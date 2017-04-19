@@ -6,7 +6,8 @@ shape analysis and geometry processing
 - thesis latex 
 
 ## Code dependencies (linux)
-- g++ 6.2
+- g++ 6.2 (default)
+- g++ 5.3
 - cuda 8.0
 - armadillo
 - eigen
@@ -16,6 +17,7 @@ shape analysis and geometry processing
 - openmp
 - matlab
 - latex
+- libcgal
 
 ## Credits
 - Lizeth Joseline Fuentes Pérez
