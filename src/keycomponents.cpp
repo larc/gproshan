@@ -117,7 +117,7 @@ void keycomponents::calcular_krings(off & shape)
 		calcular_krings(shape, v_keypoints[i], index, k);
 		/*
 		stringstream ss;
-		ss<<"../../../../TEST/keycomponents/"<<i;
+		ss<<"../TEST/keycomponents/"<<i;
 		ofstream os(ss.str());
 		print(os);
 		os.close();

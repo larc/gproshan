@@ -59,7 +59,7 @@ void holes::calcular_holes(keypoints & kps, off & shape)
 	for(size_t i = 0; i < n_vertices; i++)
 		holes_vertices[i] = shape.get_rings(i).size() != kps.get_nro_faces(i);
 
-	ofstream os("../../../../TEST/holes/holes");
+	ofstream os("../TEST/holes/holes");
 	print_holes(os);
 	os.close();
 	calcular_bounds(shape);
@@ -174,7 +174,7 @@ void holes::find_holes()
 		index_holes.push_back(a);
 		holes_vertices[a] = 1;
 
-		sprintf(buffer,"../../../../TEST/holes/holes_%lu", index_holes.size()-1);
+		sprintf(buffer,"../TEST/holes/holes_%lu", index_holes.size()-1);
 		ofstream os(buffer);
 		os<<a<<endl;
 		i = neighbors_bound[a];
@@ -257,9 +257,9 @@ void holes::repair_hole(off & shape, size_t index)
 	off & shole = *sub_mesh(shape, 1);
 
 	char buffer[128];
-	sprintf(buffer,"../../../../TEST/holes/sub_mesh.%lu.off", index);
+	sprintf(buffer,"../TEST/holes/sub_mesh.%lu.off", index);
 	shole.save(buffer);
-	sprintf(buffer,"../../../../TEST/holes/hole_repair.%lu.off", index);
+	sprintf(buffer,"../TEST/holes/hole_repair.%lu.off", index);
 	shape_hole.save(buffer);
 
 	MatrixXd p(3, shole.get_nvertices());
@@ -302,7 +302,7 @@ void holes::repair_hole(off & shape, size_t index)
 		shape_hole(i).z = H(2,i);
 	}
 
-	sprintf(buffer,"../../../../TEST/holes/hole_repair_2.%lu.off", index);
+	sprintf(buffer,"../TEST/holes/hole_repair_2.%lu.off", index);
 	shape_hole.save(buffer);
 }
 

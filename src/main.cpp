@@ -382,7 +382,7 @@ void main_testholes()
 	string filename = getFileName(file);
 
 	off shape(PATH_DATA + file);
-	//off shape("../../../../DATA/nefertiti-entire.off");
+	//off shape("../DATA/nefertiti-entire.off");
 
 	percent_t percent = 0.1;
 	size_t nkps = shape.get_nvertices()*percent;
@@ -394,7 +394,7 @@ void main_testholes()
 	oskp.close();
 
 	holes sholes(kps,shape);
-	sholes.save_off("../../../../TEST/holes/mesh_refinada.off");
+	sholes.save_off("../TEST/holes/mesh_refinada.off");
 	cout<<"NRO HOLES: "<<sholes.getNroHoles()<<endl;
 }
 

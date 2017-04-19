@@ -25,13 +25,13 @@ typedef vertex_t area_t;
 typedef vertex_t angle_t;
 typedef std::pair<area_t,size_t> areapair_t;
 
-#define PATH_MDATA	std::string("../../../../DATA/")
-#define PATH_DATA	std::string("../../../../DATA/shapes_grande/")
-#define PATH_CORR	std::string("../../../../DATA/corr_shapes/")
-#define PATH_KPS	std::string("../../../../TEST/keypoints/")
-#define PATH_KCS	std::string("../../../../TEST/keycomponents/")
-#define PATH_HOLES	std::string("../../../../TEST/holes/")
-#define PATH_TEST	std::string("../../../../TEST/")
+#define PATH_MDATA	std::string("../DATA/")
+#define PATH_DATA	std::string("../DATA/shapes_grande/")
+#define PATH_CORR	std::string("../DATA/corr_shapes/")
+#define PATH_KPS	std::string("../TEST/keypoints/")
+#define PATH_KCS	std::string("../TEST/keycomponents/")
+#define PATH_HOLES	std::string("../TEST/holes/")
+#define PATH_TEST	std::string("../TEST/")
 
 
 #ifndef NDEBUG

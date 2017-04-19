@@ -334,7 +334,7 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 
 		}
 		
-		////////////////////////////////////
+//
 		// Second iteration
 		size_t M_;
 		if(all_points) M_ = mesh->n_vertices();
@@ -360,7 +360,7 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 		memset(levels + M, 255, sizeof(index_t) * (M_ - M));
 
 
-		//////////////////////////////////////////////////////
+//
 		// Including all patches to the mapping...
 		debug_me(it inpaiting)
 
@@ -511,7 +511,7 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 
 		}
 		
-		////////////////////////////////////
+//
 		// Second iteration
 		debug(max_dist)	
 		float time_g;
@@ -530,7 +530,7 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 		memset(levels + M, 255, sizeof(index_t) * (patches.size() - M));
 
 
-		//////////////////////////////////////////////////////
+//
 		// Including all patches to the mapping...
 		debug_me(it inpaiting)
 
