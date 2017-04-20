@@ -27,7 +27,8 @@ inline index_t end_v(const index_t & i, const vector<index_t> & limites)
 {
 	index_t di = i - (i >> 1) - 2;
 	di = i - (di >> 1);
-	return limites[i < limites.size() ? i : limites.size() - 1];
+	//return limites[i < limites.size() ? i : limites.size() - 1];
+	return i < limites.size() ? limites[i] : limites.back();
 }
 
 __host__ __device__

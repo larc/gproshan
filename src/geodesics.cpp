@@ -141,13 +141,13 @@ void geodesics::run(che * mesh)
 
 			if(color[v] == RED)
 			{
+				updates[v]++;
 				for_star(v_he, mesh, v)
 				{
 					//p = update(d, mesh, v_he, vx);
 					p = update_step(mesh, distances, v_he);
 					if(p < distances[v])
 					{
-						updates[v]++;
 						distances[v] = p;
 						clusters[v] = distances[mesh->vt(prev(v_he))] < distances[mesh->vt(next(he))] ? clusters[mesh->vt(prev(he))] : clusters[mesh->vt(next(he))];
 
@@ -162,6 +162,19 @@ void geodesics::run(che * mesh)
 		}
 	}
 
+	
+	index_t * rings = new index_t[n_vertices];
+	index_t * sorted = new index_t[n_vertices];
+	vector<index_t> limites;
+
+	mesh->sort_by_rings(rings, sorted, limites, sources);
+
+	for(index_t i = 0; i < n_vertices; i++)
+		cout << i << " " << rings[i] << " " << updates[i] << " " << (rings[i] + 1)/ 2  << endl;
+	
+	debug(limites.size())
+	delete [] rings;
+	delete [] sorted;
 }
 
 int max_iter = 50;
