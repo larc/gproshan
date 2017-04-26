@@ -593,7 +593,12 @@ void viewer_process_gaussian_curvature()
 	
 	vertex_t g, g_max = -INFINITY, g_min = INFINITY;
 	vertex a, b;
+
+#ifdef SINGLE_P
+	fvec gv(Viewer::n_vertices);
+#else
 	vec gv(Viewer::n_vertices);
+#endif
 
 	#pragma omp parallel for private(g, a, b) reduction(max: g_max) reduction(min: g_min)
 	for(index_t v = 0; v < Viewer::n_vertices; v++)

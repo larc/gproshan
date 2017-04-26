@@ -112,8 +112,8 @@ void geodesics::run(che * mesh)
 		cola.push(make_pair(distances[s], s));
 	}
 
-	index_t * updates = new index_t[n_vertices];
-	memset(updates, 0, n_vertices * sizeof(index_t));
+//	index_t * updates = new index_t[n_vertices];
+//	memset(updates, 0, n_vertices * sizeof(index_t));
 
 	while(green_count-- && !cola.empty())
 	{
@@ -141,7 +141,7 @@ void geodesics::run(che * mesh)
 
 			if(color[v] == RED)
 			{
-				updates[v]++;
+//				updates[v]++;
 				for_star(v_he, mesh, v)
 				{
 					//p = update(d, mesh, v_he, vx);
@@ -162,6 +162,7 @@ void geodesics::run(che * mesh)
 		}
 	}
 
+/*
 	
 	index_t * rings = new index_t[n_vertices];
 	index_t * sorted = new index_t[n_vertices];
@@ -175,6 +176,7 @@ void geodesics::run(che * mesh)
 	debug(limites.size())
 	delete [] rings;
 	delete [] sorted;
+*/
 }
 
 int max_iter = 50;
