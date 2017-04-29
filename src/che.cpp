@@ -812,40 +812,70 @@ void che::edge_collapse(size_t ne)
 
 	index_t e_d, he_d, ohe_d, he_v, ohe_v;
 	ne = n_edges_;
+
+	bool is_collapse;
+
 	while(ne--)
 	{
-		e_d = ne;
-		//e_d = rand() % n_edges_;
+		//e_d = ne;
+		e_d = rand() % n_edges_;
 		he_d = ET[e_d];
 		ohe_d = OT[he_d];
-	
+		
+		debug(e_d)
+		debug(faces_fixed[trig(he_d)])
+		debug(faces_fixed[trig(ohe_d)])
+
 		if(ohe_d != NIL && !faces_fixed[trig(he_d)] && !faces_fixed[trig(ohe_d)])
 		{
 			he_v = VT[he_d];
 			ohe_v = VT[ohe_d];
 			
-			debug(trig(he_d))
-			debug(trig(ohe_d))
 			
-			for_star(he, this, he_v)
-				if(!faces_fixed[trig(he)]) faces_fixed[trig(he)] = 1;
-debug_me(edge_collapse)
-			debug(ohe_v)
-			for_star(he, this, ohe_v)
-				if(!faces_fixed[trig(he)]) faces_fixed[trig(he)] = 1;
-debug_me(edge_collapse)
-			faces_fixed[trig(he_d)] = -1;
-			faces_fixed[trig(ohe_d)] = -1;
+			is_collapse = true;
 
-			deleted_vertices[ohe_v] = 1;
-//			Viewer::other_vertices.push_back(GT[he_v]);
-//			Viewer::other_vertices.push_back(GT[ohe_v]);
-//			GT[he_v] = (GT[he_v] + GT[ohe_v]) / 2;
+			for_star(he, this, he_v)
+				if(faces_fixed[trig(he)])
+				{
+					is_collapse = false;
+					break;
+				}
 			
-debug_me(edge_collapse)
+			if(is_collapse)
 			for_star(he, this, ohe_v)
-				VT[he] = he_v;
-			EVT[ohe_v] = NIL;
+				if(faces_fixed[trig(he)])
+				{
+					is_collapse = false;
+					break;
+				}	
+			
+			if(is_collapse)
+			{
+		debug(he_v)	
+		debug(ohe_v)	
+
+		debug(trig(he_d))
+		debug(trig(ohe_d))
+				for_star(he, this, he_v)
+					if(!faces_fixed[trig(he)]) faces_fixed[trig(he)] = 1;
+	debug_me(edge_collapse)
+				debug(ohe_v)
+				for_star(he, this, ohe_v)
+					if(!faces_fixed[trig(he)]) faces_fixed[trig(he)] = 1;
+	debug_me(edge_collapse)
+				faces_fixed[trig(he_d)] = -1;
+				faces_fixed[trig(ohe_d)] = -1;
+
+				deleted_vertices[ohe_v] = 1;
+	//			Viewer::other_vertices.push_back(GT[he_v]);
+	//			Viewer::other_vertices.push_back(GT[ohe_v]);
+				GT[he_v] = (GT[he_v] + GT[ohe_v]) / 2;
+				
+	debug_me(edge_collapse)
+				for_star(he, this, ohe_v)
+					VT[he] = he_v;
+				EVT[ohe_v] = NIL;
+			}
 		}
 	}
 debug_me(edge_collapse)
@@ -874,6 +904,9 @@ debug_me(edge_collapse)
 debug_me(edge_collapse)
 	delete_me();
 debug_me(edge_collapse)
+//	for(index_t i = 0; i < new_faces.size(); i += 3)
+//		cout << new_faces[i] << ' ' << new_faces[i+1] << " " << new_faces[i+2] << endl;
+//	cout << endl;
 	init(new_vertices.data(), new_vertices.size(), new_faces.data(), new_faces.size() / P);
 debug_me(edge_collapse)
 	
