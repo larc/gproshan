@@ -887,17 +887,17 @@ void che::edge_collapse(size_t ne)
 	index_t dv = 0;
 	for(index_t v = 0; v < n_vertices_; v++)
 	{
-//		if(deleted_vertices[v]) dv++;
-//		else
+		if(deleted_vertices[v]) dv++;
+		else
 		{
-//			deleted_vertices[v] = dv;
+			deleted_vertices[v] = dv;
 			new_vertices.push_back(GT[v]);
 		}
 	}
 
 	for(index_t he = 0; he < n_half_edges_; he++)
 		if(faces_fixed[trig(he)] > -1)
-			new_faces.push_back(VT[he]);// - deleted_vertices[VT[he]]);
+			new_faces.push_back(VT[he] - deleted_vertices[VT[he]]);
 	
 	delete_me();
 	init(new_vertices.data(), new_vertices.size(), new_faces.data(), new_faces.size() / P);
