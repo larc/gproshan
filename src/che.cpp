@@ -803,6 +803,18 @@ void che::set_head_vertices(index_t * head, const size_t & n)
 	}
 }
 
+index_t che::link_intersect(const index_t & v_a, const index_t & v_b)
+{
+	index_t intersect = 0;
+
+	for_star(he_a, this, v_a)
+	for_star(he_b, this, v_b)
+		if(VT[next(he_a)] == VT[next(he_b)])
+			intersect++;
+	
+	return intersect;
+}
+
 void che::edge_collapse(size_t ne)
 {
 	short * faces_fixed = new short[n_faces_];
@@ -822,18 +834,14 @@ void che::edge_collapse(size_t ne)
 		he_d = ET[e_d];
 		ohe_d = OT[he_d];
 		
-		debug(e_d)
-		debug(faces_fixed[trig(he_d)])
-		debug(faces_fixed[trig(ohe_d)])
-
 		if(ohe_d != NIL && !faces_fixed[trig(he_d)] && !faces_fixed[trig(ohe_d)])
 		{
 			he_v = VT[he_d];
 			ohe_v = VT[ohe_d];
-			
-			
-			is_collapse = true;
+				
+			is_collapse = link_intersect(he_v, ohe_v) == 2;
 
+			if(is_collapse)
 			for_star(he, this, he_v)
 				if(faces_fixed[trig(he)])
 				{
@@ -851,18 +859,11 @@ void che::edge_collapse(size_t ne)
 			
 			if(is_collapse)
 			{
-		debug(he_v)	
-		debug(ohe_v)	
-
-		debug(trig(he_d))
-		debug(trig(ohe_d))
 				for_star(he, this, he_v)
 					if(!faces_fixed[trig(he)]) faces_fixed[trig(he)] = 1;
-	debug_me(edge_collapse)
-				debug(ohe_v)
 				for_star(he, this, ohe_v)
 					if(!faces_fixed[trig(he)]) faces_fixed[trig(he)] = 1;
-	debug_me(edge_collapse)
+				
 				faces_fixed[trig(he_d)] = -1;
 				faces_fixed[trig(ohe_d)] = -1;
 
@@ -871,14 +872,12 @@ void che::edge_collapse(size_t ne)
 	//			Viewer::other_vertices.push_back(GT[ohe_v]);
 				GT[he_v] = (GT[he_v] + GT[ohe_v]) / 2;
 				
-	debug_me(edge_collapse)
 				for_star(he, this, ohe_v)
 					VT[he] = he_v;
 				EVT[ohe_v] = NIL;
 			}
 		}
 	}
-debug_me(edge_collapse)
 	
 	vector<vertex> new_vertices;	
 	vector<index_t> new_faces;
@@ -895,22 +894,14 @@ debug_me(edge_collapse)
 			new_vertices.push_back(GT[v]);
 		}
 	}
-	debug(dv)
 
 	for(index_t he = 0; he < n_half_edges_; he++)
 		if(faces_fixed[trig(he)] > -1)
 			new_faces.push_back(VT[he]);// - deleted_vertices[VT[he]]);
-
-debug_me(edge_collapse)
-	delete_me();
-debug_me(edge_collapse)
-//	for(index_t i = 0; i < new_faces.size(); i += 3)
-//		cout << new_faces[i] << ' ' << new_faces[i+1] << " " << new_faces[i+2] << endl;
-//	cout << endl;
-	init(new_vertices.data(), new_vertices.size(), new_faces.data(), new_faces.size() / P);
-debug_me(edge_collapse)
 	
-	debug(n_vertices_)
+	delete_me();
+	init(new_vertices.data(), new_vertices.size(), new_faces.data(), new_faces.size() / P);
+	
 	delete [] faces_fixed;
 	delete [] deleted_vertices;
 }
