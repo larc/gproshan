@@ -70,6 +70,16 @@ void che::border(vector<index_t> & border, const index_t & b)
 		border.push_back(VT[he]);
 }
 
+bool che::is_border_v(const index_t & v) const
+{
+	return OT[EVT[v]] == NIL;
+}
+
+bool che::is_border_e(const index_t & e) const
+{
+	return OT[ET[e]] == NIL;
+}
+
 void che::flip(const index_t & e)
 {
 	index_t ha = ET[e];
@@ -806,10 +816,14 @@ void che::set_head_vertices(index_t * head, const size_t & n)
 index_t che::link_intersect(const index_t & v_a, const index_t & v_b)
 {
 	index_t intersect = 0;
+	
+	link_t link_a, link_b;
+	link(link_a, v_a);
+	link(link_b, v_b);
 
-	for_star(he_a, this, v_a)
-	for_star(he_b, this, v_b)
-		if(VT[next(he_a)] == VT[next(he_b)])
+	for(index_t & he_a: link_a)
+	for(index_t & he_b: link_b)
+		if(VT[he_a] == VT[he_b])
 			intersect++;
 	
 	return intersect;
@@ -817,32 +831,35 @@ index_t che::link_intersect(const index_t & v_a, const index_t & v_b)
 
 void che::edge_collapse(size_t ne)
 {
+	if(n_faces_ < 2) return;
+
 	short * faces_fixed = new short[n_faces_];
 	memset(faces_fixed, 0, sizeof(short) * n_faces_);
 	index_t * deleted_vertices = new index_t[n_vertices_];
 	memset(deleted_vertices, 0, sizeof(index_t) * n_vertices_);
 
-	index_t e_d, he_d, ohe_d, he_v, ohe_v;
+	index_t e_d, he_d, ohe_d, va, vb;
 	ne = n_edges_;
 
 	bool is_collapse;
 
 	while(ne--)
 	{
-		//e_d = ne;
-		e_d = rand() % n_edges_;
+		e_d = ne;
+		//e_d = rand() % n_edges_;
 		he_d = ET[e_d];
 		ohe_d = OT[he_d];
+		va = VT[he_d];
+		vb = VT[next(he_d)];
 		
-		if(ohe_d != NIL && !faces_fixed[trig(he_d)] && !faces_fixed[trig(ohe_d)])
+		//is_border_v(va) && is_border_v(vb) -> is_border_e(e_d)
+		if( ( !(is_border_v(va) && is_border_v(vb)) || is_border_e(e_d) ) &&
+			!faces_fixed[trig(he_d)] && (ohe_d != NIL ? !faces_fixed[trig(ohe_d)] : true) )
 		{
-			he_v = VT[he_d];
-			ohe_v = VT[ohe_d];
-				
-			is_collapse = link_intersect(he_v, ohe_v) == 2;
+			is_collapse = link_intersect(va, vb) == (1 + (ohe_d != NIL));
 
 			if(is_collapse)
-			for_star(he, this, he_v)
+			for_star(he, this, va)
 				if(faces_fixed[trig(he)])
 				{
 					is_collapse = false;
@@ -850,7 +867,7 @@ void che::edge_collapse(size_t ne)
 				}
 			
 			if(is_collapse)
-			for_star(he, this, ohe_v)
+			for_star(he, this, vb)
 				if(faces_fixed[trig(he)])
 				{
 					is_collapse = false;
@@ -859,22 +876,20 @@ void che::edge_collapse(size_t ne)
 			
 			if(is_collapse)
 			{
-				for_star(he, this, he_v)
+				for_star(he, this, va)
 					if(!faces_fixed[trig(he)]) faces_fixed[trig(he)] = 1;
-				for_star(he, this, ohe_v)
+				for_star(he, this, vb)
 					if(!faces_fixed[trig(he)]) faces_fixed[trig(he)] = 1;
 				
 				faces_fixed[trig(he_d)] = -1;
-				faces_fixed[trig(ohe_d)] = -1;
+				if(ohe_d != NIL) faces_fixed[trig(ohe_d)] = -1;
 
-				deleted_vertices[ohe_v] = 1;
-	//			Viewer::other_vertices.push_back(GT[he_v]);
-	//			Viewer::other_vertices.push_back(GT[ohe_v]);
-				GT[he_v] = (GT[he_v] + GT[ohe_v]) / 2;
+				deleted_vertices[vb] = 1;
+				GT[va] = (GT[va] + GT[vb]) / 2;
 				
-				for_star(he, this, ohe_v)
-					VT[he] = he_v;
-				EVT[ohe_v] = NIL;
+				for_star(he, this, vb)
+					VT[he] = va;
+				EVT[vb] = NIL;
 			}
 		}
 	}
@@ -901,7 +916,7 @@ void che::edge_collapse(size_t ne)
 	
 	delete_me();
 	init(new_vertices.data(), new_vertices.size(), new_faces.data(), new_faces.size() / P);
-	
+
 	delete [] faces_fixed;
 	delete [] deleted_vertices;
 }

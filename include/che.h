@@ -65,6 +65,8 @@ class che
 		void star(star_t & s, const index_t & v);
 		void link(link_t & l, const index_t & v);
 		void border(vector<index_t> & border, const index_t & b);
+		bool is_border_v(const index_t & v) const;
+		bool is_border_e(const index_t & e) const;
 		void flip(const index_t & e);
 		vertex_t pdetriq(const index_t & t) const;
 		area_t area_trig(const index_t & t) const;
