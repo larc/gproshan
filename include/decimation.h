@@ -1,5 +1,5 @@
-#ifndef QUADRIC_H
-#define QUADRIC_H
+#ifndef DECIMATION_H
+#define DECIMATION_H
 
 
 #include <string>
@@ -11,17 +11,17 @@
 using namespace std;
 using namespace arma;
 
-class quadric
+class decimation
 {
 	private:
 		mat Q;
 		size_t var_size;
 	public:
-		quadric();
-		quadric(vertex normal, vertex p);
-		quadric & operator +( quadric & q);
+		decimation();
+		decimation(vertex normal, vertex p);
 		double eval( vertex v);
-	 ~quadric();
+		double compute_error(const vertex_t & a, const vertex_t & b);
+	 ~decimation();
 };
 
 

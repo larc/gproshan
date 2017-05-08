@@ -1,12 +1,19 @@
-#include "quadric.h"
+#include "decimation.h"
 
-quadric::quadric()
+decimation::decimation()
 {
 	var_size = 10;
 	for (int i = 0; i < var_size; i++)
 		Q[i] = 0;
 }
-quadric::quadric( vertex normal, vertex p)
+
+
+double compute_error(const  vertex_t & a, const  vertex_t & b)
+{
+
+}
+
+decimation::decimation( vertex normal, vertex p)
 {
 	double nx, ny, nz, d;
 	var_size = 10;
@@ -29,19 +36,12 @@ quadric::quadric( vertex normal, vertex p)
 
 }
 
-quadric::~quadric()
+decimation::~decimation()
 {
 }
 
-quadric & quadric::operator + (quadric &q)
-{
-	quadric nq;
-	for (int i = 0; i < var_size; i++)
-		nq.Q[i] = this->Q[i] + q.Q[i];
-	return nq;
-}
 
-double quadric::eval(vertex v)
+double decimation::eval(vertex v)
 {
 	double x, y, z;
 	x = v[0];
