@@ -1,14 +1,10 @@
 #ifndef DECIMATION_H
 #define DECIMATION_H
 
-
-#include <string>
-
-#include "include.h"
-#include "vertex.h"
-#include <armadillo>
 #include "che.h"
 
+#include <string>
+#include <armadillo>
 
 using namespace std;
 using namespace arma;
@@ -16,17 +12,18 @@ using namespace arma;
 class decimation
 {
 	private:
-		mat *Q;
+		mat * Q;
 		che * mesh;
 		size_t var_size;
+	
 	public:
 		decimation(che * mesh);
+		~decimation();
 		void compute_quadrics();
-		double eval( vertex_t v);
-		double compute_error(const vertex_t & a, const vertex_t & b);
-	 ~decimation();
+		vertex_t compute_error(const index_t & e);
+		vertex create_vertex(const index_t & e);
 };
 
 
-#endif // CHE_H
+#endif // DECIMATION_H
 

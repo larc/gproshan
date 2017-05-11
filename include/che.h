@@ -87,6 +87,8 @@ class che
 		const vertex & gt(const index_t & v) const;
 		const vertex & gt_vt(const index_t & he) const;
 		const vertex & gt_vt_next_evt(const index_t & v) const;
+		const vertex & gt_e(const index_t & e, const bool & op = false);
+		const index_t & vt_e(const index_t & e, const bool & op = false);
 		const index_t & et(const index_t & e) const;
 		const index_t & ot_et(const index_t & e) const;
 		const index_t & ot(const index_t & he) const;

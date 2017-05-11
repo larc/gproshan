@@ -336,6 +336,16 @@ const vertex & che::gt_vt_next_evt(const index_t & v) const
 	return GT[VT[next(EVT[v])]];
 }
 
+const vertex & che::gt_e(const index_t & e, const bool & op)
+{ 
+	return op ? GT[VT[next(ET[e])]] : GT[VT[ET[e]]];
+}
+
+const index_t & che::vt_e(const index_t & e, const bool & op)
+{ 
+	return op ? VT[next(ET[e])] : VT[ET[e]];
+}
+
 const index_t & che::et(const index_t & e) const
 {
 	return ET[e];
