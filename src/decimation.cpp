@@ -35,19 +35,21 @@ void decimation::compute_quadrics()
 	}
 }
 
-priority_queue< err_edge > decimation::order_edges()
+void decimation::order_edges(index_t * const & sort_edges, vertex_t * const & error_edges)
 {
-	priority_queue< err_edge > queue;	
-	index_t e;
-	err_edge p_edge;
-	for(int i = 0; i < mesh->n_edges(); i++)
-	{	
-		e = mesh->vt_e(i);
-		p_edge.edge = e;
-		p_edge.error = compute_error(e);
-		queue.push( p_edge ) ;
+	#pragma omp parallel for
+	for(int e = 0; e < mesh->n_edges(); e++)
+	{
+		sort_edges[e] = e;
+		error_edges[e] = compute_error(e);
 	}
-	return queue;
+	
+	sort(sort_edges, sort_edges + mesh->n_edges(),
+		[&error_edges](const index_t & a, const index_t & b)
+		{
+			return error_edges[a] < error_edges[b];
+		}
+		);
 }
 
 vertex_t decimation::compute_error(const index_t & e)
