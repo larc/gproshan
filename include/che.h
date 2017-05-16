@@ -113,6 +113,7 @@ class che
 		void merge(const che * mesh, const vector<index_t> & com_vertices);
 		void set_head_vertices(index_t * head, const size_t & n);
 		index_t link_intersect(const index_t & v_a, const index_t & v_b);
+		void edge_collapse(const index_t *const & sort_edges);
 		void edge_collapse(size_t ne);
 
 	protected:

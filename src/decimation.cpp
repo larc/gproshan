@@ -4,6 +4,8 @@ decimation::decimation(che * mesh_)
 {
 	mesh = mesh_;
 	Q = new mat[mesh->n_vertices()];
+
+	execute();
 }
 
 decimation::~decimation()
@@ -11,12 +13,31 @@ decimation::~decimation()
 	delete [] Q;
 }
 
+void decimation::execute()
+{
+debug_me(decimation)
+	compute_quadrics();
+
+debug_me(decimation)
+	index_t * sort_edges = new index_t[mesh->n_edges()];
+	vertex_t * error_edges = new vertex_t[mesh->n_edges()];
+debug_me(decimation)
+	order_edges(sort_edges, error_edges);
+debug_me(decimation)
+
+	mesh->edge_collapse(sort_edges);
+debug_me(decimation)
+
+	delete [] sort_edges;
+	delete [] error_edges;
+}
+
 void decimation::compute_quadrics()
 {
 	vec p(4);
 	vertex n;
 
-	#pragma omp parallel for private(p, n)
+//	#pragma omp parallel for private(p, n)
 	for(index_t v = 0; v < mesh->n_vertices(); v++)
 	{
 		Q[v].resize(4,4);

@@ -839,7 +839,7 @@ index_t che::link_intersect(const index_t & v_a, const index_t & v_b)
 	return intersect;
 }
 
-void che::edge_collapse(size_t ne)
+void che::edge_collapse(const index_t *const & sort_edges)
 {
 	if(n_faces_ < 2) return;
 
@@ -849,14 +849,14 @@ void che::edge_collapse(size_t ne)
 	memset(deleted_vertices, 0, sizeof(index_t) * n_vertices_);
 
 	index_t e_d, he_d, ohe_d, va, vb;
-	ne = n_edges_;
 
 	bool is_collapse;
-
-	while(ne--)
+	
+	for(index_t e = 0; e < n_edges_; e++)
 	{
-		e_d = ne;
-		//e_d = rand() % n_edges_;
+		//e_d = ne;
+		e_d = sort_edges ? sort_edges[e] : rand() % n_edges_;
+
 		he_d = ET[e_d];
 		ohe_d = OT[he_d];
 		va = VT[he_d];
