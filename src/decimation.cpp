@@ -15,18 +15,13 @@ decimation::~decimation()
 
 void decimation::execute()
 {
-debug_me(decimation)
 	compute_quadrics();
 
-debug_me(decimation)
 	index_t * sort_edges = new index_t[mesh->n_edges()];
 	vertex_t * error_edges = new vertex_t[mesh->n_edges()];
-debug_me(decimation)
-	order_edges(sort_edges, error_edges);
-debug_me(decimation)
 
+	order_edges(sort_edges, error_edges);
 	mesh->edge_collapse(sort_edges);
-debug_me(decimation)
 
 	delete [] sort_edges;
 	delete [] error_edges;

@@ -643,7 +643,7 @@ void viewer_process_edge_collapse()
 {
 	debug_me(Processing:)
 	
-	float time;
+	double time;
 
 	TIC(time) decimation sampling(Viewer::mesh); TOC(time)
 	debug(time)
