@@ -34,14 +34,14 @@ debug_me(decimation)
 
 void decimation::compute_quadrics()
 {
-	vec p(4);
 	vertex n;
-
-//	#pragma omp parallel for private(p, n)
+	
+	#pragma omp parallel for private(n)
 	for(index_t v = 0; v < mesh->n_vertices(); v++)
 	{
 		Q[v].resize(4,4);
 		Q[v].zeros();
+		vec p(4);
 		
 		for_star(he, mesh, v)
 		{
