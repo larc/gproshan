@@ -30,17 +30,20 @@ all: $(TARGET)
 $(TARGET): $(OBJECTS) $(CUDA_OBJECTS) obj/link_cuda.o
 	$(LD) $(OBJECTS) $(CUDA_OBJECTS) obj/link_cuda.o -o $(TARGET) $(CFLAGS) $(LFLAGS) $(LIBS)
 
-obj/%.o: src/%.cpp
+obj/%.o: src/%.cpp | obj
 	$(CC) -c $< -o $@ $(CFLAGS) 
 
-obj/%.o: src/viewer/%.cpp
+obj/%.o: src/viewer/%.cpp | obj
 	$(CC) -c $< -o $@ -I./include/viewer $(CFLAGS) 
 
-obj/%_cuda.o: src/cuda/%.cu
+obj/%_cuda.o: src/cuda/%.cu | obj
 	$(CUDA) -dc $< -o $@ $(CUDAFLAGS)
 
-obj/link_cuda.o: $(CUDA_OBJECTS)
+obj/link_cuda.o: $(CUDA_OBJECTS) | obj
 	$(CUDA) -dlink $(CUDA_OBJECTS) -o obj/link_cuda.o $(CUDAFLAGS)
+
+obj:
+	mkdir obj
 
 clean:
 	rm -f $(OBJECTS) $(CUDA_OBJECTS)
