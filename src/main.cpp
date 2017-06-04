@@ -37,11 +37,22 @@ void sampling_terrain(string file, size_t s, size_t K, string output = "patches_
 float test_fastmarching(string file, size_t n_test = 10);
 void main_test_fastmarching();
 void main_test_holes();
+void generate_grid_obtuse(const size_t & nr, const size_t & nc, const vertex_t & d = 1);
 
 
 int main(int nargs, char ** args)
 {
-
+	generate_grid_obtuse(81, 10);
+/*	mat A = {{2, 2, 0, 1}, {7, 3, 0, 1}, {4, 7, 0, 1}};
+	A = A.t();
+	vec x = {4.5, 2.5, 0, 1};
+	vec a;
+	a = solve(A, x);
+	debug(a)
+	debug(a > 0)
+	debug(sum(a))
+*/	
+//	generate_grid(1000, 1, "tmp/grilla1m.off");
 //	testkeycomponents prueba(50, 0.15);
 //	prueba.one_test_fm("0001.null.0.off","");
 //	if(nargs > 1) test_image_denoising(args[1]);
@@ -58,7 +69,7 @@ int main(int nargs, char ** args)
 //	params_t params = { & K };
 
 //	main_test_holes();
-	viewer_main(nargs, args);
+//	viewer_main(nargs, args);
 //	main_testkeycomponents();
 //	main_testkeypoints();
 	return 0;
@@ -195,13 +206,24 @@ void main_test_fastmarching()
 	}
 }
 
-distance_t * load_exact_geodesics(string file, size_t n)
+distance_t * load_exact_geodesics(string file, size_t n, che * mesh, const index_t & s)
 {
 	ifstream is(PATH_TEST + ("exact_geodesics/" + file));
 	distance_t * distances_e = new distance_t[n];
-	for(index_t i = 0; i < n; i++)
-		is >> distances_e[i];
-	is.close();
+	
+	if(is.good())
+	{
+		for(index_t i = 0; i < n; i++)
+			is >> distances_e[i];
+		is.close();
+		return distances_e;
+	}
+	else
+	{
+		for(index_t i = 0; i < n; i++)
+			distances_e[i] = *(mesh->gt(s) - mesh->gt(i));
+	}
+
 	return distances_e;
 }
 
@@ -217,7 +239,7 @@ float test_fastmarching(string filename, size_t n_test)
 	vector<index_t> source = { 0 };
 	printf("%12ld &", shape->n_vertices());
 	
-	distance_t * distances_e = load_exact_geodesics(filename, shape->n_vertices());
+	distance_t * distances_e = load_exact_geodesics(filename, shape->n_vertices(), shape, source.front());
 	
 	index_t * rings = new index_t[shape->n_vertices()];
 	index_t * sorted = new index_t[shape->n_vertices()];
@@ -262,9 +284,17 @@ float test_fastmarching(string filename, size_t n_test)
 	distance_t error_s = 0;
 	for(index_t v = 1; v < shape->n_vertices(); v++)
 	{
-//		if(distances_c[v] < INFINITY)
-		error_c += abs(distances_c[v] - distances_e[v]) / distances_e[v];
-		error_s += abs(distances_s[v] - distances_e[v]) / distances_e[v];
+		if(distances_e)
+		{
+			error_c += abs(distances_c[v] - distances_e[v]) / distances_e[v];
+			error_s += abs(distances_s[v] - distances_e[v]) / distances_e[v];
+		}
+		else
+		{
+			distance_t d = *(shape->gt(0) - shape->gt(v));
+			error_c += abs(distances_c[v] - d) / d;
+			error_s += abs(distances_s[v] - d) / d;
+		}
 	}
 
 	error_c /= shape->n_vertices() - 1;
@@ -396,5 +426,59 @@ void main_testholes()
 	holes sholes(kps,shape);
 	sholes.save_off("../TEST/holes/mesh_refinada.off");
 	cout<<"NRO HOLES: "<<sholes.getNroHoles()<<endl;
+}
+
+void generate_grid_obtuse(const size_t & nr, const size_t & nc, const vertex_t & d)
+{
+	size_t nvg = nr * nc;
+	size_t nvi = ((nvg - nc) / (nc * 2)) * (nc - 1);
+	size_t nv = nvg + nvi;
+	vertex_t dd = 8 * d;
+	
+	vector<vertex> vertices(nv);
+	for(index_t v = 0, i = 0; i < nr; i++)
+	for(index_t j = 0; j < nc; j++, v++)
+	{
+		vertices[v].x = d * i;
+		vertices[v].y = dd * j;
+	}
+	
+	vector<index_t> faces(P * nvi * 6);
+	index_t f = 0;
+	for(index_t i = 0, v = nvg; v < nv; v++)
+	{
+		i = !((v - nvg) % (nc - 1)) ?  ((v - nvg) / (nc - 1)) * 2 * nc : i + 1;
+		debug(i)
+		vertices[v] = vertices[i + nc];
+		vertices[v].y += dd / 2;
+		
+		faces[f++] = v;
+		faces[f++] = i + nc;
+		faces[f++] = i;
+
+		faces[f++] = v;
+		faces[f++] = i;
+		faces[f++] = i + 1;
+
+		faces[f++] = v;
+		faces[f++] = i + 1;
+		faces[f++] = i + nc + 1;
+
+		faces[f++] = v;
+		faces[f++] = i + nc + 1;
+		faces[f++] = i + 2 * nc + 1;
+		
+		faces[f++] = v;
+		faces[f++] = i + 2 * nc + 1;
+		faces[f++] = i + 2 * nc;
+		
+		faces[f++] = v;
+		faces[f++] = i + 2 *nc;
+		faces[f++] = i + nc;
+		debug(i + 2 * nc + 1 < nv)
+	}
+	
+	che_off mesh(vertices.data(), vertices.size(), faces.data(), faces.size() / P);
+	mesh.write_file("tmp/grid_obtuse.off");
 }
 
