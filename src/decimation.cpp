@@ -90,3 +90,24 @@ vertex decimation::create_vertex(const index_t & e)
 	return (va + vb) / 2;
 }
 
+corr_t decimation::find_corr(const vertex & v, che * mesh, const vector<index_t> & he_trigs)
+{
+	vertex_t d, dist = INFINITY;
+	corr_t corr;
+	vertex n, x;
+
+	for(const index_t & he: he_trigs)
+	{
+		n = mesh->normal_he(he);
+		d = (n, v - mesh->gt(he));
+		x = v - d * n + mesh->gt(he);
+
+		if(abs(d) < dist)
+		{
+			corr.t = trig(he);
+		}
+	}
+	
+	return corr;
+}
+
