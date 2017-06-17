@@ -30,6 +30,7 @@ using namespace DDG;
 using namespace std;
 
 void generate_grid(size_t s, size_t f, string name);
+void generate_grid_cylinder(const vertex_t & radio, vertex_t d_angle, size_t rings);
 void main_testkeypoints();
 double main_testkeycomponents();
 void main_testholes();
@@ -42,7 +43,8 @@ void generate_grid_obtuse(const size_t & nr, const size_t & nc, const vertex_t &
 
 int main(int nargs, char ** args)
 {
-	generate_grid_obtuse(81, 10);
+//	generate_grid_obtuse(81, 10);
+//	generate_grid_cylinder(100, 1, 1000);
 /*	mat A = {{2, 2, 0, 1}, {7, 3, 0, 1}, {4, 7, 0, 1}};
 	A = A.t();
 	vec x = {4.5, 2.5, 0, 1};
@@ -57,7 +59,7 @@ int main(int nargs, char ** args)
 //	prueba.one_test_fm("0001.null.0.off","");
 //	if(nargs > 1) test_image_denoising(args[1]);
 	
-//	main_test_fastmarching();
+	main_test_fastmarching();
 	
 	//sampling_terrain("terreno.off", 4, 64);
 //	sampling_shape(nargs, args);
@@ -480,5 +482,84 @@ void generate_grid_obtuse(const size_t & nr, const size_t & nc, const vertex_t &
 	
 	che_off mesh(vertices.data(), vertices.size(), faces.data(), faces.size() / P);
 	mesh.write_file("tmp/grid_obtuse.off");
+}
+
+void generate_grid_cylinder(const vertex_t & radio, vertex_t d_angle, size_t rings)
+{
+	size_t n_vrings = 360 / d_angle;	
+	d_angle *= M_PI / 180;	
+	
+	size_t n_vertices = 2 + rings * n_vrings;
+	size_t n_faces = 2 * n_vrings * rings;
+
+	index_t * faces = new index_t[n_faces * 3];
+	vertex * vertices = new vertex[n_vertices];
+	
+	vertex_t hight = d_angle * radio;
+	vertex_t z = 0;
+	index_t v = 1;
+	vertex_t a = 0;
+	for(index_t r = 0; r < rings; r++, z += hight)
+	{
+		a = 0;
+		for(index_t vr = 0; vr < n_vrings; vr++, v++)
+		{
+			vertices[v].x = radio * sin(a);
+			vertices[v].y = radio * cos(a);
+			vertices[v].z = z;
+			a += d_angle;
+		}
+	}
+	
+	vertices[v++].z = z - hight;
+	assert(v == n_vertices);
+
+	v--;
+	index_t f = 0;
+	for(index_t vr = 0; vr < n_vrings; vr++)
+	{
+		faces[f++] = 0;
+		faces[f++] = (vr % n_vrings) + 1;
+		faces[f++] = ((vr + 1) % n_vrings) + 1;
+
+		faces[f++] = v;
+		faces[f++] = v - (vr % n_vrings) - 1;
+		faces[f++] = v - ((vr + 1) % n_vrings) - 1;
+	}
+	
+	v = 1;
+	n_faces *= P;
+	while(f < n_faces)
+	{
+		if(v % n_vrings)
+		{
+			faces[f++] = v;
+			faces[f++] = v + n_vrings + 1;
+			faces[f++] = v + 1;
+			faces[f++] = v;
+			faces[f++] = v + n_vrings;
+			faces[f++] = v + n_vrings + 1;
+		}
+		else
+		{
+			faces[f++] = v;
+			faces[f++] = v + 1;
+			faces[f++] = v - n_vrings + 1;
+			faces[f++] = v;
+			faces[f++] = v + n_vrings;
+			faces[f++] = v + 1;
+		}
+		v++;
+	}
+		
+
+	debug(n_vrings)
+	debug(n_vertices)
+	
+	che_off mesh(vertices, n_vertices, faces, f / P);
+	mesh.write_file("tmp/grid_cylinder.off");
+
+	delete [] vertices;
+	delete [] faces;
 }
 
