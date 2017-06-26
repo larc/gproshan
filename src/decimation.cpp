@@ -94,17 +94,37 @@ corr_t decimation::find_corr(const vertex & v, che * mesh, const vector<index_t>
 {
 	vertex_t d, dist = INFINITY;
 	corr_t corr;
-	vertex n, x;
+	vertex n, x, aux_v;
+	mat A(4,3);
 
 	for(const index_t & he: he_trigs)
 	{
 		n = mesh->normal_he(he);
-		d = (n, v - mesh->gt(he));
-		x = v - d * n + mesh->gt(he);
+		aux_v = mesh->gt_vt(he);
+		d = (n, v - aux_v);
+		x = v - d * n + aux_v;
 
 		if(abs(d) < dist)
 		{
 			corr.t = trig(he);
+			A(0,0) = aux_v.x;
+			A(1,0) = aux_v.y;
+			A(2,0) = aux_v.z;
+
+			aux_v = mesh->gt_vt(prev(he));
+			A(0,1) = aux_v.x;
+			A(1,1) = aux_v.y;
+			A(2,1) = aux_v.z;
+
+			aux_v = mesh->gt_vt(next(he));
+			A(0,2) = aux_v.x;
+			A(1,2) = aux_v.y;
+			A(2,2) = aux_v.z;
+
+			vec aux_x(&x[0], 3, false, true);
+
+			vec alpha( & corr.alpha[0], 3, /*copy_aux_mem*/ false, /*strict*/true);
+			alpha = solve(A,aux_x);
 		}
 	}
 	
