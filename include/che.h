@@ -24,6 +24,12 @@ index_t prev(const index_t & he);
 
 struct vertex_cu;
 
+struct corr_t
+{
+	index_t t;
+	vertex alpha;
+};
+
 class che;
 struct CHE
 {
@@ -115,6 +121,7 @@ class che
 		index_t link_intersect(const index_t & v_a, const index_t & v_b);
 		void edge_collapse(const index_t *const & sort_edges);
 		void edge_collapse(size_t ne);
+		corr_t find_corr(const vertex & v, che * mesh, const vector<index_t> & triangles);
 
 	protected:
 		void delete_me();

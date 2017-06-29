@@ -39,7 +39,7 @@ float test_fastmarching(string file, size_t n_test = 10);
 void main_test_fastmarching();
 void main_test_holes();
 void generate_grid_obtuse(const size_t & nr, const size_t & nc, const vertex_t & d = 1);
-
+void main_solve_arma();
 
 int main(int nargs, char ** args)
 {
@@ -59,13 +59,12 @@ int main(int nargs, char ** args)
 //	prueba.one_test_fm("0001.null.0.off","");
 //	if(nargs > 1) test_image_denoising(args[1]);
 	
-	main_test_fastmarching();
+//	main_test_fastmarching();
 	
 	//sampling_terrain("terreno.off", 4, 64);
 //	sampling_shape(nargs, args);
 //	if(nargs == 2) sampling_shape(args[1]);
-
-
+	main_solve_arma();
 //	distance_t radio = 0.04;
 
 //	params_t params = { & K };
@@ -563,3 +562,13 @@ void generate_grid_cylinder(const vertex_t & radio, vertex_t d_angle, size_t rin
 	delete [] faces;
 }
 
+void main_solve_arma()
+{
+	vertex v;
+	mat A = { {2,7,4}, {2, 3, 7}, {0,0,0}, {1,1,1} };
+	vec x = {4, 4, 0, 1};
+	vec ans(&v[0], 3, false, true);
+	cout<< v <<endl;
+	ans = solve(A,x);
+	cout<< v <<endl;
+}
