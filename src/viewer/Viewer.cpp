@@ -52,7 +52,6 @@ namespace DDG
 	bool Viewer::renderGradientField = false;
 	bool Viewer::renderNormalField = false;
 	bool Viewer::renderBorder = false;
-	bool Viewer::invertOrientation = false;
 	bool Viewer::is_flat = false;
 	bool Viewer::lines = false;
 	float Viewer::bgc = 0.;
@@ -432,7 +431,7 @@ namespace DDG
 	
 	void Viewer::mOrientation( void )
 	{
-		invertOrientation = !invertOrientation;
+		mesh.invert_orientation();
 		mesh.update_normals();
 		update_VBO();
 	}

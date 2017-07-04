@@ -37,7 +37,7 @@ void che_viewer::init(che * _mesh)
 	mesh = _mesh;
 	mesh->normalize();
 
-	invert_orientation = false;
+	_invert_orientation = false;
 	
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
@@ -105,7 +105,7 @@ void che_viewer::update_normals()
 	for(index_t v = 0; v < _n_vertices; v++)
 	{
 		normals[v] = mesh->normal(v);
-		if(invert_orientation) normals[v] = -normals[v];
+		if(_invert_orientation) normals[v] = -normals[v];
 	}
 }
 
@@ -218,6 +218,11 @@ color_t & che_viewer::color(const index_t & v)
 vertex & che_viewer::normal(const index_t & v)
 {
 	return normals[v];
+}
+
+void che_viewer::invert_orientation()
+{
+	_invert_orientation = !_invert_orientation;
 }
 
 void che_viewer::debug_info()

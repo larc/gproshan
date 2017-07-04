@@ -22,7 +22,7 @@ class che_viewer
 	protected:
 		che * mesh;
 		size_t _n_vertices; // current number of vertices
-		bool invert_orientation;
+		bool _invert_orientation;
 		vertex_t factor;
 		
 		vertex * normals;
@@ -49,6 +49,7 @@ class che_viewer
 		const size_t & n_vertices() const;
 		color_t & color(const index_t & v);
 		vertex & normal(const index_t & v);
+		void invert_orientation();
 
 		void debug_info();
 };

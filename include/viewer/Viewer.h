@@ -126,7 +126,6 @@ namespace DDG
 		static bool renderGradientField;
 		static bool renderNormalField;
 		static bool renderBorder;
-		static bool invertOrientation;
 		static bool is_flat;
 		static bool lines;
 		static float bgc;
