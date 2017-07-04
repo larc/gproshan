@@ -68,15 +68,13 @@ int viewer_main(int nargs, char ** args)
 
 void paint_holes_vertices()
 {
-	/*
-	size_t nv = Viewer::mesh()->n_vertices();
+	size_t nv = Viewer::mesh().n_vertices();
 	
 	Viewer::mesh().update();
 
 	#pragma omp parallel for
 	for(index_t v = 0; v < Viewer::mesh()->n_vertices(); v++)
 		if(v >= nv) Viewer::get_color(v) = .25;
-		*/
 }
 
 void viewer_process_delete_non_manifold_vertices()

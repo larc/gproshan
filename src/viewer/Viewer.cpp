@@ -76,6 +76,7 @@ namespace DDG
 			meshes[i++].init(_mesh);
 		
 		glutSetWindowTitle(mesh()->filename().c_str());
+		init_menus();
 		
 		debug_info();
 		mesh().debug_info();
@@ -116,7 +117,6 @@ namespace DDG
 		glutCreateWindow( "che_viewer" );
 		//glutFullScreen();
 
-
 		// specify callbacks
 		glutDisplayFunc( Viewer::display );
 		glutIdleFunc( Viewer::idle );
@@ -126,7 +126,10 @@ namespace DDG
 		glutMotionFunc( Viewer::motion );
 
 		glutSetOption ( GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_CONTINUE_EXECUTION );
-		
+}	
+
+void Viewer::init_menus()
+{
 		// initialize menus
 		int viewMenu = glutCreateMenu( Viewer::view );
 		glutSetMenu( viewMenu );
@@ -137,7 +140,14 @@ namespace DDG
 		glutAddMenuEntry( "[i] Orientation", menuOrientation );
 		glutAddMenuEntry( "[tab] Flat", menuIsFlat );
 		glutAddMenuEntry( "[space] Lines", menuLines );
+		
+		// set current mesh menu
+		int mesh_menu = glutCreateMenu( Viewer::menu_meshes );
+		glutSetMenu(mesh_menu);
+		for(index_t i = 0; i < meshes.size(); i++)
+			glutAddMenuEntry(meshes[i]->filename().c_str(), i);
 
+		// process sub menus
 		int * sub_menu = new int[sub_menus.size()];
 
 		for(index_t sm = 0; sm < sub_menus.size(); sm++)
@@ -160,6 +170,7 @@ namespace DDG
 		glutAddMenuEntry( "[>] Zoom Out", menuZoomOut );
 		glutAddMenuEntry( "[esc] Exit", menuExit );
 		glutAddSubMenu( "View", viewMenu );
+		glutAddSubMenu( "Meshes", mesh_menu );
 		
 		for(index_t sm = 0; sm < sub_menus.size(); sm++)
 			glutAddSubMenu(sub_menus[sm].c_str(), sub_menu[sm]);
@@ -308,6 +319,13 @@ namespace DDG
 				mProcess(processes[c].function);
 				break;
 		}
+	}
+
+	void Viewer::menu_meshes(int value)
+	{
+		current = value;
+		select_vertices.clear();
+		glutSetWindowTitle(mesh()->filename().c_str());	
 	}
 	
 	void Viewer::special( int i, int x, int y )

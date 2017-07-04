@@ -74,6 +74,7 @@ void che_viewer::update()
 void che_viewer::update_vbo()
 {
 	glBindVertexArray(vao);
+
 	// 0 VERTEX
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
 	glBufferData(GL_ARRAY_BUFFER, _n_vertices * sizeof(vertex), &mesh->gt(0), GL_STATIC_DRAW);

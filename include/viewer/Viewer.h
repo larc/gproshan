@@ -49,6 +49,7 @@ namespace DDG
 		// init
 		static void debug_info();
 		static void initGLUT( void );
+		static void init_menus( void );
 		static void initGLSL( void );
 		static void update_VBO( void );
 
@@ -62,6 +63,7 @@ namespace DDG
 		static void menu( int value );
 		static void view( int value );
 		static void menu_process( int value );
+		static void menu_meshes( int value );
 		
 		// menu functions
 		static void mProcess(function_t pro);
