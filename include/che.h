@@ -75,6 +75,7 @@ class che
 		bool is_border_e(const index_t & e) const;
 		void flip(const index_t & e);
 		vertex_t pdetriq(const index_t & t) const;
+		percent_t quality();
 		area_t area_trig(const index_t & t) const;
 		area_t area_vertex(const index_t & v);
 		area_t area_surface() const;
@@ -86,6 +87,7 @@ class che
 		area_t cotan(const index_t & he) const;
 		vertex_t mean_edge() const;
 		size_t memory() const;
+		size_t genus() const;
 
 		void normalize();
 		bool is_manifold() const;

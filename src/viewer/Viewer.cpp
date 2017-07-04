@@ -39,7 +39,8 @@ void drawText(const char *text, int length, int x, int y)
 namespace DDG
 {
 	// declare static member variables
-	che_viewer Viewer::mesh;
+	vector<che_viewer> Viewer::meshes;
+	index_t Viewer::current = 0;
 	vector<index_t> Viewer::select_vertices;
 	vector<vertex> Viewer::other_vertices;
 	vector<vertex> Viewer::vectors;
@@ -58,15 +59,26 @@ namespace DDG
 
 	map<unsigned char, process_t> Viewer::processes;
 	
-	void Viewer::init(che * _mesh)
+	che_viewer & Viewer::mesh()
+	{
+		assert(meshes.size() > 0);
+		return meshes[current];
+	}
+
+	void Viewer::init(const vector<che *> & _meshes)
 	{
 		//restoreViewerState();
 		initGLUT();
-		mesh.init(_mesh);
-		glutSetWindowTitle(mesh->filename().c_str());
+		
+		meshes.resize(_meshes.size());
+		index_t i = 0;
+		for(che * _mesh: _meshes)
+			meshes[i++].init(_mesh);
+		
+		glutSetWindowTitle(mesh()->filename().c_str());
 		
 		debug_info();
-		mesh.debug_info();
+		mesh().debug_info();
 
 		setGL();
 		initGLSL();
@@ -169,12 +181,12 @@ namespace DDG
 
 	color_t & Viewer::get_color(const index_t & i)
 	{
-		return mesh.color(i);
+		return mesh().color(i);
 	}
 
 	void Viewer::update_VBO( void )
 	{
-		mesh.update();
+		mesh().update();
 	}
 
 	void Viewer::menu( int value )
@@ -256,7 +268,7 @@ namespace DDG
 		switch( c )
 		{
 			case 'x':
-				mesh.update_colors();
+				mesh().update_colors();
 				update_VBO();
 				break;
 			case 'c':
@@ -372,24 +384,24 @@ namespace DDG
 	
 	void Viewer::mResetMesh()
 	{
-		mesh->reload();
-		mesh->normalize();
+		mesh()->reload();
+		mesh()->normalize();
 		select_vertices.clear();
 		other_vertices.clear();
 		vectors.clear();
 		
-		mesh.debug_info();
+		mesh().debug_info();
 
 		update_VBO();
 	}
 	
 	void Viewer::mWriteMesh()
 	{
-		string file = mesh->filename();
+		string file = mesh()->filename();
 		index_t p = file.find_last_of('.');
 		file = file.substr(0, p) + "_new.off";
 		cout << __FUNCTION__ << " " << file << endl;
-		mesh->write_file(file);
+		mesh()->write_file(file);
 	}
 	
 	void Viewer::mExit( void )
@@ -431,8 +443,8 @@ namespace DDG
 	
 	void Viewer::mOrientation( void )
 	{
-		mesh.invert_orientation();
-		mesh.update_normals();
+		mesh().invert_orientation();
+		mesh().update_normals();
 		update_VBO();
 	}
 
@@ -562,9 +574,9 @@ namespace DDG
 /*	
 		char text[50];
 		int n_text;
-		n_text = sprintf(text, "%15s: %llu", "Vertices", mesh->n_vertices());
+		n_text = sprintf(text, "%15s: %llu", "Vertices", mesh()->n_vertices());
 		drawText(text, n_text, 50, 100);
-		n_text = sprintf(text, "%15s: %llu", "Faces", mesh->n_faces());
+		n_text = sprintf(text, "%15s: %llu", "Faces", mesh()->n_faces());
 		drawText(text, n_text, 50, 88);
 */		
 	//	glPopAttrib();
@@ -572,13 +584,15 @@ namespace DDG
 	
 	void Viewer::drawPolygons( void )
 	{
-		mesh.draw();
+		for(che_viewer & m: meshes)
+			m.draw();
 	}
 	
 	void Viewer::drawWireframe( void )
 	{
 		shader.disable();
-		mesh.draw_wireframe();
+		for(che_viewer & m: meshes)
+			m.draw_wireframe();
 	}
 	
 	void Viewer::drawVectors( void )
@@ -650,11 +664,11 @@ namespace DDG
 	
 	void Viewer::drawVertices( void )
 	{
-		for(index_t v = 0; v < mesh->n_vertices(); v++)
+		for(index_t v = 0; v < mesh()->n_vertices(); v++)
 		{
 			glLoadName(v);
 			glBegin(GL_POINTS);
-			glVertex3v( &mesh->gt(v).x );
+			glVertex3v( &mesh()->gt(v).x );
 			glEnd();
 		}
 	}
@@ -662,9 +676,9 @@ namespace DDG
 	void Viewer::drawBorder( void )
 	{
 		select_vertices.clear();
-		for(index_t b = 0; b < mesh->n_borders(); b++)
-			for_border(he, mesh, mesh->bt(b))
-				select_vertices.push_back(mesh->vt(he));
+		for(index_t b = 0; b < mesh()->n_borders(); b++)
+			for_border(he, mesh(), mesh()->bt(b))
+				select_vertices.push_back(mesh()->vt(he));
 	}
 	
 	void Viewer::drawSelectedVertices( void )
@@ -680,7 +694,7 @@ namespace DDG
 		for(int v: select_vertices)
 		{
 			glPushMatrix();
-			glTranslated(mesh->gt(v).x, mesh->gt(v).y, mesh->gt(v).z);
+			glTranslated(mesh()->gt(v).x, mesh()->gt(v).y, mesh()->gt(v).z);
 			glutSolidSphere(h, 10, 10);
 			glPopMatrix();
 		}
@@ -693,13 +707,15 @@ namespace DDG
 	void Viewer::drawNormalField( void )
 	{
 		shader.disable();
-		mesh.draw_normal_field();
+		for(che_viewer & m: meshes)
+			m.draw_normal_field();
 	}
 
 	void Viewer::drawGradientField( void )
 	{
 		shader.disable();
-		mesh.draw_gradient_field();
+		for(che_viewer & m: meshes)
+			m.draw_gradient_field();
 	}
 
 	void Viewer::pickVertex(int x, int y)
@@ -708,7 +724,7 @@ namespace DDG
 		int height = glutGet(GLUT_WINDOW_HEIGHT);
 		if( x < 0 || x >= width || y < 0 || y >= height ) return;
 		
-		int bufSize = mesh->n_vertices();
+		int bufSize = mesh()->n_vertices();
 		GLuint * buf = new GLuint[bufSize];
 		glSelectBuffer(bufSize, buf);
 		
@@ -751,10 +767,10 @@ namespace DDG
 		}
 		delete[] buf;
 
-		if (index >= 0 && index < mesh->n_vertices())
+		if (index >= 0 && index < mesh()->n_vertices())
 		{
 			debug(index)
-			debug(mesh.color(index))
+			debug(mesh().color(index))
 			select_vertices.push_back(index);
 		}
 	}

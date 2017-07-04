@@ -158,6 +158,17 @@ vertex_t che::pdetriq(const index_t & t) const
 	return (4 * sqrt(3) * area_trig(t)) / (h[0] * h[0] + h[1] * h[1] + h[2] * h[2]);
 }
 
+percent_t che::quality()
+{
+	percent_t q = 0;
+	
+	#pragma omp parallel for reduction(+: q)
+	for(index_t t = 0; t < n_faces_; t++)
+		q += pdetriq(t) > 0.6; //is confederating good triangle 
+
+	return q * 100.0 / n_faces_;
+}
+
 area_t che::area_trig(const index_t & t) const
 {
 	index_t he = t * P;
@@ -285,6 +296,12 @@ size_t che::memory() const
 {
 	return sizeof(*this) + n_vertices_ * (sizeof(vertex) + sizeof(index_t)) + filename_.size()
 						+ sizeof(index_t) * (3 * n_half_edges_ + n_edges_ + n_borders_);
+}
+
+size_t che::genus() const
+{
+	size_t g = n_vertices_ - n_edges_ + n_faces_;
+	return (g - 2) / (-2);
 }
 
 void che::normalize()

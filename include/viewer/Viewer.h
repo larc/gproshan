@@ -32,14 +32,16 @@ namespace DDG
 	class Viewer
 	{
 	public:
-		static void init(che * _mesh);
+		static void init(const vector<che *> & _meshes);
 		
-		static che_viewer mesh;
+		static vector<che_viewer> meshes;
+		static index_t current; // current mesh
 		static vector<index_t> select_vertices;
 		static vector<vertex> other_vertices;
 		static vector<vertex> vectors;
 		static vector<string> sub_menus;
-
+		
+		static che_viewer & mesh(); //get current che_viewer mesh
 		static color_t & get_color(const index_t & i);
 		static void add_process(const char & key, const string & name, function_t function);
 	

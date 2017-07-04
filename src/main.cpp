@@ -572,3 +572,4 @@ void main_solve_arma()
 	ans = solve(A,x);
 	cout<< v <<endl;
 }
+

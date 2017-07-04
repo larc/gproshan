@@ -40,7 +40,6 @@ void che_viewer::init(che * _mesh)
 	_invert_orientation = false;
 	
 	glGenVertexArrays(1, &vao);
-	glBindVertexArray(vao);
 	glGenBuffers(4, vbo);
 
 	update();
@@ -70,6 +69,7 @@ void che_viewer::update()
 
 void che_viewer::update_vbo()
 {
+	glBindVertexArray(vao);
 	// 0 VERTEX
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
 	glBufferData(GL_ARRAY_BUFFER, _n_vertices * sizeof(vertex), &mesh->gt(0), GL_STATIC_DRAW);
@@ -118,6 +118,7 @@ void che_viewer::update_colors(const color_t *const c)
 
 void che_viewer::draw()
 {
+	glBindVertexArray(vao);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[3]);
 	glDrawElements(GL_TRIANGLES, mesh->n_half_edges(), GL_UNSIGNED_INT, 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -237,5 +238,7 @@ void che_viewer::debug_info()
 	debug(mesh->is_manifold())
 	debug(mesh->n_borders())
 	debug(mesh->memory() / 1E6)
+	debug(mesh->quality())
+	debug(mesh->genus())
 }
 

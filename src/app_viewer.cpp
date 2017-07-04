@@ -8,10 +8,10 @@ int viewer_main(int nargs, char ** args)
 
 	double time;
 
-	string file = args[1];
-	
 	TIC(time)
-	che * shape_che = new che_off(file);
+	vector<che *> meshes;
+	for(int i = 1; i < nargs; i++)
+		meshes.push_back(new che_off(args[i]));
 	TOC(time)
 
 	debug(time)	
@@ -57,20 +57,15 @@ int viewer_main(int nargs, char ** args)
 	Viewer::add_process('K', "Gaussian curvature", viewer_process_gaussian_curvature);
 	Viewer::add_process('/', "Decimation", viewer_process_edge_collapse);
 	
-	size_t g = shape_che->n_vertices() - shape_che->n_edges() + shape_che->n_faces();
+/*	size_t g = shape_che->n_vertices() - shape_che->n_edges() + shape_che->n_faces();
 	g = (g - 2)/(-2);
 	debug(g)
 
-	size_t quality = 0;
-	#pragma omp parallel for reduction(+: quality)
-	for(index_t t = 0; t < shape_che->n_faces(); t++)
-		quality += shape_che->pdetriq(t) > 0.6;
-	
-	debug(quality * 100.0 / shape_che->n_faces())
-
-	Viewer::init(shape_che);
+*/
+	Viewer::init(meshes);
 		
-	delete shape_che;
+	for(che * mesh: meshes)
+		delete mesh;
 
 	return 0;
 }
@@ -78,12 +73,12 @@ int viewer_main(int nargs, char ** args)
 void paint_holes_vertices()
 {
 	/*
-	size_t nv = Viewer::mesh->n_vertices();
+	size_t nv = Viewer::mesh()->n_vertices();
 	
-	Viewer::mesh.update();
+	Viewer::mesh().update();
 
 	#pragma omp parallel for
-	for(index_t v = 0; v < Viewer::mesh->n_vertices(); v++)
+	for(index_t v = 0; v < Viewer::mesh()->n_vertices(); v++)
 		if(v >= nv) Viewer::get_color(v) = .25;
 		*/
 }
@@ -93,7 +88,7 @@ void viewer_process_delete_non_manifold_vertices()
 	debug_me(Processing:)
 
 	debug_me(removing vertex);
-	Viewer::mesh->remove_non_manifold_vertices();
+	Viewer::mesh()->remove_non_manifold_vertices();
 	debug_me(removing vertex);
 }
 
@@ -103,18 +98,18 @@ void viewer_process_delete_vertices()
 
 	if(!Viewer::select_vertices.size()) return;
 	debug_me(removing vertex);
-	Viewer::mesh->remove_vertices(Viewer::select_vertices);
+	Viewer::mesh()->remove_vertices(Viewer::select_vertices);
 	Viewer::select_vertices.clear();
 	debug_me(removing vertex);
 }
 
 void viewer_process_poisson(const index_t & k)
 {
-	size_t old_n_vertices = Viewer::mesh->n_vertices();
-	delete [] fill_all_holes(Viewer::mesh);
+	size_t old_n_vertices = Viewer::mesh()->n_vertices();
+	delete [] fill_all_holes(Viewer::mesh());
 	
 	double time;
-	TIC(time) poisson(Viewer::mesh, old_n_vertices, k); TOC(time)
+	TIC(time) poisson(Viewer::mesh(), old_n_vertices, k); TOC(time)
 	debug(time)
 	
 	paint_holes_vertices();
@@ -142,7 +137,7 @@ void viewer_process_fill_holes()
 {
 	debug_me(Processing:)
 	
-	fill_all_holes(Viewer::mesh);
+	fill_all_holes(Viewer::mesh());
 	
 	paint_holes_vertices();
 }
@@ -154,21 +149,21 @@ void viewer_process_noise()
 	srand(time(NULL));
 
 	#pragma omp parallel for
-	for(index_t v = 0; v < Viewer::mesh->n_vertices(); v++)
+	for(index_t v = 0; v < Viewer::mesh()->n_vertices(); v++)
 	{
 		distance_t r = distance_t( rand() % 1000 ) / 40000;
 		int p = rand() % 5;
-		Viewer::mesh->get_vertex(v) += (!p) * r * Viewer::mesh->normal(v);
+		Viewer::mesh()->get_vertex(v) += (!p) * r * Viewer::mesh()->normal(v);
 	}
 
-	Viewer::mesh.update_normals();
+	Viewer::mesh().update_normals();
 }
 
 void viewer_process_thresold()
 {
 	debug_me(Processing:)
 
-	for(index_t v = 0; v < Viewer::mesh->n_vertices(); v++)
+	for(index_t v = 0; v < Viewer::mesh()->n_vertices(); v++)
 		Viewer::get_color(v) = Viewer::get_color(v) > 0.5 ? 1 : 0.5;
 }
 
@@ -180,19 +175,19 @@ void viewer_process_wks()
 	
 	sp_mat L, A;
 	d_message(init laplacian...)
-	TIC(time) laplacian(Viewer::mesh, L, A); TOC(time)
+	TIC(time) laplacian(Viewer::mesh(), L, A); TOC(time)
 	debug(time)
 	
 	vec eigval;
 	mat eigvec;
 	
 	d_message(init eigs...)
-	TIC(time) eigs_laplacian(eigval, eigvec, Viewer::mesh, L, K); TOC(time)
+	TIC(time) eigs_laplacian(eigval, eigvec, Viewer::mesh(), L, K); TOC(time)
 	debug(time)
 
 	distance_t max_s = 0;
 	#pragma omp parallel for reduction(max: max_s)
-	for(index_t v = 0; v < Viewer::mesh->n_vertices(); v++)
+	for(index_t v = 0; v < Viewer::mesh()->n_vertices(); v++)
 	{
 		vec s(T, fill::zeros);
 		for(index_t t = 0; t < T; t++)
@@ -204,7 +199,7 @@ void viewer_process_wks()
 	}
 
 	#pragma omp parallel for
-	for(index_t v = 0; v < Viewer::mesh->n_vertices(); v++)
+	for(index_t v = 0; v < Viewer::mesh()->n_vertices(); v++)
 		Viewer::get_color(v) /= max_s;
 }
 
@@ -217,19 +212,19 @@ void viewer_process_hks()
 	sp_mat L, A;
 
 	d_message(init laplacian...)
-	TIC(time) laplacian(Viewer::mesh, L, A); TOC(time)
+	TIC(time) laplacian(Viewer::mesh(), L, A); TOC(time)
 	debug(time)
 
 	vec eigval;
 	mat eigvec;
 	
 	d_message(init eigs...)
-	TIC(time) eigs_laplacian(eigval, eigvec, Viewer::mesh, L, K); TOC(time)
+	TIC(time) eigs_laplacian(eigval, eigvec, Viewer::mesh(), L, K); TOC(time)
 	debug(time)
 
 	distance_t max_s = 0;
 	#pragma omp parallel for reduction(max: max_s)
-	for(index_t v = 0; v < Viewer::mesh->n_vertices(); v++)
+	for(index_t v = 0; v < Viewer::mesh()->n_vertices(); v++)
 	{
 		vec s(T, fill::zeros);
 		for(index_t t = 0; t < T; t++)
@@ -241,7 +236,7 @@ void viewer_process_hks()
 	}
 
 	#pragma omp parallel for
-	for(index_t v = 0; v < Viewer::mesh->n_vertices(); v++)
+	for(index_t v = 0; v < Viewer::mesh()->n_vertices(); v++)
 		Viewer::get_color(v) /= max_s;
 }
 
@@ -254,14 +249,14 @@ void viewer_process_gps()
 	sp_mat L, A;
 
 	d_message(init laplacian...)
-	TIC(time) laplacian(Viewer::mesh, L, A); TOC(time)
+	TIC(time) laplacian(Viewer::mesh(), L, A); TOC(time)
 	debug(time)
 
 	vec eigval;
 	mat eigvec;
 	
 	d_message(init eigs...)
-	TIC(time) eigs_laplacian(eigval, eigvec, Viewer::mesh, L, K); TOC(time)
+	TIC(time) eigs_laplacian(eigval, eigvec, Viewer::mesh(), L, K); TOC(time)
 	debug(time)
 
 	eigvec.col(0).zeros();
@@ -273,14 +268,14 @@ void viewer_process_gps()
 
 	distance_t max_s = 0;
 	#pragma omp parallel for reduction(max: max_s)
-	for(index_t v = 0; v < Viewer::mesh->n_vertices(); v++)
+	for(index_t v = 0; v < Viewer::mesh()->n_vertices(); v++)
 	{
 		Viewer::get_color(v) = norm(eigvec.row(v));
 			max_s = max(max_s, Viewer::get_color(v));
 	}
 
 	#pragma omp parallel for
-	for(index_t v = 0; v < Viewer::mesh->n_vertices(); v++)
+	for(index_t v = 0; v < Viewer::mesh()->n_vertices(); v++)
 		Viewer::get_color(v) /= max_s;
 }
 
@@ -292,9 +287,9 @@ void viewer_process_denoising()
 	distance_t f;
 	cin >> K >> m >> M >> f;
 
-	mesh_denoising(Viewer::mesh, Viewer::select_vertices, K, m, M, f);
+	mesh_denoising(Viewer::mesh(), Viewer::select_vertices, K, m, M, f);
 
-	Viewer::mesh.update_normals();
+	Viewer::mesh().update_normals();
 }
 
 void viewer_process_super_resolution()
@@ -305,7 +300,7 @@ void viewer_process_super_resolution()
 	distance_t f;
 	cin >> K >> m >> M >> f;
 
-	mesh_super_resolution(Viewer::mesh, Viewer::select_vertices, K, m, M,f);
+	mesh_super_resolution(Viewer::mesh(), Viewer::select_vertices, K, m, M,f);
 }	
 
 void viewer_process_inpaiting()
@@ -316,7 +311,7 @@ void viewer_process_inpaiting()
 	distance_t f;
 	cin >> K >> m >> M >> f;
 
-	mesh_inpaiting(Viewer::mesh, Viewer::select_vertices, K, m, M,f);
+	mesh_inpaiting(Viewer::mesh(), Viewer::select_vertices, K, m, M,f);
 	
 	paint_holes_vertices();
 }
@@ -330,9 +325,9 @@ void viewer_process_iterative_inpaiting()
 	distance_t f;
 	cin >> K >> m >> M >> f;
 
-	size_t n_v = Viewer::mesh->n_vertices();
+	size_t n_v = Viewer::mesh()->n_vertices();
 	
-	mesh_iterative_inpaiting(Viewer::mesh, Viewer::select_vertices, K, m, M,f);
+	mesh_iterative_inpaiting(Viewer::mesh(), Viewer::select_vertices, K, m, M,f);
 
 	paint_holes_vertices();
 }
@@ -341,23 +336,23 @@ void viewer_process_multiplicate_vertices()
 {
 	debug_me(Processing:)
 
-	Viewer::mesh->multiplicate_vertices();
+	Viewer::mesh()->multiplicate_vertices();
 	
-	debug(Viewer::mesh->n_vertices())
+	debug(Viewer::mesh()->n_vertices())
 }
 
 void viewer_sort_by_rings()
 {
 	debug_me(Processing:)
 	
-	index_t * rings = new index_t[Viewer::mesh->n_vertices()];
-	index_t * sorted = new index_t[Viewer::mesh->n_vertices()];
+	index_t * rings = new index_t[Viewer::mesh()->n_vertices()];
+	index_t * sorted = new index_t[Viewer::mesh()->n_vertices()];
 	vector<index_t> limites;
-	Viewer::mesh->sort_by_rings(rings, sorted, limites, Viewer::select_vertices);
+	Viewer::mesh()->sort_by_rings(rings, sorted, limites, Viewer::select_vertices);
 	
 	size_t k = limites.size() - 1;
 
-	for(index_t v = 0; v < Viewer::mesh->n_vertices(); v++)
+	for(index_t v = 0; v < Viewer::mesh()->n_vertices(); v++)
 	{
 		if(rings[v] < k) //Viewer::select_vertices.push_back(v);
 		Viewer::get_color(v) = distance_t(rings[v]) / (limites.size() - 1);
@@ -374,18 +369,18 @@ void viewer_process_fastmarching_cpu()
 	
 	debug_me(Processing:)
 	
-	index_t * rings = new index_t[Viewer::mesh->n_vertices()];
-	index_t * sorted = new index_t[Viewer::mesh->n_vertices()];
+	index_t * rings = new index_t[Viewer::mesh()->n_vertices()];
+	index_t * sorted = new index_t[Viewer::mesh()->n_vertices()];
 	vector<index_t> limites;
-	Viewer::mesh->sort_by_rings(rings, sorted, limites, Viewer::select_vertices);
+	Viewer::mesh()->sort_by_rings(rings, sorted, limites, Viewer::select_vertices);
 	
 	float time;
-	distance_t * distances = parallel_fastmarching(Viewer::mesh, Viewer::select_vertices.data(), Viewer::select_vertices.size(), time, limites, sorted, true, NULL, false);	
-	//distance_t * distances = parallel_fastmarching(Viewer::mesh->filename().c_str(), Viewer::select_vertices.data(), Viewer::select_vertices.size(), time, 9, true, true);
+	distance_t * distances = parallel_fastmarching(Viewer::mesh(), Viewer::select_vertices.data(), Viewer::select_vertices.size(), time, limites, sorted, true, NULL, false);	
+	//distance_t * distances = parallel_fastmarching(Viewer::mesh()->filename().c_str(), Viewer::select_vertices.data(), Viewer::select_vertices.size(), time, 9, true, true);
 
 	debug(time)
 
-	Viewer::mesh.update_colors(distances);
+	Viewer::mesh().update_colors(distances);
 
 	delete [] distances;
 	delete [] rings;
@@ -397,18 +392,18 @@ void viewer_process_fastmarching_gpu()
 	
 	debug_me(Processing:)
 	
-	index_t * rings = new index_t[Viewer::mesh->n_vertices()];
-	index_t * sorted = new index_t[Viewer::mesh->n_vertices()];
+	index_t * rings = new index_t[Viewer::mesh()->n_vertices()];
+	index_t * sorted = new index_t[Viewer::mesh()->n_vertices()];
 	vector<index_t> limites;
-	Viewer::mesh->sort_by_rings(rings, sorted, limites, Viewer::select_vertices);
+	Viewer::mesh()->sort_by_rings(rings, sorted, limites, Viewer::select_vertices);
 	
 	float time;
-	distance_t * distances = parallel_fastmarching(Viewer::mesh, Viewer::select_vertices.data(), Viewer::select_vertices.size(), time, limites, sorted, true);	
-	//distance_t * distances = parallel_fastmarching(Viewer::mesh->filename().c_str(), Viewer::select_vertices.data(), Viewer::select_vertices.size(), time, 9, true, true);
+	distance_t * distances = parallel_fastmarching(Viewer::mesh(), Viewer::select_vertices.data(), Viewer::select_vertices.size(), time, limites, sorted, true);	
+	//distance_t * distances = parallel_fastmarching(Viewer::mesh()->filename().c_str(), Viewer::select_vertices.data(), Viewer::select_vertices.size(), time, 9, true, true);
 
 	debug(time)
 
-	Viewer::mesh.update_colors(distances);
+	Viewer::mesh().update_colors(distances);
 	
 	delete [] distances;
 	delete [] rings;
@@ -421,21 +416,21 @@ void viewer_process_voronoi()
 	
 	debug_me(Processing:)
 	
-	index_t * rings = new index_t[Viewer::mesh->n_vertices()];
-	index_t * sorted = new index_t[Viewer::mesh->n_vertices()];
+	index_t * rings = new index_t[Viewer::mesh()->n_vertices()];
+	index_t * sorted = new index_t[Viewer::mesh()->n_vertices()];
 	vector<index_t> limites;
-	Viewer::mesh->sort_by_rings(rings, sorted, limites, Viewer::select_vertices);
+	Viewer::mesh()->sort_by_rings(rings, sorted, limites, Viewer::select_vertices);
 	
 	float time;
-	index_t * clusters = new index_t[Viewer::mesh->n_vertices()];
-	memset(clusters, 255, sizeof(index_t) * Viewer::mesh->n_vertices());
+	index_t * clusters = new index_t[Viewer::mesh()->n_vertices()];
+	memset(clusters, 255, sizeof(index_t) * Viewer::mesh()->n_vertices());
 	
-	distance_t * distances = parallel_fastmarching(Viewer::mesh, Viewer::select_vertices.data(), Viewer::select_vertices.size(), time, limites, sorted, true, clusters);	
+	distance_t * distances = parallel_fastmarching(Viewer::mesh(), Viewer::select_vertices.data(), Viewer::select_vertices.size(), time, limites, sorted, true, clusters);	
 	
 	debug(time)
 
 	#pragma omp parallel for
-	for(index_t i = 0; i < Viewer::mesh->n_vertices(); i++)
+	for(index_t i = 0; i < Viewer::mesh()->n_vertices(); i++)
 	{
 		Viewer::get_color(i) = clusters[i];
 		Viewer::get_color(i) /= Viewer::select_vertices.size() + 1;
@@ -460,7 +455,7 @@ void viewer_process_farthest_point_sampling_radio()
 	float time, time_g;
 		
 	TIC(time)
-	radio = farthest_point_sampling_gpu(Viewer::select_vertices, time_g, Viewer::mesh, Viewer::mesh->n_vertices(), radio);
+	radio = farthest_point_sampling_gpu(Viewer::select_vertices, time_g, Viewer::mesh(), Viewer::mesh()->n_vertices(), radio);
 	TOC(time)
 	
 	debug(radio)
@@ -482,7 +477,7 @@ void viewer_process_farthest_point_sampling()
 	float time, time_g;
 		
 	TIC(time)
-	distance_t radio = farthest_point_sampling_gpu(Viewer::select_vertices, time_g, Viewer::mesh, n);
+	distance_t radio = farthest_point_sampling_gpu(Viewer::select_vertices, time_g, Viewer::mesh(), n);
 	TOC(time)
 	
 	debug(radio)
@@ -496,12 +491,12 @@ void viewer_process_fairing_spectral()
 	debug_me(Processing:)
 
 	fairing * fair = new fairing_spectral(50);
-	fair->run(Viewer::mesh);
-	Viewer::mesh->set_vertices(fair->get_postions());
-	Viewer::mesh->normalize();
+	fair->run(Viewer::mesh());
+	Viewer::mesh()->set_vertices(fair->get_postions());
+	Viewer::mesh()->normalize();
 	delete fair;
 	
-	Viewer::mesh.update_normals();
+	Viewer::mesh().update_normals();
 }
 
 void viewer_process_fairing_taubin()
@@ -509,12 +504,12 @@ void viewer_process_fairing_taubin()
 	debug_me(Processing:)
 
 	fairing * fair = new fairing_taubin;
-	fair->run(Viewer::mesh);
-	Viewer::mesh->set_vertices(fair->get_postions());
-	Viewer::mesh->normalize();
+	fair->run(Viewer::mesh());
+	Viewer::mesh()->set_vertices(fair->get_postions());
+	Viewer::mesh()->normalize();
 	delete fair;
 
-	Viewer::mesh.update_normals();
+	Viewer::mesh().update_normals();
 }
 
 void viewer_process_geodesics()
@@ -522,17 +517,17 @@ void viewer_process_geodesics()
 	debug_me(Processing:)
 	
 	double start_omp = omp_get_wtime();
-	geodesics geodesic(Viewer::mesh, Viewer::select_vertices);
+	geodesics geodesic(Viewer::mesh(), Viewer::select_vertices);
 	double time = omp_get_wtime() - start_omp;
 	debug(time)
 
-//	geodesic.path_to(Viewer::other_vertices, Viewer::mesh, 0);
+//	geodesic.path_to(Viewer::other_vertices, Viewer::mesh(), 0);
 	
 	geodesic.normalize();
-	Viewer::mesh.update_colors(geodesic.distances);
+	Viewer::mesh().update_colors(geodesic.distances);
 /* heat map one color
 	#pragma omp parallel for
-	for(index_t v = 0; v < Viewer::mesh.n_vertices(); v++)
+	for(index_t v = 0; v < Viewer::mesh().n_vertices(); v++)
 		Viewer::get_color(v) = Viewer::get_color(v) * 0.5;	
 */		
 		
@@ -541,11 +536,11 @@ void viewer_process_geodesics()
 void viewer_process_fastmarching()
 {
 	debug_me(Processing:)
-	off shape(Viewer::mesh->filename());
+	off shape(Viewer::mesh()->filename());
 
 	#pragma omp parallel for
 	for(index_t v = 0; v < shape.get_nvertices(); v++)
-		shape(v) = Viewer::mesh->get_vertex(v);
+		shape(v) = Viewer::mesh()->get_vertex(v);
 
 	double time;
 	TIC(time)	
@@ -553,19 +548,19 @@ void viewer_process_fastmarching()
 	TOC(time)
 	debug(time)
 
-	Viewer::mesh.update_colors(fm.distances);
+	Viewer::mesh().update_colors(fm.distances);
 }
 
 void viewer_process_fill_holes_biharmonic_splines()
 {
 	debug_me(Processing:)
 	
-	size_t old_n_vertices, n_vertices = Viewer::mesh.n_vertices();
-	size_t n_holes = Viewer::mesh->n_borders();
+	size_t old_n_vertices, n_vertices = Viewer::mesh().n_vertices();
+	size_t n_holes = Viewer::mesh()->n_borders();
 
 	vector<index_t> * border_vertices;
 	che ** holes;
-	tie(border_vertices, holes) = fill_all_holes_meshes(Viewer::mesh);
+	tie(border_vertices, holes) = fill_all_holes_meshes(Viewer::mesh());
 	if(!holes) return;
 	
 	index_t k = 2;
@@ -574,7 +569,7 @@ void viewer_process_fill_holes_biharmonic_splines()
 		if(holes[h])
 		{
 			old_n_vertices = n_vertices;
-			biharmonic_interp_2(Viewer::mesh, old_n_vertices, n_vertices += holes[h]->n_vertices() - border_vertices[h].size(), border_vertices[h], k);
+			biharmonic_interp_2(Viewer::mesh(), old_n_vertices, n_vertices += holes[h]->n_vertices() - border_vertices[h].size(), border_vertices[h], k);
 			delete holes[h];
 		}
 	
@@ -591,22 +586,22 @@ void viewer_process_gaussian_curvature()
 	vertex a, b;
 
 #ifdef SINGLE_P
-	fvec gv(Viewer::mesh.n_vertices());
+	fvec gv(Viewer::mesh().n_vertices());
 #else
-	vec gv(Viewer::mesh.n_vertices());
+	vec gv(Viewer::mesh().n_vertices());
 #endif
 
 	#pragma omp parallel for private(g, a, b) reduction(max: g_max) reduction(min: g_min)
-	for(index_t v = 0; v < Viewer::mesh.n_vertices(); v++)
+	for(index_t v = 0; v < Viewer::mesh().n_vertices(); v++)
 	{
 		g = 0;
-		for_star(he, Viewer::mesh, v)
+		for_star(he, Viewer::mesh(), v)
 		{
-			a = Viewer::mesh->gt_vt(next(he)) - Viewer::mesh->gt(v);
-			b = Viewer::mesh->gt_vt(prev(he)) - Viewer::mesh->gt(v);
+			a = Viewer::mesh()->gt_vt(next(he)) - Viewer::mesh()->gt(v);
+			b = Viewer::mesh()->gt_vt(prev(he)) - Viewer::mesh()->gt(v);
 			g += acos((a,b) / (*a * *b));
 		}
-		gv(v) = (2 * M_PI - g) / Viewer::mesh->area_vertex(v);
+		gv(v) = (2 * M_PI - g) / Viewer::mesh()->area_vertex(v);
 		g_max = max(g_max, gv(v));
 		g_min = min(g_min, gv(v));
 	}
@@ -614,7 +609,7 @@ void viewer_process_gaussian_curvature()
 	g = g_max - g_min;
 	
 	#pragma omp parallel for
-	for(index_t v = 0; v < Viewer::mesh.n_vertices(); v++)
+	for(index_t v = 0; v < Viewer::mesh().n_vertices(); v++)
 		gv(v) = (gv(v) - g_min) / g;
 
 	vertex_t gm = mean(gv);
@@ -631,7 +626,7 @@ void viewer_process_gaussian_curvature()
 	};
 
 	#pragma omp parallel for
-	for(index_t v = 0; v < Viewer::mesh.n_vertices(); v++)
+	for(index_t v = 0; v < Viewer::mesh().n_vertices(); v++)
 		Viewer::get_color(v) = f(gv(v));
 }
 
@@ -641,6 +636,6 @@ void viewer_process_edge_collapse()
 	
 	double time;
 
-	TIC(time) decimation sampling(Viewer::mesh); TOC(time)
+	TIC(time) decimation sampling(Viewer::mesh()); TOC(time)
 	debug(time)
 }
