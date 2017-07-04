@@ -9,17 +9,9 @@
 #include "Camera.h"
 #include "Shader.h"
 
-#include "che.h"
+#include "che_viewer.h"
 
 typedef void (*function_t) (void);
-
-#ifdef SINGLE_P
-#define glVertex3v(x) glVertex3fv(x)
-#define GL_VERTEX_T GL_FLOAT
-#else
-#define glVertex3v(x) glVertex3dv(x)
-#define GL_VERTEX_T GL_DOUBLE
-#endif
 
 struct process_t
 {

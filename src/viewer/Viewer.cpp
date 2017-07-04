@@ -173,6 +173,7 @@ namespace DDG
 
 		glGenVertexArrays(1, &vao);
 		glBindVertexArray(vao);
+		glGenBuffers(4, vbo);
 		
 		delete [] sub_menu;
 	}
@@ -231,9 +232,7 @@ namespace DDG
 		if(n_vertices != mesh->n_vertices())
 			update_mesh_data();
 
-		if(vbo[0]) glDeleteBuffers(4, vbo);
 
-		glGenBuffers(4, vbo);
 
 		// 0 VERTEX
 		glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);

@@ -64,13 +64,13 @@ int main(int nargs, char ** args)
 	//sampling_terrain("terreno.off", 4, 64);
 //	sampling_shape(nargs, args);
 //	if(nargs == 2) sampling_shape(args[1]);
-	main_solve_arma();
+//	main_solve_arma();
 //	distance_t radio = 0.04;
 
 //	params_t params = { & K };
 
 //	main_test_holes();
-//	viewer_main(nargs, args);
+	viewer_main(nargs, args);
 //	main_testkeycomponents();
 //	main_testkeypoints();
 	return 0;
