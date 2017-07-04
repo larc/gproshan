@@ -8,6 +8,9 @@ che_viewer::che_viewer()
 {
 	mesh = NULL;
 	_n_vertices = 0;
+
+	normals = NULL;
+	colors = NULL;
 }
 
 che_viewer::~che_viewer()
@@ -17,8 +20,8 @@ che_viewer::~che_viewer()
 	glDeleteBuffers(4, vbo);  
 	glDeleteVertexArrays(1, &vao);
 	
-	delete [] normals;
-	delete [] colors;
+	if(normals) delete [] normals;
+	if(colors) delete [] colors;
 }
 
 che *& che_viewer::operator -> ()
@@ -51,8 +54,8 @@ void che_viewer::update()
 
 	if(_n_vertices != mesh->n_vertices())
 	{
-		delete [] normals;
-		delete [] colors;
+		if(normals) delete [] normals;
+		if(colors) delete [] colors;
 
 		_n_vertices = mesh->n_vertices();
 		normals = new vertex[_n_vertices];
@@ -61,6 +64,7 @@ void che_viewer::update()
 		update_normals();
 		update_colors();
 	}
+	
 
 	factor = mesh->mean_edge();
 	
@@ -154,7 +158,7 @@ void che_viewer::draw_normal_field()
 	glLineWidth(1.0);
 
 	glBegin(GL_LINES);
-	for(index_t v = 0; v < mesh->n_vertices(); v++)
+	for(index_t v = 0; v < _n_vertices; v++)
 	{
 		vertex n = factor * normals[v];
 		vertex a = mesh->get_vertex(v);

@@ -57,11 +57,7 @@ int viewer_main(int nargs, char ** args)
 	Viewer::add_process('K', "Gaussian curvature", viewer_process_gaussian_curvature);
 	Viewer::add_process('/', "Decimation", viewer_process_edge_collapse);
 	
-/*	size_t g = shape_che->n_vertices() - shape_che->n_edges() + shape_che->n_faces();
-	g = (g - 2)/(-2);
-	debug(g)
-
-*/
+	//init viewer	
 	Viewer::init(meshes);
 		
 	for(che * mesh: meshes)
