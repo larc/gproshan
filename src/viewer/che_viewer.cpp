@@ -226,6 +226,15 @@ vertex & che_viewer::normal(const index_t & v)
 	return normals[v];
 }
 
+void che_viewer::translate(const vertex & p)
+{
+	#pragma omp parallel for
+	for(index_t v = 0; v < _n_vertices; v++)
+		mesh->get_vertex(v) += p;
+	
+	update();
+}
+
 void che_viewer::invert_orientation()
 {
 	_invert_orientation = !_invert_orientation;

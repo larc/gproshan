@@ -72,9 +72,17 @@ namespace DDG
 		
 		meshes.resize(_meshes.size());
 		index_t i = 0;
+		angle_t angle = 2 * M_PI / _meshes.size();
+		vertex_t r = 1.25;
 		for(che * _mesh: _meshes)
-			meshes[i++].init(_mesh);
-		
+		{
+			vertex p(r * cos(i * angle), r * sin(i * angle), 0);
+			debug(p)
+			meshes[i].init(_mesh);
+			meshes[i].translate(p);
+			i++;
+		}
+
 		glutSetWindowTitle(mesh()->filename().c_str());
 		init_menus();
 		
@@ -84,8 +92,6 @@ namespace DDG
 		setGL();
 		initGLSL();
 
-		update_VBO();
-		
 		glutMainLoop();
 	}
 
@@ -197,7 +203,8 @@ void Viewer::init_menus()
 
 	void Viewer::update_VBO( void )
 	{
-		mesh().update();
+		for(che_viewer & m: meshes)
+			m.update();
 	}
 
 	void Viewer::menu( int value )

@@ -49,6 +49,7 @@ class che_viewer
 		const size_t & n_vertices() const;
 		color_t & color(const index_t & v);
 		vertex & normal(const index_t & v);
+		void translate(const vertex & p);
 		void invert_orientation();
 
 		void debug_info();
