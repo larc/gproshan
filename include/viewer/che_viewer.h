@@ -21,7 +21,7 @@ class che_viewer
 {
 	protected:
 		che * mesh;
-		size_t n_vertices; // current number of vertices
+		size_t _n_vertices; // current number of vertices
 		bool invert_orientation;
 		vertex * normals;
 		color_t * colors;
@@ -29,14 +29,20 @@ class che_viewer
 		GLuint vbo[4];
 
 	public:
-		che_viewer(che * mesh);
+		che_viewer();
 		virtual ~che_viewer();
-		operator che *const ();	
+		che *& operator -> ();
+		operator che *& ();
+		void init(che * _mesh);
 		void update();
 		void update_vbo();
 		void update_normals();
 		void update_colors(const color_t *const c = NULL);
 		void draw();
+		
+		const size_t & n_vertices() const;
+		color_t & color(const index_t & v);
+		vertex & normal(const index_t & v);
 };
 
 #endif // CHE_VIEWER_H

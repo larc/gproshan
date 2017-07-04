@@ -39,7 +39,7 @@ void drawText(const char *text, int length, int x, int y)
 namespace DDG
 {
 	// declare static member variables
-	che * Viewer::mesh = NULL;
+	che_viewer Viewer::mesh;
 	vector<index_t> Viewer::select_vertices;
 	vector<vertex> Viewer::other_vertices;
 	vector<vertex> Viewer::vectors;
@@ -58,18 +58,15 @@ namespace DDG
 	bool Viewer::lines = false;
 	float Viewer::bgc = 0.;
 
-	size_t Viewer::n_vertices = 0;
-	vertex * Viewer::normals = NULL;
-	vertex_t * Viewer::colors = NULL;
 	map<unsigned char, process_t> Viewer::processes;
 	
-	GLuint Viewer::vao = 0;
-	GLuint Viewer::vbo[4] = {0, 0, 0, 0};
-	
-	void Viewer::init( void )
+	void Viewer::init(che * _mesh)
 	{
 		//restoreViewerState();
 		initGLUT();
+		mesh.init(_mesh);
+		glutSetWindowTitle(mesh->filename().c_str());
+		
 		setGL();
 		initGLSL();
 
@@ -117,7 +114,7 @@ namespace DDG
 		glutInitWindowSize( windowSize[0], windowSize[1] );
 		glutInitDisplayMode( GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH );
 		glutInit( &argc, (char**)&argv );
-		glutCreateWindow( mesh->filename().c_str() );
+		glutCreateWindow( "che_viewer" );
 		//glutFullScreen();
 
 		debug_info();
@@ -171,10 +168,6 @@ namespace DDG
 		
 		glutAttachMenu( GLUT_RIGHT_BUTTON );
 
-		glGenVertexArrays(1, &vao);
-		glBindVertexArray(vao);
-		glGenBuffers(4, vbo);
-		
 		delete [] sub_menu;
 	}
 	
@@ -188,79 +181,14 @@ namespace DDG
 		shader.loadFragment( "shaders/new_fragment.glsl" );
 	}
 
-	void Viewer::set_normals()
+	color_t & Viewer::get_color(const index_t & i)
 	{
-		assert(n_vertices == mesh->n_vertices());
-
-		#pragma omp parallel for
-		for(index_t v = 0; v < mesh->n_vertices(); v++)
-		{
-			normals[v] = mesh->normal(v);
-			if(invertOrientation) normals[v] = -normals[v];
-		}
-	}
-
-	void Viewer::set_colors(const vertex_t *const _colors)
-	{
-		assert(n_vertices == mesh->n_vertices());
-		
-		#pragma omp parallel for
-		for(index_t v = 0; v < mesh->n_vertices(); v++)
-			colors[v] = _colors ? _colors[v] : 0.5;
-	}
-
-	vertex_t & Viewer::get_color(const index_t & i)
-	{
-		return colors[i];
-	}
-
-	void Viewer::update_mesh_data( void )
-	{
-		n_vertices = mesh->n_vertices();
-		
-		if(normals) delete [] normals;
-		if(colors) delete [] colors;
-		normals = new vertex[n_vertices];
-		colors = new vertex_t[n_vertices];
-
-		set_normals();
-		set_colors();
+		return mesh.color(i);
 	}
 
 	void Viewer::update_VBO( void )
 	{
-		if(n_vertices != mesh->n_vertices())
-			update_mesh_data();
-
-
-
-		// 0 VERTEX
-		glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
-		glBufferData(GL_ARRAY_BUFFER, mesh->n_vertices() * sizeof(vertex), &mesh->gt(0), GL_STATIC_DRAW);
-		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 3, GL_VERTEX_T, GL_FALSE, 0, 0);
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-		// 1 NORMAL
-		glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
-		glBufferData(GL_ARRAY_BUFFER, mesh->n_vertices() * sizeof(vertex), normals, GL_STATIC_DRAW);
-		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(1, 3, GL_VERTEX_T, GL_FALSE, 0, 0);
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		
-		// 2 COLOR
-		glBindBuffer(GL_ARRAY_BUFFER, vbo[2]);
-		glBufferData(GL_ARRAY_BUFFER, mesh->n_vertices() * sizeof(vertex_t), colors, GL_STATIC_DRAW);
-		glEnableVertexAttribArray(2);
-		glVertexAttribPointer(2, 1, GL_VERTEX_T, GL_FALSE, 0, 0);
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-		// INDEXES
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[3]);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh->n_half_edges() * sizeof(index_t), &mesh->vt(0), GL_STATIC_DRAW);
-	//	glEnableVertexAttribArray(3);
-	//	glVertexAttribPointer(3, 3, GL_UNSIGNED_INT, GL_FALSE, 0, 0);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		mesh.update();
 	}
 
 	void Viewer::menu( int value )
@@ -342,7 +270,7 @@ namespace DDG
 		switch( c )
 		{
 			case 'x':
-				set_colors();
+				mesh.update_colors();
 				update_VBO();
 				break;
 			case 'c':
@@ -463,8 +391,7 @@ namespace DDG
 		select_vertices.clear();
 		other_vertices.clear();
 		vectors.clear();
-		factor = Viewer::mesh->mean_edge();
-		n_vertices = 0;
+		factor = mesh->mean_edge();
 		debug_mesh_info();
 		update_VBO();
 	}
@@ -482,11 +409,6 @@ namespace DDG
 	{
 	//	storeViewerState();
 		glutLeaveMainLoop();
-		
-		glDeleteBuffers(4, vbo);
-		glDeleteVertexArrays(1, &vao);
-		if(normals) delete [] normals;
-		if(colors) delete [] colors;
 	}
 	
 	void Viewer::mWireframe( void )
@@ -523,7 +445,7 @@ namespace DDG
 	void Viewer::mOrientation( void )
 	{
 		invertOrientation = !invertOrientation;
-		set_normals();
+		mesh.update_normals();
 		update_VBO();
 	}
 
@@ -663,9 +585,7 @@ namespace DDG
 	
 	void Viewer::drawPolygons( void )
 	{
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[3]);
-		glDrawElements(GL_TRIANGLES, mesh->n_half_edges(), GL_UNSIGNED_INT, 0);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		mesh.draw();
 	}
 	
 	void Viewer::drawWireframe( void )
@@ -810,7 +730,7 @@ namespace DDG
 
 		for(index_t v = 0; v < mesh->n_vertices(); v++)
 		{
-			vertex n = factor * normals[v];
+			vertex n = factor * mesh.normal(v);
 			vertex a = mesh->get_vertex(v);
 			vertex b = a + n;
 			
@@ -836,7 +756,7 @@ namespace DDG
 
 		for(index_t f = 0; f < mesh->n_faces(); f++)
 		{
-			vertex g = h * mesh->gradient_he(f * P, colors);
+			vertex g = h * mesh->gradient_he(f * P, &mesh.color(0));
 			vertex a = mesh->barycenter(f);
 			vertex b = a + g;
 			vertex n = mesh->normal_he(f * P);
@@ -914,7 +834,7 @@ namespace DDG
 		if (index >= 0 && index < mesh->n_vertices())
 		{
 			debug(index)
-			debug(colors[index])
+			debug(mesh.color(index))
 			select_vertices.push_back(index);
 		}
 	}

@@ -32,10 +32,9 @@ namespace DDG
 	class Viewer
 	{
 	public:
-		static void init( void );
+		static void init(che * _mesh);
 		
-		static che * mesh;
-		static size_t n_vertices;
+		static che_viewer mesh;
 		static vector<index_t> select_vertices;
 		static vector<vertex> other_vertices;
 		static vector<vertex> vectors;
@@ -43,10 +42,7 @@ namespace DDG
 
 		static area_t factor;
 
-		static void update_mesh_data( void );
-		static void set_normals();
-		static void set_colors(const vertex_t *const _colors = NULL);
-		static vertex_t & get_color(const index_t & i);
+		static color_t & get_color(const index_t & i);
 		static void add_process(const char & key, const string & name, function_t function);
 		static void debug_mesh_info();
 	
@@ -122,9 +118,6 @@ namespace DDG
 		static void restoreViewerState( void );
 	
 		static int windowSize[2];
-	
-		static GLuint vao;
-		static GLuint vbo[4];
 
 		static Camera camera;
 		// keeps track of view state
@@ -141,8 +134,6 @@ namespace DDG
 		static bool lines;
 		static float bgc;
 
-		static vertex * normals;
-		static vertex_t * colors;
 		static map<unsigned char, process_t> processes;
 	};
 }

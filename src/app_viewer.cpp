@@ -57,9 +57,6 @@ int viewer_main(int nargs, char ** args)
 	Viewer::add_process('K', "Gaussian curvature", viewer_process_gaussian_curvature);
 	Viewer::add_process('/', "Decimation", viewer_process_edge_collapse);
 	
-	Viewer::mesh = shape_che;
-	Viewer::mesh->normalize();
-	Viewer::debug_mesh_info();
 	Viewer::factor = shape_che->mean_edge();
 	size_t g = shape_che->n_vertices() - shape_che->n_edges() + shape_che->n_faces();
 	g = (g - 2)/(-2);
@@ -73,7 +70,7 @@ int viewer_main(int nargs, char ** args)
 	
 	debug(quality * 100.0 / shape_che->n_faces())
 
-	Viewer::init();
+	Viewer::init(shape_che);
 		
 	delete shape_che;
 
@@ -82,13 +79,15 @@ int viewer_main(int nargs, char ** args)
 
 void paint_holes_vertices()
 {
-	size_t nv = Viewer::n_vertices;
+	/*
+	size_t nv = Viewer::mesh->n_vertices();
 	
-	Viewer::update_mesh_data();
+	Viewer::mesh.update();
 
 	#pragma omp parallel for
 	for(index_t v = 0; v < Viewer::mesh->n_vertices(); v++)
 		if(v >= nv) Viewer::get_color(v) = .25;
+		*/
 }
 
 void viewer_process_delete_non_manifold_vertices()
@@ -164,7 +163,7 @@ void viewer_process_noise()
 		Viewer::mesh->get_vertex(v) += (!p) * r * Viewer::mesh->normal(v);
 	}
 
-	Viewer::set_normals();
+	Viewer::mesh.update_normals();
 }
 
 void viewer_process_thresold()
@@ -297,7 +296,7 @@ void viewer_process_denoising()
 
 	mesh_denoising(Viewer::mesh, Viewer::select_vertices, K, m, M, f);
 
-	Viewer::set_normals();
+	Viewer::mesh.update_normals();
 }
 
 void viewer_process_super_resolution()
@@ -389,7 +388,7 @@ void viewer_process_fastmarching_cpu()
 
 	debug(time)
 
-	Viewer::set_colors(distances);
+	Viewer::mesh.update_colors(distances);
 
 	delete [] distances;
 	delete [] rings;
@@ -412,7 +411,7 @@ void viewer_process_fastmarching_gpu()
 
 	debug(time)
 
-	Viewer::set_colors(distances);
+	Viewer::mesh.update_colors(distances);
 	
 	delete [] distances;
 	delete [] rings;
@@ -505,7 +504,7 @@ void viewer_process_fairing_spectral()
 	Viewer::mesh->normalize();
 	delete fair;
 	
-	Viewer::set_normals();
+	Viewer::mesh.update_normals();
 }
 
 void viewer_process_fairing_taubin()
@@ -518,7 +517,7 @@ void viewer_process_fairing_taubin()
 	Viewer::mesh->normalize();
 	delete fair;
 
-	Viewer::set_normals();
+	Viewer::mesh.update_normals();
 }
 
 void viewer_process_geodesics()
@@ -533,10 +532,10 @@ void viewer_process_geodesics()
 //	geodesic.path_to(Viewer::other_vertices, Viewer::mesh, 0);
 	
 	geodesic.normalize();
-	Viewer::set_colors(geodesic.distances);
+	Viewer::mesh.update_colors(geodesic.distances);
 /* heat map one color
 	#pragma omp parallel for
-	for(index_t v = 0; v < Viewer::n_vertices; v++)
+	for(index_t v = 0; v < Viewer::mesh.n_vertices(); v++)
 		Viewer::get_color(v) = Viewer::get_color(v) * 0.5;	
 */		
 		
@@ -557,14 +556,14 @@ void viewer_process_fastmarching()
 	TOC(time)
 	debug(time)
 
-	Viewer::set_colors(fm.distances);
+	Viewer::mesh.update_colors(fm.distances);
 }
 
 void viewer_process_fill_holes_biharmonic_splines()
 {
 	debug_me(Processing:)
 	
-	size_t old_n_vertices, n_vertices = Viewer::n_vertices;
+	size_t old_n_vertices, n_vertices = Viewer::mesh.n_vertices();
 	size_t n_holes = Viewer::mesh->n_borders();
 
 	vector<index_t> * border_vertices;
@@ -595,13 +594,13 @@ void viewer_process_gaussian_curvature()
 	vertex a, b;
 
 #ifdef SINGLE_P
-	fvec gv(Viewer::n_vertices);
+	fvec gv(Viewer::mesh.n_vertices());
 #else
-	vec gv(Viewer::n_vertices);
+	vec gv(Viewer::mesh.n_vertices());
 #endif
 
 	#pragma omp parallel for private(g, a, b) reduction(max: g_max) reduction(min: g_min)
-	for(index_t v = 0; v < Viewer::n_vertices; v++)
+	for(index_t v = 0; v < Viewer::mesh.n_vertices(); v++)
 	{
 		g = 0;
 		for_star(he, Viewer::mesh, v)
@@ -618,7 +617,7 @@ void viewer_process_gaussian_curvature()
 	g = g_max - g_min;
 	
 	#pragma omp parallel for
-	for(index_t v = 0; v < Viewer::n_vertices; v++)
+	for(index_t v = 0; v < Viewer::mesh.n_vertices(); v++)
 		gv(v) = (gv(v) - g_min) / g;
 
 	vertex_t gm = mean(gv);
@@ -635,7 +634,7 @@ void viewer_process_gaussian_curvature()
 	};
 
 	#pragma omp parallel for
-	for(index_t v = 0; v < Viewer::n_vertices; v++)
+	for(index_t v = 0; v < Viewer::mesh.n_vertices(); v++)
 		Viewer::get_color(v) = f(gv(v));
 }
 
