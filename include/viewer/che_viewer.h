@@ -23,8 +23,11 @@ class che_viewer
 		che * mesh;
 		size_t _n_vertices; // current number of vertices
 		bool invert_orientation;
+		vertex_t factor;
+		
 		vertex * normals;
 		color_t * colors;
+
 		GLuint vao;
 		GLuint vbo[4];
 
@@ -39,10 +42,15 @@ class che_viewer
 		void update_normals();
 		void update_colors(const color_t *const c = NULL);
 		void draw();
+		void draw_wireframe();
+		void draw_normal_field();
+		void draw_gradient_field();
 		
 		const size_t & n_vertices() const;
 		color_t & color(const index_t & v);
 		vertex & normal(const index_t & v);
+
+		void debug_info();
 };
 
 #endif // CHE_VIEWER_H

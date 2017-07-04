@@ -40,11 +40,8 @@ namespace DDG
 		static vector<vertex> vectors;
 		static vector<string> sub_menus;
 
-		static area_t factor;
-
 		static color_t & get_color(const index_t & i);
 		static void add_process(const char & key, const string & name, function_t function);
-		static void debug_mesh_info();
 	
 	protected:
 		// init

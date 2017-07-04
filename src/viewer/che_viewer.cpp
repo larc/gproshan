@@ -36,6 +36,7 @@ void che_viewer::init(che * _mesh)
 	_n_vertices = 0;
 	mesh = _mesh;
 	mesh->normalize();
+
 	invert_orientation = false;
 	
 	glGenVertexArrays(1, &vao);
@@ -62,6 +63,8 @@ void che_viewer::update()
 		update_colors();
 	}
 
+	factor = mesh->mean_edge();
+	
 	update_vbo();
 }
 
@@ -120,6 +123,88 @@ void che_viewer::draw()
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
+void che_viewer::draw_wireframe()
+{
+	glPushAttrib(GL_ALL_ATTRIB_BITS);
+	
+	glDisable(GL_LIGHTING);
+	glColor4f(0., 0., 0., 0.5);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	
+	glBegin(GL_LINES);
+
+	for(index_t e = 0; e < mesh->n_edges(); e++)
+	{
+		glVertex3v(&mesh->gt_vt(mesh->et(e)).x);
+		glVertex3v(&mesh->gt_vt(next(mesh->et(e))).x);
+	}
+
+	glEnd();
+	glPopAttrib();
+}
+
+void che_viewer::draw_normal_field()
+{
+	glPushAttrib(GL_ALL_ATTRIB_BITS);
+
+	glDisable(GL_LIGHTING);
+	glColor3f(.8, .8, 1.0);
+	glLineWidth(1.0);
+
+	glBegin(GL_LINES);
+	for(index_t v = 0; v < mesh->n_vertices(); v++)
+	{
+		vertex n = factor * normals[v];
+		vertex a = mesh->get_vertex(v);
+		vertex b = a + n;
+		
+		glVertex3v(&a[0]);
+		glVertex3v(&b[0]);
+	}
+	glEnd();
+
+	glPopAttrib();
+}
+
+void che_viewer::draw_gradient_field()
+{
+	glPushAttrib(GL_ALL_ATTRIB_BITS);
+	
+	glDisable(GL_LIGHTING);
+	glColor3f(.8, 1.0, .8);
+	glLineWidth(1.0);
+
+	double h = 0.3 * factor;
+
+	for(index_t f = 0; f < mesh->n_faces(); f++)
+	{
+		vertex g = h * mesh->gradient_he(f * P, colors);
+		vertex a = mesh->barycenter(f);
+		vertex b = a + g;
+		vertex n = mesh->normal_he(f * P);
+
+		vertex v = b - a;
+		vertex v90 = n * v;
+		vertex p0 = b;
+		vertex p1 = p0 - 0.25 * v - 0.15 * v90;
+		vertex p2 = p0 - 0.25 * v + 0.15 * v90;
+
+		glBegin(GL_LINE);
+		glVertex3v(&a[0]);
+		glVertex3v(&b[0]);
+		glEnd();
+
+		glBegin(GL_TRIANGLES);
+		glVertex3v(&p0[0]);
+		glVertex3v(&p1[0]);
+		glVertex3v(&p2[0]);
+		glEnd();
+	}
+	
+	glPopAttrib();
+}
+
 const size_t & che_viewer::n_vertices() const
 {
 	return _n_vertices;
@@ -133,5 +218,19 @@ color_t & che_viewer::color(const index_t & v)
 vertex & che_viewer::normal(const index_t & v)
 {
 	return normals[v];
+}
+
+void che_viewer::debug_info()
+{
+	if(!mesh) return;
+
+	debug(mesh->n_vertices())
+	debug(mesh->n_faces())
+	debug(mesh->n_half_edges())
+	debug(mesh->n_edges())
+	debug(mesh->area_surface())
+	debug(mesh->is_manifold())
+	debug(mesh->n_borders())
+	debug(mesh->memory() / 1E6)
 }
 

@@ -57,11 +57,9 @@ int viewer_main(int nargs, char ** args)
 	Viewer::add_process('K', "Gaussian curvature", viewer_process_gaussian_curvature);
 	Viewer::add_process('/', "Decimation", viewer_process_edge_collapse);
 	
-	Viewer::factor = shape_che->mean_edge();
 	size_t g = shape_che->n_vertices() - shape_che->n_edges() + shape_che->n_faces();
 	g = (g - 2)/(-2);
 	debug(g)
-	debug(Viewer::factor)
 
 	size_t quality = 0;
 	#pragma omp parallel for reduction(+: quality)
@@ -344,7 +342,6 @@ void viewer_process_multiplicate_vertices()
 	debug_me(Processing:)
 
 	Viewer::mesh->multiplicate_vertices();
-	Viewer::factor = Viewer::mesh->mean_edge();
 	
 	debug(Viewer::mesh->n_vertices())
 }

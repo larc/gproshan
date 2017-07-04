@@ -44,7 +44,6 @@ namespace DDG
 	vector<vertex> Viewer::other_vertices;
 	vector<vertex> Viewer::vectors;
 	vector<string> Viewer::sub_menus;
-	area_t Viewer::factor = 0;
 
 	int Viewer::windowSize[2] = { 1366, 768 };
 	Camera Viewer::camera;
@@ -67,26 +66,15 @@ namespace DDG
 		mesh.init(_mesh);
 		glutSetWindowTitle(mesh->filename().c_str());
 		
+		debug_info();
+		mesh.debug_info();
+
 		setGL();
 		initGLSL();
 
 		update_VBO();
 		
 		glutMainLoop();
-	}
-
-	void Viewer::debug_mesh_info()
-	{
-		if(!mesh) return;
-
-		debug(mesh->n_vertices())
-		debug(mesh->n_faces())
-		debug(mesh->n_half_edges())
-		debug(mesh->n_edges())
-		debug(mesh->area_surface())
-		debug(mesh->is_manifold())
-		debug(mesh->n_borders())
-		debug(mesh->memory() / 1E6)
 	}
 
 	void Viewer::debug_info()
@@ -117,7 +105,6 @@ namespace DDG
 		glutCreateWindow( "che_viewer" );
 		//glutFullScreen();
 
-		debug_info();
 
 		// specify callbacks
 		glutDisplayFunc( Viewer::display );
@@ -391,8 +378,9 @@ namespace DDG
 		select_vertices.clear();
 		other_vertices.clear();
 		vectors.clear();
-		factor = mesh->mean_edge();
-		debug_mesh_info();
+		
+		mesh.debug_info();
+
 		update_VBO();
 	}
 	
@@ -591,23 +579,7 @@ namespace DDG
 	void Viewer::drawWireframe( void )
 	{
 		shader.disable();
-		glPushAttrib( GL_ALL_ATTRIB_BITS );
-		
-		glDisable( GL_LIGHTING );
-		glColor4f( 0., 0., 0., 0.5 );
-		glEnable( GL_BLEND );
-		glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
-		
-		glBegin( GL_LINES );
-
-		for(index_t e = 0; e < mesh->n_edges(); e++)
-		{
-			glVertex3v( &mesh->gt_vt(mesh->et(e)).x );
-			glVertex3v( &mesh->gt_vt(next(mesh->et(e))).x );
-		}
-
-		glEnd();
-		glPopAttrib();
+		mesh.draw_wireframe();
 	}
 	
 	void Viewer::drawVectors( void )
@@ -722,64 +694,13 @@ namespace DDG
 	void Viewer::drawNormalField( void )
 	{
 		shader.disable();
-		glPushAttrib( GL_ALL_ATTRIB_BITS );
-
-		glDisable( GL_LIGHTING );
-		glColor3f( .8, .8, 1. );
-		glLineWidth( 1.0 );
-
-		for(index_t v = 0; v < mesh->n_vertices(); v++)
-		{
-			vertex n = factor * mesh.normal(v);
-			vertex a = mesh->get_vertex(v);
-			vertex b = a + n;
-			
-			glBegin( GL_LINES );
-			glVertex3v( &a[0] );
-			glVertex3v( &b[0] );
-			glEnd();
-		}
-
-		glPopAttrib();
+		mesh.draw_normal_field();
 	}
 
 	void Viewer::drawGradientField( void )
 	{
 		shader.disable();
-		glPushAttrib( GL_ALL_ATTRIB_BITS );
-		
-		glDisable( GL_LIGHTING );
-		glColor3f( .8, 1., .8 );
-		glLineWidth( 1.0 );
-
-		double h = 0.3 * factor;
-
-		for(index_t f = 0; f < mesh->n_faces(); f++)
-		{
-			vertex g = h * mesh->gradient_he(f * P, &mesh.color(0));
-			vertex a = mesh->barycenter(f);
-			vertex b = a + g;
-			vertex n = mesh->normal_he(f * P);
-
-			vertex v = b - a;
-			vertex v90 = n * v;
-			vertex p0 = b;
-			vertex p1 = p0 - 0.25 * v - 0.15 * v90;
-			vertex p2 = p0 - 0.25 * v + 0.15 * v90;
-
-			glBegin( GL_LINES );
-			glVertex3v( &a[0] );
-			glVertex3v( &b[0] );
-			glEnd();
-
-			glBegin(GL_TRIANGLES);
-			glVertex3v( &p0[0] );
-			glVertex3v( &p1[0] );
-			glVertex3v( &p2[0] );
-			glEnd();
-		}
-		
-		glPopAttrib();
+		mesh.draw_gradient_field();
 	}
 
 	void Viewer::pickVertex(int x, int y)
