@@ -11,6 +11,8 @@
 
 #include "che_viewer.h"
 
+#define N_MESHES 10
+
 typedef void (*function_t) (void);
 
 struct process_t
@@ -33,8 +35,9 @@ namespace DDG
 	{
 	public:
 		static void init(const vector<che *> & _meshes);
-		
-		static vector<che_viewer> meshes;
+			
+		static che_viewer meshes[N_MESHES];
+		static size_t n_meshes;
 		static index_t current; // current mesh
 		static vector<index_t> select_vertices;
 		static vector<vertex> other_vertices;
@@ -44,18 +47,19 @@ namespace DDG
 		static che_viewer & mesh(); //get current che_viewer mesh
 		static color_t & get_color(const index_t & i);
 		static void add_process(const char & key, const string & name, function_t function);
+		static void add_mesh(const vector<che *> & _meshes);
 	
 	protected:
 		// init
 		static void debug_info();
-		static void initGLUT( void );
-		static void init_menus( void );
-		static void initGLSL( void );
-		static void update_VBO( void );
+		static void initGLUT();
+		static void init_menus();
+		static void initGLSL();
+		static void update_VBO();
 
 		// GLUT callbacks
-		static void display( void );
-		static void idle( void );
+		static void display();
+		static void idle();
 		static void keyboard( unsigned char c, int x, int y );
 		static void special( int i, int x, int y );
 		static void mouse( int button, int state, int x, int y );
@@ -67,18 +71,18 @@ namespace DDG
 		
 		// menu functions
 		static void mProcess(function_t pro);
-		static void mResetMesh( void );
+		static void mResetMesh();
 		static void mWriteMesh();
-		static void mExit( void );
-		static void mWireframe( void );
-		static void mZoomIn( void );
-		static void mZoomOut( void );
-		static void mGradientField( void );
-		static void mNormalField( void );
-		static void mBorder( void );
-		static void mOrientation( void );
-		static void mIsFlat( void );
-		static void mLines( void );
+		static void mExit();
+		static void mWireframe();
+		static void mZoomIn();
+		static void mZoomOut();
+		static void mGradientField();
+		static void mNormalField();
+		static void mBorder();
+		static void mOrientation();
+		static void mIsFlat();
+		static void mLines();
 		
 		// unique identifiers for menus
 		enum
@@ -99,24 +103,24 @@ namespace DDG
 		};
 		
 		// draw routines
-		static void setGL( void );
-		static void setLighting( void );
-		static void setMeshMaterial( void );
-		static void callDisplayList( void );
-		static void updateDisplayList( void );
-		static void drawScene( void );
-		static void drawPolygons( void );
-		static void drawWireframe( void );
-		static void drawGradientField( void );
-		static void drawNormalField( void );
-		static void drawVertices( void );
-		static void drawBorder( void );
-		static void drawSelectedVertices( void );
-		static void drawVectors( void );
-		static void drawIsolatedVertices( void );
+		static void setGL();
+		static void setLighting();
+		static void setMeshMaterial();
+		static void callDisplayList();
+		static void updateDisplayList();
+		static void drawScene();
+		static void drawPolygons();
+		static void drawWireframe();
+		static void drawGradientField();
+		static void drawNormalField();
+		static void drawVertices();
+		static void drawBorder();
+		static void drawSelectedVertices();
+		static void drawVectors();
+		static void drawIsolatedVertices();
 		static void pickVertex(int x, int y);	
-		static void storeViewerState( void );
-		static void restoreViewerState( void );
+		static void storeViewerState();
+		static void restoreViewerState();
 	
 		static int windowSize[2];
 

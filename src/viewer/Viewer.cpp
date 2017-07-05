@@ -39,7 +39,8 @@ void drawText(const char *text, int length, int x, int y)
 namespace DDG
 {
 	// declare static member variables
-	vector<che_viewer> Viewer::meshes;
+	che_viewer Viewer::meshes[N_MESHES];
+	size_t Viewer::n_meshes = 0;
 	index_t Viewer::current = 0;
 	vector<index_t> Viewer::select_vertices;
 	vector<vertex> Viewer::other_vertices;
@@ -61,7 +62,7 @@ namespace DDG
 	
 	che_viewer & Viewer::mesh()
 	{
-		assert(meshes.size() > 0);
+		assert(n_meshes > 0);
 		return meshes[current];
 	}
 
@@ -69,19 +70,7 @@ namespace DDG
 	{
 		//restoreViewerState();
 		initGLUT();
-		
-		meshes.resize(_meshes.size());
-		index_t i = 0;
-		angle_t angle = 2 * M_PI / _meshes.size();
-		vertex_t r = 1.25;
-		for(che * _mesh: _meshes)
-		{
-			vertex p(r * cos(i * angle), r * sin(i * angle), 0);
-			debug(p)
-			meshes[i].init(_mesh);
-			meshes[i].translate(p);
-			i++;
-		}
+		add_mesh(_meshes);	
 
 		glutSetWindowTitle(mesh()->filename().c_str());
 		init_menus();
@@ -111,7 +100,7 @@ namespace DDG
 		fprintf(stderr, "GLSL Version %s\n", glslVersion);
 	}
 
-	void Viewer::initGLUT( void )
+	void Viewer::initGLUT()
 	{
 		int argc = 0;
 		vector< vector<char> > argv(1);
@@ -150,7 +139,7 @@ void Viewer::init_menus()
 		// set current mesh menu
 		int mesh_menu = glutCreateMenu( Viewer::menu_meshes );
 		glutSetMenu(mesh_menu);
-		for(index_t i = 0; i < meshes.size(); i++)
+		for(index_t i = 0; i < n_meshes; i++)
 			glutAddMenuEntry(meshes[i]->filename().c_str(), i);
 
 		// process sub menus
@@ -186,7 +175,7 @@ void Viewer::init_menus()
 		delete [] sub_menu;
 	}
 	
-	void Viewer::initGLSL( void )
+	void Viewer::initGLSL()
 	{
 		//shader.loadVertex( "shaders/vertex.glsl" );
 		//shader.loadFragment( "shaders/fragment.glsl" );
@@ -201,10 +190,10 @@ void Viewer::init_menus()
 		return mesh().color(i);
 	}
 
-	void Viewer::update_VBO( void )
+	void Viewer::update_VBO()
 	{
-		for(che_viewer & m: meshes)
-			m.update();
+		for(index_t i = 0; i < n_meshes; i++)
+			meshes[i].update();
 	}
 
 	void Viewer::menu( int value )
@@ -237,6 +226,23 @@ void Viewer::init_menus()
 			processes[key] = process_t(sub_menus.size() - 1, name, function);
 		}
 		else cerr << "Repeat key: " << key << endl;  
+	}
+
+	void Viewer::add_mesh(const vector<che *> & _meshes)
+	{
+		for(che * _mesh: _meshes)
+		{
+			assert(n_meshes < N_MESHES);
+			meshes[n_meshes++].init(_mesh);
+		}
+		
+		angle_t angle = 2 * M_PI / n_meshes;
+		vertex_t r = sqrt(n_meshes - 1);
+		for(index_t i = 0; i < n_meshes; i++)
+		{
+			meshes[i].update();
+			meshes[i].translate({r * cos(i * angle), r * sin(i * angle), 0});
+		}
 	}
 
 	void Viewer::view( int value )
@@ -367,13 +373,13 @@ void Viewer::init_menus()
 		camera.motion( x, y );
 	}
 	
-	void Viewer::idle( void )
+	void Viewer::idle()
 	{
 		camera.idle();
 		glutPostRedisplay();
 	}
 	
-	void Viewer::storeViewerState( void )
+	void Viewer::storeViewerState()
 	{
 		ofstream out( ".viewer_state.txt" );
 		
@@ -429,61 +435,61 @@ void Viewer::init_menus()
 		mesh()->write_file(file);
 	}
 	
-	void Viewer::mExit( void )
+	void Viewer::mExit()
 	{
 	//	storeViewerState();
 		glutLeaveMainLoop();
 	}
 	
-	void Viewer::mWireframe( void )
+	void Viewer::mWireframe()
 	{
 		renderWireframe = !renderWireframe;
 	}
 	
-	void Viewer::mZoomIn( void )
+	void Viewer::mZoomIn()
 	{
 		camera.zoomIn();
 	}
 	
-	void Viewer::mZoomOut( void )
+	void Viewer::mZoomOut()
 	{
 		camera.zoomOut();
 	}
 	
-	void Viewer::mGradientField( void )
+	void Viewer::mGradientField()
 	{
 		renderGradientField = !renderGradientField;
 	}
 
-	void Viewer::mNormalField( void )
+	void Viewer::mNormalField()
 	{
 		renderNormalField = !renderNormalField;
 	}
 		
-	void Viewer::mBorder( void )
+	void Viewer::mBorder()
 	{
 		renderBorder = !renderBorder;
 		if(!renderBorder) select_vertices.clear();
 	}
 	
-	void Viewer::mOrientation( void )
+	void Viewer::mOrientation()
 	{
 		mesh().invert_orientation();
 		mesh().update_normals();
 		update_VBO();
 	}
 
-	void Viewer::mIsFlat( void )
+	void Viewer::mIsFlat()
 	{
 		is_flat = !is_flat;
 	}
 	
-	void Viewer::mLines( void )
+	void Viewer::mLines()
 	{
 		lines = !lines;
 	}
 	
-	void Viewer::display( void )
+	void Viewer::display()
 	{
 		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 		shader.enable();
@@ -553,13 +559,13 @@ void Viewer::init_menus()
 		glutSwapBuffers();
 	}
 	
-	void Viewer::setGL( void )
+	void Viewer::setGL()
 	{
 		glClearColor( bgc, bgc, bgc, 1. );
 		setLighting();
 	}
 	
-	void Viewer::setLighting( void )
+	void Viewer::setLighting()
 	{
 		GLfloat position[4] = { 20., 30., 40., 0. };
 		glLightfv( GL_LIGHT0, GL_POSITION, position );
@@ -567,7 +573,7 @@ void Viewer::init_menus()
 		glEnable( GL_NORMALIZE );
 	}
 	
-	void Viewer::setMeshMaterial( void )
+	void Viewer::setMeshMaterial()
 	{
 		GLfloat diffuse[4] = { .8, .5, .3, 1. };
 		GLfloat specular[4] = { .3, .3, .3, 1. };
@@ -579,7 +585,7 @@ void Viewer::init_menus()
 		glMaterialf ( GL_FRONT_AND_BACK, GL_SHININESS, 16.		);
 	}
 	
-	void Viewer::drawScene( void )
+	void Viewer::drawScene()
 	{
 	//	glPushAttrib( GL_ALL_ATTRIB_BITS );
 
@@ -607,20 +613,20 @@ void Viewer::init_menus()
 	//	glPopAttrib();
 	}
 	
-	void Viewer::drawPolygons( void )
+	void Viewer::drawPolygons()
 	{
-		for(che_viewer & m: meshes)
-			m.draw();
+		for(index_t i = 0; i < n_meshes; i++)
+			meshes[i].draw();
 	}
 	
-	void Viewer::drawWireframe( void )
+	void Viewer::drawWireframe()
 	{
 		shader.disable();
-		for(che_viewer & m: meshes)
-			m.draw_wireframe();
+		for(index_t i = 0; i < n_meshes; i++)
+			meshes[i].draw_wireframe();
 	}
 	
-	void Viewer::drawVectors( void )
+	void Viewer::drawVectors()
 	{
 		shader.disable();
 		glPushAttrib( GL_ALL_ATTRIB_BITS );
@@ -648,7 +654,7 @@ void Viewer::init_menus()
 		glPopAttrib();
 	}
 	
-	void Viewer::drawIsolatedVertices( void )
+	void Viewer::drawIsolatedVertices()
 	{
 		shader.disable();
 		glPushAttrib( GL_ALL_ATTRIB_BITS );
@@ -687,7 +693,7 @@ void Viewer::init_menus()
 		glPopAttrib();*/
 	}
 	
-	void Viewer::drawVertices( void )
+	void Viewer::drawVertices()
 	{
 		for(index_t v = 0; v < mesh()->n_vertices(); v++)
 		{
@@ -698,7 +704,7 @@ void Viewer::init_menus()
 		}
 	}
 	
-	void Viewer::drawBorder( void )
+	void Viewer::drawBorder()
 	{
 		select_vertices.clear();
 		for(index_t b = 0; b < mesh()->n_borders(); b++)
@@ -706,7 +712,7 @@ void Viewer::init_menus()
 				select_vertices.push_back(mesh()->vt(he));
 	}
 	
-	void Viewer::drawSelectedVertices( void )
+	void Viewer::drawSelectedVertices()
 	{
 		shader.disable();
 		glPushAttrib( GL_ALL_ATTRIB_BITS );
@@ -729,18 +735,18 @@ void Viewer::init_menus()
 		glPopAttrib();
 	}
 
-	void Viewer::drawNormalField( void )
+	void Viewer::drawNormalField()
 	{
 		shader.disable();
-		for(che_viewer & m: meshes)
-			m.draw_normal_field();
+		for(index_t i = 0; i < n_meshes; i++)
+			meshes[i].draw_normal_field();
 	}
 
-	void Viewer::drawGradientField( void )
+	void Viewer::drawGradientField()
 	{
 		shader.disable();
-		for(che_viewer & m: meshes)
-			m.draw_gradient_field();
+		for(index_t i = 0; i < n_meshes; i++)
+			meshes[i].draw_gradient_field();
 	}
 
 	void Viewer::pickVertex(int x, int y)

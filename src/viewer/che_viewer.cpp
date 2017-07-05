@@ -16,12 +16,13 @@ che_viewer::che_viewer()
 che_viewer::~che_viewer()
 {
 	if(!mesh) return;
-
+	
 	glDeleteBuffers(4, vbo);  
 	glDeleteVertexArrays(1, &vao);
 	
 	if(normals) delete [] normals;
 	if(colors) delete [] colors;
+	delete mesh;
 }
 
 che *& che_viewer::operator -> ()
@@ -51,7 +52,7 @@ void che_viewer::init(che * _mesh)
 void che_viewer::update()
 {
 	assert(mesh != NULL);
-
+	
 	if(_n_vertices != mesh->n_vertices())
 	{
 		if(normals) delete [] normals;
@@ -65,7 +66,6 @@ void che_viewer::update()
 		update_colors();
 	}
 	
-
 	factor = mesh->mean_edge();
 	
 	update_vbo();

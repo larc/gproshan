@@ -60,9 +60,6 @@ int viewer_main(int nargs, char ** args)
 	//init viewer	
 	Viewer::init(meshes);
 		
-	for(che * mesh: meshes)
-		delete mesh;
-
 	return 0;
 }
 
@@ -632,4 +629,6 @@ void viewer_process_edge_collapse()
 
 	TIC(time) decimation sampling(Viewer::mesh()); TOC(time)
 	debug(time)
+	Viewer::add_mesh({new che_off("../DATA/circle.off")});
 }
+
