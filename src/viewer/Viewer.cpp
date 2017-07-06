@@ -700,10 +700,11 @@ void Viewer::init_menus()
 		if(n_meshes < 2) return;
 		
 		shader.disable();
+
 		glPushAttrib(GL_ALL_ATTRIB_BITS);
 
 		glDisable(GL_LIGHTING);
-		glColor3f(1.0, .0, .0);
+		glColor3f(0.8, .0, .0);
 		glLineWidth(2.0);
 
 		glBegin(GL_LINES);
@@ -715,6 +716,27 @@ void Viewer::init_menus()
 		glEnd();
 
 		glPopAttrib();
+		
+		// spheres corr
+		glPushAttrib( GL_ALL_ATTRIB_BITS );
+		
+		glEnable( GL_COLOR_MATERIAL );
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		glColor3f( 0.8, 0.0, 0.0 );
+		
+		double h = 0.015 * camera.zoom; 
+		for(int v: select_vertices)
+		{
+			glPushMatrix();
+			glTranslated(meshes[1]->gt(v).x, meshes[1]->gt(v).y, meshes[1]->gt(v).z);
+			glutSolidSphere(h, 10, 10);
+			glPopMatrix();
+		}
+
+		glEnd();
+		
+		glPopAttrib();
+
 	}
 
 	void Viewer::drawVertices()
