@@ -37,6 +37,7 @@ namespace DDG
 		static void init(const vector<che *> & _meshes);
 			
 		static che_viewer meshes[N_MESHES];
+		static corr_t * corr_mesh[N_MESHES];
 		static size_t n_meshes;
 		static index_t current; // current mesh
 		static vector<index_t> select_vertices;
@@ -109,6 +110,7 @@ namespace DDG
 		static void callDisplayList();
 		static void updateDisplayList();
 		static void drawScene();
+		static void draw_corr();
 		static void drawPolygons();
 		static void drawWireframe();
 		static void drawGradientField();

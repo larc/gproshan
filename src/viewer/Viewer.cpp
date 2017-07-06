@@ -40,6 +40,7 @@ namespace DDG
 {
 	// declare static member variables
 	che_viewer Viewer::meshes[N_MESHES];
+	corr_t * Viewer::corr_mesh[N_MESHES] = {}; // zero initialization 
 	size_t Viewer::n_meshes = 0;
 	index_t Viewer::current = 0;
 	vector<index_t> Viewer::select_vertices;
@@ -598,7 +599,8 @@ void Viewer::init_menus()
 		if( renderGradientField ) drawGradientField();
 		if( renderNormalField ) drawNormalField();
 		if( renderBorder ) drawBorder();
-		
+	
+		draw_corr();
 		drawIsolatedVertices();
 		drawVectors();
 		drawSelectedVertices();
@@ -692,7 +694,29 @@ void Viewer::init_menus()
 		
 		glPopAttrib();*/
 	}
-	
+
+	void Viewer::draw_corr()
+	{
+		if(n_meshes < 2) return;
+		
+		shader.disable();
+		glPushAttrib(GL_ALL_ATTRIB_BITS);
+
+		glDisable(GL_LIGHTING);
+		glColor3f(1.0, .0, .0);
+		glLineWidth(2.0);
+
+		glBegin(GL_LINES);
+		for(index_t & v: select_vertices)
+		{
+			glVertex3v(&meshes[0]->gt(v).x);
+			glVertex3v(&meshes[1]->gt(v).x);
+		}
+		glEnd();
+
+		glPopAttrib();
+	}
+
 	void Viewer::drawVertices()
 	{
 		for(index_t v = 0; v < mesh()->n_vertices(); v++)
