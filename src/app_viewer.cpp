@@ -142,7 +142,7 @@ void viewer_process_noise()
 	#pragma omp parallel for
 	for(index_t v = 0; v < Viewer::mesh()->n_vertices(); v++)
 	{
-		distance_t r = distance_t( rand() % 1000 ) / 40000;
+		distance_t r = distance_t( rand() % 1000 ) / 200000;
 		int p = rand() % 5;
 		Viewer::mesh()->get_vertex(v) += (!p) * r * Viewer::mesh()->normal(v);
 	}
