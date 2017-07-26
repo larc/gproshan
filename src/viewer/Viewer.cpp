@@ -194,7 +194,7 @@ namespace DDG
 		return mesh().color(i);
 	}
 
-	void Viewer::update_VBO()
+	void Viewer::update_vbo()
 	{
 		for(index_t i = 0; i < n_meshes; i++)
 			meshes[i].update();
@@ -323,7 +323,7 @@ namespace DDG
 	void Viewer::mProcess(function_t pro)
 	{
 		if(pro) pro();
-		update_VBO();
+		update_vbo();
 	}
 	
 	void Viewer::mResetMesh()
@@ -336,7 +336,7 @@ namespace DDG
 		
 		mesh().debug_info();
 
-		update_VBO();
+		update_vbo();
 	}
 	
 	void Viewer::mWriteMesh()
@@ -368,7 +368,7 @@ namespace DDG
 	{
 		mesh().invert_orientation();
 		mesh().update_normals();
-		update_VBO();
+		update_vbo();
 	}
 
 	void Viewer::set_render_wireframe()

@@ -78,7 +78,7 @@ namespace DDG
 		static void initGLUT();
 		static void init_menus();
 		static void initGLSL();
-		static void update_VBO();
+		static void update_vbo();
 
 		// GLUT callbacks
 		static void display();
