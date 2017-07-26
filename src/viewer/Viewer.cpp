@@ -87,10 +87,10 @@ namespace DDG
 
 	void Viewer::debug_info()
 	{
-		const GLubyte *renderer = glGetString( GL_RENDERER );
-		const GLubyte *vendor = glGetString( GL_VENDOR );
-		const GLubyte *version = glGetString( GL_VERSION );
-		const GLubyte *glslVersion = glGetString( GL_SHADING_LANGUAGE_VERSION );
+		const GLubyte *renderer = glGetString(GL_RENDERER);
+		const GLubyte *vendor = glGetString(GL_VENDOR);
+		const GLubyte *version = glGetString(GL_VERSION);
+		const GLubyte *glslVersion = glGetString(GL_SHADING_LANGUAGE_VERSION);
 		GLint major, minor;
 		glGetIntegerv(GL_MAJOR_VERSION, &major);
 		glGetIntegerv(GL_MINOR_VERSION, &minor);
@@ -107,30 +107,31 @@ namespace DDG
 		vector< vector<char> > argv(1);
 		
 		// initialize window
-		glutInitWindowSize( windowSize[0], windowSize[1] );
-		glutInitDisplayMode( GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH );
-		glutInit( &argc, (char**)&argv );
-		glutCreateWindow( "che_viewer" );
+		glutInitWindowSize(windowSize[0], windowSize[1]);
+		glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
+		glutInit(&argc, (char**)&argv);
+		glutCreateWindow("che_viewer");
 		//glutFullScreen();
 
 		// specify callbacks
-		glutDisplayFunc( Viewer::display );
-		glutIdleFunc( Viewer::idle );
-		glutKeyboardFunc( Viewer::keyboard );
-		glutSpecialFunc( Viewer::special );
-		glutMouseFunc( Viewer::mouse );
-		glutMotionFunc( Viewer::motion );
+		glutDisplayFunc(display);
+		glutIdleFunc(idle);
+		glutKeyboardFunc(keyboard);
+		glutSpecialFunc(special);
+		glutMouseFunc(mouse);
+		glutMotionFunc(motion);
 
-		glutSetOption ( GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_CONTINUE_EXECUTION );
+		glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_CONTINUE_EXECUTION);
 	}	
 
 	void Viewer::init_menus()
 	{
 		// set current mesh menu
-		int mesh_menu = glutCreateMenu( Viewer::menu_meshes );
+		int mesh_menu = glutCreateMenu(Viewer::menu_meshes);
 		glutSetMenu(mesh_menu);
 		for(index_t i = 0; i < n_meshes; i++)
 			glutAddMenuEntry(meshes[i]->filename().c_str(), i);
+		
 		// init viewer menu
 		sub_menus.push_back("Viewer");
 		add_process('f', "Wireframe", mWireframe);
@@ -171,19 +172,19 @@ namespace DDG
 		for(index_t sm = 0; sm < sub_menus.size(); sm++)
 			glutAddSubMenu(sub_menus[sm].c_str(), sub_menu[sm]);
 		
-		glutAttachMenu( GLUT_RIGHT_BUTTON );
+		glutAttachMenu(GLUT_RIGHT_BUTTON);
 
 		delete [] sub_menu;
 	}
 	
 	void Viewer::initGLSL()
 	{
-		//shader.loadVertex( "shaders/vertex.glsl" );
-		//shader.loadFragment( "shaders/fragment.glsl" );
-		//shader.loadGeometry( "shaders/geometry.glsl" );
-		//shader.loadGeometry( "shaders/new_geometry.glsl" );
-		shader.loadVertex( "shaders/new_vertex.glsl" );
-		shader.loadFragment( "shaders/new_fragment.glsl" );
+		//shader.loadVertex("shaders/vertex.glsl");
+		//shader.loadFragment("shaders/fragment.glsl");
+		//shader.loadGeometry("shaders/geometry.glsl");
+		//shader.loadGeometry("shaders/new_geometry.glsl");
+		shader.loadVertex("shaders/new_vertex.glsl");
+		shader.loadFragment("shaders/new_fragment.glsl");
 	}
 
 	color_t & Viewer::get_color(const index_t & i)
@@ -233,12 +234,12 @@ namespace DDG
 		}
 	}
 
-	void Viewer::keyboard( unsigned char c, int x, int y )
+	void Viewer::keyboard(unsigned char c, int x, int y)
 	{
 		if(c >= '0' && c <= '9')
 		{
 			bgc = (c - '0') / 9.;
-			glClearColor( bgc, bgc, bgc, 1. );
+			glClearColor(bgc, bgc, bgc, 1.);
 		}
 
 		mProcess(processes[c].function);
@@ -251,7 +252,7 @@ namespace DDG
 		glutSetWindowTitle(mesh()->filename().c_str());	
 	}
 	
-	void Viewer::special( int i, int x, int y )
+	void Viewer::special(int i, int x, int y)
 	{
 		switch(i)
 		{
@@ -269,18 +270,18 @@ namespace DDG
 		}
 	}
 
-	void Viewer::mouse( int button, int state, int x, int y )
+	void Viewer::mouse(int button, int state, int x, int y)
 	{
-		if( ( glutGetModifiers() & GLUT_ACTIVE_SHIFT) and state == GLUT_UP )
+		if((glutGetModifiers() & GLUT_ACTIVE_SHIFT) and state == GLUT_UP)
 			pickVertex(x, y);
 		else if(button == 6) camera.zoomIn();
 		else if(button == 5) camera.zoomOut();
-		else camera.mouse( button, state, x, y );
+		else camera.mouse(button, state, x, y);
 	}
 	
-	void Viewer::motion( int x, int y )
+	void Viewer::motion(int x, int y)
 	{
-		camera.motion( x, y );
+		camera.motion(x, y);
 	}
 	
 	void Viewer::idle()
@@ -291,7 +292,7 @@ namespace DDG
 	
 	void Viewer::storeViewerState()
 	{
-		ofstream out( ".viewer_state.txt" );
+		ofstream out(".viewer_state.txt");
 		
 		out << camera.rLast[0] << endl;
 		out << camera.rLast[1] << endl;
@@ -299,15 +300,15 @@ namespace DDG
 		out << camera.rLast[3] << endl;
 		
 		GLint view[4];
-		glGetIntegerv( GL_VIEWPORT, view );
+		glGetIntegerv(GL_VIEWPORT, view);
 		out << view[2] << endl;
 		out << view[3] << endl;
 	}
 	
 	void Viewer::restoreViewerState(void)
 	{
-		ifstream in( ".viewer_state.txt" );
-		if( !in.is_open() ) return;
+		ifstream in(".viewer_state.txt");
+		if(!in.is_open()) return;
 		
 		in >> camera.rLast[0];
 		in >> camera.rLast[1];
@@ -401,47 +402,47 @@ namespace DDG
 	
 	void Viewer::display()
 	{
-		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		shader.enable();
 
-		glMatrixMode( GL_PROJECTION );
+		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
 		GLint viewport[4];
-		glGetIntegerv( GL_VIEWPORT, viewport );
+		glGetIntegerv(GL_VIEWPORT, viewport);
 		double aspect = (double) viewport[2] / (double) viewport[3];
 		const double fovy = 50.;
 		const double clipNear = .01;
 		const double clipFar = 1000.;
-		gluPerspective( fovy, aspect, clipNear, clipFar );
+		gluPerspective(fovy, aspect, clipNear, clipFar);
 		
-		glMatrixMode( GL_MODELVIEW );
+		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 		
 	
-		Quaternion eye = vertex( 0., 0., -2.5 * camera.zoom );
-		Quaternion center = vertex( 0., 0., 0. );
-		Quaternion up = vertex( 0., 1., 0. );		
+		Quaternion eye = vertex(0., 0., -2.5 * camera.zoom);
+		Quaternion center = vertex(0., 0., 0.);
+		Quaternion up = vertex(0., 1., 0.);		
 		gluLookAt(	eye[1],		eye[2],		eye[3],
 				center[1],	center[2],	center[3],
-				up[1],		up[2],		up[3] );
+				up[1],		up[2],		up[3]);
 		
 		
 		Quaternion r = camera.currentRotation();
 		eye = r.conj() * eye * r;
-		GLint uniformEye = glGetUniformLocation( shader, "eye" );
-		glUniform3f( uniformEye, eye[1], eye[2], eye[3] );
+		GLint uniformEye = glGetUniformLocation(shader, "eye");
+		glUniform3f(uniformEye, eye[1], eye[2], eye[3]);
 		
-		Quaternion light = vertex( -1., 1., -2. );
+		Quaternion light = vertex(-1., 1., -2.);
 		light = r.conj() * light * r;
-		GLint uniformLight = glGetUniformLocation( shader, "light" );
-		glUniform3f( uniformLight, light[1], light[2], light[3] );
+		GLint uniformLight = glGetUniformLocation(shader, "light");
+		glUniform3f(uniformLight, light[1], light[2], light[3]);
 	
 		camera.setView();
 		
-		GLint uniformIsFlat = glGetUniformLocation( shader, "is_flat" );
+		GLint uniformIsFlat = glGetUniformLocation(shader, "is_flat");
 		glUniform1i(uniformIsFlat, is_flat);
 		
-		GLint uniformLines = glGetUniformLocation( shader, "lines" );
+		GLint uniformLines = glGetUniformLocation(shader, "lines");
 		glUniform1i(uniformLines, lines);
 
 		GLfloat ModelViewMatrix[16]; 
@@ -456,9 +457,9 @@ namespace DDG
 		glUniformMatrix4fv(uniformModelViewMatrix, 1, 0, ModelViewMatrix);
 		glUniformMatrix4fv(uniformProjectionMatrix, 1, 0, ProjectionMatrix);
 
-		//glPushAttrib( GL_ALL_ATTRIB_BITS );
-		glEnable( GL_DEPTH_TEST );
-		glEnable( GL_LIGHTING );
+		//glPushAttrib(GL_ALL_ATTRIB_BITS);
+		glEnable(GL_DEPTH_TEST);
+		glEnable(GL_LIGHTING);
 		
 		setMeshMaterial();
 		drawScene();
@@ -471,16 +472,16 @@ namespace DDG
 	
 	void Viewer::setGL()
 	{
-		glClearColor( bgc, bgc, bgc, 1. );
+		glClearColor(bgc, bgc, bgc, 1.);
 		setLighting();
 	}
 	
 	void Viewer::setLighting()
 	{
 		GLfloat position[4] = { 20., 30., 40., 0. };
-		glLightfv( GL_LIGHT0, GL_POSITION, position );
-		glEnable( GL_LIGHT0 );
-		glEnable( GL_NORMALIZE );
+		glLightfv(GL_LIGHT0, GL_POSITION, position);
+		glEnable(GL_LIGHT0);
+		glEnable(GL_NORMALIZE);
 	}
 	
 	void Viewer::setMeshMaterial()
@@ -489,25 +490,25 @@ namespace DDG
 		GLfloat specular[4] = { .3, .3, .3, 1. };
 		GLfloat ambient[4] = { .2, .2, .5, 1. };
 		
-		glMaterialfv( GL_FRONT_AND_BACK, GL_DIFFUSE,	diffuse );
-		glMaterialfv( GL_FRONT_AND_BACK, GL_SPECULAR, specular );
-		glMaterialfv( GL_FRONT_AND_BACK, GL_AMBIENT,	ambient );
-		glMaterialf ( GL_FRONT_AND_BACK, GL_SHININESS, 16.		);
+		glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE,	diffuse);
+		glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specular);
+		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT,	ambient);
+		glMaterialf (GL_FRONT_AND_BACK, GL_SHININESS, 16.		);
 	}
 	
 	void Viewer::drawScene()
 	{
-	//	glPushAttrib( GL_ALL_ATTRIB_BITS );
+	//	glPushAttrib(GL_ALL_ATTRIB_BITS);
 
-		glEnable( GL_POLYGON_OFFSET_FILL );
-		glPolygonOffset( 1., 1. );
+		glEnable(GL_POLYGON_OFFSET_FILL);
+		glPolygonOffset(1., 1.);
 		drawPolygons();
-		glDisable( GL_POLYGON_OFFSET_FILL );
+		glDisable(GL_POLYGON_OFFSET_FILL);
 		
-		if( renderWireframe ) drawWireframe();
-		if( renderGradientField ) drawGradientField();
-		if( renderNormalField ) drawNormalField();
-		if( renderBorder ) drawBorder();
+		if(renderWireframe) drawWireframe();
+		if(renderGradientField) drawGradientField();
+		if(renderNormalField) drawNormalField();
+		if(renderBorder) drawBorder();
 		if(render_corr) draw_corr();
 
 		drawIsolatedVertices();
@@ -540,24 +541,24 @@ namespace DDG
 	void Viewer::drawVectors()
 	{
 		shader.disable();
-		glPushAttrib( GL_ALL_ATTRIB_BITS );
+		glPushAttrib(GL_ALL_ATTRIB_BITS);
 		
-		glDisable( GL_LIGHTING );
-		glColor4f( 1., 0., 0., 1 );
-		glLineWidth( 3.0 );
-		glEnable( GL_BLEND );
-		glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+		glDisable(GL_LIGHTING);
+		glColor4f(1., 0., 0., 1);
+		glLineWidth(3.0);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		
-		glBegin( GL_LINES );
+		glBegin(GL_LINES);
 		
 		index_t i = 0;
 		for(vertex & v: vectors)
 		{
-			if(i % 8 == 0) glColor4f( 1., 0., 0., 1 );
-			if(i % 8 == 2) glColor4f( 0., 1., 0., 1 );
-			if(i % 8 == 4) glColor4f( 0., 0., 1., 1 );
-			if(i % 8 == 6) glColor4f( 1., 1., 0., 1 );
-			glVertex3v( &v.x );
+			if(i % 8 == 0) glColor4f(1., 0., 0., 1);
+			if(i % 8 == 2) glColor4f(0., 1., 0., 1);
+			if(i % 8 == 4) glColor4f(0., 0., 1., 1);
+			if(i % 8 == 6) glColor4f(1., 1., 0., 1);
+			glVertex3v(&v.x);
 			i++;
 		}
 
@@ -568,11 +569,11 @@ namespace DDG
 	void Viewer::drawIsolatedVertices()
 	{
 		shader.disable();
-		glPushAttrib( GL_ALL_ATTRIB_BITS );
+		glPushAttrib(GL_ALL_ATTRIB_BITS);
 		
-		glEnable( GL_COLOR_MATERIAL );
+		glEnable(GL_COLOR_MATERIAL);
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		glColor3f( 0.5, 0., 0.5 );
+		glColor3f(0.5, 0., 0.5);
 		
 		double h = 0.01 * camera.zoom; 
 		for(const vertex & v: other_vertices)
@@ -587,14 +588,14 @@ namespace DDG
 		
 		glPopAttrib();
 		/*shader.disable();
-		glPushAttrib( GL_ALL_ATTRIB_BITS );
+		glPushAttrib(GL_ALL_ATTRIB_BITS);
 		
-		glPointSize( 5 );
-		glHint( GL_POINT_SMOOTH_HINT, GL_NICEST );
-		glEnable( GL_POINT_SMOOTH );
-		glColor3f( 1., 0., 0. );
+		glPointSize(5);
+		glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
+		glEnable(GL_POINT_SMOOTH);
+		glColor3f(1., 0., 0.);
 		
-		glBegin( GL_POINTS );
+		glBegin(GL_POINTS);
 
 		for(const vertex & v: other_vertices)
 			glVertex3v(&v.x);
@@ -627,11 +628,11 @@ namespace DDG
 		glPopAttrib();
 		
 		// spheres corr
-		glPushAttrib( GL_ALL_ATTRIB_BITS );
+		glPushAttrib(GL_ALL_ATTRIB_BITS);
 		
-		glEnable( GL_COLOR_MATERIAL );
+		glEnable(GL_COLOR_MATERIAL);
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		glColor3f( 0.8, 0.0, 0.0 );
+		glColor3f(0.8, 0.0, 0.0);
 		
 		double h = 0.015 * camera.zoom; 
 		for(index_t & v: select_vertices)
@@ -654,7 +655,7 @@ namespace DDG
 		{
 			glLoadName(v);
 			glBegin(GL_POINTS);
-			glVertex3v( &mesh()->gt(v).x );
+			glVertex3v(&mesh()->gt(v).x);
 			glEnd();
 		}
 	}
@@ -670,11 +671,11 @@ namespace DDG
 	void Viewer::drawSelectedVertices()
 	{
 		shader.disable();
-		glPushAttrib( GL_ALL_ATTRIB_BITS );
+		glPushAttrib(GL_ALL_ATTRIB_BITS);
 		
-		glEnable( GL_COLOR_MATERIAL );
+		glEnable(GL_COLOR_MATERIAL);
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		glColor3f( 0., 0.5, 0.5 );
+		glColor3f(0., 0.5, 0.5);
 		
 		double h = 0.02 * camera.zoom; 
 		for(int v: select_vertices)
@@ -708,7 +709,7 @@ namespace DDG
 	{
 		int width = glutGet(GLUT_WINDOW_WIDTH);
 		int height = glutGet(GLUT_WINDOW_HEIGHT);
-		if( x < 0 || x >= width || y < 0 || y >= height ) return;
+		if(x < 0 || x >= width || y < 0 || y >= height) return;
 		
 		int bufSize = mesh()->n_vertices();
 		GLuint * buf = new GLuint[bufSize];
@@ -716,7 +717,7 @@ namespace DDG
 		
 		GLint viewport[4];
 		GLdouble projection[16];
-		glGetIntegerv( GL_VIEWPORT, viewport );
+		glGetIntegerv(GL_VIEWPORT, viewport);
 		glGetDoublev(GL_PROJECTION_MATRIX, projection);
 		
 		glRenderMode(GL_SELECT);
@@ -742,10 +743,10 @@ namespace DDG
 
 		int index = -1;
 		double min_z = 1.0e100;
-		for( long i = 0; i < hits; ++i )
+		for(long i = 0; i < hits; ++i)
 		{
 			double distance = buf[4*i + 1];
-			if( distance < min_z )
+			if(distance < min_z)
 			{
 				index = buf[4*i + 3];
 				min_z = distance;
