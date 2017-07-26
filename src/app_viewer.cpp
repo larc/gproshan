@@ -389,10 +389,22 @@ void viewer_process_fastmarching_gpu()
 	Viewer::mesh()->sort_by_rings(rings, sorted, limites, Viewer::select_vertices);
 	
 	float time;
-	distance_t * distances = parallel_fastmarching(Viewer::mesh(), Viewer::select_vertices.data(), Viewer::select_vertices.size(), time, limites, sorted, true);	
+//	distance_t * distances = parallel_fastmarching(Viewer::mesh(), Viewer::select_vertices.data(), Viewer::select_vertices.size(), time, limites, sorted, true);	
 	//distance_t * distances = parallel_fastmarching(Viewer::mesh()->filename().c_str(), Viewer::select_vertices.data(), Viewer::select_vertices.size(), time, 9, true, true);
-
+	TIC(time)
+	distance_t * distances = fast_geodesics(Viewer::mesh(), Viewer::select_vertices.data(), Viewer::select_vertices.size(), limites, sorted);
+	TOC(time)
 	debug(time)
+	
+	distance_t max_d = 0;
+
+	#pragma omp parallel for reduction(max: max_d)
+	for(index_t v = 0; v < Viewer::mesh()->n_vertices(); v++)
+		max_d = max(max_d, distances[v]);
+	
+	#pragma omp parallel for
+	for(index_t v = 0; v < Viewer::mesh()->n_vertices(); v++)
+		distances[v] /= max_d;
 
 	Viewer::mesh().update_colors(distances);
 	

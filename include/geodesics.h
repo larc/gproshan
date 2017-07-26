@@ -39,10 +39,12 @@ class geodesics
 
 	private:
 		void run(che * mesh);
-		distance_t update_step(che * mesh, const distance_t * dist, const index_t & he);
 		distance_t update(index_t & d, che * mesh, const index_t & he, vertex & vx);
 		distance_t planar_update(index_t & d, arma::mat & X, index_t * x, vertex & vx);
 };
+
+distance_t update_step(che * mesh, const distance_t * dist, const index_t & he);
+distance_t * fast_geodesics(che * mesh, index_t * source, length_t source_size, const vector<index_t> & limites, const index_t * sorted);
 
 #endif //GEODESICS_H
 

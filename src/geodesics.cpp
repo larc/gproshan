@@ -249,75 +249,6 @@ void geodesics::path_to(vector<vertex> & v_path, che * mesh, const vertex & v, c
 	else path_to(v_path, mesh, vx[pi], mesh->ot(pi ? prev(he) : next(he)));
 }
 
-distance_t geodesics::update_step(che * mesh, const distance_t * dist, const index_t & he)
-{
-	index_t x[3];
-	x[0] = mesh->vt(next(he));
-	x[1] = mesh->vt(prev(he));
-	x[2] = mesh->vt(he);
-
-	vertex X[2];
-	X[0] = mesh->gt(x[0]) - mesh->gt(x[2]);
-	X[1] = mesh->gt(x[1]) - mesh->gt(x[2]);
-
-	distance_t t[2];
-	t[0] = dist[x[0]];
-	t[1] = dist[x[1]];
-
-	distance_t q[2][2];
-	q[0][0] = (X[0], X[0]);
-	q[0][1] = (X[0], X[1]);
-	q[1][0] = (X[1], X[0]);
-	q[1][1] = (X[1], X[1]);
-	
-	distance_t det = q[0][0] * q[1][1] - q[0][1] * q[1][0];
-	distance_t Q[2][2];
-	Q[0][0] = q[1][1] / det;
-	Q[0][1] = -q[0][1] / det;
-	Q[1][0] = -q[1][0] / det;
-	Q[1][1] = q[0][0] / det;
-
-
-	distance_t delta = t[0] * (Q[0][0] + Q[1][0]) + t[1] * (Q[0][1] + Q[1][1]);
-
-	distance_t dis = delta * delta - (Q[0][0] + Q[0][1] + Q[1][0] + Q[1][1]) * (t[0]*t[0]*Q[0][0] + t[0]*t[1]*(Q[1][0] + Q[0][1]) + t[1]*t[1]*Q[1][1] - 1);
-	
-	distance_t p;
-
-	if(dis >= 0)
-	{
-		p = delta + sqrt(dis);
-		p /= Q[0][0] + Q[0][1] + Q[1][0] + Q[1][1];
-	}
-
-	distance_t tp[2];
-	tp[0] = t[0] - p;
-	tp[1] = t[1] - p;
-
-	vertex n(tp[0] * (X[0][0]*Q[0][0] + X[1][0]*Q[1][0]) + tp[1] * (X[0][0]*Q[0][1] + X[1][0]*Q[1][1]),
-			 tp[0] * (X[0][1]*Q[0][0] + X[1][1]*Q[1][0]) + tp[1] * (X[0][1]*Q[0][1] + X[1][1]*Q[1][1]),
-			 tp[0] * (X[0][2]*Q[0][0] + X[1][2]*Q[1][0]) + tp[1] * (X[0][2]*Q[0][1] + X[1][2]*Q[1][1]) );
-
-	distance_t cond[2];
-	cond[0] = (X[0] , n);
-	cond[1] = (X[1] , n);
-
-	distance_t c[2];
-	c[0] = cond[0] * Q[0][0] + cond[1] * Q[0][1];
-	c[1] = cond[0] * Q[1][0] + cond[1] * Q[1][1];
-
-	if(t[0] == INFINITY || t[1] == INFINITY || dis < 0 || c[0] >= 0 || c[1] >= 0)
-	{
-		distance_t dp[2];
-		dp[0] = dist[x[0]] + *X[0];
-		dp[1] = dist[x[1]] + *X[1];
-
-		p = dp[dp[1] < dp[0]];
-	}
-
-	return p;
-}
-
 //d = {NIL, 0, 1} cross edge, next, prev
 distance_t geodesics::update(index_t & d, che * mesh, const index_t & he, vertex & vx)
 {
@@ -409,5 +340,122 @@ void geodesics::normalize()
 	#pragma omp parallel for
 	for(size_t i = 0; i < n_pesos; i++)
 		distances[sort_index[i]] /= max;
+}
+
+distance_t update_step(che * mesh, const distance_t * dist, const index_t & he)
+{
+	index_t x[3];
+	x[0] = mesh->vt(next(he));
+	x[1] = mesh->vt(prev(he));
+	x[2] = mesh->vt(he);
+
+	vertex X[2];
+	X[0] = mesh->gt(x[0]) - mesh->gt(x[2]);
+	X[1] = mesh->gt(x[1]) - mesh->gt(x[2]);
+
+	distance_t t[2];
+	t[0] = dist[x[0]];
+	t[1] = dist[x[1]];
+
+	distance_t q[2][2];
+	q[0][0] = (X[0], X[0]);
+	q[0][1] = (X[0], X[1]);
+	q[1][0] = (X[1], X[0]);
+	q[1][1] = (X[1], X[1]);
+	
+	distance_t det = q[0][0] * q[1][1] - q[0][1] * q[1][0];
+	distance_t Q[2][2];
+	Q[0][0] = q[1][1] / det;
+	Q[0][1] = -q[0][1] / det;
+	Q[1][0] = -q[1][0] / det;
+	Q[1][1] = q[0][0] / det;
+
+
+	distance_t delta = t[0] * (Q[0][0] + Q[1][0]) + t[1] * (Q[0][1] + Q[1][1]);
+
+	distance_t dis = delta * delta - (Q[0][0] + Q[0][1] + Q[1][0] + Q[1][1]) * (t[0]*t[0]*Q[0][0] + t[0]*t[1]*(Q[1][0] + Q[0][1]) + t[1]*t[1]*Q[1][1] - 1);
+	
+	distance_t p;
+
+	if(dis >= 0)
+	{
+		p = delta + sqrt(dis);
+		p /= Q[0][0] + Q[0][1] + Q[1][0] + Q[1][1];
+	}
+
+	distance_t tp[2];
+	tp[0] = t[0] - p;
+	tp[1] = t[1] - p;
+
+	vertex n(tp[0] * (X[0][0]*Q[0][0] + X[1][0]*Q[1][0]) + tp[1] * (X[0][0]*Q[0][1] + X[1][0]*Q[1][1]),
+			 tp[0] * (X[0][1]*Q[0][0] + X[1][1]*Q[1][0]) + tp[1] * (X[0][1]*Q[0][1] + X[1][1]*Q[1][1]),
+			 tp[0] * (X[0][2]*Q[0][0] + X[1][2]*Q[1][0]) + tp[1] * (X[0][2]*Q[0][1] + X[1][2]*Q[1][1]) );
+
+	distance_t cond[2];
+	cond[0] = (X[0] , n);
+	cond[1] = (X[1] , n);
+
+	distance_t c[2];
+	c[0] = cond[0] * Q[0][0] + cond[1] * Q[0][1];
+	c[1] = cond[0] * Q[1][0] + cond[1] * Q[1][1];
+
+	if(t[0] == INFINITY || t[1] == INFINITY || dis < 0 || c[0] >= 0 || c[1] >= 0)
+	{
+		distance_t dp[2];
+		dp[0] = dist[x[0]] + *X[0];
+		dp[1] = dist[x[1]] + *X[1];
+
+		p = dp[dp[1] < dp[0]];
+	}
+
+	return p;
+}
+
+distance_t * fast_geodesics(che * mesh, index_t * source, length_t n_sources, const vector<index_t> & limites, const index_t * sorted)
+{
+	length_t n_vertices = mesh->n_vertices();
+
+	distance_t * dist[2];
+	dist[0] = new distance_t[n_vertices];
+	dist[1] = new distance_t[n_vertices];
+	
+	#pragma omp parallel for
+	for(index_t v = 0; v < n_vertices; v++)
+		dist[0][v] = dist[1][v] = INFINITY;
+
+	for(index_t s = 0; s < n_sources; s++)
+		dist[0][source[s]] = dist[1][source[s]] = 0;
+	
+	index_t v, k, d = 1;
+	index_t iter = limites.size();
+	distance_t p;
+	distance_t ratio;
+
+	for(index_t i = 2; i < iter; i++)
+	{
+		ratio = (limites[i] - limites[i - 1]) / (limites[i - 1] - limites[i - 2]);
+	//	if(ratio < 1) ratio = 1.0 / ratio;
+		k = log(1 + ratio) / log(2) + 2;
+		while(k--)
+		{
+			#pragma parallel for private(v, p)
+			for(index_t r = limites[i - 1]; r < limites[i]; r++)
+			{
+				v = sorted[r];
+				dist[!d][v] = dist[d][v];
+
+				for_star(he, mesh, v)
+				{
+					p = update_step(mesh, dist[d], he);
+					if(p < dist[!d][v]) dist[!d][v] = p;
+				}
+			}
+
+			d = !d;
+		}
+	}
+
+	delete [] dist[d];
+	return dist[!d];
 }
 

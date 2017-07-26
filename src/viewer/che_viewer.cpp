@@ -179,7 +179,7 @@ void che_viewer::draw_gradient_field()
 	
 	glDisable(GL_LIGHTING);
 	glColor3f(.8, 1.0, .8);
-	glLineWidth(3.0);
+	glLineWidth(1.2);
 
 	double h = 0.3 * factor;
 
