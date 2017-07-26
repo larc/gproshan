@@ -50,13 +50,13 @@ namespace DDG
 	int Viewer::windowSize[2] = { 1366, 768 };
 	Camera Viewer::camera;
 	Shader Viewer::shader;
-	bool Viewer::renderWireframe = false;
-	bool Viewer::renderGradientField = false;
-	bool Viewer::renderNormalField = false;
-	bool Viewer::renderBorder = false;
+	bool Viewer::render_wireframe = false;
+	bool Viewer::render_gradient_field = false;
+	bool Viewer::render_normal_field = false;
+	bool Viewer::render_border = false;
 	bool Viewer::render_corr = false;
+	bool Viewer::render_lines = false;
 	bool Viewer::is_flat = false;
-	bool Viewer::lines = false;
 	float Viewer::bgc = 0.;
 
 	map<unsigned char, process_t> Viewer::processes;
@@ -134,12 +134,14 @@ namespace DDG
 		
 		// init viewer menu
 		sub_menus.push_back("Viewer");
-		add_process('f', "Wireframe", mWireframe);
-		add_process('g', "Gradient Field", mGradientField);
-		add_process('n', "Normal Field", mNormalField);
-		add_process('b', "Show Border", mBorder);
-		add_process('\t', "Flat", mIsFlat);
-		add_process(' ', "Lines", mLines);
+		add_process('i', "Invert Orientation", invert_orientation);
+		add_process('f', "Wireframe", set_render_wireframe);
+		add_process('g', "Gradient Field", set_render_gradient_field);
+		add_process('n', "Normal Field", set_render_normal_field);
+		add_process('b', "Show Border", set_render_border);
+		add_process(' ', "Lines", set_render_lines);
+		add_process('+', "Show Corr", set_render_corr);
+		add_process('\t', "Flat", set_is_flat);
 		
 		// init mesh menu
 		sub_menus.push_back("Mesh");
@@ -157,9 +159,9 @@ namespace DDG
 		for(index_t sm = 0; sm < sub_menus.size(); sm++)
 			sub_menu[sm] = glutCreateMenu(Viewer::menu_process);
 
+		char ss[128];
 		for(auto mp: Viewer::processes)
 		{
-			char ss[128];
 			sprintf(ss, "[%c] %s", mp.first, mp.second.name_function.c_str());
 			glutSetMenu(sub_menu[mp.second.sub_menu]);
 			glutAddMenuEntry(ss, mp.first);
@@ -352,11 +354,6 @@ namespace DDG
 		glutLeaveMainLoop();
 	}
 	
-	void Viewer::mWireframe()
-	{
-		renderWireframe = !renderWireframe;
-	}
-	
 	void Viewer::mZoomIn()
 	{
 		camera.zoomIn();
@@ -367,37 +364,47 @@ namespace DDG
 		camera.zoomOut();
 	}
 	
-	void Viewer::mGradientField()
-	{
-		renderGradientField = !renderGradientField;
-	}
-
-	void Viewer::mNormalField()
-	{
-		renderNormalField = !renderNormalField;
-	}
-		
-	void Viewer::mBorder()
-	{
-		renderBorder = !renderBorder;
-		if(!renderBorder) select_vertices.clear();
-	}
-	
-	void Viewer::mOrientation()
+	void Viewer::invert_orientation()
 	{
 		mesh().invert_orientation();
 		mesh().update_normals();
 		update_VBO();
 	}
 
-	void Viewer::mIsFlat()
+	void Viewer::set_render_wireframe()
 	{
-		is_flat = !is_flat;
+		render_wireframe = !render_wireframe;
 	}
 	
-	void Viewer::mLines()
+	void Viewer::set_render_gradient_field()
 	{
-		lines = !lines;
+		render_gradient_field = !render_gradient_field;
+	}
+
+	void Viewer::set_render_normal_field()
+	{
+		render_normal_field = !render_normal_field;
+	}
+		
+	void Viewer::set_render_border()
+	{
+		render_border = !render_border;
+		if(!render_border) select_vertices.clear();
+	}
+	
+	void Viewer::set_render_lines()
+	{
+		render_lines = !render_lines;
+	}
+
+	void Viewer::set_render_corr()
+	{
+		render_corr = !render_corr;
+	}
+	
+	void Viewer::set_is_flat()
+	{
+		is_flat = !is_flat;
 	}
 	
 	void Viewer::display()
@@ -443,7 +450,7 @@ namespace DDG
 		glUniform1i(uniformIsFlat, is_flat);
 		
 		GLint uniformLines = glGetUniformLocation(shader, "lines");
-		glUniform1i(uniformLines, lines);
+		glUniform1i(uniformLines, render_lines);
 
 		GLfloat ModelViewMatrix[16]; 
 		GLfloat ProjectionMatrix[16];
@@ -505,10 +512,10 @@ namespace DDG
 		drawPolygons();
 		glDisable(GL_POLYGON_OFFSET_FILL);
 		
-		if(renderWireframe) drawWireframe();
-		if(renderGradientField) drawGradientField();
-		if(renderNormalField) drawNormalField();
-		if(renderBorder) drawBorder();
+		if(render_wireframe) drawWireframe();
+		if(render_gradient_field) drawGradientField();
+		if(render_normal_field) drawNormalField();
+		if(render_border) drawBorder();
 		if(render_corr) draw_corr();
 
 		drawIsolatedVertices();

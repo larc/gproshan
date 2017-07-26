@@ -96,15 +96,16 @@ namespace DDG
 		static void mResetMesh();
 		static void mWriteMesh();
 		static void mExit();
-		static void mWireframe();
 		static void mZoomIn();
 		static void mZoomOut();
-		static void mGradientField();
-		static void mNormalField();
-		static void mBorder();
-		static void mOrientation();
-		static void mIsFlat();
-		static void mLines();
+		static void invert_orientation();
+		static void set_render_wireframe();
+		static void set_render_gradient_field();
+		static void set_render_normal_field();
+		static void set_render_border();
+		static void set_render_lines();
+		static void set_render_corr();
+		static void set_is_flat();
 		
 		// draw routines
 		static void setGL();
@@ -135,13 +136,13 @@ namespace DDG
 		static Shader shader;
 		// shader used to determine appearance of surface
 		
-		static bool renderWireframe;
-		static bool renderGradientField;
-		static bool renderNormalField;
-		static bool renderBorder;
+		static bool render_wireframe;
+		static bool render_gradient_field;
+		static bool render_normal_field;
+		static bool render_border;
 		static bool render_corr;
+		static bool render_lines;
 		static bool is_flat;
-		static bool lines;
 		static float bgc;
 
 		static map<unsigned char, process_t> processes;
