@@ -3,7 +3,6 @@
 #include <iostream>
 #include <iomanip>
 #include <fstream>
-#include <sstream>
 #include <vector>
 #include <cassert>
 
@@ -40,7 +39,7 @@ namespace DDG
 {
 	// declare static member variables
 	che_viewer Viewer::meshes[N_MESHES];
-	corr_t * Viewer::corr_mesh[N_MESHES] = {}; // zero initialization 
+	vcorr_t Viewer::corr_mesh[N_MESHES]; // zero initialization 
 	size_t Viewer::n_meshes = 0;
 	index_t Viewer::current = 0;
 	vector<index_t> Viewer::select_vertices;
@@ -55,6 +54,7 @@ namespace DDG
 	bool Viewer::renderGradientField = false;
 	bool Viewer::renderNormalField = false;
 	bool Viewer::renderBorder = false;
+	bool Viewer::render_corr = false;
 	bool Viewer::is_flat = false;
 	bool Viewer::lines = false;
 	float Viewer::bgc = 0.;
@@ -122,27 +122,34 @@ namespace DDG
 		glutMotionFunc( Viewer::motion );
 
 		glutSetOption ( GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_CONTINUE_EXECUTION );
-}	
+	}	
 
-void Viewer::init_menus()
-{
-		// initialize menus
-		int viewMenu = glutCreateMenu( Viewer::view );
-		glutSetMenu( viewMenu );
-		glutAddMenuEntry( "[f] Wireframe", menuWireframe );
-		glutAddMenuEntry( "[g] GradientField", menuGradientField );
-		glutAddMenuEntry( "[n] NormalField", menuNormalField );
-		glutAddMenuEntry( "[b] Border", menuBorder );
-		glutAddMenuEntry( "[i] Orientation", menuOrientation );
-		glutAddMenuEntry( "[tab] Flat", menuIsFlat );
-		glutAddMenuEntry( "[space] Lines", menuLines );
-		
+	void Viewer::init_menus()
+	{
 		// set current mesh menu
 		int mesh_menu = glutCreateMenu( Viewer::menu_meshes );
 		glutSetMenu(mesh_menu);
 		for(index_t i = 0; i < n_meshes; i++)
 			glutAddMenuEntry(meshes[i]->filename().c_str(), i);
-
+		// init viewer menu
+		sub_menus.push_back("Viewer");
+		add_process('f', "Wireframe", mWireframe);
+		add_process('g', "Gradient Field", mGradientField);
+		add_process('n', "Normal Field", mNormalField);
+		add_process('b', "Show Border", mBorder);
+		add_process('\t', "Flat", mIsFlat);
+		add_process(' ', "Lines", mLines);
+		
+		// init mesh menu
+		sub_menus.push_back("Mesh");
+		add_process('r', "Reset Mesh", mResetMesh);
+		add_process('w', "Write Mesh", mWriteMesh);
+		add_process('<', "Zoom In", mZoomIn);
+		add_process('>', "Zoom Out", mZoomOut);
+		add_process(27, "Exit", mExit);
+		
+		
+		// init		
 		// process sub menus
 		int * sub_menu = new int[sub_menus.size()];
 
@@ -151,23 +158,16 @@ void Viewer::init_menus()
 
 		for(auto mp: Viewer::processes)
 		{
-			stringstream ss;
-			ss << "[" << mp.first << "] " << mp.second.name_function;
-			
+			char ss[128];
+			sprintf(ss, "[%c] %s", mp.first, mp.second.name_function.c_str());
 			glutSetMenu(sub_menu[mp.second.sub_menu]);
-			glutAddMenuEntry( ss.str().c_str(), mp.first );
+			glutAddMenuEntry(ss, mp.first);
 		}
 
-		int mainMenu = glutCreateMenu( Viewer::menu );
-		glutSetMenu( mainMenu );
-		glutAddMenuEntry( "[r] Reset Mesh", menuResetMesh );
-		glutAddMenuEntry( "[w] Write Mesh", menuWriteMesh );
-		glutAddMenuEntry( "[<] Zoom In", menuZoomIn );
-		glutAddMenuEntry( "[>] Zoom Out", menuZoomOut );
-		glutAddMenuEntry( "[esc] Exit", menuExit );
-		glutAddSubMenu( "View", viewMenu );
-		glutAddSubMenu( "Meshes", mesh_menu );
+		int mainMenu = glutCreateMenu(Viewer::menu);
+		glutSetMenu(mainMenu);	
 		
+		glutAddSubMenu("Select Mesh", mesh_menu);
 		for(index_t sm = 0; sm < sub_menus.size(); sm++)
 			glutAddSubMenu(sub_menus[sm].c_str(), sub_menu[sm]);
 		
@@ -196,25 +196,12 @@ void Viewer::init_menus()
 		for(index_t i = 0; i < n_meshes; i++)
 			meshes[i].update();
 	}
-
-	void Viewer::menu( int value )
-	{
-		switch( value )
-		{
-			case( menuResetMesh ):
-				mResetMesh();
-				break;
-			case( menuWriteMesh ):
-				mWriteMesh();
-				break;
-			case( menuExit ):
-				mExit();
-				break;
-			default:
-				break;
-		}
-	}
 	
+	void Viewer::menu(int value)
+	{
+	
+	}	
+
 	void Viewer::menu_process(int value)
 	{
 		mProcess(processes[value].function);
@@ -246,42 +233,6 @@ void Viewer::init_menus()
 		}
 	}
 
-	void Viewer::view( int value )
-	{
-		switch( value )
-		{
-			case( menuWireframe ):
-				mWireframe();
-				break;
-			case( menuZoomIn ):
-				mZoomIn();
-				break;
-			case( menuZoomOut ):
-				mZoomOut();
-				break;
-			case( menuGradientField ):
-				mGradientField();
-				break;
-			case( menuNormalField ):
-				mNormalField();
-				break;
-			case( menuBorder ):
-				mBorder();
-				break;
-			case( menuOrientation ):
-				mOrientation();
-				break;
-			case( menuIsFlat ):
-				mIsFlat();
-				break;
-			case( menuLines ):
-				mLines();
-				break;
-			default:
-				break;
-		}
-	}
-	
 	void Viewer::keyboard( unsigned char c, int x, int y )
 	{
 		if(c >= '0' && c <= '9')
@@ -290,49 +241,7 @@ void Viewer::init_menus()
 			glClearColor( bgc, bgc, bgc, 1. );
 		}
 
-		switch( c )
-		{
-			case 'x':
-				mesh().update_colors();
-				update_VBO();
-				break;
-			case 'c':
-				select_vertices.clear();
-				break;
-			case 'f':
-				mWireframe();
-				break;
-			case 'w':
-				mWriteMesh();
-				break;
-			case 'r':
-				mResetMesh();
-				break;
-			case 27:
-				mExit();
-				break;
-			case 'g':
-				mGradientField();
-				break;
-			case 'n':
-				mNormalField();
-				break;
-			case 'b':
-				mBorder();
-				break;
-			case 'i':
-				mOrientation();
-				break;
-			case '\t':
-				mIsFlat();
-				break;
-			case ' ':
-				mLines();
-				break;
-			default:
-				mProcess(processes[c].function);
-				break;
-		}
+		mProcess(processes[c].function);
 	}
 
 	void Viewer::menu_meshes(int value)
@@ -513,8 +422,8 @@ void Viewer::init_menus()
 		Quaternion center = vertex( 0., 0., 0. );
 		Quaternion up = vertex( 0., 1., 0. );		
 		gluLookAt(	eye[1],		eye[2],		eye[3],
-					center[1],	center[2],	center[3],
-					up[1],		up[2],		up[3] );
+				center[1],	center[2],	center[3],
+				up[1],		up[2],		up[3] );
 		
 		
 		Quaternion r = camera.currentRotation();
@@ -599,8 +508,8 @@ void Viewer::init_menus()
 		if( renderGradientField ) drawGradientField();
 		if( renderNormalField ) drawNormalField();
 		if( renderBorder ) drawBorder();
-	
-		draw_corr();
+		if(render_corr) draw_corr();
+
 		drawIsolatedVertices();
 		drawVectors();
 		drawSelectedVertices();
@@ -725,7 +634,7 @@ void Viewer::init_menus()
 		glColor3f( 0.8, 0.0, 0.0 );
 		
 		double h = 0.015 * camera.zoom; 
-		for(int v: select_vertices)
+		for(index_t & v: select_vertices)
 		{
 			glPushMatrix();
 			glTranslated(meshes[1]->gt(v).x, meshes[1]->gt(v).y, meshes[1]->gt(v).z);

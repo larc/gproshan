@@ -89,3 +89,4 @@ vertex decimation::create_vertex(const index_t & e)
 
 	return (va + vb) / 2;
 }
+

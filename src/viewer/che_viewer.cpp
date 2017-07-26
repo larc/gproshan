@@ -156,7 +156,7 @@ void che_viewer::draw_normal_field()
 
 	glDisable(GL_LIGHTING);
 	glColor3f(.8, .8, 1.0);
-	glLineWidth(1.0);
+	glLineWidth(2.0);
 
 	glBegin(GL_LINES);
 	for(index_t v = 0; v < _n_vertices; v++)
@@ -179,7 +179,7 @@ void che_viewer::draw_gradient_field()
 	
 	glDisable(GL_LIGHTING);
 	glColor3f(.8, 1.0, .8);
-	glLineWidth(1.0);
+	glLineWidth(3.0);
 
 	double h = 0.3 * factor;
 
@@ -196,7 +196,7 @@ void che_viewer::draw_gradient_field()
 		vertex p1 = p0 - 0.25 * v - 0.15 * v90;
 		vertex p2 = p0 - 0.25 * v + 0.15 * v90;
 
-		glBegin(GL_LINE);
+		glBegin(GL_LINES);
 		glVertex3v(&a[0]);
 		glVertex3v(&b[0]);
 		glEnd();

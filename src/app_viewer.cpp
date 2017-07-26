@@ -629,6 +629,11 @@ void viewer_process_edge_collapse()
 
 	TIC(time) decimation sampling(Viewer::mesh()); TOC(time)
 	debug(time)
-	Viewer::add_mesh({new che_off("../DATA/circle.off")});
+
+	if(Viewer::corr_mesh[Viewer::current])
+		delete [] Viewer::corr_mesh[Viewer::current];
+
+	if(Viewer::n_meshes < 2)
+		Viewer::add_mesh({new che_off(Viewer::mesh()->filename())});
 }
 

@@ -15,6 +15,28 @@
 
 typedef void (*function_t) (void);
 
+struct vcorr_t
+{
+	index_t mesh_i;
+	corr_t * corr;
+
+	vcorr_t()
+	{
+		mesh_i = NIL;
+		corr = NULL;
+	}
+	
+	operator corr_t *& ()
+	{
+		return corr;
+	}
+
+	bool is_loaded()
+	{
+		return mesh_i != NIL && corr != NULL;
+	}
+};
+
 struct process_t
 {
 	index_t sub_menu;
@@ -37,7 +59,7 @@ namespace DDG
 		static void init(const vector<che *> & _meshes);
 			
 		static che_viewer meshes[N_MESHES];
-		static corr_t * corr_mesh[N_MESHES];
+		static vcorr_t corr_mesh[N_MESHES];
 		static size_t n_meshes;
 		static index_t current; // current mesh
 		static vector<index_t> select_vertices;
@@ -65,8 +87,7 @@ namespace DDG
 		static void special( int i, int x, int y );
 		static void mouse( int button, int state, int x, int y );
 		static void motion( int x, int y );
-		static void menu( int value );
-		static void view( int value );
+		static void menu(int value);
 		static void menu_process( int value );
 		static void menu_meshes( int value );
 		
@@ -84,24 +105,6 @@ namespace DDG
 		static void mOrientation();
 		static void mIsFlat();
 		static void mLines();
-		
-		// unique identifiers for menus
-		enum
-		{
-			menuProcess = 10000,
-			menuResetMesh = 10001,
-			menuWriteMesh = 10002,
-			menuExit = 10003,
-			menuWireframe = 10004,
-			menuZoomIn = 10005,
-			menuZoomOut = 10006,
-			menuGradientField = 10007,
-			menuNormalField = 1008,
-			menuBorder = 1009,
-			menuOrientation = 1010,
-			menuIsFlat = 1011,
-			menuLines = 1012
-		};
 		
 		// draw routines
 		static void setGL();
@@ -136,6 +139,7 @@ namespace DDG
 		static bool renderGradientField;
 		static bool renderNormalField;
 		static bool renderBorder;
+		static bool render_corr;
 		static bool is_flat;
 		static bool lines;
 		static float bgc;
