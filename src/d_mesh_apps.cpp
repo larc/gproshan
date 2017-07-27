@@ -153,12 +153,12 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 	// Dictionary learning ------------------------------------------------------------------------
 
 	size_t L = 10;	
-	mat A(K, m, fill::randu);
+	mat A(K, m, fill::eye);
 	mat alpha(m, M, fill::zeros);
 
 	d_message(Dictionary learning...)	
 	TIC(time)
-	KSVDT(A, patches, M, L);
+	//KSVDT(A, patches, M, L);
 	TOC(time)
 	debug(time)
 

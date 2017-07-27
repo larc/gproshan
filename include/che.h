@@ -22,27 +22,19 @@ index_t trig(const index_t & he);
 index_t next(const index_t & he);
 index_t prev(const index_t & he);
 
-struct vertex_cu;
-
 struct corr_t
 {
 	index_t t;
 	vertex alpha;
-};
-
-class che;
-struct CHE
-{
-	length_t n_vertices;
-	length_t n_faces;
-	length_t n_half_edges;
-
-	vertex_cu * GT;
-	index_t * VT;
-	index_t * OT;
-	index_t * EVT;
-
-	CHE(che * mesh);
+	
+	void init(const index_t & he)
+	{
+		t = trig(he) * P;
+		alpha[0] = he == t;
+		alpha[1] = he == next(t);
+		alpha[2] = he == prev(t);
+		t /= P;
+	}
 };
 
 class che
@@ -121,8 +113,7 @@ class che
 		void merge(const che * mesh, const vector<index_t> & com_vertices);
 		void set_head_vertices(index_t * head, const size_t & n);
 		index_t link_intersect(const index_t & v_a, const index_t & v_b);
-		void edge_collapse(const index_t *const & sort_edges);
-		void edge_collapse(size_t ne);
+		corr_t * edge_collapse(const index_t *const & sort_edges);
 		corr_t find_corr(const vertex & v, che * mesh, const vector<index_t> & triangles);
 
 	protected:
@@ -143,6 +134,21 @@ class che
 	friend struct CHE;
 };
 
+struct vertex_cu;
+
+struct CHE
+{
+	length_t n_vertices;
+	length_t n_faces;
+	length_t n_half_edges;
+
+	vertex_cu * GT;
+	index_t * VT;
+	index_t * OT;
+	index_t * EVT;
+
+	CHE(che * mesh);
+};
 
 #endif // CHE_H
 

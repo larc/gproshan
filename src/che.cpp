@@ -858,9 +858,15 @@ index_t che::link_intersect(const index_t & v_a, const index_t & v_b)
 	return intersect;
 }
 
-void che::edge_collapse(const index_t *const & sort_edges)
+corr_t * che::edge_collapse(const index_t *const & sort_edges)
 {
-	if(n_faces_ < 2) return;
+	if(n_faces_ < 2) return NULL;
+	
+	// init default corr
+	corr_t * corr = new corr_t[n_vertices_];
+	#pragma omp parallel for
+	for(index_t v = 0; v < n_vertices_; v++)
+		corr[v].init(EVT[v]);
 
 	short * faces_fixed = new short[n_faces_];
 	memset(faces_fixed, 0, sizeof(short) * n_faces_);
@@ -948,6 +954,43 @@ void che::edge_collapse(const index_t *const & sort_edges)
 
 	delete [] faces_fixed;
 	delete [] deleted_vertices;
+
+	return corr;
+}
+
+corr_t che::find_corr(const vertex & v, che * mesh, const vector<index_t> & he_trigs)
+{
+	distance_t d, dist = INFINITY;
+	corr_t corr, corr_d;
+
+	mat A(4, 3, fill::ones);
+	vec x(4);
+	x(0) = v.x; x(1) = v.y; x(2) = v.z; x(3) = 1;
+ 
+	vec alpha(&corr.alpha.x, 3, false, true);
+	vertex aux;
+
+	for(const index_t & he: he_trigs)
+	{
+		corr.t = trig(he);
+
+		aux = mesh->gt_vt(he);
+		A(0, 0) = aux.x; A(1, 0) = aux.y; A(2, 0) = aux.z;
+		
+		aux = mesh->gt_vt(next(he));	
+		A(0, 1) = aux.x; A(1, 1) = aux.y; A(2, 1) = aux.z;
+	
+		aux = mesh->gt_vt(prev(he));
+		A(0, 2) = aux.x; A(1, 2) = aux.y; A(2, 2) = aux.z;
+
+		alpha = inv(A.t() * A) * A.t() * x;
+		d = norm(x - A * alpha);
+		
+		if(d < dist)
+			corr_d = corr;	
+	}
+	
+	return corr_d;
 }
 
 void che::init(const vertex * vertices, const index_t & n_v, const index_t * faces, const index_t & n_f)
@@ -1094,47 +1137,6 @@ void che::update_bt()
 	else BT = NULL;
 
 	delete [] border;
-}
-
-corr_t che::find_corr(const vertex & v, che * mesh, const vector<index_t> & he_trigs)
-{
-	vertex_t d, dist = INFINITY;
-	corr_t corr;
-	vertex n, x, aux_v;
-	mat A(4,3);
-
-	for(const index_t & he: he_trigs)
-	{
-		n = mesh->normal_he(he);
-		aux_v = mesh->gt_vt(he);
-		d = (n, v - aux_v);
-		x = v - d * n + aux_v;
-
-		if(abs(d) < dist)
-		{
-			corr.t = trig(he);
-			A(0,0) = aux_v.x;
-			A(1,0) = aux_v.y;
-			A(2,0) = aux_v.z;
-
-			aux_v = mesh->gt_vt(prev(he));
-			A(0,1) = aux_v.x;
-			A(1,1) = aux_v.y;
-			A(2,1) = aux_v.z;
-
-			aux_v = mesh->gt_vt(next(he));
-			A(0,2) = aux_v.x;
-			A(1,2) = aux_v.y;
-			A(2,2) = aux_v.z;
-
-			vec aux_x(&x[0], 3, false, true);
-
-			vec alpha( & corr.alpha[0], 3, /*copy_aux_mem*/ false, /*strict*/true);
-			alpha = solve(A,aux_x);
-		}
-	}
-	
-	return corr;
 }
 
 void che::delete_me()
