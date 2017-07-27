@@ -4,7 +4,7 @@
 #include "sampling.h"
 #include "che_fill_hole.h"
 #include "che_poisson.h"
-#include "viewer/Viewer.h"
+#include "viewer/viewer.h"
 
 #include <cmath>
 #include <iomanip>

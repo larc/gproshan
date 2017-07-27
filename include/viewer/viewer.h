@@ -6,9 +6,8 @@
 #include <GL/freeglut.h>
 #include <map>
 
-#include "Camera.h"
-#include "Shader.h"
-
+#include "camera.h"
+#include "shader.h"
 #include "che_viewer.h"
 
 #define N_MESHES 10
@@ -51,10 +50,8 @@ struct process_t
 	}
 };
 
-namespace DDG
+class viewer
 {
-	class Viewer
-	{
 	public:
 		static void init(const vector<che *> & _meshes);
 			
@@ -125,15 +122,15 @@ namespace DDG
 		static void drawVectors();
 		static void drawIsolatedVertices();
 		static void pickVertex(int x, int y);	
-		static void storeViewerState();
-		static void restoreViewerState();
+		static void storeviewerState();
+		static void restoreviewerState();
 	
 		static int windowSize[2];
 
-		static Camera camera;
+		static camera cam;
 		// keeps track of view state
 			
-		static Shader shader;
+		static shader shader_program;
 		// shader used to determine appearance of surface
 		
 		static bool render_wireframe;
@@ -146,8 +143,7 @@ namespace DDG
 		static float bgc;
 
 		static map<unsigned char, process_t> processes;
-	};
-}
+};
 
 #endif
 

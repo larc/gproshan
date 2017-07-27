@@ -3,7 +3,7 @@
 #ifndef APP_VIEWER_H
 #define APP_VIEWER_H
 
-#include "viewer/Viewer.h"
+#include "viewer/viewer.h"
 #include "include.h"
 #include "che_off.h"
 #include "fastmarching.h"

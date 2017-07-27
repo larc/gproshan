@@ -5,12 +5,11 @@
 #include <cassert>
 #include <set>
 
-#include "viewer/Viewer.h"
+#include "viewer/viewer.h"
 
 #include <armadillo>
 
 using namespace arma;
-using namespace DDG;
 
 index_t trig(const index_t & he)
 {

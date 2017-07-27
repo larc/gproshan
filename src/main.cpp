@@ -22,11 +22,8 @@
 #include "d_mesh.h"
 #include "d_image_denoising.h"
 #include "app_viewer.h"
+#include "viewer/viewer.h"
 
-//DDG modified
-#include "viewer/Viewer.h"
-
-using namespace DDG;
 using namespace std;
 
 void generate_grid(size_t s, size_t f, string name);

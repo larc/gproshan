@@ -2,12 +2,11 @@
 
 #include "che_off.h"
 #include "laplacian.h"
-#include "viewer/Viewer.h"
+#include "viewer/viewer.h"
 
 #include <queue>
 
 using namespace std;
-using namespace DDG;
 
 bool operator<(const border_t & a, const border_t & b)
 {
@@ -54,7 +53,7 @@ che * mesh_simple_fill_hole(che * mesh, const vector<index_t> & border_vertices,
 		
 		ve = E.t() * ve;
 		vertices.push_back(*((vertex *) ve.memptr()));
-		Viewer::other_vertices.push_back(vertices.back());
+		viewer::other_vertices.push_back(vertices.back());
 	}
 
 	return fill_hole_front_angles(vertices, mesh->mean_edge(), normal, max_iter);
@@ -253,7 +252,7 @@ void split_border(vector<pair<index_t, index_t> > & split_indices, che * mesh, c
 			{
 				cerr << b << " " << i << endl;
 				a = b;
-//				Viewer::select_vertices.push_back(border_vertices[i]);
+//				viewer::select_vertices.push_back(border_vertices[i]);
 			}
 		}
 	}
@@ -375,9 +374,9 @@ che * fill_hole_front_angles_test(che * mesh, vector<index_t> & front_vertices, 
 		neighbors[v][o] = n_v;
 
 		front.push(border_t(tmp_vertices, v, neighbors[v], o, tmp_normals[v]));
-	//	Viewer::vectors.push_back(vertex(tmp_vertices[v](0), tmp_vertices[v](1), tmp_vertices[v](2)));
+	//	viewer::vectors.push_back(vertex(tmp_vertices[v](0), tmp_vertices[v](1), tmp_vertices[v](2)));
 	//	vec normal = tmp_vertices[v] + lenght * 3 * normalise(tmp_normals[v]);
-	//	Viewer::vectors.push_back(vertex(normal(0), normal(1), normal(2)));
+	//	viewer::vectors.push_back(vertex(normal(0), normal(1), normal(2)));
 	}
 
 	border_t top;
@@ -552,9 +551,9 @@ che * fill_hole_front_angles_test(che * mesh, vector<index_t> & front_vertices, 
 	
 	for(index_t v = 0; false && v < tmp_vertices.size(); v++)
 	{
-	//	Viewer::vectors.push_back(vertex(tmp_vertices[v](0), tmp_vertices[v](1), tmp_vertices[v](2)));
+	//	viewer::vectors.push_back(vertex(tmp_vertices[v](0), tmp_vertices[v](1), tmp_vertices[v](2)));
 		vec normal = tmp_vertices[v] + lenght * 3 * normalise(tmp_normals[v]);
-	//	Viewer::vectors.push_back(vertex(normal(0), normal(1), normal(2)));
+	//	viewer::vectors.push_back(vertex(normal(0), normal(1), normal(2)));
 	}
 
 	debug(perimeter)
@@ -814,17 +813,17 @@ che * fill_hole_front_angles(vector<vertex> & vertices, const vertex_t & lenght,
 /*
 	vec axis;
 	axis = avg + E.col(0) * lenght * 3;
-	Viewer::vectors.push_back(vertex(avg(0), avg(1), avg(2)));
-	Viewer::vectors.push_back(vertex(axis(0), axis(1), axis(2)));
+	viewer::vectors.push_back(vertex(avg(0), avg(1), avg(2)));
+	viewer::vectors.push_back(vertex(axis(0), axis(1), axis(2)));
 	axis = avg + E.col(1) * lenght * 3;
-	Viewer::vectors.push_back(vertex(avg(0), avg(1), avg(2)));
-	Viewer::vectors.push_back(vertex(axis(0), axis(1), axis(2)));
+	viewer::vectors.push_back(vertex(avg(0), avg(1), avg(2)));
+	viewer::vectors.push_back(vertex(axis(0), axis(1), axis(2)));
 	axis = avg + E.col(2) * lenght * 3;
-	Viewer::vectors.push_back(vertex(avg(0), avg(1), avg(2)));
-	Viewer::vectors.push_back(vertex(axis(0), axis(1), axis(2)));
+	viewer::vectors.push_back(vertex(avg(0), avg(1), avg(2)));
+	viewer::vectors.push_back(vertex(axis(0), axis(1), axis(2)));
 	axis = avg + normalise(orientation) * lenght * 3;
-	Viewer::vectors.push_back(vertex(avg(0), avg(1), avg(2)));
-	Viewer::vectors.push_back(vertex(axis(0), axis(1), axis(2)));
+	viewer::vectors.push_back(vertex(avg(0), avg(1), avg(2)));
+	viewer::vectors.push_back(vertex(axis(0), axis(1), axis(2)));
 */
 	vertices.clear();
 	vertices.reserve(tmp_vertices.size());
