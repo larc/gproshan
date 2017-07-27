@@ -874,6 +874,7 @@ corr_t * che::edge_collapse(const index_t *const & sort_edges)
 	memset(deleted_vertices, 0, sizeof(index_t) * n_vertices_);
 
 	index_t e_d, he_d, ohe_d, va, vb;
+	vertex aux;
 
 	bool is_collapse;
 	
@@ -918,12 +919,20 @@ corr_t * che::edge_collapse(const index_t *const & sort_edges)
 				
 				faces_fixed[trig(he_d)] = -1;
 				if(ohe_d != NIL) faces_fixed[trig(ohe_d)] = -1;
-
-				deleted_vertices[vb] = 1;
-				GT[va] = (GT[va] + GT[vb]) / 2;
-				
 				for_star(he, this, vb)
 					VT[he] = va;
+
+				deleted_vertices[vb] = 1;
+				
+				aux = GT[va];
+				GT[va] = (GT[va] + GT[vb]) / 2;
+				
+				vector<index_t> he_trigs;
+				for_star(he, this, va)
+					he_trigs.push_back(trig(he) * P);				
+				corr[va] = find_corr(aux, he_trigs);
+				corr[vb] = find_corr(GT[vb], he_trigs);
+					
 				EVT[vb] = NIL;
 			}
 		}
@@ -958,7 +967,7 @@ corr_t * che::edge_collapse(const index_t *const & sort_edges)
 	return corr;
 }
 
-corr_t che::find_corr(const vertex & v, che * mesh, const vector<index_t> & he_trigs)
+corr_t che::find_corr(const vertex & v, const vector<index_t> & he_trigs)
 {
 	distance_t d, dist = INFINITY;
 	corr_t corr, corr_d;
@@ -974,16 +983,16 @@ corr_t che::find_corr(const vertex & v, che * mesh, const vector<index_t> & he_t
 	{
 		corr.t = trig(he);
 
-		aux = mesh->gt_vt(he);
+		aux = gt_vt(he);
 		A(0, 0) = aux.x; A(1, 0) = aux.y; A(2, 0) = aux.z;
 		
-		aux = mesh->gt_vt(next(he));	
+		aux = gt_vt(next(he));	
 		A(0, 1) = aux.x; A(1, 1) = aux.y; A(2, 1) = aux.z;
 	
-		aux = mesh->gt_vt(prev(he));
+		aux = gt_vt(prev(he));
 		A(0, 2) = aux.x; A(1, 2) = aux.y; A(2, 2) = aux.z;
 
-		alpha = inv(A.t() * A) * A.t() * x;
+		alpha = solve(A, x);
 		d = norm(x - A * alpha);
 		
 		if(d < dist)

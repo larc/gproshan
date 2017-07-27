@@ -114,7 +114,7 @@ class che
 		void set_head_vertices(index_t * head, const size_t & n);
 		index_t link_intersect(const index_t & v_a, const index_t & v_b);
 		corr_t * edge_collapse(const index_t *const & sort_edges);
-		corr_t find_corr(const vertex & v, che * mesh, const vector<index_t> & triangles);
+		corr_t find_corr(const vertex & v, const vector<index_t> & triangles);
 
 	protected:
 		void delete_me();
