@@ -86,8 +86,6 @@ struct patch
 	}
 };
 
-void dictionary_learning_process(che * mesh, vector<index_t> & points, const size_t & K, const size_t & m, size_t & M, const distance_t & f, const index_t & pf);
-
 vec gaussian(mat & xy, vertex_t sigma, vertex_t cx, vertex_t cy);
 
 vec cossine(mat & xy, distance_t radio, size_t K);

@@ -25,7 +25,7 @@ CUDA_SOURCES := $(wildcard src/cuda/*.cu)
 OBJECTS :=	$(addprefix obj/,$(notdir $(SOURCES:.cpp=.o)))
 CUDA_OBJECTS :=	$(addprefix obj/,$(notdir $(CUDA_SOURCES:.cu=_cuda.o)))
 
-all: $(TARGET)
+all: $(TARGET) | tmp
 
 $(TARGET): $(OBJECTS) $(CUDA_OBJECTS) obj/link_cuda.o
 	$(LD) $(OBJECTS) $(CUDA_OBJECTS) obj/link_cuda.o -o $(TARGET) $(CFLAGS) $(LFLAGS) $(LIBS)
@@ -44,6 +44,9 @@ obj/link_cuda.o: $(CUDA_OBJECTS) | obj
 
 obj:
 	mkdir obj
+
+tmp:
+	mkdir tmp
 
 clean:
 	rm -f $(OBJECTS) $(CUDA_OBJECTS)

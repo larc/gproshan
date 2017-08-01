@@ -14,6 +14,7 @@ class decimation
 	private:
 		mat * Q;
 		che * mesh;
+		corr_t * corr;
 	
 	public:
 		decimation(che * mesh);

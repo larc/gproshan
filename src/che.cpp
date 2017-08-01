@@ -953,16 +953,26 @@ corr_t * che::edge_collapse(const index_t *const & sort_edges)
 			new_vertices.push_back(GT[v]);
 		}
 	}
-
-	for(index_t he = 0; he < n_half_edges_; he++)
-		if(faces_fixed[trig(he)] > -1)
-			new_faces.push_back(VT[he] - deleted_vertices[VT[he]]);
 	
+	index_t * map_he = new index_t[n_half_edges_];
+	memset(map_he, 255, sizeof(index_t) * n_half_edges_);
+
+	for(index_t n_he = 0, he = 0; he < n_half_edges_; he++)
+		if(faces_fixed[trig(he)] > -1)
+		{
+			new_faces.push_back(VT[he] - deleted_vertices[VT[he]]);
+			map_he[he] = n_he++;
+		}
+
+	for(index_t v = 0; v < n_vertices_; v++)
+		corr[v].t = trig(map_he[corr[v].t * P]);
+
 	delete_me();
 	init(new_vertices.data(), new_vertices.size(), new_faces.data(), new_faces.size() / P);
 
 	delete [] faces_fixed;
 	delete [] deleted_vertices;
+	delete [] map_he;
 
 	return corr;
 }

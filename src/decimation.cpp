@@ -10,7 +10,8 @@ decimation::decimation(che * mesh_)
 
 decimation::~decimation()
 {
-	delete [] Q;
+	if(Q) delete [] Q;
+//	if(corr) delete [] corr;
 }
 
 void decimation::execute()
@@ -21,7 +22,7 @@ void decimation::execute()
 	vertex_t * error_edges = new vertex_t[mesh->n_edges()];
 
 	order_edges(sort_edges, error_edges);
-	mesh->edge_collapse(sort_edges);
+	corr = mesh->edge_collapse(sort_edges);
 
 	delete [] sort_edges;
 	delete [] error_edges;
