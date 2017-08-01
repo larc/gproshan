@@ -19,6 +19,7 @@ class decimation
 	public:
 		decimation(che * mesh);
 		~decimation();
+		operator const corr_t * ();
 	
 	private:
 		void execute();

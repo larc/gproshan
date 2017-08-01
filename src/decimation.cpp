@@ -11,7 +11,12 @@ decimation::decimation(che * mesh_)
 decimation::~decimation()
 {
 	if(Q) delete [] Q;
-//	if(corr) delete [] corr;
+	if(corr) delete [] corr;
+}
+
+decimation::operator const corr_t * ()
+{
+	return corr;
 }
 
 void decimation::execute()

@@ -163,11 +163,12 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 	{
 		string fmesh_dict = "tmp/" + mesh->name() + '_' + to_string(K) + ".a_dict";
 	
-		A.randu();
 		debug(fmesh_dict)
 	
 		if( !A.load(fmesh_dict))
 		{
+			A.randu(K, m);
+			
 			d_message(Dictionary learning...)	
 			TIC(time)
 			KSVDT(A, patches, M, L);
@@ -669,22 +670,22 @@ size_t sort_first_valid_vertex(index_t * indexes, const size_t & size, const vec
 
 void mesh_denoising(che * mesh, vector<index_t> & points, const size_t & K, const size_t & m, size_t & M, const distance_t & f, const bool & learn)
 {
-	dictionary_learning_process(mesh, points, K, m, M, f, 0, 0);
+	dictionary_learning_process(mesh, points, K, m, M, f, 0, learn);
 }
 
 void mesh_inpaiting(che * mesh, vector<index_t> & points, size_t K, size_t m, size_t M, double f, const bool & learn)
 {
-	dictionary_learning_process(mesh, points, K, m, M, f, 2, 0);
+	dictionary_learning_process(mesh, points, K, m, M, f, 2, learn);
 }
 
 void mesh_super_resolution(che * mesh, vector<index_t> & points, size_t K, size_t m, size_t M, double f, const bool & learn)
 {
-	dictionary_learning_process(mesh, points, K, m, M, f, 1, 0);
+	dictionary_learning_process(mesh, points, K, m, M, f, 1, learn);
 }
 
 void mesh_iterative_inpaiting(che * mesh, vector<index_t> & points, size_t K, size_t m, size_t M, double f, const bool & learn)
 {
-	dictionary_learning_process(mesh, points, K, m, M, f, 3, 0);
+	dictionary_learning_process(mesh, points, K, m, M, f, 3, learn);
 }
 
 void plot_atoms(phi_function_t phi, params_t params, const distance_t & radio, const mat & A, string file)

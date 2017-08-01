@@ -640,6 +640,8 @@ void viewer_process_edge_collapse()
 
 	if(viewer::corr_mesh[viewer::current])
 		delete [] viewer::corr_mesh[viewer::current];
+	
+	const corr_t * corr = sampling;
 
 	if(viewer::n_meshes < 2)
 		viewer::add_mesh({new che_off(viewer::mesh()->filename())});
