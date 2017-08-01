@@ -15,7 +15,7 @@
 #include <functional>
 #include <cassert>
 
-void dictionary_learning_process(che * mesh, vector<index_t> & points, const size_t & K, const size_t & m, size_t & M, const distance_t & f, const index_t & pf)
+void dictionary_learning_process(che * mesh, vector<index_t> & points, const size_t & K, const size_t & m, size_t & M, const distance_t & f, const index_t & pf, bool & op_dict)
 {
 	patch::del_index = false;
 	bool all_points = M ? false : true;
@@ -153,14 +153,29 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 	// Dictionary learning ------------------------------------------------------------------------
 
 	size_t L = 10;	
-	mat A(K, m, fill::eye);
 	mat alpha(m, M, fill::zeros);
-
-	d_message(Dictionary learning...)	
-	TIC(time)
-	//KSVDT(A, patches, M, L);
-	TOC(time)
-	debug(time)
+	mat A(K, m);
+	if( !op_dict)
+	{
+		A.eye();
+	}
+	else
+	{
+		string fmesh_dict = "tmp/" + mesh->name() + '_' + to_string(K) + ".a_dict";
+	
+		A.randu();
+		debug(fmesh_dict)
+	
+		if( !A.load(fmesh_dict))
+		{
+			d_message(Dictionary learning...)	
+			TIC(time)
+			KSVDT(A, patches, M, L);
+			TOC(time)
+			debug(time)
+			A.save(fmesh_dict);
+		}
+	}
 
 	plot_atoms(phi_cossine, params, radio, A);
 
