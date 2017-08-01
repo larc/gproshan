@@ -667,24 +667,24 @@ size_t sort_first_valid_vertex(index_t * indexes, const size_t & size, const vec
 	return i;
 }
 
-void mesh_denoising(che * mesh, vector<index_t> & points, const size_t & K, const size_t & m, size_t & M, const distance_t & f)
+void mesh_denoising(che * mesh, vector<index_t> & points, const size_t & K, const size_t & m, size_t & M, const distance_t & f, const bool & learn)
 {
-	dictionary_learning_process(mesh, points, K, m, M, f, 0);
+	dictionary_learning_process(mesh, points, K, m, M, f, 0, 0);
 }
 
-void mesh_inpaiting(che * mesh, vector<index_t> & points, size_t K, size_t m, size_t M, double f)
+void mesh_inpaiting(che * mesh, vector<index_t> & points, size_t K, size_t m, size_t M, double f, const bool & learn)
 {
-	dictionary_learning_process(mesh, points, K, m, M, f, 2);
+	dictionary_learning_process(mesh, points, K, m, M, f, 2, 0);
 }
 
-void mesh_super_resolution(che * mesh, vector<index_t> & points, size_t K, size_t m, size_t M, double f)
+void mesh_super_resolution(che * mesh, vector<index_t> & points, size_t K, size_t m, size_t M, double f, const bool & learn)
 {
-	dictionary_learning_process(mesh, points, K, m, M, f, 1);
+	dictionary_learning_process(mesh, points, K, m, M, f, 1, 0);
 }
 
-void mesh_iterative_inpaiting(che * mesh, vector<index_t> & points, size_t K, size_t m, size_t M, double f)
+void mesh_iterative_inpaiting(che * mesh, vector<index_t> & points, size_t K, size_t m, size_t M, double f, const bool & learn)
 {
-	dictionary_learning_process(mesh, points, K, m, M, f, 3);
+	dictionary_learning_process(mesh, points, K, m, M, f, 3, 0);
 }
 
 void plot_atoms(phi_function_t phi, params_t params, const distance_t & radio, const mat & A, string file)

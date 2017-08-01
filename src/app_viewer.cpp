@@ -274,9 +274,10 @@ void viewer_process_denoising()
 	
 	size_t K, m, M;
 	distance_t f;
-	cin >> K >> m >> M >> f;
+	bool learn;
+	cin >> K >> m >> M >> f >> learn;
 
-	mesh_denoising(viewer::mesh(), viewer::select_vertices, K, m, M, f);
+	mesh_denoising(viewer::mesh(), viewer::select_vertices, K, m, M, f, learn);
 
 	viewer::mesh().update_normals();
 }
@@ -287,9 +288,10 @@ void viewer_process_super_resolution()
 	
 	size_t K, m, M;
 	distance_t f;
-	cin >> K >> m >> M >> f;
+	bool learn;
+	cin >> K >> m >> M >> f >> learn;
 
-	mesh_super_resolution(viewer::mesh(), viewer::select_vertices, K, m, M,f);
+	mesh_super_resolution(viewer::mesh(), viewer::select_vertices, K, m, M,f, learn);
 }	
 
 void viewer_process_inpaiting()
@@ -298,9 +300,10 @@ void viewer_process_inpaiting()
 	
 	size_t K, m, M;
 	distance_t f;
-	cin >> K >> m >> M >> f;
+	bool learn;
+	cin >> K >> m >> M >> f >> learn;
 
-	mesh_inpaiting(viewer::mesh(), viewer::select_vertices, K, m, M,f);
+	mesh_inpaiting(viewer::mesh(), viewer::select_vertices, K, m, M, f, learn);
 	
 	paint_holes_vertices();
 }
@@ -312,11 +315,12 @@ void viewer_process_iterative_inpaiting()
 	
 	size_t K, m, M;
 	distance_t f;
-	cin >> K >> m >> M >> f;
+	bool learn;
+	cin >> K >> m >> M >> f >> learn;
 
 	size_t n_v = viewer::mesh()->n_vertices();
 	
-	mesh_iterative_inpaiting(viewer::mesh(), viewer::select_vertices, K, m, M,f);
+	mesh_iterative_inpaiting(viewer::mesh(), viewer::select_vertices, K, m, M,f, learn);
 
 	paint_holes_vertices();
 }
