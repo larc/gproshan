@@ -98,7 +98,7 @@ void phi_gaussian(mat & phi, mat & xy, void ** params);
 
 void phi_cossine(mat & phi, mat & xy, void ** params);
 
-void phi_cossine(ostream & os, params_t params, const size_t & K);
+void phi_cossine(ostream & os, params_t params, const size_t & freq);
 
 void atoms_cossine(ostream & os, params_t params, const size_t & K, const vec & A);
 

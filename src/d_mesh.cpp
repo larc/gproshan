@@ -75,18 +75,17 @@ void phi_cossine(mat & phi, mat & xy, void ** params)
 	}
 }
 
-void phi_cossine(ostream & os, params_t params, const size_t & K)
+void phi_cossine(ostream & os, params_t params, const size_t & freq)
 {
 	distance_t & radio = *( (distance_t * ) params[0] );
 	size_t & r = *( (size_t * ) params[1] );
 
-	size_t n = K / r;
 	vertex_t d = 1.0 / (r - 1);
 	vertex_t c;
 	
-	os << "set multiplot layout " << n << "," << r << " rowsfirst scale 1.2;" << endl;
+	os << "set multiplot layout " << freq  << "," << r << " rowsfirst scale 1.2;" << endl;
 	
-	for(size_t k = 0, ni = 1; ni <= n; ni++ )
+	for(size_t k = 0, ni = 1; ni <= freq; ni++ )
 	for(vertex_t alpha = 0; alpha <= 1; alpha += d, k++)
 	{
 		c = ni * M_PI / radio;

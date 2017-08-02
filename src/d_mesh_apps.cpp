@@ -15,8 +15,9 @@
 #include <functional>
 #include <cassert>
 
-void dictionary_learning_process(che * mesh, vector<index_t> & points, const size_t & K, const size_t & m, size_t & M, const distance_t & f, const index_t & pf, const bool & op_dict)
+void dictionary_learning_process(che * mesh, vector<index_t> & points, const size_t & freq,  size_t & rt, const size_t & m, size_t & M, const distance_t & f, const index_t & pf, const bool & op_dict)
 {
+	size_t K = freq * rt;
 	patch::del_index = false;
 	bool all_points = M ? false : true;
 	
@@ -46,10 +47,9 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 	debug(radio)
 	debug(max_dist)
 	
-	size_t r = 5;
 	size_t min_nvp = 36; //MInimo numero de vertices por patche
-	params_t params = { & radio, & r};
-	plot_phi(phi_cossine, params, radio, K);
+	params_t params = { & radio, & rt};
+	plot_phi(phi_cossine, params, radio, freq, rt);
 	
 	size_t n_vertices = mesh->n_vertices();
 		
@@ -668,24 +668,24 @@ size_t sort_first_valid_vertex(index_t * indexes, const size_t & size, const vec
 	return i;
 }
 
-void mesh_denoising(che * mesh, vector<index_t> & points, const size_t & K, const size_t & m, size_t & M, const distance_t & f, const bool & learn)
+void mesh_denoising(che * mesh, vector<index_t> & points, const size_t & freq, size_t & rt, const size_t & m, size_t & M, const distance_t & f, const bool & learn)
 {
-	dictionary_learning_process(mesh, points, K, m, M, f, 0, learn);
+	dictionary_learning_process(mesh, points, freq, rt, m, M, f, 0, learn);
 }
 
-void mesh_inpaiting(che * mesh, vector<index_t> & points, size_t K, size_t m, size_t M, double f, const bool & learn)
+void mesh_inpaiting(che * mesh, vector<index_t> & points, size_t freq, size_t rt, size_t m, size_t M, double f, const bool & learn)
 {
-	dictionary_learning_process(mesh, points, K, m, M, f, 2, learn);
+	dictionary_learning_process(mesh, points, freq, rt,  m, M, f, 2, learn);
 }
 
-void mesh_super_resolution(che * mesh, vector<index_t> & points, size_t K, size_t m, size_t M, double f, const bool & learn)
+void mesh_super_resolution(che * mesh, vector<index_t> & points, size_t freq, size_t rt, size_t m, size_t M, double f, const bool & learn)
 {
-	dictionary_learning_process(mesh, points, K, m, M, f, 1, learn);
+	dictionary_learning_process(mesh, points, freq, rt, m, M, f, 1, learn);
 }
 
-void mesh_iterative_inpaiting(che * mesh, vector<index_t> & points, size_t K, size_t m, size_t M, double f, const bool & learn)
+void mesh_iterative_inpaiting(che * mesh, vector<index_t> & points, size_t freq, size_t rt, size_t m, size_t M, double f, const bool & learn)
 {
-	dictionary_learning_process(mesh, points, K, m, M, f, 3, learn);
+	dictionary_learning_process(mesh, points, freq, rt, m, M, f, 3, learn);
 }
 
 void plot_atoms(phi_function_t phi, params_t params, const distance_t & radio, const mat & A, string file)
@@ -733,7 +733,7 @@ void plot_atoms(phi_function_t phi, params_t params, const distance_t & radio, c
 	debug(system(file.c_str()));
 }
 
-void plot_phi(phi_function_t phi, params_t params, const vertex_t & radio, const size_t & K, string file)
+void plot_phi(phi_function_t phi, params_t params, const vertex_t & radio, const size_t & freq, const size_t & rt, string file)
 {
 //	vec & cx = *( (vec * ) params[0] );
 //	vec & cy = *( (vec * ) params[1] );
@@ -755,8 +755,8 @@ void plot_phi(phi_function_t phi, params_t params, const vertex_t & radio, const
 	os << "set pm3d at b;" << endl;
 	os << "unset colorbox;" << endl;
 
-	debug(K)
-	phi_cossine(os, params, K);
+	debug(freq * rt)
+	phi_cossine(os, params, freq);
 	//for(index_t k = 0; k < K; k++)
 	//	os << "splot exp( - ((x - " << cx(k) << ")**2 + (y - " << cy(k) << ")**2 ) / (2*sigma**2) );" << endl;
 
