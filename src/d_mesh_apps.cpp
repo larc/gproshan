@@ -19,7 +19,7 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 {
 	size_t K = freq * rt;
 	patch::del_index = false;
-	bool all_points = M ? false : true;
+	bool all_points = M == 0;
 	
 	distance_t max_dist, radio;
 
@@ -27,15 +27,16 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 	{
 		if(!load_sampling(points, radio, mesh, M)) return;
 		max_dist = radio;
+		assert(M == points.size());
 	}
 	else
 	{
 		M = mesh->n_vertices();
 		max_dist = radio = 3 * mesh->mean_edge();
 		debug_me(all vertices)
-		debug(M)
 	}
-
+	debug(M)
+	
 	auto p_vertex = [&](const index_t & s) -> index_t
 	{
 		if(all_points) return s;
@@ -67,7 +68,6 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 	double time;
 
  	poisson(mesh, n_vertices, 2);*/
-	M = mesh->n_vertices();
 	
 	double time;
 	n_vertices = mesh->n_vertices();
@@ -99,7 +99,6 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 			index_t v = p_vertex(s);
 
 			patch & p = patches[s];
-			
 			geodesics fm(mesh, { v }, NIL, radio);
 			p.n = fm.get_n_radio();
 
