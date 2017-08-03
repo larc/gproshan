@@ -76,6 +76,7 @@ class che
 		vertex gradient_he(const index_t & he, const distance_t *const & f) const;
 		vertex gradient(const index_t & v, const distance_t *const & f);
 		vertex barycenter(const index_t & t) const;
+		vertex corr_vertex(corr_t & corr) const;
 		area_t cotan(const index_t & he) const;
 		vertex_t mean_edge() const;
 		size_t memory() const;

@@ -614,6 +614,7 @@ void viewer::drawIsolatedVertices()
 void viewer::draw_corr()
 {
 	if(n_meshes < 2) return;
+	if(!corr_mesh[current].is_loaded()) return;
 	
 	shader_program.disable();
 
@@ -623,11 +624,14 @@ void viewer::draw_corr()
 	glColor3f(0.8, .0, .0);
 	glLineWidth(2.0);
 
+	vertex corr_v;
+
 	glBegin(GL_LINES);
 	for(index_t & v: select_vertices)
 	{
-		glVertex3v(&meshes[0]->gt(v).x);
-		glVertex3v(&meshes[1]->gt(v).x);
+		corr_v = meshes[corr_mesh[current].mesh_i]->corr_vertex(corr_mesh[current][v]);
+		glVertex3v(&meshes[current]->gt(v).x);
+		glVertex3v(&corr_v.x);
 	}
 	glEnd();
 
@@ -640,11 +644,12 @@ void viewer::draw_corr()
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glColor3f(0.8, 0.0, 0.0);
 	
-	double h = 0.015 * cam.zoom; 
+	double h = 0.008 * cam.zoom; 
 	for(index_t & v: select_vertices)
 	{
 		glPushMatrix();
-		glTranslated(meshes[1]->gt(v).x, meshes[1]->gt(v).y, meshes[1]->gt(v).z);
+		corr_v = meshes[corr_mesh[current].mesh_i]->corr_vertex(corr_mesh[current][v]);
+		glTranslated(corr_v.x, corr_v.y, corr_v.z);
 		glutSolidSphere(h, 10, 10);
 		glPopMatrix();
 	}
@@ -764,6 +769,8 @@ void viewer::pickVertex(int x, int y)
 	{
 		debug(index)
 		debug(mesh().color(index))
+		if(corr_mesh[current].is_loaded())
+			debug(corr_mesh[current][index].alpha)
 		select_vertices.push_back(index);
 	}
 }

@@ -272,6 +272,13 @@ vertex che::barycenter(const index_t & t) const
 	return bc / P;
 }
 
+vertex che::corr_vertex(corr_t & corr) const
+{
+	index_t he = corr.t * P;
+	assert(he < n_half_edges_);
+	return corr.alpha[0] * gt_vt(he) + corr.alpha[1] * gt_vt(next(he)) + corr.alpha[2] * gt_vt(prev(he));
+}
+
 area_t che::cotan(const index_t & he) const
 {
 	if(he == NIL) return 0;
@@ -874,10 +881,21 @@ corr_t * che::edge_collapse(const index_t *const & sort_edges)
 	memset(deleted_vertices, 0, sizeof(index_t) * n_vertices_);
 
 	index_t e_d, he_d, ohe_d, va, vb;
-	vertex aux;
+	vertex aux_va, aux_vb;
+
+	// update corr to vertex opposite to edge
+	auto update_corr_v = [this, &corr](const index_t & he)
+	{
+		index_t v = VT[prev(he)];
+		if(trig(EVT[v]) == trig(he))
+		{
+			EVT[v] = OT[prev(he)];
+			corr[v].init(EVT[v]);
+		}
+	};
 
 	bool is_collapse;
-	
+
 	for(index_t e = 0; e < n_edges_; e++)
 	{
 		//e_d = ne;
@@ -912,11 +930,16 @@ corr_t * che::edge_collapse(const index_t *const & sort_edges)
 			
 			if(is_collapse)
 			{
+				update_corr_v(he_d);
+				if(ohe_d != NIL)
+					update_corr_v(ohe_d);
+
 				for_star(he, this, va)
 					if(!faces_fixed[trig(he)]) faces_fixed[trig(he)] = 1;
+
 				for_star(he, this, vb)
 					if(!faces_fixed[trig(he)]) faces_fixed[trig(he)] = 1;
-				
+
 				faces_fixed[trig(he_d)] = -1;
 				if(ohe_d != NIL) faces_fixed[trig(ohe_d)] = -1;
 				for_star(he, this, vb)
@@ -924,14 +947,20 @@ corr_t * che::edge_collapse(const index_t *const & sort_edges)
 
 				deleted_vertices[vb] = 1;
 				
-				aux = GT[va];
-				GT[va] = (GT[va] + GT[vb]) / 2;
+				aux_va = GT[va];
+				aux_vb = GT[vb];
+				GT[va] = GT[vb] = (GT[va] + GT[vb]) / 2;
 				
 				vector<index_t> he_trigs;
 				for_star(he, this, va)
+				if(faces_fixed[trig(he)] > -1)
 					he_trigs.push_back(trig(he) * P);				
-				corr[va] = find_corr(aux, he_trigs);
-				corr[vb] = find_corr(GT[vb], he_trigs);
+				for_star(he, this, vb)
+				if(faces_fixed[trig(he)] > -1)
+					he_trigs.push_back(trig(he) * P);				
+				
+				corr[va] = find_corr(aux_va, he_trigs);
+				corr[vb] = find_corr(aux_vb, he_trigs);
 					
 				EVT[vb] = NIL;
 			}
@@ -965,7 +994,11 @@ corr_t * che::edge_collapse(const index_t *const & sort_edges)
 		}
 
 	for(index_t v = 0; v < n_vertices_; v++)
+	{
+		assert(corr[v].t != NIL);
+		assert(faces_fixed[corr[v].t] > -1);
 		corr[v].t = trig(map_he[corr[v].t * P]);
+	}
 
 	delete_me();
 	init(new_vertices.data(), new_vertices.size(), new_faces.data(), new_faces.size() / P);

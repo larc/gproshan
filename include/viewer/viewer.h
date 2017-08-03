@@ -5,6 +5,7 @@
 #include <GL/glut.h>
 #include <GL/freeglut.h>
 #include <map>
+#include <cstring>
 
 #include "camera.h"
 #include "shader.h"
@@ -24,7 +25,16 @@ struct vcorr_t
 		mesh_i = NIL;
 		corr = NULL;
 	}
-	
+
+	void init(const size_t & n, const index_t & _mesh_i, const corr_t * _corr)
+	{
+		if(corr) delete [] corr;
+		corr = new corr_t[n];
+		
+		mesh_i = _mesh_i;
+		memcpy(corr, _corr, n * sizeof(corr_t));
+	}
+
 	operator corr_t *& ()
 	{
 		return corr;
