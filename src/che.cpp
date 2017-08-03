@@ -1023,6 +1023,15 @@ corr_t che::find_corr(const vertex & v, const vector<index_t> & he_trigs)
 	vec alpha(&corr.alpha.x, 3, false, true);
 	vertex aux;
 
+	auto update_dist = [&]()
+	{
+		if(d < dist)
+		{
+			dist = d;
+			corr_d = corr;	
+		}
+	};
+
 	for(const index_t & he: he_trigs)
 	{
 		corr.t = trig(he);
@@ -1039,22 +1048,42 @@ corr_t che::find_corr(const vertex & v, const vector<index_t> & he_trigs)
 		alpha = solve(A, x);
 		d = norm(x - A * alpha);
 		
-		if(aaa)
-		{
-			debug(x)
-			debug(A)
-			debug(alpha.t());
-		}
 		if(all(alpha > 0))
 		{
-			if(d < dist)
-				corr_d = corr;	
+			update_dist();
 		}
 		else
 		{
-			x = A * alpha; 
-			mat B;
-			//B = A.col({0,1});
+			auto dist_to_edge = [&](const index_t & i, const index_t & j)
+			{
+				mat B = A.cols(i, j);
+				vec a = solve(B, x);
+				d = norm(x - B * a);
+				
+				corr.alpha = 0;
+			
+				if(all(a > 0))
+				{
+					corr.alpha[i] = a(0);
+					corr.alpha[j] = a(1);
+					update_dist();
+				}
+				else
+				{
+					corr.alpha[i] = 1;
+					d = norm(x - A.col(i));
+					update_dist();
+					
+					corr.alpha[i] = 0;
+					corr.alpha[j] = 1;
+					d = norm(x - A.col(j));
+					update_dist();
+				}
+			};
+			
+			dist_to_edge(0, 1);
+			dist_to_edge(1, 2);
+			dist_to_edge(0, 2);
 		}
 	}
 	
