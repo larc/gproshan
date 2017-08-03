@@ -477,16 +477,11 @@ void viewer_process_farthest_point_sampling()
 	index_t n;
 	cin>>n;
 
-	float e_time_g;
-		
+	distance_t radio;
 	TIC(e_time)
-	distance_t radio = farthest_point_sampling_gpu(viewer::select_vertices, e_time_g, viewer::mesh(), n);
+	load_sampling(viewer::select_vertices, radio, viewer::mesh(), n);
+//	distance_t radio = farthest_point_sampling_gpu(viewer::select_vertices, e_time_g, viewer::mesh(), n);
 	TOC(e_time)
-	
-	debug(radio)
-	debug(viewer::select_vertices.size())
-	debug(e_time)
-	debug(e_time_g)
 }
 
 void viewer_process_fairing_spectral()

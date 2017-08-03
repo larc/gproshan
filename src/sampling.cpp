@@ -252,10 +252,10 @@ bool load_sampling(vector<index_t> & points, distance_t & radio, che * mesh, siz
 			points.push_back(0);
 
 		float time;
-		TIC(time)
 //		radio = parallel_farthest_point_sampling(points, mesh, M);
-		TOC(time)
+		TIC(time)
 		radio = farthest_point_sampling_gpu(points, time, mesh, M, 0);
+		TOC(time)
 		debug(time)
 
 		ofstream os(file);
