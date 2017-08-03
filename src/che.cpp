@@ -1010,6 +1010,7 @@ corr_t * che::edge_collapse(const index_t *const & sort_edges)
 	return corr;
 }
 
+bool aaa = true;
 corr_t che::find_corr(const vertex & v, const vector<index_t> & he_trigs)
 {
 	distance_t d, dist = INFINITY;
@@ -1038,10 +1039,26 @@ corr_t che::find_corr(const vertex & v, const vector<index_t> & he_trigs)
 		alpha = solve(A, x);
 		d = norm(x - A * alpha);
 		
-		if(d < dist)
-			corr_d = corr;	
+		if(aaa)
+		{
+			debug(x)
+			debug(A)
+			debug(alpha.t());
+		}
+		if(all(alpha > 0))
+		{
+			if(d < dist)
+				corr_d = corr;	
+		}
+		else
+		{
+			x = A * alpha; 
+			mat B;
+			//B = A.col({0,1});
+		}
 	}
 	
+	aaa = false;
 	return corr_d;
 }
 
