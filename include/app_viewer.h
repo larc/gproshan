@@ -55,6 +55,7 @@ void viewer_process_delete_non_manifold_vertices();
 void viewer_process_fill_holes_biharmonic_splines();
 void viewer_process_gaussian_curvature();
 void viewer_process_edge_collapse();
+void viewer_select_multiple();
 
 int viewer_main(int nargs, char ** args);
 

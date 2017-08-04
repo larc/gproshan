@@ -49,6 +49,15 @@ void che_viewer::init(che * _mesh)
 	update();
 }
 
+void che_viewer::reload()
+{
+	_n_vertices = 0;
+	mesh->reload();
+	mesh->normalize();
+
+	update();
+}
+
 void che_viewer::update()
 {
 	assert(mesh != NULL);

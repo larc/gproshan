@@ -74,6 +74,7 @@ void che::border(vector<index_t> & border, const index_t & b)
 
 bool che::is_border_v(const index_t & v) const
 {
+	assert(EVT[v] < n_half_edges_);
 	return OT[EVT[v]] == NIL;
 }
 
@@ -889,7 +890,7 @@ corr_t * che::edge_collapse(const index_t *const & sort_edges)
 		index_t v = VT[prev(he)];
 		if(trig(EVT[v]) == trig(he))
 		{
-			EVT[v] = OT[prev(he)];
+			EVT[v] = OT[next(he)];
 			corr[v].init(EVT[v]);
 		}
 	};
@@ -900,6 +901,7 @@ corr_t * che::edge_collapse(const index_t *const & sort_edges)
 	{
 		//e_d = ne;
 		e_d = sort_edges ? sort_edges[e] : rand() % n_edges_;
+		assert(e_d < n_edges_);
 
 		he_d = ET[e_d];
 		ohe_d = OT[he_d];
@@ -907,8 +909,8 @@ corr_t * che::edge_collapse(const index_t *const & sort_edges)
 		vb = VT[next(he_d)];
 		
 		//is_border_v(va) && is_border_v(vb) -> is_border_e(e_d)
-		if( ( !(is_border_v(va) && is_border_v(vb)) || is_border_e(e_d) ) &&
-			!faces_fixed[trig(he_d)] && (ohe_d != NIL ? !faces_fixed[trig(ohe_d)] : true) )
+		if( !faces_fixed[trig(he_d)] && (ohe_d != NIL ? !faces_fixed[trig(ohe_d)] : true) &&
+			(!(is_border_v(va) && is_border_v(vb)) || is_border_e(e_d)) )
 		{
 			is_collapse = link_intersect(va, vb) == (1 + (ohe_d != NIL));
 
@@ -994,11 +996,7 @@ corr_t * che::edge_collapse(const index_t *const & sort_edges)
 		}
 
 	for(index_t v = 0; v < n_vertices_; v++)
-	{
-		assert(corr[v].t != NIL);
-		assert(faces_fixed[corr[v].t] > -1);
 		corr[v].t = trig(map_he[corr[v].t * P]);
-	}
 
 	delete_me();
 	init(new_vertices.data(), new_vertices.size(), new_faces.data(), new_faces.size() / P);
@@ -1006,11 +1004,10 @@ corr_t * che::edge_collapse(const index_t *const & sort_edges)
 	delete [] faces_fixed;
 	delete [] deleted_vertices;
 	delete [] map_he;
-
+	
 	return corr;
 }
 
-bool aaa = true;
 corr_t che::find_corr(const vertex & v, const vector<index_t> & he_trigs)
 {
 	distance_t d, dist = INFINITY;
@@ -1087,7 +1084,6 @@ corr_t che::find_corr(const vertex & v, const vector<index_t> & he_trigs)
 		}
 	}
 	
-	aaa = false;
 	return corr_d;
 }
 

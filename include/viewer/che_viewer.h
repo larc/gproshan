@@ -37,6 +37,7 @@ class che_viewer
 		che *& operator -> ();
 		operator che *& ();
 		void init(che * _mesh);
+		void reload();
 		void update();
 		void update_vbo();
 		void update_normals();

@@ -55,6 +55,7 @@ int viewer_main(int nargs, char ** args)
 	viewer::add_process('B', "Fill holes (biharmonic splines)", viewer_process_fill_holes_biharmonic_splines);
 	viewer::add_process('K', "Gaussian curvature", viewer_process_gaussian_curvature);
 	viewer::add_process('/', "Decimation", viewer_process_edge_collapse);
+	viewer::add_process(':', "Select multiple vertices", viewer_select_multiple);
 	
 	//init viewer	
 	viewer::init(meshes);
@@ -639,5 +640,19 @@ void viewer_process_edge_collapse()
 	
 	viewer::corr_mesh[1].init(viewer::meshes[1]->n_vertices(), viewer::current, sampling);
 	viewer::current = 1;
+}
+
+void viewer_select_multiple()
+{
+	debug_me(Processing:)
+	
+	char line[128];
+	if(fgets(line, 128, stdin))
+	{
+		stringstream ss(line);
+		index_t v;
+		while(ss >> v)
+			viewer::select_vertices.push_back(v);
+	}
 }
 

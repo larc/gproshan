@@ -327,12 +327,11 @@ void viewer::mProcess(function_t pro)
 
 void viewer::mResetMesh()
 {
-	mesh()->reload();
-	mesh()->normalize();
 	select_vertices.clear();
 	other_vertices.clear();
 	vectors.clear();
 	
+	mesh().reload();
 	mesh().debug_info();
 
 	update_vbo();
