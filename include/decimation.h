@@ -15,9 +15,10 @@ class decimation
 		mat * Q;
 		che * mesh;
 		corr_t * corr;
+		index_t levels;
 	
 	public:
-		decimation(che * mesh);
+		decimation(che * mesh, const index_t & levels_ = 1);
 		~decimation();
 		operator const corr_t * ();
 	
