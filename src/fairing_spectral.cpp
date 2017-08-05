@@ -13,35 +13,29 @@ fairing_spectral::~fairing_spectral()
 
 void fairing_spectral::compute(che * shape)
 {
+	double time;
+
 	sp_mat L, A;
-	double start_omp = omp_get_wtime();
-	laplacian(shape, L, A);
-	double time = omp_get_wtime() - start_omp;
-	cout<<"time laplacian: "<<time<<endl;
+	
+	d_message(Compute laplacian...)
+	TIC(time) laplacian(shape, L, A); TOC(time)
+	debug(time)
 
 	positions = new vertex[shape->n_vertices()];
 
-	mat X(shape->n_vertices(), 3);
+	mat X((vertex_t *) positions, 3, shape->n_vertices(), false, true);
+	
+	#pragma omp parallel for
 	for(index_t v = 0; v < shape->n_vertices(); v++)
-	{
-		X(v, 0) = shape->gt(v).x;
-		X(v, 1) = shape->gt(v).y;
-		X(v, 2) = shape->gt(v).z;
-	}
+		positions[v] = shape->gt(v);
 
 	vec eigval;
 	mat eigvec;
-	start_omp = omp_get_wtime();
-	eigs_sym(eigval, eigvec, L, k, "sm");
-	time = omp_get_wtime() - start_omp;
-	cout<<"time eigs: "<<time<<endl;
+	
+	d_message(Computing eigs)
+	TIC(time) eigs_sym(eigval, eigvec, L, k, "sm"); TOC(time)
+	debug(time)
 
-	X = eigvec * eigvec.t() * X;
-
-	for(index_t v = 0; v < shape->n_vertices(); v++)
-	{
-		positions[v][0] = X(v, 0);
-		positions[v][1] = X(v, 1);
-		positions[v][2] = X(v, 2);
-	}
+	X = X * eigvec * eigvec.t();
 }
+

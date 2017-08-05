@@ -492,7 +492,6 @@ void viewer_process_fairing_spectral()
 	fairing * fair = new fairing_spectral(50);
 	fair->run(viewer::mesh());
 	viewer::mesh()->set_vertices(fair->get_postions());
-	viewer::mesh()->normalize();
 	delete fair;
 	
 	viewer::mesh().update_normals();
@@ -505,9 +504,8 @@ void viewer_process_fairing_taubin()
 	fairing * fair = new fairing_taubin;
 	fair->run(viewer::mesh());
 	viewer::mesh()->set_vertices(fair->get_postions());
-	viewer::mesh()->normalize();
 	delete fair;
-
+	
 	viewer::mesh().update_normals();
 }
 

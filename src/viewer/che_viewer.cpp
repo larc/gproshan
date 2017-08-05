@@ -54,6 +54,8 @@ void che_viewer::reload()
 	_n_vertices = 0;
 	mesh->reload();
 	mesh->normalize();
+	debug(v_translate)
+	translate(v_translate);
 
 	update();
 }
@@ -237,11 +239,12 @@ vertex & che_viewer::normal(const index_t & v)
 
 void che_viewer::translate(const vertex & p)
 {
+	v_translate = p;
+	debug(v_translate)
+
 	#pragma omp parallel for
 	for(index_t v = 0; v < _n_vertices; v++)
-		mesh->get_vertex(v) += p;
-	
-	update();
+		mesh->get_vertex(v) += v_translate;
 }
 
 void che_viewer::invert_orientation()

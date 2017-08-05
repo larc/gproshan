@@ -230,8 +230,8 @@ void viewer::add_mesh(const vector<che *> & _meshes)
 	vertex_t r = sqrt(n_meshes - 1);
 	for(index_t i = 0; i < n_meshes; i++)
 	{
-		meshes[i].update();
 		meshes[i].translate({r * cos(i * angle), r * sin(i * angle), 0});
+		meshes[i].update();
 	}
 }
 

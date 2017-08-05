@@ -24,6 +24,7 @@ class che_viewer
 		size_t _n_vertices; // current number of vertices
 		bool _invert_orientation;
 		vertex_t factor;
+		vertex v_translate;
 		
 		vertex * normals;
 		color_t * colors;
