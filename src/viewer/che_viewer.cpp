@@ -54,9 +54,9 @@ void che_viewer::reload()
 	_n_vertices = 0;
 	mesh->reload();
 	mesh->normalize();
-	debug(v_translate)
-	translate(v_translate);
+	update();
 
+	translate(v_translate);
 	update();
 }
 
