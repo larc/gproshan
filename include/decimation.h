@@ -18,12 +18,12 @@ class decimation
 		index_t levels;
 	
 	public:
-		decimation(che * mesh, const index_t & levels_ = 1);
+		decimation(che * mesh, const vertex *const & normals, const index_t & levels_ = 1);
 		~decimation();
 		operator const corr_t * ();
 	
 	private:
-		void execute();
+		void execute(const vertex *const & normals);
 		void compute_quadrics();
 		vertex_t compute_error(const index_t & e);
 		void order_edges(index_t * const & sort_edges, vertex_t * const & error_edges);

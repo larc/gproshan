@@ -1,12 +1,12 @@
 #include "decimation.h"
 
-decimation::decimation(che * mesh_, const index_t & levels_)
+decimation::decimation(che * mesh_, const vertex *const & normals, const index_t & levels_)
 {
 	mesh = mesh_;
 	levels = levels_;
 	Q = new mat[mesh->n_vertices()];
 
-	execute();
+	execute(normals);
 }
 
 decimation::~decimation()
@@ -20,7 +20,7 @@ decimation::operator const corr_t * ()
 	return corr;
 }
 
-void decimation::execute()
+void decimation::execute(const vertex *const & normals)
 {
 	compute_quadrics();
 	
@@ -46,7 +46,7 @@ void decimation::execute()
 	};
 
 	order_edges(sort_edges, error_edges);
-	corr = mesh->edge_collapse(sort_edges);
+	corr = mesh->edge_collapse(sort_edges, normals);
 	
 	while(--levels)
 	{
@@ -62,7 +62,7 @@ void decimation::execute()
 		}
 		
 		order_edges(sort_edges, error_edges);
-		corr_aux = mesh->edge_collapse(sort_edges);
+		corr_aux = mesh->edge_collapse(sort_edges, normals);
 		
 		#pragma omp parallel for private(vi, a, b, c)
 		for(index_t v = 0; v < n_vertices; v++)
@@ -78,7 +78,7 @@ void decimation::execute()
 			add_he_trigs(he_trigs, corr_aux[corr_i[vi + 1]]);			
 			add_he_trigs(he_trigs, corr_aux[corr_i[vi + 2]]);			
 			
-			corr[v] = mesh->find_corr(corr_v[v], he_trigs);
+			corr[v] = mesh->find_corr(corr_v[v], normals[v], he_trigs);
 		}	
 		
 		delete [] corr_aux;

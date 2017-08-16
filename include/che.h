@@ -26,7 +26,12 @@ struct corr_t
 {
 	index_t t;
 	vertex alpha;
-	
+
+	corr_t()
+	{
+		t = NIL;
+	}
+
 	void init(const index_t & he)
 	{
 		t = trig(he) * P;
@@ -114,8 +119,8 @@ class che
 		void merge(const che * mesh, const vector<index_t> & com_vertices);
 		void set_head_vertices(index_t * head, const size_t & n);
 		index_t link_intersect(const index_t & v_a, const index_t & v_b);
-		corr_t * edge_collapse(const index_t *const & sort_edges);
-		corr_t find_corr(const vertex & v, const vector<index_t> & triangles);
+		corr_t * edge_collapse(const index_t *const & sort_edges, const vertex *const & normals);
+		corr_t find_corr(const vertex & v, const vertex & n, const vector<index_t> & triangles);
 
 	protected:
 		void delete_me();

@@ -633,7 +633,7 @@ void viewer_process_edge_collapse()
 	index_t levels;
 	cin >> levels;
 
-	TIC(e_time) decimation sampling(viewer::mesh(), levels); TOC(e_time)
+	TIC(e_time) decimation sampling(viewer::mesh(), viewer::mesh().normals_ptr(), levels); TOC(e_time)
 	debug(e_time)
 
 	if(viewer::n_meshes < 2)

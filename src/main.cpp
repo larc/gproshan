@@ -42,15 +42,15 @@ int main(int nargs, char ** args)
 {
 //	generate_grid_obtuse(81, 10);
 //	generate_grid_cylinder(100, 1, 1000);
-/*	mat A = {{2, 2, 0, 1}, {7, 3, 0, 1}, {4, 7, 0, 1}};
+	mat A = {{1, 0, 0, 1}, {0, 1, 0, 1}, {1, 1, 0, 1}, {0, 0, 1, 0}};
 	A = A.t();
-	vec x = {4.5, 2.5, 0, 1};
+	vec x = {0.6, 0.6, 1, 1};
 	vec a;
-	a = solve(A, x);
+	debug(solve(a, A, x, solve_opts::no_approx));
 	debug(a)
 	debug(a > 0)
 	debug(sum(a))
-*/	
+	debug(A.submat(0, 0, 2, 2) * a.head(3))
 //	generate_grid(1000, 1, "tmp/grilla1m.off");
 //	testkeycomponents prueba(50, 0.15);
 //	prueba.one_test_fm("0001.null.0.off","");

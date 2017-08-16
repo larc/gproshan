@@ -237,13 +237,18 @@ vertex & che_viewer::normal(const index_t & v)
 	return normals[v];
 }
 
+vertex *& che_viewer::normals_ptr()
+{
+	return normals;
+}
+
 void che_viewer::translate(const vertex & p)
 {
 	v_translate = p;
 	debug(v_translate)
 
 	#pragma omp parallel for
-	for(index_t v = 0; v < _n_vertices; v++)
+	for(index_t v = 0; v < mesh->n_vertices(); v++)
 		mesh->get_vertex(v) += v_translate;
 }
 

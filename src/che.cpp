@@ -866,7 +866,7 @@ index_t che::link_intersect(const index_t & v_a, const index_t & v_b)
 	return intersect;
 }
 
-corr_t * che::edge_collapse(const index_t *const & sort_edges)
+corr_t * che::edge_collapse(const index_t *const & sort_edges, const vertex *const & normals)
 {
 	if(n_faces_ < 2) return NULL;
 	
@@ -961,8 +961,10 @@ corr_t * che::edge_collapse(const index_t *const & sort_edges)
 				if(faces_fixed[trig(he)] > -1)
 					he_trigs.push_back(trig(he) * P);				
 				
-				corr[va] = find_corr(aux_va, he_trigs);
-				corr[vb] = find_corr(aux_vb, he_trigs);
+				debug(va)
+				corr[va] = find_corr(aux_va, normals[va], he_trigs);
+				debug(vb)
+				corr[vb] = find_corr(aux_vb, normals[vb], he_trigs);
 					
 				EVT[vb] = NIL;
 			}
@@ -1008,16 +1010,17 @@ corr_t * che::edge_collapse(const index_t *const & sort_edges)
 	return corr;
 }
 
-corr_t che::find_corr(const vertex & v, const vector<index_t> & he_trigs)
+corr_t che::find_corr(const vertex & v, const vertex & n, const vector<index_t> & he_trigs)
 {
 	distance_t d, dist = INFINITY;
 	corr_t corr, corr_d;
 
-	mat A(4, 3, fill::ones);
+	mat A(4, 4, fill::ones);
 	vec x(4);
 	x(0) = v.x; x(1) = v.y; x(2) = v.z; x(3) = 1;
  
 	vec alpha(&corr.alpha.x, 3, false, true);
+	vec a;
 	vertex aux;
 
 	auto update_dist = [&]()
@@ -1041,25 +1044,33 @@ corr_t che::find_corr(const vertex & v, const vector<index_t> & he_trigs)
 	
 		aux = gt_vt(prev(he));
 		A(0, 2) = aux.x; A(1, 2) = aux.y; A(2, 2) = aux.z;
+	
+		A(0, 3) = -n.x;
+		A(1, 3) = -n.y;
+		A(2, 3) = -n.z;
+		A(3, 3) = 0;
 
-		alpha = solve(A, x);
-		d = norm(x - A * alpha);
-		
-		if(all(alpha > 0))
+		if(solve(a, A, x, solve_opts::no_approx))
 		{
+			debug(a)
+		if(all(a >= 0) && sum(a.head(3)) == 1)
+		{
+			alpha = a.head(3);
+			d = 0;
 			update_dist();
 		}
 		else
 		{
+			x = A.submat(0, 0, 3, 2) * alpha;
 			auto dist_to_edge = [&](const index_t & i, const index_t & j)
 			{
 				mat B = A.cols(i, j);
-				vec a = solve(B, x);
+				a = solve(B, x);
 				d = norm(x - B * a);
 				
 				corr.alpha = 0;
 			
-				if(all(a > 0))
+				if(all(a >= 0) && sum(a.head(2)) == 1)
 				{
 					corr.alpha[i] = a(0);
 					corr.alpha[j] = a(1);
@@ -1082,8 +1093,15 @@ corr_t che::find_corr(const vertex & v, const vector<index_t> & he_trigs)
 			dist_to_edge(1, 2);
 			dist_to_edge(0, 2);
 		}
+		}
 	}
 	
+	if(corr_d.t == NIL)
+	{
+		debug(n)
+		debug(x)
+		debug(A)
+	}
 	return corr_d;
 }
 
