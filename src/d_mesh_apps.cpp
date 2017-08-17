@@ -1,6 +1,7 @@
 #include "d_mesh_apps.h"
 
 #include "d_dict_learning.h"
+#include "d_basis_cosine.h"
 #include "sampling.h"
 #include "che_fill_hole.h"
 #include "che_poisson.h"
@@ -49,8 +50,10 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 	debug(max_dist)
 	
 	size_t min_nvp = 36; //MInimo numero de vertices por patche
-	params_t params = { & radio, & rt};
-	plot_phi(phi_cossine, params, radio, freq, rt);
+
+	basis * phi_basis = new basis_cosine(radio, rt, freq);
+	phi_basis->plot_basis();	
+
 	
 	size_t n_vertices = mesh->n_vertices();
 		
@@ -127,7 +130,7 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 				PrincipalCurvatures(p, mesh);
 			p.transform();
 			p.phi.set_size(p.n, K);
-			phi_cossine(p.phi, p.xyz, params);
+			phi_basis->discrete(p.phi, p.xyz);
 		}
 		debug_me(init_patches)
 
@@ -177,7 +180,7 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 		}
 	}
 
-	plot_atoms(phi_cossine, params, radio, A);
+	phi_basis->plot_atoms(A);
 
 
 	auto run_omp_all = [&]()
@@ -273,7 +276,7 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 		//	PrincipalCurvatures(p, mesh);
 			p.transform();
 			p.phi.set_size(p.n, K);
-			phi_cossine(p.phi, p.xyz, params);
+			phi_basis->discrete(p.phi, p.xyz);
 		}
 
 		M = M_;
@@ -345,8 +348,7 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 			p.transform();
 
 			p.phi.set_size(p.n, K);
-			phi_cossine(p.phi, p.xyz, params);
-
+			phi_basis->discrete(p.phi, p.xyz);
 		}
 		
 //
@@ -423,7 +425,7 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 					p.transform();
 
 					p.phi.set_size(p.n, K);
-					phi_cossine(p.phi, p.xyz, params);
+					phi_basis->discrete(p.phi, p.xyz);
 				
 				//	OMP_patch(alpha, A, s, p, L);	
 					
@@ -522,8 +524,7 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 			p.transform();
 
 			p.phi.set_size(p.n, K);
-			phi_cossine(p.phi, p.xyz, params);
-
+			phi_basis->discrete(p.phi, p.xyz);
 		}
 		
 //
@@ -577,7 +578,7 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 			p.transform();
 
 			p.phi.set_size(p.n, K);
-			phi_cossine(p.phi, p.xyz, params);
+			phi_basis->discrete(p.phi, p.xyz);
 										
 			OMP_patch(alpha, A, s, p, L);	
 		
@@ -685,87 +686,5 @@ void mesh_super_resolution(che * mesh, vector<index_t> & points, size_t freq, si
 void mesh_iterative_inpaiting(che * mesh, vector<index_t> & points, size_t freq, size_t rt, size_t m, size_t M, double f, const bool & learn)
 {
 	dictionary_learning_process(mesh, points, freq, rt, m, M, f, 3, learn);
-}
-
-void plot_atoms(phi_function_t phi, params_t params, const distance_t & radio, const mat & A, string file)
-{
-/*	vec & cx = *( (vec * ) params[0] );
-	vec & cy = *( (vec * ) params[1] );
-	vertex_t sigma = *( (vertex_t * ) params[2] );
-*/
-	size_t K = A.n_rows;
-	size_t m = A.n_cols;
-	size_t s = sqrt(m);
-	s += !(s * s == K);
-
-	file = PATH_TEST + file;
-	ofstream os(file);
-
-	os << "set term wxt size 1000,1000;" << endl;
-	os << "set multiplot layout " << s << "," << s << " rowsfirst scale 1.2;" << endl;
-	os << "set isosamples 25,25;" << endl;
-	//os << "set xrange [-"<< radio << ":" << radio <<"];" << endl;
-	//os << "set yrange [-"<< radio << ":" << radio <<"];" << endl;
-	os << "set parametric;" << endl;
-	os << "set vrange [-"<< 0 << ":" << radio <<"];" << endl;
-	os << "set urange [-pi:pi];" << endl;
-//	os << "sigma = " << sigma << ";" <<endl;
-	os << "unset key;" << endl;
-	os << "set pm3d at b;" << endl;
-	os << "unset colorbox;" << endl;
-
-	for(index_t i = 0; i < m; i++)
-	{
-		os << "splot v * cos(u), v * sin(u), 0 ";
-		atoms_cossine(os, params, K, A.col(i));
-		//for(index_t k = 0; k < K; k++)
-//			os << "+ " << A(k,i) << " * exp( - ((x - " << cx(k) << ")**2 + (y - " << cy(k) << ")**2 ) / (2*sigma**2) ) ";
-		os << ";" << endl;
-	}
-	os << "unset multiplot;" << endl;
-	os << "pause -1;" << endl;
-
-	os.close();
-
-	file = "gnuplot -persist " + file + " &";
-
-	debug(system(file.c_str()));
-}
-
-void plot_phi(phi_function_t phi, params_t params, const vertex_t & radio, const size_t & freq, const size_t & rt, string file)
-{
-//	vec & cx = *( (vec * ) params[0] );
-//	vec & cy = *( (vec * ) params[1] );
-//	vertex_t sigma = *( (vertex_t * ) params[2] );
-//
-//	size_t K = cx.n_elem;
-//	size_t s = sqrt(K);
-
-	file = PATH_TEST + file;
-	ofstream os(file);
-	os << "set term wxt size 1000,1000;" << endl;
-	os << "set isosamples 50,50;" << endl;
-	//os << "set xrange [-"<< radio << ":" << radio <<"];" << endl;
-	//os << "set yrange [-"<< radio << ":" << radio <<"];" << endl;
-	os << "set parametric;" << endl;
-	os << "set vrange [-"<< 0 << ":" << radio <<"];" << endl;
-	os << "set urange [-pi:pi];" << endl;
-	os << "unset key;" << endl;
-	os << "set pm3d at b;" << endl;
-	os << "unset colorbox;" << endl;
-
-	debug(freq * rt)
-	phi_cossine(os, params, freq);
-	//for(index_t k = 0; k < K; k++)
-	//	os << "splot exp( - ((x - " << cx(k) << ")**2 + (y - " << cy(k) << ")**2 ) / (2*sigma**2) );" << endl;
-
-	os << "unset multiplot;" << endl;
-	os << "pause -1;" << endl;
-
-	os.close();
-
-	file = "gnuplot -persist " + file + " &";
-
-	debug(system(file.c_str()));
 }
 

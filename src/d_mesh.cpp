@@ -32,19 +32,6 @@ vec cossine(mat & xy, distance_t radio, size_t K)
 	return sum;
 }
 
-vec cossine_freq(mat &xy, distance_t radio, vertex_t c, vertex_t alpha)
-{
-	vec x = xy.row(0).t();
-	vec y = xy.row(1).t();
-
-	return cos(c * (alpha * x + (1 - alpha) * y));
-}
-
-void cossine_freq(ostream & os, const vertex_t & c, const vertex_t & alpha)
-{
-	os << "cos( " << c << " * (" << alpha << " * v * cos(u) + ( 1 - " << alpha << ") * v * sin(u)))";
-}
-
 void phi_gaussian(mat & phi, mat & xy, params_t params)
 {
 	vec & cx = *( (vec * ) params[0] );
@@ -55,59 +42,6 @@ void phi_gaussian(mat & phi, mat & xy, params_t params)
 
 	for(index_t k = 0 ; k < K; k++)
 		phi.col(k) = gaussian(xy, sigma, cx(k), cy(k));
-}
-
-void phi_cossine(mat & phi, mat & xy, void ** params)
-{
-	distance_t & radio = *( (distance_t * ) params[0] );
-	size_t & r = *( (size_t * ) params[1] );
-
-	size_t K = phi.n_cols;
-	size_t n = K / r;
-	vertex_t d = 1.0 / (r - 1);
-	vertex_t c;
-
-	for(size_t k = 0, ni = 1; ni <= n; ni++ )
-	for(vertex_t alpha = 0; alpha <= 1; alpha += d, k++)
-	{
-		c = ni * M_PI / radio;
-		phi.col(k) = cossine_freq(xy, radio, c, alpha);	
-	}
-}
-
-void phi_cossine(ostream & os, params_t params, const size_t & freq)
-{
-	distance_t & radio = *( (distance_t * ) params[0] );
-	size_t & r = *( (size_t * ) params[1] );
-
-	vertex_t d = 1.0 / (r - 1);
-	vertex_t c;
-	
-	os << "set multiplot layout " << freq  << "," << r << " rowsfirst scale 1.2;" << endl;
-	
-	for(size_t k = 0, ni = 1; ni <= freq; ni++ )
-	for(vertex_t alpha = 0; alpha <= 1; alpha += d, k++)
-	{
-		c = ni * M_PI / radio;
-		os << "splot v * cos(u), v * sin(u), "; cossine_freq(os, c, alpha); os << ";" << endl;
-	}
-}
-
-void atoms_cossine(ostream & os, params_t params, const size_t & K, const vec & A)
-{
-	distance_t & radio = *( (distance_t * ) params[0] );
-	size_t & r = *( (size_t * ) params[1] );
-
-	size_t n = K / r;
-	vertex_t d = 1.0 / (r - 1);
-	vertex_t c;
-	
-	for(size_t k = 0, ni = 1; ni <= n; ni++ )
-	for(vertex_t alpha = 0; alpha <= 1; alpha += d, k++)
-	{
-		c = ni * M_PI / radio;
-		os << " + " << A(k) << " * "; cossine_freq(os, c, alpha);
-	}
 }
 
 void get_centers_gaussian(vec & cx, vec & cy, vertex_t radio, size_t K)

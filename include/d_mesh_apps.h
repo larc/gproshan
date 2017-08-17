@@ -20,11 +20,5 @@ void mesh_iterative_inpaiting(che * mesh, vector<index_t> & points, size_t freq,
 
 size_t sort_first_valid_vertex(index_t * indexes, const size_t & size, const vector<patches_map_t> & patches_map);
 
-void plot_atoms(phi_function_t phi, params_t params, const distance_t & radio, const mat & A, string file = "atoms.gpi");
-
-void plot_phi(phi_function_t phi, params_t params, distance_t radio, string file = "phi.gpi");
-
-void plot_phi(phi_function_t phi, params_t params, const vertex_t & radio, const size_t & freq, const size_t & rt, string file = "phi.gpi");
-
 #endif
 

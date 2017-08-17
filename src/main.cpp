@@ -64,8 +64,6 @@ int main(int nargs, char ** args)
 //	main_solve_arma();
 //	distance_t radio = 0.04;
 
-//	params_t params = { & K };
-
 //	main_test_holes();
 	viewer_main(nargs, args);
 //	main_testkeycomponents();

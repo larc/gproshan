@@ -90,17 +90,7 @@ vec gaussian(mat & xy, vertex_t sigma, vertex_t cx, vertex_t cy);
 
 vec cossine(mat & xy, distance_t radio, size_t K);
 
-vec cossine_freq(mat & xy, distance_t radio, size_t K);
-
-void cossine_freq(ostream & os, const vertex_t & c, const vertex_t & alpha);
-
 void phi_gaussian(mat & phi, mat & xy, void ** params);
-
-void phi_cossine(mat & phi, mat & xy, void ** params);
-
-void phi_cossine(ostream & os, params_t params, const size_t & freq);
-
-void atoms_cossine(ostream & os, params_t params, const size_t & K, const vec & A);
 
 void get_centers_gaussian(vec & cx, vec & cy, vertex_t radio, size_t K);
 
