@@ -11,7 +11,7 @@ basis_cosine::basis_cosine(const vertex_t &_radio, const size_t & _r, const size
 
 void basis_cosine::discrete(mat & phi, const mat & xy)
 {
-	assert(phi.n_cols != n * r);
+	assert(phi.n_cols == n * r);
 
 	vec x = xy.row(0).t();
 	vec y = xy.row(1).t();

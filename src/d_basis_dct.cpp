@@ -10,7 +10,7 @@ basis_dct::basis_dct(const vertex_t &_radio, const size_t & _n)
 
 void basis_dct::discrete(mat & phi, const mat & xy)
 {
-	assert(phi.n_cols != n * n);
+	assert(phi.n_cols == n * n);
 
 	vec x = xy.row(0).t();
 	vec y = xy.row(1).t();

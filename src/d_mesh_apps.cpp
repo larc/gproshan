@@ -2,6 +2,7 @@
 
 #include "d_dict_learning.h"
 #include "d_basis_cosine.h"
+#include "d_basis_dct.h"
 #include "sampling.h"
 #include "che_fill_hole.h"
 #include "che_poisson.h"
@@ -53,7 +54,8 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 	
 	/* basis initialization */
 
-	basis * phi_basis = new basis_cosine(radio, rt, freq);
+	basis * phi_basis = new basis_dct(radio, rt);
+//	basis * phi_basis = new basis_cosine(radio, rt, freq);
 	phi_basis->plot_basis();	
 
 	/***********************************************************************************************/
@@ -160,11 +162,8 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 	size_t L = 10;	
 	mat alpha(m, M, fill::zeros);
 	mat A(K, m);
-	if( !op_dict)
-	{
-		A.eye();
-	}
-	else
+	A.eye();
+	if( op_dict)
 	{
 		string fmesh_dict = "tmp/" + mesh->name() + '_' + to_string(K) + ".a_dict";
 	
@@ -172,7 +171,7 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 	
 		if( !A.load(fmesh_dict))
 		{
-			A.randu(K, m);
+			A.eye(K, m);
 			
 			d_message(Dictionary learning...)	
 			TIC(time)
