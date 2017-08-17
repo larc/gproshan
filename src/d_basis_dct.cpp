@@ -42,12 +42,12 @@ void basis_dct::plot_atoms(ostream & os, const vec & A)
 
 vec basis_dct::dct(const vec & x, const vec & y, const index_t & nx, const index_t & ny)
 {
-	return cos( (M_PI * x * (nx - 1) + nx) / radio ) % cos( (M_PI * y * (ny - 1) + ny) / radio );
+	return cos( (M_PI * x * nx) / radio ) % cos( (M_PI * y * ny) / radio );
 }
 
 void basis_dct::dct(ostream & os, const index_t & nx, const index_t & ny)
 {
-	os << "cos( (pi * v * cos(u) * (" << nx << " - 1) + " << nx << ") / " << radio << " ) *";
-	os << "cos( (pi * v * sin(u) * (" << ny << " - 1) + " << ny << ") / " << radio << " )";
+	os << "cos( (pi * v * cos(u) * " << nx << " ) / " << radio << " ) *";
+	os << "cos( (pi * v * sin(u) * " << ny << " ) / " << radio << " )";
 }
 

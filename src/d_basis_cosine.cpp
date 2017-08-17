@@ -34,8 +34,8 @@ void basis_cosine::plot_basis(ostream & os)
 	
 	os << "set multiplot layout " << n  << "," << r << " rowsfirst scale 1.2;" << endl;
 	
-	for(size_t k = 0, ni = 1; ni <= n; ni++ )
-	for(vertex_t alpha = 0; alpha <= 1; alpha += d, k++)
+	for(size_t ni = 1; ni <= n; ni++ )
+	for(vertex_t alpha = 0; alpha <= 1; alpha += d)
 	{
 		c = ni * M_PI / radio;
 		os << "splot v * cos(u), v * sin(u), "; cosine(os, c, alpha); os << ";" << endl;

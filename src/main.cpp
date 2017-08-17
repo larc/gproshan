@@ -41,10 +41,12 @@ void main_solve_arma();
 
 int main(int nargs, char ** args)
 {
+	/*
 	basis * pbasis = new basis_dct(1, 5);
 	pbasis->plot_basis();
 	
 	delete pbasis;
+	*/
 //	generate_grid_obtuse(81, 10);
 //	generate_grid_cylinder(100, 1, 1000);
 	mat A = {{1, 0, 0, 1}, {0, 1, 0, 1}, {1, 1, 0, 1}, {0, 0, 1, 0}};
