@@ -50,10 +50,13 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 	debug(max_dist)
 	
 	size_t min_nvp = 36; //MInimo numero de vertices por patche
+	
+	/* basis initialization */
 
 	basis * phi_basis = new basis_cosine(radio, rt, freq);
 	phi_basis->plot_basis();	
 
+	/***********************************************************************************************/
 	
 	size_t n_vertices = mesh->n_vertices();
 		
