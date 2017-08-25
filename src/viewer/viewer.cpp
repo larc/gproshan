@@ -213,7 +213,7 @@ void viewer::add_process(const char & key, const string & name, function_t funct
 {
 	if(processes.find(key) == processes.end())
 	{
-		processes[key] = process_t(sub_menus.size() - 1, name, function);
+		processes[key] = {(index_t) sub_menus.size() - 1, name, function};
 	}
 	else cerr << "Repeat key: " << key << endl;  
 }

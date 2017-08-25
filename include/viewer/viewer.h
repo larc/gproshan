@@ -51,13 +51,6 @@ struct process_t
 	index_t sub_menu;
 	string name_function;
 	function_t function;
-
-	process_t(index_t _sub_menu = NIL, string _name_function = "", function_t _function = NULL)
-	{
-		sub_menu = _sub_menu;
-		name_function = _name_function;
-		function = _function;
-	}
 };
 
 class viewer
