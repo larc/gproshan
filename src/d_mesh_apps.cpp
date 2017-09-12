@@ -163,15 +163,19 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 	mat alpha(m, M, fill::zeros);
 	mat A(K, m);
 	A.eye();
-	if( op_dict)
+
+	debug(K)
+	debug(m)
+	if(op_dict)
 	{
-		string fmesh_dict = "tmp/" + mesh->name() + '_' + to_string(K) + ".a_dict";
+		string fmesh_dict = "tmp/" + mesh->name() + '_' + to_string(K) + '_' + to_string(m) + ".a_dict";
 	
 		debug(fmesh_dict)
 	
-		if( !A.load(fmesh_dict))
+		if(!A.load(fmesh_dict))
 		{
 			A.eye(K, m);
+			//A.random(K, m);
 			
 			d_message(Dictionary learning...)	
 			TIC(time)
@@ -181,9 +185,10 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 			A.save(fmesh_dict);
 		}
 	}
-
+	
+	debug(A.n_rows)
+	debug(A.n_cols)
 	phi_basis->plot_atoms(A);
-
 
 	auto run_omp_all = [&]()
 	{
