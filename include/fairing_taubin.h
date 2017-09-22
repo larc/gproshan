@@ -9,7 +9,7 @@ class fairing_taubin : public fairing
 		matrix_t step;
 
 	public:
-		fairing_taubin(matrix_t step_ = 0.01);
+		fairing_taubin(matrix_t step_ = 0.002);
 		virtual ~fairing_taubin();
 
 	private:
