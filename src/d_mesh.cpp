@@ -1,6 +1,6 @@
 #include "d_mesh.h"
 
-bool patch::del_index = false;
+bool patch_t::del_index = false;
 
 vec gaussian(mat & xy, vertex_t sigma, vertex_t cx, vertex_t cy)
 {
@@ -63,7 +63,7 @@ void get_centers_gaussian(vec & cx, vec & cy, vertex_t radio, size_t K)
 	}
 }
 
-void jet_fit_directions(patch & rp)
+void jet_fit_directions(patch_t & rp)
 {
 	vector<DPoint> in_points;
 	in_points.reserve(rp.n);
@@ -93,7 +93,7 @@ void jet_fit_directions(patch & rp)
 	rp.E(2, 2) = monge_form.normal_direction()[2];
 }
 
-void PCA(patch & rp)
+void PCA(patch_t & rp)
 {
 	rp.avg = mean(rp.xyz, 1);
 	rp.xyz.each_col() -= rp.avg;
@@ -105,7 +105,7 @@ void PCA(patch & rp)
 	rp.E.swap_cols(0, 2);
 }
 
-void PrincipalCurvatures( patch & rp, che * mesh)
+void PrincipalCurvatures( patch_t & rp, che * mesh)
 {
 	rp.avg = rp.xyz.col(0);
 
@@ -142,7 +142,7 @@ void PrincipalCurvatures( patch & rp, che * mesh)
 	rp.E.col(1) /= norm(rp.E.col(1));
 }
 
-void save_patches_coordinates( vector<patch> & patches, vector< pair<index_t,index_t> > * lpatches, size_t NV)
+void save_patches_coordinates( vector<patch_t> & patches, vector< pair<index_t,index_t> > * lpatches, size_t NV)
 {
 	string file = "test-patches_coordinates";
 	ofstream os(PATH_TEST + file );
@@ -151,7 +151,7 @@ void save_patches_coordinates( vector<patch> & patches, vector< pair<index_t,ind
 	{
 		for(auto pi: lpatches[v])
 		{
-			patch & rp = patches[pi.first];
+			patch_t & rp = patches[pi.first];
 			os<<rp.xyz.col(pi.second)[0]<<" "<<rp.xyz.col(pi.second)[1]<<" "<<rp.xyz.col(pi.second)[2]<<" "<<pi.first<<" ";
 		}	
 		os<<endl;
@@ -160,14 +160,14 @@ void save_patches_coordinates( vector<patch> & patches, vector< pair<index_t,ind
 	os.close();
 }
 
-void save_patches(vector<patch> & patches, size_t M)
+void save_patches(vector<patch_t> & patches, size_t M)
 {
 	string file = "test-patch_wise_coordinates";
 	ofstream os(PATH_TEST + file );
 	
 	for(index_t p = 0; p < M; p++)
 	{
-		patch & rp = patches[p];
+		patch_t & rp = patches[p];
 		for(index_t i = 0; i < rp.n; i++)
 		{
 			os<<rp.xyz.col(i)[0]<<" "<<rp.xyz.col(i)[1]<<" "<<rp.xyz.col(i)[2]<<" ";
@@ -178,12 +178,12 @@ void save_patches(vector<patch> & patches, size_t M)
 	os.close();
 }
 
-void partial_mesh_reconstruction(size_t old_n_vertices, che * mesh, size_t M, vector<patch> & patches, vector<patches_map_t> & patches_map, mat & A, mat & alpha)
+void partial_mesh_reconstruction(size_t old_n_vertices, che * mesh, size_t M, vector<patch_t> & patches, vector<patches_map_t> & patches_map, mat & A, mat & alpha)
 {
 	#pragma omp parallel for
 	for(index_t p = M; p < patches.size(); p++)
 	{
-		patch & rp = patches[p];
+		patch_t & rp = patches[p];
 		
 		if(rp.indexes)
 		{
@@ -216,14 +216,14 @@ void partial_mesh_reconstruction(size_t old_n_vertices, che * mesh, size_t M, ve
 
 }
 
-void mesh_reconstruction(che * mesh, size_t M, vector<patch> & patches, vector<patches_map_t> & patches_map, mat & A, mat & alpha, const index_t & v_i)
+void mesh_reconstruction(che * mesh, size_t M, vector<patch_t> & patches, vector<patches_map_t> & patches_map, mat & A, mat & alpha, const index_t & v_i)
 {
 	mat V(3, mesh->n_vertices(), fill::zeros);
 
 	#pragma omp parallel for
 	for(index_t p = 0; p < M; p++)
 	{
-		patch & rp = patches[p];
+		patch_t & rp = patches[p];
 	
 		if(rp.phi.n_rows)
 		{
@@ -265,7 +265,7 @@ void mesh_reconstruction(che * mesh, size_t M, vector<patch> & patches, vector<p
 	mesh->set_vertices(new_vertices + v_i, mesh->n_vertices() - v_i, v_i);
 }
 
-vec non_local_means_vertex(mat & alpha, const index_t & v, vector<patch> & patches, vector<patches_map_t> & patches_map, const distance_t & h)
+vec non_local_means_vertex(mat & alpha, const index_t & v, vector<patch_t> & patches, vector<patches_map_t> & patches_map, const distance_t & h)
 {
 	vec n_vec(3, fill::zeros);
 	area_t sum = 0;
@@ -300,7 +300,7 @@ vec non_local_means_vertex(mat & alpha, const index_t & v, vector<patch> & patch
 	return n_vec;
 }
 
-vec simple_means_vertex(mat & alpha, const index_t & v, vector<patch> & patches, vector<patches_map_t> & patches_map, const distance_t & h)
+vec simple_means_vertex(mat & alpha, const index_t & v, vector<patch_t> & patches, vector<patches_map_t> & patches_map, const distance_t & h)
 {
 	vec n_vec(3, fill::zeros);
 

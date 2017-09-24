@@ -20,7 +20,7 @@
 void dictionary_learning_process(che * mesh, vector<index_t> & points, const size_t & freq,  size_t & rt, const size_t & m, size_t & M, const distance_t & f, const index_t & pf, const bool & op_dict)
 {
 	size_t K = freq * rt;
-	patch::del_index = false;
+	patch_t::del_index = false;
 	bool all_points = M == 0;
 	
 	distance_t max_dist, radio;
@@ -79,7 +79,7 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 	
 	double time;
 	n_vertices = mesh->n_vertices();
-	vector<patch> patches(M);
+	vector<patch_t> patches(M);
 	vector<patches_map_t> patches_map(n_vertices);
 	
 	// Params ---------------------------------------------------------------------------------------
@@ -106,7 +106,7 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 		{
 			index_t v = p_vertex(s);
 
-			patch & p = patches[s];
+			patch_t & p = patches[s];
 			geodesics fm(mesh, { v }, NIL, radio);
 			p.n = fm.get_n_radio();
 
@@ -118,7 +118,7 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 		// problem with patches_map to be parallel
 		for(index_t s = 0; s < M; s++)
 		{
-			patch & p = patches[s];
+			patch_t & p = patches[s];
 			p.reset_xyz(mesh, patches_map, s);
 		}
 		debug_me(init_patches)
@@ -126,7 +126,7 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 		#pragma omp parallel for
 		for(index_t s = 0; s < M; s++)
 		{
-			patch & p = patches[s];
+			patch_t & p = patches[s];
 			if(p.n > min_nvp)
 			{
 				jet_fit_directions(p);
@@ -264,7 +264,7 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 		for(index_t v, s = M; s < M_; s++)
 		{
 			v = p_vertex(s);
-			patch & p = patches[s];
+			patch_t & p = patches[s];
 
 			geodesics fm(mesh, { v }, NIL, radio );
 			size = fm.get_n_radio();
@@ -330,7 +330,7 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 		for(index_t bp: border_patches)
 		{
 			//updating patch
-			patch & p = patches[bp];
+			patch_t & p = patches[bp];
 				
 			v = p[0];
 			geodesics fm(mesh, { v }, NIL, radio);
@@ -406,7 +406,7 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 			for(index_t s = M; s < M_; s++)
 			{
 				v = p_vertex(s);
-				patch & p = patches[s];
+				patch_t & p = patches[s];
 
 				if(levels[s] == NIL && is_level(v, level))
 				{	
@@ -506,7 +506,7 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 		for(index_t bp: border_patches)
 		{
 			//updating patch
-			patch & p = patches[bp];
+			patch_t & p = patches[bp];
 				
 			v = p[0];
 			geodesics fm(mesh, { v }, NIL, radio);
@@ -564,7 +564,7 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 		for(index_t s = M; s < points.size(); s++)
 		{
 			v = p_vertex(s);		
-			patch & p = patches[s];			
+			patch_t & p = patches[s];			
 					
 			geodesics fm(mesh, { v }, NIL, radio );
 			p.n = fm.get_n_radio();
@@ -645,7 +645,7 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 	
 	points.clear();
 
-	patch::del_index = true;
+	patch_t::del_index = true;
 	debug_me(inpainting)
 }
 

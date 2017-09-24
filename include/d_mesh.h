@@ -24,14 +24,13 @@ typedef Data_Kernel::Point_3 DPoint;
 typedef CGAL::Monge_via_jet_fitting<Data_Kernel> My_Monge_via_jet_fitting;
 typedef My_Monge_via_jet_fitting::Monge_form My_Monge_form;
 
+struct patch_t;
 
-struct patch;
+void jet_fit_directions(patch_t & rp);
+void PCA(patch_t & rp);
+void PrincipalCurvatures( patch_t & rp, che * mesh);
 
-void jet_fit_directions(patch & rp);
-void PCA(patch & rp);
-void PrincipalCurvatures( patch & rp, che * mesh);
-
-struct patch
+struct patch_t
 {
 	static bool del_index;
 	size_t n;
@@ -41,12 +40,12 @@ struct patch
 	mat E;
 	mat phi;
 	
-	patch()
+	patch_t()
 	{
 		indexes = NULL;
 	}
 
-	~patch()
+	~patch_t()
 	{
 		if(del_index)
 		if(indexes) delete [] indexes;
@@ -94,17 +93,17 @@ void phi_gaussian(mat & phi, mat & xy, void ** params);
 
 void get_centers_gaussian(vec & cx, vec & cy, vertex_t radio, size_t K);
 
-void save_patches_coordinates( vector<patch> & patches, vector< pair<index_t,index_t> > * lpatches, size_t NV);
+void save_patches_coordinates( vector<patch_t> & patches, vector< pair<index_t,index_t> > * lpatches, size_t NV);
 
-void save_patches(vector<patch> patches, size_t M);
+void save_patches(vector<patch_t> patches, size_t M);
 
-void partial_mesh_reconstruction(size_t old_n_vertices, che * mesh, size_t M, vector<patch> & patches, vector<patches_map_t> & patches_map, mat & A, mat & alpha);
+void partial_mesh_reconstruction(size_t old_n_vertices, che * mesh, size_t M, vector<patch_t> & patches, vector<patches_map_t> & patches_map, mat & A, mat & alpha);
 
-void mesh_reconstruction(che * mesh, size_t M, vector<patch> & patches, vector<patches_map_t> & patches_map, mat & A, mat & alpha, const index_t & v_i = 0);
+void mesh_reconstruction(che * mesh, size_t M, vector<patch_t> & patches, vector<patches_map_t> & patches_map, mat & A, mat & alpha, const index_t & v_i = 0);
 
-vec non_local_means_vertex(mat & alpha, const index_t & v, vector<patch> & patches, vector<patches_map_t> & patches_map, const distance_t & h);
+vec non_local_means_vertex(mat & alpha, const index_t & v, vector<patch_t> & patches, vector<patches_map_t> & patches_map, const distance_t & h);
 
-vec simple_means_vertex(mat & alpha, const index_t & v, vector<patch> & patches, vector<patches_map_t> & patches_map, const distance_t & h);
+vec simple_means_vertex(mat & alpha, const index_t & v, vector<patch_t> & patches, vector<patches_map_t> & patches_map, const distance_t & h);
 
 #endif
 

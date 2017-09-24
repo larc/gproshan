@@ -76,7 +76,7 @@ void KSVD(mat & D, mat & X, size_t L)
 	}
 }
 
-void OMP_patch(mat & alpha, const mat & A, const index_t & i, patch & p, const size_t & L)
+void OMP_patch(mat & alpha, const mat & A, const index_t & i, patch_t & p, const size_t & L)
 {
 	vec a;
 	vec x = p.xyz.row(2).t();
@@ -86,14 +86,14 @@ void OMP_patch(mat & alpha, const mat & A, const index_t & i, patch & p, const s
 	alpha.col(i) = a;
 }
 
-void OMP_all_patches_ksvt(mat & alpha, mat & A, vector<patch> & patches, size_t M, size_t L)
+void OMP_all_patches_ksvt(mat & alpha, mat & A, vector<patch_t> & patches, size_t M, size_t L)
 {
 	#pragma omp parallel for
 	for(index_t i = 0; i < M; i++)
 		OMP_patch(alpha, A, i, patches[i], L);
 }
 
-void KSVDT(mat & A, vector<patch> & patches, size_t M, size_t L)
+void KSVDT(mat & A, vector<patch_t> & patches, size_t M, size_t L)
 {
 	size_t K = A.n_rows;
 	size_t m = A.n_cols;

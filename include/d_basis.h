@@ -9,10 +9,12 @@
 using namespace arma;
 using namespace std;
 
+class dictionary;
+
 class basis
 {
 	protected:
-		vertex_t radio;
+		distance_t radio;
 		size_t dim;
 
 	public:
@@ -23,6 +25,8 @@ class basis
 	private:
 		virtual void plot_basis(ostream & os) = 0;
 		virtual void plot_atoms(ostream & os, const vec & A) = 0;
+
+	friend class dictionary;
 };
 
 #endif // D_BASIS_H
