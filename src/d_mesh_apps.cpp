@@ -132,7 +132,7 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 				jet_fit_directions(p);
 			}
 			else
-				PrincipalCurvatures(p, mesh);
+				principal_curvatures(p, mesh);
 			p.transform();
 			p.phi.set_size(p.n, K);
 			phi_basis->discrete(p.phi, p.xyz);
@@ -279,8 +279,8 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 				jet_fit_directions(p);
 			}
 			else
-				PrincipalCurvatures(p, mesh);
-		//	PrincipalCurvatures(p, mesh);
+				principal_curvatures(p, mesh);
+		//	principal_curvatures(p, mesh);
 			p.transform();
 			p.phi.set_size(p.n, K);
 			phi_basis->discrete(p.phi, p.xyz);
@@ -344,13 +344,13 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 			p.n = size;
 			p.reset_xyz(mesh, patches_map, bp);
 
-		//	PrincipalCurvatures(p, mesh);
+		//	principal_curvatures(p, mesh);
 			if(p.n > min_nvp)
 			{
 				jet_fit_directions(p);
 			}
 			else
-				PrincipalCurvatures(p, mesh);
+				principal_curvatures(p, mesh);
 
 			p.transform();
 
@@ -426,8 +426,8 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 						jet_fit_directions(p);
 					}
 					else
-						PrincipalCurvatures(p, mesh);
-				//	PrincipalCurvatures(p, mesh);
+						principal_curvatures(p, mesh);
+				//	principal_curvatures(p, mesh);
 						
 					p.transform();
 
@@ -525,9 +525,9 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 				jet_fit_directions(p);
 			}
 			else
-				PrincipalCurvatures(p, mesh);
+				principal_curvatures(p, mesh);
 		//	jet_fit_directions(p);
-		//	PrincipalCurvatures(p, mesh);
+		//	principal_curvatures(p, mesh);
 			p.transform();
 
 			p.phi.set_size(p.n, K);
@@ -578,9 +578,9 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 				jet_fit_directions(p);
 			}
 			else
-				PrincipalCurvatures(p, mesh);
+				principal_curvatures(p, mesh);
 	//		jet_fit_directions(p);
-		//	PrincipalCurvatures(p, mesh);
+		//	principal_curvatures(p, mesh);
 											
 			p.transform();
 

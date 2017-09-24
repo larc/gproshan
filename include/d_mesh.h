@@ -28,7 +28,7 @@ struct patch_t;
 
 void jet_fit_directions(patch_t & rp);
 void PCA(patch_t & rp);
-void PrincipalCurvatures( patch_t & rp, che * mesh);
+void principal_curvatures( patch_t & rp, che * mesh);
 
 struct patch_t
 {

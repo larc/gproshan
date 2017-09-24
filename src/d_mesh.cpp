@@ -105,7 +105,7 @@ void PCA(patch_t & rp)
 	rp.E.swap_cols(0, 2);
 }
 
-void PrincipalCurvatures( patch_t & rp, che * mesh)
+void principal_curvatures( patch_t & rp, che * mesh)
 {
 	rp.avg = rp.xyz.col(0);
 
