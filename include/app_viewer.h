@@ -18,6 +18,9 @@
 #include "che_poisson.h"
 #include "d_mesh_apps.h"
 #include "decimation.h"
+#include "dictionary.h"
+#include "d_basis_dct.h"
+#include "d_basis_cosine.h"
 
 void viewer_process_fairing_taubin();
 void viewer_process_fairing_spectral();

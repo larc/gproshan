@@ -54,7 +54,7 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 	
 	/* basis initialization */
 
-	basis * phi_basis = new basis_dct(radio, rt);
+	basis * phi_basis = new basis_dct(rt, radio);
 //	basis * phi_basis = new basis_cosine(radio, rt, freq);
 	phi_basis->plot_basis();	
 

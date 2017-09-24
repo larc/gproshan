@@ -2,7 +2,7 @@
 
 #include <cassert>
 
-basis_cosine::basis_cosine(const vertex_t &_radio, const size_t & _r, const size_t & _n)
+basis_cosine::basis_cosine(const size_t & _r, const size_t & _n, const distance_t & _radio)
 {
 	radio = _radio;
 	r = _r;

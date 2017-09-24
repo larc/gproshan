@@ -2,7 +2,7 @@
 
 #include <cassert>
 
-basis_dct::basis_dct(const vertex_t &_radio, const size_t & _n)
+basis_dct::basis_dct(const size_t & _n, const distance_t & _radio)
 {
 	radio = _radio;
 	n = _n;	

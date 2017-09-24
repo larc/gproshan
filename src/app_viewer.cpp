@@ -273,16 +273,22 @@ void viewer_process_denoising()
 {
 	debug_me(Processing:)
 	
-	size_t freq, rt, m, M;
+	size_t freq, rt; // cosine
+	size_t n; // dct
+	size_t m, M;
 	distance_t f;
 	bool learn;
 
-	d_message(parametros:)	
-	d_message((freq, rt, m, M, f, learn))
-	cin >> freq >> rt >> m >> M >> f >> learn;
+	d_message(parametros (n, m, M, f, learn):)
+	cin >> n >> m >> M >> f >> learn;
 
-	mesh_denoising(viewer::mesh(), viewer::select_vertices, freq, rt, m, M, f, learn);
+	basis * phi = new basis_dct(n);
+	dictionary dict(viewer::mesh(), phi, m, M, f);
+	dict.learning();
 
+//	mesh_denoising(viewer::mesh(), viewer::select_vertices, freq, rt, m, M, f, learn);
+
+	delete phi;
 	viewer::mesh().update_normals();
 }
 

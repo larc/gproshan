@@ -8,8 +8,8 @@
 const size_t dictionary::min_nvp = 36;
 const size_t dictionary::L = 10;
 
-dictionary::dictionary(che *const & _mesh, basis *const & _phi_basis, const size_t & _m, const size_t & _M, const distance_t & f):
-					mesh(_mesh), phi_basis(_phi_basis), m(_m), M(_M)
+dictionary::dictionary(che *const & _mesh, basis *const & _phi_basis, const size_t & _m, const size_t & _M, const distance_t & f, const bool & _d_plot):
+					mesh(_mesh), phi_basis(_phi_basis), m(_m), M(_M), d_plot(_d_plot)
 {
 	n_vertices = mesh->n_vertices();
 
@@ -36,6 +36,8 @@ dictionary::dictionary(che *const & _mesh, basis *const & _phi_basis, const size
 
 	A.eye(phi_basis->dim, m);
 	alpha.zeros(m, M);
+
+	if(d_plot) phi_basis->plot_basis();
 }
 
 dictionary::~dictionary()
@@ -43,12 +45,12 @@ dictionary::~dictionary()
 	patch_t::del_index = true;
 }
 
-void dictionary::learning(const bool & plot)
+void dictionary::learning()
 {
-	string s_dict = "tmp/" + mesh->name() + '_' + to_string(phi_basis->dim) + to_string(m) + ".dict";
-	debug(s_dict)
+	string f_dict = "tmp/" + mesh->name() + '_' + to_string(phi_basis->dim) + '_' + to_string(m) + ".dict";
+	debug(f_dict)
 
-	if(!A.load(s_dict))
+	if(!A.load(f_dict))
 	{
 		A.eye(phi_basis->dim, m);
 		// A.random(phi_basis->dim, m);
@@ -57,13 +59,13 @@ void dictionary::learning(const bool & plot)
 		TIC(d_time) KSVDT(A, patches, M, L); TOC(d_time)
 		debug(d_time)
 
-		A.save(s_dict);
+		A.save(f_dict);
 	}
 
 	assert(A.n_rows == phi_basis->dim);
 	assert(A.n_cols == m);
 
-	if(plot) phi_basis->plot_atoms(A);
+	if(d_plot) phi_basis->plot_atoms(A);
 }
 
 void dictionary::init_patches()

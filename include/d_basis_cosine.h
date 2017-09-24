@@ -10,7 +10,7 @@ class basis_cosine: public basis
 		vertex_t n; // frequency
 
 	public:
-		basis_cosine(const vertex_t &_radio, const size_t & _r, const size_t & _n);
+		basis_cosine(const size_t & _r, const size_t & _n, const distance_t & _radio = 0);
 		void discrete(mat & phi, const mat & xy);
 	
 	private:

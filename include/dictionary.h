@@ -27,13 +27,18 @@ class dictionary
 		vector<patches_map_t> patches_map;
 		
 		double d_time;
+		bool d_plot;
+
 		static const size_t min_nvp;
 		static const size_t L;
 
 	public:
-		dictionary(che *const & _mesh, basis *const &_phi_basis, const size_t & _m, const size_t & _M, const distance_t & f);
+		dictionary(che *const & _mesh, basis *const &_phi_basis, const size_t & _m, const size_t & _M, const distance_t & f, const bool & _plot = false);
 		virtual ~dictionary();
-		void learning(const bool & plot = true);
+		void learning();
+		void denoising();
+		void super_resolution();
+		void inpaiting();
 	
 	private:
 		void init_patches();

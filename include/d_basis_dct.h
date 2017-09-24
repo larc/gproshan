@@ -9,7 +9,7 @@ class basis_dct: public basis
 		vertex_t n; // frequency
 
 	public:
-		basis_dct(const vertex_t &_radio, const size_t & _n);
+		basis_dct(const size_t & _n, const distance_t & _radio = 0);
 		void discrete(mat & phi, const mat & xy);
 	
 	private:
