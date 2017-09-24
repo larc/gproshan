@@ -68,6 +68,22 @@ void dictionary::learning()
 	if(d_plot) phi_basis->plot_atoms(A);
 }
 
+void dictionary::denoising()
+{
+	d_message(sparse coding...)
+	TIC(d_time)
+	OMP_all_patches_ksvt(alpha, A, patches, M, L);
+	TOC(d_time)
+
+	d_message(mesh reconstruction...)
+	assert(n_vertices == mesh->n_vertices());
+
+	TIC(d_time)
+	mesh_reconstruction(mesh, M, patches, patches_map, A, alpha);
+	TOC(d_time)
+	debug(d_time)
+}
+
 void dictionary::init_patches()
 {
 	#pragma omp parallel for
