@@ -15,6 +15,7 @@ class dictionary
 	public:
 		dictionary(che *const & _mesh, basis *const &_phi_basis, const size_t & _m, const size_t & _M);
 		virtual ~dictionary();
+		void learning();
 };
 
 #endif // DICTIONARY_H

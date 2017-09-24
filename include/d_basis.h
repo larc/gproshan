@@ -13,6 +13,7 @@ class basis
 {
 	protected:
 		vertex_t radio;
+		size_t dim;
 
 	public:
 		virtual void discrete(mat & phi, const mat & xy) = 0;
