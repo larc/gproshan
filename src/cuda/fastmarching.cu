@@ -7,6 +7,12 @@
 #define NT 32
 #define NB(x) (x + NT - 1) / NT
 
+#define B 10
+
+inline index_t iterations(const vector<index_t> & limites);
+inline index_t start_v(const index_t & i, const vector<index_t> & limites);
+inline index_t end_v(const index_t & i, const vector<index_t> & limites);
+
 inline index_t iterations(const vector<index_t> & limites)
 {
 	index_t max_i = 1;
@@ -20,7 +26,8 @@ inline index_t iterations(const vector<index_t> & limites)
 
 inline index_t start_v(const index_t & i, const vector<index_t> & limites)
 {
-	return limites[i >> 1];
+//	return limites[i >> 1];
+	return limites[i > B ? i - B : 1];
 }
 
 inline index_t end_v(const index_t & i, const vector<index_t> & limites)
@@ -334,6 +341,8 @@ distance_t * cuda_fastmarching(CHE * h_mesh, CHE * d_mesh, index_t * source, len
 	{
 		start = start_v(i, limites);
 		end = end_v(i, limites);
+		
+		if(start == end) break;
 
 		fastmarching_relax<<<NB(end - start), NT>>>(d_mesh, d_dist[!d], d_dist[d], end, d_clusters[!d], d_clusters[d], start, d_sorted, i, d_arrive[!d], d_arrive[d]);
 		

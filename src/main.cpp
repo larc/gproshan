@@ -41,15 +41,9 @@ void main_solve_arma();
 
 int main(int nargs, char ** args)
 {
-	/*
-	basis * pbasis = new basis_dct(1, 5);
-	pbasis->plot_basis();
-	
-	delete pbasis;
-	*/
 //	generate_grid_obtuse(81, 10);
 //	generate_grid_cylinder(100, 1, 1000);
-	mat A = {{1, 0, 0, 1}, {0, 1, 0, 1}, {1, 1, 0, 1}, {0, 0, 1, 0}};
+/*	mat A = {{1, 0, 0, 1}, {0, 1, 0, 1}, {1, 1, 0, 1}, {0, 0, 1, 0}};
 	A = A.t();
 	vec x = {0.6, 0.6, 1, 1};
 	vec a;
@@ -58,12 +52,13 @@ int main(int nargs, char ** args)
 	debug(a > 0)
 	debug(sum(a))
 	debug(A.submat(0, 0, 2, 2) * a.head(3))
+*/
 //	generate_grid(1000, 1, "tmp/grilla1m.off");
 //	testkeycomponents prueba(50, 0.15);
 //	prueba.one_test_fm("0001.null.0.off","");
 //	if(nargs > 1) test_image_denoising(args[1]);
 	
-//	main_test_fastmarching();
+	main_test_fastmarching();
 	
 	//sampling_terrain("terreno.off", 4, 64);
 //	sampling_shape(nargs, args);
@@ -72,7 +67,7 @@ int main(int nargs, char ** args)
 //	distance_t radio = 0.04;
 
 //	main_test_holes();
-	viewer_main(nargs, args);
+//	viewer_main(nargs, args);
 //	main_testkeycomponents();
 //	main_testkeypoints();
 	return 0;
@@ -158,7 +153,7 @@ void main_test_fastmarching()
 		filename = PATH_MDATA + filename + ".off";
 		che * shape = new che_off(filename);
 		vector<index_t> sources = {0};
-/*
+
 		float time;
 		farthest_point_sampling_gpu(sources, time, shape, 1000, 0);
 		debug(time)	
@@ -178,7 +173,7 @@ void main_test_fastmarching()
 			os << pp.first << " " << pp.second << endl;
 		os.close();
 		debug(system(("mv deg_hist " + PATH_TEST + "fastmarching/" + shape->name() + ".deg").c_str()))
-*/
+
 		
 		index_t * rings = new index_t[shape->n_vertices()];
 		index_t * sorted = new index_t[shape->n_vertices()];
@@ -187,7 +182,7 @@ void main_test_fastmarching()
 		
 		index_t * dist_rings = new index_t[limites.size() - 1];
 		
-		ofstream os("rings_dist");
+		os.open("rings_dist");
 		for(index_t i = 1; i < limites.size(); i++)
 			os << i - 1 << " " << (dist_rings[i - 1] = limites[i] - limites[i - 1]) << endl;
 		os.close();
@@ -200,8 +195,8 @@ void main_test_fastmarching()
 		os.close();
 		
 		debug(system(("mv iter_error " + PATH_TEST + "fastmarching/fm_error_double_" + shape->name() + ".iter").c_str()))
-		debug(system(("mv rings_dist " + PATH_TEST + "fastmarching/" + shape->name() + ".rings").c_str()))
-		debug(system(("mv rings_dist_sort " + PATH_TEST + "fastmarching/" + shape->name() + ".s_rings").c_str()))
+		debug(system(("mv rings_dist " + PATH_TEST + "fastmarching/" + shape->name() + ".levels").c_str()))
+		debug(system(("mv rings_dist_sort " + PATH_TEST + "fastmarching/" + shape->name() + ".s_levels").c_str()))
 		
 		delete shape;
 		delete [] rings;
