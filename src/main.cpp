@@ -58,7 +58,7 @@ int main(int nargs, char ** args)
 //	prueba.one_test_fm("0001.null.0.off","");
 //	if(nargs > 1) test_image_denoising(args[1]);
 	
-	main_test_fastmarching();
+//	main_test_fastmarching();
 	
 	//sampling_terrain("terreno.off", 4, 64);
 //	sampling_shape(nargs, args);
@@ -67,7 +67,7 @@ int main(int nargs, char ** args)
 //	distance_t radio = 0.04;
 
 //	main_test_holes();
-//	viewer_main(nargs, args);
+	viewer_main(nargs, args);
 //	main_testkeycomponents();
 //	main_testkeypoints();
 	return 0;

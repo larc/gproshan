@@ -3,7 +3,10 @@
 #include "sampling.h"
 #include "d_dict_learning.h"
 
+#include "che_poisson.h"
+#include "che_fill_hole.h"
 #include <cassert>
+#include <set>
 
 const size_t dictionary::min_nvp = 36;
 const size_t dictionary::L = 10;
@@ -68,6 +71,179 @@ void dictionary::learning()
 	if(d_plot) phi_basis->plot_atoms(A);
 }
 
+void dictionary::inpaiting()
+{
+	d_message(iterative inpainting)
+	// Computing hole borders
+	size_t n_borders = mesh->n_borders();
+	if(!n_borders) return;
+
+	vector<index_t> * border_vertices = fill_all_holes(mesh);
+
+	//with poisson
+	poisson(mesh, n_vertices, 2);
+	debug(mesh->n_vertices())
+
+	//Contains index of patches which are borders
+	set<index_t> border_patches;	
+		
+	for(index_t nb = 0; nb < n_borders; nb++)
+		for(index_t b: border_vertices[nb])
+			for(auto p_aux: patches_map[b])
+				border_patches.insert(p_aux.first);
+
+	delete [] border_vertices;
+		
+	debug(border_patches.size())
+	
+	// First iteration
+	index_t v;
+	size_t size;
+	vec tmp_alpha(m);
+	tmp_alpha.zeros();
+
+	patches_map.resize(mesh->n_vertices());
+
+	for(index_t bp: border_patches)
+	{
+		//updating patch
+		patch_t & p = patches[bp];
+			
+		v = p[0];
+		geodesics fm(mesh, { v }, NIL, phi_basis->radio);
+
+		delete [] p.indexes;
+		p.indexes = new index_t[fm.get_n_radio()];
+	
+		fm.get_sort_indexes(p.indexes, fm.get_n_radio());
+		size = fm.get_n_radio();
+
+		p.n = size;
+		p.reset_xyz(mesh, patches_map, bp);
+
+	//	principal_curvatures(p, mesh);
+		if(p.n > min_nvp)
+		{
+			jet_fit_directions(p);
+		}
+		else
+			principal_curvatures(p, mesh);
+
+		p.transform();
+
+		p.phi.set_size(p.n, phi_basis->dim);
+		phi_basis->discrete(p.phi, p.xyz);
+	}
+		
+	// Second iteration
+	size_t M_;
+	if(sampling.size()) M_ = mesh->n_vertices();
+	else
+	{	
+		float time_g;
+		farthest_point_sampling_gpu(sampling, time_g, mesh, n_vertices, s_radio);
+		debug(time_g)
+
+		M_ = sampling.size();
+	}
+
+	patches.resize(M_);
+	alpha.set_size(m, M_);
+	patches_map.resize(mesh->n_vertices());
+
+	debug(M_)	
+	debug(M)
+
+	index_t * levels = new index_t[M_];
+	memset(levels, 0, sizeof(index_t) * M);
+	memset(levels + M, 255, sizeof(index_t) * (M_ - M));
+
+
+//
+	// Including all patches to the mapping...
+	debug_me(it inpaiting)
+
+	index_t count = M;
+	index_t level = 0;
+	auto is_level = [&](const index_t & v, const index_t & level) -> bool
+	{
+		for(auto & m: patches_map[v])
+			if(levels[m.first] < level)
+				return true;
+
+		return false;
+	};
+
+	while(count < M_)
+	{
+		level++;
+		debug(level)
+		for(index_t s = M; s < M_; s++)
+		{
+			v = sample(s);
+			patch_t & p = patches[s];
+
+			if(levels[s] == NIL && is_level(v, level))
+			{	
+				levels[s] = level;
+				count++;
+				
+				geodesics fm(mesh, { v }, NIL, phi_basis->radio );
+				p.n = fm.get_n_radio();
+				p.indexes = new index_t[p.n];
+				fm.get_sort_indexes(p.indexes, p.n);
+					
+				p.reset_xyz(mesh, patches_map, s);
+
+		//		jet_fit_directions(p);
+				if(p.n > min_nvp)
+				{
+					jet_fit_directions(p);
+				}
+				else
+					principal_curvatures(p, mesh);
+			//	principal_curvatures(p, mesh);
+					
+				p.transform();
+
+				p.phi.set_size(p.n, phi_basis->dim);
+				phi_basis->discrete(p.phi, p.xyz);
+			
+			//	OMP_patch(alpha, A, s, p, L);	
+				
+				map<index_t, index_t> patches_alphas;
+
+				for(index_t i = 0; i < p.n; i++)
+				for(auto & pi: patches_map[p[i]])
+			//		if(pi.first != s) patches_alphas[pi.first]++;
+					if(levels[pi.first] < level) patches_alphas[pi.first]++;
+				
+				alpha.col(s).zeros();
+				distance_t sum = 0;
+				for(auto & pa: patches_alphas)
+				{
+					alpha.col(s) += pa.second * alpha.col(pa.first);
+					sum += pa.second;
+				}
+
+				assert(sum > 0);
+				alpha.col(s) /= sum;
+			}
+		}
+		debug(count)
+	}
+		
+	debug(count)
+
+	debug(patches.size() - M)
+		
+	M = M_;
+
+	n_vertices = mesh->n_vertices();
+
+	delete [] levels;
+	
+}
 void dictionary::denoising()
 {
 	d_message(sparse coding...)
