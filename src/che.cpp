@@ -428,6 +428,22 @@ const size_t & che::n_borders() const
 	return n_borders_;
 }
 
+size_t che::max_degree() const
+{
+	size_t d, md = 0;
+
+	#pragma omp parallel for private(d) reduction(max: md)
+	for(index_t v = 0; v < n_vertices_; v++)
+	{
+		d = 0;
+		for_star(he, this, v) d++;
+		d += is_border_v(v);
+		md = max(md, d);
+	}
+	
+	return md;
+}
+
 vertex & che::get_vertex(index_t v)
 {
 	return GT[v];

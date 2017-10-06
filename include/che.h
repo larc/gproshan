@@ -106,6 +106,7 @@ class che
 		const size_t & n_half_edges() const;
 		const size_t & n_edges() const;
 		const size_t & n_borders() const;
+		size_t max_degree() const;
 		vertex & get_vertex(index_t v);
 		void set_vertices(const vertex *const& positions, size_t n = 0, const index_t & v_i = 0);
 		const string & filename() const;
@@ -144,6 +145,8 @@ struct vertex_cu;
 
 struct CHE
 {
+	static length_t band;
+
 	length_t n_vertices;
 	length_t n_faces;
 	length_t n_half_edges;

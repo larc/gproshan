@@ -7,7 +7,7 @@
 #define NT 32
 #define NB(x) (x + NT - 1) / NT
 
-#define B 10
+length_t CHE::band = 6;
 
 inline index_t iterations(const vector<index_t> & limites);
 inline index_t start_v(const index_t & i, const vector<index_t> & limites);
@@ -27,7 +27,7 @@ inline index_t iterations(const vector<index_t> & limites)
 inline index_t start_v(const index_t & i, const vector<index_t> & limites)
 {
 //	return limites[i >> 1];
-	return limites[i > B ? i - B : 1];
+	return limites[i > CHE::band ? i - CHE::band : 1];
 }
 
 inline index_t end_v(const index_t & i, const vector<index_t> & limites)
