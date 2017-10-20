@@ -10,7 +10,7 @@ CC = g++
 LD = g++
 CUDA = nvcc
 CFLAGS = -O3 -fopenmp $(INCLUDE_PATH) $(CGAL_DEFINES) 
-CUDAFLAGS = -I./include/cuda -O3 -Xcompiler -fopenmp -D_FORCE_INLINES
+CUDAFLAGS = --gpu-architecture=sm_50 -I./include/cuda -O3 -Xcompiler -fopenmp -D_FORCE_INLINES
 LFLAGS = -O3 -fopenmp $(LIBRARY_PATH) -lcublas -lcuda -lcudart -lX11 -lpthread
 LIBS = $(OPENGL_LIBS) $(SUITESPARSE_LIBS) $(BLAS_LIBS) -larmadillo -lCGAL
 
