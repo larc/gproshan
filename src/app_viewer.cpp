@@ -407,11 +407,9 @@ void viewer_process_fastmarching_gpu()
 	vector<index_t> limites;
 	viewer::mesh()->sort_by_rings(rings, sorted, limites, viewer::select_vertices);
 	
-//	distance_t * distances = parallel_fastmarching(viewer::mesh(), viewer::select_vertices.data(), viewer::select_vertices.size(), e_time, limites, sorted, true);	
+	distance_t * distances = parallel_fastmarching(viewer::mesh(), viewer::select_vertices.data(), viewer::select_vertices.size(), e_time, limites, sorted, true);	
 	//distance_t * distances = parallel_fastmarching(viewer::mesh()->filename().c_str(), viewer::select_vertices.data(), viewer::select_vertices.size(), e_time, 9, true, true);
-	TIC(e_time)
-	distance_t * distances = fast_geodesics(viewer::mesh(), viewer::select_vertices.data(), viewer::select_vertices.size(), limites, sorted);
-	TOC(e_time)
+	//distance_t * distances = fast_geodesics(viewer::mesh(), viewer::select_vertices.data(), viewer::select_vertices.size(), limites, sorted);
 	debug(e_time)
 	
 	distance_t max_d = 0;

@@ -15,26 +15,27 @@ inline index_t end_v(const index_t & i, const vector<index_t> & limites);
 
 inline index_t iterations(const vector<index_t> & limites)
 {
-	index_t max_i = 1;
+/*	index_t max_i = 1;
 	for(index_t i = 2; i < limites.size(); i++)
 		if(limites[i] - limites[i - 1] >= limites[max_i] - limites[max_i - 1])
 			max_i = i;
-	
-//	return max_i + limites.size() + 1;
+
+	return max_i + limites.size() + 1;
+*/	
 	return limites.size() << 1;
 }
 
 inline index_t start_v(const index_t & i, const vector<index_t> & limites)
 {
-//	return limites[i >> 1];
-	return limites[i > CHE::band ? i - CHE::band : 1];
+	return limites[i >> 1];
+//	return limites[i > CHE::band ? i - CHE::band : 1];
 }
 
 inline index_t end_v(const index_t & i, const vector<index_t> & limites)
 {
-	index_t di = i - (i >> 1) - 2;
+/*	index_t di = i - (i >> 1) - 2;
 	di = i - (di >> 1);
-	//return limites[i < limites.size() ? i : limites.size() - 1];
+	*/
 	return i < limites.size() ? limites[i] : limites.back();
 }
 
