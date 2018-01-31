@@ -36,12 +36,10 @@ class dictionary
 		dictionary(che *const & _mesh, basis *const &_phi_basis, const size_t & _m, const size_t & _M, const distance_t & f, const bool & _plot = false);
 		virtual ~dictionary();
 
-	//	void denoising();
-	//	void super_resolution();
-	//  void inpaiting();
 	public:
 		void learning();
 		virtual void execute() = 0;
+		
 	protected:
 		void init_patches();
 		index_t sample(const index_t & s);

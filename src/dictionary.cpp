@@ -27,13 +27,13 @@ dictionary::dictionary(che *const & _mesh, basis *const & _phi_basis, const size
 		sampling.reserve(M);
 		assert(load_sampling(sampling, phi_basis->radio, mesh, M));
 	}
-	
+
 	s_radio = phi_basis->radio;
 	phi_basis->radio *= f;
 
 	patches.resize(M);
 	patches_map.resize(n_vertices);
-	
+
 	patch_t::del_index = false;
 	init_patches();
 
