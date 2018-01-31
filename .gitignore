@@ -2,4 +2,4 @@ obj/*
 tmp/*
 *.swp
 *.swo
-
+.vscode/*
