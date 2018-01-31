@@ -1,9 +1,10 @@
-# TesisCode
-shape analysis and geometry processing
+# gproshan
+geometry processing and shape analysis framework
+
+## Description
 
 ## Structure
-- code c/c++/cuda/matlab
-- thesis latex 
+- code c/c++/cuda
 
 ## Code dependencies (linux)
 - g++ 6.2 (default)
@@ -15,11 +16,9 @@ shape analysis and geometry processing
 - openblas
 - opengl
 - openmp
-- matlab
-- latex
+- gnuplot
 - libcgal
 
 ## Credits
 - Lizeth Joseline Fuentes Pérez
 - Luciano Arnaldo Romero Calla
-
