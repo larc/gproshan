@@ -18,7 +18,7 @@
 #include "che_poisson.h"
 #include "d_mesh_apps.h"
 #include "decimation.h"
-#include "dictionary.h"
+#include "denoising.h"
 #include "d_basis_dct.h"
 #include "d_basis_cosine.h"
 

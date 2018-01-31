@@ -283,9 +283,9 @@ void viewer_process_denoising()
 	cin >> n >> m >> M >> f >> learn;
 
 	basis * phi = new basis_dct(n);
-	dictionary dict(viewer::mesh(), phi, m, M, f, true);
+	denoising dict(viewer::mesh(), phi, m, M, f, true);
 	if(learn) dict.learning();
-	dict.denoising();
+	dict.execute();
 
 //	mesh_denoising(viewer::mesh(), viewer::select_vertices, freq, rt, m, M, f, learn);
 

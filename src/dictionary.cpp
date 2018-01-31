@@ -70,7 +70,7 @@ void dictionary::learning()
 
 	if(d_plot) phi_basis->plot_atoms(A);
 }
-
+/*
 void dictionary::inpaiting()
 {
 	d_message(iterative inpainting)
@@ -243,7 +243,8 @@ void dictionary::inpaiting()
 
 	delete [] levels;
 	
-}
+}*/
+/*
 void dictionary::denoising()
 {
 	d_message(sparse coding...)
@@ -259,7 +260,7 @@ void dictionary::denoising()
 	TOC(d_time)
 	debug(d_time)
 }
-
+*/
 void dictionary::init_patches()
 {
 	#pragma omp parallel for
