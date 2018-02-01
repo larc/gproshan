@@ -3,6 +3,9 @@
 
 #include "d_basis.h"
 
+// mesh dictionary learning and sparse coding namespace
+namespace mdict {
+
 class basis_dct: public basis
 {
 	private:
@@ -18,6 +21,8 @@ class basis_dct: public basis
 		vec dct(const vec & x, const vec & y, const index_t & nx, const index_t & ny);
 		void dct(ostream & os, const index_t & nx, const index_t & ny);
 };
+
+} // mdict
 
 #endif // D_BASIS_DCT_H
 

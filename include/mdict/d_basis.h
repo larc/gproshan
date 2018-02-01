@@ -9,6 +9,9 @@
 using namespace arma;
 using namespace std;
 
+// mesh dictionary learning and sparse coding namespace
+namespace mdict {
+
 class dictionary;
 
 class basis
@@ -28,6 +31,8 @@ class basis
 
 	friend class dictionary;
 };
+
+} // mdict
 
 #endif // D_BASIS_H
 

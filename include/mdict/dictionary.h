@@ -9,6 +9,9 @@
 
 using namespace arma;
 
+// mesh dictionary learning and sparse coding namespace
+namespace mdict {
+
 class dictionary
 {
 	protected:
@@ -44,6 +47,8 @@ class dictionary
 		void init_patches();
 		index_t sample(const index_t & s);
 };
+
+} // mdict
 
 #endif // DICTIONARY_H
 

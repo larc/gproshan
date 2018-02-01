@@ -2,6 +2,9 @@
 
 #include <cassert>
 
+// mesh dictionary learning and sparse coding namespace
+namespace mdict {
+
 basis_dct::basis_dct(const size_t & _n, const distance_t & _radio)
 {
 	radio = _radio;
@@ -51,4 +54,6 @@ void basis_dct::dct(ostream & os, const index_t & nx, const index_t & ny)
 	os << "cos( (pi * v * cos(u) * " << nx << " ) / " << radio << " ) *";
 	os << "cos( (pi * v * sin(u) * " << ny << " ) / " << radio << " )";
 }
+
+} // mdict
 

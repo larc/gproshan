@@ -6,6 +6,9 @@
 #include <vector>
 #include <fstream>
 
+// mesh dictionary learning and sparse coding namespace
+namespace mdict {
+
 void OMP(vec & alpha, vec & x, mat & D, size_t L)
 {
 	size_t n = x.n_elem;
@@ -132,4 +135,6 @@ void KSVDT(mat & A, vector<patch_t> & patches, size_t M, size_t L)
 		}
 	}
 }
+
+} // mdict
 

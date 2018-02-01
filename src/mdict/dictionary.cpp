@@ -8,6 +8,9 @@
 #include <cassert>
 #include <set>
 
+// mesh dictionary learning and sparse coding namespace
+namespace mdict {
+
 const size_t dictionary::min_nvp = 36;
 const size_t dictionary::L = 10;
 
@@ -313,4 +316,6 @@ index_t dictionary::sample(const index_t & s)
 	if(sampling.size()) return sampling[s];
 	return s;
 }
+
+} // mdict
 

@@ -17,6 +17,9 @@
 #include <functional>
 #include <cassert>
 
+// mesh dictionary learning and sparse coding namespace
+namespace mdict {
+
 void dictionary_learning_process(che * mesh, vector<index_t> & points, const size_t & freq,  size_t & rt, const size_t & m, size_t & M, const distance_t & f, const index_t & pf, const bool & op_dict)
 {
 	size_t K = freq * rt;
@@ -694,4 +697,6 @@ void mesh_iterative_inpaiting(che * mesh, vector<index_t> & points, size_t freq,
 {
 	dictionary_learning_process(mesh, points, freq, rt, m, M, f, 3, learn);
 }
+
+} // mdict
 

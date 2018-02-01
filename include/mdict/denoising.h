@@ -7,6 +7,9 @@
 
 using namespace arma;
 
+// mesh dictionary learning and sparse coding namespace
+namespace mdict {
+
 class denoising : public dictionary
 {
 	public:
@@ -15,5 +18,7 @@ class denoising : public dictionary
         void execute();
 
 };
+
+} // mdict
 
 #endif // DICTIONARY_H

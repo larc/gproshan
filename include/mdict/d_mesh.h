@@ -12,6 +12,9 @@
 
 using namespace arma;
 
+// mesh dictionary learning and sparse coding namespace
+namespace mdict {
+
 typedef void * params_t[];
 typedef void (* phi_function_t) (mat &, mat &, params_t);
 
@@ -105,5 +108,7 @@ vec non_local_means_vertex(mat & alpha, const index_t & v, vector<patch_t> & pat
 
 vec simple_means_vertex(mat & alpha, const index_t & v, vector<patch_t> & patches, vector<patches_map_t> & patches_map, const distance_t & h);
 
-#endif
+} // mdict
+
+#endif // D_MESH_H
 

@@ -8,6 +8,9 @@
 #include <cassert>
 #include <set>
 
+// mesh dictionary learning and sparse coding namespace
+namespace mdict {
+
 denoising::denoising(che *const & _mesh, basis *const & _phi_basis, const size_t & _m, const size_t & _M,
          const distance_t & _f, const bool & _plot): dictionary(_mesh, _phi_basis, _m, _M, _f, _plot)
          {
@@ -34,3 +37,6 @@ void denoising::execute()
 	TOC(d_time)
 	debug(d_time)
 }
+
+} // mdict
+

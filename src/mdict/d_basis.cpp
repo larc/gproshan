@@ -1,5 +1,8 @@
 #include "d_basis.h"
 
+// mesh dictionary learning and sparse coding namespace
+namespace mdict {
+
 void basis::plot_basis()
 {
 	string file = "tmp/basis.gpi";
@@ -60,4 +63,6 @@ void basis::plot_atoms(const mat & A)
 
 	debug(system(file.c_str()));
 }
+
+} // mdict
 

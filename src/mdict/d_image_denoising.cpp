@@ -4,6 +4,9 @@
 
 using namespace cimg_library;
 
+// mesh dictionary learning and sparse coding namespace
+namespace mdict {
+
 void test_image_denoising(string file)
 {
 	CImg<double> image(file.c_str());
@@ -90,4 +93,6 @@ void test_image_denoising(string file)
 	CImg<double> diff = abs(image - image_out);
 	(image, image_out, diff).display();
 }
+
+} // mdict
 

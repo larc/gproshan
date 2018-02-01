@@ -1,5 +1,8 @@
 #include "d_mesh.h"
 
+// mesh dictionary learning and sparse coding namespace
+namespace mdict {
+
 bool patch_t::del_index = false;
 
 vec gaussian(mat & xy, vertex_t sigma, vertex_t cx, vertex_t cy)
@@ -309,4 +312,6 @@ vec simple_means_vertex(mat & alpha, const index_t & v, vector<patch_t> & patche
 
 	return n_vec / patches_map[v].size();
 }
+
+} // mdict
 

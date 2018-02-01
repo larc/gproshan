@@ -3,6 +3,9 @@
 
 #include "d_basis.h"
 
+// mesh dictionary learning and sparse coding namespace
+namespace mdict {
+
 class basis_cosine: public basis
 {
 	private:
@@ -19,6 +22,8 @@ class basis_cosine: public basis
 		vec cosine(const vec & x, const vec & y, const vertex_t & c, const vertex_t & alpha);
 		void cosine(ostream & os, const vertex_t & c, const vertex_t & alpha);
 };
+
+} // mdict
 
 #endif // D_BASIS_COSSINE_H
 

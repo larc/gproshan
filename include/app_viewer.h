@@ -16,11 +16,11 @@
 #include "sampling.h"
 #include "che_fill_hole.h"
 #include "che_poisson.h"
-#include "d_mesh_apps.h"
 #include "decimation.h"
-#include "denoising.h"
-#include "d_basis_dct.h"
-#include "d_basis_cosine.h"
+#include "mdict/denoising.h"
+#include "mdict/d_basis_dct.h"
+#include "mdict/d_basis_cosine.h"
+#include "mdict/d_mesh_apps.h"
 
 void viewer_process_fairing_taubin();
 void viewer_process_fairing_spectral();

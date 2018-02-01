@@ -10,7 +10,7 @@ CC = g++
 LD = g++
 CUDA = nvcc
 CFLAGS = -O3 -fopenmp $(INCLUDE_PATH) $(CGAL_DEFINES) 
-CUDAFLAGS = --gpu-architecture=sm_50 -I./include/cuda -O3 -Xcompiler -fopenmp -D_FORCE_INLINES
+CUDAFLAGS = -I./include/cuda -O3 -Xcompiler -fopenmp -D_FORCE_INLINES
 LFLAGS = -O3 -fopenmp $(LIBRARY_PATH) -lcublas -lcuda -lcudart -lX11 -lpthread
 LIBS = $(OPENGL_LIBS) $(SUITESPARSE_LIBS) $(BLAS_LIBS) -larmadillo -lCGAL
 
@@ -18,7 +18,7 @@ LIBS = $(OPENGL_LIBS) $(SUITESPARSE_LIBS) $(BLAS_LIBS) -larmadillo -lCGAL
 ## !! Do not edit below this line
 
 HEADERS := $(wildcard include/*.h)
-SOURCES := $(wildcard src/*.cpp) $(wildcard src/viewer/*.cpp)
+SOURCES := $(wildcard src/*.cpp) $(wildcard src/viewer/*.cpp) $(wildcard src/mdict/*.cpp)
 CUDA_HEADERS := $(wildcard include/cuda/*.cuh)
 CUDA_SOURCES := $(wildcard src/cuda/*.cu)
 
@@ -35,6 +35,9 @@ obj/%.o: src/%.cpp | obj
 
 obj/%.o: src/viewer/%.cpp | obj
 	$(CC) -c $< -o $@ -I./include/viewer $(CFLAGS) 
+
+obj/%.o: src/mdict/%.cpp | obj
+	$(CC) -c $< -o $@ -I./include/mdict $(CFLAGS) 
 
 obj/%_cuda.o: src/cuda/%.cu | obj
 	$(CUDA) -dc $< -o $@ $(CUDAFLAGS)

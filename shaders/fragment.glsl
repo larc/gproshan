@@ -26,7 +26,7 @@ void main()
 {
    // color
    float d = 1. - gl_Color.r;
-   float r = (1. - d*d) * .8;
+   float r = (1. - d * d) * .8;
    float g = (1. - (2. * (d - .5)) * (2. * (d - .5))) * .7;
    float b = (1. - (1. - d) * (1. - d));
    vec3 color = vec3(r, g, b);
