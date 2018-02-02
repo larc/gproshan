@@ -19,6 +19,8 @@ class dictionary
 		size_t n_vertices;
 		
 		basis * phi_basis;
+
+		distance_t f;	// overlapping factor
 		size_t m;		// number of atoms
 		size_t M; 		// number of patches
 		mat A;			// dictionary continuous matrix
@@ -36,14 +38,14 @@ class dictionary
 		static const size_t L;
 
 	protected:
-		dictionary(che *const & _mesh, basis *const &_phi_basis, const size_t & _m, const size_t & _M, const distance_t & f, const bool & _plot = false);
+		dictionary(che *const & _mesh, basis *const &_phi_basis, const size_t & _m, const size_t & _M, const distance_t & _f, const bool & _plot);
 		virtual ~dictionary();
 
-	public:
-		void learning();
 		virtual void execute() = 0;
 		
-	protected:
+		void learning();
+		void sparse_coding();
+		void init_sampling();
 		void init_patches();
 		index_t sample(const index_t & s);
 };

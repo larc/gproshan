@@ -78,7 +78,7 @@ void paint_holes_vertices()
 
 void viewer_process_delete_non_manifold_vertices()
 {
-	debug_me(Processing:)
+	debug_me(APP_VIEWER)
 
 	debug_me(removing vertex);
 	viewer::mesh()->remove_non_manifold_vertices();
@@ -87,7 +87,7 @@ void viewer_process_delete_non_manifold_vertices()
 
 void viewer_process_delete_vertices()
 {
-	debug_me(Processing:)
+	debug_me(APP_VIEWER)
 
 	if(!viewer::select_vertices.size()) return;
 	debug_me(removing vertex);
@@ -109,25 +109,25 @@ void viewer_process_poisson(const index_t & k)
 
 void viewer_process_poisson_laplacian_1()
 {
-	debug_me(Processing:)
+	debug_me(APP_VIEWER)
 	viewer_process_poisson(1);
 }
 
 void viewer_process_poisson_laplacian_2()
 {
-	debug_me(Processing:)
+	debug_me(APP_VIEWER)
 	viewer_process_poisson(2);
 }
 
 void viewer_process_poisson_laplacian_3()
 {
-	debug_me(Processing:)
+	debug_me(APP_VIEWER)
 	viewer_process_poisson(3);
 }
 
 void viewer_process_fill_holes()
 {
-	debug_me(Processing:)
+	debug_me(APP_VIEWER)
 	
 	fill_all_holes(viewer::mesh());
 	
@@ -136,7 +136,7 @@ void viewer_process_fill_holes()
 
 void viewer_process_noise()
 {
-	debug_me(Processing:)
+	debug_me(APP_VIEWER)
 
 	srand(time(NULL));
 
@@ -153,7 +153,7 @@ void viewer_process_noise()
 
 void viewer_process_thresold()
 {
-	debug_me(Processing:)
+	debug_me(APP_VIEWER)
 
 	for(index_t v = 0; v < viewer::mesh()->n_vertices(); v++)
 		viewer::get_color(v) = viewer::get_color(v) > 0.5 ? 1 : 0.5;
@@ -161,7 +161,7 @@ void viewer_process_thresold()
 
 void viewer_process_wks()
 {
-	debug_me(Processing:)
+	debug_me(APP_VIEWER)
 	
 	size_t K = 20, T = 10;
 	
@@ -197,7 +197,7 @@ void viewer_process_wks()
 
 void viewer_process_hks()
 {
-	debug_me(Processing:)
+	debug_me(APP_VIEWER)
 	
 	size_t K = 20, T = 100;
 	
@@ -234,7 +234,7 @@ void viewer_process_hks()
 
 void viewer_process_gps()
 {
-	debug_me(Processing:)
+	debug_me(APP_VIEWER)
 	
 	size_t K = 20;
 	
@@ -273,7 +273,7 @@ void viewer_process_gps()
 
 void viewer_process_denoising()
 {
-	debug_me(Processing:)
+	debug_me(APP_VIEWER)
 	
 	size_t freq, rt; // cosine
 	size_t n; // dct
@@ -285,8 +285,7 @@ void viewer_process_denoising()
 	cin >> n >> m >> M >> f >> learn;
 
 	basis * phi = new basis_dct(n);
-	denoising dict(viewer::mesh(), phi, m, M, f, true);
-	if(learn) dict.learning();
+	denoising dict(viewer::mesh(), phi, m, M, f);
 	dict.execute();
 
 //	mesh_denoising(viewer::mesh(), viewer::select_vertices, freq, rt, m, M, f, learn);
@@ -297,7 +296,7 @@ void viewer_process_denoising()
 
 void viewer_process_super_resolution()
 {
-	debug_me(Processing:)
+	debug_me(APP_VIEWER)
 	
 	size_t freq, rt, m, M;
 	distance_t f;
@@ -312,7 +311,7 @@ void viewer_process_super_resolution()
 
 void viewer_process_inpaiting()
 {
-	debug_me(Processing:)
+	debug_me(APP_VIEWER)
 	
 	size_t freq, rt, m, M;
 	distance_t f;
@@ -330,7 +329,7 @@ void viewer_process_inpaiting()
 
 void viewer_process_iterative_inpaiting()
 {
-	debug_me(Processing:)
+	debug_me(APP_VIEWER)
 	
 	size_t freq, rt, m, M;
 	distance_t f;
@@ -347,7 +346,7 @@ void viewer_process_iterative_inpaiting()
 
 void viewer_process_multiplicate_vertices()
 {
-	debug_me(Processing:)
+	debug_me(APP_VIEWER)
 
 	viewer::mesh()->multiplicate_vertices();
 	
@@ -356,7 +355,7 @@ void viewer_process_multiplicate_vertices()
 
 void viewer_sort_by_rings()
 {
-	debug_me(Processing:)
+	debug_me(APP_VIEWER)
 	
 	index_t * rings = new index_t[viewer::mesh()->n_vertices()];
 	index_t * sorted = new index_t[viewer::mesh()->n_vertices()];
@@ -380,7 +379,7 @@ void viewer_process_fastmarching_cpu()
 {
 	if(!viewer::select_vertices.size()) return;
 	
-	debug_me(Processing:)
+	debug_me(APP_VIEWER)
 	
 	index_t * rings = new index_t[viewer::mesh()->n_vertices()];
 	index_t * sorted = new index_t[viewer::mesh()->n_vertices()];
@@ -402,7 +401,7 @@ void viewer_process_fastmarching_gpu()
 {
 	if(!viewer::select_vertices.size()) return;
 	
-	debug_me(Processing:)
+	debug_me(APP_VIEWER)
 	
 	index_t * rings = new index_t[viewer::mesh()->n_vertices()];
 	index_t * sorted = new index_t[viewer::mesh()->n_vertices()];
@@ -435,7 +434,7 @@ void viewer_process_voronoi()
 {
 	if(!viewer::select_vertices.size()) return;
 	
-	debug_me(Processing:)
+	debug_me(APP_VIEWER)
 	
 	index_t * rings = new index_t[viewer::mesh()->n_vertices()];
 	index_t * sorted = new index_t[viewer::mesh()->n_vertices()];
@@ -464,7 +463,7 @@ void viewer_process_voronoi()
 
 void viewer_process_farthest_point_sampling_radio()
 {
-	debug_me(Processing:)
+	debug_me(APP_VIEWER)
 	
 	if(!viewer::select_vertices.size())
 		viewer::select_vertices.push_back(0);
@@ -486,7 +485,7 @@ void viewer_process_farthest_point_sampling_radio()
 
 void viewer_process_farthest_point_sampling()
 {
-	debug_me(Processing:)
+	debug_me(APP_VIEWER)
 	
 	if(!viewer::select_vertices.size())
 		viewer::select_vertices.push_back(0);
@@ -503,7 +502,7 @@ void viewer_process_farthest_point_sampling()
 
 void viewer_process_fairing_spectral()
 {
-	debug_me(Processing:)
+	debug_me(APP_VIEWER)
 
 	fairing * fair = new fairing_spectral(50);
 	fair->run(viewer::mesh());
@@ -515,7 +514,7 @@ void viewer_process_fairing_spectral()
 
 void viewer_process_fairing_taubin()
 {
-	debug_me(Processing:)
+	debug_me(APP_VIEWER)
 
 	fairing * fair = new fairing_taubin;
 	fair->run(viewer::mesh());
@@ -527,7 +526,7 @@ void viewer_process_fairing_taubin()
 
 void viewer_process_geodesics()
 {
-	debug_me(Processing:)
+	debug_me(APP_VIEWER)
 	
 	TIC(e_time)
 	geodesics geodesic(viewer::mesh(), viewer::select_vertices);
@@ -548,7 +547,7 @@ void viewer_process_geodesics()
 
 void viewer_process_fastmarching()
 {
-	debug_me(Processing:)
+	debug_me(APP_VIEWER)
 	off shape(viewer::mesh()->filename());
 
 	#pragma omp parallel for
@@ -565,7 +564,7 @@ void viewer_process_fastmarching()
 
 void viewer_process_fill_holes_biharmonic_splines()
 {
-	debug_me(Processing:)
+	debug_me(APP_VIEWER)
 	
 	size_t old_n_vertices, n_vertices = viewer::mesh().n_vertices();
 	size_t n_holes = viewer::mesh()->n_borders();
@@ -592,7 +591,7 @@ void viewer_process_fill_holes_biharmonic_splines()
 
 void viewer_process_gaussian_curvature()
 {
-	debug_me(Processing:)
+	debug_me(APP_VIEWER)
 	
 	vertex_t g, g_max = -INFINITY, g_min = INFINITY;
 	vertex a, b;
@@ -644,7 +643,7 @@ void viewer_process_gaussian_curvature()
 
 void viewer_process_edge_collapse()
 {
-	debug_me(Processing:)
+	debug_me(APP_VIEWER)
 	
 	index_t levels;
 	cin >> levels;
@@ -661,7 +660,7 @@ void viewer_process_edge_collapse()
 
 void viewer_select_multiple()
 {
-	debug_me(Processing:)
+	debug_me(APP_VIEWER)
 	
 	char line[128];
 	if(fgets(line, 128, stdin))

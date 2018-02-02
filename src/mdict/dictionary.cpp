@@ -14,36 +14,10 @@ namespace mdict {
 const size_t dictionary::min_nvp = 36;
 const size_t dictionary::L = 10;
 
-dictionary::dictionary(che *const & _mesh, basis *const & _phi_basis, const size_t & _m, const size_t & _M, const distance_t & f, const bool & _d_plot):
-					mesh(_mesh), phi_basis(_phi_basis), m(_m), M(_M), d_plot(_d_plot)
+dictionary::dictionary(che *const & _mesh, basis *const & _phi_basis, const size_t & _m, const size_t & _M, const distance_t & _f, const bool & _d_plot):
+					mesh(_mesh), phi_basis(_phi_basis), m(_m), M(_M), f(_f), d_plot(_d_plot)
 {
-	n_vertices = mesh->n_vertices();
-
-	// load sampling
-	if(M == 0)
-	{
-		M = mesh->n_vertices();
-		phi_basis->radio = 3 * mesh->mean_edge();
-	}
-	else
-	{
-		sampling.reserve(M);
-		assert(load_sampling(sampling, phi_basis->radio, mesh, M));
-	}
-
-	s_radio = phi_basis->radio;
-	phi_basis->radio *= f;
-
-	patches.resize(M);
-	patches_map.resize(n_vertices);
-
-	patch_t::del_index = false;
-	init_patches();
-
 	A.eye(phi_basis->dim, m);
-	alpha.zeros(m, M);
-
-	if(d_plot) phi_basis->plot_basis();
 }
 
 dictionary::~dictionary()
@@ -53,6 +27,8 @@ dictionary::~dictionary()
 
 void dictionary::learning()
 {
+	debug_me(MDICT)
+
 	string f_dict = "tmp/" + mesh->name() + '_' + to_string(phi_basis->dim) + '_' + to_string(m) + ".dict";
 	debug(f_dict)
 
@@ -71,8 +47,21 @@ void dictionary::learning()
 	assert(A.n_rows == phi_basis->dim);
 	assert(A.n_cols == m);
 
-	if(d_plot) phi_basis->plot_atoms(A);
+	if(d_plot)
+	{
+		phi_basis->plot_basis();
+		phi_basis->plot_atoms(A);
+	}
 }
+
+void dictionary::sparse_coding()
+{
+	debug_me(MDICT)
+	
+	alpha.zeros(m, M);
+	OMP_all_patches_ksvt(alpha, A, patches, M, L);
+}
+
 /*
 void dictionary::inpaiting()
 {
@@ -264,8 +253,41 @@ void dictionary::denoising()
 	debug(d_time)
 }
 */
+
+void dictionary::init_sampling()
+{
+	debug_me(MDICT)
+	
+	n_vertices = mesh->n_vertices();
+	
+	// load sampling
+	if(M == 0)
+	{
+		M = mesh->n_vertices();
+		phi_basis->radio = 3 * mesh->mean_edge();
+	}
+	else
+	{
+		sampling.reserve(M);
+		assert(load_sampling(sampling, phi_basis->radio, mesh, M));
+	}
+		
+	// overlapping by factor "f"
+	s_radio = phi_basis->radio;
+	phi_basis->radio *= f;
+}
+
 void dictionary::init_patches()
 {
+	debug_me(MDICT)
+	
+	patch_t::del_index = true;
+
+	patches.resize(M);
+	patches_map.resize(n_vertices);
+
+	patch_t::del_index = false;
+	
 	#pragma omp parallel for
 	for(index_t s = 0; s < M; s++)
 	{
@@ -297,7 +319,7 @@ void dictionary::init_patches()
 		p.phi.set_size(p.n, phi_basis->dim);
 		phi_basis->discrete(p.phi, p.xyz);
 	}
-
+		
 	#ifndef NDEBUG
 		size_t patch_mean_size = 0;
 	
