@@ -3,10 +3,6 @@
 
 #include "dictionary.h"
 
-#include <armadillo>
-
-using namespace arma;
-
 // mesh dictionary learning and sparse coding namespace
 namespace mdict {
 
@@ -21,4 +17,5 @@ class denoising : public dictionary
 
 } // mdict
 
-#endif // DICTIONARY_H
+#endif // DENOISING_H
+

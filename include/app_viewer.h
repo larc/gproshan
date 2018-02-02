@@ -18,9 +18,8 @@
 #include "che_poisson.h"
 #include "decimation.h"
 #include "mdict/denoising.h"
+#include "mdict/super_resolution.h"
 #include "mdict/d_basis_dct.h"
-#include "mdict/d_basis_cosine.h"
-#include "mdict/d_mesh_apps.h"
 
 void viewer_process_fairing_taubin();
 void viewer_process_fairing_spectral();

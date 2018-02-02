@@ -216,11 +216,11 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 		run_omp_all();
 	};
 
-	auto multiresolution = [&]()
+	auto super_resolution = [&]()
 	{
 		run_omp_all();
 		
-		d_message(multiresolution)
+		d_message(super_resolution)
 		
 		mesh->multiplicate_vertices();
 		mesh->multiplicate_vertices();
@@ -618,7 +618,7 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 
 	vector<function<void(void)> > processs_app = {
 													denoising, 
-													multiresolution,
+													super_resolution,
 													inpainting,
 													iterative_inpainting,
 													non_local_inpainting

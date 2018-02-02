@@ -47,6 +47,8 @@ class dictionary
 		void sparse_coding();
 		void init_sampling();
 		void init_patches();
+		void mesh_reconstruction();
+
 		index_t sample(const index_t & s);
 };
 

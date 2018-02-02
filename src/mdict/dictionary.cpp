@@ -2,11 +2,10 @@
 
 #include "sampling.h"
 #include "d_dict_learning.h"
-
 #include "che_poisson.h"
 #include "che_fill_hole.h"
+
 #include <cassert>
-#include <set>
 
 // mesh dictionary learning and sparse coding namespace
 namespace mdict {
@@ -236,23 +235,6 @@ void dictionary::inpaiting()
 	delete [] levels;
 	
 }*/
-/*
-void dictionary::denoising()
-{
-	d_message(sparse coding...)
-	TIC(d_time)
-	OMP_all_patches_ksvt(alpha, A, patches, M, L);
-	TOC(d_time)
-
-	d_message(mesh reconstruction...)
-	assert(n_vertices == mesh->n_vertices());
-
-	TIC(d_time)
-	mesh_reconstruction(mesh, M, patches, patches_map, A, alpha);
-	TOC(d_time)
-	debug(d_time)
-}
-*/
 
 void dictionary::init_sampling()
 {
@@ -330,6 +312,14 @@ void dictionary::init_patches()
 		patch_mean_size /= M;
 		debug(patch_mean_size)
 	#endif
+}
+
+void dictionary::mesh_reconstruction()
+{
+	debug_me(MDICT)
+	
+	assert(n_vertices == mesh->n_vertices());
+	mdict::mesh_reconstruction(mesh, M, patches, patches_map, A, alpha);
 }
 
 index_t dictionary::sample(const index_t & s)

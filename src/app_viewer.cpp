@@ -281,7 +281,7 @@ void viewer_process_denoising()
 	distance_t f;
 	bool learn;
 
-	d_message(parametros (n, m, M, f, learn):)
+	d_message(parameters: (n, m, M, f, learn))
 	cin >> n >> m >> M >> f >> learn;
 
 	basis * phi = new basis_dct(n);
@@ -298,32 +298,30 @@ void viewer_process_super_resolution()
 {
 	debug_me(APP_VIEWER)
 	
-	size_t freq, rt, m, M;
+	size_t freq, rt; // cosine
+	size_t n; // dct
+	size_t m, M;
 	distance_t f;
 	bool learn;
-	
-	d_message(parameters:)	
-	d_message((freq, rt, m, M, f, learn))
-	cin >> freq >> rt >> m >> M >> f >> learn;
 
-	mesh_super_resolution(viewer::mesh(), viewer::select_vertices, freq, rt, m, M, f, learn);
+	d_message(parameters: (n, m, M, f, learn))
+	cin >> n >> m >> M >> f >> learn;
+
+	basis * phi = new basis_dct(n);
+	super_resolution dict(viewer::mesh(), phi, m, M, f);
+	dict.execute();
+
+//	mesh_super_resolution(viewer::mesh(), viewer::select_vertices, freq, rt, m, M, f, learn);
+	
+	delete phi;
+	viewer::mesh().update_normals();
 }	
 
 void viewer_process_inpaiting()
 {
 	debug_me(APP_VIEWER)
 	
-	size_t freq, rt, m, M;
-	distance_t f;
-	bool learn;
-	
-	d_message(parameters:)	
-	d_message((freq, rt, m, M, f, learn))
-	cin >> freq >> rt >> m >> M >> f >> learn;
-
-	mesh_inpaiting(viewer::mesh(), viewer::select_vertices, freq, rt, m, M, f, learn);
-	
-	paint_holes_vertices();
+//	mesh_inpaiting(viewer::mesh(), viewer::select_vertices, freq, rt, m, M, f, learn);
 }
 
 
@@ -331,17 +329,7 @@ void viewer_process_iterative_inpaiting()
 {
 	debug_me(APP_VIEWER)
 	
-	size_t freq, rt, m, M;
-	distance_t f;
-	bool learn;
-	
-	d_message(parameters:)	
-	d_message((freq, rt, m, M, f, learn))
-	cin >> freq >> rt >> m >> M >> f >> learn;
-
-	mesh_iterative_inpaiting(viewer::mesh(), viewer::select_vertices, freq, rt, m, M, f, learn);
-
-	paint_holes_vertices();
+//	mesh_iterative_inpaiting(viewer::mesh(), viewer::select_vertices, freq, rt, m, M, f, learn);
 }
 
 void viewer_process_multiplicate_vertices()
