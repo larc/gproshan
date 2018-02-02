@@ -3,13 +3,12 @@ LIBRARY_PATH		=
 BLAS_LIBS			= -lumfpack
 SUITESPARSE_LIBS	= -lspqr -lcholmod
 OPENGL_LIBS			= -lglut -lGL -lGLU
-CGAL_DEFINES		= -DCGAL_EIGEN3_ENABLED -DCGAL_USE_BOOST_PROGRAM_OPTIONS -DCGAL_USE_GMP -DCGAL_USE_MPFR
 
 TARGET = gproshan
 CC = g++
 LD = g++
 CUDA = nvcc
-CFLAGS = -O3 -fopenmp $(INCLUDE_PATH) $(CGAL_DEFINES) 
+CFLAGS = -O3 -fopenmp $(INCLUDE_PATH) 
 CUDAFLAGS = -I./include/cuda -O3 -Xcompiler -fopenmp -D_FORCE_INLINES
 LFLAGS = -O3 -fopenmp $(LIBRARY_PATH) -lcublas -lcuda -lcudart -lX11 -lpthread
 LIBS = $(OPENGL_LIBS) $(SUITESPARSE_LIBS) $(BLAS_LIBS) -larmadillo -lCGAL

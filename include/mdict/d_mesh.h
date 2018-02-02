@@ -7,6 +7,11 @@
 
 #include <armadillo>
 
+#define CGAL_EIGEN3_ENABLED
+#define CGAL_USE_BOOST_PROGRAM_OPTIONS 
+#define CGAL_USE_GMP 
+#define DCGAL_USE_MPFR
+
 #include <CGAL/Simple_cartesian.h>
 #include <CGAL/Monge_via_jet_fitting.h>
 
