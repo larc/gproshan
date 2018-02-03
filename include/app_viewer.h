@@ -19,6 +19,7 @@
 #include "decimation.h"
 #include "mdict/denoising.h"
 #include "mdict/super_resolution.h"
+#include "mdict/inpainting.h"
 #include "mdict/d_basis_dct.h"
 
 void viewer_process_fairing_taubin();

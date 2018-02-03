@@ -321,7 +321,23 @@ void viewer_process_inpaiting()
 {
 	debug_me(APP_VIEWER)
 	
-//	mesh_inpaiting(viewer::mesh(), viewer::select_vertices, freq, rt, m, M, f, learn);
+	size_t freq, rt; // cosine
+	size_t n; // dct
+	size_t m, M;
+	distance_t f;
+	bool learn;
+
+	d_message(parameters: (n, m, M, f, learn))
+	cin >> n >> m >> M >> f >> learn;
+
+	basis * phi = new basis_dct(n);
+	inpainting dict(viewer::mesh(), phi, m, M, f);
+	dict.execute();
+
+//	mesh_inpainting(viewer::mesh(), viewer::select_vertices, freq, rt, m, M, f, learn);
+	
+	delete phi;
+	viewer::mesh().update_normals();
 }
 
 
