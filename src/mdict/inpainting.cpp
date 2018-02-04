@@ -10,27 +10,27 @@ inpainting::inpainting(che *const & _mesh, basis *const & _phi_basis, const size
 void inpainting::execute()
 {
 
-	size_t old_n_vertices = mesh->n_vertices();
+	n_vertices = mesh->n_vertices();
 	delete [] fill_all_holes(mesh);
 	
-	TIC(d_time) poisson(mesh, old_n_vertices, 2); TOC(d_time)
+	TIC(d_time) poisson(mesh, n_vertices, 2); TOC(d_time)
 	debug(d_time)
-	
-	debug(old_n_vertices)
+
 	debug(n_vertices)
 
 	TIC(d_time) init_sampling(); TOC(d_time)
 	debug(d_time)
 
-	M = old_n_vertices;
+// Here modify the patches function inside 
 
-	TIC(d_time) init_patches(); TOC(d_time)
+	TIC(d_time) init_patches(n_vertices); TOC(d_time)
 	debug(d_time)
 	
 	TIC(d_time) learning(); TOC(d_time)
 	debug(d_time)
-
-	M = mesh->n_vertices();
+	
+	// Updating mesh n vertices after learning
+	n_vertices = mesh->n_vertices();
 
 	TIC(d_time) init_patches(); TOC(d_time)
 	debug(d_time)

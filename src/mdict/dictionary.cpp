@@ -84,14 +84,18 @@ void dictionary::init_sampling()
 	phi_basis->radio *= f;
 }
 
-void dictionary::init_patches()
+void dictionary::init_patches(size_t threshold)
 {
 	debug_me(MDICT)
 	
 	patch_t::del_index = true;
 
 	patches.resize(M);
-	patches_map.resize(n_vertices);
+
+	if (! threshold)
+		patches_map.resize(n_vertices); // Default
+	else
+		patches_map.resize(threshold);
 
 	patch_t::del_index = false;
 	
@@ -104,8 +108,13 @@ void dictionary::init_patches()
 		geodesics fm(mesh, {v}, NIL, phi_basis->radio);
 
 		p.n = fm.get_n_radio();
+		
 		p.indexes = new index_t[p.n];
 		fm.get_sort_indexes(p.indexes, p.n);
+		
+		// Control the indexes to restrict to the threshold parameters
+		if (threshold)
+			p.n = threshold;
 	}
 	
 	for(index_t s = 0; s < M; s++)
