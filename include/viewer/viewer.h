@@ -67,11 +67,14 @@ class viewer
 		static vector<vertex> vectors;
 		static vector<string> sub_menus;
 		
+		static const int & window_width();
+		static const int & window_height();
+	
 		static che_viewer & mesh(); //get current che_viewer mesh
 		static color_t & get_color(const index_t & i);
 		static void add_process(const char & key, const string & name, function_t function);
 		static void add_mesh(const vector<che *> & _meshes);
-	
+
 	protected:
 		// init
 		static void debug_info();
@@ -83,13 +86,13 @@ class viewer
 		// GLUT callbacks
 		static void display();
 		static void idle();
-		static void keyboard( unsigned char c, int x, int y );
-		static void special( int i, int x, int y );
-		static void mouse( int button, int state, int x, int y );
-		static void motion( int x, int y );
+		static void keyboard(unsigned char c, int x, int y);
+		static void special(int i, int x, int y);
+		static void mouse(int button, int state, int x, int y);
+		static void motion(int x, int y);
 		static void menu(int value);
-		static void menu_process( int value );
-		static void menu_meshes( int value );
+		static void menu_process(int value);
+		static void menu_meshes(int value);
 		
 		// menu functions
 		static void mProcess(function_t pro);
@@ -128,7 +131,7 @@ class viewer
 		static void storeviewerState();
 		static void restoreviewerState();
 	
-		static int windowSize[2];
+		static int window_size[2];
 
 		static camera cam;
 		// keeps track of view state
@@ -148,5 +151,7 @@ class viewer
 		static map<unsigned char, process_t> processes;
 };
 
-#endif
+void draw_str(const char * str, int x, int y, float color[4], void * font);
+
+#endif // VIEWER_VIEWER_H
 

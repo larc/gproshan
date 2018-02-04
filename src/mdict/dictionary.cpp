@@ -36,10 +36,7 @@ void dictionary::learning()
 		A.eye(phi_basis->dim, m);
 		// A.random(phi_basis->dim, m);
 
-		d_message(dictionary learning...)
-		TIC(d_time) KSVDT(A, patches, M, L); TOC(d_time)
-		debug(d_time)
-
+		KSVDT(A, patches, M, L);
 		A.save(f_dict);
 	}
 

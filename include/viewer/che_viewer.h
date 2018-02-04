@@ -47,6 +47,7 @@ class che_viewer
 		void draw_wireframe();
 		void draw_normal_field();
 		void draw_gradient_field();
+		void draw_mesh_info();
 		
 		const size_t & n_vertices() const;
 		color_t & color(const index_t & v);

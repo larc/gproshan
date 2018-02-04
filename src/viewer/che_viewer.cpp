@@ -1,4 +1,5 @@
 #include "che_viewer.h"
+#include "viewer.h"
 
 #include <GLES3/gl3.h>
 
@@ -17,7 +18,7 @@ che_viewer::~che_viewer()
 {
 	if(!mesh) return;
 	
-	glDeleteBuffers(4, vbo);  
+	glDeleteBuffers(4, vbo);
 	glDeleteVertexArrays(1, &vao);
 	
 	if(normals) delete [] normals;
@@ -110,8 +111,6 @@ void che_viewer::update_vbo()
 	// INDEXES
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[3]);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh->n_half_edges() * sizeof(index_t), &mesh->vt(0), GL_STATIC_DRAW);
-//	glEnableVertexAttribArray(3);
-//	glVertexAttribPointer(3, 3, GL_UNSIGNED_INT, GL_FALSE, 0, 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
@@ -220,6 +219,46 @@ void che_viewer::draw_gradient_field()
 	}
 	
 	glPopAttrib();
+}
+
+void che_viewer::draw_mesh_info()
+{
+	if(!mesh) return;
+	
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
+	gluOrtho2D(0, viewer::window_width(), 0, viewer::window_height());
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glLoadIdentity();
+	
+	char str[256];
+	float color[4] = {1, 1, 0, 1};
+	int h = 2, dh = 16;
+	
+	sprintf(str, "%9lu n_vertices", mesh->n_vertices());
+	draw_str(str, 10, viewer::window_height() - (h += 18), color, GLUT_BITMAP_8_BY_13);
+	
+	sprintf(str, "%9lu n_faces", mesh->n_faces());
+	draw_str(str, 10, viewer::window_height() - (h += 18), color, GLUT_BITMAP_8_BY_13);
+	
+	sprintf(str, "%9lu n_edges", mesh->n_edges());
+	draw_str(str, 10, viewer::window_height() - (h += 18), color, GLUT_BITMAP_8_BY_13);
+	
+	sprintf(str, "%9lu n_half_edges", mesh->n_half_edges());
+	draw_str(str, 10, viewer::window_height() - (h += 18), color, GLUT_BITMAP_8_BY_13);
+	
+	sprintf(str, "%9lu n_borders", mesh->n_borders());
+	draw_str(str, 10, viewer::window_height() - (h += 18), color, GLUT_BITMAP_8_BY_13);
+
+	//sprintf(str, "%9.3lf quality", mesh->quality());
+	//draw_str(str, 10, viewer::window_height() - (h += 18), color, GLUT_BITMAP_8_BY_13);
+	
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+	glMatrixMode(GL_MODELVIEW);
+	glPopMatrix();
 }
 
 const size_t & che_viewer::n_vertices() const

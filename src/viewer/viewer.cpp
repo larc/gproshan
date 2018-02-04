@@ -1,3 +1,5 @@
+#include "viewer.h"
+
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
@@ -7,34 +9,6 @@
 #include <cassert>
 
 using namespace std;
-
-#include "viewer.h"
-
-void drawText(const char *text, int length, int x, int y)
-{
-	glColor3f(0, 1, 0);
-	glDisable(GL_LIGHTING);
-
-	glMatrixMode(GL_PROJECTION); // change the current matrix to PROJECTION
-	glPushMatrix(); // push current state of MODELVIEW matrix to stack
-	glLoadIdentity(); // reset PROJECTION matrix to identity matrix
-	glOrtho(0, 800, 0, 600, -5, 5); // orthographic perspective
-	glMatrixMode(GL_MODELVIEW); // change current matrix to MODELVIEW matrix again
-	glLoadIdentity(); // reset it to identity matrix
-	glPushMatrix(); // push current state of MODELVIEW matrix to stack
-
-	glRasterPos2i(x, y); // raster position in 2D
-	for(int i = 0; i < length; i++)
-		glutBitmapCharacter(GLUT_BITMAP_9_BY_15, (int)text[i]); // generation of characters in our text with 9 by 15 GLU font
-	
-	glPopMatrix(); // reset
-	glMatrixMode(GL_PROJECTION); // change current matrix mode to PROJECTION
-	glPopMatrix(); // reset
-	glMatrixMode(GL_MODELVIEW); // change current matrix mode to MODELVIEW
-	
-	glEnable(GL_LIGHTING);
-}
-
 
 // declare static member variables
 che_viewer viewer::meshes[N_MESHES];
@@ -46,7 +20,7 @@ vector<vertex> viewer::other_vertices;
 vector<vertex> viewer::vectors;
 vector<string> viewer::sub_menus;
 
-int viewer::windowSize[2] = { 1366, 768 };
+int viewer::window_size[2] = {1366, 768};
 camera viewer::cam;
 shader viewer::shader_program;
 bool viewer::render_wireframe = false;
@@ -60,6 +34,16 @@ float viewer::bgc = 0.;
 
 map<unsigned char, process_t> viewer::processes;
 
+const int & viewer::window_width()
+{
+	return window_size[0];
+}
+
+const int & viewer::window_height()
+{
+	return window_size[1];
+}
+
 che_viewer & viewer::mesh()
 {
 	assert(n_meshes > 0);
@@ -68,15 +52,16 @@ che_viewer & viewer::mesh()
 
 void viewer::init(const vector<che *> & _meshes)
 {
-	//restoreviewerState();
+//	restoreviewerState();
+	
 	initGLUT();
 	add_mesh(_meshes);	
 
 	glutSetWindowTitle(mesh()->filename().c_str());
 	init_menus();
 	
-	debug_info();
-	mesh().debug_info();
+//	debug_info();
+//	mesh().debug_info();
 
 	setGL();
 	initGLSL();
@@ -106,7 +91,7 @@ void viewer::initGLUT()
 	vector< vector<char> > argv(1);
 	
 	// initialize window
-	glutInitWindowSize(windowSize[0], windowSize[1]);
+	glutInitWindowSize(window_size[0], window_size[1]);
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
 	glutInit(&argc, (char**)&argv);
 	glutCreateWindow("che_viewer");
@@ -315,8 +300,8 @@ void viewer::restoreviewerState(void)
 	in >> cam.rLast[1];
 	in >> cam.rLast[2];
 	in >> cam.rLast[3];
-	in >> windowSize[0];
-	in >> windowSize[1];
+	in >> window_size[0];
+	in >> window_size[1];
 }
 
 void viewer::mProcess(function_t pro)
@@ -419,6 +404,7 @@ void viewer::display()
 	const double clipNear = .01;
 	const double clipFar = 1000.;
 	gluPerspective(fovy, aspect, clipNear, clipFar);
+//	glFrustum(-1.0, 1.0, -1.0, 1.0, 1.5, 20.0);	
 	
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -498,7 +484,7 @@ void viewer::setMeshMaterial()
 	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE,	diffuse);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specular);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT,	ambient);
-	glMaterialf (GL_FRONT_AND_BACK, GL_SHININESS, 16.		);
+	glMaterialf (GL_FRONT_AND_BACK, GL_SHININESS, 16.);
 }
 
 void viewer::drawScene()
@@ -515,19 +501,13 @@ void viewer::drawScene()
 	if(render_normal_field) drawNormalField();
 	if(render_border) drawBorder();
 	if(render_corr) draw_corr();
-
+	
 	drawIsolatedVertices();
 	drawVectors();
 	drawSelectedVertices();
-/*	
-	char text[50];
-	int n_text;
-	n_text = sprintf(text, "%15s: %llu", "Vertices", mesh()->n_vertices());
-	drawText(text, n_text, 50, 100);
-	n_text = sprintf(text, "%15s: %llu", "Faces", mesh()->n_faces());
-	drawText(text, n_text, 50, 88);
-*/		
-//	glPopAttrib();
+	
+	shader_program.disable();
+	mesh().draw_mesh_info();
 }
 
 void viewer::drawPolygons()
@@ -772,5 +752,21 @@ void viewer::pickVertex(int x, int y)
 			debug(corr_mesh[current][index].alpha)
 		select_vertices.push_back(index);
 	}
+}
+
+void draw_str(const char * str, int x, int y, float color[4], void * font)
+{
+	glPushAttrib(GL_LIGHTING_BIT | GL_CURRENT_BIT);
+	glDisable(GL_LIGHTING);
+	glDisable(GL_TEXTURE_2D);
+
+	glColor4fv(color);
+	glRasterPos2i(x, y);
+
+	while(*str) glutBitmapCharacter(font, *str++);
+	
+	glEnable(GL_TEXTURE_2D);
+	glEnable(GL_LIGHTING);
+	glPopAttrib();
 }
 
