@@ -20,7 +20,7 @@
 // mesh dictionary learning and sparse coding namespace
 namespace mdict {
 
-void dictionary_learning_process(che * mesh, vector<index_t> & points, const size_t & freq,  size_t & rt, const size_t & m, size_t & M, const distance_t & f, const index_t & pf, const bool & op_dict)
+void dictionary_learning_process(che * mesh, vector<index_t> & points, const size_t & freq, size_t & rt, const size_t & m, size_t & M, const distance_t & f, const index_t & pf, const bool & op_dict)
 {
 	size_t K = freq * rt;
 	patch_t::del_index = false;
@@ -596,7 +596,7 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 			d_min = INFINITY;
 
 			for(index_t i = 0; i < M; i++)
-				if( norm(alpha.col(s) - alpha.col(i)) < d_min  )
+				if( norm(alpha.col(s) - alpha.col(i)) < d_min )
 				{
 					d_min = norm(alpha.col(s) - alpha.col(i));
 					arg_min = i;
@@ -685,7 +685,7 @@ void mesh_denoising(che * mesh, vector<index_t> & points, const size_t & freq, s
 
 void mesh_inpaiting(che * mesh, vector<index_t> & points, size_t freq, size_t rt, size_t m, size_t M, double f, const bool & learn)
 {
-	dictionary_learning_process(mesh, points, freq, rt,  m, M, f, 2, learn);
+	dictionary_learning_process(mesh, points, freq, rt, m, M, f, 2, learn);
 }
 
 void mesh_super_resolution(che * mesh, vector<index_t> & points, size_t freq, size_t rt, size_t m, size_t M, double f, const bool & learn)

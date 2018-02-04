@@ -234,7 +234,7 @@ void che_viewer::draw_mesh_info()
 	glLoadIdentity();
 	
 	char str[256];
-	float color[4] = {1, 1, 0, 1};
+	float color[4] = {1, .75, .25, 1};
 	int h = 2, dh = 16;
 	
 	sprintf(str, "%9lu n_vertices", mesh->n_vertices());
@@ -284,7 +284,6 @@ vertex *& che_viewer::normals_ptr()
 void che_viewer::translate(const vertex & p)
 {
 	v_translate = p;
-	debug(v_translate)
 
 	#pragma omp parallel for
 	for(index_t v = 0; v < mesh->n_vertices(); v++)

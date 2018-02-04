@@ -138,7 +138,7 @@ che * mesh_fill_hole(che * mesh, const vector<index_t> & border_vertices, const 
 			
 			if(i != p.first)
 			{
-				merge_vertices[c].push_back(vertices[c].size() + hole->n_vertices() -  merge_vertices[!c].size());
+				merge_vertices[c].push_back(vertices[c].size() + hole->n_vertices() - merge_vertices[!c].size());
 				n_v += add_border_vertices(p.first, i > 0 ? i - 1 : size - 1 , hole->n_vertices() - merge_vertices[!c].size());
 			}
 			else merge_vertices[c].push_back(merge_vertices[!c].front());
@@ -879,17 +879,17 @@ void get_vertex_tri(che * mesh, vector<index_t> & select_vertices, vector<vertex
 	distance_t aux = wp * tri_sizes[0];
 	distance_t wo = (1 - aux) / ( tri_sizes[1] + tri_sizes[2] );
 
-	triangle.push_back( (wp * tri[0]) +  wo * (tri[1] + tri[2]) );
+	triangle.push_back( (wp * tri[0]) + wo * (tri[1] + tri[2]) );
 
 	aux = wp * tri_sizes[1];
 	wo = (1 - aux) / ( tri_sizes[0] + tri_sizes[2] );
 
-	triangle.push_back( (wp * tri[1]) +  wo * (tri[0] + tri[2]) );
+	triangle.push_back( (wp * tri[1]) + wo * (tri[0] + tri[2]) );
 
 	aux = wp * tri_sizes[2];
 	wo = (1 - aux) / ( tri_sizes[0] + tri_sizes[1] );
 
-	triangle.push_back( (wp * tri[2]) +  wo * (tri[0] + tri[1]) );
+	triangle.push_back( (wp * tri[2]) + wo * (tri[0] + tri[1]) );
 }
 
 che * fill_hole_center_triangle(che * mesh, vector<index_t> & select_vertices, index_t index)

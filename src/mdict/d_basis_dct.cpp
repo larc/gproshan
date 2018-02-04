@@ -26,7 +26,7 @@ void basis_dct::discrete(mat & phi, const mat & xy)
 
 void basis_dct::plot_basis(ostream & os)
 {
-	os << "set multiplot layout " << n  << "," << n << " rowsfirst scale 1.2;" << endl;
+	os << "set multiplot layout " << n << "," << n << " rowsfirst scale 1.2;" << endl;
 	
 	for(index_t nx = 0; nx < n; nx++)
 	for(index_t ny = 0; ny < n; ny++)

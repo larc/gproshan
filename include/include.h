@@ -35,8 +35,8 @@ typedef std::pair<area_t,size_t> areapair_t;
 
 
 #ifndef NDEBUG
-	#define debug(vari) cerr << "\033[0;33m" << setprecision(9) << #vari << ":\033[0m " << (vari) << endl;
-	#define debug_me(message) fprintf(stderr, "\033[0;31m%s: %s (%s:%d)\n\033[0m", #message, __FUNCTION__, __FILE__, __LINE__);
+	#define debug(vari) cerr << "\033[0;33m" << setprecision(9) << #vari << ":\033[0m " << (vari) << "\t\033[38;5;210m" << __FILE__ ":" << __LINE__ << " > " << __FUNCTION__ << "\033[0m" << endl;
+	#define debug_me(message) fprintf(stderr, "\033[1;31m%s: %s (%s:%d)\n\033[0m", #message, __FUNCTION__, __FILE__, __LINE__);
 	#define d_message(message) fprintf(stderr, "\033[0;33m%s\n\033[0m", #message);
 #else
 	#define debug(vari)

@@ -171,7 +171,7 @@ void geodesics::run(che * mesh)
 	mesh->sort_by_rings(rings, sorted, limites, sources);
 
 	for(index_t i = 0; i < n_vertices; i++)
-		cout << i << " " << rings[i] << " " << updates[i] << " " << (rings[i] + 1)/ 2  << endl;
+		cout << i << " " << rings[i] << " " << updates[i] << " " << (rings[i] + 1)/ 2 << endl;
 	
 	debug(limites.size())
 	delete [] rings;

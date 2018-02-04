@@ -147,12 +147,12 @@ void fastmarching::print_path(off & model, path p, ostream & os, distance_t d, s
 	else
 	{
 		//cout<<d<<" -> "<<p1<<" ** "<<*(model(source) - p.v)<<endl;
-		print_path(model, r1, os,  d - *(p.v - r1.v), source);
+		print_path(model, r1, os, d - *(p.v - r1.v), source);
 	}
 }
 
 /*
- * Color of vertices: black green red are  0 1 2  respectively
+ * Color of vertices: black green red are 0 1 2 respectively
  */
 void fastmarching::calcular_FM(off & model, vector<index_t> & source)
 {

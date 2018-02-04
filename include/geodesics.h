@@ -26,7 +26,7 @@ class geodesics
 
 	public:
 		geodesics(che * mesh, const vector<index_t> & _sources, size_t _n_iter = 0,
-				  distance_t _radio = INFINITY, bool normalized = 0, bool parallel = 0, bool _spherical = 0);
+				 distance_t _radio = INFINITY, bool normalized = 0, bool parallel = 0, bool _spherical = 0);
 		virtual ~geodesics();
 		index_t operator[](index_t i);
 		index_t farthest();

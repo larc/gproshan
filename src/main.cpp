@@ -113,7 +113,7 @@ void main_test_holes()
 			os << h * 1.0 / h_size << " " << histograma[h] << endl;
 		os.close();
 
-		printf("%15s & %10lu & %10lu & %10.3f ", shape->name().c_str(), old_n_vertices, shape->n_vertices() - old_n_vertices, quality  * 100 / n_faces);
+		printf("%15s & %10lu & %10lu & %10.3f ", shape->name().c_str(), old_n_vertices, shape->n_vertices() - old_n_vertices, quality * 100 / n_faces);
 		printf("& %10.3f ", time);
 		
 		for(index_t k = 1; k <=3; k++)
@@ -323,7 +323,7 @@ void sampling_terrain(string file, size_t s, size_t K, string output, string pla
 {
 	file = PATH_MDATA + file;
 	che * shape_che = new che_off(file);
-	size_t n =  sqrt(shape_che->n_vertices());
+	size_t n = sqrt(shape_che->n_vertices());
 	cout<<n<<endl;
 
 	output = PATH_TEST + output;
@@ -392,10 +392,10 @@ double main_testkeycomponents()
 			string comand="";
 			sprintf(buffer, "%d-%0.2f", i, pj);
 			string tmp (buffer);
-			comand =  comand + "mkdir " + PATH_KCS + tmp;
+			comand = comand + "mkdir " + PATH_KCS + tmp;
 			system (comand.c_str());
 			comand="";
-			comand =  comand + "mkdir " + PATH_KPS + tmp;
+			comand = comand + "mkdir " + PATH_KPS + tmp;
 			system (comand.c_str());
 			testkeycomponents prueba(i, pj);
 			cout<<buffer<<endl;
@@ -449,7 +449,7 @@ void generate_grid_obtuse(const size_t & nr, const size_t & nc, const vertex_t &
 	index_t f = 0;
 	for(index_t i = 0, v = nvg; v < nv; v++)
 	{
-		i = !((v - nvg) % (nc - 1)) ?  ((v - nvg) / (nc - 1)) * 2 * nc : i + 1;
+		i = !((v - nvg) % (nc - 1)) ? ((v - nvg) / (nc - 1)) * 2 * nc : i + 1;
 		debug(i)
 		vertices[v] = vertices[i + nc];
 		vertices[v].y += dd / 2;

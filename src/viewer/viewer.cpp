@@ -60,7 +60,7 @@ void viewer::init(const vector<che *> & _meshes)
 	glutSetWindowTitle(mesh()->filename().c_str());
 	init_menus();
 	
-//	debug_info();
+	debug_info();
 //	mesh().debug_info();
 
 	setGL();
@@ -200,7 +200,7 @@ void viewer::add_process(const char & key, const string & name, function_t funct
 	{
 		processes[key] = {(index_t) sub_menus.size() - 1, name, function};
 	}
-	else cerr << "Repeat key: " << key << endl;  
+	else cerr << "Repeat key: " << key << endl; 
 }
 
 void viewer::add_mesh(const vector<che *> & _meshes)

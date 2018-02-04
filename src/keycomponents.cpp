@@ -139,7 +139,7 @@ void keycomponents::calcular_krings(off & shape)
 
 	for(size_t i = 0; i < n_keypoints; i++)
 	{
-		centers[*components[v_keypoints[i]]] +=  shape(v_keypoints[i]);
+		centers[*components[v_keypoints[i]]] += shape(v_keypoints[i]);
 		nro_x_comp[*components[v_keypoints[i]]]++;
 	}
 
@@ -331,7 +331,7 @@ void keycomponents::agrupar_kpoints(off & shape)
 			index = components[v_keypoints[i]];
 
 		memset(marcados, 0, sizeof(size_t)*n_vertices);
-		agrupar_kpoints(shape, v_keypoints[i], index, k,  keypoints);
+		agrupar_kpoints(shape, v_keypoints[i], index, k, keypoints);
 	}
 
 	delete [] keypoints;
@@ -343,9 +343,9 @@ void keycomponents::agrupar_kpoints(off & shape, size_t p, size_t * index, size_
 
 	size_t ir;
 	marcados[p] = kr;
-	if( keypoints[p] && !components[p]  )
+	if( keypoints[p] && !components[p] )
 		components[p] = index;
-	else if(  keypoints[p] && *components[p] != *index)
+	else if( keypoints[p] && *components[p] != *index)
 	{
 		ir = *components[p];
 

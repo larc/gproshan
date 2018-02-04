@@ -3,19 +3,18 @@
 using namespace mdict;
 
 // elapsed time in seconds
-float e_time;
+float load_time;
 
 int viewer_main(int nargs, char ** args)
 {
 	if(nargs < 2) return 0;
 
-	TIC(e_time)
+	TIC(load_time)
 	vector<che *> meshes;
 	for(int i = 1; i < nargs; i++)
 		meshes.push_back(new che_off(args[i]));
-	TOC(e_time)
-
-	debug(e_time)	
+	TOC(load_time)
+	debug(load_time)	
 
 	viewer::sub_menus.push_back("Fairing");
 	viewer::add_process('T', "Fairing Taubin", viewer_process_fairing_taubin);
@@ -101,8 +100,8 @@ void viewer_process_poisson(const index_t & k)
 	size_t old_n_vertices = viewer::mesh()->n_vertices();
 	delete [] fill_all_holes(viewer::mesh());
 	
-	TIC(e_time) poisson(viewer::mesh(), old_n_vertices, k); TOC(e_time)
-	debug(e_time)
+	TIC(load_time) poisson(viewer::mesh(), old_n_vertices, k); TOC(load_time)
+	debug(load_time)
 	
 	paint_holes_vertices();
 }
@@ -167,15 +166,15 @@ void viewer_process_wks()
 	
 	sp_mat L, A;
 	d_message(init laplacian...)
-	TIC(e_time) laplacian(viewer::mesh(), L, A); TOC(e_time)
-	debug(e_time)
+	TIC(load_time) laplacian(viewer::mesh(), L, A); TOC(load_time)
+	debug(load_time)
 	
 	vec eigval;
 	mat eigvec;
 	
 	d_message(init eigs...)
-	TIC(e_time) eigs_laplacian(eigval, eigvec, viewer::mesh(), L, K); TOC(e_time)
-	debug(e_time)
+	TIC(load_time) eigs_laplacian(eigval, eigvec, viewer::mesh(), L, K); TOC(load_time)
+	debug(load_time)
 
 	distance_t max_s = 0;
 	#pragma omp parallel for reduction(max: max_s)
@@ -204,15 +203,15 @@ void viewer_process_hks()
 	sp_mat L, A;
 
 	d_message(init laplacian...)
-	TIC(e_time) laplacian(viewer::mesh(), L, A); TOC(e_time)
-	debug(e_time)
+	TIC(load_time) laplacian(viewer::mesh(), L, A); TOC(load_time)
+	debug(load_time)
 
 	vec eigval;
 	mat eigvec;
 	
 	d_message(init eigs...)
-	TIC(e_time) eigs_laplacian(eigval, eigvec, viewer::mesh(), L, K); TOC(e_time)
-	debug(e_time)
+	TIC(load_time) eigs_laplacian(eigval, eigvec, viewer::mesh(), L, K); TOC(load_time)
+	debug(load_time)
 
 	distance_t max_s = 0;
 	#pragma omp parallel for reduction(max: max_s)
@@ -241,15 +240,15 @@ void viewer_process_gps()
 	sp_mat L, A;
 
 	d_message(init laplacian...)
-	TIC(e_time) laplacian(viewer::mesh(), L, A); TOC(e_time)
-	debug(e_time)
+	TIC(load_time) laplacian(viewer::mesh(), L, A); TOC(load_time)
+	debug(load_time)
 
 	vec eigval;
 	mat eigvec;
 	
 	d_message(init eigs...)
-	TIC(e_time) eigs_laplacian(eigval, eigvec, viewer::mesh(), L, K); TOC(e_time)
-	debug(e_time)
+	TIC(load_time) eigs_laplacian(eigval, eigvec, viewer::mesh(), L, K); TOC(load_time)
+	debug(load_time)
 
 	eigvec.col(0).zeros();
 	for(index_t i = 1; i < K; i++)
@@ -390,10 +389,10 @@ void viewer_process_fastmarching_cpu()
 	vector<index_t> limites;
 	viewer::mesh()->sort_by_rings(rings, sorted, limites, viewer::select_vertices);
 
-	distance_t * distances = parallel_fastmarching(viewer::mesh(), viewer::select_vertices.data(), viewer::select_vertices.size(), e_time, limites, sorted, true, NULL, false);	
-	//distance_t * distances = parallel_fastmarching(viewer::mesh()->filename().c_str(), viewer::select_vertices.data(), viewer::select_vertices.size(), e_time, 9, true, true);
+	distance_t * distances = parallel_fastmarching(viewer::mesh(), viewer::select_vertices.data(), viewer::select_vertices.size(), load_time, limites, sorted, true, NULL, false);	
+	//distance_t * distances = parallel_fastmarching(viewer::mesh()->filename().c_str(), viewer::select_vertices.data(), viewer::select_vertices.size(), load_time, 9, true, true);
 
-	debug(e_time)
+	debug(load_time)
 
 	viewer::mesh().update_colors(distances);
 
@@ -412,10 +411,10 @@ void viewer_process_fastmarching_gpu()
 	vector<index_t> limites;
 	viewer::mesh()->sort_by_rings(rings, sorted, limites, viewer::select_vertices);
 	
-	distance_t * distances = parallel_fastmarching(viewer::mesh(), viewer::select_vertices.data(), viewer::select_vertices.size(), e_time, limites, sorted, true);	
-	//distance_t * distances = parallel_fastmarching(viewer::mesh()->filename().c_str(), viewer::select_vertices.data(), viewer::select_vertices.size(), e_time, 9, true, true);
+	distance_t * distances = parallel_fastmarching(viewer::mesh(), viewer::select_vertices.data(), viewer::select_vertices.size(), load_time, limites, sorted, true);	
+	//distance_t * distances = parallel_fastmarching(viewer::mesh()->filename().c_str(), viewer::select_vertices.data(), viewer::select_vertices.size(), load_time, 9, true, true);
 	//distance_t * distances = fast_geodesics(viewer::mesh(), viewer::select_vertices.data(), viewer::select_vertices.size(), limites, sorted);
-	debug(e_time)
+	debug(load_time)
 	
 	distance_t max_d = 0;
 
@@ -448,9 +447,9 @@ void viewer_process_voronoi()
 	index_t * clusters = new index_t[viewer::mesh()->n_vertices()];
 	memset(clusters, 255, sizeof(index_t) * viewer::mesh()->n_vertices());
 	
-	distance_t * distances = parallel_fastmarching(viewer::mesh(), viewer::select_vertices.data(), viewer::select_vertices.size(), e_time, limites, sorted, true, clusters);	
+	distance_t * distances = parallel_fastmarching(viewer::mesh(), viewer::select_vertices.data(), viewer::select_vertices.size(), load_time, limites, sorted, true, clusters);	
 	
-	debug(e_time)
+	debug(load_time)
 
 	#pragma omp parallel for
 	for(index_t i = 0; i < viewer::mesh()->n_vertices(); i++)
@@ -475,16 +474,16 @@ void viewer_process_farthest_point_sampling_radio()
 	distance_t radio;
 	cin>>radio;
 
-	float e_time_g;
+	float load_time_g;
 		
-	TIC(e_time)
-	radio = farthest_point_sampling_gpu(viewer::select_vertices, e_time_g, viewer::mesh(), viewer::mesh()->n_vertices(), radio);
-	TOC(e_time)
+	TIC(load_time)
+	radio = farthest_point_sampling_gpu(viewer::select_vertices, load_time_g, viewer::mesh(), viewer::mesh()->n_vertices(), radio);
+	TOC(load_time)
 	
 	debug(radio)
 	debug(viewer::select_vertices.size())
-	debug(e_time)
-	debug(e_time_g)
+	debug(load_time)
+	debug(load_time_g)
 }
 
 void viewer_process_farthest_point_sampling()
@@ -498,10 +497,10 @@ void viewer_process_farthest_point_sampling()
 	cin>>n;
 
 	distance_t radio;
-	TIC(e_time)
+	TIC(load_time)
 	load_sampling(viewer::select_vertices, radio, viewer::mesh(), n);
-//	distance_t radio = farthest_point_sampling_gpu(viewer::select_vertices, e_time_g, viewer::mesh(), n);
-	TOC(e_time)
+//	distance_t radio = farthest_point_sampling_gpu(viewer::select_vertices, load_time_g, viewer::mesh(), n);
+	TOC(load_time)
 }
 
 void viewer_process_fairing_spectral()
@@ -532,10 +531,10 @@ void viewer_process_geodesics()
 {
 	debug_me(APP_VIEWER)
 	
-	TIC(e_time)
+	TIC(load_time)
 	geodesics geodesic(viewer::mesh(), viewer::select_vertices);
-	TOC(e_time)
-	debug(e_time)
+	TOC(load_time)
+	debug(load_time)
 
 //	geodesic.path_to(viewer::other_vertices, viewer::mesh(), 0);
 	
@@ -558,10 +557,10 @@ void viewer_process_fastmarching()
 	for(index_t v = 0; v < shape.get_nvertices(); v++)
 		shape(v) = viewer::mesh()->get_vertex(v);
 
-	TIC(e_time)	
+	TIC(load_time)	
 	fastmarching fm(shape, viewer::select_vertices, INFINITY, true, false);
-	TOC(e_time)
-	debug(e_time)
+	TOC(load_time)
+	debug(load_time)
 
 	viewer::mesh().update_colors(fm.distances);
 }
@@ -652,8 +651,8 @@ void viewer_process_edge_collapse()
 	index_t levels;
 	cin >> levels;
 
-	TIC(e_time) decimation sampling(viewer::mesh(), viewer::mesh().normals_ptr(), levels); TOC(e_time)
-	debug(e_time)
+	TIC(load_time) decimation sampling(viewer::mesh(), viewer::mesh().normals_ptr(), levels); TOC(load_time)
+	debug(load_time)
 
 	if(viewer::n_meshes < 2)
 		viewer::add_mesh({new che_off(viewer::mesh()->filename())});

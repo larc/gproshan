@@ -144,9 +144,9 @@ void che::flip(const index_t & e)
 }
 
 // https://www.mathworks.com/help/pde/ug/pdetriq.html
-//       4*sqrt(3)*a
+// 4*sqrt(3)*a
 // q = ----------------
-//      h1^2+h2^2+h3^2
+// h1^2+h2^2+h3^2
 vertex_t che::pdetriq(const index_t & t) const
 {
 	index_t he = t * P;
