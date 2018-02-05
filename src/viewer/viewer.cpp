@@ -54,7 +54,7 @@ void viewer::init(const vector<che *> & _meshes)
 {
 //	restoreviewerState();
 	
-	initGLUT();
+	init_glut();
 	add_mesh(_meshes);	
 
 	glutSetWindowTitle(mesh()->filename().c_str());
@@ -63,8 +63,8 @@ void viewer::init(const vector<che *> & _meshes)
 	debug_info();
 //	mesh().debug_info();
 
-	setGL();
-	initGLSL();
+	set_gl();
+	init_glsl();
 
 	glutMainLoop();
 }
@@ -85,7 +85,7 @@ void viewer::debug_info()
 	fprintf(stderr, "GLSL Version %s\n", glslVersion);
 }
 
-void viewer::initGLUT()
+void viewer::init_glut()
 {
 	int argc = 0;
 	vector< vector<char> > argv(1);
@@ -129,11 +129,11 @@ void viewer::init_menus()
 	
 	// init mesh menu
 	sub_menus.push_back("Mesh");
-	add_process('r', "Reset Mesh", mResetMesh);
-	add_process('w', "Write Mesh", mWriteMesh);
-	add_process('<', "Zoom In", mZoomIn);
-	add_process('>', "Zoom Out", mZoomOut);
-	add_process(27, "Exit", mExit);
+	add_process('r', "Reset Mesh", menu_reset_mesh);
+	add_process('w', "Write Mesh", menu_save_mesh);
+	add_process('<', "Zoom In", menu_zoom_in);
+	add_process('>', "Zoom Out", menu_zoom_out);
+	add_process(27, "Exit", menu_exit);
 	
 	
 	// init		
@@ -163,7 +163,7 @@ void viewer::init_menus()
 	delete [] sub_menu;
 }
 
-void viewer::initGLSL()
+void viewer::init_glsl()
 {
 	//shader_program.loadVertex("shaders/vertex.glsl");
 	//shader_program.loadFragment("shaders/fragment.glsl");
@@ -191,7 +191,7 @@ void viewer::menu(int value)
 
 void viewer::menu_process(int value)
 {
-	mProcess(processes[value].function);
+	menu_process(processes[value].function);
 }
 
 void viewer::add_process(const char & key, const string & name, function_t function)
@@ -228,7 +228,7 @@ void viewer::keyboard(unsigned char c, int x, int y)
 		glClearColor(bgc, bgc, bgc, 1.);
 	}
 
-	mProcess(processes[c].function);
+	menu_process(processes[c].function);
 }
 
 void viewer::menu_meshes(int value)
@@ -249,7 +249,7 @@ void viewer::special(int i, int x, int y)
 			cam.zoomOut();
 			break;
 		case 27:
-			mExit();
+			menu_exit();
 			break;
 		default:
 			break;
@@ -259,7 +259,7 @@ void viewer::special(int i, int x, int y)
 void viewer::mouse(int button, int state, int x, int y)
 {
 	if((glutGetModifiers() & GLUT_ACTIVE_SHIFT) and state == GLUT_UP)
-		pickVertex(x, y);
+		pick_vertex(x, y);
 	else if(button == 6) cam.zoomIn();
 	else if(button == 5) cam.zoomOut();
 	else cam.mouse(button, state, x, y);
@@ -276,53 +276,25 @@ void viewer::idle()
 	glutPostRedisplay();
 }
 
-void viewer::storeviewerState()
-{
-	ofstream out(".viewer_state.txt");
-	
-	out << cam.rLast[0] << endl;
-	out << cam.rLast[1] << endl;
-	out << cam.rLast[2] << endl;
-	out << cam.rLast[3] << endl;
-	
-	GLint view[4];
-	glGetIntegerv(GL_VIEWPORT, view);
-	out << view[2] << endl;
-	out << view[3] << endl;
-}
-
-void viewer::restoreviewerState(void)
-{
-	ifstream in(".viewer_state.txt");
-	if(!in.is_open()) return;
-	
-	in >> cam.rLast[0];
-	in >> cam.rLast[1];
-	in >> cam.rLast[2];
-	in >> cam.rLast[3];
-	in >> window_size[0];
-	in >> window_size[1];
-}
-
-void viewer::mProcess(function_t pro)
+void viewer::menu_process(function_t pro)
 {
 	if(pro) pro();
 	update_vbo();
 }
 
-void viewer::mResetMesh()
+void viewer::menu_reset_mesh()
 {
 	select_vertices.clear();
 	other_vertices.clear();
 	vectors.clear();
 	
 	mesh().reload();
-	mesh().debug_info();
+//	mesh().debug_info();
 
 	update_vbo();
 }
 
-void viewer::mWriteMesh()
+void viewer::menu_save_mesh()
 {
 	string file = mesh()->filename();
 	index_t p = file.find_last_of('.');
@@ -331,18 +303,18 @@ void viewer::mWriteMesh()
 	mesh()->write_file(file);
 }
 
-void viewer::mExit()
+void viewer::menu_exit()
 {
 //	storeviewerState();
 	glutLeaveMainLoop();
 }
 
-void viewer::mZoomIn()
+void viewer::menu_zoom_in()
 {
 	cam.zoomIn();
 }
 
-void viewer::mZoomOut()
+void viewer::menu_zoom_out()
 {
 	cam.zoomOut();
 }
@@ -404,7 +376,8 @@ void viewer::display()
 	const double clipNear = .01;
 	const double clipFar = 1000.;
 	gluPerspective(fovy, aspect, clipNear, clipFar);
-//	glFrustum(-1.0, 1.0, -1.0, 1.0, 1.5, 20.0);	
+	//glFrustum(-1.0, 1.0, -1.0, 1.0, 1.5, 20.0);	
+	//glOrtho(-1.0, 1.0, -1.0, 1.0, 100, 1000);
 	
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -452,8 +425,8 @@ void viewer::display()
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_LIGHTING);
 	
-	setMeshMaterial();
-	drawScene();
+	set_mesh_materia();
+	draw_scene();
 	
 	//glPopAttrib();
 	
@@ -461,21 +434,21 @@ void viewer::display()
 	glutSwapBuffers();
 }
 
-void viewer::setGL()
+void viewer::set_gl()
 {
 	glClearColor(bgc, bgc, bgc, 1.);
-	setLighting();
+	set_lighting();
 }
 
-void viewer::setLighting()
+void viewer::set_lighting()
 {
-	GLfloat position[4] = { 20., 30., 40., 0. };
+	GLfloat position[4] = {20, 30, 40, 0};
 	glLightfv(GL_LIGHT0, GL_POSITION, position);
 	glEnable(GL_LIGHT0);
 	glEnable(GL_NORMALIZE);
 }
 
-void viewer::setMeshMaterial()
+void viewer::set_mesh_materia()
 {
 	GLfloat diffuse[4] = { .8, .5, .3, 1. };
 	GLfloat specular[4] = { .3, .3, .3, 1. };
@@ -487,43 +460,44 @@ void viewer::setMeshMaterial()
 	glMaterialf (GL_FRONT_AND_BACK, GL_SHININESS, 16.);
 }
 
-void viewer::drawScene()
+void viewer::draw_scene()
 {
 //	glPushAttrib(GL_ALL_ATTRIB_BITS);
 
 	glEnable(GL_POLYGON_OFFSET_FILL);
 	glPolygonOffset(1., 1.);
-	drawPolygons();
+	draw_polygons();
 	glDisable(GL_POLYGON_OFFSET_FILL);
 	
-	if(render_wireframe) drawWireframe();
-	if(render_gradient_field) drawGradientField();
-	if(render_normal_field) drawNormalField();
-	if(render_border) drawBorder();
+	if(render_wireframe) draw_wireframe();
+	if(render_gradient_field) draw_gradient_field();
+	if(render_normal_field) draw_normal_field();
+	if(render_border) draw_border();
 	if(render_corr) draw_corr();
 	
-	drawIsolatedVertices();
-	drawVectors();
-	drawSelectedVertices();
+	draw_isolated_vertices();
+	draw_vectors();
+	draw_selected_vertices();
 	
 	shader_program.disable();
 	mesh().draw_mesh_info();
+	shader_program.enable();
 }
 
-void viewer::drawPolygons()
+void viewer::draw_polygons()
 {
 	for(index_t i = 0; i < n_meshes; i++)
 		meshes[i].draw();
 }
 
-void viewer::drawWireframe()
+void viewer::draw_wireframe()
 {
 	shader_program.disable();
 	for(index_t i = 0; i < n_meshes; i++)
 		meshes[i].draw_wireframe();
 }
 
-void viewer::drawVectors()
+void viewer::draw_vectors()
 {
 	shader_program.disable();
 	glPushAttrib(GL_ALL_ATTRIB_BITS);
@@ -551,7 +525,7 @@ void viewer::drawVectors()
 	glPopAttrib();
 }
 
-void viewer::drawIsolatedVertices()
+void viewer::draw_isolated_vertices()
 {
 	shader_program.disable();
 	glPushAttrib(GL_ALL_ATTRIB_BITS);
@@ -639,7 +613,7 @@ void viewer::draw_corr()
 
 }
 
-void viewer::drawVertices()
+void viewer::draw_vertices()
 {
 	for(index_t v = 0; v < mesh()->n_vertices(); v++)
 	{
@@ -650,7 +624,7 @@ void viewer::drawVertices()
 	}
 }
 
-void viewer::drawBorder()
+void viewer::draw_border()
 {
 	select_vertices.clear();
 	for(index_t b = 0; b < mesh()->n_borders(); b++)
@@ -658,7 +632,7 @@ void viewer::drawBorder()
 			select_vertices.push_back(mesh()->vt(he));
 }
 
-void viewer::drawSelectedVertices()
+void viewer::draw_selected_vertices()
 {
 	shader_program.disable();
 	glPushAttrib(GL_ALL_ATTRIB_BITS);
@@ -681,21 +655,21 @@ void viewer::drawSelectedVertices()
 	glPopAttrib();
 }
 
-void viewer::drawNormalField()
+void viewer::draw_normal_field()
 {
 	shader_program.disable();
 	for(index_t i = 0; i < n_meshes; i++)
 		meshes[i].draw_normal_field();
 }
 
-void viewer::drawGradientField()
+void viewer::draw_gradient_field()
 {
 	shader_program.disable();
 	for(index_t i = 0; i < n_meshes; i++)
 		meshes[i].draw_gradient_field();
 }
 
-void viewer::pickVertex(int x, int y)
+void viewer::pick_vertex(int x, int y)
 {
 	int width = glutGet(GLUT_WINDOW_WIDTH);
 	int height = glutGet(GLUT_WINDOW_HEIGHT);
@@ -722,7 +696,7 @@ void viewer::pickVertex(int x, int y)
 	
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
-	drawVertices();
+	draw_vertices();
 	glPopMatrix();
 	
 	glMatrixMode(GL_PROJECTION);
@@ -744,12 +718,14 @@ void viewer::pickVertex(int x, int y)
 	}
 	delete[] buf;
 
-	if (index >= 0 && index < mesh()->n_vertices())
+	if(index >= 0 && index < mesh()->n_vertices())
 	{
 		debug(index)
 		debug(mesh().color(index))
+	
 		if(corr_mesh[current].is_loaded())
 			debug(corr_mesh[current][index].alpha)
+		
 		select_vertices.push_back(index);
 	}
 }

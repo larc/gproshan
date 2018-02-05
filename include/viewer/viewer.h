@@ -78,9 +78,9 @@ class viewer
 	protected:
 		// init
 		static void debug_info();
-		static void initGLUT();
+		static void init_glut();
 		static void init_menus();
-		static void initGLSL();
+		static void init_glsl();
 		static void update_vbo();
 
 		// GLUT callbacks
@@ -90,17 +90,19 @@ class viewer
 		static void special(int i, int x, int y);
 		static void mouse(int button, int state, int x, int y);
 		static void motion(int x, int y);
+		
+		// menu functions
 		static void menu(int value);
 		static void menu_process(int value);
 		static void menu_meshes(int value);
-		
-		// menu functions
-		static void mProcess(function_t pro);
-		static void mResetMesh();
-		static void mWriteMesh();
-		static void mExit();
-		static void mZoomIn();
-		static void mZoomOut();
+		static void menu_process(function_t pro);
+		static void menu_reset_mesh();
+		static void menu_save_mesh();
+		static void menu_exit();
+		static void menu_zoom_in();
+		static void menu_zoom_out();
+
+		// render options
 		static void invert_orientation();
 		static void set_render_wireframe();
 		static void set_render_gradient_field();
@@ -111,25 +113,21 @@ class viewer
 		static void set_is_flat();
 		
 		// draw routines
-		static void setGL();
-		static void setLighting();
-		static void setMeshMaterial();
-		static void callDisplayList();
-		static void updateDisplayList();
-		static void drawScene();
+		static void set_gl();
+		static void set_lighting();
+		static void set_mesh_materia();
+		static void draw_scene();
 		static void draw_corr();
-		static void drawPolygons();
-		static void drawWireframe();
-		static void drawGradientField();
-		static void drawNormalField();
-		static void drawVertices();
-		static void drawBorder();
-		static void drawSelectedVertices();
-		static void drawVectors();
-		static void drawIsolatedVertices();
-		static void pickVertex(int x, int y);	
-		static void storeviewerState();
-		static void restoreviewerState();
+		static void draw_polygons();
+		static void draw_wireframe();
+		static void draw_gradient_field();
+		static void draw_normal_field();
+		static void draw_vertices();
+		static void draw_border();
+		static void draw_selected_vertices();
+		static void draw_vectors();
+		static void draw_isolated_vertices();
+		static void pick_vertex(int x, int y);	
 	
 		static int window_size[2];
 

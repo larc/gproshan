@@ -238,19 +238,19 @@ void che_viewer::draw_mesh_info()
 	int h = 2, dh = 16;
 	
 	sprintf(str, "%9lu n_vertices", mesh->n_vertices());
-	draw_str(str, 10, viewer::window_height() - (h += 18), color, GLUT_BITMAP_8_BY_13);
+	draw_str(str, 10, viewer::window_height() - (h += 18), color, GLUT_BITMAP_9_BY_15);
 	
 	sprintf(str, "%9lu n_faces", mesh->n_faces());
-	draw_str(str, 10, viewer::window_height() - (h += 18), color, GLUT_BITMAP_8_BY_13);
+	draw_str(str, 10, viewer::window_height() - (h += 18), color, GLUT_BITMAP_9_BY_15);
 	
 	sprintf(str, "%9lu n_edges", mesh->n_edges());
-	draw_str(str, 10, viewer::window_height() - (h += 18), color, GLUT_BITMAP_8_BY_13);
+	draw_str(str, 10, viewer::window_height() - (h += 18), color, GLUT_BITMAP_9_BY_15);
 	
 	sprintf(str, "%9lu n_half_edges", mesh->n_half_edges());
-	draw_str(str, 10, viewer::window_height() - (h += 18), color, GLUT_BITMAP_8_BY_13);
+	draw_str(str, 10, viewer::window_height() - (h += 18), color, GLUT_BITMAP_9_BY_15);
 	
 	sprintf(str, "%9lu n_borders", mesh->n_borders());
-	draw_str(str, 10, viewer::window_height() - (h += 18), color, GLUT_BITMAP_8_BY_13);
+	draw_str(str, 10, viewer::window_height() - (h += 18), color, GLUT_BITMAP_9_BY_15);
 
 	//sprintf(str, "%9.3lf quality", mesh->quality());
 	//draw_str(str, 10, viewer::window_height() - (h += 18), color, GLUT_BITMAP_8_BY_13);
