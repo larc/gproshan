@@ -109,9 +109,11 @@ class che
 		size_t max_degree() const;
 		vertex & get_vertex(index_t v);
 		void set_vertices(const vertex *const& positions, size_t n = 0, const index_t & v_i = 0);
-		const string & filename() const;
 		void set_filename(const string & f);
-		string name() const;
+		const string & filename() const;
+		const string filename_size() const;
+		const string name() const;
+		const string name_size() const;
 		void reload();
 		void sort_by_rings(index_t *& rings, index_t *& sorted, vector<index_t> & limites, const vector<index_t> & sources, const index_t & k = NIL);
 		void multiplicate_vertices();

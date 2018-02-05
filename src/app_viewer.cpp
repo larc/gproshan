@@ -165,14 +165,13 @@ void viewer_process_wks()
 	size_t K = 20, T = 10;
 	
 	sp_mat L, A;
-	d_message(init laplacian...)
+	
 	TIC(load_time) laplacian(viewer::mesh(), L, A); TOC(load_time)
 	debug(load_time)
 	
 	vec eigval;
 	mat eigvec;
 	
-	d_message(init eigs...)
 	TIC(load_time) eigs_laplacian(eigval, eigvec, viewer::mesh(), L, K); TOC(load_time)
 	debug(load_time)
 
@@ -202,14 +201,12 @@ void viewer_process_hks()
 	
 	sp_mat L, A;
 
-	d_message(init laplacian...)
 	TIC(load_time) laplacian(viewer::mesh(), L, A); TOC(load_time)
 	debug(load_time)
 
 	vec eigval;
 	mat eigvec;
 	
-	d_message(init eigs...)
 	TIC(load_time) eigs_laplacian(eigval, eigvec, viewer::mesh(), L, K); TOC(load_time)
 	debug(load_time)
 
@@ -239,14 +236,12 @@ void viewer_process_gps()
 	
 	sp_mat L, A;
 
-	d_message(init laplacian...)
 	TIC(load_time) laplacian(viewer::mesh(), L, A); TOC(load_time)
 	debug(load_time)
 
 	vec eigval;
 	mat eigvec;
 	
-	d_message(init eigs...)
 	TIC(load_time) eigs_laplacian(eigval, eigvec, viewer::mesh(), L, K); TOC(load_time)
 	debug(load_time)
 

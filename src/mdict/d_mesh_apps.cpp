@@ -171,7 +171,7 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 	debug(m)
 	if(op_dict)
 	{
-		string fmesh_dict = "tmp/" + mesh->name() + '_' + to_string(K) + '_' + to_string(m) + ".a_dict";
+		string fmesh_dict = "tmp/" + mesh->name_size() + '_' + to_string(K) + '_' + to_string(m) + ".a_dict";
 	
 		debug(fmesh_dict)
 	

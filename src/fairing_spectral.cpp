@@ -17,7 +17,6 @@ void fairing_spectral::compute(che * shape)
 
 	sp_mat L, A;
 	
-	d_message(Compute laplacian...)
 	TIC(time) laplacian(shape, L, A); TOC(time)
 	debug(time)
 
@@ -32,8 +31,7 @@ void fairing_spectral::compute(che * shape)
 	vec eigval;
 	mat eigvec;
 	
-	d_message(Computing eigs)
-	TIC(time) eigs_sym(eigval, eigvec, L, k, "sm"); TOC(time)
+	TIC(time) eigs_laplacian(eigval, eigvec, shape, L, k); TOC(time)
 	debug(time)
 
 	X = X * eigvec * eigvec.t();

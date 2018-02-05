@@ -2,6 +2,8 @@
 
 void laplacian(che * mesh, sp_mat & L, sp_mat & A)
 {
+	debug_me(LAPLACIAN)
+
 	size_t n_edges = mesh->n_edges();
 	size_t n_vertices = mesh->n_vertices();
 
@@ -43,6 +45,8 @@ void laplacian(che * mesh, sp_mat & L, sp_mat & A)
 
 void laplacian(che * mesh, sp_mat_e & L, sp_mat_e & A)
 {
+	debug_me(LAPLACIAN)
+	
 	size_t n_edges = mesh->n_edges();
 	size_t n_vertices = mesh->n_vertices();
 
@@ -71,8 +75,10 @@ void laplacian(che * mesh, sp_mat_e & L, sp_mat_e & A)
 
 void eigs_laplacian(vec & eigval, mat & eigvec, che * mesh, const sp_mat & L, const size_t & K)
 {
-	string feigval = "tmp/" + mesh->name() + '_' + to_string(K) + ".a_eigval";
-	string feigvec = "tmp/" + mesh->name() + '_' + to_string(K) + ".a_eigvec";
+	debug_me(LAPLACIAN)
+	
+	string feigval = "tmp/" + mesh->name_size() + '_' + to_string(K) + ".L_eigval";
+	string feigvec = "tmp/" + mesh->name_size() + '_' + to_string(K) + ".L_eigvec";
 	
 	debug(feigval)
 	debug(feigvec)

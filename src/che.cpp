@@ -461,16 +461,26 @@ const string & che::filename() const
 	return filename_;
 }
 
+const string che::filename_size() const
+{
+	return filename_ + "_" + to_string(n_vertices_);
+}
+
 void che::set_filename(const string & f)
 {
 	filename_ = f;
 }
 
-string che::name() const
+const string che::name() const
 {
 	index_t p = filename_.find_last_of('/');
 	index_t q = filename_.find_last_of('.');
 	return filename_.substr(p + 1, q - p - 1);
+}
+
+const string che::name_size() const
+{
+	return name() + "_" + to_string(n_vertices_);
 }
 
 void che::reload()
