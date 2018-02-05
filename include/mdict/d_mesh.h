@@ -77,18 +77,22 @@ struct patch_t
 		xyz.each_col() += avg;
 	}
 
-	void reset_xyz(che * mesh, vector<patches_map_t> & patches_map, const index_t & p)
+	void reset_xyz(che * mesh, vector<patches_map_t> & patches_map, const index_t & p, const index_t & threshold = NIL)
 	{
 		xyz.set_size(3, n);
 
 		for(index_t i = 0; i < n; i++)
 		{
-			vertex v = mesh->gt(indexes[i]);
-			xyz(0, i) = v.x;
-			xyz(1, i) = v.y;
-			xyz(2, i) = v.z;
+			if(i < threshold)
+			{
+				vertex v = mesh->gt(indexes[i]);
+				xyz(0, i) = v.x;
+				xyz(1, i) = v.y;
+				xyz(2, i) = v.z;
 
-			patches_map[indexes[i]][p] = i; 
+				patches_map[indexes[i]][p] = i; 
+			}
+			
 		}	
 	}
 };

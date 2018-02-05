@@ -109,15 +109,13 @@ void dictionary::init_patches(size_t threshold)
 		p.indexes = new index_t[p.n];
 		fm.get_sort_indexes(p.indexes, p.n);
 		
-		// Control the indexes to restrict to the threshold parameters
-		if (threshold)
-			p.n = threshold;
 	}
 	
 	for(index_t s = 0; s < M; s++)
 	{
 		patch_t & p = patches[s];
-		p.reset_xyz(mesh, patches_map, s);
+		// Control the indexes to restrict to the threshold parameters
+		p.reset_xyz(mesh, patches_map, s, threshold);
 	}
 
 	#pragma omp parallel for
