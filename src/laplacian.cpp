@@ -73,7 +73,7 @@ void laplacian(che * mesh, sp_mat_e & L, sp_mat_e & A)
 	
 }
 
-void eigs_laplacian(vec & eigval, mat & eigvec, che * mesh, const sp_mat & L, const size_t & K)
+size_t eigs_laplacian(vec & eigval, mat & eigvec, che * mesh, const sp_mat & L, const size_t & K)
 {
 	debug_me(LAPLACIAN)
 	
@@ -85,9 +85,11 @@ void eigs_laplacian(vec & eigval, mat & eigvec, che * mesh, const sp_mat & L, co
 	
 	if(!eigval.load(feigval) || !eigvec.load(feigvec))
 	{
-		eigs_sym(eigval, eigvec, L, K, "sm");
+		assert(eigs_sym(eigval, eigvec, L, K, "sm"));
 		eigval.save(feigval);
 		eigvec.save(feigvec);
 	}
+
+	return eigval.n_elem;
 }
 

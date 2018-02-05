@@ -1,9 +1,8 @@
 #include "fairing_spectral.h"
 #include "laplacian.h"
 
-fairing_spectral::fairing_spectral(size_t k_): fairing()
+fairing_spectral::fairing_spectral(const size_t & k_): fairing(), k(k_)
 {
-	k = k_;
 }
 
 fairing_spectral::~fairing_spectral()
@@ -31,7 +30,7 @@ void fairing_spectral::compute(che * shape)
 	vec eigval;
 	mat eigvec;
 	
-	TIC(time) eigs_laplacian(eigval, eigvec, shape, L, k); TOC(time)
+	TIC(time) k = eigs_laplacian(eigval, eigvec, shape, L, k); TOC(time)
 	debug(time)
 
 	X = X * eigvec * eigvec.t();

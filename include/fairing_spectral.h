@@ -9,7 +9,7 @@ class fairing_spectral : public fairing
 		size_t k;
 
 	public:
-		fairing_spectral(size_t k_ = 10);
+		fairing_spectral(const size_t & k_ = 10);
 		virtual ~fairing_spectral();
 
 	private:

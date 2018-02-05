@@ -172,7 +172,7 @@ void viewer_process_wks()
 	vec eigval;
 	mat eigvec;
 	
-	TIC(load_time) eigs_laplacian(eigval, eigvec, viewer::mesh(), L, K); TOC(load_time)
+	TIC(load_time) K = eigs_laplacian(eigval, eigvec, viewer::mesh(), L, K); TOC(load_time)
 	debug(load_time)
 
 	distance_t max_s = 0;
@@ -207,7 +207,7 @@ void viewer_process_hks()
 	vec eigval;
 	mat eigvec;
 	
-	TIC(load_time) eigs_laplacian(eigval, eigvec, viewer::mesh(), L, K); TOC(load_time)
+	TIC(load_time) K = eigs_laplacian(eigval, eigvec, viewer::mesh(), L, K); TOC(load_time)
 	debug(load_time)
 
 	distance_t max_s = 0;
@@ -242,9 +242,9 @@ void viewer_process_gps()
 	vec eigval;
 	mat eigvec;
 	
-	TIC(load_time) eigs_laplacian(eigval, eigvec, viewer::mesh(), L, K); TOC(load_time)
+	TIC(load_time) K = eigs_laplacian(eigval, eigvec, viewer::mesh(), L, K); TOC(load_time)
 	debug(load_time)
-
+	
 	eigvec.col(0).zeros();
 	for(index_t i = 1; i < K; i++)
 		eigvec.col(i) /= sqrt(eigval(i));
