@@ -79,18 +79,24 @@ struct patch_t
 
 	void reset_xyz(che * mesh, vector<patches_map_t> & patches_map, const index_t & p, const index_t & threshold = NIL)
 	{
-		xyz.set_size(3, n);
-
-		for(index_t i = 0; i < n; i++)
+		if(threshold != NIL)
 		{
-			if(i < threshold)
-			{
-				vertex v = mesh->gt(indexes[i]);
-				xyz(0, i) = v.x;
-				xyz(1, i) = v.y;
-				xyz(2, i) = v.z;
+			n = 0;
+			for(index_t i = 0; i < n; i++)
+				if(indexes[i] < threshold) n++;
+		}
 
-				patches_map[indexes[i]][p] = i; 
+		xyz.set_size(3, n);
+		for(index_t j = 0, i = 0; i < n; i++)
+		{
+			if(indexes[i] < threshold)
+			{
+				const vertex & v = mesh->gt(indexes[i]);
+				xyz(0, j) = v.x;
+				xyz(1, j) = v.y;
+				xyz(2, j) = v.z;
+
+				patches_map[indexes[i]][p] = j++; 
 			}
 			
 		}	

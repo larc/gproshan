@@ -81,19 +81,15 @@ void dictionary::init_sampling()
 	phi_basis->radio *= f;
 }
 
-void dictionary::init_patches(size_t threshold)
+void dictionary::init_patches(const size_t & threshold)
 {
 	debug_me(MDICT)
 	
 	patch_t::del_index = true;
 
 	patches.resize(M);
-
-	if (! threshold)
-		patches_map.resize(n_vertices); // Default
-	else
-		patches_map.resize(threshold);
-
+	patches_map.resize(n_vertices);
+	
 	patch_t::del_index = false;
 	
 	#pragma omp parallel for
@@ -111,6 +107,27 @@ void dictionary::init_patches(size_t threshold)
 		
 	}
 	
+	#ifndef NDEBUG
+		size_t patch_avg_size = 0;
+		size_t patch_min_size = NIL;
+		size_t patch_max_size = 0;
+	
+		#pragma omp parallel for reduction(+: patch_avg_size)
+		for(index_t s = 0; s < M; s++)
+			patch_avg_size += patches[s].n;
+		#pragma omp parallel for reduction(min: patch_min_size)
+		for(index_t s = 0; s < M; s++)
+			patch_min_size = min(patches[s].n, patch_min_size);
+		#pragma omp parallel for reduction(max: patch_max_size)
+		for(index_t s = 0; s < M; s++)
+			patch_max_size = max(patches[s].n, patch_max_size);
+		
+		patch_avg_size /= M;
+		debug(patch_avg_size)
+		debug(patch_min_size)
+		debug(patch_max_size)
+	#endif
+	
 	for(index_t s = 0; s < M; s++)
 	{
 		patch_t & p = patches[s];
@@ -123,24 +140,14 @@ void dictionary::init_patches(size_t threshold)
 	{
 		patch_t & p = patches[s];
 		
+		if(p.n <= min_nvp) debug(p.n);
 		assert(p.n > min_nvp); // old code change to principal_curvatures
 		jet_fit_directions(p);
 
 		p.transform();
 		p.phi.set_size(p.n, phi_basis->dim);
 		phi_basis->discrete(p.phi, p.xyz);
-	}
-		
-	#ifndef NDEBUG
-		size_t patch_mean_size = 0;
-	
-		#pragma omp parallel for reduction(+: patch_mean_size)
-		for(index_t s = 0; s < M; s++)
-			patch_mean_size += patches[s].n;
-		
-		patch_mean_size /= M;
-		debug(patch_mean_size)
-	#endif
+	}	
 }
 
 void dictionary::mesh_reconstruction()
