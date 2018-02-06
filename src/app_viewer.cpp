@@ -527,20 +527,12 @@ void viewer_process_geodesics()
 	debug_me(APP_VIEWER)
 	
 	TIC(load_time)
-	geodesics geodesic(viewer::mesh(), viewer::select_vertices);
+	geodesics fm(viewer::mesh(), viewer::select_vertices);
 	TOC(load_time)
 	debug(load_time)
-
-//	geodesic.path_to(viewer::other_vertices, viewer::mesh(), 0);
 	
-	geodesic.normalize();
-	viewer::mesh().update_colors(geodesic.distances);
-/* heat map one color
-	#pragma omp parallel for
-	for(index_t v = 0; v < viewer::mesh().n_vertices(); v++)
-		viewer::get_color(v) = viewer::get_color(v) * 0.5;	
-*/		
-		
+	fm.normalize();
+	viewer::mesh().update_colors(fm.distances);
 }
 
 void viewer_process_fastmarching()

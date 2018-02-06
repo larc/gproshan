@@ -76,10 +76,10 @@ index_t ** sampling_shape(vector<index_t> & points, size_t *& sizes, vertex *& n
 
 		geodesics fm(shape, { v }, NIL, radio);
 		
-		indexes[i] = new index_t[fm.get_n_radio()];
+		indexes[i] = new index_t[fm.n_sorted_index()];
 		
-		fm.get_sort_indexes(indexes[i], fm.get_n_radio());
-		sizes[i] = fm.get_n_radio();
+		fm.copy_sorted_index(indexes[i], fm.n_sorted_index());
+		sizes[i] = fm.n_sorted_index();
 
 	}
 

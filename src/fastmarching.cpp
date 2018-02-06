@@ -179,7 +179,7 @@ void fastmarching::calcular_FM(off & model, vector<index_t> & source)
 		color[s] = red;
 		cola.push(make_pair(distances[s], s));
 	}
-
+	
 	while(green_count-- && !cola.empty())
 	{
 		while(!cola.empty() && color[cola.top().second] == black) cola.pop();
@@ -422,3 +422,4 @@ void fastmarching::normalize()
 	for(size_t i = 0; i < n_pesos; i++)
 		distances[sort_index[i]] /= max;
 }
+

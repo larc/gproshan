@@ -1,96 +1,94 @@
 #include "geodesics.h"
 
 #include <queue>
+#include <cassert>
+
 #define DP 5e-2
 
 using namespace arma;
 
 index_t BLACK = 0, GREEN = 1, RED = 2;
 
-geodesics::geodesics(che * mesh, const vector<index_t> & _sources, size_t _n_iter, distance_t _radio,
-					 bool _normalized, bool parallel, bool _spherical): sources(_sources)
+geodesics::geodesics(che * mesh, const vector<index_t> & sources, const size_t & n_iter, const distance_t & radio, const bool & parallel)
 {
 	n_vertices = mesh->n_vertices();
-	n_iter = _n_iter ? _n_iter : n_vertices;
 
 	if(n_vertices)
 	{
 		distances = new distance_t[n_vertices];
 		clusters = new index_t[n_vertices];
-		paths = new index_t[n_vertices];
 		color = new index_t[n_vertices];
-		sort_index = new index_t[n_vertices];
+		sorted_index = new index_t[n_vertices];
 	}
 	else
 	{
 		distances = NULL;
 		clusters = NULL;
-		paths = NULL;
 		color = NULL;
-		sort_index = NULL;
+		sorted_index = NULL;
 	}
 
-	n_pesos = 0;
+	n_sorted = 0;
 
-	spherical = _spherical;
-
-	radio = _radio;
-
-	memset(sort_index, 255, n_vertices * sizeof(index_t));
+	memset(sorted_index, -1, n_vertices * sizeof(index_t));
 	for(index_t v = 0; v < n_vertices; v++)
 		distances[v] = INFINITY;
-
-	run(mesh);
-
-	normalized = _normalized;
-	if(normalized) normalize();
+	
+	assert(sources.size() > 0);
+	execute(mesh, sources, n_iter, radio, parallel);
 }
 
 geodesics::~geodesics()
 {
-	if(distances)	delete [] distances;
-	if(paths)		delete [] paths;
-	if(clusters)	delete [] clusters;
-	if(color)		delete [] color;
-	if(sort_index)	delete [] sort_index;
+	if(distances)		delete [] distances;
+	if(clusters)		delete [] clusters;
+	if(color)			delete [] color;
+	if(sorted_index)	delete [] sorted_index;
 }
 
-index_t geodesics::operator[](index_t i)
+const index_t & geodesics::operator[](const index_t & i) const
 {
-	return sort_index[i];
+	return sorted_index[i];
 }
 
-index_t geodesics::farthest()
+const index_t & geodesics::farthest() const
 {
-	return sort_index[n_pesos - 1];
+	return sorted_index[n_sorted - 1];
 }
 
-size_t geodesics::get_n_radio()
+const size_t & geodesics::n_sorted_index() const
 {
-	return n_pesos;
+	return n_sorted;
 }
 
-void geodesics::get_sort_indexes(index_t * indexes, size_t K)
+void geodesics::copy_sorted_index(index_t * indexes, const size_t & n) const
 {
-	if(K > n_vertices)
-		return;
-
-	memcpy(indexes, sort_index, K * sizeof(index_t));
+	assert(n < n_sorted);
+	memcpy(indexes, sorted_index, n * sizeof(index_t));
 }
 
-void geodesics::execute(che * mesh)
+void geodesics::normalize()
 {
-	run(mesh);
-	if(normalized) normalize();
+	distance_t max = distances[farthest()];
+	
+	#pragma omp parallel for
+	for(size_t i = 0; i < n_sorted; i++)
+		distances[sorted_index[i]] /= max;
 }
 
-void geodesics::run(che * mesh)
+void geodesics::execute(che * mesh, const vector<index_t> & sources, const size_t & n_iter, const distance_t & radio, const bool & parallel)
+{
+	if(parallel) return;
+	else run_fastmarching(mesh, sources, n_iter, radio);
+}
+
+void geodesics::run_fastmarching(che * mesh, const vector<index_t> & sources, const size_t & n_iter, const distance_t & radio)
 {
 	#pragma omp parallel for
 	for(index_t v = 0; v < n_vertices; v++)
 		color[v] = GREEN;
 
-	size_t green_count = n_iter;
+	size_t green_count = n_iter ? n_iter : n_vertices;
 
 	priority_queue<pair<distance_t, size_t>,
 			vector<pair<distance_t, size_t> >,
@@ -103,7 +101,7 @@ void geodesics::run(che * mesh)
 	size_t black_i, v;
 
 	index_t c = 0;
-	n_pesos = 0;
+	n_sorted = 0;
 	for(index_t s: sources)
 	{
 		distances[s] = 0;
@@ -111,9 +109,6 @@ void geodesics::run(che * mesh)
 		color[s] = RED;
 		cola.push(make_pair(distances[s], s));
 	}
-
-//	index_t * updates = new index_t[n_vertices];
-//	memset(updates, 0, n_vertices * sizeof(index_t));
 
 	while(green_count-- && !cola.empty())
 	{
@@ -128,7 +123,7 @@ void geodesics::run(che * mesh)
 
 		if(distances[black_i] > radio) break;
 
-		sort_index[n_pesos++] = black_i;
+		sorted_index[n_sorted++] = black_i;
 
 		link_t black_link;
 		mesh->link(black_link, black_i);
@@ -141,7 +136,6 @@ void geodesics::run(che * mesh)
 
 			if(color[v] == RED)
 			{
-//				updates[v]++;
 				for_star(v_he, mesh, v)
 				{
 					//p = update(d, mesh, v_he, vx);
@@ -150,103 +144,14 @@ void geodesics::run(che * mesh)
 					{
 						distances[v] = p;
 						clusters[v] = distances[mesh->vt(prev(v_he))] < distances[mesh->vt(next(he))] ? clusters[mesh->vt(prev(he))] : clusters[mesh->vt(next(he))];
-
-						if(d == 0) paths[v] = next(v_he);
-						else if(d == 1) paths[v] = prev(v_he);
-						else paths[v] = v_he;
 					}
 				}
+
 				if(distances[v] < INFINITY)
 					cola.push(make_pair(distances[v], v));
 			}
 		}
 	}
-
-/*
-	
-	index_t * rings = new index_t[n_vertices];
-	index_t * sorted = new index_t[n_vertices];
-	vector<index_t> limites;
-
-	mesh->sort_by_rings(rings, sorted, limites, sources);
-
-	for(index_t i = 0; i < n_vertices; i++)
-		cout << i << " " << rings[i] << " " << updates[i] << " " << (rings[i] + 1)/ 2 << endl;
-	
-	debug(limites.size())
-	delete [] rings;
-	delete [] sorted;
-*/
-}
-
-int max_iter = 50;
-void geodesics::path_to(vector<vertex> & v_path, che * mesh, const index_t & v)
-{
-	if(!max_iter--) return;
-	debug_me(paths)
-	debug(v)
-	v_path.push_back(mesh->gt(v));
-	
-	for(auto s: sources)
-		if(s == v) return;
-
-	index_t he = paths[v];
-	if(mesh->vt(he) != v)
-	{
-		path_to(v_path, mesh, mesh->vt(he));
-		return;
-	}
-	
-	index_t d;
-	vertex vx;
-	update(d, mesh, he, vx);
-	path_to(v_path, mesh, vx, mesh->ot(next(he)));
-}
-
-// vertex in edge he
-void geodesics::path_to(vector<vertex> & v_path, che * mesh, const vertex & v, const index_t & he)
-{
-	debug_me(paths)
-	debug(v)
-	v_path.push_back(v);
-
-	index_t x[3];
-	x[0] = mesh->vt(next(he));
-	x[1] = mesh->vt(prev(he));
-	x[2] = mesh->vt(he);
-
-	vertex vt[3];
-	vt[0] = mesh->gt(x[0]) - v;
-	vt[1] = mesh->gt(x[1]) - v;
-	vt[2] = mesh->gt(x[2]) - v;
-
-	distance_t p[2];
-	index_t d[2];
-	vertex vx[2];
-	mat X(3, 2);
-
-	X(0, 0) = vt[0][0];
-	X(1, 0) = vt[0][1];
-	X(2, 0) = vt[0][2];
-
-	X(0, 1) = vt[1][0];
-	X(1, 1) = vt[1][1];
-	X(2, 1) = vt[1][2];
-	p[0] = planar_update(d[0], X, x, vx[0]);
-	
-	X(0, 0) = vt[1][0];
-	X(1, 0) = vt[1][1];
-	X(2, 0) = vt[1][2];
-
-	X(0, 1) = vt[2][0];
-	X(1, 1) = vt[2][1];
-	X(2, 1) = vt[2][2];
-	p[1] = planar_update(d[1], X, x + 1, vx[1]);
-
-	index_t pi = p[1] < p[0];
-
-	if(d[pi] != NIL) path_to(v_path, mesh, x[d[pi] + pi]);
-	else path_to(v_path, mesh, vx[pi], mesh->ot(pi ? prev(he) : next(he)));
 }
 
 //d = {NIL, 0, 1} cross edge, next, prev
@@ -333,15 +238,6 @@ distance_t geodesics::planar_update(index_t & d, mat & X, index_t * x, vertex & 
 	return p;
 }
 
-void geodesics::normalize()
-{
-	distance_t max = distances[farthest()];
-	
-	#pragma omp parallel for
-	for(size_t i = 0; i < n_pesos; i++)
-		distances[sort_index[i]] /= max;
-}
-
 distance_t update_step(che * mesh, const distance_t * dist, const index_t & he)
 {
 	index_t x[3];
@@ -409,53 +305,5 @@ distance_t update_step(che * mesh, const distance_t * dist, const index_t & he)
 	}
 
 	return p;
-}
-
-distance_t * fast_geodesics(che * mesh, index_t * source, length_t n_sources, const vector<index_t> & limites, const index_t * sorted)
-{
-	length_t n_vertices = mesh->n_vertices();
-
-	distance_t * dist[2];
-	dist[0] = new distance_t[n_vertices];
-	dist[1] = new distance_t[n_vertices];
-	
-	#pragma omp parallel for
-	for(index_t v = 0; v < n_vertices; v++)
-		dist[0][v] = dist[1][v] = INFINITY;
-
-	for(index_t s = 0; s < n_sources; s++)
-		dist[0][source[s]] = dist[1][source[s]] = 0;
-	
-	index_t v, k, d = 1;
-	index_t iter = limites.size();
-	distance_t p;
-	distance_t ratio;
-
-	for(index_t i = 2; i < iter; i++)
-	{
-		ratio = (limites[i] - limites[i - 1]) / (limites[i - 1] - limites[i - 2]);
-	//	if(ratio < 1) ratio = 1.0 / ratio;
-		k = log(1 + ratio) / log(2) + 2;
-		while(k--)
-		{
-			#pragma parallel for private(v, p)
-			for(index_t r = limites[i - 1]; r < limites[i]; r++)
-			{
-				v = sorted[r];
-				dist[!d][v] = dist[d][v];
-
-				for_star(he, mesh, v)
-				{
-					p = update_step(mesh, dist[d], he);
-					if(p < dist[!d][v]) dist[!d][v] = p;
-				}
-			}
-
-			d = !d;
-		}
-	}
-
-	delete [] dist[d];
-	return dist[!d];
 }
 

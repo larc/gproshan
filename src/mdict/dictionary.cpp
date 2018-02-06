@@ -100,10 +100,10 @@ void dictionary::init_patches(const size_t & threshold)
 
 		geodesics fm(mesh, {v}, NIL, phi_basis->radio);
 
-		p.n = fm.get_n_radio();
+		p.n = fm.n_sorted_index();
 		
 		p.indexes = new index_t[p.n];
-		fm.get_sort_indexes(p.indexes, p.n);
+		fm.copy_sorted_index(p.indexes, p.n);
 		
 	}
 	
@@ -131,7 +131,6 @@ void dictionary::init_patches(const size_t & threshold)
 	for(index_t s = 0; s < M; s++)
 	{
 		patch_t & p = patches[s];
-		// Control the indexes to restrict to the threshold parameters
 		p.reset_xyz(mesh, patches_map, s, threshold);
 	}
 

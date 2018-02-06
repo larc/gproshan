@@ -111,10 +111,10 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 
 			patch_t & p = patches[s];
 			geodesics fm(mesh, { v }, NIL, radio);
-			p.n = fm.get_n_radio();
+			p.n = fm.n_sorted_index();
 
 			p.indexes = new index_t[p.n];
-			fm.get_sort_indexes(p.indexes, p.n);
+			fm.copy_sorted_index(p.indexes, p.n);
 		}
 
 		debug_me(init_patches)
@@ -270,9 +270,9 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 			patch_t & p = patches[s];
 
 			geodesics fm(mesh, { v }, NIL, radio );
-			size = fm.get_n_radio();
+			size = fm.n_sorted_index();
 			p.indexes = new index_t[size];
-			fm.get_sort_indexes(p.indexes, size);
+			fm.copy_sorted_index(p.indexes, size);
 			
 			p.n = size;
 			p.reset_xyz(mesh, patches_map, s);
@@ -339,10 +339,10 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 			geodesics fm(mesh, { v }, NIL, radio);
 
 			delete [] p.indexes;
-			p.indexes = new index_t[fm.get_n_radio()];
+			p.indexes = new index_t[fm.n_sorted_index()];
 		
-			fm.get_sort_indexes(p.indexes, fm.get_n_radio());
-			size = fm.get_n_radio();
+			fm.copy_sorted_index(p.indexes, fm.n_sorted_index());
+			size = fm.n_sorted_index();
 
 			p.n = size;
 			p.reset_xyz(mesh, patches_map, bp);
@@ -417,9 +417,9 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 					count++;
 					
 					geodesics fm(mesh, { v }, NIL, radio );
-					p.n = fm.get_n_radio();
+					p.n = fm.n_sorted_index();
 					p.indexes = new index_t[p.n];
-					fm.get_sort_indexes(p.indexes, p.n);
+					fm.copy_sorted_index(p.indexes, p.n);
 						
 					p.reset_xyz(mesh, patches_map, s);
 
@@ -515,10 +515,10 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 			geodesics fm(mesh, { v }, NIL, radio);
 
 			delete [] p.indexes;
-			p.indexes = new index_t[fm.get_n_radio()];
+			p.indexes = new index_t[fm.n_sorted_index()];
 		
-			fm.get_sort_indexes(p.indexes, fm.get_n_radio());
-			size = fm.get_n_radio();
+			fm.copy_sorted_index(p.indexes, fm.n_sorted_index());
+			size = fm.n_sorted_index();
 
 			p.n = size;
 			p.reset_xyz(mesh, patches_map, bp);
@@ -570,9 +570,9 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 			patch_t & p = patches[s];			
 					
 			geodesics fm(mesh, { v }, NIL, radio );
-			p.n = fm.get_n_radio();
+			p.n = fm.n_sorted_index();
 			p.indexes = new index_t[p.n];
-			fm.get_sort_indexes(p.indexes, p.n);
+			fm.copy_sorted_index(p.indexes, p.n);
 											
 			p.reset_xyz(mesh, patches_map, s);
 
