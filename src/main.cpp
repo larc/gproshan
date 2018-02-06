@@ -341,7 +341,7 @@ void sampling_terrain(string file, size_t s, size_t K, string output, string pla
 
 			vector<index_t> source;
 			source.push_back(v);
-			geodesics fm(shape_che, source, K);
+			geodesics fm(shape_che, source, geodesics::FM, K);
 
 			for(index_t k = 0; k < K; k++)
 				os<<" "<<fm[k];

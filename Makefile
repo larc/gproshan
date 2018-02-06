@@ -39,7 +39,7 @@ obj/%.o: src/mdict/%.cpp | obj
 	$(CC) -c $< -o $@ -I./include/mdict $(CFLAGS) 
 
 obj/%_cuda.o: src/cuda/%.cu | obj
-	$(CUDA) -dc $< -o $@ $(CUDAFLAGS)
+	$(CUDA) -dc $< -o $@ -I./include $(CUDAFLAGS)
 
 obj/link_cuda.o: $(CUDA_OBJECTS) | obj
 	$(CUDA) -dlink $(CUDA_OBJECTS) -o obj/link_cuda.o $(CUDAFLAGS)

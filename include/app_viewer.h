@@ -26,11 +26,11 @@ void viewer_process_fairing_taubin();
 void viewer_process_fairing_spectral();
 
 void viewer_process_fastmarching();
-void viewer_process_geodesics();
+void viewer_process_geodesics_fm();
+void viewer_process_geodesics_ptp_gpu();
+void viewer_process_geodesics_ptp_cpu();
 void viewer_process_farthest_point_sampling();
 void viewer_process_farthest_point_sampling_radio();
-void viewer_process_fastmarching_cpu();
-void viewer_process_fastmarching_gpu();
 void viewer_sort_by_rings();
 void viewer_process_voronoi();
 

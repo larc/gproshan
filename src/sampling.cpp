@@ -74,13 +74,12 @@ index_t ** sampling_shape(vector<index_t> & points, size_t *& sizes, vertex *& n
 		v = points[i];
 		normals[i] = shape->normal(v);
 
-		geodesics fm(shape, { v }, NIL, radio);
+		geodesics fm(shape, {v}, geodesics::FM, NIL, radio);
 		
 		indexes[i] = new index_t[fm.n_sorted_index()];
 		
 		fm.copy_sorted_index(indexes[i], fm.n_sorted_index());
 		sizes[i] = fm.n_sorted_index();
-
 	}
 
 	return indexes;

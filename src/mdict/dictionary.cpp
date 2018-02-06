@@ -98,7 +98,7 @@ void dictionary::init_patches(const size_t & threshold)
 		index_t v = sample(s);
 		patch_t & p = patches[s];
 
-		geodesics fm(mesh, {v}, NIL, phi_basis->radio);
+		geodesics fm(mesh, {v}, geodesics::FM, NIL, phi_basis->radio);
 
 		p.n = fm.n_sorted_index();
 		

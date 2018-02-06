@@ -1,4 +1,5 @@
 #include "geodesics.h"
+#include "geodesics_ptp.h"
 
 #include <queue>
 #include <cassert>
@@ -7,9 +8,7 @@
 
 using namespace arma;
 
-index_t BLACK = 0, GREEN = 1, RED = 2;
-
-geodesics::geodesics(che * mesh, const vector<index_t> & sources, const size_t & n_iter, const distance_t & radio, const bool & parallel)
+geodesics::geodesics(che * mesh, const vector<index_t> & sources, const option_t & opt, const size_t & n_iter, const distance_t & radio)
 {
 	n_vertices = mesh->n_vertices();
 
@@ -17,14 +16,12 @@ geodesics::geodesics(che * mesh, const vector<index_t> & sources, const size_t &
 	{
 		distances = new distance_t[n_vertices];
 		clusters = new index_t[n_vertices];
-		color = new index_t[n_vertices];
 		sorted_index = new index_t[n_vertices];
 	}
 	else
 	{
 		distances = NULL;
 		clusters = NULL;
-		color = NULL;
 		sorted_index = NULL;
 	}
 
@@ -35,14 +32,14 @@ geodesics::geodesics(che * mesh, const vector<index_t> & sources, const size_t &
 		distances[v] = INFINITY;
 	
 	assert(sources.size() > 0);
-	execute(mesh, sources, n_iter, radio, parallel);
+	debug(opt)
+	execute(mesh, sources, n_iter, radio, opt);
 }
 
 geodesics::~geodesics()
 {
 	if(distances)		delete [] distances;
 	if(clusters)		delete [] clusters;
-	if(color)			delete [] color;
 	if(sorted_index)	delete [] sorted_index;
 }
 
@@ -63,7 +60,7 @@ const size_t & geodesics::n_sorted_index() const
 
 void geodesics::copy_sorted_index(index_t * indexes, const size_t & n) const
 {
-	assert(n < n_sorted);
+	assert(n <= n_sorted);
 	memcpy(indexes, sorted_index, n * sizeof(index_t));
 }
 
@@ -76,14 +73,28 @@ void geodesics::normalize()
 		distances[sorted_index[i]] /= max;
 }
 
-void geodesics::execute(che * mesh, const vector<index_t> & sources, const size_t & n_iter, const distance_t & radio, const bool & parallel)
+void geodesics::execute(che * mesh, const vector<index_t> & sources, const size_t & n_iter, const distance_t & radio, const option_t & opt)
 {
-	if(parallel) return;
-	else run_fastmarching(mesh, sources, n_iter, radio);
+	debug(opt)
+	switch(opt)
+	{
+		case FM: run_fastmarching(mesh, sources, n_iter, radio);
+			break;
+		case PTP_CPU: run_parallel_toplesets_propagation_cpu(mesh, sources, n_iter, radio);
+			break;
+		case PTP_GPU: run_parallel_toplesets_propagation_gpu(mesh, sources, n_iter, radio);
+			break;
+	}
 }
 
 void geodesics::run_fastmarching(che * mesh, const vector<index_t> & sources, const size_t & n_iter, const distance_t & radio)
 {
+	debug_me(GEODESICS)
+
+	index_t BLACK = 0, GREEN = 1, RED = 2;
+	index_t * color = new index_t[n_vertices];
+
+
 	#pragma omp parallel for
 	for(index_t v = 0; v < n_vertices; v++)
 		color[v] = GREEN;
@@ -152,6 +163,36 @@ void geodesics::run_fastmarching(che * mesh, const vector<index_t> & sources, co
 			}
 		}
 	}
+
+	delete [] color;
+}
+
+void geodesics::run_parallel_toplesets_propagation_cpu(che * mesh, const vector<index_t> & sources, const size_t & n_iter, const distance_t & radio)
+{
+	debug_me(GEODESICS)
+
+	index_t * toplesets = new index_t[n_vertices];
+	vector<index_t> limits;
+	mesh->sort_by_rings(toplesets, sorted_index, limits, sources);
+
+	if(distances) delete [] distances;
+	distances = parallel_toplesets_propagation_cpu(mesh, sources, limits, sorted_index, clusters);
+
+	delete [] toplesets;
+}
+
+void geodesics::run_parallel_toplesets_propagation_gpu(che * mesh, const vector<index_t> & sources, const size_t & n_iter, const distance_t & radio)
+{
+	debug_me(GEODESICS)
+
+	index_t * toplesets = new index_t[n_vertices];
+	vector<index_t> limits;
+	mesh->sort_by_rings(toplesets, sorted_index, limits, sources);
+
+	if(distances) delete [] distances;
+	distances = parallel_toplesets_propagation_gpu(mesh, sources, limits, sorted_index, clusters);
+
+	delete [] toplesets;
 }
 
 //d = {NIL, 0, 1} cross edge, next, prev
@@ -234,75 +275,6 @@ distance_t geodesics::planar_update(index_t & d, mat & X, index_t * x, vertex & 
 	}
 	
 	vx += *((vertex *) v.memptr());
-
-	return p;
-}
-
-distance_t update_step(che * mesh, const distance_t * dist, const index_t & he)
-{
-	index_t x[3];
-	x[0] = mesh->vt(next(he));
-	x[1] = mesh->vt(prev(he));
-	x[2] = mesh->vt(he);
-
-	vertex X[2];
-	X[0] = mesh->gt(x[0]) - mesh->gt(x[2]);
-	X[1] = mesh->gt(x[1]) - mesh->gt(x[2]);
-
-	distance_t t[2];
-	t[0] = dist[x[0]];
-	t[1] = dist[x[1]];
-
-	distance_t q[2][2];
-	q[0][0] = (X[0], X[0]);
-	q[0][1] = (X[0], X[1]);
-	q[1][0] = (X[1], X[0]);
-	q[1][1] = (X[1], X[1]);
-	
-	distance_t det = q[0][0] * q[1][1] - q[0][1] * q[1][0];
-	distance_t Q[2][2];
-	Q[0][0] = q[1][1] / det;
-	Q[0][1] = -q[0][1] / det;
-	Q[1][0] = -q[1][0] / det;
-	Q[1][1] = q[0][0] / det;
-
-
-	distance_t delta = t[0] * (Q[0][0] + Q[1][0]) + t[1] * (Q[0][1] + Q[1][1]);
-
-	distance_t dis = delta * delta - (Q[0][0] + Q[0][1] + Q[1][0] + Q[1][1]) * (t[0]*t[0]*Q[0][0] + t[0]*t[1]*(Q[1][0] + Q[0][1]) + t[1]*t[1]*Q[1][1] - 1);
-	
-	distance_t p;
-
-	if(dis >= 0)
-	{
-		p = delta + sqrt(dis);
-		p /= Q[0][0] + Q[0][1] + Q[1][0] + Q[1][1];
-	}
-
-	distance_t tp[2];
-	tp[0] = t[0] - p;
-	tp[1] = t[1] - p;
-
-	vertex n(tp[0] * (X[0][0]*Q[0][0] + X[1][0]*Q[1][0]) + tp[1] * (X[0][0]*Q[0][1] + X[1][0]*Q[1][1]),
-			 tp[0] * (X[0][1]*Q[0][0] + X[1][1]*Q[1][0]) + tp[1] * (X[0][1]*Q[0][1] + X[1][1]*Q[1][1]),
-			 tp[0] * (X[0][2]*Q[0][0] + X[1][2]*Q[1][0]) + tp[1] * (X[0][2]*Q[0][1] + X[1][2]*Q[1][1]) );
-
-	distance_t cond[2];
-	cond[0] = (X[0] , n);
-	cond[1] = (X[1] , n);
-
-	distance_t c[2];
-	c[0] = cond[0] * Q[0][0] + cond[1] * Q[0][1];
-	c[1] = cond[0] * Q[1][0] + cond[1] * Q[1][1];
-
-	if(t[0] == INFINITY || t[1] == INFINITY || dis < 0 || c[0] >= 0 || c[1] >= 0)
-	{
-		distance_t dp[2];
-		dp[0] = dist[x[0]] + *X[0];
-		dp[1] = dist[x[1]] + *X[1];
-
-		p = dp[dp[1] < dp[0]];
-	}
 
 	return p;
 }

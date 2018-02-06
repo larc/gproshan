@@ -110,7 +110,7 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 			index_t v = p_vertex(s);
 
 			patch_t & p = patches[s];
-			geodesics fm(mesh, { v }, NIL, radio);
+			geodesics fm(mesh, {v}, geodesics::FM, NIL, radio);
 			p.n = fm.n_sorted_index();
 
 			p.indexes = new index_t[p.n];
@@ -269,7 +269,7 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 			v = p_vertex(s);
 			patch_t & p = patches[s];
 
-			geodesics fm(mesh, { v }, NIL, radio );
+			geodesics fm(mesh, {v}, geodesics::FM, NIL, radio );
 			size = fm.n_sorted_index();
 			p.indexes = new index_t[size];
 			fm.copy_sorted_index(p.indexes, size);
@@ -336,7 +336,7 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 			patch_t & p = patches[bp];
 				
 			v = p[0];
-			geodesics fm(mesh, { v }, NIL, radio);
+			geodesics fm(mesh, {v}, geodesics::FM, NIL, radio);
 
 			delete [] p.indexes;
 			p.indexes = new index_t[fm.n_sorted_index()];
@@ -416,7 +416,7 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 					levels[s] = level;
 					count++;
 					
-					geodesics fm(mesh, { v }, NIL, radio );
+					geodesics fm(mesh, {v}, geodesics::FM, NIL, radio );
 					p.n = fm.n_sorted_index();
 					p.indexes = new index_t[p.n];
 					fm.copy_sorted_index(p.indexes, p.n);
@@ -512,7 +512,7 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 			patch_t & p = patches[bp];
 				
 			v = p[0];
-			geodesics fm(mesh, { v }, NIL, radio);
+			geodesics fm(mesh, {v}, geodesics::FM, NIL, radio);
 
 			delete [] p.indexes;
 			p.indexes = new index_t[fm.n_sorted_index()];
@@ -569,7 +569,7 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 			v = p_vertex(s);		
 			patch_t & p = patches[s];			
 					
-			geodesics fm(mesh, { v }, NIL, radio );
+			geodesics fm(mesh, {v}, geodesics::FM, NIL, radio );
 			p.n = fm.n_sorted_index();
 			p.indexes = new index_t[p.n];
 			fm.copy_sorted_index(p.indexes, p.n);

@@ -20,13 +20,13 @@ int viewer_main(int nargs, char ** args)
 	viewer::add_process('T', "Fairing Taubin", viewer_process_fairing_taubin);
 	viewer::add_process('E', "Fairing Spectral", viewer_process_fairing_spectral);
 
-	viewer::sub_menus.push_back("Fast Marching");
+	viewer::sub_menus.push_back("Geodesics");
 	viewer::add_process('F', "Fast Marching", viewer_process_fastmarching);
-	viewer::add_process('G', "Geodesics (fm_che)", viewer_process_geodesics);
+	viewer::add_process('G', "Geodesics (FM)", viewer_process_geodesics_fm);
+	viewer::add_process('U', "Geodesics (PTP_CPU)", viewer_process_geodesics_ptp_cpu);
+	viewer::add_process('C', "Geodesics (PTP_GPU)", viewer_process_geodesics_ptp_gpu);
 	viewer::add_process('S', "Farthest Point Sampling", viewer_process_farthest_point_sampling);
 	viewer::add_process('Q', "Farthest Point Sampling radio", viewer_process_farthest_point_sampling_radio);
-	viewer::add_process('C', "Geodesics (GPU - fastmarching)", viewer_process_fastmarching_gpu);
-	viewer::add_process('U', "Geodesics (CPU - fastmarching)", viewer_process_fastmarching_cpu);
 	viewer::add_process('V', "Voronoi Regions", viewer_process_voronoi);
 	viewer::add_process('P', "Rings propagations", viewer_sort_by_rings);
 	
@@ -373,61 +373,6 @@ void viewer_sort_by_rings()
 	delete [] sorted;
 }
 
-void viewer_process_fastmarching_cpu()
-{
-	if(!viewer::select_vertices.size()) return;
-	
-	debug_me(APP_VIEWER)
-	
-	index_t * rings = new index_t[viewer::mesh()->n_vertices()];
-	index_t * sorted = new index_t[viewer::mesh()->n_vertices()];
-	vector<index_t> limites;
-	viewer::mesh()->sort_by_rings(rings, sorted, limites, viewer::select_vertices);
-
-	distance_t * distances = parallel_fastmarching(viewer::mesh(), viewer::select_vertices.data(), viewer::select_vertices.size(), load_time, limites, sorted, true, NULL, false);	
-	//distance_t * distances = parallel_fastmarching(viewer::mesh()->filename().c_str(), viewer::select_vertices.data(), viewer::select_vertices.size(), load_time, 9, true, true);
-
-	debug(load_time)
-
-	viewer::mesh().update_colors(distances);
-
-	delete [] distances;
-	delete [] rings;
-	delete [] sorted;
-}
-void viewer_process_fastmarching_gpu()
-{
-	if(!viewer::select_vertices.size()) return;
-	
-	debug_me(APP_VIEWER)
-	
-	index_t * rings = new index_t[viewer::mesh()->n_vertices()];
-	index_t * sorted = new index_t[viewer::mesh()->n_vertices()];
-	vector<index_t> limites;
-	viewer::mesh()->sort_by_rings(rings, sorted, limites, viewer::select_vertices);
-	
-	distance_t * distances = parallel_fastmarching(viewer::mesh(), viewer::select_vertices.data(), viewer::select_vertices.size(), load_time, limites, sorted, true);	
-	//distance_t * distances = parallel_fastmarching(viewer::mesh()->filename().c_str(), viewer::select_vertices.data(), viewer::select_vertices.size(), load_time, 9, true, true);
-	//distance_t * distances = fast_geodesics(viewer::mesh(), viewer::select_vertices.data(), viewer::select_vertices.size(), limites, sorted);
-	debug(load_time)
-	
-	distance_t max_d = 0;
-
-	#pragma omp parallel for reduction(max: max_d)
-	for(index_t v = 0; v < viewer::mesh()->n_vertices(); v++)
-		max_d = max(max_d, distances[v]);
-	
-	#pragma omp parallel for
-	for(index_t v = 0; v < viewer::mesh()->n_vertices(); v++)
-		distances[v] /= max_d;
-
-	viewer::mesh().update_colors(distances);
-	
-	delete [] distances;
-	delete [] rings;
-	delete [] sorted;
-}
-
 void viewer_process_voronoi()
 {
 	if(!viewer::select_vertices.size()) return;
@@ -522,19 +467,6 @@ void viewer_process_fairing_taubin()
 	viewer::mesh().update_normals();
 }
 
-void viewer_process_geodesics()
-{
-	debug_me(APP_VIEWER)
-	
-	TIC(load_time)
-	geodesics fm(viewer::mesh(), viewer::select_vertices);
-	TOC(load_time)
-	debug(load_time)
-	
-	fm.normalize();
-	viewer::mesh().update_colors(fm.distances);
-}
-
 void viewer_process_fastmarching()
 {
 	debug_me(APP_VIEWER)
@@ -550,6 +482,49 @@ void viewer_process_fastmarching()
 	debug(load_time)
 
 	viewer::mesh().update_colors(fm.distances);
+}
+
+void viewer_process_geodesics_fm()
+{
+	debug_me(APP_VIEWER)
+	
+	TIC(load_time)
+	geodesics fm(viewer::mesh(), viewer::select_vertices);
+	TOC(load_time)
+	debug(load_time)
+	
+	fm.normalize();
+	viewer::mesh().update_colors(fm.distances);
+}
+
+void viewer_process_geodesics_ptp_cpu()
+{
+	debug_me(APP_VIEWER)
+	
+
+	debug(geodesics::FM)
+	debug(geodesics::PTP_CPU)
+	debug(geodesics::PTP_GPU)
+	TIC(load_time)
+	geodesics ptp(viewer::mesh(), viewer::select_vertices, geodesics::PTP_CPU);
+	TOC(load_time)
+	debug(load_time)
+	
+	ptp.normalize();
+	viewer::mesh().update_colors(ptp.distances);
+}
+
+void viewer_process_geodesics_ptp_gpu()
+{
+	debug_me(APP_VIEWER)
+	
+	TIC(load_time)
+	geodesics ptp(viewer::mesh(), viewer::select_vertices, geodesics::PTP_GPU);
+	TOC(load_time)
+	debug(load_time)
+	
+	ptp.normalize();
+	viewer::mesh().update_colors(ptp.distances);
 }
 
 void viewer_process_fill_holes_biharmonic_splines()

@@ -1,4 +1,5 @@
-#include "fastmarching.cuh"
+#include "geodesics_ptp.h"
+#include "che.cuh"
 
 #include <cstdio>
 #include <fstream>
@@ -9,34 +10,9 @@
 
 length_t CHE::band = 6;
 
-inline index_t iterations(const vector<index_t> & limites);
-inline index_t start_v(const index_t & i, const vector<index_t> & limites);
-inline index_t end_v(const index_t & i, const vector<index_t> & limites);
-
-inline index_t iterations(const vector<index_t> & limites)
+distance_t * parallel_toplesets_propagation_gpu(che * mesh, const vector<index_t> & sources, const vector<index_t> & limits, index_t * sorted_index, index_t * clusters)
 {
-/*	index_t max_i = 1;
-	for(index_t i = 2; i < limites.size(); i++)
-		if(limites[i] - limites[i - 1] >= limites[max_i] - limites[max_i - 1])
-			max_i = i;
-
-	return max_i + limites.size() + 1;
-*/	
-	return limites.size() << 1;
-}
-
-inline index_t start_v(const index_t & i, const vector<index_t> & limites)
-{
-	return limites[i >> 1];
-//	return limites[i > CHE::band ? i - CHE::band : 1];
-}
-
-inline index_t end_v(const index_t & i, const vector<index_t> & limites)
-{
-/*	index_t di = i - (i >> 1) - 2;
-	di = i - (di >> 1);
-	*/
-	return i < limites.size() ? limites[i] : limites.back();
+	return 0;
 }
 
 __host__ __device__
@@ -107,59 +83,6 @@ distance_t update_step(CHE * mesh, const distance_t * dist, const index_t & he)
 	}
 
 	return p;
-}
-
-distance_t * cpu_fastmarching(CHE * mesh, index_t * source, length_t source_size, vector<index_t> & limites, index_t * sorted, index_t * clusters)
-{
-	distance_t * dist[2];
-	dist[0] = new distance_t[mesh->n_vertices];
-	dist[1] = new distance_t[mesh->n_vertices];
-
-	for(index_t v = 0; v < mesh->n_vertices; v++)
-		dist[0][v] = dist[1][v] = INFINITY;
-
-	for(index_t i = 0; i < source_size; i++)
-	{
-		dist[0][source[i]] = dist[1][source[i]] = 0;
-		if(clusters) clusters[source[i]] = i + 1;
-	}
-
-	index_t v, d = 1;
-	index_t iter = iterations(limites);
-	index_t start, end;
-
-	for(index_t i = 2; i < iter; i++)
-	{
-		start = start_v(i, limites);
-		end = end_v(i, limites);
-
-		#pragma omp parallel for private(v)
-		for(index_t vi = start; vi < end; vi++)
-		{
-			v = sorted[vi];
-
-			dist[!d][v] = dist[d][v];
-			
-			distance_t p;
-		
-			cu_for_star(he, mesh, v)
-			{		
-				p = update_step(mesh, dist[d], he);
-		
-				if(p < dist[!d][v])
-				{
-					dist[!d][v] = p;
-					if(clusters)
-						clusters[v] = clusters[mesh->VT[cu_prev(he)]] != NIL ? clusters[mesh->VT[cu_prev(he)]] : clusters[mesh->VT[cu_next(he)]];
-				}
-			}
-		}
-
-		d = !d;
-	}
-
-	delete [] dist[d];
-	return dist[!d];
 }
 
 __global__
@@ -527,8 +450,8 @@ distance_t * parallel_fastmarching(che * mesh, index_t * source, length_t source
 	if(GPU)
 		distances = cuda_fastmarching(h_mesh, d_mesh, source, source_size, limites, sorted, clusters, real_dist);
 //		distances = cuda_fastmarching(d_mesh, mesh->n_vertices(), source, source_size, limites, sorted, false);
-	else
-		distances = cpu_fastmarching(h_mesh, source, source_size, limites, sorted, clusters);
+		//distances = cpu_fastmarching(h_mesh, source, source_size, limites, sorted, clusters);
+
 
 	cudaEventRecord(stop, 0);
 	cudaEventSynchronize(stop);
