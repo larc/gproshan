@@ -156,7 +156,8 @@ void main_test_fastmarching()
 		vector<index_t> sources = {0};
 
 		float time;
-		farthest_point_sampling_gpu(sources, time, shape, 1000, 0);
+		//farthest_point_sampling_gpu(sources, time, shape, 1000, 0);
+
 		debug(time)	
 		
 
@@ -235,9 +236,6 @@ float test_fastmarching(string filename, size_t n_test)
 	float time_c, time_p, time_s, time;
 
 	che * shape = new che_off(file);
-
-	CHE::band = shape->max_degree() + 2;
-	debug(CHE::band)
 
 	vector<index_t> source = { 0 };
 	printf("%12ld &", shape->n_vertices());

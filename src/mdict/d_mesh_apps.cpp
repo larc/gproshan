@@ -369,7 +369,7 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 		{
 			debug(max_dist)	
 			float time_g;
-			farthest_point_sampling_gpu(points, time_g, mesh, n_vertices, max_dist);
+			//farthest_point_sampling_gpu(points, time_g, mesh, n_vertices, max_dist);
 			debug(time_g)
 
 			M_ = points.size();
@@ -541,7 +541,8 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 		// Second iteration
 		debug(max_dist)	
 		float time_g;
-		farthest_point_sampling_gpu(points, time_g, mesh, n_vertices, max_dist);
+		//farthest_point_sampling_gpu(points, time_g, mesh, n_vertices, max_dist);
+
 		debug(time_g)
 		
 		patches.resize(points.size());

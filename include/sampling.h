@@ -18,7 +18,5 @@ void sampling_shape(const char * name);
 
 bool load_sampling(vector<index_t> & points, distance_t & radio, che * mesh, size_t M);
 
-distance_t farthest_point_sampling_gpu(vector<index_t> & points, float & time, che * mesh, size_t n, distance_t radio = 0);
-
 #endif // SAMPLING_H
 

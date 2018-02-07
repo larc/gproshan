@@ -221,13 +221,13 @@ void sampling_shape(const char * name)
 	delete [] sizes;
 }
 
-bool load_sampling(vector<index_t> & points, distance_t & radio, che * mesh, size_t M)
+bool load_sampling(vector<index_t> & points, distance_t & radio, che * mesh, size_t n)
 {
 	const string filename = mesh->filename();
 	string file = PATH_TEST;
 	file += "sampling";
 	file += filename.substr(filename.find_last_of('/'), filename.size() - filename.find_last_of('/'));
-	file += "." + to_string(M);
+	file += "." + to_string(n);
 
 	ifstream is(file);
 	debug(file)
@@ -246,15 +246,13 @@ bool load_sampling(vector<index_t> & points, distance_t & radio, che * mesh, siz
 	}
 	else
 	{
-		is.close();
 
 		if(!points.size())
 			points.push_back(0);
 		
-		float time;
-//		radio = parallel_farthest_point_sampling(points, mesh, M);
-		radio = farthest_point_sampling_gpu(points, time, mesh, M, 0);
-		debug(time)
+		float time_fps;
+		radio = farthest_point_sampling_ptp_gpu(mesh, points, time_fps, n);
+		debug(time_fps)
 
 		ofstream os(file);
 		os << radio << endl;
@@ -264,6 +262,8 @@ bool load_sampling(vector<index_t> & points, distance_t & radio, che * mesh, siz
 
 		os.close();
 	}
+	
+	is.close();
 
 	return true;
 }

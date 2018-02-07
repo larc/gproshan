@@ -16,6 +16,8 @@ distance_t * parallel_toplesets_propagation_gpu(che * mesh, const vector<index_t
 
 distance_t * parallel_toplesets_propagation_cpu(che * mesh, const vector<index_t> & sources, const vector<index_t> & limits, const index_t * sorted_index, index_t * clusters = NULL);
 
+distance_t farthest_point_sampling_ptp_gpu(che * mesh, vector<index_t> & samples, float & time_fps, size_t n, distance_t radio = 0);
+
 distance_t update_step(che * mesh, const distance_t * dist, const index_t & he);
 
 void normalize_ptp(distance_t * dist, const size_t & n);

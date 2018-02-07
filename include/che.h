@@ -147,8 +147,6 @@ struct vertex_cu;
 
 struct CHE
 {
-	static length_t band;
-
 	length_t n_vertices;
 	length_t n_faces;
 	length_t n_half_edges;
