@@ -375,33 +375,19 @@ void viewer_sort_by_rings()
 
 void viewer_process_voronoi()
 {
-	if(!viewer::select_vertices.size()) return;
-	
 	debug_me(APP_VIEWER)
 	
-	index_t * rings = new index_t[viewer::mesh()->n_vertices()];
-	index_t * sorted = new index_t[viewer::mesh()->n_vertices()];
-	vector<index_t> limites;
-	viewer::mesh()->sort_by_rings(rings, sorted, limites, viewer::select_vertices);
-	
-	index_t * clusters = new index_t[viewer::mesh()->n_vertices()];
-	memset(clusters, 255, sizeof(index_t) * viewer::mesh()->n_vertices());
-	
-	distance_t * distances = parallel_fastmarching(viewer::mesh(), viewer::select_vertices.data(), viewer::select_vertices.size(), load_time, limites, sorted, true, clusters);	
-	
+	TIC(load_time)
+	geodesics ptp(viewer::mesh(), viewer::select_vertices, geodesics::PTP_GPU);
+	TOC(load_time)
 	debug(load_time)
 
 	#pragma omp parallel for
 	for(index_t i = 0; i < viewer::mesh()->n_vertices(); i++)
 	{
-		viewer::get_color(i) = clusters[i];
+		viewer::get_color(i) = ptp.clusters[i];
 		viewer::get_color(i) /= viewer::select_vertices.size() + 1;
 	}
-
-	delete [] distances;
-	delete [] rings;
-	delete [] sorted;
-	delete [] clusters;
 }
 
 void viewer_process_farthest_point_sampling_radio()
@@ -441,6 +427,7 @@ void viewer_process_farthest_point_sampling()
 	load_sampling(viewer::select_vertices, radio, viewer::mesh(), n);
 //	distance_t radio = farthest_point_sampling_gpu(viewer::select_vertices, load_time_g, viewer::mesh(), n);
 	TOC(load_time)
+	debug(load_time)
 }
 
 void viewer_process_fairing_spectral()
@@ -501,10 +488,6 @@ void viewer_process_geodesics_ptp_cpu()
 {
 	debug_me(APP_VIEWER)
 	
-
-	debug(geodesics::FM)
-	debug(geodesics::PTP_CPU)
-	debug(geodesics::PTP_GPU)
 	TIC(load_time)
 	geodesics ptp(viewer::mesh(), viewer::select_vertices, geodesics::PTP_CPU);
 	TOC(load_time)

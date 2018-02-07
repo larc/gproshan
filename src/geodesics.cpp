@@ -11,19 +11,11 @@ using namespace arma;
 geodesics::geodesics(che * mesh, const vector<index_t> & sources, const option_t & opt, const size_t & n_iter, const distance_t & radio)
 {
 	n_vertices = mesh->n_vertices();
+	assert(n_vertices > 0);
 
-	if(n_vertices)
-	{
-		distances = new distance_t[n_vertices];
-		clusters = new index_t[n_vertices];
-		sorted_index = new index_t[n_vertices];
-	}
-	else
-	{
-		distances = NULL;
-		clusters = NULL;
-		sorted_index = NULL;
-	}
+	distances = new distance_t[n_vertices];
+	sorted_index = new index_t[n_vertices];
+	clusters = new index_t[n_vertices];
 
 	n_sorted = 0;
 
@@ -37,9 +29,9 @@ geodesics::geodesics(che * mesh, const vector<index_t> & sources, const option_t
 
 geodesics::~geodesics()
 {
-	if(distances)		delete [] distances;
-	if(clusters)		delete [] clusters;
-	if(sorted_index)	delete [] sorted_index;
+	delete [] distances;
+	delete [] sorted_index;
+	delete [] clusters;
 }
 
 const index_t & geodesics::operator[](const index_t & i) const

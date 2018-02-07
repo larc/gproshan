@@ -3,6 +3,7 @@
 
 #include <cstdio>
 #include <fstream>
+#include <cassert>
 #include <cublas_v2.h>
 
 #define NT 32
@@ -19,7 +20,7 @@ void relax_ptp(CHE * mesh, distance_t * new_dist, distance_t * old_dist, index_t
 __global__
 void relax_ptp(CHE * mesh, distance_t * new_dist, distance_t * old_dist, index_t * sorted, index_t end, index_t start = 0);
 
-index_t run_ptp_gpu(CHE * d_mesh, const index_t & n_vertices, distance_t * h_dist, distance_t ** d_dist, const vector<index_t> & sources, const vector<index_t> & limits, const index_t * h_sorted, index_t * d_sorted);
+index_t run_ptp_gpu(CHE * d_mesh, const index_t & n_vertices, distance_t * h_dist, distance_t ** d_dist, const vector<index_t> & sources, const vector<index_t> & limits, const index_t * h_sorted, index_t * d_sorted, index_t * h_clusters = NULL, index_t ** d_clusters = NULL);
 
 distance_t * parallel_toplesets_propagation_gpu(che * mesh, const vector<index_t> & sources, const vector<index_t> & limits, const index_t * sorted_index, float & time_ptp, index_t * clusters)
 {
@@ -47,7 +48,24 @@ distance_t * parallel_toplesets_propagation_gpu(che * mesh, const vector<index_t
 	index_t * d_sorted;
 	cudaMalloc(&d_sorted, sizeof(index_t) * h_mesh->n_vertices);
 	
-	index_t d = run_ptp_gpu(d_mesh, h_mesh->n_vertices, h_dist, d_dist, sources, limits, sorted_index, d_sorted);
+	index_t d;
+	if(clusters)
+	{
+		index_t * d_clusters[2] = {NULL, NULL};
+		cudaMalloc(&d_clusters[0], sizeof(index_t) * h_mesh->n_vertices);	
+		cudaMalloc(&d_clusters[1], sizeof(index_t) * h_mesh->n_vertices);	
+	
+		d = run_ptp_gpu(d_mesh, h_mesh->n_vertices, h_dist, d_dist, sources, limits, sorted_index, d_sorted, clusters, d_clusters);
+		cudaMemcpy(clusters, d_clusters[d], sizeof(index_t) * h_mesh->n_vertices, cudaMemcpyDeviceToHost);
+
+		cudaFree(d_clusters[0]);
+		cudaFree(d_clusters[1]);
+	}
+	else
+	{
+		d = run_ptp_gpu(d_mesh, h_mesh->n_vertices, h_dist, d_dist, sources, limits, sorted_index, d_sorted);
+	}
+
 	cudaMemcpy(h_dist, d_dist[d], sizeof(distance_t) * h_mesh->n_vertices, cudaMemcpyDeviceToHost);
 	
 	cudaFree(d_dist[0]);
@@ -60,6 +78,7 @@ distance_t * parallel_toplesets_propagation_gpu(che * mesh, const vector<index_t
 	cudaEventRecord(stop, 0);
 	cudaEventSynchronize(stop);
 	cudaEventElapsedTime(&time_ptp, start, stop);
+	time_ptp /= 1000;
 
 	cudaEventDestroy(start);
 	cudaEventDestroy(stop);
@@ -67,7 +86,7 @@ distance_t * parallel_toplesets_propagation_gpu(che * mesh, const vector<index_t
 	return h_dist;
 }
 
-index_t run_ptp_gpu(CHE * d_mesh, const index_t & n_vertices, distance_t * h_dist, distance_t ** d_dist, const vector<index_t> & sources, const vector<index_t> & limits, const index_t * h_sorted, index_t * d_sorted)
+index_t run_ptp_gpu(CHE * d_mesh, const index_t & n_vertices, distance_t * h_dist, distance_t ** d_dist, const vector<index_t> & sources, const vector<index_t> & limits, const index_t * h_sorted, index_t * d_sorted, index_t * h_clusters, index_t ** d_clusters)
 {
 	#pragma omp parallel for
 	for(index_t v = 0; v < n_vertices; v++)
@@ -79,6 +98,17 @@ index_t run_ptp_gpu(CHE * d_mesh, const index_t & n_vertices, distance_t * h_dis
 	cudaMemcpy(d_dist[0], h_dist, sizeof(distance_t) * n_vertices, cudaMemcpyHostToDevice);
 	cudaMemcpy(d_dist[1], h_dist, sizeof(distance_t) * n_vertices, cudaMemcpyHostToDevice);
 	cudaMemcpy(d_sorted, h_sorted, sizeof(index_t) * n_vertices, cudaMemcpyHostToDevice);
+	
+	if(h_clusters)
+	{
+		assert(d_clusters);
+
+		for(index_t i = 0; i < sources.size(); i++)
+			h_clusters[sources[i]] = i + 1;
+
+		cudaMemcpy(d_clusters[0], h_clusters, sizeof(index_t) * n_vertices, cudaMemcpyHostToDevice);
+		cudaMemcpy(d_clusters[1], h_clusters, sizeof(index_t) * n_vertices, cudaMemcpyHostToDevice);
+	}
 
 	index_t d = 0;
 	index_t start, end;
@@ -88,7 +118,12 @@ index_t run_ptp_gpu(CHE * d_mesh, const index_t & n_vertices, distance_t * h_dis
 		start = start_v(i, limits);
 		end = end_v(i, limits);
 		
-		relax_ptp <<< NB(end - start), NT >>> (d_mesh, d_dist[!d], d_dist[d], d_sorted, end, start);
+		if(h_clusters)
+		{
+			relax_ptp <<< NB(end - start), NT >>> (d_mesh, d_dist[!d], d_dist[d], d_clusters[!d], d_clusters[d], d_sorted, end, start);
+		}
+		else
+			relax_ptp <<< NB(end - start), NT >>> (d_mesh, d_dist[!d], d_dist[d], d_sorted, end, start);
 		cudaDeviceSynchronize();
 		d = !d;
 	}
@@ -130,7 +165,7 @@ void relax_ptp(CHE * mesh, distance_t * new_dist, distance_t * old_dist, index_t
 		if(v < mesh->n_vertices)
 		{
 			new_dist[v] = old_dist[v];
-			if(new_clusters) new_clusters[v] = old_clusters[v];
+			new_clusters[v] = old_clusters[v];
 
 			distance_t d;
 			cu_for_star(he, mesh, v)
@@ -139,7 +174,6 @@ void relax_ptp(CHE * mesh, distance_t * new_dist, distance_t * old_dist, index_t
 				if(d < new_dist[v])
 				{
 					new_dist[v] = d;
-					if(new_clusters)
 					new_clusters[v] = old_dist[mesh->VT[cu_prev(he)]] < old_dist[mesh->VT[cu_next(he)]] ? old_clusters[mesh->VT[cu_prev(he)]] : old_clusters[mesh->VT[cu_next(he)]];
 				}
 			}
@@ -215,116 +249,7 @@ distance_t cu_update_step(CHE * mesh, const distance_t * dist, const index_t & h
 	return p;
 }
 
-__global__
-void fastmarching_relax(CHE * d_mesh, distance_t * d_dist, distance_t * d_prevdist, index_t end, index_t * d_clusters = NULL, index_t * d_prevclusters = NULL, index_t start = 0, index_t * sorted = NULL)
-{
-	index_t v = blockDim.x * blockIdx.x + threadIdx.x + start;
-	
-	if(v < end)
-	{
-		v = sorted ? sorted[v] : v;
-
-		if(v < d_mesh->n_vertices)
-		{
-			d_dist[v] = d_prevdist[v];
-			if(d_clusters) d_clusters[v] = d_prevclusters[v];
-
-			distance_t d;
-
-			cu_for_star(he, d_mesh, v)
-			{
-				d = cu_update_step(d_mesh, d_prevdist, he);
-				if(d < d_dist[v])
-				{
-					d_dist[v] = d;
-					if(d_clusters)
-						d_clusters[v] = d_prevdist[d_mesh->VT[cu_prev(he)]] < d_prevdist[d_mesh->VT[cu_next(he)]] ? d_prevclusters[d_mesh->VT[cu_prev(he)]] : d_prevclusters[d_mesh->VT[cu_next(he)]];
-				}
-			}
-		}
-	}
-}
-
-__global__
-void fastmarching_relax(CHE * mesh, distance_t * new_dist, distance_t * prev_dist, index_t end, index_t * sorted, index_t start = 0)
-{
-	index_t v = blockDim.x * blockIdx.x + threadIdx.x + start;
-	
-	if(v < end)
-	{
-		v = sorted ? sorted[v] : v;
-
-		if(v < mesh->n_vertices)
-		{
-			new_dist[v] = prev_dist[v];
-
-			distance_t d;
-			cu_for_star(he, mesh, v)
-			{
-				d = cu_update_step(mesh, prev_dist, he);
-				if(d < new_dist[v]) new_dist[v] = d;
-			}
-		}
-	}
-}
-
-index_t cuda_fastmarching(CHE * d_mesh, const length_t & n, distance_t * h_dist, distance_t ** d_dist, const index_t *const source, const length_t & source_size, const vector<index_t> & limites, const index_t *const h_sorted, index_t * d_sorted)
-{
-	for(index_t i = 0; i < n; i++)
-		h_dist[i] = INFINITY;
-
-	for(index_t i = 0; i < source_size; i++)
-		h_dist[source[i]] = 0;
-	
-	cudaMemcpy(d_dist[0], h_dist, sizeof(distance_t) * n, cudaMemcpyHostToDevice);
-	cudaMemcpy(d_dist[1], h_dist, sizeof(distance_t) * n, cudaMemcpyHostToDevice);
-	cudaMemcpy(d_sorted, h_sorted, sizeof(index_t) * n, cudaMemcpyHostToDevice);
-
-	index_t d = 1;
-	index_t start, end;
-	
-	index_t iter = iterations(limites);
-	for(index_t i = 2; i < iter; i++)
-	{
-		start = start_v(i, limites);
-		end = end_v(i, limites);
-		fastmarching_relax<<<NB(end - start), NT>>>(d_mesh, d_dist[!d], d_dist[d], end, d_sorted, start);
-		cudaDeviceSynchronize();
-		d = !d;
-	}
-	
-	return d;
-}
-
-distance_t * cuda_fastmarching(CHE * d_mesh, const length_t & n, const index_t *const source, const length_t & source_size, const vector<index_t> & limites, const index_t *const h_sorted, const bool & device)
-{
-	distance_t * h_dist = new distance_t[n];
-	
-	distance_t * d_dist[2];
-	cudaMalloc(&d_dist[0], sizeof(distance_t) * n);
-	cudaMalloc(&d_dist[1], sizeof(distance_t) * n);
-
-	index_t * d_sorted;
-	cudaMalloc(&d_sorted, sizeof(index_t) * n);
-	
-	index_t d = cuda_fastmarching(d_mesh, n, h_dist, d_dist, source, source_size, limites, h_sorted, d_sorted);
-	
-	if(device)
-	{
-		cudaFree(d_dist[!d]);
-		delete [] h_dist;
-	}
-	else
-	{
-		cudaMemcpy(h_dist, d_dist[d], sizeof(distance_t) * n, cudaMemcpyDeviceToHost);
-		cudaFree(d_dist[0]);
-		cudaFree(d_dist[1]);
-	}
-	cudaFree(d_sorted);
-
-	return device ? d_dist[d] : h_dist;
-}
-
+// TEST ITER CODE ACCURACY
 distance_t * cuda_fastmarching(CHE * h_mesh, CHE * d_mesh, const index_t * source, length_t source_size, const vector<index_t> & limites, const index_t * h_sorted, index_t * h_clusters, distance_t * real_dist)
 {
 	FILE * f_iter_error;
@@ -422,6 +347,8 @@ inline index_t farthest(distance_t * d, size_t n)
 
 distance_t farthest_point_sampling_gpu(vector<index_t> & points, float & time, che * mesh, size_t n, distance_t radio)
 {
+	debug_me(GEODESICS_PTP)
+
 	CHE * h_mesh;
 	CHE * dd_mesh;
 	CHE * d_mesh;
@@ -474,7 +401,7 @@ distance_t farthest_point_sampling_gpu(vector<index_t> & points, float & time, c
 		vector<index_t> limites;
 		mesh->sort_by_rings(rings, h_sorted, limites, points);
 		
-		d = cuda_fastmarching(d_mesh, n_v, h_dist, d_dist, points.data(), points.size(), limites, h_sorted, d_sorted);
+		d = run_ptp_gpu(d_mesh, n_v, h_dist, d_dist, points, limites, h_sorted, d_sorted);
 				
 		// 1 indexing T_T
 		#ifdef SINGLE_P
@@ -515,59 +442,5 @@ distance_t farthest_point_sampling_gpu(vector<index_t> & points, float & time, c
 	cudaFree(d_sorted);
 
 	return max_dis;
-}
-
-distance_t * parallel_fastmarching(che * mesh, index_t * source, length_t source_size, float & time_g, vector<index_t> & limites, index_t * sorted, bool normalize, index_t * clusters, bool GPU, distance_t * real_dist)
-{
-	CHE * h_mesh;
-	CHE * dd_mesh;
-	CHE * d_mesh;
-
-	h_mesh = new CHE(mesh);
-
-	cuda_create_CHE(h_mesh, dd_mesh, d_mesh);
-
-	cudaEvent_t start;
-	cudaEvent_t stop;
-	cudaEventCreate(&start);
-	cudaEventCreate(&stop);
-
-	distance_t * distances;
-	cudaEventRecord(start, 0);
-	
-	if(GPU)
-		distances = cuda_fastmarching(h_mesh, d_mesh, source, source_size, limites, sorted, clusters, real_dist);
-//		distances = cuda_fastmarching(d_mesh, mesh->n_vertices(), source, source_size, limites, sorted, false);
-		//distances = cpu_fastmarching(h_mesh, source, source_size, limites, sorted, clusters);
-
-
-	cudaEventRecord(stop, 0);
-	cudaEventSynchronize(stop);
-	cudaEventElapsedTime(&time_g, start, stop);
-
-	cudaEventDestroy(start);
-	cudaEventDestroy(stop);
-
-	time_g /= 1000;
-
-	if(normalize)
-	{
-		distance_t max_d = 0;
-		
-		#pragma omp parallel for reduction(max: max_d)
-		for(index_t v = 0; v < h_mesh->n_vertices; v++)
-			if(distances[v] < INFINITY)
-				max_d = max(distances[v], max_d);
-		
-		#pragma omp parallel for shared(max_d)
-		for(index_t v = 0; v < h_mesh->n_vertices; v++)
-			distances[v] /= max_d;
-	}
-
-
-	//free_CHE(h_mesh);
-	cuda_free_CHE(dd_mesh, d_mesh);
-
-	return distances;
 }
 

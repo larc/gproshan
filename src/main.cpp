@@ -15,6 +15,7 @@
 #include "che_off.h"
 #include "dijkstra.h"
 #include "geodesics.h"
+#include "geodesics_ptp.h"
 #include "fairing_taubin.h"
 #include "fairing_spectral.h"
 #include "sampling.h"
@@ -253,17 +254,17 @@ float test_fastmarching(string filename, size_t n_test)
 	time_c = 0;
 	for(index_t t = 1; t < n_test; t++)
 	{
-		distances_c = parallel_fastmarching(shape, source.data(), source.size(), time, limites, sorted);
+		distances_c = parallel_toplesets_propagation_gpu(shape, source, limites, sorted, time_c);
 		time_c += time;
 		delete [] distances_c;
 	}
 
 	//test iter error
-	distances_c = parallel_fastmarching(shape, source.data(), source.size(), time, limites, sorted, 0, NULL, 1, distances_e);
+	//distances_c = parallel_fastmarching(shape, source.data(), source.size(), time, limites, sorted, 0, NULL, 1, distances_e);
 	delete [] distances_c;
 	// end test iter error
 	
-	distances_c = parallel_fastmarching(shape, source.data(), source.size(), time, limites, sorted);
+	//distances_c = parallel_fastmarching(shape, source.data(), source.size(), time, limites, sorted);
 	time_c += time;
 	time_c /= n_test;
 

@@ -1,4 +1,5 @@
 #include "sampling.h"
+#include "geodesics_ptp.h"
 #include "test.h"
 #include "che_off.h"
 
@@ -38,7 +39,7 @@ distance_t parallel_farthest_point_sampling(vector<index_t> & points, che * shap
 		vector<index_t> limites;
 		shape->sort_by_rings(rings, sorted, limites, points);
 		
-		distance_t * distances = parallel_fastmarching(shape, points.data(), points.size(), time, limites, sorted);
+		distance_t * distances = parallel_toplesets_propagation_gpu(shape, points, limites, sorted, time);
 		
 		f = farthest(distances, shape->n_vertices());
 
@@ -249,12 +250,10 @@ bool load_sampling(vector<index_t> & points, distance_t & radio, che * mesh, siz
 
 		if(!points.size())
 			points.push_back(0);
-
+		
 		float time;
 //		radio = parallel_farthest_point_sampling(points, mesh, M);
-		TIC(time)
 		radio = farthest_point_sampling_gpu(points, time, mesh, M, 0);
-		TOC(time)
 		debug(time)
 
 		ofstream os(file);
