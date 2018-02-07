@@ -394,22 +394,19 @@ void viewer_process_farthest_point_sampling_radio()
 {
 	debug_me(APP_VIEWER)
 	
-	if(!viewer::select_vertices.size())
-		viewer::select_vertices.push_back(0);
-
 	distance_t radio;
-	cin>>radio;
+	cin >> radio;
 
-	float load_time_g;
+	float time_fps;
 		
 	TIC(load_time)
-	radio = farthest_point_sampling_gpu(viewer::select_vertices, load_time_g, viewer::mesh(), viewer::mesh()->n_vertices(), radio);
+	radio = farthest_point_sampling_ptp_gpu(viewer::mesh(), viewer::select_vertices, time_fps, NIL, radio);
 	TOC(load_time)
+	debug(time_fps)
 	
 	debug(radio)
 	debug(viewer::select_vertices.size())
 	debug(load_time)
-	debug(load_time_g)
 }
 
 void viewer_process_farthest_point_sampling()
