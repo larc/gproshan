@@ -17,8 +17,6 @@ index_t cu_prev(index_t he);
 
 void cuda_create_CHE(CHE * h_che, CHE *& dd_che, CHE *& d_che);
 
-void free_CHE(CHE *& h_che);
-
 void cuda_free_CHE(CHE *& dd_che, CHE *& d_che);
 
 #endif

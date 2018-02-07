@@ -10,13 +10,145 @@
 
 length_t CHE::band = 6;
 
-distance_t * parallel_toplesets_propagation_gpu(che * mesh, const vector<index_t> & sources, const vector<index_t> & limits, index_t * sorted_index, index_t * clusters)
+__device__
+distance_t cu_update_step(CHE * mesh, const distance_t * dist, const index_t & he);
+
+__global__
+void relax_ptp(CHE * mesh, distance_t * new_dist, distance_t * old_dist, index_t * new_clusters, index_t * old_clusters, index_t * sorted, index_t end, index_t start = 0);
+
+__global__
+void relax_ptp(CHE * mesh, distance_t * new_dist, distance_t * old_dist, index_t * sorted, index_t end, index_t start = 0);
+
+index_t run_ptp_gpu(CHE * d_mesh, const index_t & n_vertices, distance_t * h_dist, distance_t ** d_dist, const vector<index_t> & sources, const vector<index_t> & limits, const index_t * h_sorted, index_t * d_sorted);
+
+distance_t * parallel_toplesets_propagation_gpu(che * mesh, const vector<index_t> & sources, const vector<index_t> & limits, const index_t * sorted_index, float & time_ptp, index_t * clusters)
 {
-	return 0;
+	debug_me(GEODESICS_PTP)
+
+	cudaDeviceReset();
+
+	cudaEvent_t start, stop;
+	cudaEventCreate(&start);
+	cudaEventCreate(&stop);
+	cudaEventRecord(start, 0);
+
+	// BEGIN PTP
+	
+	CHE * h_mesh = new CHE(mesh);
+	CHE * dd_mesh, * d_mesh;
+	cuda_create_CHE(h_mesh, dd_mesh, d_mesh);
+
+	distance_t * h_dist = new distance_t[h_mesh->n_vertices];
+	
+	distance_t * d_dist[2];
+	cudaMalloc(&d_dist[0], sizeof(distance_t) * h_mesh->n_vertices);
+	cudaMalloc(&d_dist[1], sizeof(distance_t) * h_mesh->n_vertices);
+
+	index_t * d_sorted;
+	cudaMalloc(&d_sorted, sizeof(index_t) * h_mesh->n_vertices);
+	
+	index_t d = run_ptp_gpu(d_mesh, h_mesh->n_vertices, h_dist, d_dist, sources, limits, sorted_index, d_sorted);
+	cudaMemcpy(h_dist, d_dist[d], sizeof(distance_t) * h_mesh->n_vertices, cudaMemcpyDeviceToHost);
+	
+	cudaFree(d_dist[0]);
+	cudaFree(d_dist[1]);
+	cudaFree(d_sorted);
+	cuda_free_CHE(dd_mesh, d_mesh);
+	
+	// END PTP
+
+	cudaEventRecord(stop, 0);
+	cudaEventSynchronize(stop);
+	cudaEventElapsedTime(&time_ptp, start, stop);
+
+	cudaEventDestroy(start);
+	cudaEventDestroy(stop);
+
+	return h_dist;
 }
 
-__host__ __device__
-distance_t update_step(CHE * mesh, const distance_t * dist, const index_t & he)
+index_t run_ptp_gpu(CHE * d_mesh, const index_t & n_vertices, distance_t * h_dist, distance_t ** d_dist, const vector<index_t> & sources, const vector<index_t> & limits, const index_t * h_sorted, index_t * d_sorted)
+{
+	#pragma omp parallel for
+	for(index_t v = 0; v < n_vertices; v++)
+		h_dist[v] = INFINITY;
+
+	for(index_t i = 0; i < sources.size(); i++)
+		h_dist[sources[i]] = 0;
+		
+	cudaMemcpy(d_dist[0], h_dist, sizeof(distance_t) * n_vertices, cudaMemcpyHostToDevice);
+	cudaMemcpy(d_dist[1], h_dist, sizeof(distance_t) * n_vertices, cudaMemcpyHostToDevice);
+	cudaMemcpy(d_sorted, h_sorted, sizeof(index_t) * n_vertices, cudaMemcpyHostToDevice);
+
+	index_t d = 0;
+	index_t start, end;
+	index_t iter = iterations(limits);
+	for(index_t i = 2; i < iter; i++)
+	{
+		start = start_v(i, limits);
+		end = end_v(i, limits);
+		
+		relax_ptp <<< NB(end - start), NT >>> (d_mesh, d_dist[!d], d_dist[d], d_sorted, end, start);
+		cudaDeviceSynchronize();
+		d = !d;
+	}
+	
+	return d;
+}
+
+__global__
+void relax_ptp(CHE * mesh, distance_t * new_dist, distance_t * old_dist, index_t * sorted, index_t end, index_t start)
+{
+	index_t v = blockDim.x * blockIdx.x + threadIdx.x + start;
+	
+	if(v < end)
+	{
+		v = sorted ? sorted[v] : v;
+		if(v < mesh->n_vertices)
+		{
+			new_dist[v] = old_dist[v];
+
+			distance_t d;
+			cu_for_star(he, mesh, v)
+			{
+				d = cu_update_step(mesh, old_dist, he);
+				if(d < new_dist[v]) new_dist[v] = d;
+			}
+		}
+	}
+}
+
+
+__global__
+void relax_ptp(CHE * mesh, distance_t * new_dist, distance_t * old_dist, index_t * new_clusters, index_t * old_clusters, index_t * sorted, index_t end, index_t start)
+{
+	index_t v = blockDim.x * blockIdx.x + threadIdx.x + start;
+	
+	if(v < end)
+	{
+		v = sorted ? sorted[v] : v;
+		if(v < mesh->n_vertices)
+		{
+			new_dist[v] = old_dist[v];
+			if(new_clusters) new_clusters[v] = old_clusters[v];
+
+			distance_t d;
+			cu_for_star(he, mesh, v)
+			{
+				d = cu_update_step(mesh, old_dist, he);
+				if(d < new_dist[v])
+				{
+					new_dist[v] = d;
+					if(new_clusters)
+					new_clusters[v] = old_dist[mesh->VT[cu_prev(he)]] < old_dist[mesh->VT[cu_next(he)]] ? old_clusters[mesh->VT[cu_prev(he)]] : old_clusters[mesh->VT[cu_next(he)]];
+				}
+			}
+		}
+	}
+}
+
+__device__
+distance_t cu_update_step(CHE * mesh, const distance_t * dist, const index_t & he)
 {
 	index_t x[3];
 	x[0] = mesh->VT[cu_next(he)];
@@ -44,9 +176,7 @@ distance_t update_step(CHE * mesh, const distance_t * dist, const index_t & he)
 	Q[1][0] = -q[1][0] / det;
 	Q[1][1] = q[0][0] / det;
 
-
 	distance_t delta = t[0] * (Q[0][0] + Q[1][0]) + t[1] * (Q[0][1] + Q[1][1]);
-
 	distance_t dis = delta * delta - (Q[0][0] + Q[0][1] + Q[1][0] + Q[1][1]) * (t[0]*t[0]*Q[0][0] + t[0]*t[1]*(Q[1][0] + Q[0][1]) + t[1]*t[1]*Q[1][1] - 1);
 	
 	distance_t p;
@@ -86,7 +216,7 @@ distance_t update_step(CHE * mesh, const distance_t * dist, const index_t & he)
 }
 
 __global__
-void fastmarching_relax(CHE * d_mesh, distance_t * d_dist, distance_t * d_prevdist, index_t end, index_t * d_clusters = NULL, index_t * d_prevclusters = NULL, index_t start = 0, index_t * sorted = NULL, index_t iter = NIL, index_t * arrive = NULL, index_t * prevarrive = NULL)
+void fastmarching_relax(CHE * d_mesh, distance_t * d_dist, distance_t * d_prevdist, index_t end, index_t * d_clusters = NULL, index_t * d_prevclusters = NULL, index_t start = 0, index_t * sorted = NULL)
 {
 	index_t v = blockDim.x * blockIdx.x + threadIdx.x + start;
 	
@@ -98,19 +228,12 @@ void fastmarching_relax(CHE * d_mesh, distance_t * d_dist, distance_t * d_prevdi
 		{
 			d_dist[v] = d_prevdist[v];
 			if(d_clusters) d_clusters[v] = d_prevclusters[v];
-			if(arrive) arrive[v] = prevarrive[v];
 
 			distance_t d;
 
 			cu_for_star(he, d_mesh, v)
 			{
-				d = update_step(d_mesh, d_prevdist, he);
-		
-				if(arrive && arrive[v] == NIL && 
-					prevarrive[d_mesh->VT[cu_next(he)]] != NIL && prevarrive[d_mesh->VT[cu_prev(he)]] != NIL &&
-					prevarrive[d_mesh->VT[cu_next(he)]] < iter && prevarrive[d_mesh->VT[cu_prev(he)]] < iter)
-					arrive[v] = iter;
-
+				d = cu_update_step(d_mesh, d_prevdist, he);
 				if(d < d_dist[v])
 				{
 					d_dist[v] = d;
@@ -138,7 +261,7 @@ void fastmarching_relax(CHE * mesh, distance_t * new_dist, distance_t * prev_dis
 			distance_t d;
 			cu_for_star(he, mesh, v)
 			{
-				d = update_step(mesh, prev_dist, he);
+				d = cu_update_step(mesh, prev_dist, he);
 				if(d < new_dist[v]) new_dist[v] = d;
 			}
 		}
@@ -202,7 +325,7 @@ distance_t * cuda_fastmarching(CHE * d_mesh, const length_t & n, const index_t *
 	return device ? d_dist[d] : h_dist;
 }
 
-distance_t * cuda_fastmarching(CHE * h_mesh, CHE * d_mesh, index_t * source, length_t source_size, vector<index_t> & limites, index_t * h_sorted, index_t * h_clusters, distance_t * real_dist)
+distance_t * cuda_fastmarching(CHE * h_mesh, CHE * d_mesh, const index_t * source, length_t source_size, const vector<index_t> & limites, const index_t * h_sorted, index_t * h_clusters, distance_t * real_dist)
 {
 	FILE * f_iter_error;
 	if(real_dist) f_iter_error = fopen("iter_error", "w");
@@ -217,21 +340,6 @@ distance_t * cuda_fastmarching(CHE * h_mesh, CHE * d_mesh, index_t * source, len
 	index_t * d_clusters[2] = {NULL, NULL};
 	if(h_clusters) cudaMalloc(&d_clusters[0], sizeof(index_t) * h_mesh->n_vertices);	
 	if(h_clusters) cudaMalloc(&d_clusters[1], sizeof(index_t) * h_mesh->n_vertices);	
-
-	index_t * h_arrive = NULL; //new index_t[h_mesh->n_vertices];
-	index_t * d_arrive[2] = {NULL, NULL};
-	if(h_arrive) cudaMalloc(&d_arrive[0], sizeof(index_t) * h_mesh->n_vertices);	
-	if(h_arrive) cudaMalloc(&d_arrive[1], sizeof(index_t) * h_mesh->n_vertices);	
-	
-	
-	if(h_arrive)
-	{
-		memset(h_arrive, 255, sizeof(index_t) * h_mesh->n_vertices);
-		for(index_t i = 0; i < limites[1]; i++)
-			h_arrive[h_sorted[i]] = 0;
-		for(index_t i = limites[1]; i < limites[2]; i++)
-			h_arrive[h_sorted[i]] = 1;
-	}
 
 	index_t * d_sorted;
 	cudaMalloc(&d_sorted, sizeof(index_t) * h_mesh->n_vertices);
@@ -250,17 +358,12 @@ distance_t * cuda_fastmarching(CHE * h_mesh, CHE * d_mesh, index_t * source, len
 	cudaMemcpy(d_sorted, h_sorted, sizeof(index_t) * h_mesh->n_vertices, cudaMemcpyHostToDevice);
 	if(h_clusters) cudaMemcpy(d_clusters[0], h_clusters, sizeof(index_t) * h_mesh->n_vertices, cudaMemcpyHostToDevice);
 	if(h_clusters) cudaMemcpy(d_clusters[1], h_clusters, sizeof(index_t) * h_mesh->n_vertices, cudaMemcpyHostToDevice);
-	if(h_arrive) cudaMemcpy(d_arrive[0], h_arrive, sizeof(index_t) * h_mesh->n_vertices, cudaMemcpyHostToDevice);
-	if(h_arrive) cudaMemcpy(d_arrive[1], h_arrive, sizeof(index_t) * h_mesh->n_vertices, cudaMemcpyHostToDevice);
 
 	index_t d = 1;	
-	index_t start, end, i = 2;
-
-//	bool stop = false;
+	index_t start, end;
 
 	index_t iter = real_dist ? limites.size() << 1 : iterations(limites);
-
-	for(i = 2; i < iter; i++)
+	for(index_t i = 2; i < iter; i++)
 //	while(i && !stop)
 	{
 		start = start_v(i, limites);
@@ -268,7 +371,8 @@ distance_t * cuda_fastmarching(CHE * h_mesh, CHE * d_mesh, index_t * source, len
 		
 		if(start == end) break;
 
-		fastmarching_relax<<<NB(end - start), NT>>>(d_mesh, d_dist[!d], d_dist[d], end, d_clusters[!d], d_clusters[d], start, d_sorted, i, d_arrive[!d], d_arrive[d]);
+//		fastmarching_relax<<<NB(end - start), NT>>>(d_mesh, d_dist[!d], d_dist[d], end, d_clusters[!d], d_clusters[d], start, d_sorted);
+//		relax_ptp <<< NB(end - start), NT >>> (d_mesh, d_dist[!d], d_dist[d], d_clusters[!d], d_clusters[d], d_sorted, end, start);
 		
 		if(real_dist && i >= limites.size())
 		{
@@ -286,22 +390,6 @@ distance_t * cuda_fastmarching(CHE * h_mesh, CHE * d_mesh, index_t * source, len
 			cudaDeviceSynchronize();
 
 		d = !d;
-		
-	/*
-		if(h_arrive)
-		{
-			cudaMemcpy(h_arrive, d_arrive[d], sizeof(index_t) * h_mesh->n_vertices, cudaMemcpyDeviceToHost);
-			#pragma omp parallel for
-			for(index_t s = limites[limites.size() - 2]; s < h_mesh->n_vertices; s++)
-				if(h_arrive[h_sorted[s]] != NIL)
-				{
-					#pragma omp atomic
-					stop |= true;
-				}
-		}
-	
-		i++;
-	*/
 	}
 
 	if(real_dist) fclose(f_iter_error);

@@ -32,7 +32,6 @@ geodesics::geodesics(che * mesh, const vector<index_t> & sources, const option_t
 		distances[v] = INFINITY;
 	
 	assert(sources.size() > 0);
-	debug(opt)
 	execute(mesh, sources, n_iter, radio, opt);
 }
 
@@ -45,11 +44,13 @@ geodesics::~geodesics()
 
 const index_t & geodesics::operator[](const index_t & i) const
 {
+	assert(i < n_sorted);
 	return sorted_index[i];
 }
 
 const index_t & geodesics::farthest() const
 {
+	assert(n_sorted != 0);
 	return sorted_index[n_sorted - 1];
 }
 
@@ -66,6 +67,12 @@ void geodesics::copy_sorted_index(index_t * indexes, const size_t & n) const
 
 void geodesics::normalize()
 {
+	if(!n_sorted) 
+	{
+		normalize_ptp(distances, n_vertices);
+		return;
+	}
+		
 	distance_t max = distances[farthest()];
 	
 	#pragma omp parallel for
@@ -75,7 +82,6 @@ void geodesics::normalize()
 
 void geodesics::execute(che * mesh, const vector<index_t> & sources, const size_t & n_iter, const distance_t & radio, const option_t & opt)
 {
-	debug(opt)
 	switch(opt)
 	{
 		case FM: run_fastmarching(mesh, sources, n_iter, radio);
@@ -89,11 +95,8 @@ void geodesics::execute(che * mesh, const vector<index_t> & sources, const size_
 
 void geodesics::run_fastmarching(che * mesh, const vector<index_t> & sources, const size_t & n_iter, const distance_t & radio)
 {
-	debug_me(GEODESICS)
-
 	index_t BLACK = 0, GREEN = 1, RED = 2;
 	index_t * color = new index_t[n_vertices];
-
 
 	#pragma omp parallel for
 	for(index_t v = 0; v < n_vertices; v++)
@@ -169,28 +172,32 @@ void geodesics::run_fastmarching(che * mesh, const vector<index_t> & sources, co
 
 void geodesics::run_parallel_toplesets_propagation_cpu(che * mesh, const vector<index_t> & sources, const size_t & n_iter, const distance_t & radio)
 {
-	debug_me(GEODESICS)
-
+	if(distances) delete [] distances;
+	
 	index_t * toplesets = new index_t[n_vertices];
 	vector<index_t> limits;
 	mesh->sort_by_rings(toplesets, sorted_index, limits, sources);
 
-	if(distances) delete [] distances;
+	float time_ptp;
+	TIC(time_ptp)
 	distances = parallel_toplesets_propagation_cpu(mesh, sources, limits, sorted_index, clusters);
+	TOC(time_ptp)
+	debug(time_ptp)
 
 	delete [] toplesets;
 }
 
 void geodesics::run_parallel_toplesets_propagation_gpu(che * mesh, const vector<index_t> & sources, const size_t & n_iter, const distance_t & radio)
 {
-	debug_me(GEODESICS)
+	if(distances) delete [] distances;
 
 	index_t * toplesets = new index_t[n_vertices];
 	vector<index_t> limits;
 	mesh->sort_by_rings(toplesets, sorted_index, limits, sources);
 
-	if(distances) delete [] distances;
-	distances = parallel_toplesets_propagation_gpu(mesh, sources, limits, sorted_index, clusters);
+	float time_ptp;
+	distances = parallel_toplesets_propagation_gpu(mesh, sources, limits, sorted_index, time_ptp, clusters);
+	debug(time_ptp);
 
 	delete [] toplesets;
 }

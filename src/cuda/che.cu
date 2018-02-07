@@ -42,21 +42,13 @@ void cuda_create_CHE(CHE * h_che, CHE *& dd_che, CHE *& d_che)
 	cudaMemcpy(d_che, dd_che, sizeof(CHE), cudaMemcpyHostToDevice);
 }
 
-void free_CHE(CHE *& h_che)
-{
-	if(h_che->GT) delete [] h_che->GT;
-	if(h_che->VT) delete [] h_che->VT;
-	if(h_che->OT) delete [] h_che->OT;
-	if(h_che->EVT) delete [] h_che->EVT;
-	delete h_che;
-}
-
 void cuda_free_CHE(CHE *& dd_che, CHE *& d_che)
 {
 	if(dd_che->GT) cudaFree(dd_che->GT);
 	if(dd_che->VT) cudaFree(dd_che->VT);
 	if(dd_che->OT) cudaFree(dd_che->OT);
 	if(dd_che->EVT) cudaFree(dd_che->EVT);
+
 	free(dd_che);
 	cudaFree(d_che);
 }
