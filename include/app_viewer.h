@@ -31,7 +31,7 @@ void viewer_process_geodesics_ptp_gpu();
 void viewer_process_geodesics_ptp_cpu();
 void viewer_process_farthest_point_sampling();
 void viewer_process_farthest_point_sampling_radio();
-void viewer_sort_by_rings();
+void viewer_compute_toplesets();
 void viewer_process_voronoi();
 
 void viewer_process_denoising();

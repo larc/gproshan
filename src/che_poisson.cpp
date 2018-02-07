@@ -99,7 +99,7 @@ void biharmonic_interp_2(che * mesh, const size_t & old_n_vertices, const size_t
 	index_t * rings = new index_t[mesh->n_vertices()];
 	index_t * sorted = new index_t[mesh->n_vertices()];
 	vector<index_t> limites;
-	mesh->sort_by_rings(rings, sorted, limites, border_vertices, k);
+	mesh->compute_toplesets(rings, sorted, limites, border_vertices, k);
 
 	const size_t n_border_vertices = limites.back();
 	

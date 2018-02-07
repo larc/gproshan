@@ -28,7 +28,7 @@ int viewer_main(int nargs, char ** args)
 	viewer::add_process('S', "Farthest Point Sampling", viewer_process_farthest_point_sampling);
 	viewer::add_process('Q', "Farthest Point Sampling radio", viewer_process_farthest_point_sampling_radio);
 	viewer::add_process('V', "Voronoi Regions", viewer_process_voronoi);
-	viewer::add_process('P', "Rings propagations", viewer_sort_by_rings);
+	viewer::add_process('P', "Rings propagations", viewer_compute_toplesets);
 	
 	viewer::sub_menus.push_back("Dictionary Learning");
 	viewer::add_process('D', "Denoising", viewer_process_denoising);
@@ -351,25 +351,25 @@ void viewer_process_multiplicate_vertices()
 	debug(viewer::mesh()->n_vertices())
 }
 
-void viewer_sort_by_rings()
+void viewer_compute_toplesets()
 {
 	debug_me(APP_VIEWER)
 	
-	index_t * rings = new index_t[viewer::mesh()->n_vertices()];
+	index_t * toplesets = new index_t[viewer::mesh()->n_vertices()];
 	index_t * sorted = new index_t[viewer::mesh()->n_vertices()];
 	vector<index_t> limites;
-	viewer::mesh()->sort_by_rings(rings, sorted, limites, viewer::select_vertices);
+	viewer::mesh()->compute_toplesets(toplesets, sorted, limites, viewer::select_vertices);
 	
 	size_t k = limites.size() - 1;
 
 	for(index_t v = 0; v < viewer::mesh()->n_vertices(); v++)
 	{
-		if(rings[v] < k) //viewer::select_vertices.push_back(v);
-		viewer::get_color(v) = distance_t(rings[v]) / (limites.size() - 1);
+		if(toplesets[v] < k) //viewer::select_vertices.push_back(v);
+			viewer::get_color(v) = distance_t(toplesets[v]) / (limites.size() - 1);
 	}
 	debug(k)
 
-	delete [] rings;
+	delete [] toplesets;
 	delete [] sorted;
 }
 

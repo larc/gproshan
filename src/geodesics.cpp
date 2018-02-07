@@ -168,7 +168,7 @@ void geodesics::run_parallel_toplesets_propagation_cpu(che * mesh, const vector<
 	
 	index_t * toplesets = new index_t[n_vertices];
 	vector<index_t> limits;
-	mesh->sort_by_rings(toplesets, sorted_index, limits, sources);
+	mesh->compute_toplesets(toplesets, sorted_index, limits, sources);
 
 	float time_ptp;
 	TIC(time_ptp)
@@ -185,7 +185,7 @@ void geodesics::run_parallel_toplesets_propagation_gpu(che * mesh, const vector<
 
 	index_t * toplesets = new index_t[n_vertices];
 	vector<index_t> limits;
-	mesh->sort_by_rings(toplesets, sorted_index, limits, sources);
+	mesh->compute_toplesets(toplesets, sorted_index, limits, sources);
 
 	float time_ptp;
 	distances = parallel_toplesets_propagation_gpu(mesh, sources, limits, sorted_index, time_ptp, clusters);

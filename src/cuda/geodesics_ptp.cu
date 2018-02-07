@@ -118,7 +118,7 @@ distance_t farthest_point_sampling_ptp_gpu(che * mesh, vector<index_t> & samples
 	while(n-- && max_dist > radio)
 	{
 		limits.clear();
-		mesh->sort_by_rings(toplesets, sorted_index, limits, samples);
+		mesh->compute_toplesets(toplesets, sorted_index, limits, samples);
 		
 		d = run_ptp_gpu(d_mesh, h_mesh->n_vertices, h_dist, d_dist, samples, limits, sorted_index, d_sorted);
 				

@@ -180,7 +180,7 @@ void main_test_fastmarching()
 		index_t * rings = new index_t[shape->n_vertices()];
 		index_t * sorted = new index_t[shape->n_vertices()];
 		vector<index_t> limites;
-		shape->sort_by_rings(rings, sorted, limites, {0});
+		shape->compute_toplesets(rings, sorted, limites, {0});
 		
 		index_t * dist_rings = new index_t[limites.size() - 1];
 		
@@ -245,7 +245,7 @@ float test_fastmarching(string filename, size_t n_test)
 	index_t * rings = new index_t[shape->n_vertices()];
 	index_t * sorted = new index_t[shape->n_vertices()];
 	vector<index_t> limites;
-	shape->sort_by_rings(rings, sorted, limites, source);
+	shape->compute_toplesets(rings, sorted, limites, source);
 		
 	distance_t * distances_c;
 	

@@ -489,7 +489,7 @@ void che::reload()
 	init(filename_);
 }
 
-void che::sort_by_rings(index_t *& rings, index_t *& sorted, vector<index_t> & limites, const vector<index_t> & sources, const index_t & k)
+void che::compute_toplesets(index_t *& rings, index_t *& sorted, vector<index_t> & limites, const vector<index_t> & sources, const index_t & k)
 {
 	if(!sources.size()) return;
 

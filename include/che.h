@@ -115,7 +115,7 @@ class che
 		const string name() const;
 		const string name_size() const;
 		void reload();
-		void sort_by_rings(index_t *& rings, index_t *& sorted, vector<index_t> & limites, const vector<index_t> & sources, const index_t & k = NIL);
+		void compute_toplesets(index_t *& rings, index_t *& sorted, vector<index_t> & limites, const vector<index_t> & sources, const index_t & k = NIL);
 		void multiplicate_vertices();
 		void remove_non_manifold_vertices();
 		void remove_vertices(const vector<index_t> & vertices);

@@ -158,7 +158,7 @@ distance_t farthest_point_sampling_gpu(vector<index_t> & points, float & time, c
 		cudaEventRecord(start, 0);
 		
 		vector<index_t> limites;
-		mesh->sort_by_rings(rings, h_sorted, limites, points);
+		mesh->compute_toplesets(rings, h_sorted, limites, points);
 		
 		d = run_ptp_gpu(d_mesh, n_v, h_dist, d_dist, points, limites, h_sorted, d_sorted);
 				

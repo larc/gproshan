@@ -37,7 +37,7 @@ distance_t parallel_farthest_point_sampling(vector<index_t> & points, che * shap
 	while(n-- && max_dis > radio)
 	{
 		vector<index_t> limites;
-		shape->sort_by_rings(rings, sorted, limites, points);
+		shape->compute_toplesets(rings, sorted, limites, points);
 		
 		distance_t * distances = parallel_toplesets_propagation_gpu(shape, points, limites, sorted, time);
 		
