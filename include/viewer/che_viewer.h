@@ -15,7 +15,7 @@
 #define GL_VERTEX_T GL_DOUBLE
 #endif
 
-typedef vertex_t color_t; 
+typedef vertex_t color_t;
 
 class che_viewer
 {
@@ -25,7 +25,7 @@ class che_viewer
 		bool _invert_orientation;
 		vertex_t factor;
 		vertex v_translate;
-		
+
 		vertex * normals;
 		color_t * colors;
 
@@ -48,7 +48,7 @@ class che_viewer
 		void draw_normal_field();
 		void draw_gradient_field();
 		void draw_mesh_info();
-		
+
 		const size_t & n_vertices() const;
 		color_t & color(const index_t & v);
 		vertex & normal(const index_t & v);
@@ -57,7 +57,7 @@ class che_viewer
 		void invert_orientation();
 
 		void debug_info();
-	
+
 };
 
 #endif // CHE_VIEWER_H

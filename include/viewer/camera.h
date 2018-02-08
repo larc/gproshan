@@ -17,7 +17,7 @@ class camera
 
 	public:
 		camera();
-		quaternion clickToSphere(int x, int y);		
+		quaternion clickToSphere(int x, int y);
 		void setView() const;
 		void mouse(int button, int state, int x, int y);
 		void motion(int x, int y);

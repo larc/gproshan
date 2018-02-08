@@ -8,7 +8,7 @@ namespace mdict {
 basis_dct::basis_dct(const size_t & _n, const distance_t & _radio)
 {
 	radio = _radio;
-	n = _n;	
+	n = _n;
 	dim = n * n;
 }
 
@@ -18,16 +18,16 @@ void basis_dct::discrete(mat & phi, const mat & xy)
 
 	vec x = xy.row(0).t();
 	vec y = xy.row(1).t();
-	
+
 	for(index_t k = 0, nx = 0; nx < n; nx++)
 	for(index_t ny = 0; ny < n; ny++, k++)
-		phi.col(k) = dct(x, y, nx, ny);	
+		phi.col(k) = dct(x, y, nx, ny);
 }
 
 void basis_dct::plot_basis(ostream & os)
 {
 	os << "set multiplot layout " << n << "," << n << " rowsfirst scale 1.2;" << endl;
-	
+
 	for(index_t nx = 0; nx < n; nx++)
 	for(index_t ny = 0; ny < n; ny++)
 	{

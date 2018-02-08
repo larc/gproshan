@@ -27,7 +27,7 @@ void OMP(vec & alpha, vec & x, mat & D, size_t L)
 
 		Dtr.max(max_i);
 		selected_atoms(l) = max_i;
-		
+
 		mat DD = D.cols(selected_atoms.head(l + 1));
 		aa = pinv(DD) * x;
 		r = x - DD * aa;
@@ -41,9 +41,9 @@ void KSVD(mat & D, mat & X, size_t L)
 	size_t n = X.n_rows;
 	size_t m = D.n_cols;
 	size_t M = X.n_cols;
-	
+
 	mat alpha(m, M);
-	
+
 	size_t iter = L;
 	while(iter--)
 	{
@@ -84,7 +84,7 @@ void OMP_patch(mat & alpha, const mat & A, const index_t & i, patch_t & p, const
 	vec a;
 	vec x = p.xyz.row(2).t();
 	mat D = p.phi * A;
-	
+
 	OMP(a, x, D, L);
 	alpha.col(i) = a;
 }
@@ -101,9 +101,9 @@ void KSVDT(mat & A, vector<patch_t> & patches, size_t M, size_t L)
 {
 	size_t K = A.n_rows;
 	size_t m = A.n_cols;
-	
+
 	mat alpha(m, M);
-	
+
 	size_t iter = L;
 	while(iter--)
 	{
@@ -113,7 +113,7 @@ void KSVDT(mat & A, vector<patch_t> & patches, size_t M, size_t L)
 		for(index_t j = 0; j < m; j++)
 		{
 			uvec omega = find(abs(alpha.row(j)) > 0);
-			
+
 			mat sum(K, K, fill::zeros);
 			vec sum_error(K, fill::zeros);
 

@@ -8,8 +8,8 @@
 #include <armadillo>
 
 #define CGAL_EIGEN3_ENABLED
-#define CGAL_USE_BOOST_PROGRAM_OPTIONS 
-#define CGAL_USE_GMP 
+#define CGAL_USE_BOOST_PROGRAM_OPTIONS
+#define CGAL_USE_GMP
 #define DCGAL_USE_MPFR
 
 #include <CGAL/Simple_cartesian.h>
@@ -49,7 +49,7 @@ struct patch_t
 	vec avg;
 	mat E;
 	mat phi;
-	
+
 	patch_t()
 	{
 		indexes = NULL;
@@ -78,7 +78,7 @@ struct patch_t
 		xyz = E * xyz;
 		xyz.each_col() += avg;
 	}
-	
+
 	bool valid_xyz()
 	{
 		return xyz.n_cols > min_nvp;
@@ -104,9 +104,9 @@ struct patch_t
 				xyz(1, j) = v.y;
 				xyz(2, j) = v.z;
 
-				patches_map[indexes[i]][p] = j++; 
+				patches_map[indexes[i]][p] = j++;
 			}
-		}	
+		}
 	}
 };
 

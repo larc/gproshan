@@ -20,19 +20,19 @@ index_t end_v(const index_t & i, const vector<index_t> & limits)
 distance_t * parallel_toplesets_propagation_cpu(che * mesh, const vector<index_t> & sources, const vector<index_t> & limits, const index_t * sorted_index, index_t * clusters)
 {
 	debug_me(GEODESICS_PTP)
-	
+
 	distance_t * dist[2] = {new distance_t[mesh->n_vertices()], new distance_t[mesh->n_vertices()]};
 
 	#pragma omp parallel for
 	for(index_t v = 0; v < mesh->n_vertices(); v++)
 		dist[0][v] = dist[1][v] = INFINITY;
-	
+
 	for(index_t i = 0; i < sources.size(); i++)
 	{
 		dist[0][sources[i]] = dist[1][sources[i]] = 0;
 		if(clusters) clusters[sources[i]] = i + 1;
 	}
-	
+
 	index_t d = 1;
 	index_t start, end;
 	index_t iter = iterations(limits);
@@ -40,7 +40,7 @@ distance_t * parallel_toplesets_propagation_cpu(che * mesh, const vector<index_t
 	{
 		start = start_v(i, limits);
 		end = end_v(i, limits);
-		
+
 		#pragma omp parallel for
 		for(index_t vi = start; vi < end; vi++)
 		{
@@ -87,7 +87,7 @@ distance_t update_step(che * mesh, const distance_t * dist, const index_t & he)
 	q[0][1] = (X[0], X[1]);
 	q[1][0] = (X[1], X[0]);
 	q[1][1] = (X[1], X[1]);
-	
+
 	distance_t det = q[0][0] * q[1][1] - q[0][1] * q[1][0];
 	distance_t Q[2][2];
 	Q[0][0] = q[1][1] / det;
@@ -97,7 +97,7 @@ distance_t update_step(che * mesh, const distance_t * dist, const index_t & he)
 
 	distance_t delta = t[0] * (Q[0][0] + Q[1][0]) + t[1] * (Q[0][1] + Q[1][1]);
 	distance_t dis = delta * delta - (Q[0][0] + Q[0][1] + Q[1][0] + Q[1][1]) * (t[0]*t[0]*Q[0][0] + t[0]*t[1]*(Q[1][0] + Q[0][1]) + t[1]*t[1]*Q[1][1] - 1);
-	
+
 	distance_t p;
 
 	if(dis >= 0)
@@ -142,7 +142,7 @@ void normalize_ptp(distance_t * dist, const size_t & n)
 	for(index_t v = 0; v < n; v++)
 		if(dist[v] < INFINITY)
 			max_d = max(dist[v], max_d);
-	
+
 	#pragma omp parallel for
 	for(index_t v = 0; v < n; v++)
 		dist[v] /= max_d;

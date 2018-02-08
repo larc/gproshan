@@ -34,7 +34,7 @@ CHE::CHE(che * mesh)
 	n_vertices = mesh->n_vertices_;
 	n_faces = mesh->n_faces_;
 	n_half_edges = mesh->n_half_edges_;
-	
+
 	GT = (vertex_cu *) mesh->GT;
 	VT = mesh->VT;
 	OT = mesh->OT;
@@ -49,7 +49,7 @@ che::~che()
 void che::star(star_t & s, const index_t & v)
 {
 	if(v >= n_vertices_) return;
-	
+
 	for_star(he, this, v)
 		s.push_back(he);
 }
@@ -65,7 +65,7 @@ void che::link(link_t & l, const index_t & v)
 			l.push_back(prev(he));
 	}
 }
-		
+
 void che::border(vector<index_t> & border, const index_t & b)
 {
 	for_border(he, this, BT[b])
@@ -87,13 +87,13 @@ void che::flip(const index_t & e)
 {
 	index_t ha = ET[e];
 	index_t hb = OT[ha];
-	
+
 	if(hb == NIL)
 		return;
 
-	index_t va = VT[ha];	
-	index_t vb = VT[hb];	
-	index_t vc = VT[prev(ha)];	
+	index_t va = VT[ha];
+	index_t vb = VT[hb];
+	index_t vc = VT[prev(ha)];
 	index_t vd = VT[prev(hb)];
 
 	VT[prev(ha)] = vb;
@@ -103,21 +103,21 @@ void che::flip(const index_t & e)
 	VT[hb] = vd;
 	VT[next(hb)] = vc;
 
-	index_t ot_pa = OT[prev(ha)]; 
-	index_t ot_na = OT[next(ha)]; 
-	index_t ot_pb = OT[prev(hb)]; 
-	index_t ot_nb = OT[next(hb)]; 
+	index_t ot_pa = OT[prev(ha)];
+	index_t ot_na = OT[next(ha)];
+	index_t ot_pb = OT[prev(hb)];
+	index_t ot_nb = OT[next(hb)];
 
 	if(ot_pa != NIL) OT[ot_pa] = next(hb);
 	if(ot_na != NIL) OT[ot_na] = prev(ha);
 	if(ot_pb != NIL) OT[ot_pb] = next(ha);
 	if(ot_nb != NIL) OT[ot_nb] = prev(hb);
-	
+
 	OT[prev(ha)] = ot_na;
 	OT[next(ha)] = ot_pb;
 	OT[prev(hb)] = ot_nb;
 	OT[next(hb)] = ot_pa;
-	
+
 	if(EVT[va] == next(hb) || EVT[va] == ha) EVT[va] = prev(hb);
 	if(EVT[vb] == next(ha) || EVT[vb] == hb) EVT[vb] = prev(ha);
 	if(EVT[vc] == prev(ha)) EVT[vc] = next(hb);
@@ -161,10 +161,10 @@ vertex_t che::pdetriq(const index_t & t) const
 percent_t che::quality()
 {
 	percent_t q = 0;
-	
+
 	#pragma omp parallel for reduction(+: q)
 	for(index_t t = 0; t < n_faces_; t++)
-		q += pdetriq(t) > 0.6; //is confederating good triangle 
+		q += pdetriq(t) > 0.6; //is confederating good triangle
 
 	return q * 100.0 / n_faces_;
 }
@@ -208,7 +208,7 @@ vertex che::normal(const index_t & v)
 {
 	vertex n;
 	area_t area, area_star = 0;
-	
+
 	for_star(he, this, v)
 	{
 		area = area_trig(trig(he));
@@ -225,7 +225,7 @@ vertex che::gradient_he(const index_t & he, const distance_t *const & f) const
 	index_t i = VT[he];
 	index_t j = VT[next(he)];
 	index_t k = VT[prev(he)];
-	
+
 	vertex xi = GT[i];
 	vertex xj = GT[j];
 	vertex xk = GT[k];
@@ -246,7 +246,7 @@ vertex che::gradient(const index_t & v, const distance_t *const & f)
 {
 	vertex g;
 	area_t area, area_star = 0;
-	
+
 	for_star(he, this, v)
 	{
 		area = area_trig(trig(he));
@@ -364,12 +364,12 @@ const vertex & che::gt_vt_next_evt(const index_t & v) const
 }
 
 const vertex & che::gt_e(const index_t & e, const bool & op)
-{ 
+{
 	return op ? GT[VT[next(ET[e])]] : GT[VT[ET[e]]];
 }
 
 const index_t & che::vt_e(const index_t & e, const bool & op)
-{ 
+{
 	return op ? VT[next(ET[e])] : VT[ET[e]];
 }
 
@@ -440,7 +440,7 @@ size_t che::max_degree() const
 		d += is_border_v(v);
 		md = max(md, d);
 	}
-	
+
 	return md;
 }
 
@@ -509,15 +509,15 @@ void che::compute_toplesets(index_t *& rings, index_t *& sorted, vector<index_t>
 	for(; s < p; s++)
 	{
 		v = sorted[s];
-		
+
 		if(rings[v] != NIL && rings[v] > r)
 		{
 			r++;
-			
+
 			if(r > k) break;
 			limites.push_back(s);
 		}
-			
+
 		link_t v_link;
 		link(v_link, v);
 		for(index_t he: v_link)
@@ -553,7 +553,7 @@ void che::multiplicate_vertices()
 	#pragma omp parallel for
 	for(index_t e = 0; e < n_edges_; e++)
 		aET[e] = ET[e] * 3;
-	
+
 	#pragma omp parallel for
 	for(index_t v = 0; v < n_vertices_; v++)
 		aEVT[v] = EVT[v] * 3;
@@ -564,7 +564,7 @@ void che::multiplicate_vertices()
 		index_t he = f * P;
 		index_t v = n_vertices_ + f;
 		aGT[v] = (GT[VT[prev(he)]] + GT[VT[he]] + GT[VT[next(he)]]) / 3;
-		
+
 		index_t ahe = f * P * 3;
 		aVT[ahe] = aVT[ahe + 7] = VT[he];
 		aVT[ahe + 3] = aVT[ahe + 1] = VT[next(he)];
@@ -586,7 +586,7 @@ void che::multiplicate_vertices()
 
 		aET[n_edges_ + he] = ahe + 2;
 		aET[n_edges_ + he + 1] = ahe + 5;
-		aET[n_edges_ + he + 2] = ahe + 8;	
+		aET[n_edges_ + he + 2] = ahe + 8;
 	}
 
 	delete_me();
@@ -596,7 +596,7 @@ void che::multiplicate_vertices()
 	EVT = aEVT;
 	ET = aET;
 	EHT = aEHT;
-	
+
 	size_t n_flips = n_edges_;
 	n_vertices_ = nv;
 	n_faces_ = nf;
@@ -616,9 +616,9 @@ void che::remove_non_manifold_vertices()
 	{
 		if(EVT[ VT[he] ] == NIL || EVT[ VT[he+1]] == NIL || EVT[ VT[he+2] ] == NIL)
 		{
-			VT[he] = NIL;	
-			VT[he + 1 ] = NIL;	
-			VT[he + 2 ] = NIL;	
+			VT[he] = NIL;
+			VT[he + 1 ] = NIL;
+			VT[he + 2 ] = NIL;
 		}
 	}
 
@@ -626,7 +626,7 @@ void che::remove_non_manifold_vertices()
 	vector<vertex> new_vertices;
 	vector<index_t> removed;
 	vector<index_t> new_faces; // each 3
-	
+
 	debug_me(removing vertex);
 	for(index_t v = 0; v < n_vertices_; v++)
 	{
@@ -659,7 +659,7 @@ void che::remove_non_manifold_vertices()
 		if(VT[he] != NIL)
 			new_faces.push_back(VT[he]);
 		else { debug(he) }
-	
+
 	debug(new_vertices.size())
 	debug(new_faces.size())
 	debug_me(removing vertex);
@@ -675,13 +675,13 @@ void che::remove_vertices(const vector<index_t> & vertices)
 
 	debug_me(removing vertex);
 	for(index_t v: vertices)
-	{	
+	{
 		for_star(he, this, v)
 		{
 			VT[he] = NIL;
 			VT[prev(he)] = NIL;
 			VT[next(he)] = NIL;
-		
+
 			debug(he)
 			debug(next(he))
 			debug(prev(he))
@@ -695,7 +695,7 @@ void che::remove_vertices(const vector<index_t> & vertices)
 	vector<vertex> new_vertices;
 	vector<index_t> removed;
 	vector<index_t> new_faces; // each 3
-	
+
 	debug_me(removing vertex);
 	for(index_t v = 0; v < n_vertices_; v++)
 	{
@@ -728,7 +728,7 @@ void che::remove_vertices(const vector<index_t> & vertices)
 		if(VT[he] != NIL)
 			new_faces.push_back(VT[he]);
 		else debug(he)
-	
+
 	debug(new_vertices.size())
 	debug(new_faces.size())
 	debug_me(removing vertex);
@@ -750,7 +750,7 @@ debug_me(fill holes)
 	size_t nv = n_vertices_ + mesh->n_vertices_ - ncv;
 	size_t nf = n_faces_ + mesh->n_faces_;
 	size_t nh = n_half_edges_ + mesh->n_half_edges_;
-	size_t ne = n_edges_ + mesh->n_edges_ - (ncv - is_open); 
+	size_t ne = n_edges_ + mesh->n_edges_ - (ncv - is_open);
 
 	vertex * aGT = new vertex[nv];
 	index_t * aVT = new index_t[nh];
@@ -769,10 +769,10 @@ debug_me(fill holes)
 	for(index_t he = 0; he < mesh->n_half_edges_; he++)
 		t_aVT[he] = mesh->VT[he] < ncv ? com_vertices[mesh->VT[he]] : mesh->VT[he] + n_vertices_ - ncv;
 debug_me(fill holes)
-	
+
 	memcpy(aOT, OT, sizeof(index_t) * n_half_edges_);
 debug_me(fill holes)
-	
+
 	index_t * t_aOT = aOT + n_half_edges_;
 	for(index_t he = 0; he < mesh->n_half_edges_; he++)
 		t_aOT[he] = mesh->OT[he] != NIL ? mesh->OT[he] + n_half_edges_ : NIL;
@@ -801,7 +801,7 @@ debug_me(fill holes)
 	for(index_t v = ncv; v < mesh->n_vertices_; v++)
 		t_aEVT[v - ncv] = mesh->EVT[v] != NIL ? mesh->EVT[v] + n_half_edges_ : NIL;
 debug_me(fill holes)
-	
+
 	memcpy(aET, ET, sizeof(index_t) * n_edges_);
 debug_me(fill holes)
 
@@ -813,7 +813,7 @@ debug_me(fill holes)
 		if(he_i != NIL && mesh->VT[next(he_i)] < ncv)
 			common_edge[mesh->EHT[he_i]] = true;
 	}
-	
+
 	index_t ae = n_edges_;
 	for(index_t e = 0; e < mesh->n_edges_; e++)
 		if(!common_edge[e])
@@ -826,7 +826,7 @@ debug_me(fill holes)
 	delete [] common_edge;
 debug_me(fill holes)
 	delete_me();
-	
+
 debug_me(fill holes)
 	GT = aGT;
 	VT = aVT;
@@ -834,7 +834,7 @@ debug_me(fill holes)
 	EVT = aEVT;
 	ET = aET;
 	EHT = aEHT;
-	
+
 	n_vertices_ = nv;
 	n_faces_ = nf;
 	n_half_edges_ = nh;
@@ -852,21 +852,21 @@ void che::set_head_vertices(index_t * head, const size_t & n)
 	for(index_t v, i = 0; i < n; i++)
 	{
 		v = head[i];
-		
+
 		for(index_t j = i + 1; j < n; j++)
 			if(i == head[j])
 			{
 				head[j] = v;
 				break;
 			}
-	
+
 		swap(GT[v], GT[i]);
-		
+
 		for_star(he, this, v)
 			VT[he] = i;
 		for_star(he, this, i)
 			VT[he] = v;
-		
+
 		swap(EVT[v], EVT[i]);
 		for(index_t b = 0; b < n_borders_; b++)
 		{
@@ -879,7 +879,7 @@ void che::set_head_vertices(index_t * head, const size_t & n)
 index_t che::link_intersect(const index_t & v_a, const index_t & v_b)
 {
 	index_t intersect = 0;
-	
+
 	link_t link_a, link_b;
 	link(link_a, v_a);
 	link(link_b, v_b);
@@ -888,14 +888,14 @@ index_t che::link_intersect(const index_t & v_a, const index_t & v_b)
 	for(index_t & he_b: link_b)
 		if(VT[he_a] == VT[he_b])
 			intersect++;
-	
+
 	return intersect;
 }
 
 corr_t * che::edge_collapse(const index_t *const & sort_edges, const vertex *const & normals)
 {
 	if(n_faces_ < 2) return NULL;
-	
+
 	// init default corr
 	corr_t * corr = new corr_t[n_vertices_];
 	#pragma omp parallel for
@@ -933,7 +933,7 @@ corr_t * che::edge_collapse(const index_t *const & sort_edges, const vertex *con
 		ohe_d = OT[he_d];
 		va = VT[he_d];
 		vb = VT[next(he_d)];
-		
+
 		//is_border_v(va) && is_border_v(vb) -> is_border_e(e_d)
 		if( !faces_fixed[trig(he_d)] && (ohe_d != NIL ? !faces_fixed[trig(ohe_d)] : true) &&
 			(!(is_border_v(va) && is_border_v(vb)) || is_border_e(e_d)) )
@@ -947,15 +947,15 @@ corr_t * che::edge_collapse(const index_t *const & sort_edges, const vertex *con
 					is_collapse = false;
 					break;
 				}
-			
+
 			if(is_collapse)
 			for_star(he, this, vb)
 				if(faces_fixed[trig(he)])
 				{
 					is_collapse = false;
 					break;
-				}	
-			
+				}
+
 			if(is_collapse)
 			{
 				update_corr_v(he_d);
@@ -974,30 +974,30 @@ corr_t * che::edge_collapse(const index_t *const & sort_edges, const vertex *con
 					VT[he] = va;
 
 				deleted_vertices[vb] = 1;
-				
+
 				aux_va = GT[va];
 				aux_vb = GT[vb];
 				GT[va] = GT[vb] = (GT[va] + GT[vb]) / 2;
-				
+
 				vector<index_t> he_trigs;
 				for_star(he, this, va)
 				if(faces_fixed[trig(he)] > -1)
-					he_trigs.push_back(trig(he) * P);				
+					he_trigs.push_back(trig(he) * P);
 				for_star(he, this, vb)
 				if(faces_fixed[trig(he)] > -1)
-					he_trigs.push_back(trig(he) * P);				
-				
+					he_trigs.push_back(trig(he) * P);
+
 				debug(va)
 				corr[va] = find_corr(aux_va, normals[va], he_trigs);
 				debug(vb)
 				corr[vb] = find_corr(aux_vb, normals[vb], he_trigs);
-					
+
 				EVT[vb] = NIL;
 			}
 		}
 	}
-	
-	vector<vertex> new_vertices;	
+
+	vector<vertex> new_vertices;
 	vector<index_t> new_faces;
 	new_vertices.reserve(n_vertices_);
 	new_faces.reserve(n_faces_);
@@ -1012,7 +1012,7 @@ corr_t * che::edge_collapse(const index_t *const & sort_edges, const vertex *con
 			new_vertices.push_back(GT[v]);
 		}
 	}
-	
+
 	index_t * map_he = new index_t[n_half_edges_];
 	memset(map_he, 255, sizeof(index_t) * n_half_edges_);
 
@@ -1032,7 +1032,7 @@ corr_t * che::edge_collapse(const index_t *const & sort_edges, const vertex *con
 	delete [] faces_fixed;
 	delete [] deleted_vertices;
 	delete [] map_he;
-	
+
 	return corr;
 }
 
@@ -1044,7 +1044,7 @@ corr_t che::find_corr(const vertex & v, const vertex & n, const vector<index_t> 
 	mat A(4, 4, fill::ones);
 	vec x(4);
 	x(0) = v.x; x(1) = v.y; x(2) = v.z; x(3) = 1;
- 
+
 	vec alpha(&corr.alpha.x, 3, false, true);
 	vec a;
 	vertex aux;
@@ -1054,7 +1054,7 @@ corr_t che::find_corr(const vertex & v, const vertex & n, const vector<index_t> 
 		if(d < dist)
 		{
 			dist = d;
-			corr_d = corr;	
+			corr_d = corr;
 		}
 	};
 
@@ -1064,13 +1064,13 @@ corr_t che::find_corr(const vertex & v, const vertex & n, const vector<index_t> 
 
 		aux = gt_vt(he);
 		A(0, 0) = aux.x; A(1, 0) = aux.y; A(2, 0) = aux.z;
-		
-		aux = gt_vt(next(he));	
+
+		aux = gt_vt(next(he));
 		A(0, 1) = aux.x; A(1, 1) = aux.y; A(2, 1) = aux.z;
-	
+
 		aux = gt_vt(prev(he));
 		A(0, 2) = aux.x; A(1, 2) = aux.y; A(2, 2) = aux.z;
-	
+
 		A(0, 3) = -n.x;
 		A(1, 3) = -n.y;
 		A(2, 3) = -n.z;
@@ -1093,9 +1093,9 @@ corr_t che::find_corr(const vertex & v, const vertex & n, const vector<index_t> 
 				mat B = A.cols(i, j);
 				a = solve(B, x);
 				d = norm(x - B * a);
-				
+
 				corr.alpha = 0;
-			
+
 				if(all(a >= 0) && sum(a.head(2)) == 1)
 				{
 					corr.alpha[i] = a(0);
@@ -1107,21 +1107,21 @@ corr_t che::find_corr(const vertex & v, const vertex & n, const vector<index_t> 
 					corr.alpha[i] = 1;
 					d = norm(x - A.col(i));
 					update_dist();
-					
+
 					corr.alpha[i] = 0;
 					corr.alpha[j] = 1;
 					d = norm(x - A.col(j));
 					update_dist();
 				}
 			};
-			
+
 			dist_to_edge(0, 1);
 			dist_to_edge(1, 2);
 			dist_to_edge(0, 2);
 		}
 		}
 	}
-	
+
 	if(corr_d.t == NIL)
 	{
 		debug(n)
@@ -1134,7 +1134,7 @@ corr_t che::find_corr(const vertex & v, const vertex & n, const vector<index_t> 
 void che::init(const vertex * vertices, const index_t & n_v, const index_t * faces, const index_t & n_f)
 {
 	init(n_v, n_f);
-	
+
 	memcpy(GT, vertices, n_vertices_ * sizeof(vertex));
 	memcpy(VT, faces, n_half_edges_ * sizeof(index_t));
 
@@ -1181,9 +1181,9 @@ void che::init(const size_t & n_v, const size_t & n_f)
 void che::update_evt_ot_et()
 {
 	vector<index_t> * he_p_vertex = new vector<index_t>[n_vertices_];
-	
+
 	memset(EVT, 255, sizeof(index_t) * n_vertices_);
-	
+
 	//vertex table
 	for(index_t he = 0; he < n_half_edges_; he++)
 	{
@@ -1215,8 +1215,8 @@ void che::update_evt_ot_et()
 	n_edges_ = et.size();
 	ET = new index_t[n_edges_];
 	memcpy(ET, et.data(), sizeof(index_t) * n_edges_);
-	
-	
+
+
 	for(index_t he = 0; he < n_half_edges_; he++)
 		if(OT[he] == NIL && EVT[VT[he]] != NIL)
 		{

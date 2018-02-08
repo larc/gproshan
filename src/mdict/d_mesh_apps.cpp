@@ -25,7 +25,7 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 	size_t K = freq * rt;
 	patch_t::del_index = false;
 	bool all_points = M == 0;
-	
+
 	distance_t max_dist, radio;
 
 	if(!all_points)
@@ -41,7 +41,7 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 		debug_me(all vertices)
 	}
 	debug(M)
-	
+
 	auto p_vertex = [&](const index_t & s) -> index_t
 	{
 		if(all_points) return s;
@@ -52,19 +52,19 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 
 	debug(radio)
 	debug(max_dist)
-	
+
 	size_t min_nvp = 36; //MInimo numero de vertices por patche
-	
+
 	/* basis initialization */
 
 	basis * phi_basis = new basis_dct(rt, radio);
 //	basis * phi_basis = new basis_cosine(radio, rt, freq);
-	phi_basis->plot_basis();	
+	phi_basis->plot_basis();
 
 	/***********************************************************************************************/
-	
+
 	size_t n_vertices = mesh->n_vertices();
-		
+
 /*	vector<index_t> * borders = fill_all_holes(mesh);
 	if(!borders)
 	{
@@ -75,27 +75,27 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 
 	delete [] borders;
 	M = mesh->n_vertices();
-	
+
 	double time;
 
  	poisson(mesh, n_vertices, 2);*/
-	
+
 	double time;
 	n_vertices = mesh->n_vertices();
 	vector<patch_t> patches(M);
 	vector<patches_map_t> patches_map(n_vertices);
-	
+
 	// Params ---------------------------------------------------------------------------------------
 	// Gaussian
-/*	
-	vec cx(K); 
-	vec cy(K); 
+/*
+	vec cx(K);
+	vec cy(K);
 	vertex_t sigma = 2.5 * radio / sqrt(K);
 	get_centers_gaussian(cx, cy, radio, K);
 
 	params_t params = { & cx, & cy, & sigma };
 */
-	// Cossine 
+	// Cossine
 
 
 	// Init patches -------------------------------------------------------------------------------
@@ -147,13 +147,13 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 		#pragma omp parallel for reduction(+: patch_mean_size)
 		for(index_t s = 0; s < M; s++)
 			patch_mean_size += patches[s].n;
-		
+
 		patch_mean_size /= M;
 		debug(patch_mean_size)
 		// ----------------------------------------------------------
 
 	};
-	
+
 	d_message(init_patches)
 	TIC(time)
 	init_patches();
@@ -162,7 +162,7 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 
 	// Dictionary learning ------------------------------------------------------------------------
 
-	size_t L = 10;	
+	size_t L = 10;
 	mat alpha(m, M, fill::zeros);
 	mat A(K, m);
 	A.eye();
@@ -172,15 +172,15 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 	if(op_dict)
 	{
 		string fmesh_dict = "tmp/" + mesh->name_size() + '_' + to_string(K) + '_' + to_string(m) + ".a_dict";
-	
+
 		debug(fmesh_dict)
-	
+
 		if(!A.load(fmesh_dict))
 		{
 			A.eye(K, m);
 			//A.random(K, m);
-			
-			d_message(Dictionary learning...)	
+
+			d_message(Dictionary learning...)
 			TIC(time)
 			KSVDT(A, patches, M, L);
 			TOC(time)
@@ -188,7 +188,7 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 			A.save(fmesh_dict);
 		}
 	}
-	
+
 	debug(A.n_rows)
 	debug(A.n_cols)
 	phi_basis->plot_atoms(A);
@@ -196,10 +196,10 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 	auto run_omp_all = [&]()
 	{
 		// Compute alphas -------------------------------------------------------------------------
-		
+
 		alpha.set_size(m, M);
 
-		d_message(Compute alphas...)	
+		d_message(Compute alphas...)
 		TIC(time)
 		OMP_all_patches_ksvt(alpha, A, patches, M, L);
 		TOC(time)
@@ -207,9 +207,9 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 	};
 
 	bool reconstruction = true;
-		
+
 	// Declare process functions ------------------------------------------------------------------
-	
+
 	auto denoising = [&]()
 	{
 		d_message(denoising)
@@ -219,14 +219,14 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 	auto super_resolution = [&]()
 	{
 		run_omp_all();
-		
+
 		d_message(super_resolution)
-		
+
 		mesh->multiplicate_vertices();
 		mesh->multiplicate_vertices();
-	
+
 		n_vertices = mesh->n_vertices();
-		
+
 		patches_map.clear();
 		patches.resize(n_vertices);
 
@@ -236,7 +236,7 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 	auto inpainting = [&]()
 	{
 		d_message(inpainting)
-		
+
 		vector<index_t> * borders = fill_all_holes(mesh);
 		if(!borders)
 		{
@@ -248,7 +248,7 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 		delete [] borders;
 
  		poisson(mesh, n_vertices, 2);
-		debug("before inpaiting")	
+		debug("before inpaiting")
 		size_t M_;
 		if(all_points) M_ = mesh->n_vertices();
 		else
@@ -256,7 +256,7 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 			parallel_farthest_point_sampling(points, mesh, mesh->n_vertices(), max_dist);
 			M_ = points.size();
 		}
-		
+
 		debug(M_)
 		debug(M)
 
@@ -273,7 +273,7 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 			size = fm.n_sorted_index();
 			p.indexes = new index_t[size];
 			fm.copy_sorted_index(p.indexes, size);
-			
+
 			p.n = size;
 			p.reset_xyz(mesh, patches_map, s);
 
@@ -290,18 +290,18 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 		}
 
 		M = M_;
-	
+
 		run_omp_all();
-		
+
 		n_vertices = mesh->n_vertices();
 	};
 
 	auto iterative_inpainting = [&]()
 	{
 		run_omp_all();
-		
+
 		d_message(iterative inpainting)
-		
+
 		size_t n_borders = mesh->n_borders();
 		if(!n_borders) return;
 
@@ -312,17 +312,17 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 		debug(mesh->n_vertices())
 
 		//Contains index of patches which are borders
-		set<index_t> border_patches;	
-		
+		set<index_t> border_patches;
+
 		for(index_t nb = 0; nb < n_borders; nb++)
 		for(index_t b: border_vertices[nb])
 		for(auto p_aux: patches_map[b])
 			border_patches.insert(p_aux.first);
 
 		delete [] border_vertices;
-		
+
 		debug(border_patches.size())
-		
+
 		index_t v;
 		size_t size;
 		vec tmp_alpha(m);
@@ -334,13 +334,13 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 		{
 			//updating patch
 			patch_t & p = patches[bp];
-				
+
 			v = p[0];
 			geodesics fm(mesh, {v}, geodesics::FM, NIL, radio);
 
 			delete [] p.indexes;
 			p.indexes = new index_t[fm.n_sorted_index()];
-		
+
 			fm.copy_sorted_index(p.indexes, fm.n_sorted_index());
 			size = fm.n_sorted_index();
 
@@ -360,14 +360,14 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 			p.phi.set_size(p.n, K);
 			phi_basis->discrete(p.phi, p.xyz);
 		}
-		
+
 //
 		// Second iteration
 		size_t M_;
 		if(all_points) M_ = mesh->n_vertices();
 		else
 		{
-			debug(max_dist)	
+			debug(max_dist)
 			float time_g;
 			//farthest_point_sampling_gpu(points, time_g, mesh, n_vertices, max_dist);
 			debug(time_g)
@@ -379,7 +379,7 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 		alpha.set_size(m, M_);
 		patches_map.resize(mesh->n_vertices());
 
-		debug(M_)	
+		debug(M_)
 		debug(M)
 
 		index_t * levels = new index_t[M_];
@@ -401,7 +401,7 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 
 			return false;
 		};
-	
+
 		while(count < M_)
 		{
 			level++;
@@ -412,15 +412,15 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 				patch_t & p = patches[s];
 
 				if(levels[s] == NIL && is_level(v, level))
-				{	
+				{
 					levels[s] = level;
 					count++;
-					
+
 					geodesics fm(mesh, {v}, geodesics::FM, NIL, radio );
 					p.n = fm.n_sorted_index();
 					p.indexes = new index_t[p.n];
 					fm.copy_sorted_index(p.indexes, p.n);
-						
+
 					p.reset_xyz(mesh, patches_map, s);
 
 			//		jet_fit_directions(p);
@@ -431,21 +431,21 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 					else
 						principal_curvatures(p, mesh);
 				//	principal_curvatures(p, mesh);
-						
+
 					p.transform();
 
 					p.phi.set_size(p.n, K);
 					phi_basis->discrete(p.phi, p.xyz);
-				
-				//	OMP_patch(alpha, A, s, p, L);	
-					
+
+				//	OMP_patch(alpha, A, s, p, L);
+
 					map<index_t, index_t> patches_alphas;
 
 					for(index_t i = 0; i < p.n; i++)
 					for(auto & pi: patches_map[p[i]])
 				//		if(pi.first != s) patches_alphas[pi.first]++;
 						if(levels[pi.first] < level) patches_alphas[pi.first]++;
-					
+
 					alpha.col(s).zeros();
 					distance_t sum = 0;
 					for(auto & pa: patches_alphas)
@@ -460,10 +460,10 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 			}
 			debug(count)
 		}
-		
+
 		debug(count)
 		debug(patches.size() - M)
-		
+
 		M = M_;
 
 		n_vertices = mesh->n_vertices();
@@ -475,9 +475,9 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 	auto non_local_inpainting = [&]()
 	{
 		run_omp_all();
-		
+
 		d_message(non local inpainting)
-		
+
 		size_t n_borders = mesh->n_borders();
 		if(!n_borders) return;
 
@@ -488,17 +488,17 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 		debug(mesh->n_vertices())
 
 		//Contains index of patches which are borders
-		set<index_t> border_patches;	
-		
+		set<index_t> border_patches;
+
 		for(index_t nb = 0; nb < n_borders; nb++)
 		for(index_t b: border_vertices[nb])
 		for(auto p_aux: patches_map[b])
 			border_patches.insert(p_aux.first);
 
 		delete [] border_vertices;
-		
+
 		debug(border_patches.size())
-		
+
 		index_t v;
 		size_t size;
 		vec tmp_alpha(m);
@@ -510,13 +510,13 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 		{
 			//updating patch
 			patch_t & p = patches[bp];
-				
+
 			v = p[0];
 			geodesics fm(mesh, {v}, geodesics::FM, NIL, radio);
 
 			delete [] p.indexes;
 			p.indexes = new index_t[fm.n_sorted_index()];
-		
+
 			fm.copy_sorted_index(p.indexes, fm.n_sorted_index());
 			size = fm.n_sorted_index();
 
@@ -536,19 +536,19 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 			p.phi.set_size(p.n, K);
 			phi_basis->discrete(p.phi, p.xyz);
 		}
-		
+
 //
 		// Second iteration
-		debug(max_dist)	
+		debug(max_dist)
 		float time_g;
 		//farthest_point_sampling_gpu(points, time_g, mesh, n_vertices, max_dist);
 
 		debug(time_g)
-		
+
 		patches.resize(points.size());
 		alpha.set_size(m, points.size());
 
-		debug(patches.size())	
+		debug(patches.size())
 		debug(points.size())
 
 //		return;
@@ -567,14 +567,14 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 
 		for(index_t s = M; s < points.size(); s++)
 		{
-			v = p_vertex(s);		
-			patch_t & p = patches[s];			
-					
+			v = p_vertex(s);
+			patch_t & p = patches[s];
+
 			geodesics fm(mesh, {v}, geodesics::FM, NIL, radio );
 			p.n = fm.n_sorted_index();
 			p.indexes = new index_t[p.n];
 			fm.copy_sorted_index(p.indexes, p.n);
-											
+
 			p.reset_xyz(mesh, patches_map, s);
 
 			if(p.n > min_nvp)
@@ -585,14 +585,14 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 				principal_curvatures(p, mesh);
 	//		jet_fit_directions(p);
 		//	principal_curvatures(p, mesh);
-											
+
 			p.transform();
 
 			p.phi.set_size(p.n, K);
 			phi_basis->discrete(p.phi, p.xyz);
-										
-			OMP_patch(alpha, A, s, p, L);	
-		
+
+			OMP_patch(alpha, A, s, p, L);
+
 			arg_min = s;
 			d_min = INFINITY;
 
@@ -606,11 +606,11 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 	//		if(	norm (alpha.col(s) - alpha.col(arg_min)) != 0)
 	//			debug("cambi alpha")
 			alpha.col(s) = alpha.col(arg_min);
-			
+
 		}
-	
+
 		debug(patches.size() - M)
-		
+
 		M = patches.size();
 		n_vertices = mesh->n_vertices();
 
@@ -618,16 +618,16 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 	};
 
 	vector<function<void(void)> > processs_app = {
-													denoising, 
+													denoising,
 													super_resolution,
 													inpainting,
 													iterative_inpainting,
 													non_local_inpainting
 												};
 
-	
+
 	// Call process functions --------------------------------------------------------------------
-	
+
 	if(pf < processs_app.size())
 		processs_app[pf]();
 
@@ -644,9 +644,9 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 		TOC(time)
 		debug(time)
 	}
-	
+
 	// Free vectors ---------------------------------------------------------------------------------
-	
+
 	points.clear();
 
 	patch_t::del_index = true;
@@ -664,7 +664,7 @@ size_t sort_first_valid_vertex(index_t * indexes, const size_t & size, const vec
 		{
 			tmp = indexes[i];
 			while(i < f && !patches_map[indexes[f]].size()) f--;
-			
+
 			if(patches_map[indexes[f]].size())
 			{
 				indexes[i] = indexes[f];

@@ -179,7 +179,7 @@ void fastmarching::calcular_FM(off & model, vector<index_t> & source)
 		color[s] = red;
 		cola.push(make_pair(distances[s], s));
 	}
-	
+
 	while(green_count-- && !cola.empty())
 	{
 		while(!cola.empty() && color[cola.top().second] == black) cola.pop();
@@ -192,7 +192,7 @@ void fastmarching::calcular_FM(off & model, vector<index_t> & source)
 		if(distances[black_i] > radio) break;
 
 		sort_index[n_pesos++] = black_i;
-	
+
 		for(auto it: model.get_rings(black_i))
 		{
 			if(color[it] == green)
@@ -203,7 +203,7 @@ void fastmarching::calcular_FM(off & model, vector<index_t> & source)
 				for(auto fi: model.get_faces(it))
 				{
 					p = update(path(model[fi], model(it), it), pr, model);
-					
+
 					if(p < distances[it])
 					{
 						distances[it] = p;
@@ -266,7 +266,7 @@ distance_t fastmarching::update(path p, path & r, off & model)
 	X(0, 1) = v[1][0];
 	X(1, 1) = v[1][1];
 	X(2, 1) = v[1][2];
-	
+
 
 	r.f[0] = ix0;
 	r.f[1] = ix1;
@@ -286,7 +286,7 @@ distance_t fastmarching::planar_update(path & r, mat & X, size_t ix0, size_t ix1
 	mat Q;
 	if(!inv_sympd(Q, X.t() * X))
 		return INFINITY;
-	
+
 	mat t(2,1);
 
 	t(0) = distances[ix0];
@@ -350,7 +350,7 @@ distance_t fastmarching::spherical_update(path & r, mat & X, size_t ix0, size_t 
 	mat Q;
 	if(!inv_sympd(Q, X.t() * X))
 		return INFINITY;
-	
+
 	mat s(2,1);
 
 	s(0) = distances[ix0]*distances[ix0];

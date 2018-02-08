@@ -60,7 +60,7 @@ class che
 		index_t * ET;	//edge table			e	-> he
 		index_t * EHT;	//extra half edge table	he	-> e
 		index_t * BT;	//boundary table		b 	-> v
-		
+
 		bool manifold;
 
 	public:

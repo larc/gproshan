@@ -30,7 +30,7 @@ struct vcorr_t
 	{
 		if(corr) delete [] corr;
 		corr = new corr_t[n];
-		
+
 		mesh_i = _mesh_i;
 		memcpy(corr, _corr, n * sizeof(corr_t));
 	}
@@ -57,7 +57,7 @@ class viewer
 {
 	public:
 		static void init(const vector<che *> & _meshes);
-			
+
 		static che_viewer meshes[N_MESHES];
 		static vcorr_t corr_mesh[N_MESHES];
 		static size_t n_meshes;
@@ -66,10 +66,10 @@ class viewer
 		static vector<vertex> other_vertices;
 		static vector<vertex> vectors;
 		static vector<string> sub_menus;
-		
+
 		static const int & window_width();
 		static const int & window_height();
-	
+
 		static che_viewer & mesh(); //get current che_viewer mesh
 		static color_t & get_color(const index_t & i);
 		static void add_process(const char & key, const string & name, function_t function);
@@ -90,7 +90,7 @@ class viewer
 		static void special(int i, int x, int y);
 		static void mouse(int button, int state, int x, int y);
 		static void motion(int x, int y);
-		
+
 		// menu functions
 		static void menu(int value);
 		static void menu_process(int value);
@@ -111,7 +111,7 @@ class viewer
 		static void set_render_lines();
 		static void set_render_corr();
 		static void set_is_flat();
-		
+
 		// draw routines
 		static void set_gl();
 		static void set_lighting();
@@ -127,16 +127,16 @@ class viewer
 		static void draw_selected_vertices();
 		static void draw_vectors();
 		static void draw_isolated_vertices();
-		static void pick_vertex(int x, int y);	
-	
+		static void pick_vertex(int x, int y);
+
 		static int window_size[2];
 
 		static camera cam;
 		// keeps track of view state
-			
+
 		static shader shader_program;
 		// shader used to determine appearance of surface
-		
+
 		static bool render_wireframe;
 		static bool render_gradient_field;
 		static bool render_normal_field;

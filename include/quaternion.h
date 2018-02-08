@@ -41,14 +41,14 @@ class quaternion
 		void operator/=(vertex_t c);
 		quaternion operator*(const quaternion & q) const;
 		void operator*=(const quaternion & q);
-		
+
 		quaternion conj(void) const;
 		quaternion inv(void) const;
 		vertex_t norm(void) const;
 		vertex_t norm2(void) const;
 		quaternion unit(void) const;
 		void normalize(void);
-	
+
 };
 
 quaternion operator*(vertex_t c, const quaternion & q);

@@ -14,7 +14,7 @@ class basis_dct: public basis
 	public:
 		basis_dct(const size_t & _n, const distance_t & _radio = 0);
 		void discrete(mat & phi, const mat & xy);
-	
+
 	private:
 		void plot_basis(ostream & os);
 		void plot_atoms(ostream & os, const vec & A);

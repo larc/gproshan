@@ -11,7 +11,7 @@ void inpainting::execute()
 {
 	// fill holes
 	size_t threshold = mesh->n_vertices();
-	delete [] fill_all_holes(mesh);	
+	delete [] fill_all_holes(mesh);
 	TIC(d_time) poisson(mesh, threshold, 2); TOC(d_time)
 	debug(d_time)
 
@@ -25,11 +25,11 @@ void inpainting::execute()
 	// initializing patches with threshold
 	TIC(d_time) init_patches(1, threshold); TOC(d_time)
 	debug(d_time)
-	
+
 	// learning only from valid patches
 	TIC(d_time) learning(); TOC(d_time)
 	debug(d_time)
-	
+
 	// including vertices out of threshold
 	TIC(d_time) init_patches(0); TOC(d_time)
 	debug(d_time)

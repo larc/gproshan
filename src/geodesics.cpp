@@ -22,7 +22,7 @@ geodesics::geodesics(che * mesh, const vector<index_t> & sources, const option_t
 	memset(sorted_index, -1, n_vertices * sizeof(index_t));
 	for(index_t v = 0; v < n_vertices; v++)
 		distances[v] = INFINITY;
-	
+
 	assert(sources.size() > 0);
 	execute(mesh, sources, n_iter, radio, opt);
 }
@@ -59,14 +59,14 @@ void geodesics::copy_sorted_index(index_t * indexes, const size_t & n) const
 
 void geodesics::normalize()
 {
-	if(!n_sorted) 
+	if(!n_sorted)
 	{
 		normalize_ptp(distances, n_vertices);
 		return;
 	}
-		
+
 	distance_t max = distances[farthest()];
-	
+
 	#pragma omp parallel for
 	for(size_t i = 0; i < n_sorted; i++)
 		distances[sorted_index[i]] /= max;
@@ -165,7 +165,7 @@ void geodesics::run_fastmarching(che * mesh, const vector<index_t> & sources, co
 void geodesics::run_parallel_toplesets_propagation_cpu(che * mesh, const vector<index_t> & sources, const size_t & n_iter, const distance_t & radio)
 {
 	if(distances) delete [] distances;
-	
+
 	index_t * toplesets = new index_t[n_vertices];
 	vector<index_t> limits;
 	mesh->compute_toplesets(toplesets, sorted_index, limits, sources);
@@ -205,7 +205,7 @@ distance_t geodesics::update(index_t & d, che * mesh, const index_t & he, vertex
 	x[0] = mesh->vt(next(he));
 	x[1] = mesh->vt(prev(he));
 	x[2] = mesh->vt(he);				//update x[2]
-	
+
 	vx = mesh->gt(x[2]);
 
 	vertex v[2];
@@ -219,7 +219,7 @@ distance_t geodesics::update(index_t & d, che * mesh, const index_t & he, vertex
 	X(0, 1) = v[1][0];
 	X(1, 1) = v[1][1];
 	X(2, 1) = v[1][2];
-	
+
 	return planar_update(d, X, x, vx);
 }
 
@@ -272,7 +272,7 @@ distance_t geodesics::planar_update(index_t & d, mat & X, index_t * x, vertex & 
 		mat l =	solve(A, b);
 		v = l(1) * A.col(1) + X.col(0);
 	}
-	
+
 	vx += *((vertex *) v.memptr());
 
 	return p;

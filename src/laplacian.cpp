@@ -29,13 +29,13 @@ void laplacian(che * mesh, sp_mat & L, sp_mat & A)
 		DV(i) = -1;
 
 		SI(0, e) = SI(1, e) = e;
-		SV(e) = (mesh->cotan(mesh->et(e)) + 
+		SV(e) = (mesh->cotan(mesh->et(e)) +
 					mesh->cotan(mesh->ot_et(e))) / 2;
 	}
 
 	sp_mat D(DI, DV, n_edges, n_vertices);
 	sp_mat S(SI, SV, n_edges, n_edges);
-	
+
 	L = D.t() * S * D;
 
 	A.resize(n_vertices, n_vertices);
@@ -46,7 +46,7 @@ void laplacian(che * mesh, sp_mat & L, sp_mat & A)
 void laplacian(che * mesh, sp_mat_e & L, sp_mat_e & A)
 {
 	debug_me(LAPLACIAN)
-	
+
 	size_t n_edges = mesh->n_edges();
 	size_t n_vertices = mesh->n_vertices();
 
@@ -61,7 +61,7 @@ void laplacian(che * mesh, sp_mat_e & L, sp_mat_e & A)
 		D.insert(e, mesh->vt(mesh->et(e))) = 1;
 		D.insert(e, mesh->vt(next(mesh->et(e)))) = -1;
 
-		S.insert(e, e) = (mesh->cotan(mesh->et(e)) + 
+		S.insert(e, e) = (mesh->cotan(mesh->et(e)) +
 					mesh->cotan(mesh->ot_et(e))) / 2;
 	}
 
@@ -70,22 +70,23 @@ void laplacian(che * mesh, sp_mat_e & L, sp_mat_e & A)
 	A.resize(n_vertices, n_vertices);
 	for(index_t v = 0; v < n_vertices; v++)
 		A.insert(v, v) = mesh->area_vertex(v);
-	
 }
 
 size_t eigs_laplacian(vec & eigval, mat & eigvec, che * mesh, const sp_mat & L, const size_t & K)
 {
 	debug_me(LAPLACIAN)
-	
+
 	string feigval = "tmp/" + mesh->name_size() + '_' + to_string(K) + ".L_eigval";
 	string feigvec = "tmp/" + mesh->name_size() + '_' + to_string(K) + ".L_eigvec";
-	
+
 	debug(feigval)
 	debug(feigvec)
-	
+
 	if(!eigval.load(feigval) || !eigvec.load(feigvec))
 	{
-		assert(eigs_sym(eigval, eigvec, L, K, "sm"));
+		if(!eigs_sym(eigval, eigvec, L, K, "sm"))
+			return 0;
+
 		eigval.save(feigval);
 		eigvec.save(feigvec);
 	}

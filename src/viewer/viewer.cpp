@@ -12,7 +12,7 @@ using namespace std;
 
 // declare static member variables
 che_viewer viewer::meshes[N_MESHES];
-vcorr_t viewer::corr_mesh[N_MESHES]; // zero initialization 
+vcorr_t viewer::corr_mesh[N_MESHES]; // zero initialization
 size_t viewer::n_meshes = 0;
 index_t viewer::current = 0;
 vector<index_t> viewer::select_vertices;
@@ -53,13 +53,13 @@ che_viewer & viewer::mesh()
 void viewer::init(const vector<che *> & _meshes)
 {
 //	restoreviewerState();
-	
+
 	init_glut();
-	add_mesh(_meshes);	
+	add_mesh(_meshes);
 
 	glutSetWindowTitle(mesh()->filename().c_str());
 	init_menus();
-	
+
 	debug_info();
 //	mesh().debug_info();
 
@@ -89,7 +89,7 @@ void viewer::init_glut()
 {
 	int argc = 0;
 	vector< vector<char> > argv(1);
-	
+
 	// initialize window
 	glutInitWindowSize(window_size[0], window_size[1]);
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
@@ -106,7 +106,7 @@ void viewer::init_glut()
 	glutMotionFunc(motion);
 
 	glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_CONTINUE_EXECUTION);
-}	
+}
 
 void viewer::init_menus()
 {
@@ -115,7 +115,7 @@ void viewer::init_menus()
 	glutSetMenu(mesh_menu);
 	for(index_t i = 0; i < n_meshes; i++)
 		glutAddMenuEntry(meshes[i]->filename().c_str(), i);
-	
+
 	// init viewer menu
 	sub_menus.push_back("viewer");
 	add_process('i', "Invert Orientation", invert_orientation);
@@ -126,7 +126,7 @@ void viewer::init_menus()
 	add_process(' ', "Lines", set_render_lines);
 	add_process('+', "Show Corr", set_render_corr);
 	add_process('\t', "Flat", set_is_flat);
-	
+
 	// init mesh menu
 	sub_menus.push_back("Mesh");
 	add_process('r', "Reset Mesh", menu_reset_mesh);
@@ -134,9 +134,9 @@ void viewer::init_menus()
 	add_process('<', "Zoom In", menu_zoom_in);
 	add_process('>', "Zoom Out", menu_zoom_out);
 	add_process(27, "Exit", menu_exit);
-	
-	
-	// init		
+
+
+	// init
 	// process sub menus
 	int * sub_menu = new int[sub_menus.size()];
 
@@ -152,12 +152,12 @@ void viewer::init_menus()
 	}
 
 	int mainMenu = glutCreateMenu(viewer::menu);
-	glutSetMenu(mainMenu);	
-	
+	glutSetMenu(mainMenu);
+
 	glutAddSubMenu("Select Mesh", mesh_menu);
 	for(index_t sm = 0; sm < sub_menus.size(); sm++)
 		glutAddSubMenu(sub_menus[sm].c_str(), sub_menu[sm]);
-	
+
 	glutAttachMenu(GLUT_RIGHT_BUTTON);
 
 	delete [] sub_menu;
@@ -187,7 +187,7 @@ void viewer::update_vbo()
 void viewer::menu(int value)
 {
 
-}	
+}
 
 void viewer::menu_process(int value)
 {
@@ -200,7 +200,7 @@ void viewer::add_process(const char & key, const string & name, function_t funct
 	{
 		processes[key] = {(index_t) sub_menus.size() - 1, name, function};
 	}
-	else cerr << "Repeat key: " << key << endl; 
+	else cerr << "Repeat key: " << key << endl;
 }
 
 void viewer::add_mesh(const vector<che *> & _meshes)
@@ -210,7 +210,7 @@ void viewer::add_mesh(const vector<che *> & _meshes)
 		assert(n_meshes < N_MESHES);
 		meshes[n_meshes++].init(_mesh);
 	}
-	
+
 	angle_t angle = 2 * M_PI / n_meshes;
 	vertex_t r = sqrt(n_meshes - 1);
 	for(index_t i = 0; i < n_meshes; i++)
@@ -235,7 +235,7 @@ void viewer::menu_meshes(int value)
 {
 	current = value;
 	select_vertices.clear();
-	glutSetWindowTitle(mesh()->filename().c_str());	
+	glutSetWindowTitle(mesh()->filename().c_str());
 }
 
 void viewer::special(int i, int x, int y)
@@ -287,7 +287,7 @@ void viewer::menu_reset_mesh()
 	select_vertices.clear();
 	other_vertices.clear();
 	vectors.clear();
-	
+
 	mesh().reload();
 //	mesh().debug_info();
 
@@ -340,7 +340,7 @@ void viewer::set_render_normal_field()
 {
 	render_normal_field = !render_normal_field;
 }
-	
+
 void viewer::set_render_border()
 {
 	render_border = !render_border;
@@ -376,60 +376,60 @@ void viewer::display()
 	const double clipNear = .01;
 	const double clipFar = 1000.;
 	gluPerspective(fovy, aspect, clipNear, clipFar);
-	//glFrustum(-1.0, 1.0, -1.0, 1.0, 1.5, 20.0);	
+	//glFrustum(-1.0, 1.0, -1.0, 1.0, 1.5, 20.0);
 	//glOrtho(-1.0, 1.0, -1.0, 1.0, 100, 1000);
-	
+
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	
+
 
 	quaternion eye = vertex(0., 0., -2.5 * cam.zoom);
 	quaternion center = vertex(0., 0., 0.);
-	quaternion up = vertex(0., 1., 0.);		
+	quaternion up = vertex(0., 1., 0.);
 	gluLookAt(	eye[1],		eye[2],		eye[3],
 			center[1],	center[2],	center[3],
 			up[1],		up[2],		up[3]);
-	
-	
+
+
 	quaternion r = cam.currentRotation();
 	eye = r.conj() * eye * r;
 	GLint uniformEye = glGetUniformLocation(shader_program, "eye");
 	glUniform3f(uniformEye, eye[1], eye[2], eye[3]);
-	
+
 	quaternion light = vertex(-1., 1., -2.);
 	light = r.conj() * light * r;
 	GLint uniformLight = glGetUniformLocation(shader_program, "light");
 	glUniform3f(uniformLight, light[1], light[2], light[3]);
 
 	cam.setView();
-	
+
 	GLint uniformIsFlat = glGetUniformLocation(shader_program, "is_flat");
 	glUniform1i(uniformIsFlat, is_flat);
-	
+
 	GLint uniformLines = glGetUniformLocation(shader_program, "lines");
 	glUniform1i(uniformLines, render_lines);
 
-	GLfloat ModelViewMatrix[16]; 
+	GLfloat ModelViewMatrix[16];
 	GLfloat ProjectionMatrix[16];
 
 	glGetFloatv(GL_MODELVIEW_MATRIX, ModelViewMatrix);
-	glGetFloatv(GL_PROJECTION_MATRIX, ProjectionMatrix); 
+	glGetFloatv(GL_PROJECTION_MATRIX, ProjectionMatrix);
 
 	GLint uniformModelViewMatrix = glGetUniformLocation(shader_program, "ModelViewMatrix");
 	GLint uniformProjectionMatrix = glGetUniformLocation(shader_program, "ProjectionMatrix");
-	
+
 	glUniformMatrix4fv(uniformModelViewMatrix, 1, 0, ModelViewMatrix);
 	glUniformMatrix4fv(uniformProjectionMatrix, 1, 0, ProjectionMatrix);
 
 	//glPushAttrib(GL_ALL_ATTRIB_BITS);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_LIGHTING);
-	
+
 	set_mesh_materia();
 	draw_scene();
-	
+
 	//glPopAttrib();
-	
+
 	shader_program.disable();
 	glutSwapBuffers();
 }
@@ -453,7 +453,7 @@ void viewer::set_mesh_materia()
 	GLfloat diffuse[4] = { .8, .5, .3, 1. };
 	GLfloat specular[4] = { .3, .3, .3, 1. };
 	GLfloat ambient[4] = { .2, .2, .5, 1. };
-	
+
 	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE,	diffuse);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specular);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT,	ambient);
@@ -468,17 +468,17 @@ void viewer::draw_scene()
 	glPolygonOffset(1., 1.);
 	draw_polygons();
 	glDisable(GL_POLYGON_OFFSET_FILL);
-	
+
 	if(render_wireframe) draw_wireframe();
 	if(render_gradient_field) draw_gradient_field();
 	if(render_normal_field) draw_normal_field();
 	if(render_border) draw_border();
 	if(render_corr) draw_corr();
-	
+
 	draw_isolated_vertices();
 	draw_vectors();
 	draw_selected_vertices();
-	
+
 	shader_program.disable();
 	mesh().draw_mesh_info();
 	shader_program.enable();
@@ -501,15 +501,15 @@ void viewer::draw_vectors()
 {
 	shader_program.disable();
 	glPushAttrib(GL_ALL_ATTRIB_BITS);
-	
+
 	glDisable(GL_LIGHTING);
 	glColor4f(1., 0., 0., 1);
 	glLineWidth(3.0);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	
+
 	glBegin(GL_LINES);
-	
+
 	index_t i = 0;
 	for(vertex & v: vectors)
 	{
@@ -529,12 +529,12 @@ void viewer::draw_isolated_vertices()
 {
 	shader_program.disable();
 	glPushAttrib(GL_ALL_ATTRIB_BITS);
-	
+
 	glEnable(GL_COLOR_MATERIAL);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glColor3f(0.5, 0., 0.5);
-	
-	double h = 0.01 * cam.zoom; 
+
+	double h = 0.01 * cam.zoom;
 	for(const vertex & v: other_vertices)
 	{
 		glPushMatrix();
@@ -544,23 +544,23 @@ void viewer::draw_isolated_vertices()
 	}
 
 	glEnd();
-	
+
 	glPopAttrib();
 	/*shader_program.disable();
 	glPushAttrib(GL_ALL_ATTRIB_BITS);
-	
+
 	glPointSize(5);
 	glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
 	glEnable(GL_POINT_SMOOTH);
 	glColor3f(1., 0., 0.);
-	
+
 	glBegin(GL_POINTS);
 
 	for(const vertex & v: other_vertices)
 		glVertex3v(&v.x);
 
 	glEnd();
-	
+
 	glPopAttrib();*/
 }
 
@@ -568,7 +568,7 @@ void viewer::draw_corr()
 {
 	if(n_meshes < 2) return;
 	if(!corr_mesh[current].is_loaded()) return;
-	
+
 	shader_program.disable();
 
 	glPushAttrib(GL_ALL_ATTRIB_BITS);
@@ -589,15 +589,15 @@ void viewer::draw_corr()
 	glEnd();
 
 	glPopAttrib();
-	
+
 	// spheres corr
 	glPushAttrib(GL_ALL_ATTRIB_BITS);
-	
+
 	glEnable(GL_COLOR_MATERIAL);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glColor3f(0.8, 0.0, 0.0);
-	
-	double h = 0.008 * cam.zoom; 
+
+	double h = 0.008 * cam.zoom;
 	for(index_t & v: select_vertices)
 	{
 		glPushMatrix();
@@ -608,7 +608,7 @@ void viewer::draw_corr()
 	}
 
 	glEnd();
-	
+
 	glPopAttrib();
 
 }
@@ -636,12 +636,12 @@ void viewer::draw_selected_vertices()
 {
 	shader_program.disable();
 	glPushAttrib(GL_ALL_ATTRIB_BITS);
-	
+
 	glEnable(GL_COLOR_MATERIAL);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glColor3f(0., 0.5, 0.5);
-	
-	double h = 0.02 * cam.zoom; 
+
+	double h = 0.02 * cam.zoom;
 	for(int v: select_vertices)
 	{
 		glPushMatrix();
@@ -651,7 +651,7 @@ void viewer::draw_selected_vertices()
 	}
 
 	glEnd();
-	
+
 	glPopAttrib();
 }
 
@@ -674,34 +674,34 @@ void viewer::pick_vertex(int x, int y)
 	int width = glutGet(GLUT_WINDOW_WIDTH);
 	int height = glutGet(GLUT_WINDOW_HEIGHT);
 	if(x < 0 || x >= width || y < 0 || y >= height) return;
-	
+
 	int bufSize = mesh()->n_vertices();
 	GLuint * buf = new GLuint[bufSize];
 	glSelectBuffer(bufSize, buf);
-	
+
 	GLint viewport[4];
 	GLdouble projection[16];
 	glGetIntegerv(GL_VIEWPORT, viewport);
 	glGetDoublev(GL_PROJECTION_MATRIX, projection);
-	
+
 	glRenderMode(GL_SELECT);
 	glInitNames();
 	glPushName(0);
-	
+
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
 	glLoadIdentity();
 	gluPickMatrix(x, viewport[3] - y, 10, 10, viewport);
 	glMultMatrixd(projection);
-	
+
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
 	draw_vertices();
 	glPopMatrix();
-	
+
 	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();
-	
+
 	glMatrixMode(GL_MODELVIEW);
 	long hits = glRenderMode(GL_RENDER);
 
@@ -722,10 +722,10 @@ void viewer::pick_vertex(int x, int y)
 	{
 		debug(index)
 		debug(mesh().color(index))
-	
+
 		if(corr_mesh[current].is_loaded())
 			debug(corr_mesh[current][index].alpha)
-		
+
 		select_vertices.push_back(index);
 	}
 }
@@ -740,7 +740,7 @@ void draw_str(const char * str, int x, int y, float color[4], void * font)
 	glRasterPos2i(x, y);
 
 	while(*str) glutBitmapCharacter(font, *str++);
-	
+
 	glEnable(GL_TEXTURE_2D);
 	glEnable(GL_LIGHTING);
 	glPopAttrib();

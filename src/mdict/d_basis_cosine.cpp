@@ -19,7 +19,7 @@ void basis_cosine::discrete(mat & phi, const mat & xy)
 
 	vec x = xy.row(0).t();
 	vec y = xy.row(1).t();
-	
+
 	vertex_t d = 1.0 / (r - 1);
 	vertex_t c;
 
@@ -27,17 +27,17 @@ void basis_cosine::discrete(mat & phi, const mat & xy)
 	for(vertex_t alpha = 0; alpha <= 1; alpha += d, k++)
 	{
 		c = ni * M_PI / radio;
-		phi.col(k) = cosine(x, y, c, alpha);	
-	}	
+		phi.col(k) = cosine(x, y, c, alpha);
+	}
 }
 
 void basis_cosine::plot_basis(ostream & os)
 {
 	vertex_t d = 1.0 / (r - 1);
 	vertex_t c;
-	
+
 	os << "set multiplot layout " << n << "," << r << " rowsfirst scale 1.2;" << endl;
-	
+
 	for(size_t ni = 1; ni <= n; ni++ )
 	for(vertex_t alpha = 0; alpha <= 1; alpha += d)
 	{
@@ -50,7 +50,7 @@ void basis_cosine::plot_atoms(ostream & os, const vec & A)
 {
 	vertex_t d = 1.0 / (r - 1);
 	vertex_t c;
-	
+
 	for(size_t k = 0, ni = 1; ni <= n; ni++ )
 	for(vertex_t alpha = 0; alpha <= 1; alpha += d, k++)
 	{

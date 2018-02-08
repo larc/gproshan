@@ -230,7 +230,7 @@ void keycomponents::calcular_rings_fm(off & shape, fastmarching & fm)
 	for(size_t i = 0; i < n_vertices; i++)
 		if(find(components_index, i) == i)
 			components_index[i] = 0;
-	
+
 	for(size_t i = 0; i < n_vertices; i++)
 	{
 		if(contar_keypoints[i] > 1)

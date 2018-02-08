@@ -20,9 +20,9 @@ void fairing_taubin::compute(che * shape)
 	laplacian(shape, Le, Ae);
 	TOC(time)
 	cout<<"time laplacian: "<<time<<endl;
-*/	
+*/
 	sp_mat L, A;
-	
+
 	d_message(Compute laplacian...)
 	TIC(time) laplacian(shape, L, A); TOC(time)
 	debug(time)
@@ -38,7 +38,7 @@ void fairing_taubin::compute(che * shape)
 	mat R;
 	mat AX = A * X.t();
 	sp_mat M = A + step * L;
-	
+
 	d_message(Solve system...)
 	TIC(time) spsolve(R, M, AX); TOC(time)
 	debug(time)

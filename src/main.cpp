@@ -58,9 +58,9 @@ int main(int nargs, char ** args)
 //	testkeycomponents prueba(50, 0.15);
 //	prueba.one_test_fm("0001.null.0.off","");
 //	if(nargs > 1) test_image_denoising(args[1]);
-	
+
 //	main_test_fastmarching();
-	
+
 	//sampling_terrain("terreno.off", 4, 64);
 //	sampling_shape(nargs, args);
 //	if(nargs == 2) sampling_shape(args[1]);
@@ -108,7 +108,7 @@ void main_test_holes()
 				histograma[(index_t) (q * h_size)]++;
 			}
 		}
-		
+
 		ofstream os(PATH_TEST + "holes/" + shape->name() + ".hist");
 		for(index_t h = 0; h < h_size; h++)
 			os << h * 1.0 / h_size << " " << histograma[h] << endl;
@@ -116,7 +116,7 @@ void main_test_holes()
 
 		printf("%15s & %10lu & %10lu & %10.3f ", shape->name().c_str(), old_n_vertices, shape->n_vertices() - old_n_vertices, quality * 100 / n_faces);
 		printf("& %10.3f ", time);
-		
+
 		for(index_t k = 1; k <=3; k++)
 		{
 			TIC(time) poisson(shape, old_n_vertices, k); TOC(time)
@@ -150,7 +150,7 @@ void main_test_fastmarching()
 	{
 		debug(filename)
 		time_s = test_fastmarching(filename, 1);
-		
+
 		filename = PATH_MDATA + filename + ".off";
 		che * shape = new che_off(filename);
 		vector<index_t> sources = {0};
@@ -158,8 +158,8 @@ void main_test_fastmarching()
 		float time;
 		//farthest_point_sampling_gpu(sources, time, shape, 1000, 0);
 
-		debug(time)	
-		
+		debug(time)
+
 
 		map<index_t, index_t> deg;
 		for(index_t d, v = 0; v < shape->n_vertices(); v++)
@@ -169,37 +169,37 @@ void main_test_fastmarching()
 			if(shape->ot_evt(v) == NIL) d++;
 			deg[d]++;
 		}
-	
+
 		ofstream os("deg_hist");
 		for(auto pp: deg)
 			os << pp.first << " " << pp.second << endl;
 		os.close();
 		debug(system(("mv deg_hist " + PATH_TEST + "fastmarching/" + shape->name() + ".deg").c_str()))
 
-		
+
 		index_t * rings = new index_t[shape->n_vertices()];
 		index_t * sorted = new index_t[shape->n_vertices()];
 		vector<index_t> limites;
 		shape->compute_toplesets(rings, sorted, limites, {0});
-		
+
 		index_t * dist_rings = new index_t[limites.size() - 1];
-		
+
 		os.open("rings_dist");
 		for(index_t i = 1; i < limites.size(); i++)
 			os << i - 1 << " " << (dist_rings[i - 1] = limites[i] - limites[i - 1]) << endl;
 		os.close();
-	
+
 		sort(dist_rings, dist_rings + limites.size() - 1);
-		
+
 		os.open("rings_dist_sort");
 		for(index_t i = 1; i < limites.size(); i++)
 			os << i - 1 << " " << dist_rings[i - 1] << endl;
 		os.close();
-		
+
 		debug(system(("mv iter_error " + PATH_TEST + "fastmarching/fm_error_double_" + shape->name() + ".iter").c_str()))
 		debug(system(("mv rings_dist " + PATH_TEST + "fastmarching/" + shape->name() + ".levels").c_str()))
 		debug(system(("mv rings_dist_sort " + PATH_TEST + "fastmarching/" + shape->name() + ".s_levels").c_str()))
-		
+
 		delete shape;
 		delete [] rings;
 		delete [] sorted;
@@ -210,7 +210,7 @@ distance_t * load_exact_geodesics(string file, size_t n, che * mesh, const index
 {
 	ifstream is(PATH_TEST + ("exact_geodesics/" + file));
 	distance_t * distances_e = new distance_t[n];
-	
+
 	if(is.good())
 	{
 		for(index_t i = 0; i < n; i++)
@@ -239,16 +239,16 @@ float test_fastmarching(string filename, size_t n_test)
 
 	vector<index_t> source = { 0 };
 	printf("%12ld &", shape->n_vertices());
-	
+
 	distance_t * distances_e = load_exact_geodesics(filename, shape->n_vertices(), shape, source.front());
-	
+
 	index_t * rings = new index_t[shape->n_vertices()];
 	index_t * sorted = new index_t[shape->n_vertices()];
 	vector<index_t> limites;
 	shape->compute_toplesets(rings, sorted, limites, source);
-		
+
 	distance_t * distances_c;
-	
+
 	time_c = 0;
 	for(index_t t = 1; t < n_test; t++)
 	{
@@ -261,7 +261,7 @@ float test_fastmarching(string filename, size_t n_test)
 	//distances_c = parallel_fastmarching(shape, source.data(), source.size(), time, limites, sorted, 0, NULL, 1, distances_e);
 	delete [] distances_c;
 	// end test iter error
-	
+
 	//distances_c = parallel_fastmarching(shape, source.data(), source.size(), time, limites, sorted);
 	time_c += time;
 	time_c /= n_test;
@@ -272,7 +272,7 @@ float test_fastmarching(string filename, size_t n_test)
 		TIC(time) geodesics geodesic(shape, source); TOC(time)
 		time_s += time;
 	}
-	
+
 	TIC(time) geodesics geodesic(shape, source); TOC(time)
 	time_s += time;
 	time_s /= n_test;
@@ -435,7 +435,7 @@ void generate_grid_obtuse(const size_t & nr, const size_t & nc, const vertex_t &
 	size_t nvi = ((nvg - nc) / (nc * 2)) * (nc - 1);
 	size_t nv = nvg + nvi;
 	vertex_t dd = 8 * d;
-	
+
 	vector<vertex> vertices(nv);
 	for(index_t v = 0, i = 0; i < nr; i++)
 	for(index_t j = 0; j < nc; j++, v++)
@@ -443,7 +443,7 @@ void generate_grid_obtuse(const size_t & nr, const size_t & nc, const vertex_t &
 		vertices[v].x = d * i;
 		vertices[v].y = dd * j;
 	}
-	
+
 	vector<index_t> faces(P * nvi * 6);
 	index_t f = 0;
 	for(index_t i = 0, v = nvg; v < nv; v++)
@@ -452,7 +452,7 @@ void generate_grid_obtuse(const size_t & nr, const size_t & nc, const vertex_t &
 		debug(i)
 		vertices[v] = vertices[i + nc];
 		vertices[v].y += dd / 2;
-		
+
 		faces[f++] = v;
 		faces[f++] = i + nc;
 		faces[f++] = i;
@@ -468,32 +468,32 @@ void generate_grid_obtuse(const size_t & nr, const size_t & nc, const vertex_t &
 		faces[f++] = v;
 		faces[f++] = i + nc + 1;
 		faces[f++] = i + 2 * nc + 1;
-		
+
 		faces[f++] = v;
 		faces[f++] = i + 2 * nc + 1;
 		faces[f++] = i + 2 * nc;
-		
+
 		faces[f++] = v;
 		faces[f++] = i + 2 *nc;
 		faces[f++] = i + nc;
 		debug(i + 2 * nc + 1 < nv)
 	}
-	
+
 	che_off mesh(vertices.data(), vertices.size(), faces.data(), faces.size() / P);
 	mesh.write_file("tmp/grid_obtuse.off");
 }
 
 void generate_grid_cylinder(const vertex_t & radio, vertex_t d_angle, size_t rings)
 {
-	size_t n_vrings = 360 / d_angle;	
-	d_angle *= M_PI / 180;	
-	
+	size_t n_vrings = 360 / d_angle;
+	d_angle *= M_PI / 180;
+
 	size_t n_vertices = 2 + rings * n_vrings;
 	size_t n_faces = 2 * n_vrings * rings;
 
 	index_t * faces = new index_t[n_faces * 3];
 	vertex * vertices = new vertex[n_vertices];
-	
+
 	vertex_t hight = d_angle * radio;
 	vertex_t z = 0;
 	index_t v = 1;
@@ -509,7 +509,7 @@ void generate_grid_cylinder(const vertex_t & radio, vertex_t d_angle, size_t rin
 			a += d_angle;
 		}
 	}
-	
+
 	vertices[v++].z = z - hight;
 	assert(v == n_vertices);
 
@@ -525,7 +525,7 @@ void generate_grid_cylinder(const vertex_t & radio, vertex_t d_angle, size_t rin
 		faces[f++] = v - (vr % n_vrings) - 1;
 		faces[f++] = v - ((vr + 1) % n_vrings) - 1;
 	}
-	
+
 	v = 1;
 	n_faces *= P;
 	while(f < n_faces)
@@ -550,11 +550,11 @@ void generate_grid_cylinder(const vertex_t & radio, vertex_t d_angle, size_t rin
 		}
 		v++;
 	}
-		
+
 
 	debug(n_vrings)
 	debug(n_vertices)
-	
+
 	che_off mesh(vertices, n_vertices, faces, f / P);
 	mesh.write_file("tmp/grid_cylinder.off");
 

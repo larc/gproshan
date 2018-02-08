@@ -40,12 +40,12 @@ void test_image_denoising(string file)
 	D.randu();
 
 	double time = omp_get_wtime();
-	
+
 	KSVD(D, X, L);
-	
+
 	time = omp_get_wtime() - time;
 	cout << "time KSVD: " << time << endl;
-	
+
 	mat alpha(m, M);
 
 	#pragma omp parallel for
@@ -58,7 +58,7 @@ void test_image_denoising(string file)
 	}
 
 	mat Y = D * alpha;
-	
+
 	CImg<double> image_out = image;
 	image_out.fill(0);
 
@@ -75,18 +75,18 @@ void test_image_denoising(string file)
 			k++;
 		}
 	}
-	
+
 	rows = image.width();
 	cols = image.height();
 	for(index_t x = 0; x < rows; x++)
 	for(index_t y = 0; y < cols; y++)
 	{
 		int dx = p, dy = p;
-		if(x < p && x < dx) dx = x + 1; 
-		if(y < p && y < dy) dy = y + 1; 
-		if((rows - x) < p && (rows - x) < dx) dx = rows - x; 
+		if(x < p && x < dx) dx = x + 1;
+		if(y < p && y < dy) dy = y + 1;
+		if((rows - x) < p && (rows - x) < dx) dx = rows - x;
 		if((cols - y) < p && (cols - y) < dy) dy = cols - y;
-		
+
 		image_out(x, y) /= dx * dy;
 	}
 

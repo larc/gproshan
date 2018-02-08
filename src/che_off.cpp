@@ -49,16 +49,16 @@ void che_off::read_file(const string & file)
 		if(!i && v > P)
 		{
 			vertex * tGT = GT; GT = NULL;
-			
+
 			delete_me();
 			init(n_v, n_f * (v - P + 1));
 
 			GT = tGT;
 		}
-		
+
 		for(index_t j = 0; j < v; j++)
 			is>>VT[he++];
-		
+
 		// divide face
 		if(v > P)
 		{
@@ -68,7 +68,7 @@ void che_off::read_file(const string & file)
 			i += (v - P);
 		}
 	}
-	
+
 	is.close();
 }
 

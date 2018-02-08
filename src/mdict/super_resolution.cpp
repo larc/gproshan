@@ -11,10 +11,10 @@ void super_resolution::execute()
 {
 	TIC(d_time) init_sampling(); TOC(d_time)
 	debug(d_time)
-	
+
 	TIC(d_time) init_patches(); TOC(d_time)
 	debug(d_time)
-	
+
 	TIC(d_time) learning(); TOC(d_time)
 	debug(d_time)
 

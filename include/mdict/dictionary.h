@@ -17,7 +17,7 @@ class dictionary
 	protected:
 		che * mesh;
 		size_t n_vertices;
-		
+
 		basis * phi_basis;
 
 		distance_t f;	// overlapping factor
@@ -30,7 +30,7 @@ class dictionary
 		vector<index_t> sampling;
 		vector<patch_t> patches;
 		vector<patches_map_t> patches_map;
-		
+
 		double d_time;
 		bool d_plot;
 
@@ -41,7 +41,7 @@ class dictionary
 		virtual ~dictionary();
 
 		virtual void execute() = 0;
-		
+
 		void learning();
 		void sparse_coding();
 		void init_sampling();

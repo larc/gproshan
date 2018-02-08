@@ -8,13 +8,13 @@
 inline index_t farthest(distance_t * d, size_t n)
 {
 	index_t f = 0;
-	
+
 	#pragma omp parallel for
 	for(index_t v = 0; v < n; v++)
 		#pragma omp critical
 		if(d[v] < INFINITY && d[f] < d[v])
 			f = v;
-	
+
 	return f;
 }
 
@@ -25,7 +25,7 @@ distance_t parallel_farthest_point_sampling(vector<index_t> & points, che * shap
 	distance_t max_dis = INFINITY;
 
 	ofstream os(PATH_TEST + "fastmarching/" + shape->name() + ".fps");
-	
+
 	index_t * rings = new index_t[shape->n_vertices()];
 	index_t * sorted = new index_t[shape->n_vertices()];
 
@@ -33,14 +33,14 @@ distance_t parallel_farthest_point_sampling(vector<index_t> & points, che * shap
 		n = shape->n_vertices() / 2;
 
 	n -= points.size() - 1;
-	
+
 	while(n-- && max_dis > radio)
 	{
 		vector<index_t> limites;
 		shape->compute_toplesets(rings, sorted, limites, points);
-		
+
 		distance_t * distances = parallel_toplesets_propagation_gpu(shape, points, limites, sorted, time);
-		
+
 		f = farthest(distances, shape->n_vertices());
 
 		os << points.size() << " " << time << endl;
@@ -68,7 +68,7 @@ index_t ** sampling_shape(vector<index_t> & points, size_t *& sizes, vertex *& n
 	index_t ** indexes = new index_t * [n_points];
 
 	index_t v;
-	
+
 	#pragma omp parallel for private(v)
 	for(index_t i = 0; i < n_points; i++)
 	{
@@ -76,9 +76,9 @@ index_t ** sampling_shape(vector<index_t> & points, size_t *& sizes, vertex *& n
 		normals[i] = shape->normal(v);
 
 		geodesics fm(shape, {v}, geodesics::FM, NIL, radio);
-		
+
 		indexes[i] = new index_t[fm.n_sorted_index()];
-		
+
 		fm.copy_sorted_index(indexes[i], fm.n_sorted_index());
 		sizes[i] = fm.n_sorted_index();
 	}
@@ -93,14 +93,14 @@ void sampling_shape(int nargs, char ** args)
 	if(nargs < 2) return;
 
 	cout<<__FUNCTION__<<endl;
-	
+
 	string file = args[1];
 
 	che * shape = new che_off(PATH_MDATA + file);
 
 	size_t n_points;
 	cin >> n_points;
-	
+
 
 	vector<index_t> points;
 	points.push_back(0);
@@ -110,15 +110,15 @@ void sampling_shape(int nargs, char ** args)
 	vertex * normals;
 
 	double time = omp_get_wtime();
-	
+
 	distance_t max_dis = parallel_farthest_point_sampling(points, shape, n_points);
-	
+
 	time = omp_get_wtime() - time;
 	cout<<"time fps: "<<time<<endl;
 	cout<<"max_dis: "<<max_dis<<endl;
-	
+
 	index_t ** indexes = sampling_shape(points, sizes, normals, shape, n_points, 1.5 * max_dis);
-	
+
 	cout<<n_points<<endl;
 
 	ofstream os(PATH_TEST + file + "-indexes");
@@ -150,14 +150,14 @@ void sampling_shape(int nargs, char ** args)
 void sampling_shape(const char * name)
 {
 	cout<<__FUNCTION__<<endl;
-	
+
 	string file = name;
 
 	che * shape = new che_off(PATH_MDATA + file);
 
 	size_t n_points, K;
 	cin >> n_points >> K;
-	
+
 
 	vector<index_t> points;
 	points.push_back(0);
@@ -165,15 +165,15 @@ void sampling_shape(const char * name)
 	vertex * normals;
 
 	double time = omp_get_wtime();
-	
+
 	distance_t max_dis = parallel_farthest_point_sampling(points, shape, n_points);
-	
+
 	time = omp_get_wtime() - time;
 	cout<<"time fps: "<<time<<endl;
 	cout<<"max_dis: "<<max_dis<<endl;
 
 	index_t ** indexes = sampling_shape(points, sizes, normals, shape, n_points, 1.5 * max_dis);
-	
+
 	cout<<n_points<<endl;
 
 	ofstream os(PATH_TEST + file + "-indexes");
@@ -234,10 +234,10 @@ bool load_sampling(vector<index_t> & points, distance_t & radio, che * mesh, siz
 	if(is.good())
 	{
 		is >> radio;
-		
+
 		size_t n, p;
 		is >> n;
-		
+
 		while(n--)
 		{
 			is >> p;
@@ -249,7 +249,7 @@ bool load_sampling(vector<index_t> & points, distance_t & radio, che * mesh, siz
 
 		if(!points.size())
 			points.push_back(0);
-		
+
 		float time_fps;
 		radio = farthest_point_sampling_ptp_gpu(mesh, points, time_fps, n);
 		debug(time_fps)
@@ -262,7 +262,7 @@ bool load_sampling(vector<index_t> & points, distance_t & radio, che * mesh, siz
 
 		os.close();
 	}
-	
+
 	is.close();
 
 	return true;

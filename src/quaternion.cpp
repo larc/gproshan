@@ -199,7 +199,7 @@ void quaternion::normalize(void)
 {
 	*this /= norm();
 }
-	
+
 // spherical-linear interpolation
 quaternion slerp(const quaternion & q0, const quaternion & q1, vertex_t t)
 {
@@ -219,6 +219,6 @@ quaternion slerp(const quaternion & q0, const quaternion & q1, vertex_t t)
 
 std::ostream & operator<<(std::ostream & os, const quaternion & q)
 {
-	return os << "(" << q.re() << ", " << q.im() << ")";	
+	return os << "(" << q.re() << ", " << q.im() << ")";
 }
 

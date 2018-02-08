@@ -52,7 +52,7 @@ void dictionary::learning()
 void dictionary::sparse_coding()
 {
 	debug_me(MDICT)
-	
+
 	alpha.zeros(m, M);
 	OMP_all_patches_ksvt(alpha, A, patches, M, L);
 }
@@ -60,9 +60,9 @@ void dictionary::sparse_coding()
 void dictionary::init_sampling()
 {
 	debug_me(MDICT)
-	
+
 	n_vertices = mesh->n_vertices();
-	
+
 	// load sampling
 	if(M == 0)
 	{
@@ -74,7 +74,7 @@ void dictionary::init_sampling()
 		sampling.reserve(M);
 		assert(load_sampling(sampling, phi_basis->radio, mesh, M));
 	}
-		
+
 	// overlapping by factor "f"
 	s_radio = phi_basis->radio;
 	phi_basis->radio *= f;
@@ -83,16 +83,16 @@ void dictionary::init_sampling()
 void dictionary::init_patches(const bool & reset, const size_t & threshold)
 {
 	debug_me(MDICT)
-	
+
 	if(reset)
 	{
 		patch_t::del_index = true;
 
 		patches.resize(M);
 		patches_map.resize(n_vertices);
-		
+
 		patch_t::del_index = false;
-		
+
 		#pragma omp parallel for
 		for(index_t s = 0; s < M; s++)
 		{
@@ -102,16 +102,16 @@ void dictionary::init_patches(const bool & reset, const size_t & threshold)
 			geodesics fm(mesh, {v}, geodesics::FM, NIL, phi_basis->radio);
 
 			p.n = fm.n_sorted_index();
-			
+
 			p.indexes = new index_t[p.n];
 			fm.copy_sorted_index(p.indexes, p.n);
 		}
-		
+
 		#ifndef NDEBUG
 			size_t patch_avg_size = 0;
 			size_t patch_min_size = NIL;
 			size_t patch_max_size = 0;
-		
+
 			#pragma omp parallel for reduction(+: patch_avg_size)
 			for(index_t s = 0; s < M; s++)
 				patch_avg_size += patches[s].n;
@@ -121,7 +121,7 @@ void dictionary::init_patches(const bool & reset, const size_t & threshold)
 			#pragma omp parallel for reduction(max: patch_max_size)
 			for(index_t s = 0; s < M; s++)
 				patch_max_size = max(patches[s].n, patch_max_size);
-			
+
 			patch_avg_size /= M;
 			debug(patch_avg_size)
 			debug(patch_min_size)
@@ -139,7 +139,7 @@ void dictionary::init_patches(const bool & reset, const size_t & threshold)
 	for(index_t s = 0; s < M; s++)
 	{
 		patch_t & p = patches[s];
-		
+
 		if(p.valid_xyz())
 		{
 			jet_fit_directions(p);
@@ -148,13 +148,13 @@ void dictionary::init_patches(const bool & reset, const size_t & threshold)
 			p.phi.set_size(p.xyz.n_cols, phi_basis->dim);
 			phi_basis->discrete(p.phi, p.xyz);
 		}
-	}	
+	}
 }
 
 void dictionary::mesh_reconstruction()
 {
 	debug_me(MDICT)
-	
+
 	assert(n_vertices == mesh->n_vertices());
 	mdict::mesh_reconstruction(mesh, M, patches, patches_map, A, alpha);
 }

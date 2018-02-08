@@ -23,7 +23,7 @@ decimation::operator const corr_t * ()
 void decimation::execute(const vertex *const & normals)
 {
 	compute_quadrics();
-	
+
 	const size_t n_vertices = mesh->n_vertices();
 	index_t * sort_edges = new index_t[mesh->n_edges()];
 	vertex_t * error_edges = new vertex_t[mesh->n_edges()];
@@ -47,7 +47,7 @@ void decimation::execute(const vertex *const & normals)
 
 	order_edges(sort_edges, error_edges);
 	corr = mesh->edge_collapse(sort_edges, normals);
-	
+
 	while(--levels)
 	{
 		#pragma omp parallel for private(he, vi)
@@ -56,14 +56,14 @@ void decimation::execute(const vertex *const & normals)
 			corr_v[v] = mesh->corr_vertex(corr[v]);
 			he = corr[v].t * P;
 			vi = v * P;
-			corr_i[vi] = mesh->vt(he); 
-			corr_i[vi + 1] = mesh->vt(next(he)); 
-			corr_i[vi + 2] = mesh->vt(prev(he)); 
+			corr_i[vi] = mesh->vt(he);
+			corr_i[vi + 1] = mesh->vt(next(he));
+			corr_i[vi + 2] = mesh->vt(prev(he));
 		}
-		
+
 		order_edges(sort_edges, error_edges);
 		corr_aux = mesh->edge_collapse(sort_edges, normals);
-		
+
 		#pragma omp parallel for private(vi, a, b, c)
 		for(index_t v = 0; v < n_vertices; v++)
 		{
@@ -72,15 +72,15 @@ void decimation::execute(const vertex *const & normals)
 			b = mesh->corr_vertex(corr_aux[corr_i[vi + 1]]);
 			c = mesh->corr_vertex(corr_aux[corr_i[vi + 2]]);
 			corr_v[v] = corr[v].alpha[0] * a + corr[v].alpha[1] * b + corr[v].alpha[2] * c;
-			
+
 			vector<index_t> he_trigs;
-			add_he_trigs(he_trigs, corr_aux[corr_i[vi]]);			
-			add_he_trigs(he_trigs, corr_aux[corr_i[vi + 1]]);			
-			add_he_trigs(he_trigs, corr_aux[corr_i[vi + 2]]);			
-			
+			add_he_trigs(he_trigs, corr_aux[corr_i[vi]]);
+			add_he_trigs(he_trigs, corr_aux[corr_i[vi + 1]]);
+			add_he_trigs(he_trigs, corr_aux[corr_i[vi + 2]]);
+
 			corr[v] = mesh->find_corr(corr_v[v], normals[v], he_trigs);
-		}	
-		
+		}
+
 		delete [] corr_aux;
 	}
 
@@ -93,14 +93,14 @@ void decimation::execute(const vertex *const & normals)
 void decimation::compute_quadrics()
 {
 	vertex n;
-	
+
 	#pragma omp parallel for private(n)
 	for(index_t v = 0; v < mesh->n_vertices(); v++)
 	{
 		Q[v].resize(4,4);
 		Q[v].zeros();
 		vec p(4);
-		
+
 		for_star(he, mesh, v)
 		{
 			n = mesh->normal_he(he);
@@ -122,7 +122,7 @@ void decimation::order_edges(index_t * const & sort_edges, vertex_t * const & er
 		sort_edges[e] = e;
 		error_edges[e] = compute_error(e);
 	}
-	
+
 	sort(sort_edges, sort_edges + mesh->n_edges(),
 		[&error_edges](const index_t & a, const index_t & b)
 		{

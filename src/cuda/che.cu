@@ -31,13 +31,13 @@ void cuda_create_CHE(CHE * h_che, CHE *& dd_che, CHE *& d_che)
 
 	cudaMalloc(&dd_che->VT, sizeof(index_t) * h_che->n_half_edges);
 	cudaMemcpy(dd_che->VT, h_che->VT, sizeof(index_t) * h_che->n_half_edges, cudaMemcpyHostToDevice);
-	
+
 	cudaMalloc(&dd_che->OT, sizeof(index_t) * h_che->n_half_edges);
 	cudaMemcpy(dd_che->OT, h_che->OT, sizeof(index_t) * h_che->n_half_edges, cudaMemcpyHostToDevice);
-	
+
 	cudaMalloc(&dd_che->EVT, sizeof(index_t) * h_che->n_vertices);
 	cudaMemcpy(dd_che->EVT, h_che->EVT, sizeof(index_t) * h_che->n_vertices, cudaMemcpyHostToDevice);
-	
+
 	cudaMalloc(&d_che, sizeof(CHE));
 	cudaMemcpy(d_che, dd_che, sizeof(CHE), cudaMemcpyHostToDevice);
 }

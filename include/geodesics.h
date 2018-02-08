@@ -34,7 +34,7 @@ class geodesics
 		void run_fastmarching(che * mesh, const vector<index_t> & sources, const size_t & n_iter, const distance_t & radio);
 		void run_parallel_toplesets_propagation_cpu(che * mesh, const vector<index_t> & sources, const size_t & n_iter, const distance_t & radio);
 		void run_parallel_toplesets_propagation_gpu(che * mesh, const vector<index_t> & sources, const size_t & n_iter, const distance_t & radio);
-		
+
 		distance_t update(index_t & d, che * mesh, const index_t & he, vertex & vx);
 		distance_t planar_update(index_t & d, arma::mat & X, index_t * x, vertex & vx);
 };

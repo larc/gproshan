@@ -15,7 +15,7 @@ class basis_cosine: public basis
 	public:
 		basis_cosine(const size_t & _r, const size_t & _n, const distance_t & _radio = 0);
 		void discrete(mat & phi, const mat & xy);
-	
+
 	private:
 		void plot_basis(ostream & os);
 		void plot_atoms(ostream & os, const vec & A);

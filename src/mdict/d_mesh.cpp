@@ -22,7 +22,7 @@ vec cossine(mat & xy, distance_t radio, size_t K)
 	vec x = xy.row(0).t() + 0.5;
 	vec y = xy.row(1).t() + 0.5;
 
-	
+
 	size_t k = sqrt(K);
 	vec sum(x.n_elem,fill::zeros);
 	vec tmp;
@@ -59,7 +59,7 @@ void get_centers_gaussian(vec & cx, vec & cy, vertex_t radio, size_t K)
 	size_t k = sqrt(K);
 	vertex_t d = 2 * radio / (k - 1);
 
-	for(index_t c = 0, i = 0; i < k; i++)	
+	for(index_t c = 0, i = 0; i < k; i++)
 	for(index_t j = 0; j < k; j++, c++)
 	{
 		cx(c) = -radio + d * i;
@@ -76,11 +76,11 @@ void jet_fit_directions(patch_t & rp)
 
 	size_t d_fitting = 4;
 	size_t d_monge = 4;
-	
+
 	My_Monge_form monge_form;
 	My_Monge_via_jet_fitting monge_fit;
-	monge_form = monge_fit(in_points.begin(), in_points.end(), d_fitting, d_monge);	
-	
+	monge_form = monge_fit(in_points.begin(), in_points.end(), d_fitting, d_monge);
+
 	rp.avg.set_size(3);
 	rp.avg(0) = monge_form.origin()[0];
 	rp.avg(1) = monge_form.origin()[1];
@@ -118,7 +118,7 @@ void principal_curvatures( patch_t & rp, che * mesh)
 	vertex max;
 	vertex_t K = -INFINITY;
 	vertex_t k;
-	
+
 	for_star(he, mesh, rp[0])
 	{
 		vertex d = mesh->gt_vt(next(he)) - mesh->gt_vt(he);
@@ -136,12 +136,12 @@ void principal_curvatures( patch_t & rp, che * mesh)
 	rp.E(0, 2) = N.x;
 	rp.E(1, 2) = N.y;
 	rp.E(2, 2) = N.z;
-		
+
 	max -= K * N;
 	rp.E(0, 0) = max.x;
 	rp.E(1, 0) = max.y;
 	rp.E(2, 0) = max.z;
-	
+
 	rp.E.col(1) = cross(rp.E.col(0), rp.E.col(2));
 	rp.E.col(1) /= norm(rp.E.col(1));
 }
@@ -150,14 +150,14 @@ void save_patches_coordinates( vector<patch_t> & patches, vector< pair<index_t,i
 {
 	string file = "test-patches_coordinates";
 	ofstream os(PATH_TEST + file );
-	
+
 	for(index_t v = 0; v < NV; v++)
 	{
 		for(auto pi: lpatches[v])
 		{
 			patch_t & rp = patches[pi.first];
 			os<<rp.xyz.col(pi.second)[0]<<" "<<rp.xyz.col(pi.second)[1]<<" "<<rp.xyz.col(pi.second)[2]<<" "<<pi.first<<" ";
-		}	
+		}
 		os<<endl;
 	}
 
@@ -168,7 +168,7 @@ void save_patches(vector<patch_t> & patches, size_t M)
 {
 	string file = "test-patch_wise_coordinates";
 	ofstream os(PATH_TEST + file );
-	
+
 	for(index_t p = 0; p < M; p++)
 	{
 		patch_t & rp = patches[p];
@@ -188,13 +188,13 @@ void partial_mesh_reconstruction(size_t old_n_vertices, che * mesh, size_t M, ve
 	for(index_t p = M; p < patches.size(); p++)
 	{
 		patch_t & rp = patches[p];
-		
+
 		if(rp.indexes)
 		{
 			vec x = rp.phi * A * alpha.col(p);
-	
+
 			rp.xyz.row(2) = x.t();
-		
+
 			rp.itransform();
 		}
 	}
@@ -202,7 +202,7 @@ void partial_mesh_reconstruction(size_t old_n_vertices, che * mesh, size_t M, ve
 	distance_t h = 2;
 
 	vec V(3);
-	
+
 	#pragma omp parallel for private(V)
 	for(index_t v = old_n_vertices; v < mesh->n_vertices(); v++)
 	{
@@ -214,8 +214,8 @@ void partial_mesh_reconstruction(size_t old_n_vertices, che * mesh, size_t M, ve
 			V(1) = mesh->gt(v).y;
 			V(2) = mesh->gt(v).z;
 		}
-		
-		mesh->get_vertex(v) = *((vertex *) V.memptr()); 
+
+		mesh->get_vertex(v) = *((vertex *) V.memptr());
 	}
 
 }
@@ -228,11 +228,11 @@ void mesh_reconstruction(che * mesh, size_t M, vector<patch_t> & patches, vector
 	for(index_t p = 0; p < M; p++)
 	{
 		patch_t & rp = patches[p];
-	
+
 		if(rp.phi.n_rows)
 		{
 			vec x = rp.phi * A * alpha.col(p);
-	
+
 			rp.xyz.row(2) = x.t();
 			rp.itransform();
 		}
@@ -260,11 +260,11 @@ void mesh_reconstruction(che * mesh, size_t M, vector<patch_t> & patches, vector
 	#pragma omp parallel for reduction(+: error)
 	for(index_t v = v_i; v < mesh->n_vertices(); v++)
 		error += *(new_vertices[v] - mesh->get_vertex(v));
-	
+
 	debug(mesh->n_vertices())
 	error /= mesh->n_vertices();
 	debug(error)
-	
+
 	debug(v_i)
 	mesh->set_vertices(new_vertices + v_i, mesh->n_vertices() - v_i, v_i);
 }
@@ -275,22 +275,22 @@ vec non_local_means_vertex(mat & alpha, const index_t & v, vector<patch_t> & pat
 	area_t sum = 0;
 
 	distance_t * w = new distance_t[patches_map[v].size()];
-	
+
 	index_t i = 0;
 	distance_t d = 0;
-	
+
 	for(auto p: patches_map[v])
 	{
 		d = 0;
 		for(auto q: patches_map[v])
 			d += norm(alpha.col(p.first) - alpha.col(q.first));
 		d /= patches_map[v].size();
-	
+
 		w[i] = exp(- d * d / h);
 		sum += w[i];
 		i++;
 	}
-	
+
 	i = 0;
 	for(auto p: patches_map[v])
 	{
@@ -298,9 +298,9 @@ vec non_local_means_vertex(mat & alpha, const index_t & v, vector<patch_t> & pat
 		n_vec += w[i] * patches[p.first].xyz.col(p.second);
 		i++;
 	}
-	
+
 	delete [] w;
-	
+
 	return n_vec;
 }
 

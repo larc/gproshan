@@ -65,7 +65,7 @@ shader::operator GLuint() const
 void shader::load(GLenum shaderType, const char * filename, GLuint & _shader)
 {
 	string source;
-	
+
 	if(!readSource(filename, source))
 	{
 		return;

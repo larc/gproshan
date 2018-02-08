@@ -17,10 +17,10 @@ che_viewer::che_viewer()
 che_viewer::~che_viewer()
 {
 	if(!mesh) return;
-	
+
 	glDeleteBuffers(4, vbo);
 	glDeleteVertexArrays(1, &vao);
-	
+
 	if(normals) delete [] normals;
 	if(colors) delete [] colors;
 	delete mesh;
@@ -43,7 +43,7 @@ void che_viewer::init(che * _mesh)
 	mesh->normalize();
 
 	_invert_orientation = false;
-	
+
 	glGenVertexArrays(1, &vao);
 	glGenBuffers(4, vbo);
 
@@ -64,7 +64,7 @@ void che_viewer::reload()
 void che_viewer::update()
 {
 	assert(mesh != NULL);
-	
+
 	if(_n_vertices != mesh->n_vertices())
 	{
 		if(normals) delete [] normals;
@@ -77,9 +77,9 @@ void che_viewer::update()
 		update_normals();
 		update_colors();
 	}
-	
+
 	factor = mesh->mean_edge();
-	
+
 	update_vbo();
 }
 
@@ -100,7 +100,7 @@ void che_viewer::update_vbo()
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 3, GL_VERTEX_T, GL_FALSE, 0, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	
+
 	// 2 COLOR
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[2]);
 	glBufferData(GL_ARRAY_BUFFER, _n_vertices * sizeof(vertex_t), colors, GL_STATIC_DRAW);
@@ -142,12 +142,12 @@ void che_viewer::draw()
 void che_viewer::draw_wireframe()
 {
 	glPushAttrib(GL_ALL_ATTRIB_BITS);
-	
+
 	glDisable(GL_LIGHTING);
 	glColor4f(0., 0., 0., 0.5);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	
+
 	glBegin(GL_LINES);
 
 	for(index_t e = 0; e < mesh->n_edges(); e++)
@@ -174,7 +174,7 @@ void che_viewer::draw_normal_field()
 		vertex n = factor * normals[v];
 		vertex a = mesh->get_vertex(v);
 		vertex b = a + n;
-		
+
 		glVertex3v(&a[0]);
 		glVertex3v(&b[0]);
 	}
@@ -186,7 +186,7 @@ void che_viewer::draw_normal_field()
 void che_viewer::draw_gradient_field()
 {
 	glPushAttrib(GL_ALL_ATTRIB_BITS);
-	
+
 	glDisable(GL_LIGHTING);
 	glColor3f(.8, 1.0, .8);
 	glLineWidth(1.2);
@@ -217,14 +217,14 @@ void che_viewer::draw_gradient_field()
 		glVertex3v(&p2[0]);
 		glEnd();
 	}
-	
+
 	glPopAttrib();
 }
 
 void che_viewer::draw_mesh_info()
 {
 	if(!mesh) return;
-	
+
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
 	glLoadIdentity();
@@ -232,29 +232,29 @@ void che_viewer::draw_mesh_info()
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
 	glLoadIdentity();
-	
+
 	char str[256];
 	float color[4] = {1, .75, .25, 1};
 	int h = 2, dh = 16;
-	
+
 	sprintf(str, "%9lu n_vertices", mesh->n_vertices());
 	draw_str(str, 10, viewer::window_height() - (h += 18), color, GLUT_BITMAP_9_BY_15);
-	
+
 	sprintf(str, "%9lu n_faces", mesh->n_faces());
 	draw_str(str, 10, viewer::window_height() - (h += 18), color, GLUT_BITMAP_9_BY_15);
-	
+
 	sprintf(str, "%9lu n_edges", mesh->n_edges());
 	draw_str(str, 10, viewer::window_height() - (h += 18), color, GLUT_BITMAP_9_BY_15);
-	
+
 	sprintf(str, "%9lu n_half_edges", mesh->n_half_edges());
 	draw_str(str, 10, viewer::window_height() - (h += 18), color, GLUT_BITMAP_9_BY_15);
-	
+
 	sprintf(str, "%9lu n_borders", mesh->n_borders());
 	draw_str(str, 10, viewer::window_height() - (h += 18), color, GLUT_BITMAP_9_BY_15);
 
 	//sprintf(str, "%9.3lf quality", mesh->quality());
 	//draw_str(str, 10, viewer::window_height() - (h += 18), color, GLUT_BITMAP_8_BY_13);
-	
+
 	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();
 	glMatrixMode(GL_MODELVIEW);
