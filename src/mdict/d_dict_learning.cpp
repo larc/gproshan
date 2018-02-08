@@ -93,7 +93,8 @@ void OMP_all_patches_ksvt(mat & alpha, mat & A, vector<patch_t> & patches, size_
 {
 	#pragma omp parallel for
 	for(index_t i = 0; i < M; i++)
-		OMP_patch(alpha, A, i, patches[i], L);
+		if(patches[i].valid_xyz())
+			OMP_patch(alpha, A, i, patches[i], L);
 }
 
 void KSVDT(mat & A, vector<patch_t> & patches, size_t M, size_t L)

@@ -41,6 +41,8 @@ void principal_curvatures( patch_t & rp, che * mesh);
 struct patch_t
 {
 	static bool del_index;
+	static size_t min_nvp;
+
 	size_t n;
 	index_t * indexes;
 	mat xyz;
@@ -76,17 +78,23 @@ struct patch_t
 		xyz = E * xyz;
 		xyz.each_col() += avg;
 	}
+	
+	bool valid_xyz()
+	{
+		return xyz.n_cols > min_nvp;
+	}
 
 	void reset_xyz(che * mesh, vector<patches_map_t> & patches_map, const index_t & p, const index_t & threshold = NIL)
 	{
+		size_t m = n;
 		if(threshold != NIL)
 		{
-			n = 0;
+			m = 0;
 			for(index_t i = 0; i < n; i++)
-				if(indexes[i] < threshold) n++;
+				if(indexes[i] < threshold) m++;
 		}
 
-		xyz.set_size(3, n);
+		xyz.set_size(3, m);
 		for(index_t j = 0, i = 0; i < n; i++)
 		{
 			if(indexes[i] < threshold)
@@ -98,7 +106,6 @@ struct patch_t
 
 				patches_map[indexes[i]][p] = j++; 
 			}
-			
 		}	
 	}
 };

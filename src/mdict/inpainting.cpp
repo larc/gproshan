@@ -9,32 +9,32 @@ inpainting::inpainting(che *const & _mesh, basis *const & _phi_basis, const size
 
 void inpainting::execute()
 {
-
-	n_vertices = mesh->n_vertices();
-	delete [] fill_all_holes(mesh);
-	
-	TIC(d_time) poisson(mesh, n_vertices, 2); TOC(d_time)
+	// fill holes
+	size_t threshold = mesh->n_vertices();
+	delete [] fill_all_holes(mesh);	
+	TIC(d_time) poisson(mesh, threshold, 2); TOC(d_time)
 	debug(d_time)
 
-	debug(n_vertices)
+	// remove possible non manifold vertices
+	mesh->remove_non_manifold_vertices();
 
+	// sampling including new vertices
 	TIC(d_time) init_sampling(); TOC(d_time)
 	debug(d_time)
 
-// Here modify the patches function inside 
-
-	TIC(d_time) init_patches(n_vertices); TOC(d_time)
+	// initializing patches with threshold
+	TIC(d_time) init_patches(1, threshold); TOC(d_time)
 	debug(d_time)
 	
+	// learning only from valid patches
 	TIC(d_time) learning(); TOC(d_time)
 	debug(d_time)
 	
-	// Updating mesh n vertices after learning
-	n_vertices = mesh->n_vertices();
-
-	TIC(d_time) init_patches(); TOC(d_time)
+	// including vertices out of threshold
+	TIC(d_time) init_patches(0); TOC(d_time)
 	debug(d_time)
 
+	// sparse coding and reconstruction with all patches
 	TIC(d_time) sparse_coding(); TOC(d_time)
 	debug(d_time)
 

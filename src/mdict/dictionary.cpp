@@ -10,7 +10,6 @@
 // mesh dictionary learning and sparse coding namespace
 namespace mdict {
 
-const size_t dictionary::min_nvp = 36;
 const size_t dictionary::L = 10;
 
 dictionary::dictionary(che *const & _mesh, basis *const & _phi_basis, const size_t & _m, const size_t & _M, const distance_t & _f, const bool & _d_plot):
@@ -81,53 +80,55 @@ void dictionary::init_sampling()
 	phi_basis->radio *= f;
 }
 
-void dictionary::init_patches(const size_t & threshold)
+void dictionary::init_patches(const bool & reset, const size_t & threshold)
 {
 	debug_me(MDICT)
 	
-	patch_t::del_index = true;
-
-	patches.resize(M);
-	patches_map.resize(n_vertices);
-	
-	patch_t::del_index = false;
-	
-	#pragma omp parallel for
-	for(index_t s = 0; s < M; s++)
+	if(reset)
 	{
-		index_t v = sample(s);
-		patch_t & p = patches[s];
+		patch_t::del_index = true;
 
-		geodesics fm(mesh, {v}, geodesics::FM, NIL, phi_basis->radio);
+		patches.resize(M);
+		patches_map.resize(n_vertices);
+		
+		patch_t::del_index = false;
+		
+		#pragma omp parallel for
+		for(index_t s = 0; s < M; s++)
+		{
+			index_t v = sample(s);
+			patch_t & p = patches[s];
 
-		p.n = fm.n_sorted_index();
+			geodesics fm(mesh, {v}, geodesics::FM, NIL, phi_basis->radio);
+
+			p.n = fm.n_sorted_index();
+			
+			p.indexes = new index_t[p.n];
+			fm.copy_sorted_index(p.indexes, p.n);
+		}
 		
-		p.indexes = new index_t[p.n];
-		fm.copy_sorted_index(p.indexes, p.n);
+		#ifndef NDEBUG
+			size_t patch_avg_size = 0;
+			size_t patch_min_size = NIL;
+			size_t patch_max_size = 0;
 		
+			#pragma omp parallel for reduction(+: patch_avg_size)
+			for(index_t s = 0; s < M; s++)
+				patch_avg_size += patches[s].n;
+			#pragma omp parallel for reduction(min: patch_min_size)
+			for(index_t s = 0; s < M; s++)
+				patch_min_size = min(patches[s].n, patch_min_size);
+			#pragma omp parallel for reduction(max: patch_max_size)
+			for(index_t s = 0; s < M; s++)
+				patch_max_size = max(patches[s].n, patch_max_size);
+			
+			patch_avg_size /= M;
+			debug(patch_avg_size)
+			debug(patch_min_size)
+			debug(patch_max_size)
+		#endif
 	}
-	
-	#ifndef NDEBUG
-		size_t patch_avg_size = 0;
-		size_t patch_min_size = NIL;
-		size_t patch_max_size = 0;
-	
-		#pragma omp parallel for reduction(+: patch_avg_size)
-		for(index_t s = 0; s < M; s++)
-			patch_avg_size += patches[s].n;
-		#pragma omp parallel for reduction(min: patch_min_size)
-		for(index_t s = 0; s < M; s++)
-			patch_min_size = min(patches[s].n, patch_min_size);
-		#pragma omp parallel for reduction(max: patch_max_size)
-		for(index_t s = 0; s < M; s++)
-			patch_max_size = max(patches[s].n, patch_max_size);
-		
-		patch_avg_size /= M;
-		debug(patch_avg_size)
-		debug(patch_min_size)
-		debug(patch_max_size)
-	#endif
-	
+
 	for(index_t s = 0; s < M; s++)
 	{
 		patch_t & p = patches[s];
@@ -139,13 +140,14 @@ void dictionary::init_patches(const size_t & threshold)
 	{
 		patch_t & p = patches[s];
 		
-		if(p.n <= min_nvp) debug(p.n);
-		assert(p.n > min_nvp); // old code change to principal_curvatures
-		jet_fit_directions(p);
+		if(p.valid_xyz())
+		{
+			jet_fit_directions(p);
 
-		p.transform();
-		p.phi.set_size(p.n, phi_basis->dim);
-		phi_basis->discrete(p.phi, p.xyz);
+			p.transform();
+			p.phi.set_size(p.xyz.n_cols, phi_basis->dim);
+			phi_basis->discrete(p.phi, p.xyz);
+		}
 	}	
 }
 

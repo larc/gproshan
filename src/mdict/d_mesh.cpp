@@ -3,6 +3,7 @@
 // mesh dictionary learning and sparse coding namespace
 namespace mdict {
 
+size_t patch_t::min_nvp = 36;
 bool patch_t::del_index = false;
 
 vec gaussian(mat & xy, vertex_t sigma, vertex_t cx, vertex_t cy)
@@ -70,7 +71,7 @@ void jet_fit_directions(patch_t & rp)
 {
 	vector<DPoint> in_points;
 	in_points.reserve(rp.n);
-	for(index_t i = 0; i < rp.n; i++)
+	for(index_t i = 0; i < rp.xyz.n_cols; i++)
 		in_points.push_back(DPoint(rp.xyz(0, i), rp.xyz(1, i), rp.xyz(2, i)));
 
 	size_t d_fitting = 4;

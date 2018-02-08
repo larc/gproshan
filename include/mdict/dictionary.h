@@ -34,7 +34,6 @@ class dictionary
 		double d_time;
 		bool d_plot;
 
-		static const size_t min_nvp;
 		static const size_t L;
 
 	protected:
@@ -46,7 +45,7 @@ class dictionary
 		void learning();
 		void sparse_coding();
 		void init_sampling();
-		void init_patches(const size_t & threshold = NIL);
+		void init_patches(const bool & reset = 1, const size_t & threshold = NIL);
 		void mesh_reconstruction();
 
 		index_t sample(const index_t & s);
