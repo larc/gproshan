@@ -1,5 +1,3 @@
-/*! \file */
-
 #ifndef APP_VIEWER_H
 #define APP_VIEWER_H
 
