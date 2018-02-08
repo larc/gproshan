@@ -484,7 +484,7 @@ void viewer_process_geodesics_fm()
 	debug(load_time)
 
 	fm.normalize();
-	viewer::mesh().update_colors(fm.distances);
+	viewer::mesh().update_colors(&fm[0]);
 }
 
 void viewer_process_geodesics_ptp_cpu()
@@ -497,7 +497,7 @@ void viewer_process_geodesics_ptp_cpu()
 	debug(load_time)
 
 	ptp.normalize();
-	viewer::mesh().update_colors(ptp.distances);
+	viewer::mesh().update_colors(&ptp[0]);
 }
 
 void viewer_process_geodesics_ptp_gpu()
@@ -510,7 +510,7 @@ void viewer_process_geodesics_ptp_gpu()
 	debug(load_time)
 
 	ptp.normalize();
-	viewer::mesh().update_colors(ptp.distances);
+	viewer::mesh().update_colors(&ptp[0]);
 }
 
 void viewer_process_fill_holes_biharmonic_splines()

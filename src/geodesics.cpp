@@ -34,10 +34,10 @@ geodesics::~geodesics()
 	delete [] clusters;
 }
 
-const index_t & geodesics::operator[](const index_t & i) const
+const distance_t & geodesics::operator[](const index_t & i) const
 {
-	assert(i < n_sorted);
-	return sorted_index[i];
+	assert(i < n_vertices);
+	return distances[i];
 }
 
 const index_t & geodesics::farthest() const

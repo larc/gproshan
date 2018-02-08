@@ -6,24 +6,39 @@
 
 #include <armadillo>
 
+/*!
+	Compute the geodesics distances on a mesh from a source or multi-source. This class implements
+	the Fast Marching algorithm without deal with obtuse triangles. Also, if the options PTP_CPU or
+	PTP_GPU are enables, compute the geodesics distances executing the Parallel Toplesets Propagation
+	algorithm.
+*/
 class geodesics
 {
 	public:
-		enum option_t {FM, PTP_CPU, PTP_GPU};
+		enum option_t {	FM,			///< Execute Fast Marching algorithm
+						PTP_CPU,	///< Execute Parallel Toplesets Propagation algorithm on CPU
+						PTP_GPU		///< Execute Parallel Toplesets Propagation algorithm on GPU
+						};
 
 	public:
-		distance_t * distances;
-		index_t * clusters;
+		index_t * clusters;			///< Clustering vertices to closet source.
 
 	private:
-		index_t * sorted_index;
-		size_t n_vertices;
-		size_t n_sorted;
+		distance_t * distances;		///< Results of computation geodesic distances.
+		index_t * sorted_index;		///< Sort vertices by topological level or geodesic distance.
+		size_t n_vertices;			///< Number of vertices.
+		size_t n_sorted;			///< Number of vertices sorted by their geodesics distances.
 
 	public:
-		geodesics(che * mesh, const vector<index_t> & _sources, const option_t & opt = FM, const size_t & n_iter = 0, const distance_t & radio = INFINITY);
+		geodesics(	che * mesh,							///< input mesh must be a triangular mesh.
+					const vector<index_t> & sources,	///< source vertices.
+					const option_t & opt = FM,			///< specific the algorithm to execute.
+					const size_t & n_iter = 0, 			///< maximum number of iterations.
+					const distance_t & radio = INFINITY	///< execute until the specific radio.
+					);
+
 		virtual ~geodesics();
-		const index_t & operator[](const index_t & i) const;
+		const distance_t & operator[](const index_t & i) const;
 		const index_t & farthest() const;
 		const size_t & n_sorted_index() const;
 		void copy_sorted_index(index_t * indexes, const size_t & n) const;

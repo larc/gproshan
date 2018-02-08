@@ -277,7 +277,7 @@ float test_fastmarching(string filename, size_t n_test)
 	time_s += time;
 	time_s /= n_test;
 
-	distance_t * distances_s = geodesic.distances;
+	const distance_t * distances_s = &geodesic[0];
 
 	printf("%18.3f &%18.3f &%18.3f &", time_s, time_c, time_s/time_c);
 
@@ -560,16 +560,5 @@ void generate_grid_cylinder(const vertex_t & radio, vertex_t d_angle, size_t rin
 
 	delete [] vertices;
 	delete [] faces;
-}
-
-void main_solve_arma()
-{
-	vertex v;
-	mat A = { {2,7,4}, {2, 3, 7}, {0,0,0}, {1,1,1} };
-	vec x = {4, 4, 0, 1};
-	vec ans(&v[0], 3, false, true);
-	cout<< v <<endl;
-	ans = solve(A,x);
-	cout<< v <<endl;
 }
 
