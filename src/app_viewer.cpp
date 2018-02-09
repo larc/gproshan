@@ -103,7 +103,7 @@ void viewer_process_poisson(const index_t & k)
 	TIC(load_time) poisson(viewer::mesh(), old_n_vertices, k); TOC(load_time)
 	debug(load_time)
 
-	paint_holes_vertices();
+//	paint_holes_vertices();
 }
 
 void viewer_process_poisson_laplacian_1()
@@ -285,8 +285,6 @@ void viewer_process_denoising()
 	denoising dict(viewer::mesh(), phi, m, M, f);
 	dict.execute();
 
-//	mesh_denoising(viewer::mesh(), viewer::select_vertices, freq, rt, m, M, f, learn);
-
 	delete phi;
 	viewer::mesh().update_normals();
 }
@@ -308,8 +306,6 @@ void viewer_process_super_resolution()
 	super_resolution dict(viewer::mesh(), phi, m, M, f);
 	dict.execute();
 
-//	mesh_super_resolution(viewer::mesh(), viewer::select_vertices, freq, rt, m, M, f, learn);
-
 	delete phi;
 	viewer::mesh().update_normals();
 }
@@ -330,8 +326,6 @@ void viewer_process_inpaiting()
 	basis * phi = new basis_dct(n);
 	inpainting dict(viewer::mesh(), phi, m, M, f);
 	dict.execute();
-
-//	mesh_inpainting(viewer::mesh(), viewer::select_vertices, freq, rt, m, M, f, learn);
 
 	delete phi;
 	viewer::mesh().update_normals();
@@ -367,7 +361,7 @@ void viewer_compute_toplesets()
 
 	for(index_t v = 0; v < viewer::mesh()->n_vertices(); v++)
 	{
-		if(toplesets[v] < k) //viewer::select_vertices.push_back(v);
+		if(toplesets[v] < k) 
 			viewer::get_color(v) = distance_t(toplesets[v]) / (limites.size() - 1);
 	}
 	debug(k)
@@ -425,7 +419,6 @@ void viewer_process_farthest_point_sampling()
 	distance_t radio;
 	TIC(load_time)
 	load_sampling(viewer::select_vertices, radio, viewer::mesh(), n);
-//	distance_t radio = farthest_point_sampling_gpu(viewer::select_vertices, load_time_g, viewer::mesh(), n);
 	TOC(load_time)
 	debug(load_time)
 }

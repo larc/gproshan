@@ -44,7 +44,6 @@ class che_viewer
 		void update_normals();
 		void update_colors(const color_t *const c = NULL);
 		void draw();
-		void draw_wireframe();
 		void draw_normal_field();
 		void draw_gradient_field();
 		void draw_mesh_info();

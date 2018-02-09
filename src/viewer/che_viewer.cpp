@@ -139,27 +139,6 @@ void che_viewer::draw()
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
-void che_viewer::draw_wireframe()
-{
-	glPushAttrib(GL_ALL_ATTRIB_BITS);
-
-	glDisable(GL_LIGHTING);
-	glColor4f(0., 0., 0., 0.5);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-	glBegin(GL_LINES);
-
-	for(index_t e = 0; e < mesh->n_edges(); e++)
-	{
-		glVertex3v(&mesh->gt_vt(mesh->et(e)).x);
-		glVertex3v(&mesh->gt_vt(next(mesh->et(e))).x);
-	}
-
-	glEnd();
-	glPopAttrib();
-}
-
 void che_viewer::draw_normal_field()
 {
 	glPushAttrib(GL_ALL_ATTRIB_BITS);
@@ -235,8 +214,11 @@ void che_viewer::draw_mesh_info()
 
 	char str[256];
 	float color[4] = {1, .75, .25, 1};
-	int h = 2, dh = 16;
+	int h = 16, dh = 16;
 
+	sprintf(str, "%s", mesh->name().c_str());
+	draw_str(str, 32, 32, color, GLUT_BITMAP_HELVETICA_18);
+	
 	sprintf(str, "%9lu n_vertices", mesh->n_vertices());
 	draw_str(str, 10, viewer::window_height() - (h += 18), color, GLUT_BITMAP_9_BY_15);
 

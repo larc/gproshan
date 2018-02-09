@@ -462,12 +462,7 @@ void viewer::set_mesh_materia()
 
 void viewer::draw_scene()
 {
-//	glPushAttrib(GL_ALL_ATTRIB_BITS);
-
-	glEnable(GL_POLYGON_OFFSET_FILL);
-	glPolygonOffset(1., 1.);
 	draw_polygons();
-	glDisable(GL_POLYGON_OFFSET_FILL);
 
 	if(render_wireframe) draw_wireframe();
 	if(render_gradient_field) draw_gradient_field();
@@ -486,15 +481,33 @@ void viewer::draw_scene()
 
 void viewer::draw_polygons()
 {
+	shader_program.enable();
+
+	glEnable(GL_POLYGON_OFFSET_FILL);
+	glPolygonOffset(1., 1.);
+	
 	for(index_t i = 0; i < n_meshes; i++)
 		meshes[i].draw();
+	
+	glDisable(GL_POLYGON_OFFSET_FILL);
 }
 
 void viewer::draw_wireframe()
 {
 	shader_program.disable();
+	glPushAttrib(GL_ALL_ATTRIB_BITS);
+
+	glDisable(GL_LIGHTING);
+	glColor4f(0., 0., 0., 0.4);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	
 	for(index_t i = 0; i < n_meshes; i++)
-		meshes[i].draw_wireframe();
+		meshes[i].draw();
+
+	glPopAttrib();
 }
 
 void viewer::draw_vectors()
