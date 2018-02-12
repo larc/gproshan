@@ -9,35 +9,44 @@
 
 using namespace arma;
 
-// mesh dictionary learning and sparse coding namespace
+/// Mesh dictionary learning and sparse coding namespace
 namespace mdict {
 
 class dictionary
 {
 	protected:
-		che * mesh;
-		size_t n_vertices;
+		che * mesh;								///< input mesh.
+		size_t n_vertices;						///< number of vertices.
 
-		basis * phi_basis;
+		basis * phi_basis;						///< continuous basis.
 
-		distance_t f;	// overlapping factor
-		size_t m;		// number of atoms
-		size_t M; 		// number of patches
-		mat A;			// dictionary continuous matrix
-		mat alpha;		// sparse coding matrix
+		size_t m;								///< number of dictionary atoms.
+		size_t M;								///< number of patches.
+		mat A;									///< dictionary continuous matrix.
+		mat alpha;								///< sparse coding matrix.
+		
+		distance_t f;
+		distance_t s_radio;						///< sampling geodesic radio.
+		vector<index_t> sampling;				///< samples, center of patches if sampling.
+		vector<patch_t> patches;				///< vector of patches.
+		vector<patches_map_t> patches_map;		///< invert index vertex to patches.
 
-		distance_t s_radio;
-		vector<index_t> sampling;
-		vector<patch_t> patches;
-		vector<patches_map_t> patches_map;
-
-		double d_time;
-		bool d_plot;
-
-		static const size_t L;
+		double d_time;							///< time of operations.
+		bool d_plot;							///< plot atoms and basis with gnuplot.
+	
+	public:
+		static const size_t L;					///< sparsity, norm L_0, default 10.
+		static const size_t F;					///< factor of patches's size, default 5 toplesets.
 
 	protected:
-		dictionary(che *const & _mesh, basis *const &_phi_basis, const size_t & _m, const size_t & _M, const distance_t & _f, const bool & _plot);
+		dictionary(	che *const & _mesh, 		///< pointer to input mesh.
+					basis *const &_phi_basis,	///< pointer to continuous basis.
+					const size_t & _m,			///< number of dictionary atoms.
+					const size_t & _M,			///< number of patches.
+					const distance_t & _f,		///< deprecated
+					const bool & _plot			///< flag to plot basis and atomos with gnuplot.
+					);
+
 		virtual ~dictionary();
 
 		virtual void execute() = 0;

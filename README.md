@@ -9,7 +9,7 @@ geometry processing and shape analysis framework
 ## Code dependencies (linux)
 - g++ 6.2 (default)
 - g++ 5.3
-- cuda 8.0
+- cuda 9.1
 - armadillo
 - eigen
 - suitesparse
@@ -19,6 +19,7 @@ geometry processing and shape analysis framework
 - gnuplot
 - libcgal
 
-## Credits
+## Authors
 - Lizeth Joseline Fuentes Pérez
 - Luciano Arnaldo Romero Calla
+
