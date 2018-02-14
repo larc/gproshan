@@ -36,7 +36,7 @@ class dictionary
 	
 	public:
 		static size_t L;					///< sparsity, norm L_0, default 10.
-		static size_t F;					///< factor of patches's size, default 5 toplesets.
+		static size_t T;					///< factor of patches's size, default 5 toplesets.
 
 	protected:
 		dictionary(	che *const & _mesh, 		///< pointer to input mesh.

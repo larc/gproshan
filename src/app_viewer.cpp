@@ -73,7 +73,7 @@ void paint_holes_vertices()
 
 	#pragma omp parallel for
 	for(index_t v = 0; v < viewer::mesh()->n_vertices(); v++)
-		if(v >= nv) viewer::get_color(v) = .25;
+		if(v >= nv) viewer::vcolor(v) = .25;
 }
 
 void viewer_process_delete_non_manifold_vertices()
@@ -156,7 +156,7 @@ void viewer_process_thresold()
 	debug_me(APP_VIEWER)
 
 	for(index_t v = 0; v < viewer::mesh()->n_vertices(); v++)
-		viewer::get_color(v) = viewer::get_color(v) > 0.5 ? 1 : 0.5;
+		viewer::vcolor(v) = viewer::vcolor(v) > 0.5 ? 1 : 0.5;
 }
 
 void viewer_process_wks()
@@ -185,13 +185,13 @@ void viewer_process_wks()
 		for(index_t k = 1; k < K; k++)
 			s(t) += exp(-eigval(k) * t) * eigvec(v, k) * eigvec(v, k);
 
-		viewer::get_color(v) = norm(s);
-		max_s = max(max_s, viewer::get_color(v));
+		viewer::vcolor(v) = norm(s);
+		max_s = max(max_s, viewer::vcolor(v));
 	}
 
 	#pragma omp parallel for
 	for(index_t v = 0; v < viewer::mesh()->n_vertices(); v++)
-		viewer::get_color(v) /= max_s;
+		viewer::vcolor(v) /= max_s;
 }
 
 void viewer_process_hks()
@@ -223,13 +223,13 @@ void viewer_process_hks()
 		for(index_t k = 1; k < K; k++)
 			s(t) += exp(-eigval(k) * t) * eigvec(v, k) * eigvec(v, k);
 
-		viewer::get_color(v) = norm(s);
-		max_s = max(max_s, viewer::get_color(v));
+		viewer::vcolor(v) = norm(s);
+		max_s = max(max_s, viewer::vcolor(v));
 	}
 
 	#pragma omp parallel for
 	for(index_t v = 0; v < viewer::mesh()->n_vertices(); v++)
-		viewer::get_color(v) /= max_s;
+		viewer::vcolor(v) /= max_s;
 }
 
 void viewer_process_gps()
@@ -260,26 +260,53 @@ void viewer_process_gps()
 	#pragma omp parallel for reduction(max: max_s)
 	for(index_t v = 0; v < viewer::mesh()->n_vertices(); v++)
 	{
-		viewer::get_color(v) = norm(eigvec.row(v));
-			max_s = max(max_s, viewer::get_color(v));
+		viewer::vcolor(v) = norm(eigvec.row(v));
+			max_s = max(max_s, viewer::vcolor(v));
 	}
 
 	#pragma omp parallel for
 	for(index_t v = 0; v < viewer::mesh()->n_vertices(); v++)
-		viewer::get_color(v) /= max_s;
+		viewer::vcolor(v) /= max_s;
 }
 
 void viewer_process_mdict_patch()
 {
 	debug_me(APP_VIEWER)
+	
+	che * mesh = viewer::mesh();
 
+	vertex vdir;
 	patch p;
+	distance_t mean_edge = mesh->mean_edge();
 	for(auto & v: viewer::select_vertices)
 	{
-		p.init(viewer::mesh(), v);
-		const vector<index_t> & vp = p;
-		for(auto & u: vp)
-			viewer::get_color(u) = 1;
+		p.init(mesh, v, dictionary::T, dictionary::T * mean_edge);
+		for(auto & u: p.vertices)
+			viewer::vcolor(u) = 1;
+
+		vdir.x = p.T(0, 0);
+		vdir.y = p.T(0, 1);
+		vdir.z = p.T(0, 2);
+		viewer::vectors.push_back(mesh->gt(v));
+		viewer::vectors.push_back(mesh->gt(v) + 3 * mean_edge * vdir);
+		
+		vdir.x = p.T(1, 0);
+		vdir.y = p.T(1, 1);
+		vdir.z = p.T(1, 2);
+		viewer::vectors.push_back(mesh->gt(v));
+		viewer::vectors.push_back(mesh->gt(v) + 3 * mean_edge * vdir);
+		
+		vdir.x = p.T(2, 0);
+		vdir.y = p.T(2, 1);
+		vdir.z = p.T(2, 2);
+		viewer::vectors.push_back(mesh->gt(v));
+		viewer::vectors.push_back(mesh->gt(v) + 3 * mean_edge * vdir);
+		
+		viewer::vectors.push_back(mesh->gt(v));
+		viewer::vectors.push_back(mesh->gt(v) + 3 * mean_edge * mesh->normal(v));
+
+
+		debug(p.vertices.size())
 	}
 }
 
@@ -377,7 +404,7 @@ void viewer_compute_toplesets()
 	for(index_t v = 0; v < viewer::mesh()->n_vertices(); v++)
 	{
 		if(toplesets[v] < k) 
-			viewer::get_color(v) = distance_t(toplesets[v]) / (limites.size() - 1);
+			viewer::vcolor(v) = distance_t(toplesets[v]) / (limites.size() - 1);
 	}
 	debug(k)
 
@@ -397,8 +424,8 @@ void viewer_process_voronoi()
 	#pragma omp parallel for
 	for(index_t i = 0; i < viewer::mesh()->n_vertices(); i++)
 	{
-		viewer::get_color(i) = ptp.clusters[i];
-		viewer::get_color(i) /= viewer::select_vertices.size() + 1;
+		viewer::vcolor(i) = ptp.clusters[i];
+		viewer::vcolor(i) /= viewer::select_vertices.size() + 1;
 	}
 }
 
@@ -597,7 +624,7 @@ void viewer_process_gaussian_curvature()
 
 	#pragma omp parallel for
 	for(index_t v = 0; v < viewer::mesh().n_vertices(); v++)
-		viewer::get_color(v) = f(gv(v));
+		viewer::vcolor(v) = f(gv(v));
 }
 
 void viewer_process_edge_collapse()

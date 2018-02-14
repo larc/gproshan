@@ -7,17 +7,6 @@
 #include <vector>
 #include <armadillo>
 
-#ifndef CGAL_PATCH_DEFS
-	#define CGAL_PATCH_DEFS
-	#define CGAL_EIGEN3_ENABLED
-	#define CGAL_USE_BOOST_PROGRAM_OPTIONS
-	#define CGAL_USE_GMP
-	#define DCGAL_USE_MPFR
-#endif
-
-#include <CGAL/Simple_cartesian.h>
-#include <CGAL/Monge_via_jet_fitting.h>
-
 using namespace std;
 using namespace arma;
 
@@ -29,7 +18,7 @@ class dictionary;
 /// 
 class patch
 {
-	private:
+	public:
 		vector<index_t> vertices;		///< Vertices of the patch.
 		mat T;							///< Transformation matrix.
 		vec x;							///< Center point.
@@ -41,11 +30,26 @@ class patch
 	public:
 		patch() = default;
 		~patch() = default;
-		void init(che * mesh, const index_t & v, index_t * _level = NULL);
-		operator const vector<index_t> & () const;
+		void init(	che * mesh,						///< input mesh.
+					const index_t & v,				///< center vertex of the patch.
+					const size_t & n_toplevels,		///< number of toplevels to jet fitting.
+					const distance_t & radio,		///< euclidean radio in XY of the patch.
+					index_t * _toplevel = NULL		///< aux memory to gather toplevel vertices.
+					);
 
 	private:
-		void clear();
+		/// Gather the vertices needed to compute the jet_fit_directions of the patch.
+		void gather_vertices(	che * mesh,
+								const index_t & v,
+								const size_t & n_toplevels,
+								index_t * toplevel
+								);
+		
+		/// Initialize transformation matrix T and translation vector x, using CGAL jet_fitting.
+		void jet_fit_directions(che * mesh,
+								const index_t & v
+								); 
+
 	friend class dictionary;
 };
 

@@ -173,7 +173,7 @@ void viewer::init_glsl()
 	shader_program.loadFragment("shaders/new_fragment.glsl");
 }
 
-color_t & viewer::get_color(const index_t & i)
+color_t & viewer::vcolor(const index_t & i)
 {
 	return mesh().color(i);
 }

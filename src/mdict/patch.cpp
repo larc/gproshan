@@ -2,54 +2,106 @@
 
 #include "dictionary.h"
 
+#ifndef CGAL_PATCH_DEFS
+	#define CGAL_PATCH_DEFS
+	#define CGAL_EIGEN3_ENABLED
+	#define CGAL_USE_BOOST_PROGRAM_OPTIONS
+	#define CGAL_USE_GMP
+	#define DCGAL_USE_MPFR
+#endif
+
+#include <CGAL/Simple_cartesian.h>
+#include <CGAL/Monge_via_jet_fitting.h>
+
+typedef vertex_t DFT;
+typedef CGAL::Simple_cartesian<DFT> Data_Kernel;
+typedef Data_Kernel::Point_3 DPoint;
+typedef Data_Kernel::Vector_3 DVector;
+typedef CGAL::Monge_via_jet_fitting<Data_Kernel> My_Monge_via_jet_fitting;
+typedef My_Monge_via_jet_fitting::Monge_form My_Monge_form;
+
 /// Mesh dictionary learning and sparse coding namespace
 namespace mdict {
 
-size_t patch::expected_nv = 3 * dictionary::F * (dictionary::F + 1);
+size_t patch::expected_nv = 3 * dictionary::T * (dictionary::T + 1);
 
-void patch::init(che * mesh, const index_t & v, index_t * _level)
+void patch::init(che * mesh, const index_t & v, const size_t & n_toplevels, const distance_t & radio, index_t * _toplevel)
 {
-	index_t * level = _level ? _level : new index_t[mesh->n_vertices()];
+	index_t * toplevel = _toplevel ? _toplevel : new index_t[mesh->n_vertices()];
 	
-	if(vertices.size()) clear();
+	gather_vertices(mesh, v, n_toplevels, toplevel);
+	jet_fit_directions(mesh, v);
 
-	vertices.reserve(expected_nv << 1);
-	memset(level, -1, sizeof(index_t) * mesh->n_vertices());
+	if(_toplevel) delete [] toplevel;
+}	
+
+void patch::gather_vertices(che * mesh, const index_t & v, const size_t & n_toplevels, index_t * toplevel)
+{
+	if(vertices.size()) vertices.clear();
+
+	vertices.reserve(expected_nv << 2);
+	memset(toplevel, -1, sizeof(index_t) * mesh->n_vertices());
 	
 	link_t link;
-	level[v] = 0;
+	toplevel[v] = 0;
 	vertices.push_back(v);
 	for(index_t i = 0; i < vertices.size(); i++)
 	{
 		const index_t & v = vertices[i];
-		if(level[v] == dictionary::F)
+		if(toplevel[v] == n_toplevels)
 			break;
 		
 		mesh->link(link, v);
 		for(const index_t & he: link)
 		{
 			const index_t & u = mesh->vt(he);
-			if(level[u] == NIL)
+			if(toplevel[u] == NIL)
 			{
 				vertices.push_back(u);
-				level[u] = level[v] + 1;
+				toplevel[u] = toplevel[v] + 1;
 			}
 		}
 
 		link.clear();	
-	}
-
-	if(_level) delete [] level;
+	}	
 }
 
-patch::operator const vector<index_t> & () const
+/// Compute the principal directions of the patch, centering in the vertex \f$v\f$.
+/// See: https://doc.cgal.org/latest/Jet_fitting_3/index.html
+void patch::jet_fit_directions(che * mesh, const index_t & v)
 {
-	return vertices;
-}
+	size_t d_fitting = 4;
+	size_t d_monge = 4;
+	size_t min_points = (d_fitting + 1) * (d_fitting + 2) / 2;
+	assert(vertices.size() > min_points);
 
-void patch::clear()
-{
-	vertices.clear();
+	vector<DPoint> in_points;
+	in_points.reserve(vertices.size());
+	for(const index_t & u: vertices)
+		in_points.push_back(DPoint(mesh->gt(u).x, mesh->gt(u).y, mesh->gt(u).z));
+	
+	My_Monge_form monge_form;
+	My_Monge_via_jet_fitting monge_fit;
+	monge_form = monge_fit(in_points.begin(), in_points.end(), d_fitting, d_monge);
+
+	vertex normal = mesh->normal(v);
+	monge_form.comply_wrt_given_normal(DVector(normal.x, normal.y, normal.z));
+	
+	x.set_size(3);
+	x(0) = mesh->gt(v).x;
+	x(1) = mesh->gt(v).y;
+	x(2) = mesh->gt(v).z;
+
+	T.set_size(3, 3);
+	T(0, 0) = monge_form.maximal_principal_direction()[0];
+	T(1, 0) = monge_form.maximal_principal_direction()[1];
+	T(2, 0) = monge_form.maximal_principal_direction()[2];
+	T(0, 1) = monge_form.minimal_principal_direction()[0];
+	T(1, 1) = monge_form.minimal_principal_direction()[1];
+	T(2, 1) = monge_form.minimal_principal_direction()[2];
+	T(0, 2) = monge_form.normal_direction()[0];
+	T(1, 2) = monge_form.normal_direction()[1];
+	T(2, 2) = monge_form.normal_direction()[2];
 }
 
 } // mdict

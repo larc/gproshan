@@ -71,7 +71,7 @@ class viewer
 		static const int & window_height();
 
 		static che_viewer & mesh(); //get current che_viewer mesh
-		static color_t & get_color(const index_t & i);
+		static color_t & vcolor(const index_t & i);
 		static void add_process(const char & key, const string & name, function_t function);
 		static void add_mesh(const vector<che *> & _meshes);
 

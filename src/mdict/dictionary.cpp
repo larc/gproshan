@@ -11,7 +11,7 @@
 namespace mdict {
 
 size_t dictionary::L = 10;
-size_t dictionary::F = 5;
+size_t dictionary::T = 5;
 
 dictionary::dictionary(che *const & _mesh, basis *const & _phi_basis, const size_t & _m, const size_t & _M, const distance_t & _f, const bool & _d_plot):
 					mesh(_mesh), phi_basis(_phi_basis), m(_m), M(_M), f(_f), d_plot(_d_plot)
