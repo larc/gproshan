@@ -31,8 +31,9 @@ void patch::init(che * mesh, const index_t & v, const size_t & n_toplevels, cons
 	
 	gather_vertices(mesh, v, n_toplevels, toplevel);
 	jet_fit_directions(mesh, v);
+	gather_vertices(mesh, v, radio, toplevel);
 
-	if(_toplevel) delete [] toplevel;
+	if(!_toplevel) delete [] toplevel;
 }	
 
 void patch::gather_vertices(che * mesh, const index_t & v, const size_t & n_toplevels, index_t * toplevel)
@@ -58,6 +59,60 @@ void patch::gather_vertices(che * mesh, const index_t & v, const size_t & n_topl
 			if(toplevel[u] == NIL)
 			{
 				vertices.push_back(u);
+				toplevel[u] = toplevel[v] + 1;
+			}
+		}
+
+		link.clear();	
+	}	
+}
+
+void patch::gather_vertices(che * mesh, const index_t & v, const distance_t & radio, index_t * toplevel)
+{
+	assert(x.n_elem == 3 && T.n_rows == 3 && T.n_cols == 3);
+	if(vertices.size()) vertices.clear();
+	
+	vector<index_t> qvertices;
+	qvertices.reserve(expected_nv << 2);
+	
+	vertices.reserve(expected_nv << 2);
+	memset(toplevel, -1, sizeof(index_t) * mesh->n_vertices());
+	
+	size_t count_toplevel = 0;
+	size_t current_toplevel = 0;
+
+	vec p(3);
+	link_t link;
+	toplevel[v] = 0;
+	qvertices.push_back(v);
+	for(index_t i = 0; i < qvertices.size(); i++)
+	{
+		const index_t & v = qvertices[i];
+		p(0) = mesh->gt(v).x;
+		p(1) = mesh->gt(v).y;
+		p(2) = mesh->gt(v).z;
+		p = T.t() * (p - x);
+		p(2) = 0;
+		
+		if(toplevel[v] != current_toplevel)
+		{
+			if(count_toplevel == 0) break;
+			current_toplevel++;
+			count_toplevel = 0;
+		}
+		if(norm(p) <= radio)
+		{
+			vertices.push_back(v);
+			count_toplevel++;
+		}
+		
+		mesh->link(link, v);
+		for(const index_t & he: link)
+		{
+			const index_t & u = mesh->vt(he);
+			if(toplevel[u] == NIL)
+			{
+				qvertices.push_back(u);
 				toplevel[u] = toplevel[v] + 1;
 			}
 		}

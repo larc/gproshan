@@ -273,14 +273,17 @@ void viewer_process_mdict_patch()
 {
 	debug_me(APP_VIEWER)
 	
+	TIC(load_time)
 	che * mesh = viewer::mesh();
+	index_t * toplevel = new index_t[mesh->n_vertices()];
+	size_t avg_nvp = 0;
 
 	vertex vdir;
 	patch p;
 	distance_t mean_edge = mesh->mean_edge();
 	for(auto & v: viewer::select_vertices)
 	{
-		p.init(mesh, v, dictionary::T, dictionary::T * mean_edge);
+		p.init(mesh, v, dictionary::T, dictionary::T * mean_edge, toplevel);
 		for(auto & u: p.vertices)
 			viewer::vcolor(u) = 1;
 
@@ -305,9 +308,15 @@ void viewer_process_mdict_patch()
 		viewer::vectors.push_back(mesh->gt(v));
 		viewer::vectors.push_back(mesh->gt(v) + 3 * mean_edge * mesh->normal(v));
 
-
-		debug(p.vertices.size())
+		avg_nvp += p.vertices.size();
 	}
+
+	avg_nvp /= viewer::select_vertices.size();
+	debug(avg_nvp);
+	
+	delete [] toplevel;
+	TOC(load_time)
+	debug(load_time)
 }
 
 void viewer_process_denoising()

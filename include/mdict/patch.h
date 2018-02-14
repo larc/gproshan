@@ -45,10 +45,18 @@ class patch
 								index_t * toplevel
 								);
 		
+		/// Gather the vertices filter by radio in the local coordinates require initialize T and x.
+		void gather_vertices(	che * mesh,
+								const index_t & v,
+								const distance_t & radio,
+								index_t * toplevel
+								);
+		
 		/// Initialize transformation matrix T and translation vector x, using CGAL jet_fitting.
 		void jet_fit_directions(che * mesh,
 								const index_t & v
-								); 
+								);
+		
 
 	friend class dictionary;
 };
