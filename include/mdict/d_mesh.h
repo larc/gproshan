@@ -7,10 +7,13 @@
 
 #include <armadillo>
 
-#define CGAL_EIGEN3_ENABLED
-#define CGAL_USE_BOOST_PROGRAM_OPTIONS
-#define CGAL_USE_GMP
-#define DCGAL_USE_MPFR
+#ifndef CGAL_PATCH_DEFS
+	#define CGAL_PATCH_DEFS
+	#define CGAL_EIGEN3_ENABLED
+	#define CGAL_USE_BOOST_PROGRAM_OPTIONS
+	#define CGAL_USE_GMP
+	#define DCGAL_USE_MPFR
+#endif
 
 #include <CGAL/Simple_cartesian.h>
 #include <CGAL/Monge_via_jet_fitting.h>
@@ -36,7 +39,7 @@ struct patch_t;
 
 void jet_fit_directions(patch_t & rp);
 void PCA(patch_t & rp);
-void principal_curvatures( patch_t & rp, che * mesh);
+void principal_curvatures(patch_t & rp, che * mesh);
 
 struct patch_t
 {

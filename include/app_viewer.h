@@ -19,6 +19,7 @@
 #include "mdict/super_resolution.h"
 #include "mdict/inpainting.h"
 #include "mdict/d_basis_dct.h"
+#include "mdict/patch.h"
 
 void viewer_process_fairing_taubin();
 void viewer_process_fairing_spectral();
@@ -32,6 +33,7 @@ void viewer_process_farthest_point_sampling_radio();
 void viewer_compute_toplesets();
 void viewer_process_voronoi();
 
+void viewer_process_mdict_patch();
 void viewer_process_denoising();
 void viewer_process_super_resolution();
 void viewer_process_inpaiting();

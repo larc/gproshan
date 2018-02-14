@@ -35,8 +35,8 @@ class dictionary
 		bool d_plot;							///< plot atoms and basis with gnuplot.
 	
 	public:
-		static const size_t L;					///< sparsity, norm L_0, default 10.
-		static const size_t F;					///< factor of patches's size, default 5 toplesets.
+		static size_t L;					///< sparsity, norm L_0, default 10.
+		static size_t F;					///< factor of patches's size, default 5 toplesets.
 
 	protected:
 		dictionary(	che *const & _mesh, 		///< pointer to input mesh.
@@ -55,6 +55,7 @@ class dictionary
 		void sparse_coding();
 		void init_sampling();
 		void init_patches(const bool & reset = 1, const size_t & threshold = NIL);
+		void init_new_patches();
 		void mesh_reconstruction();
 
 		index_t sample(const index_t & s);

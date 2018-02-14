@@ -345,56 +345,67 @@ bool che::is_manifold() const
 
 const index_t & che::vt(const index_t & he) const
 {
+	assert(he < n_half_edges_);
 	return VT[he];
 }
 
 const vertex & che::gt(const index_t & v) const
 {
+	assert(v < n_vertices_);
 	return GT[v];
 }
 
 const vertex & che::gt_vt(const index_t & he) const
 {
+	assert(he < n_half_edges_);
 	return GT[VT[he]];
 }
 
 const vertex & che::gt_vt_next_evt(const index_t & v) const
 {
+	assert(v < n_vertices_);
 	return GT[VT[next(EVT[v])]];
 }
 
 const vertex & che::gt_e(const index_t & e, const bool & op)
 {
+	assert(e < n_edges_);
 	return op ? GT[VT[next(ET[e])]] : GT[VT[ET[e]]];
 }
 
 const index_t & che::vt_e(const index_t & e, const bool & op)
 {
+	assert(e < n_edges_);
 	return op ? VT[next(ET[e])] : VT[ET[e]];
 }
 
 const index_t & che::et(const index_t & e) const
 {
+	assert(e < n_edges_);
 	return ET[e];
 }
 
 const index_t & che::ot_et(const index_t & e) const
 {
+	assert(e < n_edges_);
 	return OT[ET[e]];
 }
 
 const index_t & che::ot(const index_t & he) const
 {
+	assert(he < n_half_edges_);
 	return OT[he];
 }
 
 const index_t & che::ot_evt(const index_t & v) const
 {
+	assert(v < n_vertices_);
 	return OT[EVT[v]];
 }
 
 const index_t & che::evt(const index_t & v) const
 {
+	assert(v < n_vertices_);
 	return EVT[v];
 }
 

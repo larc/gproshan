@@ -31,6 +31,7 @@ int viewer_main(int nargs, char ** args)
 	viewer::add_process('P', "Rings propagations", viewer_compute_toplesets);
 
 	viewer::sub_menus.push_back("Dictionary Learning");
+	viewer::add_process('.', "Mark patch", viewer_process_mdict_patch);
 	viewer::add_process('D', "Denoising", viewer_process_denoising);
 	viewer::add_process('R', "Super Resolution", viewer_process_super_resolution);
 	viewer::add_process('I', "Inpaiting", viewer_process_inpaiting);
@@ -266,6 +267,20 @@ void viewer_process_gps()
 	#pragma omp parallel for
 	for(index_t v = 0; v < viewer::mesh()->n_vertices(); v++)
 		viewer::get_color(v) /= max_s;
+}
+
+void viewer_process_mdict_patch()
+{
+	debug_me(APP_VIEWER)
+
+	patch p;
+	for(auto & v: viewer::select_vertices)
+	{
+		p.init(viewer::mesh(), v);
+		const vector<index_t> & vp = p;
+		for(auto & u: vp)
+			viewer::get_color(u) = 1;
+	}
 }
 
 void viewer_process_denoising()
