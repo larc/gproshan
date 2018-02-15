@@ -321,6 +321,7 @@ vec non_local_means_vertex(mat & alpha, const index_t & v, vector<patch> & patch
 	return n_vec;
 }
 
+/// DEPRECATED
 void mesh_reconstruction(che * mesh, size_t M, vector<patch_t> & patches, vector<patches_map_t> & patches_map, mat & A, mat & alpha, const index_t & v_i)
 {
 	mat V(3, mesh->n_vertices(), fill::zeros);
@@ -370,6 +371,7 @@ void mesh_reconstruction(che * mesh, size_t M, vector<patch_t> & patches, vector
 	mesh->set_vertices(new_vertices + v_i, mesh->n_vertices() - v_i, v_i);
 }
 
+/// DEPRECATED
 vec non_local_means_vertex(mat & alpha, const index_t & v, vector<patch_t> & patches, vector<patches_map_t> & patches_map, const distance_t & h)
 {
 	vec n_vec(3, fill::zeros);

@@ -22,12 +22,13 @@ void OMP_all_patches_ksvt(mat & alpha, mat & A, vector<patch> & patches, size_t 
 
 void KSVDT(mat & A, vector<patch> & patches, size_t M, size_t L);
 
-// DEPRECATED
-
+/// DEPRECATED
 void OMP_patch(mat & alpha, const mat & A, const index_t & i, patch_t & p, const size_t & L);
 
+/// DEPRECATED
 void OMP_all_patches_ksvt(mat & alpha, mat & A, vector<patch_t> & patches, size_t M, size_t L);
 
+/// DEPRECATED
 void KSVDT(mat & A, vector<patch_t> & patches, size_t M, size_t L);
 
 } // mdict

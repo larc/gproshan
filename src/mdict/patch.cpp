@@ -23,7 +23,7 @@ typedef My_Monge_via_jet_fitting::Monge_form My_Monge_form;
 /// Mesh dictionary learning and sparse coding namespace
 namespace mdict {
 
-size_t patch::expected_nv = 3 * dictionary::T * (dictionary::T + 1);
+size_t patch::expected_nv = 6 * dictionary::T * (dictionary::T + 1);
 
 void patch::init(che * mesh, const index_t & v, const size_t & n_toplevels, const distance_t & radio, index_t * _toplevel)
 {
@@ -78,7 +78,7 @@ void patch::gather_vertices(che * mesh, const index_t & v, const size_t & n_topl
 {
 	if(vertices.size()) vertices.clear();
 
-	vertices.reserve(expected_nv << 2);
+	vertices.reserve(expected_nv);
 	memset(toplevel, -1, sizeof(index_t) * mesh->n_vertices());
 	
 	link_t link;
@@ -111,9 +111,9 @@ void patch::gather_vertices(che * mesh, const index_t & v, const distance_t & ra
 	if(vertices.size()) vertices.clear();
 	
 	vector<index_t> qvertices;
-	qvertices.reserve(expected_nv << 2);
+	qvertices.reserve(expected_nv);
 	
-	vertices.reserve(expected_nv << 2);
+	vertices.reserve(expected_nv);
 	memset(toplevel, -1, sizeof(index_t) * mesh->n_vertices());
 	
 	size_t count_toplevel = 0;
@@ -132,6 +132,7 @@ void patch::gather_vertices(che * mesh, const index_t & v, const distance_t & ra
 		p = T.t() * (p - x);
 		p(2) = 0;
 		
+		if(vertices.size() > expected_nv) break;
 		if(toplevel[v] != current_toplevel)
 		{
 			if(count_toplevel == 0) break;

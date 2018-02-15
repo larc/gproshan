@@ -68,7 +68,7 @@ void dictionary::init_sampling()
 	if(M == 0)
 	{
 		M = mesh->n_vertices();
-		phi_basis->radio = 3 * mesh->mean_edge();
+		phi_basis->radio = T * mesh->mean_edge();
 	}
 	else
 	{
@@ -76,9 +76,8 @@ void dictionary::init_sampling()
 		assert(load_sampling(sampling, phi_basis->radio, mesh, M));
 	}
 
-	// overlapping by factor "f"
 	s_radio = phi_basis->radio;
-	phi_basis->radio *= f;
+	//phi_basis->radio *= f;
 }
 
 void dictionary::init_patches(const bool & reset, const size_t & threshold)
