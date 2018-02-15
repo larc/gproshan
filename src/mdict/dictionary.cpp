@@ -139,19 +139,6 @@ void dictionary::init_patches(const bool & reset, const size_t & threshold)
 	}
 }
 
-void dictionary::init_new_patches()
-{
-	#pragma omp parallel
-	{
-		debug_me(PPP)
-		#pragma omp for 
-		for(index_t s = 0; s < M; s++)
-		{
-			index_t v = sample(s);
-		}
-	}
-}
-
 void dictionary::mesh_reconstruction()
 {
 	debug_me(MDICT)

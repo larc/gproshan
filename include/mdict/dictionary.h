@@ -57,7 +57,6 @@ class dictionary
 		void sparse_coding();
 		void init_sampling();
 		void init_patches(const bool & reset = 1, const size_t & threshold = NIL);
-		void init_new_patches();
 		void mesh_reconstruction();
 
 		index_t sample(const index_t & s);
