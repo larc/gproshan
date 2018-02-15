@@ -2,21 +2,11 @@
 #define D_MESH_H
 
 #include "include.h"
-#include "che_off.h"
+#include "che.h"
+#include "patch.h"
 #include "geodesics.h"
 
 #include <armadillo>
-
-#ifndef CGAL_PATCH_DEFS
-	#define CGAL_PATCH_DEFS
-	#define CGAL_EIGEN3_ENABLED
-	#define CGAL_USE_BOOST_PROGRAM_OPTIONS
-	#define CGAL_USE_GMP
-	#define DCGAL_USE_MPFR
-#endif
-
-#include <CGAL/Simple_cartesian.h>
-#include <CGAL/Monge_via_jet_fitting.h>
 
 using namespace arma;
 
@@ -27,13 +17,6 @@ typedef void * params_t[];
 typedef void (* phi_function_t) (mat &, mat &, params_t);
 
 typedef map< index_t, index_t > patches_map_t;
-
-
-typedef vertex_t DFT;
-typedef CGAL::Simple_cartesian<DFT> Data_Kernel;
-typedef Data_Kernel::Point_3 DPoint;
-typedef CGAL::Monge_via_jet_fitting<Data_Kernel> My_Monge_via_jet_fitting;
-typedef My_Monge_via_jet_fitting::Monge_form My_Monge_form;
 
 struct patch_t;
 
@@ -127,8 +110,14 @@ void save_patches(vector<patch_t> patches, size_t M);
 
 void partial_mesh_reconstruction(size_t old_n_vertices, che * mesh, size_t M, vector<patch_t> & patches, vector<patches_map_t> & patches_map, mat & A, mat & alpha);
 
+void mesh_reconstruction(che * mesh, size_t M, vector<patch> & patches, vector<vpatches_t> & patches_map, mat & A, mat & alpha, const index_t & v_i = 0);
+
+vec non_local_means_vertex(mat & alpha, const index_t & v, vector<patch> & patches, vector<vpatches_t> & patches_map, const distance_t & h);
+
+/// DEPRECATED
 void mesh_reconstruction(che * mesh, size_t M, vector<patch_t> & patches, vector<patches_map_t> & patches_map, mat & A, mat & alpha, const index_t & v_i = 0);
 
+/// DEPRECATED
 vec non_local_means_vertex(mat & alpha, const index_t & v, vector<patch_t> & patches, vector<patches_map_t> & patches_map, const distance_t & h);
 
 vec simple_means_vertex(mat & alpha, const index_t & v, vector<patch_t> & patches, vector<patches_map_t> & patches_map, const distance_t & h);

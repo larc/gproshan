@@ -36,6 +36,44 @@ void patch::init(che * mesh, const index_t & v, const size_t & n_toplevels, cons
 	if(!_toplevel) delete [] toplevel;
 }	
 
+// xyz = E.t * (xyz - avg)
+void patch::transform()
+{
+	xyz.each_col() -= x;
+	xyz = T.t() * xyz;
+}
+
+void patch::itransform()
+{
+	xyz = T * xyz;
+	xyz.each_col() += x;
+}
+
+void patch::reset_xyz(che * mesh, vector<vpatches_t> & vpatches, const index_t & p, const index_t & threshold)
+{
+	size_t m = vertices.size();
+	if(threshold != NIL)
+	{
+		m = 0;
+		for(index_t i = 0; i < vertices.size(); i++)
+			if(vertices[i] < threshold) m++;
+	}
+
+	xyz.set_size(3, m);
+	for(index_t j = 0, i = 0; i < vertices.size(); i++)
+	{
+		if(vertices[i] < threshold)
+		{
+			const vertex & v = mesh->gt(vertices[i]);
+			xyz(0, j) = v.x;
+			xyz(1, j) = v.y;
+			xyz(2, j) = v.z;
+
+			vpatches[vertices[i]].push_back({p, j++});
+		}
+	}
+}
+
 void patch::gather_vertices(che * mesh, const index_t & v, const size_t & n_toplevels, index_t * toplevel)
 {
 	if(vertices.size()) vertices.clear();

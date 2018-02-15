@@ -15,6 +15,8 @@ namespace mdict {
 
 class dictionary;
 
+typedef vector<pair<index_t, index_t> > vpatches_t;
+
 /// 
 class patch
 {
@@ -23,6 +25,7 @@ class patch
 		mat T;							///< Transformation matrix.
 		vec x;							///< Center point.
 		mat xyz;						///< Matrix of points.
+		mat phi;
 	
 	public:
 		static size_t expected_nv;		///< Expected number of patch vertices.
@@ -30,12 +33,23 @@ class patch
 	public:
 		patch() = default;
 		~patch() = default;
+		
 		void init(	che * mesh,						///< input mesh.
 					const index_t & v,				///< center vertex of the patch.
 					const size_t & n_toplevels,		///< number of toplevels to jet fitting.
 					const distance_t & radio,		///< euclidean radio in XY of the patch.
 					index_t * _toplevel = NULL		///< aux memory to gather toplevel vertices.
 					);
+
+		void transform();
+		
+		void itransform();
+		
+		void reset_xyz(	che * mesh,
+						vector<vpatches_t> & vpatches,
+						const index_t & p,
+						const index_t & threshold = NIL
+						);
 
 	private:
 		/// Gather the vertices needed to compute the jet_fit_directions of the patch.

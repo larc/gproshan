@@ -84,29 +84,24 @@ void dictionary::init_sampling()
 void dictionary::init_patches(const bool & reset, const size_t & threshold)
 {
 	debug_me(MDICT)
-	init_new_patches();
 
 	if(reset)
 	{
-		patch_t::del_index = true;
-
 		patches.resize(M);
 		patches_map.resize(n_vertices);
 
-		patch_t::del_index = false;
-
-		#pragma omp parallel for
-		for(index_t s = 0; s < M; s++)
+		#pragma omp parallel
 		{
-			index_t v = sample(s);
-			patch_t & p = patches[s];
+			index_t * toplevel = new index_t[n_vertices];
 
-			geodesics fm(mesh, {v}, geodesics::FM, NIL, phi_basis->radio);
+			#pragma omp for 
+			for(index_t s = 0; s < M; s++)
+			{
+				index_t v = sample(s);
+				patches[s].init(mesh, v, dictionary::T, phi_basis->radio);
+			}
 
-			p.n = fm.n_sorted_index();
-
-			p.indexes = new index_t[p.n];
-			fm.copy_sorted_index(p.indexes, p.n);
+			delete [] toplevel;
 		}
 
 		#ifndef NDEBUG
@@ -116,13 +111,13 @@ void dictionary::init_patches(const bool & reset, const size_t & threshold)
 
 			#pragma omp parallel for reduction(+: patch_avg_size)
 			for(index_t s = 0; s < M; s++)
-				patch_avg_size += patches[s].n;
+				patch_avg_size += patches[s].vertices.size();
 			#pragma omp parallel for reduction(min: patch_min_size)
 			for(index_t s = 0; s < M; s++)
-				patch_min_size = min(patches[s].n, patch_min_size);
+				patch_min_size = min(patches[s].vertices.size(), patch_min_size);
 			#pragma omp parallel for reduction(max: patch_max_size)
 			for(index_t s = 0; s < M; s++)
-				patch_max_size = max(patches[s].n, patch_max_size);
+				patch_max_size = max(patches[s].vertices.size(), patch_max_size);
 
 			patch_avg_size /= M;
 			debug(patch_avg_size)
@@ -132,24 +127,16 @@ void dictionary::init_patches(const bool & reset, const size_t & threshold)
 	}
 
 	for(index_t s = 0; s < M; s++)
-	{
-		patch_t & p = patches[s];
-		p.reset_xyz(mesh, patches_map, s, threshold);
-	}
+		patches[s].reset_xyz(mesh, patches_map, s, threshold);
 
 	#pragma omp parallel for
 	for(index_t s = 0; s < M; s++)
 	{
-		patch_t & p = patches[s];
+		patch & p = patches[s];
 
-		if(p.valid_xyz())
-		{
-			jet_fit_directions(p);
-
-			p.transform();
-			p.phi.set_size(p.xyz.n_cols, phi_basis->dim);
-			phi_basis->discrete(p.phi, p.xyz);
-		}
+		p.transform();
+		p.phi.set_size(p.xyz.n_cols, phi_basis->dim);
+		phi_basis->discrete(p.phi, p.xyz);
 	}
 }
 

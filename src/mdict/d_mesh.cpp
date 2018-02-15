@@ -1,5 +1,22 @@
 #include "d_mesh.h"
 
+#ifndef CGAL_PATCH_DEFS
+	#define CGAL_PATCH_DEFS
+	#define CGAL_EIGEN3_ENABLED
+	#define CGAL_USE_BOOST_PROGRAM_OPTIONS
+	#define CGAL_USE_GMP
+	#define DCGAL_USE_MPFR
+#endif
+
+#include <CGAL/Simple_cartesian.h>
+#include <CGAL/Monge_via_jet_fitting.h>
+
+typedef vertex_t DFT;
+typedef CGAL::Simple_cartesian<DFT> Data_Kernel;
+typedef Data_Kernel::Point_3 DPoint;
+typedef CGAL::Monge_via_jet_fitting<Data_Kernel> My_Monge_via_jet_fitting;
+typedef My_Monge_via_jet_fitting::Monge_form My_Monge_form;
+
 // mesh dictionary learning and sparse coding namespace
 namespace mdict {
 
@@ -146,7 +163,7 @@ void principal_curvatures( patch_t & rp, che * mesh)
 	rp.E.col(1) /= norm(rp.E.col(1));
 }
 
-void save_patches_coordinates( vector<patch_t> & patches, vector< pair<index_t,index_t> > * lpatches, size_t NV)
+void save_patches_coordinates(vector<patch_t> & patches, vector< pair<index_t,index_t> > * lpatches, size_t NV)
 {
 	string file = "test-patches_coordinates";
 	ofstream os(PATH_TEST + file );
@@ -218,6 +235,90 @@ void partial_mesh_reconstruction(size_t old_n_vertices, che * mesh, size_t M, ve
 		mesh->get_vertex(v) = *((vertex *) V.memptr());
 	}
 
+}
+
+void mesh_reconstruction(che * mesh, size_t M, vector<patch> & patches, vector<vpatches_t> & patches_map, mat & A, mat & alpha, const index_t & v_i)
+{
+	mat V(3, mesh->n_vertices(), fill::zeros);
+
+	#pragma omp parallel for
+	for(index_t p = 0; p < M; p++)
+	{
+		patch & rp = patches[p];
+
+		if(rp.phi.n_rows)
+		{
+			vec x = rp.phi * A * alpha.col(p);
+
+			rp.xyz.row(2) = x.t();
+			rp.itransform();
+		}
+	}
+
+	distance_t h = 0.2;
+
+	#pragma omp parallel for
+	for(index_t v = v_i; v < mesh->n_vertices(); v++)
+	{
+		if(patches_map[v].size())
+			V.col(v) = non_local_means_vertex(alpha, v, patches, patches_map, h);
+		else
+		{
+			V(0, v) = mesh->gt(v).x;
+			V(1, v) = mesh->gt(v).y;
+			V(2, v) = mesh->gt(v).z;
+		}
+	}
+	// ------------------------------------------------------------------------
+
+	vertex * new_vertices = (vertex *) V.memptr();
+
+	distance_t error = 0;
+	#pragma omp parallel for reduction(+: error)
+	for(index_t v = v_i; v < mesh->n_vertices(); v++)
+		error += *(new_vertices[v] - mesh->get_vertex(v));
+
+	debug(mesh->n_vertices())
+	error /= mesh->n_vertices();
+	debug(error)
+
+	debug(v_i)
+	mesh->set_vertices(new_vertices + v_i, mesh->n_vertices() - v_i, v_i);
+}
+
+vec non_local_means_vertex(mat & alpha, const index_t & v, vector<patch> & patches, vector<vpatches_t> & patches_map, const distance_t & h)
+{
+	vec n_vec(3, fill::zeros);
+	area_t sum = 0;
+
+	distance_t * w = new distance_t[patches_map[v].size()];
+
+	index_t i = 0;
+	distance_t d = 0;
+
+	for(auto p: patches_map[v])
+	{
+		d = 0;
+		for(auto q: patches_map[v])
+			d += norm(alpha.col(p.first) - alpha.col(q.first));
+		d /= patches_map[v].size();
+
+		w[i] = exp(- d * d / h);
+		sum += w[i];
+		i++;
+	}
+
+	i = 0;
+	for(auto p: patches_map[v])
+	{
+		w[i] /= sum;
+		n_vec += w[i] * patches[p.first].xyz.col(p.second);
+		i++;
+	}
+
+	delete [] w;
+
+	return n_vec;
 }
 
 void mesh_reconstruction(che * mesh, size_t M, vector<patch_t> & patches, vector<patches_map_t> & patches_map, mat & A, mat & alpha, const index_t & v_i)
