@@ -1,5 +1,5 @@
 # gproshan
-###geometry processing and shape analysis framework
+### geometry processing and shape analysis framework
 
 ## Description
 This framework include some algorithms of geometry processing and shape analysis as part of our graduate research.
