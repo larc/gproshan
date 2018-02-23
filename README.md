@@ -1,5 +1,5 @@
 # gproshan
-####geometry processing and shape analysis framework
+###geometry processing and shape analysis framework
 
 ## Description
 This framework include some algorithms of geometry processing and shape analysis as part of our graduate research.
@@ -13,7 +13,7 @@ finally execute:
 
 	./gproshan [input mesh paths]
 
-![](/media/luciano/Larc/Repositories/GeometryProcessing/gproshan/gproshan.png) 
+![](gproshan.png) 
 
 ## Dependencies (linux)
 - g++ 7.2 (default)
