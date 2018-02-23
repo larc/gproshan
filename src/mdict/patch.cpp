@@ -23,7 +23,7 @@ typedef My_Monge_via_jet_fitting::Monge_form My_Monge_form;
 /// Mesh dictionary learning and sparse coding namespace
 namespace mdict {
 
-size_t patch::expected_nv = 6 * dictionary::T * (dictionary::T + 1);
+size_t patch::expected_nv = 3 * dictionary::T * (dictionary::T + 1);
 
 void patch::init(che * mesh, const index_t & v, const size_t & n_toplevels, const distance_t & radio, index_t * _toplevel)
 {
@@ -164,8 +164,8 @@ void patch::gather_vertices(che * mesh, const index_t & v, const distance_t & ra
 /// See: https://doc.cgal.org/latest/Jet_fitting_3/index.html
 void patch::jet_fit_directions(che * mesh, const index_t & v)
 {
-	size_t d_fitting = 4;
-	size_t d_monge = 4;
+	size_t d_fitting = 2;
+	size_t d_monge = 2;
 	size_t min_points = (d_fitting + 1) * (d_fitting + 2) / 2;
 	assert(vertices.size() > min_points);
 

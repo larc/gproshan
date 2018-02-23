@@ -20,8 +20,11 @@ void OMP(vec & alpha, vec & x, mat & D, size_t L)
 	uvec selected_atoms(L, fill::zeros);
 	vec aa;
 
+	double sigma = 0.001;
+	double threshold = norm(x) * sigma;
+
 	vec r = x;
-	for(index_t l = 0; l < L; l++)
+	for(index_t l = 0; norm(r) > threshold && l < L; l++)
 	{
 		vec Dtr = abs(D.t() * r);
 
