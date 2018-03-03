@@ -80,7 +80,7 @@ void dictionary::init_sampling()
 	//phi_basis->radio *= f;
 }
 
-void dictionary::init_patches(const bool & reset, const size_t & threshold)
+void dictionary::init_patches(const bool & reset, const fmask_t & mask)
 {
 	debug_me(MDICT)
 
@@ -126,7 +126,7 @@ void dictionary::init_patches(const bool & reset, const size_t & threshold)
 	}
 
 	for(index_t s = 0; s < M; s++)
-		patches[s].reset_xyz(mesh, patches_map, s, threshold);
+		patches[s].reset_xyz(mesh, patches_map, s, mask);
 
 	#pragma omp parallel for
 	for(index_t s = 0; s < M; s++)

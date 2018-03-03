@@ -49,20 +49,20 @@ void patch::itransform()
 	xyz.each_col() += x;
 }
 
-void patch::reset_xyz(che * mesh, vector<vpatches_t> & vpatches, const index_t & p, const index_t & threshold)
+void patch::reset_xyz(che * mesh, vector<vpatches_t> & vpatches, const index_t & p, const fmask_t & mask)
 {
 	size_t m = vertices.size();
-	if(threshold != NIL)
+	if(mask)
 	{
 		m = 0;
 		for(index_t i = 0; i < vertices.size(); i++)
-			if(vertices[i] < threshold) m++;
+			if(mask(vertices[i])) m++;
 	}
 
 	xyz.set_size(3, m);
 	for(index_t j = 0, i = 0; i < vertices.size(); i++)
 	{
-		if(vertices[i] < threshold)
+		if(!mask || mask(vertices[i]))
 		{
 			const vertex & v = mesh->gt(vertices[i]);
 			xyz(0, j) = v.x;

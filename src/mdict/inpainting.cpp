@@ -23,7 +23,7 @@ void inpainting::execute()
 	debug(d_time)
 
 	// initializing patches with threshold
-	TIC(d_time) init_patches(1, threshold); TOC(d_time)
+	TIC(d_time) init_patches(1, [&threshold](const index_t & i) -> bool { return i < threshold; }); TOC(d_time)
 	debug(d_time)
 
 	// learning only from valid patches

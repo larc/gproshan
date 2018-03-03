@@ -15,6 +15,7 @@ namespace mdict {
 
 class dictionary;
 
+typedef function<bool(const index_t &)> fmask_t;
 typedef vector<pair<index_t, index_t> > vpatches_t;
 
 /// 
@@ -48,7 +49,7 @@ class patch
 		void reset_xyz(	che * mesh,
 						vector<vpatches_t> & vpatches,
 						const index_t & p,
-						const index_t & threshold = NIL
+						const fmask_t & mask = nullptr
 						);
 
 	private:

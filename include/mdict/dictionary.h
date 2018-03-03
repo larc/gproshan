@@ -38,7 +38,7 @@ class dictionary
 	
 	public:
 		static size_t L;					///< sparsity, norm L_0, default 10.
-		static size_t T;					///< factor of patches's size, default 5 toplesets.
+		static size_t T;					///< factor of patches' size, default 5 toplesets.
 
 	protected:
 		dictionary(	che *const & _mesh, 		///< pointer to input mesh.
@@ -46,7 +46,7 @@ class dictionary
 					const size_t & _m,			///< number of dictionary atoms.
 					const size_t & _M,			///< number of patches.
 					const distance_t & _f,		///< deprecated
-					const bool & _plot			///< flag to plot basis and atomos with gnuplot.
+					const bool & _plot			///< flag to plot basis and atoms with gnuplot.
 					);
 
 		virtual ~dictionary();
@@ -56,7 +56,10 @@ class dictionary
 		void learning();
 		void sparse_coding();
 		void init_sampling();
-		void init_patches(const bool & reset = 1, const size_t & threshold = NIL);
+		void init_patches(	const bool & reset = 1,
+							const fmask_t & mask = nullptr
+							);
+
 		void mesh_reconstruction();
 
 		index_t sample(const index_t & s);
