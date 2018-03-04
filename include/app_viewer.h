@@ -39,6 +39,7 @@ void viewer_process_super_resolution();
 void viewer_process_inpaiting();
 void viewer_process_iterative_inpaiting();
 
+void viewer_process_functional_maps();
 void viewer_process_gps();
 void viewer_process_hks();
 void viewer_process_wks();

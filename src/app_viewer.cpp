@@ -34,13 +34,14 @@ int viewer_main(int nargs, char ** args)
 	viewer::add_process('.', "Mark patch", viewer_process_mdict_patch);
 	viewer::add_process('D', "Denoising", viewer_process_denoising);
 	viewer::add_process('R', "Super Resolution", viewer_process_super_resolution);
-	viewer::add_process('I', "Inpaiting", viewer_process_inpaiting);
-	viewer::add_process('A', "IT Inpaiting", viewer_process_iterative_inpaiting);
+	viewer::add_process('I', "Inpainting", viewer_process_inpaiting);
+	viewer::add_process('A', "IT Inpainting", viewer_process_iterative_inpaiting);
 
 	viewer::sub_menus.push_back("Signatures");
 	viewer::add_process('s', "GPS (norm)", viewer_process_gps);
 	viewer::add_process('H', "HKS (norm)", viewer_process_hks);
 	viewer::add_process('W', "WKS (norm)", viewer_process_wks);
+	viewer::add_process('X', "WKS (norm)", viewer_process_functional_maps);
 
 	viewer::sub_menus.push_back("Poisson");
 	viewer::add_process('o', "Membrane surface", viewer_process_poisson_laplacian_1);
@@ -50,6 +51,7 @@ int viewer_main(int nargs, char ** args)
 	viewer::sub_menus.push_back("Others");
 	viewer::add_process('t', "Threshold", viewer_process_thresold);
 	viewer::add_process('N', "Noise", viewer_process_noise);
+	viewer::add_process('N', "Black Noise", viewer_process_noise);
 	viewer::add_process('m', "Multiplicate Vertices", viewer_process_multiplicate_vertices);
 	viewer::add_process('h', "Fill Holes", viewer_process_fill_holes);
 	viewer::add_process('-', "Make holes", viewer_process_delete_vertices);
@@ -146,6 +148,7 @@ void viewer_process_noise()
 		distance_t r = distance_t( rand() % 1000 ) / 200000;
 		int p = rand() % 5;
 		viewer::mesh()->get_vertex(v) += (!p) * r * viewer::mesh()->normal(v);
+		if(!p) viewer::vcolor(v) = INFINITY;
 	}
 
 	viewer::mesh().update_normals();
@@ -157,6 +160,35 @@ void viewer_process_thresold()
 
 	for(index_t v = 0; v < viewer::mesh()->n_vertices(); v++)
 		viewer::vcolor(v) = viewer::vcolor(v) > 0.5 ? 1 : 0.5;
+}
+
+void viewer_process_functional_maps()
+{
+	size_t K = 20;
+
+	sp_mat L, A;
+
+	TIC(load_time) laplacian(viewer::mesh(), L, A); TOC(load_time)
+	debug(load_time)
+
+	vec eigval;
+	mat eigvec;
+
+	TIC(load_time) K = eigs_laplacian(eigval, eigvec, viewer::mesh(), L, K); TOC(load_time)
+	debug(load_time)
+	
+	for(index_t k = 0; k < N_MESHES; k++)
+	{
+		if(k) viewer::add_mesh({new che_off(viewer::mesh()->filename())});
+		viewer::current = k;
+
+		eigvec.col(k) -= eigvec.col(k).min();
+		eigvec.col(k) /= eigvec.col(k).max();
+	
+		#pragma omp parallel for
+		for(index_t v = 0; v < viewer::mesh()->n_vertices(); v++)
+			viewer::vcolor(v) = eigvec(v, k);
+	}
 }
 
 void viewer_process_wks()

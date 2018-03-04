@@ -11,7 +11,7 @@
 #include "shader.h"
 #include "che_viewer.h"
 
-#define N_MESHES 10
+#define N_MESHES 12
 
 typedef void (*function_t) (void);
 
@@ -130,6 +130,7 @@ class viewer
 		static void pick_vertex(int x, int y);
 
 		static int window_size[2];
+		static int m_window_size[N_MESHES][2];
 
 		static camera cam;
 		// keeps track of view state

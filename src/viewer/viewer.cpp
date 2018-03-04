@@ -21,6 +21,10 @@ vector<vertex> viewer::vectors;
 vector<string> viewer::sub_menus;
 
 int viewer::window_size[2] = {1366, 768};
+int viewer::m_window_size[N_MESHES][2] = {	{1, 1}, {1, 2}, {1, 3}, 
+											{2, 2}, {2, 3}, {2, 3},
+											{2, 4}, {2, 4}, {2, 5},
+											{2, 5}, {3, 4}, {3, 4} };
 camera viewer::cam;
 shader viewer::shader_program;
 bool viewer::render_wireframe = false;
@@ -71,10 +75,10 @@ void viewer::init(const vector<che *> & _meshes)
 
 void viewer::debug_info()
 {
-	const GLubyte *renderer = glGetString(GL_RENDERER);
-	const GLubyte *vendor = glGetString(GL_VENDOR);
-	const GLubyte *version = glGetString(GL_VERSION);
-	const GLubyte *glslVersion = glGetString(GL_SHADING_LANGUAGE_VERSION);
+	const GLubyte * renderer = glGetString(GL_RENDERER);
+	const GLubyte * vendor = glGetString(GL_VENDOR);
+	const GLubyte * version = glGetString(GL_VERSION);
+	const GLubyte * glslVersion = glGetString(GL_SHADING_LANGUAGE_VERSION);
 	GLint major, minor;
 	glGetIntegerv(GL_MAJOR_VERSION, &major);
 	glGetIntegerv(GL_MINOR_VERSION, &minor);
@@ -209,14 +213,6 @@ void viewer::add_mesh(const vector<che *> & _meshes)
 	{
 		assert(n_meshes < N_MESHES);
 		meshes[n_meshes++].init(_mesh);
-	}
-
-	angle_t angle = 2 * M_PI / n_meshes;
-	vertex_t r = sqrt(n_meshes - 1);
-	for(index_t i = 0; i < n_meshes; i++)
-	{
-		meshes[i].translate({r * cos(i * angle), r * sin(i * angle), 0});
-		meshes[i].update();
 	}
 }
 
@@ -486,8 +482,20 @@ void viewer::draw_polygons()
 	glEnable(GL_POLYGON_OFFSET_FILL);
 	glPolygonOffset(1., 1.);
 	
-	for(index_t i = 0; i < n_meshes; i++)
-		meshes[i].draw();
+	int * mw = m_window_size[n_meshes - 1];
+	double ww = (double) glutGet(GLUT_WINDOW_WIDTH) / mw[1];
+	double wh = (double) glutGet(GLUT_WINDOW_HEIGHT) / mw[0];
+
+	index_t m = 0;
+	for(index_t i = 0; i < mw[1]; i++)
+	for(index_t j = 0; j < mw[0]; j++)
+	{
+		if(m < n_meshes)
+		{
+			glViewport(i * ww, j * wh, ww, wh);
+			meshes[m++].draw();
+		}
+	}
 	
 	glDisable(GL_POLYGON_OFFSET_FILL);
 }
