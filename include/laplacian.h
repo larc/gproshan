@@ -17,5 +17,7 @@ void laplacian(che * mesh, sp_mat_e & L, sp_mat_e & A);
 
 size_t eigs_laplacian(vec & eigval, mat & eigvec, che * mesh, const sp_mat & L, const size_t & K);
 
+size_t eigs_laplacian(cx_vec & eigval, cx_mat & eigvec, che * mesh, const sp_mat & L, const size_t & K);
+
 #endif // LAPLACIAN_H
 

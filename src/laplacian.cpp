@@ -94,3 +94,25 @@ size_t eigs_laplacian(vec & eigval, mat & eigvec, che * mesh, const sp_mat & L, 
 	return eigval.n_elem;
 }
 
+size_t eigs_laplacian(cx_vec & eigval, cx_mat & eigvec, che * mesh, const sp_mat & L, const size_t & K)
+{
+	debug_me(LAPLACIAN)
+
+	string feigval = "tmp/" + mesh->name_size() + '_' + to_string(K) + ".L_cx_eigval";
+	string feigvec = "tmp/" + mesh->name_size() + '_' + to_string(K) + ".L_cx_eigvec";
+
+	debug(feigval)
+	debug(feigvec)
+
+	if(!eigval.load(feigval) || !eigvec.load(feigvec))
+	{
+		if(!eigs_ge(::xaeigval, eigvec, L, K, "sm"))
+			return 0;
+
+		eigval.save(feigval);
+		eigvec.save(feigvec);
+	}
+
+	return eigval.n_elem;
+}
+

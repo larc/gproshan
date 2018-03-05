@@ -189,6 +189,8 @@ void viewer_process_functional_maps()
 		for(index_t v = 0; v < viewer::mesh()->n_vertices(); v++)
 			viewer::vcolor(v) = eigvec(v, k);
 	}
+	
+	viewer::current = 0;
 }
 
 void viewer_process_wks()

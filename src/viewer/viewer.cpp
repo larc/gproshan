@@ -470,9 +470,9 @@ void viewer::draw_scene()
 	draw_vectors();
 	draw_selected_vertices();
 
-	shader_program.disable();
-	mesh().draw_mesh_info();
-	shader_program.enable();
+//	shader_program.disable();
+//	mesh().draw_mesh_info();
+//	shader_program.enable();
 }
 
 void viewer::draw_polygons()
@@ -486,14 +486,14 @@ void viewer::draw_polygons()
 	double ww = (double) glutGet(GLUT_WINDOW_WIDTH) / mw[1];
 	double wh = (double) glutGet(GLUT_WINDOW_HEIGHT) / mw[0];
 
-	index_t m = 0;
-	for(index_t i = 0; i < mw[1]; i++)
-	for(index_t j = 0; j < mw[0]; j++)
+	index_t m = n_meshes;
+	for(int i = mw[1] - 1; i >= 0; i--)
+	for(int j = 0; j < mw[0]; j++)
 	{
-		if(m < n_meshes)
+		if(m)
 		{
 			glViewport(i * ww, j * wh, ww, wh);
-			meshes[m++].draw();
+			meshes[--m].draw();
 		}
 	}
 	
@@ -512,9 +512,21 @@ void viewer::draw_wireframe()
 	
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	
-	for(index_t i = 0; i < n_meshes; i++)
-		meshes[i].draw();
+	int * mw = m_window_size[n_meshes - 1];
+	double ww = (double) glutGet(GLUT_WINDOW_WIDTH) / mw[1];
+	double wh = (double) glutGet(GLUT_WINDOW_HEIGHT) / mw[0];
 
+	index_t m = n_meshes;
+	for(int i = mw[1] - 1; i >= 0; i--)
+	for(int j = 0; j < mw[0]; j++)
+	{
+		if(m)
+		{
+			glViewport(i * ww, j * wh, ww, wh);
+			meshes[--m].draw();
+		}
+	}
+	
 	glPopAttrib();
 }
 
