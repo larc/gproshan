@@ -116,12 +116,40 @@ void che_viewer::update_vbo()
 
 void che_viewer::update_normals()
 {
+	index_t * n_count = new index_t[_n_vertices];
+
+	memset(normals, 0, sizeof(vertex) * _n_vertices);
+	memset(n_count, 0, sizeof(index_t) * _n_vertices);
+	
+	index_t he;
+	vertex n;
+
+	#pragma omp parallel for private(he, n)
+	for(index_t f = 0; f < mesh->n_faces(); f++)
+	{
+		he = f * P;
+		n = mesh->normal_he(he);
+
+		for(int i = 0; i < P; i++)
+		{
+			#pragma omp critial
+			normals[mesh->vt(he)] += n;
+		
+			#pragma omp atomic
+			n_count[mesh->vt(he)]++;
+
+			he++;
+		}
+	}
+
 	#pragma omp parallel for
 	for(index_t v = 0; v < _n_vertices; v++)
 	{
-		normals[v] = mesh->normal(v);
+		normals[v] /= n_count[v];
 		if(_invert_orientation) normals[v] = -normals[v];
 	}
+
+	delete [] n_count;
 }
 
 void che_viewer::update_colors(const color_t *const c)
