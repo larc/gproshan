@@ -51,6 +51,7 @@ void viewer_process_poisson_laplacian_3();
 
 void viewer_process_thresold();
 void viewer_process_noise();
+void viewer_process_black_noise();
 void viewer_process_multiplicate_vertices();
 void viewer_process_fill_holes();
 void viewer_process_delete_vertices();

@@ -51,7 +51,7 @@ int viewer_main(int nargs, char ** args)
 	viewer::sub_menus.push_back("Others");
 	viewer::add_process('t', "Threshold", viewer_process_thresold);
 	viewer::add_process('N', "Noise", viewer_process_noise);
-	viewer::add_process('N', "Black Noise", viewer_process_noise);
+	viewer::add_process('B', "Black Noise", viewer_process_black_noise);
 	viewer::add_process('m', "Multiplicate Vertices", viewer_process_multiplicate_vertices);
 	viewer::add_process('h', "Fill Holes", viewer_process_fill_holes);
 	viewer::add_process('-', "Make holes", viewer_process_delete_vertices);
@@ -137,6 +137,23 @@ void viewer_process_fill_holes()
 }
 
 void viewer_process_noise()
+{
+	debug_me(APP_VIEWER)
+
+	srand(time(NULL));
+
+	#pragma omp parallel for
+	for(index_t v = 0; v < viewer::mesh()->n_vertices(); v++)
+	{
+		distance_t r = distance_t( rand() % 1000 ) / 200000;
+		int p = rand() % 5;
+		viewer::mesh()->get_vertex(v) += (!p) * r * viewer::mesh()->normal(v);
+	}
+
+	viewer::mesh().update_normals();
+}
+
+void viewer_process_black_noise()
 {
 	debug_me(APP_VIEWER)
 
