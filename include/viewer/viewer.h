@@ -130,6 +130,7 @@ class viewer
 		static void pick_vertex(int x, int y);
 
 		static int window_size[2];
+		static double ww, wh;
 		static int m_window_size[N_MESHES][2];
 
 		static camera cam;

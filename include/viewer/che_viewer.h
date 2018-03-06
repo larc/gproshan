@@ -31,6 +31,9 @@ class che_viewer
 
 		GLuint vao;
 		GLuint vbo[4];
+	
+	public:
+		int vx, vy;					///< viewport positions.
 
 	public:
 		che_viewer();
@@ -56,7 +59,6 @@ class che_viewer
 		void invert_orientation();
 
 		void debug_info();
-
 };
 
 #endif // CHE_VIEWER_H

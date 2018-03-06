@@ -25,6 +25,9 @@ int viewer::m_window_size[N_MESHES][2] = {	{1, 1}, {1, 2}, {1, 3},
 											{2, 2}, {2, 3}, {2, 3},
 											{2, 4}, {2, 4}, {2, 5},
 											{2, 5}, {3, 4}, {3, 4} };
+double viewer::ww = 0;
+double viewer::wh = 0;
+
 camera viewer::cam;
 shader viewer::shader_program;
 bool viewer::render_wireframe = false;
@@ -213,6 +216,17 @@ void viewer::add_mesh(const vector<che *> & _meshes)
 	{
 		assert(n_meshes < N_MESHES);
 		meshes[n_meshes++].init(_mesh);
+	}
+	
+	int * mw = m_window_size[n_meshes - 1];
+
+	index_t m = n_meshes - 1;
+	for(int i = mw[1] - 1; i >= 0; i--)
+	for(int j = 0; j < mw[0]; j++)
+	{
+		meshes[m].vx = i;
+		meshes[m].vy = j;
+		if(!m--) return;
 	}
 }
 
@@ -422,6 +436,9 @@ void viewer::display()
 	glEnable(GL_LIGHTING);
 
 	set_mesh_materia();
+	
+	ww = (double) glutGet(GLUT_WINDOW_WIDTH) / m_window_size[n_meshes - 1][1];
+	wh = (double) glutGet(GLUT_WINDOW_HEIGHT) / m_window_size[n_meshes - 1][0];
 	draw_scene();
 
 	//glPopAttrib();
@@ -481,20 +498,11 @@ void viewer::draw_polygons()
 
 	glEnable(GL_POLYGON_OFFSET_FILL);
 	glPolygonOffset(1., 1.);
-	
-	int * mw = m_window_size[n_meshes - 1];
-	double ww = (double) glutGet(GLUT_WINDOW_WIDTH) / mw[1];
-	double wh = (double) glutGet(GLUT_WINDOW_HEIGHT) / mw[0];
 
-	index_t m = n_meshes;
-	for(int i = mw[1] - 1; i >= 0; i--)
-	for(int j = 0; j < mw[0]; j++)
+	for(int i = 0; i < n_meshes; i++)
 	{
-		if(m)
-		{
-			glViewport(i * ww, j * wh, ww, wh);
-			meshes[--m].draw();
-		}
+		glViewport(meshes[i].vx * ww, meshes[i].vy * wh, ww, wh);
+		meshes[i].draw();
 	}
 	
 	glDisable(GL_POLYGON_OFFSET_FILL);
@@ -512,19 +520,10 @@ void viewer::draw_wireframe()
 	
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	
-	int * mw = m_window_size[n_meshes - 1];
-	double ww = (double) glutGet(GLUT_WINDOW_WIDTH) / mw[1];
-	double wh = (double) glutGet(GLUT_WINDOW_HEIGHT) / mw[0];
-
-	index_t m = n_meshes;
-	for(int i = mw[1] - 1; i >= 0; i--)
-	for(int j = 0; j < mw[0]; j++)
+	for(int i = 0; i < n_meshes; i++)
 	{
-		if(m)
-		{
-			glViewport(i * ww, j * wh, ww, wh);
-			meshes[--m].draw();
-		}
+		glViewport(meshes[i].vx * ww, meshes[i].vy * wh, ww, wh);
+		meshes[i].draw();
 	}
 	
 	glPopAttrib();
@@ -692,14 +691,20 @@ void viewer::draw_normal_field()
 {
 	shader_program.disable();
 	for(index_t i = 0; i < n_meshes; i++)
+	{
+		glViewport(meshes[i].vx * ww, meshes[i].vy * wh, ww, wh);
 		meshes[i].draw_normal_field();
+	}
 }
 
 void viewer::draw_gradient_field()
 {
 	shader_program.disable();
 	for(index_t i = 0; i < n_meshes; i++)
+	{
+		glViewport(meshes[i].vx * ww, meshes[i].vy * wh, ww, wh);
 		meshes[i].draw_gradient_field();
+	}
 }
 
 void viewer::pick_vertex(int x, int y)

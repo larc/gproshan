@@ -12,6 +12,8 @@ che_viewer::che_viewer()
 
 	normals = NULL;
 	colors = NULL;
+	
+	vx = vy = 0;
 }
 
 che_viewer::~che_viewer()
