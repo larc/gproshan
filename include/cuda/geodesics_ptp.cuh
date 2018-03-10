@@ -1,6 +1,9 @@
 #ifndef GEODESICS_PTP_CUH
 #define GEODESICS_PTP_CUH
 
+#define NT 32
+#define NB(x) (x + NT - 1) / NT
+
 __device__
 distance_t cu_update_step(CHE * mesh, const distance_t * dist, const index_t & he);
 

@@ -7,9 +7,6 @@
 #include <cassert>
 #include <cublas_v2.h>
 
-#define NT 32
-#define NB(x) (x + NT - 1) / NT
-
 distance_t * parallel_toplesets_propagation_gpu(che * mesh, const vector<index_t> & sources, const vector<index_t> & limits, const index_t * sorted_index, float & time_ptp, index_t * clusters)
 {
 	debug_me(GEODESICS_PTP)
