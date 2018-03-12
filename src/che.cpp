@@ -7,9 +7,7 @@
 
 #include "viewer/viewer.h"
 
-#include <armadillo>
-
-using namespace arma;
+#include "include_arma.h"
 
 index_t trig(const index_t & he)
 {
@@ -143,7 +141,7 @@ void che::flip(const index_t & e)
 	if(OT[ET[e_nb]] != NIL) EHT[OT[ET[e_nb]]] = e_nb;
 }
 
-// https://www.mathworks.com/help/pde/ug/pdetriq.html
+// https://www.a_mathworks.com/help/pde/ug/pdetriq.html
 // 4*sqrt(3)*a
 // q = ----------------
 // h1^2+h2^2+h3^2
@@ -1052,12 +1050,12 @@ corr_t che::find_corr(const vertex & v, const vertex & n, const vector<index_t> 
 	distance_t d, dist = INFINITY;
 	corr_t corr, corr_d;
 
-	mat A(4, 4, fill::ones);
-	vec x(4);
+	a_mat A(4, 4, arma::fill::ones);
+	a_vec x(4);
 	x(0) = v.x; x(1) = v.y; x(2) = v.z; x(3) = 1;
 
-	vec alpha(&corr.alpha.x, 3, false, true);
-	vec a;
+	a_vec alpha(&corr.alpha.x, 3, false, true);
+	a_vec a;
 	vertex aux;
 
 	auto update_dist = [&]()
@@ -1087,7 +1085,7 @@ corr_t che::find_corr(const vertex & v, const vertex & n, const vector<index_t> 
 		A(2, 3) = -n.z;
 		A(3, 3) = 0;
 
-		if(solve(a, A, x, solve_opts::no_approx))
+		if(solve(a, A, x, arma::solve_opts::no_approx))
 		{
 			debug(a)
 		if(all(a >= 0) && sum(a.head(3)) == 1)
@@ -1101,7 +1099,7 @@ corr_t che::find_corr(const vertex & v, const vertex & n, const vector<index_t> 
 			x = A.submat(0, 0, 3, 2) * alpha;
 			auto dist_to_edge = [&](const index_t & i, const index_t & j)
 			{
-				mat B = A.cols(i, j);
+				a_mat B = A.cols(i, j);
 				a = solve(B, x);
 				d = norm(x - B * a);
 

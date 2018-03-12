@@ -4,9 +4,7 @@
 #include "include.h"
 #include "che.h"
 
-#include <armadillo>
-
-using namespace arma;
+#include "include_arma.h"
 
 struct border_t
 {
@@ -15,7 +13,7 @@ struct border_t
 
 	border_t() = default;
 
-	border_t(const vector<vec> & V, const index_t & _v, const array<index_t, 2> & neighbors, const bool & o):
+	border_t(const vector<a_vec> & V, const index_t & _v, const array<index_t, 2> & neighbors, const bool & o):
 	v(_v)
 	{
 		index_t p_v = neighbors[!o];
@@ -27,21 +25,21 @@ struct border_t
 			return;
 		}
 
-		vec a = V[p_v] - V[v];
-		vec b = V[n_v] - V[v];
+		a_vec a = V[p_v] - V[v];
+		a_vec b = V[n_v] - V[v];
 		a[2] = b[2] = 0;
 
 		theta = atan2(b[1], b[0]) - atan2(a[1], a[0]);
 		if(theta < 0) theta += 2 * M_PI;
 	}
 
-	vec new_vertex(const vector<vec> & V, angle_t div, const distance_t & lenght, const array<index_t, 2> & neighbors, const bool & o)
+	a_vec new_vertex(const vector<a_vec> & V, angle_t div, const distance_t & lenght, const array<index_t, 2> & neighbors, const bool & o)
 	{
 		index_t p_v = neighbors[!o];
 
-		vec a = V[p_v] - V[v];
+		a_vec a = V[p_v] - V[v];
 
-		vec r(3);
+		a_vec r(3);
 		r[0] = cos(theta * div + atan2(a[1], a[0]));
 		r[1] = sin(theta * div + atan2(a[1], a[0]));
 
@@ -52,19 +50,19 @@ struct border_t
 		return r;
 	}
 
-	border_t(const vector<vec> & V, const index_t & _v, const array<index_t, 2> & neighbors, const bool & o, const vec & normal):
+	border_t(const vector<a_vec> & V, const index_t & _v, const array<index_t, 2> & neighbors, const bool & o, const a_vec & normal):
 	v(_v)
 	{
 		index_t p_v = neighbors[!o];
 		index_t n_v = neighbors[o];
 
-		vec a = V[p_v] - V[v];
-		vec b = V[n_v] - V[v];
+		a_vec a = V[p_v] - V[v];
+		a_vec b = V[n_v] - V[v];
 
 		a -= dot(a, normal) * normal;
 		b -= dot(a, normal) * normal;
 
-		mat E(3,3);
+		a_mat E(3,3);
 		E.col(0) = normalise(a);
 		E.col(1) = normalise(cross(normal, a));
 		E.col(2) = normal;
@@ -77,18 +75,18 @@ struct border_t
 		if(theta < 0) theta += 2 * M_PI;
 	}
 
-	vec new_vertex(const vector<vec> & V, angle_t div, const distance_t & lenght, const array<index_t, 2> & neighbors, const bool & o, const vec & normal)
+	a_vec new_vertex(const vector<a_vec> & V, angle_t div, const distance_t & lenght, const array<index_t, 2> & neighbors, const bool & o, const a_vec & normal)
 	{
 		index_t p_v = neighbors[!o];
 		index_t n_v = neighbors[o];
 
-		vec a = V[p_v] - V[v];
-		vec b = V[n_v] - V[v];
+		a_vec a = V[p_v] - V[v];
+		a_vec b = V[n_v] - V[v];
 
 		a -= dot(a, normal) * normal;
 		b -= dot(a, normal) * normal;
 
-		mat E(3,3);
+		a_mat E(3,3);
 		E.col(0) = normalise(a);
 		E.col(1) = normalise(cross(normal, a));
 		E.col(2) = normal;
@@ -96,7 +94,7 @@ struct border_t
 		a = E.t() * a;
 		b = E.t() * b;
 
-		vec r(3);
+		a_vec r(3);
 		r[0] = cos(theta * div);
 		r[1] = sin(theta * div);
 		r[2] = 0;

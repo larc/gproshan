@@ -13,12 +13,12 @@ class basis_dct: public basis
 
 	public:
 		basis_dct(const size_t & _n, const distance_t & _radio = 0);
-		void discrete(mat & phi, const mat & xy);
+		void discrete(a_mat & phi, const a_mat & xy);
 
 	private:
 		void plot_basis(ostream & os);
-		void plot_atoms(ostream & os, const vec & A);
-		vec dct(const vec & x, const vec & y, const index_t & nx, const index_t & ny);
+		void plot_atoms(ostream & os, const a_vec & A);
+		a_vec dct(const a_vec & x, const a_vec & y, const index_t & nx, const index_t & ny);
 		void dct(ostream & os, const index_t & nx, const index_t & ny);
 };
 

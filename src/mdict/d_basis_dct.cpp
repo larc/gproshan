@@ -12,12 +12,12 @@ basis_dct::basis_dct(const size_t & _n, const distance_t & _radio)
 	dim = n * n;
 }
 
-void basis_dct::discrete(mat & phi, const mat & xy)
+void basis_dct::discrete(a_mat & phi, const a_mat & xy)
 {
 	assert(phi.n_cols == dim);
 
-	vec x = xy.row(0).t();
-	vec y = xy.row(1).t();
+	a_vec x = xy.row(0).t();
+	a_vec y = xy.row(1).t();
 
 	for(index_t k = 0, nx = 0; nx < n; nx++)
 	for(index_t ny = 0; ny < n; ny++, k++)
@@ -35,7 +35,7 @@ void basis_dct::plot_basis(ostream & os)
 	}
 }
 
-void basis_dct::plot_atoms(ostream & os, const vec & A)
+void basis_dct::plot_atoms(ostream & os, const a_vec & A)
 {
 	for(index_t k = 0, nx = 0; nx < n; nx++)
 	for(index_t ny = 0; ny < n; ny++, k++)
@@ -44,7 +44,7 @@ void basis_dct::plot_atoms(ostream & os, const vec & A)
 	}
 }
 
-vec basis_dct::dct(const vec & x, const vec & y, const index_t & nx, const index_t & ny)
+a_vec basis_dct::dct(const a_vec & x, const a_vec & y, const index_t & nx, const index_t & ny)
 {
 	return cos( (M_PI * x * nx) / radio ) % cos( (M_PI * y * ny) / radio );
 }

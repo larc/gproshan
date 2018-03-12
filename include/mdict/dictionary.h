@@ -7,9 +7,7 @@
 #include "d_basis.h"
 #include "d_mesh.h"
 
-#include <armadillo>
-
-using namespace arma;
+#include "include_arma.h"
 
 /// Mesh dictionary learning and sparse coding namespace
 namespace mdict {
@@ -24,8 +22,8 @@ class dictionary
 
 		size_t m;								///< number of dictionary atoms.
 		size_t M;								///< number of patches.
-		mat A;									///< dictionary continuous matrix.
-		mat alpha;								///< sparse coding matrix.
+		a_mat A;									///< dictionary continuous a_matrix.
+		a_mat alpha;								///< sparse coding a_matrix.
 		
 		distance_t f;
 		distance_t s_radio;						///< sampling geodesic radio.

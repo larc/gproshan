@@ -13,10 +13,10 @@ bool operator<(const border_t & a, const border_t & b)
 	return a.theta > b.theta;
 }
 
-vec normal_face(const vector<vec> & tmp_vertices, const index_t & a_v, const index_t & b_v, const index_t & c_v)
+a_vec normal_face(const vector<a_vec> & tmp_vertices, const index_t & a_v, const index_t & b_v, const index_t & c_v)
 {
-	vec a = tmp_vertices[c_v] - tmp_vertices[a_v];
-	vec b = tmp_vertices[b_v] - tmp_vertices[a_v];
+	a_vec a = tmp_vertices[c_v] - tmp_vertices[a_v];
+	a_vec b = tmp_vertices[b_v] - tmp_vertices[a_v];
 	return normalise(cross(a,b));
 }
 
@@ -24,8 +24,8 @@ che * mesh_simple_fill_hole(che * mesh, const vector<index_t> & border_vertices,
 {
 	vector<vertex> vertices;
 	vertex normal, normal_v, edge_v, v;
-	mat E(3,3);
-	vec ve(3);
+	a_mat E(3,3);
+	a_vec ve(3);
 
 	vertices.reserve(border_vertices.size());
 
@@ -210,8 +210,8 @@ che * mesh_fill_hole(che * mesh, const vector<index_t> & border_vertices, const 
 void split_border(vector<pair<index_t, index_t> > & split_indices, che * mesh, const vector<index_t> & border_vertices)
 {
 	size_t n = border_vertices.size();
-	mat data(3, n);
-	mat means;
+	a_mat data(3, n);
+	a_mat means;
 
 	vertex normal;
 	for(index_t i = 0; i < n; i++)
@@ -230,7 +230,7 @@ void split_border(vector<pair<index_t, index_t> > & split_indices, che * mesh, c
 	//index_t * clusters = NULL;
 
 	index_t k = 2;
-	if(kmeans(means, data, k, random_subset, 50, false))
+	if(kmeans(means, data, k, arma::random_subset, 50, false))
 	{
 	//	clusters = new index_t[n];
 		index_t a, b;
@@ -330,8 +330,8 @@ che * fill_hole_front_angles_test(che * mesh, vector<index_t> & front_vertices, 
 	for(index_t v: front_vertices)
 		vertices.push_back(mesh->gt(v));
 
-	vector<vec> tmp_vertices(vertices.size());
-	vector<vec> tmp_normals(vertices.size());
+	vector<a_vec> tmp_vertices(vertices.size());
+	vector<a_vec> tmp_normals(vertices.size());
 
 	vertex normal;
 	for(index_t v = 0; v < vertices.size(); v++)
@@ -375,7 +375,7 @@ che * fill_hole_front_angles_test(che * mesh, vector<index_t> & front_vertices, 
 
 		front.push(border_t(tmp_vertices, v, neighbors[v], o, tmp_normals[v]));
 	//	viewer::vectors.push_back(vertex(tmp_vertices[v](0), tmp_vertices[v](1), tmp_vertices[v](2)));
-	//	vec normal = tmp_vertices[v] + lenght * 3 * normalise(tmp_normals[v]);
+	//	a_vec normal = tmp_vertices[v] + lenght * 3 * normalise(tmp_normals[v]);
 	//	viewer::vectors.push_back(vertex(normal(0), normal(1), normal(2)));
 	}
 
@@ -384,8 +384,8 @@ che * fill_hole_front_angles_test(che * mesh, vector<index_t> & front_vertices, 
 	angle_t a75 = 75.0 * M_PI / 180;
 	angle_t a135 = 135.0 * M_PI / 180;
 
-	vec m_vec;
-	vec m_normal;
+	a_vec m_a_vec;
+	a_vec m_normal;
 	while(!front.empty() && p_iter--)
 	{
 
@@ -450,8 +450,8 @@ che * fill_hole_front_angles_test(che * mesh, vector<index_t> & front_vertices, 
 		{
 			index_t m_v = tmp_vertices.size();
 
-			m_vec = top.new_vertex(tmp_vertices, 0.5, lenght, neighbors[v], o, tmp_normals[v]);
-			tmp_vertices.push_back(m_vec);
+			m_a_vec = top.new_vertex(tmp_vertices, 0.5, lenght, neighbors[v], o, tmp_normals[v]);
+			tmp_vertices.push_back(m_a_vec);
 
 			faces.push_back(m_v);
 			faces.push_back(v);
@@ -488,10 +488,10 @@ che * fill_hole_front_angles_test(che * mesh, vector<index_t> & front_vertices, 
 		{
 			index_t m_v = tmp_vertices.size();
 
-			m_vec = top.new_vertex(tmp_vertices, 1./3, lenght, neighbors[v], o, tmp_normals[v]);
-			tmp_vertices.push_back(m_vec);
-			m_vec = top.new_vertex(tmp_vertices, 2./3, lenght, neighbors[v], o, tmp_normals[v]);
-			tmp_vertices.push_back(m_vec);
+			m_a_vec = top.new_vertex(tmp_vertices, 1./3, lenght, neighbors[v], o, tmp_normals[v]);
+			tmp_vertices.push_back(m_a_vec);
+			m_a_vec = top.new_vertex(tmp_vertices, 2./3, lenght, neighbors[v], o, tmp_normals[v]);
+			tmp_vertices.push_back(m_a_vec);
 
 			faces.push_back(m_v);
 			faces.push_back(v);
@@ -546,13 +546,13 @@ che * fill_hole_front_angles_test(che * mesh, vector<index_t> & front_vertices, 
 
 	vertices.clear();
 
-	for(vec r: tmp_vertices)
+	for(a_vec r: tmp_vertices)
 		vertices.push_back(vertex(r[0], r[1], r[2]));
 
 	for(index_t v = 0; false && v < tmp_vertices.size(); v++)
 	{
 	//	viewer::vectors.push_back(vertex(tmp_vertices[v](0), tmp_vertices[v](1), tmp_vertices[v](2)));
-		vec normal = tmp_vertices[v] + lenght * 3 * normalise(tmp_normals[v]);
+		a_vec normal = tmp_vertices[v] + lenght * 3 * normalise(tmp_normals[v]);
 	//	viewer::vectors.push_back(vertex(normal(0), normal(1), normal(2)));
 	}
 
@@ -574,7 +574,7 @@ che * fill_hole_front_angles(vector<vertex> & vertices, const vertex_t & lenght,
 
 	// PCA --------------------------------------------------------------------------
 
-	mat V(3, vertices.size());
+	a_mat V(3, vertices.size());
 	for(index_t v = 0; v < vertices.size(); v++)
 	{
 		V(0,v) = vertices[v][0];
@@ -588,16 +588,16 @@ che * fill_hole_front_angles(vector<vertex> & vertices, const vertex_t & lenght,
 	perimeter = init_perimeter;
 	//debug(perimeter)
 
-	vec avg = mean(V, 1);
+	a_vec avg = mean(V, 1);
 	V.each_col() -= avg;
 
-	vec orientation(3);
+	a_vec orientation(3);
 	orientation(0) = normal.x;
 	orientation(1) = normal.y;
 	orientation(2) = normal.z;
 
-	mat E;
-	vec eigval;
+	a_mat E;
+	a_vec eigval;
 	eig_sym(eigval, E, V * V.t());
 	E.swap_cols(0, 2);
 	//debug(E)
@@ -611,19 +611,19 @@ che * fill_hole_front_angles(vector<vertex> & vertices, const vertex_t & lenght,
 	//debug(dot(orientation, E.col(2)))
 
 	V = E.t() * V;
-//	V.each_col([](vec & v){v(2) = 0;});
+//	V.each_col([](a_vec & v){v(2) = 0;});
 
 	bool o = is_grow;
 
-	vec a = V.col(0);
-	vec b = V.col(1);
+	a_vec a = V.col(0);
+	a_vec b = V.col(1);
 	a(2) = b(2) = 0;
 	a = normalise(a);
 	b = normalise(b);
 
 	// END PCA ----------------------------------------------------------------------
 
-	vector<vec> tmp_vertices(vertices.size());
+	vector<a_vec> tmp_vertices(vertices.size());
 	vector<bool> is_border(vertices.size());
 	vector<array<index_t, 2> > neighbors(vertices.size());
 
@@ -655,7 +655,7 @@ che * fill_hole_front_angles(vector<vertex> & vertices, const vertex_t & lenght,
 	angle_t a75 = 75.0 * M_PI / 180;
 	angle_t a135 = 135.0 * M_PI / 180;
 
-	vec m_vec;
+	a_vec m_a_vec;
 	while(!front.empty() && p_iter-- && p_iter < 2000)
 	{
 		while(!front.empty() &&
@@ -722,8 +722,8 @@ che * fill_hole_front_angles(vector<vertex> & vertices, const vertex_t & lenght,
 		{
 			index_t m_v = tmp_vertices.size();
 
-			m_vec = top.new_vertex(tmp_vertices, 0.5, lenght, neighbors[v], o);
-			tmp_vertices.push_back(m_vec);
+			m_a_vec = top.new_vertex(tmp_vertices, 0.5, lenght, neighbors[v], o);
+			tmp_vertices.push_back(m_a_vec);
 
 			faces.push_back(m_v);
 			faces.push_back(v);
@@ -758,10 +758,10 @@ che * fill_hole_front_angles(vector<vertex> & vertices, const vertex_t & lenght,
 		{
 			index_t m_v = tmp_vertices.size();
 
-			m_vec = top.new_vertex(tmp_vertices, 1./3, lenght, neighbors[v], o);
-			tmp_vertices.push_back(m_vec);
-			m_vec = top.new_vertex(tmp_vertices, 2./3, lenght, neighbors[v], o);
-			tmp_vertices.push_back(m_vec);
+			m_a_vec = top.new_vertex(tmp_vertices, 1./3, lenght, neighbors[v], o);
+			tmp_vertices.push_back(m_a_vec);
+			m_a_vec = top.new_vertex(tmp_vertices, 2./3, lenght, neighbors[v], o);
+			tmp_vertices.push_back(m_a_vec);
 
 			faces.push_back(m_v);
 			faces.push_back(v);
@@ -811,7 +811,7 @@ che * fill_hole_front_angles(vector<vertex> & vertices, const vertex_t & lenght,
 		else return NULL;
 	}
 /*
-	vec axis;
+	a_vec axis;
 	axis = avg + E.col(0) * lenght * 3;
 	viewer::vectors.push_back(vertex(avg(0), avg(1), avg(2)));
 	viewer::vectors.push_back(vertex(axis(0), axis(1), axis(2)));
@@ -828,7 +828,7 @@ che * fill_hole_front_angles(vector<vertex> & vertices, const vertex_t & lenght,
 	vertices.clear();
 	vertices.reserve(tmp_vertices.size());
 
-	for(vec r: tmp_vertices)
+	for(a_vec r: tmp_vertices)
 	{
 		r = E * r + avg;
 		vertices.push_back(vertex(r[0], r[1], r[2]));

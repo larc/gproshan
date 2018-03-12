@@ -28,7 +28,7 @@ void basis::plot_basis()
 	debug(system(file.c_str()));
 }
 
-void basis::plot_atoms(const mat & A)
+void basis::plot_atoms(const a_mat & A)
 {
 	size_t K = A.n_rows;
 	size_t m = A.n_cols;

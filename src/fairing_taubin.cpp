@@ -15,13 +15,13 @@ void fairing_taubin::compute(che * shape)
 {
 	double time;
 /*
-	sp_mat_e Le, Ae;
+	a_sp_mat_e Le, Ae;
 	TIC(time)
 	laplacian(shape, Le, Ae);
 	TOC(time)
 	cout<<"time laplacian: "<<time<<endl;
 */
-	sp_mat L, A;
+	a_sp_mat L, A;
 
 	d_message(Compute laplacian...)
 	TIC(time) laplacian(shape, L, A); TOC(time)
@@ -29,15 +29,15 @@ void fairing_taubin::compute(che * shape)
 
 	positions = new vertex[shape->n_vertices()];
 
-	mat X((vertex_t *) positions, 3, shape->n_vertices(), false, true);
+	a_mat X((vertex_t *) positions, 3, shape->n_vertices(), false, true);
 
 	#pragma omp parallel for
 	for(index_t v = 0; v < shape->n_vertices(); v++)
 		positions[v] = shape->gt(v);
 
-	mat R;
-	mat AX = A * X.t();
-	sp_mat M = A + step * L;
+	a_mat R;
+	a_mat AX = A * X.t();
+	a_sp_mat M = A + step * L;
 
 	d_message(Solve system...)
 	TIC(time) spsolve(R, M, AX); TOC(time)

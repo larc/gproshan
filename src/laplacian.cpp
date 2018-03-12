@@ -1,17 +1,17 @@
 #include "laplacian.h"
 
-void laplacian(che * mesh, sp_mat & L, sp_mat & A)
+void laplacian(che * mesh, a_sp_mat & L, a_sp_mat & A)
 {
 	debug_me(LAPLACIAN)
 
 	size_t n_edges = mesh->n_edges();
 	size_t n_vertices = mesh->n_vertices();
 
-	umat DI(2, 2 * n_edges);
-	vec DV(2 * n_edges);
+	arma::umat DI(2, 2 * n_edges);
+	a_vec DV(2 * n_edges);
 
-	umat SI(2, n_edges);
-	vec SV(n_edges);
+	arma::umat SI(2, n_edges);
+	a_vec SV(n_edges);
 
 	#pragma omp parallel for
 	for(index_t e = 0; e < n_edges; e++)
@@ -33,8 +33,8 @@ void laplacian(che * mesh, sp_mat & L, sp_mat & A)
 					mesh->cotan(mesh->ot_et(e))) / 2;
 	}
 
-	sp_mat D(DI, DV, n_edges, n_vertices);
-	sp_mat S(SI, SV, n_edges, n_edges);
+	a_sp_mat D(DI, DV, n_edges, n_vertices);
+	a_sp_mat S(SI, SV, n_edges, n_edges);
 
 	L = D.t() * S * D;
 
@@ -72,12 +72,12 @@ void laplacian(che * mesh, sp_mat_e & L, sp_mat_e & A)
 		A.insert(v, v) = mesh->area_vertex(v);
 }
 
-size_t eigs_laplacian(vec & eigval, mat & eigvec, che * mesh, const sp_mat & L, const size_t & K)
+size_t eigs_laplacian(a_vec & eigval, a_mat & eigvec, che * mesh, const a_sp_mat & L, const size_t & K)
 {
 	debug_me(LAPLACIAN)
 
 	string feigval = "tmp/" + mesh->name_size() + '_' + to_string(K) + ".L_eigval";
-	string feigvec = "tmp/" + mesh->name_size() + '_' + to_string(K) + ".L_eigvec";
+	string feigvec = "tmp/" + mesh->name_size() + '_' + to_string(K) + ".L_eiga_vec";
 
 	debug(feigval)
 	debug(feigvec)
@@ -85,28 +85,6 @@ size_t eigs_laplacian(vec & eigval, mat & eigvec, che * mesh, const sp_mat & L, 
 	if(!eigval.load(feigval) || !eigvec.load(feigvec))
 	{
 		if(!eigs_sym(eigval, eigvec, L, K, "sm"))
-			return 0;
-
-		eigval.save(feigval);
-		eigvec.save(feigvec);
-	}
-
-	return eigval.n_elem;
-}
-
-size_t eigs_laplacian(cx_vec & eigval, cx_mat & eigvec, che * mesh, const sp_mat & L, const size_t & K)
-{
-	debug_me(LAPLACIAN)
-
-	string feigval = "tmp/" + mesh->name_size() + '_' + to_string(K) + ".L_cx_eigval";
-	string feigvec = "tmp/" + mesh->name_size() + '_' + to_string(K) + ".L_cx_eigvec";
-
-	debug(feigval)
-	debug(feigvec)
-
-	if(!eigval.load(feigval) || !eigvec.load(feigvec))
-	{
-		if(!eigs_gen(eigval, eigvec, L, K, "sm"))
 			return 0;
 
 		eigval.save(feigval);

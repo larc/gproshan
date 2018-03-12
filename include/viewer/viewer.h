@@ -62,10 +62,13 @@ class viewer
 		static vcorr_t corr_mesh[N_MESHES];
 		static size_t n_meshes;
 		static index_t current; // current mesh
+
 		static vector<index_t> select_vertices;
 		static vector<vertex> other_vertices;
 		static vector<vertex> vectors;
 		static vector<string> sub_menus;
+
+		static char * share;
 
 		static const int & window_width();
 		static const int & window_height();
@@ -115,7 +118,7 @@ class viewer
 		// draw routines
 		static void set_gl();
 		static void set_lighting();
-		static void set_mesh_materia();
+		static void set_mesh_a_materia();
 		static void draw_scene();
 		static void draw_corr();
 		static void draw_polygons();

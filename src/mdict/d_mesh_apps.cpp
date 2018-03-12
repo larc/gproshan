@@ -88,8 +88,8 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 	// Params ---------------------------------------------------------------------------------------
 	// Gaussian
 /*
-	vec cx(K);
-	vec cy(K);
+	a_vec cx(K);
+	a_vec cy(K);
 	vertex_t sigma = 2.5 * radio / sqrt(K);
 	get_centers_gaussian(cx, cy, radio, K);
 
@@ -163,8 +163,8 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 	// Dictionary learning ------------------------------------------------------------------------
 
 	size_t L = 10;
-	mat alpha(m, M, fill::zeros);
-	mat A(K, m);
+	a_mat alpha(m, M, arma::fill::zeros);
+	a_mat A(K, m);
 	A.eye();
 
 	debug(K)
@@ -325,7 +325,7 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 
 		index_t v;
 		size_t size;
-		vec tmp_alpha(m);
+		a_vec tmp_alpha(m);
 		tmp_alpha.zeros();
 
 		patches_map.resize(mesh->n_vertices());
@@ -501,7 +501,7 @@ void dictionary_learning_process(che * mesh, vector<index_t> & points, const siz
 
 		index_t v;
 		size_t size;
-		vec tmp_alpha(m);
+		a_vec tmp_alpha(m);
 		tmp_alpha.zeros();
 
 		patches_map.resize(mesh->n_vertices());

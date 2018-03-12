@@ -3,10 +3,9 @@
 
 #include "include.h"
 
-#include <armadillo>
+#include "include_arma.h"
 #include <fstream>
 
-using namespace arma;
 using namespace std;
 
 // mesh dictionary learning and sparse coding namespace
@@ -21,13 +20,13 @@ class basis
 		size_t dim;
 
 	public:
-		virtual void discrete(mat & phi, const mat & xy) = 0;
+		virtual void discrete(a_mat & phi, const a_mat & xy) = 0;
 		void plot_basis();
-		void plot_atoms(const mat & A);
+		void plot_atoms(const a_mat & A);
 
 	private:
 		virtual void plot_basis(ostream & os) = 0;
-		virtual void plot_atoms(ostream & os, const vec & A) = 0;
+		virtual void plot_atoms(ostream & os, const a_vec & A) = 0;
 
 	friend class dictionary;
 };

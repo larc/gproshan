@@ -4,7 +4,7 @@ decimation::decimation(che * mesh_, const vertex *const & normals, const index_t
 {
 	mesh = mesh_;
 	levels = levels_;
-	Q = new mat[mesh->n_vertices()];
+	Q = new a_mat[mesh->n_vertices()];
 
 	execute(normals);
 }
@@ -99,7 +99,7 @@ void decimation::compute_quadrics()
 	{
 		Q[v].resize(4,4);
 		Q[v].zeros();
-		vec p(4);
+		a_vec p(4);
 
 		for_star(he, mesh, v)
 		{
@@ -134,7 +134,7 @@ void decimation::order_edges(index_t * const & sort_edges, vertex_t * const & er
 vertex_t decimation::compute_error(const index_t & e)
 {
 	vertex ve = create_vertex(e);
-	vec v(4);
+	a_vec v(4);
 
 	v(0) = ve.x;
 	v(1) = ve.y;

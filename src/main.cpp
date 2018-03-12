@@ -16,6 +16,7 @@
 #include "dijkstra.h"
 #include "geodesics.h"
 #include "geodesics_ptp.h"
+#include "test_geodesics_ptp.h"
 #include "fairing_taubin.h"
 #include "fairing_spectral.h"
 #include "sampling.h"
@@ -40,20 +41,13 @@ void main_test_holes();
 void generate_grid_obtuse(const size_t & nr, const size_t & nc, const vertex_t & d = 1);
 void main_solve_arma();
 
-int main(int nargs, char ** args)
+int main(int nargs, const char ** args)
 {
+	viewer_main(nargs, args);
+//	main_test_geodesics_ptp(nargs, args);
+
 //	generate_grid_obtuse(81, 10);
 //	generate_grid_cylinder(100, 1, 1000);
-/*	mat A = {{1, 0, 0, 1}, {0, 1, 0, 1}, {1, 1, 0, 1}, {0, 0, 1, 0}};
-	A = A.t();
-	vec x = {0.6, 0.6, 1, 1};
-	vec a;
-	debug(solve(a, A, x, solve_opts::no_approx));
-	debug(a)
-	debug(a > 0)
-	debug(sum(a))
-	debug(A.submat(0, 0, 2, 2) * a.head(3))
-*/
 //	generate_grid(1000, 1, "tmp/grilla1m.off");
 //	testkeycomponents prueba(50, 0.15);
 //	prueba.one_test_fm("0001.null.0.off","");
@@ -68,7 +62,6 @@ int main(int nargs, char ** args)
 //	distance_t radio = 0.04;
 
 //	main_test_holes();
-	viewer_main(nargs, args);
 //	main_testkeycomponents();
 //	main_testkeypoints();
 	return 0;

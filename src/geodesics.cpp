@@ -6,8 +6,6 @@
 
 #define DP 5e-2
 
-using namespace arma;
-
 geodesics::geodesics(che * mesh, const vector<index_t> & sources, const option_t & opt, const size_t & n_iter, const distance_t & radio)
 {
 	n_vertices = mesh->n_vertices();
@@ -199,7 +197,7 @@ distance_t geodesics::update(index_t & d, che * mesh, const index_t & he, vertex
 {
 	d = NIL;
 
-	mat X(3,2);
+	a_mat X(3,2);
 	index_t x[3];
 
 	x[0] = mesh->vt(next(he));
@@ -223,22 +221,22 @@ distance_t geodesics::update(index_t & d, che * mesh, const index_t & he, vertex
 	return planar_update(d, X, x, vx);
 }
 
-distance_t geodesics::planar_update(index_t & d, mat & X, index_t * x, vertex & vx)
+distance_t geodesics::planar_update(index_t & d, a_mat & X, index_t * x, vertex & vx)
 {
-	mat ones(2,1);
+	a_mat ones(2,1);
 	ones.ones(2,1);
 
-	mat Q;
+	a_mat Q;
 	if(!inv_sympd(Q, X.t() * X))
 		return INFINITY;
 
-	mat t(2,1);
+	a_mat t(2,1);
 
 	t(0) = distances[x[0]];
 	t(1) = distances[x[1]];
 
 	distance_t p;
-	mat delta = ones.t() * Q * t;
+	a_mat delta = ones.t() * Q * t;
 	distance_t dis = as_scalar(delta*delta - (ones.t() * Q * ones) * (as_scalar(t.t() * Q * t) - 1));
 
 	if(dis >= 0)
@@ -248,10 +246,10 @@ distance_t geodesics::planar_update(index_t & d, mat & X, index_t * x, vertex & 
 	}
 	else p = INFINITY;
 
-	mat n = X * Q * (t - p * ones);
-	mat cond = Q * X.t() * n;
+	a_mat n = X * Q * (t - p * ones);
+	a_mat cond = Q * X.t() * n;
 
-	vec v(3);
+	a_vec v(3);
 
 	if(t(0) == INFINITY || t(1) == INFINITY || dis < 0 || (cond(0) >= 0 || cond(1) >= 0))
 	{
@@ -265,11 +263,11 @@ distance_t geodesics::planar_update(index_t & d, mat & X, index_t * x, vertex & 
 	}
 	else
 	{
-		mat A(3,2);
+		a_mat A(3,2);
 		A.col(0) = -n;
 		A.col(1) = X.col(1) - X.col(0);
-		vec b = -X.col(0);
-		mat l =	solve(A, b);
+		a_vec b = -X.col(0);
+		a_mat l =	solve(A, b);
 		v = l(1) * A.col(1) + X.col(0);
 	}
 

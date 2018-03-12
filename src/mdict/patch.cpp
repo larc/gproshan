@@ -119,7 +119,7 @@ void patch::gather_vertices(che * mesh, const index_t & v, const distance_t & ra
 	size_t count_toplevel = 0;
 	size_t current_toplevel = 0;
 
-	vec p(3);
+	a_vec p(3);
 	link_t link;
 	toplevel[v] = 0;
 	qvertices.push_back(v);

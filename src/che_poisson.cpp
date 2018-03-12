@@ -1,15 +1,13 @@
 #include "che_poisson.h"
 #include "laplacian.h"
 
-#include <armadillo>
-
-using namespace arma;
+#include "include_arma.h"
 
 void poisson(che * mesh, const size_t & old_n_vertices, index_t k)
 {
 	if(!k) return;
 
-	mat B(mesh->n_vertices(), 3);
+	a_mat B(mesh->n_vertices(), 3);
 	for(index_t v = 0; v < mesh->n_vertices(); v++)
 	{
 		if(v < old_n_vertices)
@@ -21,13 +19,13 @@ void poisson(che * mesh, const size_t & old_n_vertices, index_t k)
 		else B.row(v).zeros();
 	}
 
-	sp_mat L, A;
+	a_sp_mat L, A;
 	laplacian(mesh, L, A);
 
 	for(index_t i = 0; i < mesh->n_vertices(); i++)
 		B.row(i) *= -1 / A(i,i);
 
-	sp_mat M;
+	a_sp_mat M;
 	vertex_t s = (k % 2) ? -1 : 1;
 
 	if(k > 1) M = A * L;
@@ -46,7 +44,7 @@ void poisson(che * mesh, const size_t & old_n_vertices, index_t k)
 	A.shed_cols(0, old_n_vertices - 1);
 	B.shed_rows(0, old_n_vertices - 1);
 
-	mat X;
+	a_mat X;
 	if(spsolve(X, s * L, s * B))
 	for(index_t v = old_n_vertices; v < mesh->n_vertices(); v++)
 	{
@@ -56,13 +54,13 @@ void poisson(che * mesh, const size_t & old_n_vertices, index_t k)
 	}
 }
 
-void biharmonic_interp_2(mat & P, mat & H)
+void biharmonic_interp_2(a_mat & P, a_mat & H)
 {
 	size_t n = P.n_cols;
 	vertex_t x;
 
-	mat A(n, n);
-	vec pi(2), pj(2);
+	a_mat A(n, n);
+	a_vec pi(2), pj(2);
 
 	for(index_t i = 0; i < n; i++)
 	{
@@ -75,7 +73,7 @@ void biharmonic_interp_2(mat & P, mat & H)
 		}
 	}
 
-	mat alpha = solve(A, P.row(2).t());
+	a_mat alpha = solve(A, P.row(2).t());
 
 	for(index_t i = 0; i < H.n_cols; i++)
 	{
@@ -113,7 +111,7 @@ void biharmonic_interp_2(che * mesh, const size_t & old_n_vertices, const size_t
 	delete [] rings;
 	delete [] sorted;
 
-	mat P(3, sub_mesh_hole.size());
+	a_mat P(3, sub_mesh_hole.size());
 	index_t i = 0;
 	for(index_t & b: sub_mesh_hole)
 	{
@@ -123,7 +121,7 @@ void biharmonic_interp_2(che * mesh, const size_t & old_n_vertices, const size_t
 		i++;
 	}
 
-	mat H(3, n_vertices - old_n_vertices);
+	a_mat H(3, n_vertices - old_n_vertices);
 
 	for(index_t i = 0, v = old_n_vertices; v < n_vertices; v++)
 	{
@@ -133,13 +131,13 @@ void biharmonic_interp_2(che * mesh, const size_t & old_n_vertices, const size_t
 		i++;
 	}
 
-	vec avg = mean(H, 1);
+	a_vec avg = mean(H, 1);
 
 	P.each_col() -= avg;
 	H.each_col() -= avg;
 
-	mat E;
-	vec eval;
+	a_mat E;
+	a_vec eval;
 	eig_sym(eval, E, H * H.t());
 	E.swap_cols(0,2);
 

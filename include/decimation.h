@@ -4,15 +4,14 @@
 #include "che.h"
 
 #include <string>
-#include <armadillo>
+#include "include_arma.h"
 
 using namespace std;
-using namespace arma;
 
 class decimation
 {
 	private:
-		mat * Q;
+		a_mat * Q;
 		che * mesh;
 		corr_t * corr;
 		index_t levels;

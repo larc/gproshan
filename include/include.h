@@ -15,9 +15,9 @@ typedef double matrix_t;
 typedef double percent_t;
 
 #ifdef SINGLE_P
-typedef float vertex_t;
+	typedef float vertex_t;
 #else
-typedef double vertex_t;
+	typedef double vertex_t;
 #endif
 
 typedef vertex_t distance_t;

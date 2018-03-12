@@ -4,9 +4,7 @@
 #include "include.h"
 #include "d_mesh.h"
 
-#include <armadillo>
-
-using namespace arma;
+#include "include_arma.h"
 
 // mesh dictionary learning and sparse coding namespace
 namespace mdict {

@@ -62,7 +62,7 @@ void viewer_process_gaussian_curvature();
 void viewer_process_edge_collapse();
 void viewer_select_multiple();
 
-int viewer_main(int nargs, char ** args);
+int viewer_main(int nargs, const char ** args);
 
 #endif //APP_VIEWER_H
 

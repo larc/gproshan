@@ -15,10 +15,13 @@ che_viewer viewer::meshes[N_MESHES];
 vcorr_t viewer::corr_mesh[N_MESHES]; // zero initialization
 size_t viewer::n_meshes = 0;
 index_t viewer::current = 0;
+
 vector<index_t> viewer::select_vertices;
 vector<vertex> viewer::other_vertices;
 vector<vertex> viewer::vectors;
 vector<string> viewer::sub_menus;
+
+char * viewer::share = NULL;
 
 int viewer::window_size[2] = {1366, 768};
 int viewer::m_window_size[N_MESHES][2] = {	{1, 1}, {1, 2}, {1, 3}, 
@@ -435,7 +438,7 @@ void viewer::display()
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_LIGHTING);
 
-	set_mesh_materia();
+	set_mesh_a_materia();
 	
 	ww = (double) glutGet(GLUT_WINDOW_WIDTH) / m_window_size[n_meshes - 1][1];
 	wh = (double) glutGet(GLUT_WINDOW_HEIGHT) / m_window_size[n_meshes - 1][0];
@@ -461,7 +464,7 @@ void viewer::set_lighting()
 	glEnable(GL_NORMALIZE);
 }
 
-void viewer::set_mesh_materia()
+void viewer::set_mesh_a_materia()
 {
 	GLfloat diffuse[4] = { .8, .5, .3, 1. };
 	GLfloat specular[4] = { .3, .3, .3, 1. };

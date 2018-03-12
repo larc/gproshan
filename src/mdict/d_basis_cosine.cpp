@@ -13,12 +13,12 @@ basis_cosine::basis_cosine(const size_t & _r, const size_t & _n, const distance_
 	dim = r * n;
 }
 
-void basis_cosine::discrete(mat & phi, const mat & xy)
+void basis_cosine::discrete(a_mat & phi, const a_mat & xy)
 {
 	assert(phi.n_cols == dim);
 
-	vec x = xy.row(0).t();
-	vec y = xy.row(1).t();
+	a_vec x = xy.row(0).t();
+	a_vec y = xy.row(1).t();
 
 	vertex_t d = 1.0 / (r - 1);
 	vertex_t c;
@@ -46,7 +46,7 @@ void basis_cosine::plot_basis(ostream & os)
 	}
 }
 
-void basis_cosine::plot_atoms(ostream & os, const vec & A)
+void basis_cosine::plot_atoms(ostream & os, const a_vec & A)
 {
 	vertex_t d = 1.0 / (r - 1);
 	vertex_t c;
@@ -59,7 +59,7 @@ void basis_cosine::plot_atoms(ostream & os, const vec & A)
 	}
 }
 
-vec basis_cosine::cosine(const vec & x, const vec & y, const vertex_t & c, const vertex_t & alpha)
+a_vec basis_cosine::cosine(const a_vec & x, const a_vec & y, const vertex_t & c, const vertex_t & alpha)
 {
 	return cos(c * (alpha * x + (1 - alpha) * y));
 }

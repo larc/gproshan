@@ -4,7 +4,7 @@
 #include "include.h"
 #include "che.h"
 
-#include <armadillo>
+#include "include_arma.h"
 
 /*!
 	Compute the geodesics distances on a mesh from a source or multi-source. This class implements
@@ -51,7 +51,7 @@ class geodesics
 		void run_parallel_toplesets_propagation_gpu(che * mesh, const vector<index_t> & sources, const size_t & n_iter, const distance_t & radio);
 
 		distance_t update(index_t & d, che * mesh, const index_t & he, vertex & vx);
-		distance_t planar_update(index_t & d, arma::mat & X, index_t * x, vertex & vx);
+		distance_t planar_update(index_t & d, a_mat & X, index_t * x, vertex & vx);
 };
 
 #endif //GEODESICS_H

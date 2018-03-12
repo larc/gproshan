@@ -6,7 +6,7 @@
 
 #include <cmath>
 #include <vector>
-#include <armadillo>
+#include "include_arma.h"
 
 struct path
 {
@@ -48,8 +48,8 @@ class fastmarching
 	private:
 		void calcular_FM(off & model, vector<index_t> & source);
 		distance_t update(path p, path & r, off & model);
-		distance_t planar_update(path & r, arma::mat & X, size_t ix0, size_t ix1, bool debug = 0);
-		distance_t spherical_update(path & r, arma::mat & X, size_t ix0, size_t ix1);
+		distance_t planar_update(path & r, a_mat & X, size_t ix0, size_t ix1, bool debug = 0);
+		distance_t spherical_update(path & r, a_mat & X, size_t ix0, size_t ix1);
 		void normalize();
 };
 

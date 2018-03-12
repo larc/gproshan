@@ -23,26 +23,26 @@ namespace mdict {
 size_t patch_t::min_nvp = 36;
 bool patch_t::del_index = false;
 
-vec gaussian(mat & xy, vertex_t sigma, vertex_t cx, vertex_t cy)
+a_vec gaussian(a_mat & xy, vertex_t sigma, vertex_t cx, vertex_t cy)
 {
-	vec x = xy.row(0).t() - cx;
-	vec y = xy.row(1).t() - cy;
+	a_vec x = xy.row(0).t() - cx;
+	a_vec y = xy.row(1).t() - cy;
 
-	x.for_each( [] (mat::elem_type & val) { val *= val; } );
-	y.for_each( [] (mat::elem_type & val) { val *= val; } );
+	x.for_each( [] (a_mat::elem_type & val) { val *= val; } );
+	y.for_each( [] (a_mat::elem_type & val) { val *= val; } );
 
 	return exp( - ( x + y ) / ( 2 * sigma * sigma ) );
 }
 
-vec cossine(mat & xy, distance_t radio, size_t K)
+a_vec cossine(a_mat & xy, distance_t radio, size_t K)
 {
-	vec x = xy.row(0).t() + 0.5;
-	vec y = xy.row(1).t() + 0.5;
+	a_vec x = xy.row(0).t() + 0.5;
+	a_vec y = xy.row(1).t() + 0.5;
 
 
 	size_t k = sqrt(K);
-	vec sum(x.n_elem,fill::zeros);
-	vec tmp;
+	a_vec sum(x.n_elem, arma::fill::zeros);
+	a_vec tmp;
 
 	for(index_t nx = 0; nx < k; nx++)
 	for(index_t ny = 0; ny < k; ny++)
@@ -53,10 +53,10 @@ vec cossine(mat & xy, distance_t radio, size_t K)
 	return sum;
 }
 
-void phi_gaussian(mat & phi, mat & xy, params_t params)
+void phi_gaussian(a_mat & phi, a_mat & xy, params_t params)
 {
-	vec & cx = *( (vec * ) params[0] );
-	vec & cy = *( (vec * ) params[1] );
+	a_vec & cx = *( (a_vec * ) params[0] );
+	a_vec & cy = *( (a_vec * ) params[1] );
 	vertex_t sigma = *( (vertex_t * ) params[2] );
 
 	size_t K = phi.n_cols;
@@ -65,7 +65,7 @@ void phi_gaussian(mat & phi, mat & xy, params_t params)
 		phi.col(k) = gaussian(xy, sigma, cx(k), cy(k));
 }
 
-void get_centers_gaussian(vec & cx, vec & cy, vertex_t radio, size_t K)
+void get_centers_gaussian(a_vec & cx, a_vec & cy, vertex_t radio, size_t K)
 {
 	if(K == 1)
 	{
@@ -119,8 +119,8 @@ void PCA(patch_t & rp)
 	rp.avg = mean(rp.xyz, 1);
 	rp.xyz.each_col() -= rp.avg;
 
-	mat C = rp.xyz * rp.xyz.t();
-	vec eigval;
+	a_mat C = rp.xyz * rp.xyz.t();
+	a_vec eigval;
 	eig_sym(eigval, rp.E, C);
 
 	rp.E.swap_cols(0, 2);
@@ -199,7 +199,7 @@ void save_patches(vector<patch_t> & patches, size_t M)
 	os.close();
 }
 
-void partial_mesh_reconstruction(size_t old_n_vertices, che * mesh, size_t M, vector<patch_t> & patches, vector<patches_map_t> & patches_map, mat & A, mat & alpha)
+void partial_mesh_reconstruction(size_t old_n_vertices, che * mesh, size_t M, vector<patch_t> & patches, vector<patches_map_t> & patches_map, a_mat & A, a_mat & alpha)
 {
 	#pragma omp parallel for
 	for(index_t p = M; p < patches.size(); p++)
@@ -208,7 +208,7 @@ void partial_mesh_reconstruction(size_t old_n_vertices, che * mesh, size_t M, ve
 
 		if(rp.indexes)
 		{
-			vec x = rp.phi * A * alpha.col(p);
+			a_vec x = rp.phi * A * alpha.col(p);
 
 			rp.xyz.row(2) = x.t();
 
@@ -218,7 +218,7 @@ void partial_mesh_reconstruction(size_t old_n_vertices, che * mesh, size_t M, ve
 
 	distance_t h = 2;
 
-	vec V(3);
+	a_vec V(3);
 
 	#pragma omp parallel for private(V)
 	for(index_t v = old_n_vertices; v < mesh->n_vertices(); v++)
@@ -237,9 +237,9 @@ void partial_mesh_reconstruction(size_t old_n_vertices, che * mesh, size_t M, ve
 
 }
 
-void mesh_reconstruction(che * mesh, size_t M, vector<patch> & patches, vector<vpatches_t> & patches_map, mat & A, mat & alpha, const index_t & v_i)
+void mesh_reconstruction(che * mesh, size_t M, vector<patch> & patches, vector<vpatches_t> & patches_map, a_mat & A, a_mat & alpha, const index_t & v_i)
 {
-	mat V(3, mesh->n_vertices(), fill::zeros);
+	a_mat V(3, mesh->n_vertices(), arma::fill::zeros);
 
 	#pragma omp parallel for
 	for(index_t p = 0; p < M; p++)
@@ -248,7 +248,7 @@ void mesh_reconstruction(che * mesh, size_t M, vector<patch> & patches, vector<v
 
 		if(rp.phi.n_rows)
 		{
-			vec x = rp.phi * A * alpha.col(p);
+			a_vec x = rp.phi * A * alpha.col(p);
 
 			rp.xyz.row(2) = x.t();
 			rp.itransform();
@@ -286,9 +286,9 @@ void mesh_reconstruction(che * mesh, size_t M, vector<patch> & patches, vector<v
 	mesh->set_vertices(new_vertices + v_i, mesh->n_vertices() - v_i, v_i);
 }
 
-vec non_local_means_vertex(mat & alpha, const index_t & v, vector<patch> & patches, vector<vpatches_t> & patches_map, const distance_t & h)
+a_vec non_local_means_vertex(a_mat & alpha, const index_t & v, vector<patch> & patches, vector<vpatches_t> & patches_map, const distance_t & h)
 {
-	vec n_vec(3, fill::zeros);
+	a_vec n_a_vec(3, arma::fill::zeros);
 	area_t sum = 0;
 
 	distance_t * w = new distance_t[patches_map[v].size()];
@@ -312,19 +312,19 @@ vec non_local_means_vertex(mat & alpha, const index_t & v, vector<patch> & patch
 	for(auto p: patches_map[v])
 	{
 		w[i] /= sum;
-		n_vec += w[i] * patches[p.first].xyz.col(p.second);
+		n_a_vec += w[i] * patches[p.first].xyz.col(p.second);
 		i++;
 	}
 
 	delete [] w;
 
-	return n_vec;
+	return n_a_vec;
 }
 
 /// DEPRECATED
-void mesh_reconstruction(che * mesh, size_t M, vector<patch_t> & patches, vector<patches_map_t> & patches_map, mat & A, mat & alpha, const index_t & v_i)
+void mesh_reconstruction(che * mesh, size_t M, vector<patch_t> & patches, vector<patches_map_t> & patches_map, a_mat & A, a_mat & alpha, const index_t & v_i)
 {
-	mat V(3, mesh->n_vertices(), fill::zeros);
+	a_mat V(3, mesh->n_vertices(), arma::fill::zeros);
 
 	#pragma omp parallel for
 	for(index_t p = 0; p < M; p++)
@@ -333,7 +333,7 @@ void mesh_reconstruction(che * mesh, size_t M, vector<patch_t> & patches, vector
 
 		if(rp.phi.n_rows)
 		{
-			vec x = rp.phi * A * alpha.col(p);
+			a_vec x = rp.phi * A * alpha.col(p);
 
 			rp.xyz.row(2) = x.t();
 			rp.itransform();
@@ -372,9 +372,9 @@ void mesh_reconstruction(che * mesh, size_t M, vector<patch_t> & patches, vector
 }
 
 /// DEPRECATED
-vec non_local_means_vertex(mat & alpha, const index_t & v, vector<patch_t> & patches, vector<patches_map_t> & patches_map, const distance_t & h)
+a_vec non_local_means_vertex(a_mat & alpha, const index_t & v, vector<patch_t> & patches, vector<patches_map_t> & patches_map, const distance_t & h)
 {
-	vec n_vec(3, fill::zeros);
+	a_vec n_a_vec(3, arma::fill::zeros);
 	area_t sum = 0;
 
 	distance_t * w = new distance_t[patches_map[v].size()];
@@ -398,23 +398,23 @@ vec non_local_means_vertex(mat & alpha, const index_t & v, vector<patch_t> & pat
 	for(auto p: patches_map[v])
 	{
 		w[i] /= sum;
-		n_vec += w[i] * patches[p.first].xyz.col(p.second);
+		n_a_vec += w[i] * patches[p.first].xyz.col(p.second);
 		i++;
 	}
 
 	delete [] w;
 
-	return n_vec;
+	return n_a_vec;
 }
 
-vec simple_means_vertex(mat & alpha, const index_t & v, vector<patch_t> & patches, vector<patches_map_t> & patches_map, const distance_t & h)
+a_vec simple_means_vertex(a_mat & alpha, const index_t & v, vector<patch_t> & patches, vector<patches_map_t> & patches_map, const distance_t & h)
 {
-	vec n_vec(3, fill::zeros);
+	a_vec n_a_vec(3, arma::fill::zeros);
 
 	for(auto p: patches_map[v])
-		n_vec += patches[p.first].xyz.col(p.second);
+		n_a_vec += patches[p.first].xyz.col(p.second);
 
-	return n_vec / patches_map[v].size();
+	return n_a_vec / patches_map[v].size();
 }
 
 } // mdict

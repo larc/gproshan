@@ -5,9 +5,6 @@
 #include <fstream>
 #include <cublas_v2.h>
 
-#define NT 32
-#define NB(x) (x + NT - 1) / NT
-
 // TEST ITER CODE ACCURACY
 distance_t * cuda_fastmarching(CHE * h_mesh, CHE * d_mesh, const index_t * source, length_t source_size, const vector<index_t> & limites, const index_t * h_sorted, index_t * h_clusters, distance_t * real_dist)
 {

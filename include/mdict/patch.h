@@ -5,10 +5,9 @@
 #include "che.h"
 
 #include <vector>
-#include <armadillo>
+#include "include_arma.h"
 
 using namespace std;
-using namespace arma;
 
 /// Mesh dictionary learning and sparse coding namespace
 namespace mdict {
@@ -23,10 +22,10 @@ class patch
 {
 	public:
 		vector<index_t> vertices;		///< Vertices of the patch.
-		mat T;							///< Transformation matrix.
-		vec x;							///< Center point.
-		mat xyz;						///< Matrix of points.
-		mat phi;
+		a_mat T;							///< Transfora_mation a_matrix.
+		a_vec x;							///< Center point.
+		a_mat xyz;						///< Matrix of points.
+		a_mat phi;
 	
 	public:
 		static size_t expected_nv;		///< Expected number of patch vertices.
@@ -67,7 +66,7 @@ class patch
 								index_t * toplevel
 								);
 		
-		/// Initialize transformation matrix T and translation vector x, using CGAL jet_fitting.
+		/// Initialize transfora_mation a_matrix T and translation vector x, using CGAL jet_fitting.
 		void jet_fit_directions(che * mesh,
 								const index_t & v
 								);

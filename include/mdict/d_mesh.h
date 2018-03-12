@@ -6,15 +6,13 @@
 #include "patch.h"
 #include "geodesics.h"
 
-#include <armadillo>
-
-using namespace arma;
+#include "include_arma.h"
 
 // mesh dictionary learning and sparse coding namespace
 namespace mdict {
 
 typedef void * params_t[];
-typedef void (* phi_function_t) (mat &, mat &, params_t);
+typedef void (* phi_function_t) (a_mat &, a_mat &, params_t);
 
 typedef map< index_t, index_t > patches_map_t;
 
@@ -31,10 +29,10 @@ struct patch_t
 
 	size_t n;
 	index_t * indexes;
-	mat xyz;
-	vec avg;
-	mat E;
-	mat phi;
+	a_mat xyz;
+	a_vec avg;
+	a_mat E;
+	a_mat phi;
 
 	patch_t()
 	{
@@ -96,31 +94,31 @@ struct patch_t
 	}
 };
 
-vec gaussian(mat & xy, vertex_t sigma, vertex_t cx, vertex_t cy);
+a_vec gaussian(a_mat & xy, vertex_t sigma, vertex_t cx, vertex_t cy);
 
-vec cossine(mat & xy, distance_t radio, size_t K);
+a_vec cossine(a_mat & xy, distance_t radio, size_t K);
 
-void phi_gaussian(mat & phi, mat & xy, void ** params);
+void phi_gaussian(a_mat & phi, a_mat & xy, void ** params);
 
-void get_centers_gaussian(vec & cx, vec & cy, vertex_t radio, size_t K);
+void get_centers_gaussian(a_vec & cx, a_vec & cy, vertex_t radio, size_t K);
 
 void save_patches_coordinates( vector<patch_t> & patches, vector< pair<index_t,index_t> > * lpatches, size_t NV);
 
 void save_patches(vector<patch_t> patches, size_t M);
 
-void partial_mesh_reconstruction(size_t old_n_vertices, che * mesh, size_t M, vector<patch_t> & patches, vector<patches_map_t> & patches_map, mat & A, mat & alpha);
+void partial_mesh_reconstruction(size_t old_n_vertices, che * mesh, size_t M, vector<patch_t> & patches, vector<patches_map_t> & patches_map, a_mat & A, a_mat & alpha);
 
-void mesh_reconstruction(che * mesh, size_t M, vector<patch> & patches, vector<vpatches_t> & patches_map, mat & A, mat & alpha, const index_t & v_i = 0);
+void mesh_reconstruction(che * mesh, size_t M, vector<patch> & patches, vector<vpatches_t> & patches_map, a_mat & A, a_mat & alpha, const index_t & v_i = 0);
 
-vec non_local_means_vertex(mat & alpha, const index_t & v, vector<patch> & patches, vector<vpatches_t> & patches_map, const distance_t & h);
-
-/// DEPRECATED
-void mesh_reconstruction(che * mesh, size_t M, vector<patch_t> & patches, vector<patches_map_t> & patches_map, mat & A, mat & alpha, const index_t & v_i = 0);
+a_vec non_local_means_vertex(a_mat & alpha, const index_t & v, vector<patch> & patches, vector<vpatches_t> & patches_map, const distance_t & h);
 
 /// DEPRECATED
-vec non_local_means_vertex(mat & alpha, const index_t & v, vector<patch_t> & patches, vector<patches_map_t> & patches_map, const distance_t & h);
+void mesh_reconstruction(che * mesh, size_t M, vector<patch_t> & patches, vector<patches_map_t> & patches_map, a_mat & A, a_mat & alpha, const index_t & v_i = 0);
 
-vec simple_means_vertex(mat & alpha, const index_t & v, vector<patch_t> & patches, vector<patches_map_t> & patches_map, const distance_t & h);
+/// DEPRECATED
+a_vec non_local_means_vertex(a_mat & alpha, const index_t & v, vector<patch_t> & patches, vector<patches_map_t> & patches_map, const distance_t & h);
+
+a_vec simple_means_vertex(a_mat & alpha, const index_t & v, vector<patch_t> & patches, vector<patches_map_t> & patches_map, const distance_t & h);
 
 } // mdict
 

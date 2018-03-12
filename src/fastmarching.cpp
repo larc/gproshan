@@ -1,8 +1,6 @@
 #include "fastmarching.h"
 #include <queue>
 
-using namespace arma;
-
 size_t black = 0, green = 1, red = 2;
 
 path::path(face fx_, vertex vx_, size_t vi_)
@@ -220,7 +218,7 @@ void fastmarching::calcular_FM(off & model, vector<index_t> & source)
 
 distance_t fastmarching::update(path p, path & r, off & model)
 {
-	mat X(3,2);
+	a_mat X(3,2);
 	vertex x0, x1, x2;	//x2 -> actualizar
 	size_t ix0, ix1, ix2;
 
@@ -278,22 +276,22 @@ distance_t fastmarching::update(path p, path & r, off & model)
 	return planar_update(r, X, ix0, ix1);
 }
 
-distance_t fastmarching::planar_update(path & r, mat & X, size_t ix0, size_t ix1, bool debug)
+distance_t fastmarching::planar_update(path & r, a_mat & X, size_t ix0, size_t ix1, bool debug)
 {
-	mat ones(2,1);
+	a_mat ones(2,1);
 	ones.ones(2,1);
 
-	mat Q;
+	a_mat Q;
 	if(!inv_sympd(Q, X.t() * X))
 		return INFINITY;
 
-	mat t(2,1);
+	a_mat t(2,1);
 
 	t(0) = distances[ix0];
 	t(1) = distances[ix1];
 
 	distance_t p;
-	mat delta = ones.t() * Q * t;
+	a_mat delta = ones.t() * Q * t;
 	distance_t dis = as_scalar(delta * delta - (ones.t() * Q * ones) * (as_scalar(t.t() * Q * t) - 1));
 
 	if(dis >= 0)
@@ -304,10 +302,10 @@ distance_t fastmarching::planar_update(path & r, mat & X, size_t ix0, size_t ix1
 	}
 	else p = INFINITY;
 
-	mat n = X * Q * (t - p * ones);
-	mat cond = Q * X.t() * n;
+	a_mat n = X * Q * (t - p * ones);
+	a_mat cond = Q * X.t() * n;
 
-	mat x;
+	a_mat x;
 	if(t(0) == INFINITY || t(1) == INFINITY || dis < 0 || (cond(0) >= 0 || cond(1) >= 0))
 	{
 		if(debug) cout<<"-- dijkstra --"<<endl<<endl;
@@ -329,11 +327,11 @@ distance_t fastmarching::planar_update(path & r, mat & X, size_t ix0, size_t ix1
 	}
 	else
 	{
-		mat A(3,2);
+		a_mat A(3,2);
 		A.col(0) = -n;
 		A.col(1) = X.col(1) - X.col(0);
-		mat b = -X.col(0);
-		mat l = solve(A, b);
+		a_mat b = -X.col(0);
+		a_mat l = solve(A, b);
 		x = l(1) * A.col(1) + X.col(0);
 	}
 
@@ -342,27 +340,27 @@ distance_t fastmarching::planar_update(path & r, mat & X, size_t ix0, size_t ix1
 	return p;
 }
 
-distance_t fastmarching::spherical_update(path & r, mat & X, size_t ix0, size_t ix1)
+distance_t fastmarching::spherical_update(path & r, a_mat & X, size_t ix0, size_t ix1)
 {
-	mat ones(2,1);
+	a_mat ones(2,1);
 	ones.ones();
 
-	mat Q;
+	a_mat Q;
 	if(!inv_sympd(Q, X.t() * X))
 		return INFINITY;
 
-	mat s(2,1);
+	a_mat s(2,1);
 
 	s(0) = distances[ix0]*distances[ix0];
 	s(1) = distances[ix1]*distances[ix1];
 
-	mat q = s;
+	a_mat q = s;
 
 	q(0) -= as_scalar(X.col(0).t() * X.col(0));
 	q(1) -= as_scalar(X.col(1).t() * X.col(1));
 
 	distance_t p, dis;
-	mat delta = ones.t()*Q*q;
+	a_mat delta = ones.t()*Q*q;
 
 	delta(0) += 2;
 	dis = as_scalar(delta * delta - (ones.t() * Q * ones) * (q.t() * Q * q));
@@ -374,9 +372,9 @@ distance_t fastmarching::spherical_update(path & r, mat & X, size_t ix0, size_t 
 	}
 	else p = INFINITY;
 
-	mat cond = Q * (p * ones - q);
+	a_mat cond = Q * (p * ones - q);
 
-	mat x;
+	a_mat x;
 	if(s(0) == INFINITY || s(1) == INFINITY || dis < 0 || cond(0) * cond(1) < 0)
 	//if(s(0) == INFINITY || s(1) == INFINITY || dis < 0 || cond(0) >= 0 || cond(1) >= 0)
 	{
@@ -398,14 +396,14 @@ distance_t fastmarching::spherical_update(path & r, mat & X, size_t ix0, size_t 
 	}
 	else
 	{
-		mat n = solve(X.t(), p * ones - q);
-		mat A(3,2);
+		a_mat n = solve(X.t(), p * ones - q);
+		a_mat A(3,2);
 		A.col(0) = -n;
 		A.col(1) = X.col(1) - X.col(0);
 
-		mat b = -X.col(0);
+		a_mat b = -X.col(0);
 
-		mat l = solve(A, b);
+		a_mat l = solve(A, b);
 		x = l(1)*A.col(1)+X.col(0);
 
 		p = sqrt(p);
