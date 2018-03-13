@@ -58,7 +58,7 @@ int viewer_main(int nargs, const char ** args)
 	viewer::add_process('d', "Delete non manifolds vertices", viewer_process_delete_non_manifold_vertices);
 	viewer::add_process('B', "Fill holes (biharmonic splines)", viewer_process_fill_holes_biharmonic_splines);
 	viewer::add_process('K', "Gaussian curvature", viewer_process_gaussian_curvature);
-	viewer::add_process('/', "Decia_mation", viewer_process_edge_collapse);
+	viewer::add_process('/', "Decimation", viewer_process_edge_collapse);
 	viewer::add_process(':', "Select multiple vertices", viewer_select_multiple);
 
 	//init viewer
@@ -191,9 +191,9 @@ void viewer_process_functional_maps()
 	debug(load_time)
 
 	a_vec eigval;
-	a_mat eiga_vec;
+	a_mat eigvec;
 
-	TIC(load_time) K = eigs_laplacian(eigval, eiga_vec, viewer::mesh(), L, K); TOC(load_time)
+	TIC(load_time) K = eigs_laplacian(eigval, eigvec, viewer::mesh(), L, K); TOC(load_time)
 	debug(load_time)
 	
 	debug(K)
@@ -203,12 +203,12 @@ void viewer_process_functional_maps()
 		if(k) viewer::add_mesh({new che_off(viewer::mesh()->filename())});
 		viewer::current = k;
 
-		eiga_vec.col(k) -= eiga_vec.col(k).min();
-		eiga_vec.col(k) /= eiga_vec.col(k).max();
+		eigvec.col(k) -= eigvec.col(k).min();
+		eigvec.col(k) /= eigvec.col(k).max();
 	
 		#pragma omp parallel for
 		for(index_t v = 0; v < viewer::mesh()->n_vertices(); v++)
-			viewer::vcolor(v) = eiga_vec(v, k);
+			viewer::vcolor(v) = eigvec(v, k);
 	}
 	
 	viewer::current = 0;
@@ -226,9 +226,9 @@ void viewer_process_wks()
 	debug(load_time)
 
 	a_vec eigval;
-	a_mat eiga_vec;
+	a_mat eigvec;
 
-	TIC(load_time) K = eigs_laplacian(eigval, eiga_vec, viewer::mesh(), L, K); TOC(load_time)
+	TIC(load_time) K = eigs_laplacian(eigval, eigvec, viewer::mesh(), L, K); TOC(load_time)
 	debug(load_time)
 
 	distance_t max_s = 0;
@@ -238,7 +238,7 @@ void viewer_process_wks()
 		a_vec s(T, arma::fill::zeros);
 		for(index_t t = 0; t < T; t++)
 		for(index_t k = 1; k < K; k++)
-			s(t) += exp(-eigval(k) * t) * eiga_vec(v, k) * eiga_vec(v, k);
+			s(t) += exp(-eigval(k) * t) * eigvec(v, k) * eigvec(v, k);
 
 		viewer::vcolor(v) = norm(s);
 		max_s = max(max_s, viewer::vcolor(v));
@@ -262,9 +262,9 @@ void viewer_process_hks()
 	debug(load_time)
 
 	a_vec eigval;
-	a_mat eiga_vec;
+	a_mat eigvec;
 
-	TIC(load_time) K = eigs_laplacian(eigval, eiga_vec, viewer::mesh(), L, K); TOC(load_time)
+	TIC(load_time) K = eigs_laplacian(eigval, eigvec, viewer::mesh(), L, K); TOC(load_time)
 	debug(load_time)
 
 	if(!K) return;
@@ -276,7 +276,7 @@ void viewer_process_hks()
 		a_vec s(T, arma::fill::zeros);
 		for(index_t t = 0; t < T; t++)
 		for(index_t k = 1; k < K; k++)
-			s(t) += exp(-eigval(k) * t) * eiga_vec(v, k) * eiga_vec(v, k);
+			s(t) += exp(-eigval(k) * t) * eigvec(v, k) * eigvec(v, k);
 
 		viewer::vcolor(v) = norm(s);
 		max_s = max(max_s, viewer::vcolor(v));
@@ -299,23 +299,23 @@ void viewer_process_gps()
 	debug(load_time)
 
 	a_vec eigval;
-	a_mat eiga_vec;
+	a_mat eigvec;
 
-	TIC(load_time) K = eigs_laplacian(eigval, eiga_vec, viewer::mesh(), L, K); TOC(load_time)
+	TIC(load_time) K = eigs_laplacian(eigval, eigvec, viewer::mesh(), L, K); TOC(load_time)
 	debug(load_time)
 
-	eiga_vec.col(0).zeros();
+	eigvec.col(0).zeros();
 	for(index_t i = 1; i < K; i++)
-		eiga_vec.col(i) /= sqrt(eigval(i));
+		eigvec.col(i) /= sqrt(eigval(i));
 
-	a_mat data = eiga_vec.t();
+	a_mat data = eigvec.t();
 	a_mat means;
 
 	distance_t max_s = 0;
 	#pragma omp parallel for reduction(max: max_s)
 	for(index_t v = 0; v < viewer::mesh()->n_vertices(); v++)
 	{
-		viewer::vcolor(v) = norm(eiga_vec.row(v));
+		viewer::vcolor(v) = norm(eigvec.row(v));
 			max_s = max(max_s, viewer::vcolor(v));
 	}
 

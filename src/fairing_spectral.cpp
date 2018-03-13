@@ -28,11 +28,11 @@ void fairing_spectral::compute(che * shape)
 		positions[v] = shape->gt(v);
 
 	a_vec eigval;
-	a_mat eiga_vec;
+	a_mat eigvec;
 
-	TIC(time) k = eigs_laplacian(eigval, eiga_vec, shape, L, k); TOC(time)
+	TIC(time) k = eigs_laplacian(eigval, eigvec, shape, L, k); TOC(time)
 	debug(time)
 
-	X = X * eiga_vec * eiga_vec.t();
+	X = X * eigvec * eigvec.t();
 }
 

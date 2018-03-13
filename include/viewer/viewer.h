@@ -118,7 +118,7 @@ class viewer
 		// draw routines
 		static void set_gl();
 		static void set_lighting();
-		static void set_mesh_a_materia();
+		static void set_mesh_materia();
 		static void draw_scene();
 		static void draw_corr();
 		static void draw_polygons();

@@ -22,7 +22,7 @@ class patch
 {
 	public:
 		vector<index_t> vertices;		///< Vertices of the patch.
-		a_mat T;							///< Transfora_mation a_matrix.
+		a_mat T;							///< Transformation matrix.
 		a_vec x;							///< Center point.
 		a_mat xyz;						///< Matrix of points.
 		a_mat phi;
@@ -66,7 +66,7 @@ class patch
 								index_t * toplevel
 								);
 		
-		/// Initialize transfora_mation a_matrix T and translation vector x, using CGAL jet_fitting.
+		/// Initialize transformation matrix T and translation vector x, using CGAL jet_fitting.
 		void jet_fit_directions(che * mesh,
 								const index_t & v
 								);

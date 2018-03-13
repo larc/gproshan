@@ -141,7 +141,7 @@ void che::flip(const index_t & e)
 	if(OT[ET[e_nb]] != NIL) EHT[OT[ET[e_nb]]] = e_nb;
 }
 
-// https://www.a_mathworks.com/help/pde/ug/pdetriq.html
+// https://www.mathworks.com/help/pde/ug/pdetriq.html
 // 4*sqrt(3)*a
 // q = ----------------
 // h1^2+h2^2+h3^2

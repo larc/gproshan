@@ -22,8 +22,8 @@ class dictionary
 
 		size_t m;								///< number of dictionary atoms.
 		size_t M;								///< number of patches.
-		a_mat A;									///< dictionary continuous a_matrix.
-		a_mat alpha;								///< sparse coding a_matrix.
+		a_mat A;									///< dictionary continuous matrix.
+		a_mat alpha;								///< sparse coding matrix.
 		
 		distance_t f;
 		distance_t s_radio;						///< sampling geodesic radio.

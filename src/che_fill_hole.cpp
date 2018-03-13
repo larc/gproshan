@@ -384,7 +384,7 @@ che * fill_hole_front_angles_test(che * mesh, vector<index_t> & front_vertices, 
 	angle_t a75 = 75.0 * M_PI / 180;
 	angle_t a135 = 135.0 * M_PI / 180;
 
-	a_vec m_a_vec;
+	a_vec m_vec;
 	a_vec m_normal;
 	while(!front.empty() && p_iter--)
 	{
@@ -450,8 +450,8 @@ che * fill_hole_front_angles_test(che * mesh, vector<index_t> & front_vertices, 
 		{
 			index_t m_v = tmp_vertices.size();
 
-			m_a_vec = top.new_vertex(tmp_vertices, 0.5, lenght, neighbors[v], o, tmp_normals[v]);
-			tmp_vertices.push_back(m_a_vec);
+			m_vec = top.new_vertex(tmp_vertices, 0.5, lenght, neighbors[v], o, tmp_normals[v]);
+			tmp_vertices.push_back(m_vec);
 
 			faces.push_back(m_v);
 			faces.push_back(v);
@@ -488,10 +488,10 @@ che * fill_hole_front_angles_test(che * mesh, vector<index_t> & front_vertices, 
 		{
 			index_t m_v = tmp_vertices.size();
 
-			m_a_vec = top.new_vertex(tmp_vertices, 1./3, lenght, neighbors[v], o, tmp_normals[v]);
-			tmp_vertices.push_back(m_a_vec);
-			m_a_vec = top.new_vertex(tmp_vertices, 2./3, lenght, neighbors[v], o, tmp_normals[v]);
-			tmp_vertices.push_back(m_a_vec);
+			m_vec = top.new_vertex(tmp_vertices, 1./3, lenght, neighbors[v], o, tmp_normals[v]);
+			tmp_vertices.push_back(m_vec);
+			m_vec = top.new_vertex(tmp_vertices, 2./3, lenght, neighbors[v], o, tmp_normals[v]);
+			tmp_vertices.push_back(m_vec);
 
 			faces.push_back(m_v);
 			faces.push_back(v);
@@ -655,7 +655,7 @@ che * fill_hole_front_angles(vector<vertex> & vertices, const vertex_t & lenght,
 	angle_t a75 = 75.0 * M_PI / 180;
 	angle_t a135 = 135.0 * M_PI / 180;
 
-	a_vec m_a_vec;
+	a_vec m_vec;
 	while(!front.empty() && p_iter-- && p_iter < 2000)
 	{
 		while(!front.empty() &&
@@ -722,8 +722,8 @@ che * fill_hole_front_angles(vector<vertex> & vertices, const vertex_t & lenght,
 		{
 			index_t m_v = tmp_vertices.size();
 
-			m_a_vec = top.new_vertex(tmp_vertices, 0.5, lenght, neighbors[v], o);
-			tmp_vertices.push_back(m_a_vec);
+			m_vec = top.new_vertex(tmp_vertices, 0.5, lenght, neighbors[v], o);
+			tmp_vertices.push_back(m_vec);
 
 			faces.push_back(m_v);
 			faces.push_back(v);
@@ -758,10 +758,10 @@ che * fill_hole_front_angles(vector<vertex> & vertices, const vertex_t & lenght,
 		{
 			index_t m_v = tmp_vertices.size();
 
-			m_a_vec = top.new_vertex(tmp_vertices, 1./3, lenght, neighbors[v], o);
-			tmp_vertices.push_back(m_a_vec);
-			m_a_vec = top.new_vertex(tmp_vertices, 2./3, lenght, neighbors[v], o);
-			tmp_vertices.push_back(m_a_vec);
+			m_vec = top.new_vertex(tmp_vertices, 1./3, lenght, neighbors[v], o);
+			tmp_vertices.push_back(m_vec);
+			m_vec = top.new_vertex(tmp_vertices, 2./3, lenght, neighbors[v], o);
+			tmp_vertices.push_back(m_vec);
 
 			faces.push_back(m_v);
 			faces.push_back(v);
