@@ -43,8 +43,8 @@ void main_solve_arma();
 
 int main(int nargs, const char ** args)
 {
-	viewer_main(nargs, args);
-//	main_test_geodesics_ptp(nargs, args);
+//	viewer_main(nargs, args);
+	main_test_geodesics_ptp(nargs, args);
 
 //	generate_grid_obtuse(81, 10);
 //	generate_grid_cylinder(100, 1, 1000);

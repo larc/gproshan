@@ -71,7 +71,7 @@ void viewer::init(const vector<che *> & _meshes)
 	init_menus();
 
 	debug_info();
-//	mesh().debug_info();
+	mesh().debug_info();
 
 	set_gl();
 	init_glsl();
@@ -712,6 +712,8 @@ void viewer::draw_gradient_field()
 
 void viewer::pick_vertex(int x, int y)
 {
+	debug_me(VIEWER)
+
 	int width = glutGet(GLUT_WINDOW_WIDTH);
 	int height = glutGet(GLUT_WINDOW_HEIGHT);
 	if(x < 0 || x >= width || y < 0 || y >= height) return;
