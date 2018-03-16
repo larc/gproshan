@@ -1,6 +1,5 @@
-#include "geodesics_ptp.h"
 #include "geodesics_ptp.cuh"
-#include "che.cuh"
+#include "geodesics_ptp.h"
 
 #include <cstdio>
 #include <fstream>

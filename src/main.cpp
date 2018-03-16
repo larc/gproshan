@@ -35,8 +35,6 @@ void main_testkeypoints();
 double main_testkeycomponents();
 void main_testholes();
 void sampling_terrain(string file, size_t s, size_t K, string output = "patches_index", string planes = "normals");
-float test_fastmarching(string file, size_t n_test = 10);
-void main_test_fastmarching();
 void main_test_holes();
 void generate_grid_obtuse(const size_t & nr, const size_t & nc, const vertex_t & d = 1);
 void main_solve_arma();
@@ -53,7 +51,6 @@ int main(int nargs, const char ** args)
 //	prueba.one_test_fm("0001.null.0.off","");
 //	if(nargs > 1) test_image_denoising(args[1]);
 
-//	main_test_fastmarching();
 
 	//sampling_terrain("terreno.off", 4, 64);
 //	sampling_shape(nargs, args);
@@ -132,183 +129,6 @@ void main_test_holes()
 		printf("\\\\\\hline\n");
 		delete shape;
 	}
-}
-
-void main_test_fastmarching()
-{
-	string filename;
-	float time_s;
-
-	while(cin >> filename)
-	{
-		debug(filename)
-		time_s = test_fastmarching(filename, 1);
-
-		filename = PATH_MDATA + filename + ".off";
-		che * shape = new che_off(filename);
-		vector<index_t> sources = {0};
-
-		float time;
-		//farthest_point_sampling_gpu(sources, time, shape, 1000, 0);
-
-		debug(time)
-
-
-		map<index_t, index_t> deg;
-		for(index_t d, v = 0; v < shape->n_vertices(); v++)
-		{
-			d = 0;
-			for_star(he, shape, v) d++;
-			if(shape->ot_evt(v) == NIL) d++;
-			deg[d]++;
-		}
-
-		ofstream os("deg_hist");
-		for(auto pp: deg)
-			os << pp.first << " " << pp.second << endl;
-		os.close();
-		debug(system(("mv deg_hist " + PATH_TEST + "fastmarching/" + shape->name() + ".deg").c_str()))
-
-
-		index_t * rings = new index_t[shape->n_vertices()];
-		index_t * sorted = new index_t[shape->n_vertices()];
-		vector<index_t> limites;
-		shape->compute_toplesets(rings, sorted, limites, {0});
-
-		index_t * dist_rings = new index_t[limites.size() - 1];
-
-		os.open("rings_dist");
-		for(index_t i = 1; i < limites.size(); i++)
-			os << i - 1 << " " << (dist_rings[i - 1] = limites[i] - limites[i - 1]) << endl;
-		os.close();
-
-		sort(dist_rings, dist_rings + limites.size() - 1);
-
-		os.open("rings_dist_sort");
-		for(index_t i = 1; i < limites.size(); i++)
-			os << i - 1 << " " << dist_rings[i - 1] << endl;
-		os.close();
-
-		debug(system(("mv iter_error " + PATH_TEST + "fastmarching/fm_error_double_" + shape->name() + ".iter").c_str()))
-		debug(system(("mv rings_dist " + PATH_TEST + "fastmarching/" + shape->name() + ".levels").c_str()))
-		debug(system(("mv rings_dist_sort " + PATH_TEST + "fastmarching/" + shape->name() + ".s_levels").c_str()))
-
-		delete shape;
-		delete [] rings;
-		delete [] sorted;
-	}
-}
-
-distance_t * load_exact_geodesics(string file, size_t n, che * mesh, const index_t & s)
-{
-	ifstream is(PATH_TEST + ("exact_geodesics/" + file));
-	distance_t * distances_e = new distance_t[n];
-
-	if(is.good())
-	{
-		for(index_t i = 0; i < n; i++)
-			is >> distances_e[i];
-		is.close();
-		return distances_e;
-	}
-	else
-	{
-		for(index_t i = 0; i < n; i++)
-			distances_e[i] = *(mesh->gt(s) - mesh->gt(i));
-	}
-
-	return distances_e;
-}
-
-float test_fastmarching(string filename, size_t n_test)
-{
-	string file = filename + ".off";
-//	filename = filename.substr(filename.find_last_of('/') + 1, filename.find_last_of('.') - filename.find_last_of('/') - 1);
-	printf("%20s &", ("\\verb|" + filename + '|').c_str());
-	file = PATH_MDATA + file;
-	float time_c, time_p, time_s, time;
-
-	che * shape = new che_off(file);
-
-	vector<index_t> source = { 0 };
-	printf("%12ld &", shape->n_vertices());
-
-	distance_t * distances_e = load_exact_geodesics(filename, shape->n_vertices(), shape, source.front());
-
-	index_t * rings = new index_t[shape->n_vertices()];
-	index_t * sorted = new index_t[shape->n_vertices()];
-	vector<index_t> limites;
-	shape->compute_toplesets(rings, sorted, limites, source);
-
-	distance_t * distances_c;
-
-	time_c = 0;
-	for(index_t t = 1; t < n_test; t++)
-	{
-		distances_c = parallel_toplesets_propagation_gpu(shape, source, limites, sorted, time_c);
-		time_c += time;
-		delete [] distances_c;
-	}
-
-	//test iter error
-	//distances_c = parallel_fastmarching(shape, source.data(), source.size(), time, limites, sorted, 0, NULL, 1, distances_e);
-	delete [] distances_c;
-	// end test iter error
-
-	//distances_c = parallel_fastmarching(shape, source.data(), source.size(), time, limites, sorted);
-	time_c += time;
-	time_c /= n_test;
-
-	time_s = 0;
-	for(index_t t = 1; t < n_test; t++)
-	{
-		TIC(time) geodesics geodesic(shape, source); TOC(time)
-		time_s += time;
-	}
-
-	TIC(time) geodesics geodesic(shape, source); TOC(time)
-	time_s += time;
-	time_s /= n_test;
-
-	const distance_t * distances_s = &geodesic[0];
-
-	printf("%18.3f &%18.3f &%18.3f &", time_s, time_c, time_s/time_c);
-
-	distance_t error_c = 0;
-	distance_t error_s = 0;
-	for(index_t v = 1; v < shape->n_vertices(); v++)
-	{
-		if(distances_e)
-		{
-			error_c += abs(distances_c[v] - distances_e[v]) / distances_e[v];
-			error_s += abs(distances_s[v] - distances_e[v]) / distances_e[v];
-		}
-		else
-		{
-			distance_t d = *(shape->gt(0) - shape->gt(v));
-			error_c += abs(distances_c[v] - d) / d;
-			error_s += abs(distances_s[v] - d) / d;
-		}
-	}
-
-	error_c /= shape->n_vertices() - 1;
-	error_s /= shape->n_vertices() - 1;
-
-	error_c *= 100;
-	error_s *= 100;
-
-	printf("%18.3e & ", error_s);
-//	printf("%10s", error_s < error_c ? "\\color{blue}" : "\\color{red}");
-	printf("%18.3e \\\\\\hline\n", error_c);
-//	printf("%10s %18.3e \\\\\\hline\n", error_s < error_c ? "\\color{blue}" : "\\color{red}", error_s - error_c);
-
-	delete shape;
-	delete [] rings;
-	delete [] sorted;
-	delete [] distances_c;
-	delete [] distances_e;
-
-	return time_s;
 }
 
 void sampling_terrain(string file, size_t s, size_t K, string output, string planes)

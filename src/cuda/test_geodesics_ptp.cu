@@ -1,16 +1,26 @@
-#include "geodesics_ptp.h"
+#include "test_geodesics_ptp.cuh"
+#include "test_geodesics_ptp.h"
+
 #include "geodesics_ptp.cuh"
-#include "che.cuh"
+#include "geodesics_ptp.h"
 
 #include <fstream>
 #include <cublas_v2.h>
 
-// TEST ITER CODE ACCURACY
-distance_t * cuda_fastmarching(CHE * h_mesh, CHE * d_mesh, const index_t * source, length_t source_size, const vector<index_t> & limites, const index_t * h_sorted, index_t * h_clusters, distance_t * real_dist)
+distance_t * iter_error_parallel_toplesets_propagation_gpu(che * mesh, const vector<index_t> & sources, const vector<index_t> & limits, const index_t * sorted_index, const distance_t * exact_dist, float & time_ptp)
 {
-	FILE * f_iter_error;
-	if(real_dist) f_iter_error = fopen("iter_error", "w");
+	cudaDeviceReset();
 
+	cudaEvent_t start, stop;
+	cudaEventCreate(&start);
+	cudaEventCreate(&stop);
+	cudaEventRecord(start, 0);
+
+	// BEGIN PTP
+
+	CHE * h_mesh = new CHE(mesh);
+	CHE * dd_mesh, * d_mesh;
+	cuda_create_CHE(h_mesh, dd_mesh, d_mesh);
 
 	distance_t * h_dist = new distance_t[h_mesh->n_vertices];
 
@@ -18,75 +28,76 @@ distance_t * cuda_fastmarching(CHE * h_mesh, CHE * d_mesh, const index_t * sourc
 	cudaMalloc(&d_dist[0], sizeof(distance_t) * h_mesh->n_vertices);
 	cudaMalloc(&d_dist[1], sizeof(distance_t) * h_mesh->n_vertices);
 
-	index_t * d_clusters[2] = {NULL, NULL};
-	if(h_clusters) cudaMalloc(&d_clusters[0], sizeof(index_t) * h_mesh->n_vertices);
-	if(h_clusters) cudaMalloc(&d_clusters[1], sizeof(index_t) * h_mesh->n_vertices);
-
 	index_t * d_sorted;
 	cudaMalloc(&d_sorted, sizeof(index_t) * h_mesh->n_vertices);
 
-	for(index_t i = 0; i < h_mesh->n_vertices; i++)
-		h_dist[i] = INFINITY;
+	distance_t * error = iter_error_run_ptp_gpu(d_mesh, h_mesh->n_vertices, h_dist, d_dist, sources, limits, sorted_index, d_sorted, exact_dist);
+	
+	delete [] h_dist;
+	cudaFree(d_dist[0]);
+	cudaFree(d_dist[1]);
+	cudaFree(d_sorted);
+	cuda_free_CHE(dd_mesh, d_mesh);
 
-	for(index_t i = 0; i < source_size; i++)
-	{
-		h_dist[source[i]] = 0;
-		if(h_clusters) h_clusters[source[i]] = i + 1;
-	}
+	// END PTP
 
-	cudaMemcpy(d_dist[0], h_dist, sizeof(distance_t) * h_mesh->n_vertices, cudaMemcpyHostToDevice);
-	cudaMemcpy(d_dist[1], h_dist, sizeof(distance_t) * h_mesh->n_vertices, cudaMemcpyHostToDevice);
-	cudaMemcpy(d_sorted, h_sorted, sizeof(index_t) * h_mesh->n_vertices, cudaMemcpyHostToDevice);
-	if(h_clusters) cudaMemcpy(d_clusters[0], h_clusters, sizeof(index_t) * h_mesh->n_vertices, cudaMemcpyHostToDevice);
-	if(h_clusters) cudaMemcpy(d_clusters[1], h_clusters, sizeof(index_t) * h_mesh->n_vertices, cudaMemcpyHostToDevice);
+	cudaEventRecord(stop, 0);
+	cudaEventSynchronize(stop);
+	cudaEventElapsedTime(&time_ptp, start, stop);
+	time_ptp /= 1000;
 
-	index_t d = 1;
+	cudaEventDestroy(start);
+	cudaEventDestroy(stop);
+
+	return error;
+}
+
+distance_t * iter_error_run_ptp_gpu(CHE * d_mesh, const index_t & n_vertices, distance_t * h_dist, distance_t ** d_dist, const vector<index_t> & sources, const vector<index_t> & limits, const index_t * h_sorted, index_t * d_sorted, const distance_t * exact_dist)
+{
+	#pragma omp parallel for
+	for(index_t v = 0; v < n_vertices; v++)
+		h_dist[v] = INFINITY;
+
+	for(index_t i = 0; i < sources.size(); i++)
+		h_dist[sources[i]] = 0;
+
+	cudaMemcpy(d_dist[0], h_dist, sizeof(distance_t) * n_vertices, cudaMemcpyHostToDevice);
+	cudaMemcpy(d_dist[1], h_dist, sizeof(distance_t) * n_vertices, cudaMemcpyHostToDevice);
+	cudaMemcpy(d_sorted, h_sorted, sizeof(index_t) * n_vertices, cudaMemcpyHostToDevice);
+
+	index_t d = 0, e = 0;
 	index_t start, end;
+	index_t iter = iterations(limits);
 
-	index_t iter = real_dist ? limites.size() << 1 : iterations(limites);
+	distance_t * dist_error = new distance_t[iter - limits.size()];	
+
 	for(index_t i = 2; i < iter; i++)
-//	while(i && !stop)
 	{
-		start = start_v(i, limites);
-		end = end_v(i, limites);
+		start = start_v(i, limits);
+		end = end_v(i, limits);
 
-		if(start == end) break;
-
-//		fastmarching_relax<<<NB(end - start), NT>>>(d_mesh, d_dist[!d], d_dist[d], end, d_clusters[!d], d_clusters[d], start, d_sorted);
-//		relax_ptp <<< NB(end - start), NT >>> (d_mesh, d_dist[!d], d_dist[d], d_clusters[!d], d_clusters[d], d_sorted, end, start);
-
-		if(real_dist && i >= limites.size())
+		relax_ptp <<< NB(end - start), NT >>> (d_mesh, d_dist[!d], d_dist[d], d_sorted, end, start);
+		cudaMemcpy(h_dist, d_dist[!d], sizeof(distance_t) * n_vertices, cudaMemcpyDeviceToHost);
+		
+		// calculating iteration error
+		if(i >= limits.size())
 		{
-			cudaMemcpy(h_dist, d_dist[!d], sizeof(distance_t) * h_mesh->n_vertices, cudaMemcpyDeviceToHost);
-			distance_t error = 0;
+			distance_t & error = dist_error[e++] = 0;
 
 			#pragma omp parallel for reduction(+: error)
-			for(index_t v = 1; v < h_mesh->n_vertices; v++)
-				error += abs(h_dist[v] - real_dist[v]) / real_dist[v];
+			for(index_t v = 0; v < n_vertices; v++)
+				if(exact_dist[v] > 0)
+					error += abs(h_dist[v] - exact_dist[v]) / exact_dist[v];
 
-			error /= h_mesh->n_vertices - source_size;
-			if(error < INFINITY) fprintf(f_iter_error, "%d %.10f\n", i, error);
+			error /= n_vertices - sources.size();
 		}
-		else
-			cudaDeviceSynchronize();
 
 		d = !d;
 	}
 
-	if(real_dist) fclose(f_iter_error);
-
-	cudaMemcpy(h_dist, d_dist[d], sizeof(distance_t) * h_mesh->n_vertices, cudaMemcpyDeviceToHost);
-	if(h_clusters) cudaMemcpy(h_clusters, d_clusters[d], sizeof(index_t) * h_mesh->n_vertices, cudaMemcpyDeviceToHost);
-	cudaFree(d_dist[0]);
-	cudaFree(d_dist[1]);
-	cudaFree(d_sorted);
-	if(h_clusters)
-	{
-		cudaFree(d_clusters[0]);
-		cudaFree(d_clusters[1]);
-	}
-	return h_dist;
+	return dist_error;
 }
+
 
 inline index_t farthest(distance_t * d, size_t n)
 {

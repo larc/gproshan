@@ -5,7 +5,7 @@
 
 #include <cassert>
 
-void main_test_geodesics_ptp(int nargs, const char ** args)
+void main_test_geodesics_ptp(const int & nargs, const char ** args)
 {
 	if(nargs < 4)
 	{
@@ -35,7 +35,9 @@ void main_test_geodesics_ptp(int nargs, const char ** args)
 		
 		vector<index_t> source = { 0 };
 
-		// PERFORMANCE
+		
+		// PERFORMANCE _____________________________________________________________________________
+		
 		float time_fm, time_ptp_cpu, time_ptp_gpu, time;
 		time_fm = time_ptp_cpu = time_ptp_gpu = 0;
 		
@@ -74,7 +76,9 @@ void main_test_geodesics_ptp(int nargs, const char ** args)
 		
 		printf("%18.3f &%18.3f &%18.3f &%18.3f &%18.3f &", time_fm, time_ptp_cpu, time_fm / time_ptp_cpu, time_ptp_gpu, time_fm / time_ptp_gpu);
 		
-		// ACCURACY
+		
+		// ACCURACY ________________________________________________________________________________
+
 		distance_t * exact = load_exact_geodesics(exact_dist_path + filename, n_vertices);
 		geodesics fm(mesh, source, geodesics::FM);
 
@@ -97,6 +101,59 @@ void main_test_geodesics_ptp(int nargs, const char ** args)
 
 		printf("%18.3e &%18.3e &%18.3e", error_fm * 100, error_ptp_cpu * 100, error_ptp_gpu * 100);
 		printf("\\\\\\hline\n");
+		
+		
+		// DEGREE HISTOGRAM ________________________________________________________________________
+
+		index_t dv;
+		map<index_t, index_t> deg;
+		for(index_t v = 0; v < n_vertices; v++)
+		{
+			dv = mesh->ot_evt(v) == NIL ? 1 : 0;
+			for_star(he, mesh, v) dv++;
+			deg[dv]++;
+		}
+
+		ofstream os(test_path + filename + ".deg");
+		for(auto & ii: deg)
+			os << ii.first << " " << ii.second << endl;
+		os.close();
+			
+
+		// TOPLESETS DISTRIBUTION __________________________________________________________________
+
+		index_t * toplesets_dist = new index_t[limits.size() - 1];
+
+		os.open(test_path + filename + "_toplesets.dist");
+		for(index_t i = 1; i < limits.size(); i++)
+		{
+			toplesets_dist[i - 1] = limits[i] - limits[i - 1];
+			os << i - 1 << " " << toplesets_dist[i - 1] << endl;
+		}
+		os.close();
+
+		sort(toplesets_dist, toplesets_dist + limits.size() - 1);
+
+		os.open(test_path + filename + "_toplesets_sorted.dist");
+		for(index_t i = 0; i < limits.size() - 1; i++)
+			os << i << " " << toplesets_dist[i] << endl;
+		os.close();
+
+		
+		// PTP ITERATION ERROR _____________________________________________________________________
+		
+		distance_t * iter_error = iter_error_parallel_toplesets_propagation_gpu(mesh, source, limits, sorted_index, exact, time);
+
+		os.open(test_path + filename + "_error.iter");
+		index_t n_iter = iterations(limits);
+		for(index_t j = 0, i = limits.size(); i < n_iter; i++, j++)
+			os << i << " " << iter_error[j] << endl;
+		os.close();
+
+		// FARTHEST POINT SAMPLING _________________________________________________________________
+
+
+
 
 		delete mesh;
 		delete [] toplesets;
@@ -104,6 +161,8 @@ void main_test_geodesics_ptp(int nargs, const char ** args)
 		delete [] ptp_cpu;
 		delete [] ptp_gpu;
 		delete [] exact;
+		delete [] toplesets_dist;
+		delete [] iter_error;
 	}
 }
 
