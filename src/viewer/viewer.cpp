@@ -763,13 +763,13 @@ void viewer::pick_vertex(int x, int y)
 
 	if(index >= 0 && index < mesh()->n_vertices())
 	{
+		select_vertices.push_back(index);
+		
 		debug(index)
 		debug(mesh().color(index))
 
 		if(corr_mesh[current].is_loaded())
 			debug(corr_mesh[current][index].alpha)
-
-		select_vertices.push_back(index);
 	}
 }
 
