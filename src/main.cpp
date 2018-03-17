@@ -20,7 +20,6 @@
 #include "fairing_taubin.h"
 #include "fairing_spectral.h"
 #include "sampling.h"
-#include "mdict/d_mesh_apps.h"
 #include "mdict/d_mesh.h"
 #include "mdict/d_basis_dct.h"
 #include "mdict/d_image_denoising.h"
@@ -41,8 +40,8 @@ void main_solve_arma();
 
 int main(int nargs, const char ** args)
 {
-	viewer_main(nargs, args);
-//	main_test_geodesics_ptp(nargs, args);
+//	viewer_main(nargs, args);
+	main_test_geodesics_ptp(nargs, args);
 
 //	generate_grid_obtuse(81, 10);
 //	generate_grid_cylinder(100, 1, 1000);

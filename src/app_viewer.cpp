@@ -41,7 +41,7 @@ int viewer_main(int nargs, const char ** args)
 	viewer::add_process('s', "GPS (norm)", viewer_process_gps);
 	viewer::add_process('H', "HKS (norm)", viewer_process_hks);
 	viewer::add_process('W', "WKS (norm)", viewer_process_wks);
-	viewer::add_process('X', "WKS (norm)", viewer_process_functional_maps);
+	viewer::add_process('X', "Functional maps", viewer_process_functional_maps);
 
 	viewer::sub_menus.push_back("Poisson");
 	viewer::add_process('o', "Membrane surface", viewer_process_poisson_laplacian_1);
@@ -51,7 +51,7 @@ int viewer_main(int nargs, const char ** args)
 	viewer::sub_menus.push_back("Others");
 	viewer::add_process('t', "Threshold", viewer_process_thresold);
 	viewer::add_process('N', "Noise", viewer_process_noise);
-	viewer::add_process('B', "Black Noise", viewer_process_black_noise);
+	viewer::add_process('M', "Black Noise", viewer_process_black_noise);
 	viewer::add_process('m', "Multiplicate Vertices", viewer_process_multiplicate_vertices);
 	viewer::add_process('h', "Fill Holes", viewer_process_fill_holes);
 	viewer::add_process('-', "Make holes", viewer_process_delete_vertices);
