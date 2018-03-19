@@ -151,9 +151,17 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 		os.close();
 
 		// FARTHEST POINT SAMPLING _________________________________________________________________
+		
+		size_t i_samples = source.size();
+		size_t n_samples = 1000;
+		float * times_fps = times_farthest_point_sampling_ptp_gpu(mesh, source, n_samples);
+		
+		os.open(test_path + filename + ".fps");
+		for(index_t i = i_samples; i <= n_samples; i++)
+			os << i << " " << times_fps[i] << endl;
+		os.close();
 
-
-
+		// FREE MEMORY
 
 		delete mesh;
 		delete [] toplesets;
@@ -163,6 +171,7 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 		delete [] exact;
 		delete [] toplesets_dist;
 		delete [] iter_error;
+		delete [] times_fps;
 	}
 }
 

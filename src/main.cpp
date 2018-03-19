@@ -36,7 +36,6 @@ void main_testholes();
 void sampling_terrain(string file, size_t s, size_t K, string output = "patches_index", string planes = "normals");
 void main_test_holes();
 void generate_grid_obtuse(const size_t & nr, const size_t & nc, const vertex_t & d = 1);
-void main_solve_arma();
 
 int main(int nargs, const char ** args)
 {
@@ -54,7 +53,6 @@ int main(int nargs, const char ** args)
 	//sampling_terrain("terreno.off", 4, 64);
 //	sampling_shape(nargs, args);
 //	if(nargs == 2) sampling_shape(args[1]);
-//	main_solve_arma();
 //	distance_t radio = 0.04;
 
 //	main_test_holes();

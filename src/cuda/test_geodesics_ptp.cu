@@ -52,6 +52,95 @@ distance_t * iter_error_parallel_toplesets_propagation_gpu(che * mesh, const vec
 	return error;
 }
 
+/// Return an array of time in seconds.
+float * times_farthest_point_sampling_ptp_gpu(che * mesh, vector<index_t> & samples, size_t n, distance_t radio)
+{
+	cudaDeviceReset();
+
+	cudaEvent_t start, stop;
+	cudaEventCreate(&start);
+	cudaEventCreate(&stop);
+
+	// BEGIN FPS PTP
+
+	CHE * h_mesh = new CHE(mesh);
+	CHE * dd_mesh, * d_mesh;
+	cuda_create_CHE(h_mesh, dd_mesh, d_mesh);
+
+	distance_t * h_dist = new distance_t[h_mesh->n_vertices];
+
+	distance_t * d_dist[2];
+	cudaMalloc(&d_dist[0], sizeof(distance_t) * h_mesh->n_vertices);
+	cudaMalloc(&d_dist[1], sizeof(distance_t) * h_mesh->n_vertices);
+
+	index_t * d_sorted;
+	cudaMalloc(&d_sorted, sizeof(index_t) * h_mesh->n_vertices);
+
+	vector<index_t> limits;
+	index_t * toplesets = new index_t[h_mesh->n_vertices];
+	index_t * sorted_index = new index_t[h_mesh->n_vertices];
+
+	cublasHandle_t handle;
+	cublasCreate(&handle);
+
+	if(n >= h_mesh->n_vertices) n = h_mesh->n_vertices >> 1;
+
+	float * times = new float[n + 1];
+
+	n -= samples.size();
+	samples.reserve(n);
+
+	float time_fps;
+	index_t d;
+	int f;
+	distance_t max_dist = INFINITY;
+	while(n-- && max_dist > radio)
+	{
+		cudaEventRecord(start, 0);
+		
+		limits.clear();
+		mesh->compute_toplesets(toplesets, sorted_index, limits, samples);
+
+		d = run_ptp_gpu(d_mesh, h_mesh->n_vertices, h_dist, d_dist, samples, limits, sorted_index, d_sorted);
+
+		// 1 indexing
+		#ifdef SINGLE_P
+			cublasIsamax(handle, mesh->n_vertices(), d_dist[d], 1, &f);
+		#else
+			cublasIdamax(handle, mesh->n_vertices(), d_dist[d], 1, &f);
+		#endif
+		
+		cudaEventRecord(stop, 0);
+		cudaEventSynchronize(stop);
+		cudaEventElapsedTime(&time_fps, start, stop);
+
+		times[samples.size()] = time_fps / 1000;
+
+		if(radio > 0 || !n)
+			cudaMemcpy(&max_dist, d_dist[d] + f - 1, sizeof(distance_t), cudaMemcpyDeviceToHost);
+
+		samples.push_back(f - 1);
+	}
+
+	cublasDestroy(handle);
+
+	delete [] h_dist;
+	delete [] toplesets;
+	delete [] sorted_index;
+
+	cudaFree(d_dist[0]);
+	cudaFree(d_dist[1]);
+	cudaFree(d_sorted);
+	cuda_free_CHE(dd_mesh, d_mesh);
+
+	// END FPS PTP
+
+	cudaEventDestroy(start);
+	cudaEventDestroy(stop);
+
+	return times;
+}
+
 distance_t * iter_error_run_ptp_gpu(CHE * d_mesh, const index_t & n_vertices, distance_t * h_dist, distance_t ** d_dist, const vector<index_t> & sources, const vector<index_t> & limits, const index_t * h_sorted, index_t * d_sorted, const distance_t * exact_dist)
 {
 	#pragma omp parallel for
@@ -96,118 +185,5 @@ distance_t * iter_error_run_ptp_gpu(CHE * d_mesh, const index_t & n_vertices, di
 	}
 
 	return dist_error;
-}
-
-
-inline index_t farthest(distance_t * d, size_t n)
-{
-	index_t f = 0;
-
-	#pragma omp parallel for
-	for(index_t v = 0; v < n; v++)
-		#pragma omp critical
-		if(d[v] < INFINITY && d[f] < d[v])
-			f = v;
-
-	return f;
-}
-
-distance_t farthest_point_sampling_gpu(vector<index_t> & points, float & time, che * mesh, size_t n, distance_t radio)
-{
-	debug_me(GEODESICS_PTP)
-
-	CHE * h_mesh;
-	CHE * dd_mesh;
-	CHE * d_mesh;
-
-	h_mesh = new CHE(mesh);
-
-	cuda_create_CHE(h_mesh, dd_mesh, d_mesh);
-
-	ofstream os((PATH_TEST + "fastmarching/" + mesh->name() + ".fps").c_str());
-
-	size_t n_v = mesh->n_vertices();
-
-	index_t * rings = new index_t[n_v];
-	index_t * h_sorted = new index_t[n_v];
-
-	distance_t * h_dist = new distance_t[n_v];
-
-	distance_t * d_dist[2];
-	cudaMalloc(&d_dist[0], sizeof(distance_t) * n_v);
-	cudaMalloc(&d_dist[1], sizeof(distance_t) * n_v);
-
-	index_t * d_sorted;
-	cudaMalloc(&d_sorted, sizeof(index_t) * n_v);
-
-	// ---------------------------------------------------------------------------------------------
-	cudaEvent_t start;
-	cudaEvent_t stop;
-	cudaEventCreate(&start);
-	cudaEventCreate(&stop);
-
-	cublasHandle_t handle;
-	cublasCreate(&handle);
-
-	if(n >= mesh->n_vertices())
-		n = mesh->n_vertices() / 2;
-
-	n -= points.size();
-	points.reserve(n);
-
-	time = 0;
-	float time_aux;
-
-	index_t d;
-	int f;
-	distance_t max_dis = INFINITY;
-	while(n-- && max_dis > radio)
-	{
-		cudaEventRecord(start, 0);
-
-		vector<index_t> limites;
-		mesh->compute_toplesets(rings, h_sorted, limites, points);
-
-		d = run_ptp_gpu(d_mesh, n_v, h_dist, d_dist, points, limites, h_sorted, d_sorted);
-
-		// 1 indexing T_T
-		#ifdef SINGLE_P
-		cublasIsamax(handle, mesh->n_vertices(), d_dist[d], 1, &f);
-		#else
-		cublasIdamax(handle, mesh->n_vertices(), d_dist[d], 1, &f);
-		#endif
-
-		cudaEventRecord(stop, 0);
-		cudaEventSynchronize(stop);
-		cudaEventElapsedTime(&time_aux, start, stop);
-
-		time_aux /= 1000;
-		time += time_aux;
-
-		os << points.size() << " " << time_aux << endl;
-
-		if(radio > 0 || !n)
-			cudaMemcpy(&max_dis, d_dist[d] + f - 1, sizeof(distance_t), cudaMemcpyDeviceToHost);
-		points.push_back(f - 1);
-	}
-
-
-	cudaEventDestroy(start);
-	cudaEventDestroy(stop);
-	cublasDestroy(handle);
-	// ---------------------------------------------------------------------------------------------
-
-	os.close();
-
-	delete [] rings;
-	delete [] h_sorted;
-	delete [] h_dist;
-
-	cuda_free_CHE(dd_mesh, d_mesh);
-	cudaFree(d_dist[0]);
-	cudaFree(d_dist[1]);
-	cudaFree(d_sorted);
-
-	return max_dis;
 }
 
