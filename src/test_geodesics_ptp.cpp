@@ -18,6 +18,7 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 	const char * exact_dist_path = args[3];
 
 	int n_test = 10;
+	bool cpu = 0;
 
 	string filename;
 	while(cin >> filename)
@@ -53,16 +54,19 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 		ptp_cpu = ptp_gpu = NULL;
 
 		// ptp cpu
-		for(int t = 0; t < n_test; t++)
+		if(cpu)
 		{
-			if(ptp_cpu) delete [] ptp_cpu;
+			for(int t = 0; t < n_test; t++)
+			{
+				if(ptp_cpu) delete [] ptp_cpu;
 
-			TIC(time)
-			ptp_cpu = parallel_toplesets_propagation_cpu(mesh, source, limits, sorted_index);
-			TOC(time)
-			time_ptp_cpu += time;
+				TIC(time)
+				ptp_cpu = parallel_toplesets_propagation_cpu(mesh, source, limits, sorted_index);
+				TOC(time)
+				time_ptp_cpu += time;
+			}
+			time_ptp_cpu /= n_test;
 		}
-		time_ptp_cpu /= n_test;
 		
 		// ptp gpu
 		for(int t = 0; t < n_test; t++)
@@ -74,7 +78,10 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 		}
 		time_ptp_gpu /= n_test;
 		
-		printf("%18.3f &%18.3f &%18.3f &%18.3f &%18.3f &", time_fm, time_ptp_cpu, time_fm / time_ptp_cpu, time_ptp_gpu, time_fm / time_ptp_gpu);
+
+		printf("%18.3f &", time_fm);
+		if(cpu) printf("%18.3f &%18.3f &", time_ptp_cpu, time_fm / time_ptp_cpu);
+		printf("%18.3f &%18.3f &", time_ptp_gpu, time_fm / time_ptp_gpu);
 		
 		
 		// ACCURACY ________________________________________________________________________________
@@ -90,16 +97,18 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 			if(exact[v] > 0)
 			{
 				error_fm += abs(fm[v] - exact[v]) / exact[v];
-				error_ptp_cpu += abs(ptp_cpu[v] - exact[v]) / exact[v];
+				if(cpu) error_ptp_cpu += abs(ptp_cpu[v] - exact[v]) / exact[v];
 				error_ptp_gpu += abs(ptp_gpu[v] - exact[v]) / exact[v];
 			}
 		}
 
 		error_fm /= n_vertices;
-		error_ptp_cpu /= n_vertices;
+		if(cpu) error_ptp_cpu /= n_vertices;
 		error_ptp_gpu /= n_vertices;
 
-		printf("%18.3e &%18.3e &%18.3e", error_fm * 100, error_ptp_cpu * 100, error_ptp_gpu * 100);
+		printf("%18.3e &", error_fm * 100);
+		if(cpu) printf("%18.3e &", error_ptp_cpu * 100);
+		printf("%18.3e ", error_ptp_gpu * 100);
 		printf("\\\\\\hline\n");
 		
 		
@@ -166,7 +175,7 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 		delete mesh;
 		delete [] toplesets;
 		delete [] sorted_index;
-		delete [] ptp_cpu;
+		if(cpu) delete [] ptp_cpu;
 		delete [] ptp_gpu;
 		delete [] exact;
 		delete [] toplesets_dist;
