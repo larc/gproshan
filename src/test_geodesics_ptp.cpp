@@ -9,7 +9,7 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 {
 	if(nargs < 4)
 	{
-		printf("./gproshan [data_path] [test_path] [exact_dist_path]\n");
+		printf("./gproshan [data_path] [test_path] [exact_dist_path] [n_test = 10]\n");
 		return;
 	}
 	
@@ -17,7 +17,7 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 	const char * test_path = args[2];
 	const char * exact_dist_path = args[3];
 
-	int n_test = 10;
+	int n_test = nargs == 5 ? atoi(args[4]) : 10;
 	bool cpu = 0;
 
 	string filename;
@@ -162,11 +162,11 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 		// FARTHEST POINT SAMPLING _________________________________________________________________
 		
 		size_t i_samples = source.size();
-		size_t n_samples = 1000;
+		size_t n_samples = 1001;
 		float * times_fps = times_farthest_point_sampling_ptp_gpu(mesh, source, n_samples);
 		
 		os.open(test_path + filename + ".fps");
-		for(index_t i = i_samples; i <= n_samples; i++)
+		for(index_t i = i_samples; i < n_samples; i++)
 			os << i << " " << times_fps[i] << endl;
 		os.close();
 
