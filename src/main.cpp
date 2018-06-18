@@ -39,8 +39,8 @@ void generate_grid_obtuse(const size_t & nr, const size_t & nc, const vertex_t &
 
 int main(int nargs, const char ** args)
 {
-//	viewer_main(nargs, args);
-	main_test_geodesics_ptp(nargs, args);
+	viewer_main(nargs, args);
+//	main_test_geodesics_ptp(nargs, args);
 
 //	generate_grid_obtuse(81, 10);
 //	generate_grid_cylinder(100, 1, 1000);

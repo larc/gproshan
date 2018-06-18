@@ -32,15 +32,22 @@ void che_off::read_file(const string & file)
 
 	ifstream is(file);
 
-	if(!is.good()) return;
+	assert(is.good());
 
-	is>>soff;
-	is>>n_v>>n_f>>v;
-
+	is >> soff;
+	debug(soff)
+	is >> n_v >> n_f >> v;
+	debug(n_v)
+	debug(n_f)
 	init(n_v, n_f);
 
+	int r, g, b, a;
 	for(index_t i = 0; i < n_vertices_; i++)
-		is>>GT[i];
+	{
+		is >> GT[i];
+		if(soff[0] == 'C') // COFF file, ignore RGBA
+			is >> r >> g >> b >> a;
+	}
 
 	index_t he = 0;
 	for(index_t i = 0; i < n_faces_; i++)
