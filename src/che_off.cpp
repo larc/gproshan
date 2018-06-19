@@ -35,10 +35,7 @@ void che_off::read_file(const string & file)
 	assert(is.good());
 
 	is >> soff;
-	debug(soff)
 	is >> n_v >> n_f >> v;
-	debug(n_v)
-	debug(n_f)
 	init(n_v, n_f);
 
 	int r, g, b, a;

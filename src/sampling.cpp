@@ -55,7 +55,6 @@ bool load_sampling(vector<index_t> & points, distance_t & radio, che * mesh, siz
 	}
 	else
 	{
-
 		if(!points.size())
 			points.push_back(0);
 
