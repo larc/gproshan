@@ -218,7 +218,7 @@ void viewer_process_wks()
 {
 	debug_me(APP_VIEWER)
 
-	size_t K = 20, T = 10;
+	size_t K = 50, T = 100;
 
 	a_sp_mat L, A;
 
@@ -253,7 +253,7 @@ void viewer_process_hks()
 {
 	debug_me(APP_VIEWER)
 
-	size_t K = 20;
+	size_t K = 50;
 	size_t T = 100;
 
 	a_sp_mat L, A;
@@ -276,9 +276,10 @@ void viewer_process_hks()
 		a_vec s(T, arma::fill::zeros);
 		for(index_t t = 0; t < T; t++)
 		for(index_t k = 1; k < K; k++)
-			s(t) += exp(-eigval(k) * t) * eigvec(v, k) * eigvec(v, k);
+			s(t) += exp(-abs(eigval(k)) * t) * eigvec(v, k) * eigvec(v, k);
 
-		viewer::vcolor(v) = norm(s);
+		viewer::vcolor(v) = norm(abs(arma::fft(s,128)));
+		//viewer::vcolor(v) = norm(s);
 		max_s = max(max_s, viewer::vcolor(v));
 	}
 
@@ -291,7 +292,7 @@ void viewer_process_gps()
 {
 	debug_me(APP_VIEWER)
 
-	size_t K = 20;
+	size_t K = 50;
 
 	a_sp_mat L, A;
 
@@ -303,10 +304,10 @@ void viewer_process_gps()
 
 	TIC(load_time) K = eigs_laplacian(eigval, eigvec, viewer::mesh(), L, K); TOC(load_time)
 	debug(load_time)
-
+	eigvec = abs(eigvec);
 	eigvec.col(0).zeros();
 	for(index_t i = 1; i < K; i++)
-		eigvec.col(i) /= sqrt(eigval(i));
+		eigvec.col(i) /= sqrt(abs(eigval(i)));
 
 	a_mat data = eigvec.t();
 	a_mat means;

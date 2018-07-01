@@ -84,7 +84,7 @@ size_t eigs_laplacian(a_vec & eigval, a_mat & eigvec, che * mesh, const a_sp_mat
 
 	if(!eigval.load(feigval) || !eigvec.load(feigvec))
 	{
-		if(!eigs_sym(eigval, eigvec, L, K, "sm"))
+		if(!eigs_sym(eigval, eigvec, L, K, "sa"))
 			return 0;
 
 		eigval.save(feigval);
