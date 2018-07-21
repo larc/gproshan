@@ -9,7 +9,7 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 {
 	if(nargs < 4)
 	{
-		printf("./gproshan [data_path] [test_path] [exact_dist_path] [n_test = 10]\n");
+		printf("./test_geodesics [data_path] [test_path] [exact_dist_path] [n_test = 10]\n");
 		return;
 	}
 	

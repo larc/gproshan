@@ -5,3 +5,7 @@ tmp/*
 *.swp
 *.swo
 .vscode/*
+
+gproshan
+test_geodesics
+
