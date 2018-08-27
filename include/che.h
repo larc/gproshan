@@ -10,9 +10,6 @@
 #define for_star(he, mesh, v) for(index_t stop = mesh->evt(v), he = mesh->evt(v); he != NIL; he = (he = mesh->ot(prev(he))) != stop ? he : NIL)
 #define for_border(he, mesh, v) for(index_t stop = mesh->evt(v), he = mesh->evt(v); he != NIL; he = (he = mesh->evt(mesh->vt(next(he)))) != stop ? he : NIL)
 
-
-const size_t P = 3;
-
 using namespace std;
 
 typedef vector<index_t> star_t;		//star (vector of he)
@@ -22,28 +19,13 @@ index_t trig(const index_t & he);
 index_t next(const index_t & he);
 index_t prev(const index_t & he);
 
-struct corr_t
-{
-	index_t t;
-	vertex alpha;
-
-	corr_t()
-	{
-		t = NIL;
-	}
-
-	void init(const index_t & he)
-	{
-		t = trig(he) * P;
-		alpha[0] = he == t;
-		alpha[1] = he == next(t);
-		alpha[2] = he == prev(t);
-		t /= P;
-	}
-};
+struct corr_t;
 
 class che
 {
+	public:
+		static const size_t P = 3;
+
 	protected:
 		string filename_;
 
@@ -157,6 +139,26 @@ struct CHE
 	index_t * EVT;
 
 	CHE(che * mesh);
+};
+
+struct corr_t
+{
+	index_t t;
+	vertex alpha;
+
+	corr_t()
+	{
+		t = NIL;
+	}
+
+	void init(const index_t & he)
+	{
+		t = trig(he) * che::P;
+		alpha[0] = he == t;
+		alpha[1] = he == next(t);
+		alpha[2] = he == prev(t);
+		t /= che::P;
+	}
 };
 
 #endif // CHE_H

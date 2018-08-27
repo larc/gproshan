@@ -129,10 +129,10 @@ void che_viewer::update_normals()
 	#pragma omp parallel for private(he, n)
 	for(index_t f = 0; f < mesh->n_faces(); f++)
 	{
-		he = f * P;
+		he = f * che::P;
 		n = mesh->normal_he(he);
 
-		for(int i = 0; i < P; i++)
+		for(int i = 0; i < che::P; i++)
 		{
 			#pragma omp critial
 			normals[mesh->vt(he)] += n;
@@ -204,10 +204,10 @@ void che_viewer::draw_gradient_field()
 
 	for(index_t f = 0; f < mesh->n_faces(); f++)
 	{
-		vertex g = h * mesh->gradient_he(f * P, colors);
+		vertex g = h * mesh->gradient_he(f * che::P, colors);
 		vertex a = mesh->barycenter(f);
 		vertex b = a + g;
-		vertex n = mesh->normal_he(f * P);
+		vertex n = mesh->normal_he(f * che::P);
 
 		vertex v = b - a;
 		vertex v90 = n * v;

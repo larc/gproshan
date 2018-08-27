@@ -28,7 +28,7 @@ void decimation::execute(const vertex *const & normals)
 	index_t * sort_edges = new index_t[mesh->n_edges()];
 	vertex_t * error_edges = new vertex_t[mesh->n_edges()];
 	vertex * corr_v = new vertex[n_vertices];
-	index_t * corr_i = new index_t[n_vertices * P];
+	index_t * corr_i = new index_t[n_vertices * che::P];
 
 	corr_t * corr_aux;
 	index_t he, vi;
@@ -36,7 +36,7 @@ void decimation::execute(const vertex *const & normals)
 
 	auto add_he_trigs = [this](vector<index_t> & he_trigs, const corr_t & c)
 	{
-		const index_t he = c.t * P;
+		const index_t he = c.t * che::P;
 		for_star(t_he, mesh, mesh->vt(he))
 			he_trigs.push_back(t_he);
 		for_star(t_he, mesh, mesh->vt(next(he)))
@@ -54,8 +54,8 @@ void decimation::execute(const vertex *const & normals)
 		for(index_t v = 0; v < n_vertices; v++)
 		{
 			corr_v[v] = mesh->corr_vertex(corr[v]);
-			he = corr[v].t * P;
-			vi = v * P;
+			he = corr[v].t * che::P;
+			vi = v * che::P;
 			corr_i[vi] = mesh->vt(he);
 			corr_i[vi + 1] = mesh->vt(next(he));
 			corr_i[vi + 2] = mesh->vt(prev(he));
@@ -67,7 +67,7 @@ void decimation::execute(const vertex *const & normals)
 		#pragma omp parallel for private(vi, a, b, c)
 		for(index_t v = 0; v < n_vertices; v++)
 		{
-			vi = v * P;
+			vi = v * che::P;
 			a = mesh->corr_vertex(corr_aux[corr_i[vi]]);
 			b = mesh->corr_vertex(corr_aux[corr_i[vi + 1]]);
 			c = mesh->corr_vertex(corr_aux[corr_i[vi + 2]]);

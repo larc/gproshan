@@ -12,19 +12,19 @@
 index_t trig(const index_t & he)
 {
 	if(he == NIL) return NIL;
-	return he / P;
+	return he / che::P;
 }
 
 index_t next(const index_t & he)
 {
 	if(he == NIL) return NIL;
-	return P * trig(he) + (he + 1) % P;
+	return che::P * trig(he) + (he + 1) % che::P;
 }
 
 index_t prev(const index_t & he)
 {
 	if(he == NIL) return NIL;
-	return P * trig(he) + (he + P - 1) % P;
+	return che::P * trig(he) + (he + che::P - 1) % che::P;
 }
 
 CHE::CHE(che * mesh)

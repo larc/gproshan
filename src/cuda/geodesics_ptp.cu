@@ -8,8 +8,6 @@
 
 distance_t * parallel_toplesets_propagation_gpu(che * mesh, const vector<index_t> & sources, const vector<index_t> & limits, const index_t * sorted_index, float & time_ptp, index_t * clusters)
 {
-	debug_me(GEODESICS_PTP)
-
 	cudaDeviceReset();
 
 	cudaEvent_t start, stop;
