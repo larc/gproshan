@@ -148,8 +148,8 @@ void geodesics::run_fastmarching(che * mesh, const vector<index_t> & sources, co
 			{
 				for_star(v_he, mesh, v)
 				{
-					//p = update(d, mesh, v_he, vx);
-					p = update_step(mesh, distances, v_he);
+					p = update(d, mesh, v_he, vx);
+					//p = update_step(mesh, distances, v_he);
 					if(p < distances[v])
 					{
 						distances[v] = p;
@@ -192,7 +192,7 @@ void geodesics::run_parallel_toplesets_propagation_gpu(che * mesh, const vector<
 	mesh->compute_toplesets(toplesets, sorted_index, limits, sources);
 
 	float time_ptp;
-	distances = parallel_toplesets_propagation_gpu(mesh, sources, limits, sorted_index, time_ptp, clusters);
+	distances = parallel_toplesets_propagation_coalescence_gpu(mesh, sources, limits, sorted_index, time_ptp, clusters);
 	debug(time_ptp);
 
 	delete [] toplesets;

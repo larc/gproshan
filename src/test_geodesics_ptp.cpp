@@ -73,7 +73,7 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 		{
 			if(ptp_gpu) delete [] ptp_gpu;
 
-			ptp_gpu = parallel_toplesets_propagation_gpu(mesh, source, limits, sorted_index, time);
+			ptp_gpu = parallel_toplesets_propagation_coalescence_gpu(mesh, source, limits, sorted_index, time);
 			time_ptp_gpu += time;
 		}
 		time_ptp_gpu /= n_test;
