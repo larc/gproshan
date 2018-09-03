@@ -151,7 +151,7 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 		
 		// PTP ITERATION ERROR _____________________________________________________________________
 		
-		distance_t * iter_error = iter_error_parallel_toplesets_propagation_gpu(mesh, source, limits, sorted_index, exact, time);
+		distance_t * iter_error = iter_error_parallel_toplesets_propagation_coalescence_gpu(mesh, source, limits, sorted_index, exact, time);
 
 		os.open(test_path + filename + "_error.iter");
 		index_t n_iter = iterations(limits);
@@ -163,7 +163,7 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 		
 		size_t i_samples = source.size();
 		size_t n_samples = 1001;
-		float * times_fps = times_farthest_point_sampling_ptp_gpu(mesh, source, n_samples);
+		float * times_fps = times_farthest_point_sampling_ptp_coalescence_gpu(mesh, source, n_samples);
 		
 		os.open(test_path + filename + ".fps");
 		for(index_t i = i_samples; i < n_samples; i++)
