@@ -166,8 +166,8 @@ float * times_farthest_point_sampling_ptp_coalescence_gpu(che * mesh, vector<ind
 
 		if(radio > 0 || !n)
 			cudaMemcpy(&max_dist, d_dist[d] + f - 1, sizeof(distance_t), cudaMemcpyDeviceToHost);
-
-		samples.push_back(f - 1);
+		
+		samples.push_back(sorted_index[f - 1]);
 	}
 
 	cublasDestroy(handle);
