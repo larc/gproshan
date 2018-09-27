@@ -26,7 +26,7 @@ void poisson(che * mesh, const size_t & old_n_vertices, index_t k)
 		B.row(i) *= -1 / A(i,i);
 
 	a_sp_mat M;
-	vertex_t s = (k % 2) ? -1 : 1;
+	real_t s = (k % 2) ? -1 : 1;
 
 	if(k > 1) M = A * L;
 	while(--k) L *= M;
@@ -57,7 +57,7 @@ void poisson(che * mesh, const size_t & old_n_vertices, index_t k)
 void biharmonic_interp_2(a_mat & P, a_mat & H)
 {
 	size_t n = P.n_cols;
-	vertex_t x;
+	real_t x;
 
 	a_mat A(n, n);
 	a_vec pi(2), pj(2);

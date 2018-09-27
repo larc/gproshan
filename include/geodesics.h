@@ -17,7 +17,8 @@ class geodesics
 	public:
 		enum option_t {	FM,			///< Execute Fast Marching algorithm
 						PTP_CPU,	///< Execute Parallel Toplesets Propagation algorithm on CPU
-						PTP_GPU		///< Execute Parallel Toplesets Propagation algorithm on GPU
+						PTP_GPU,	///< Execute Parallel Toplesets Propagation algorithm on GPU
+						HEAT_FLOW	///< Execute Heat Flow
 						};
 
 	public:
@@ -50,6 +51,7 @@ class geodesics
 		void run_fastmarching(che * mesh, const vector<index_t> & sources, const size_t & n_iter, const distance_t & radio);
 		void run_parallel_toplesets_propagation_cpu(che * mesh, const vector<index_t> & sources, const size_t & n_iter, const distance_t & radio);
 		void run_parallel_toplesets_propagation_gpu(che * mesh, const vector<index_t> & sources, const size_t & n_iter, const distance_t & radio);
+		void run_heat_flow(che * mesh, const vector<index_t> & sources);
 
 		distance_t update(index_t & d, che * mesh, const index_t & he, vertex & vx);
 		distance_t planar_update(index_t & d, a_mat & X, index_t * x, vertex & vx);

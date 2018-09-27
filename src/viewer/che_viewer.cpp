@@ -105,7 +105,7 @@ void che_viewer::update_vbo()
 
 	// 2 COLOR
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[2]);
-	glBufferData(GL_ARRAY_BUFFER, _n_vertices * sizeof(vertex_t), colors, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, _n_vertices * sizeof(real_t), colors, GL_STATIC_DRAW);
 	glEnableVertexAttribArray(2);
 	glVertexAttribPointer(2, 1, GL_VERTEX_T, GL_FALSE, 0, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);

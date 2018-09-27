@@ -13,19 +13,19 @@ using namespace std;
 class vertex
 {
 	public:
-		vertex_t x;
-		vertex_t y;
-		vertex_t z;
+		real_t x;
+		real_t y;
+		real_t z;
 
 	public:
-		vertex(const vertex_t & x_ = 0, const vertex_t & y_ = 0, const vertex_t & z_ = 0);
+		vertex(const real_t & x_ = 0, const real_t & y_ = 0, const real_t & z_ = 0);
 		~vertex();
 		vertex operator*(const vertex & v) const;		//cross product
-		void operator*=(const vertex_t & v);			//scalar produc
-		vertex_t operator*() const;						//norm
-		vertex operator/(const vertex_t & v) const;
-		void operator/=(const vertex_t & v);
-		vertex_t operator,(const vertex & v) const;		//dot product
+		void operator*=(const real_t & v);			//scalar produc
+		real_t operator*() const;						//norm
+		vertex operator/(const real_t & v) const;
+		void operator/=(const real_t & v);
+		real_t operator,(const vertex & v) const;		//dot product
 		vertex operator+(const vertex & v) const;
 		void operator+=(const vertex & v);
 		vertex operator-(const vertex & v) const;
@@ -33,10 +33,10 @@ class vertex
 		vertex operator-() const;
 
 		vertex unit() const;
-		vertex_t & operator[](const index_t & i);
+		real_t & operator[](const index_t & i);
 };
 
-vertex operator*(const vertex_t & a, const vertex & v);
+vertex operator*(const real_t & a, const vertex & v);
 bool operator < (const vertex & a, const vertex & b);
 bool operator == (const vertex & a, const vertex & b);
 ostream & operator<<(ostream & os, const vertex & v);

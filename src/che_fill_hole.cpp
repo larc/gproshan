@@ -77,7 +77,7 @@ che * mesh_fill_hole(che * mesh, const vector<index_t> & border_vertices, const 
 
 	auto gen_vertices = [&mean_edge](vector<index_t> & merge_vertices, vector<vertex> & vertices, const vertex & va, const vertex & vb, const index_t & delta_v = 0)
 	{
-		vertex_t L = *(va - vb);
+		real_t L = *(va - vb);
 		size_t N = L / mean_edge;
 		L = N;
 
@@ -321,7 +321,7 @@ che * fill_hole_front_angles_test(che * mesh, vector<index_t> & front_vertices, 
 	debug_me(filling holes)
 	distance_t perimeter = 0.0, init_perimeter = 0.0;
 
-	vertex_t lenght = mesh->mean_edge();
+	real_t lenght = mesh->mean_edge();
 	priority_queue<border_t> front;
 
 	vector<vertex> vertices;
@@ -563,7 +563,7 @@ che * fill_hole_front_angles_test(che * mesh, vector<index_t> & front_vertices, 
 	return faces.size() == 0 ? NULL : new che_off(vertices.data(), vertices.size(), faces.data(), faces.size() / 3);
 }
 
-che * fill_hole_front_angles(vector<vertex> & vertices, const vertex_t & lenght, const vertex & normal, const size_t & max_iter, bool is_grow)
+che * fill_hole_front_angles(vector<vertex> & vertices, const real_t & lenght, const vertex & normal, const size_t & max_iter, bool is_grow)
 {
 	size_t p_iter = max_iter;
 	distance_t perimeter = 0.0;
@@ -837,7 +837,7 @@ che * fill_hole_front_angles(vector<vertex> & vertices, const vertex_t & lenght,
 	return faces.size() ? new che_off(vertices.data(), vertices.size(), faces.data(), faces.size() / 3) : NULL;
 }
 
-void get_vertex_tri(che * mesh, vector<index_t> & select_vertices, vector<vertex> & triangle, vector<size_t> & tri_sizes )
+void get_real_tri(che * mesh, vector<index_t> & select_vertices, vector<vertex> & triangle, vector<size_t> & tri_sizes )
 {
 	// Drawing a triangle in the middle of the border
 	size_t div = select_vertices.size() / 3;
@@ -903,7 +903,7 @@ che * fill_hole_center_triangle(che * mesh, vector<index_t> & select_vertices, i
 	vector<vertex> triangle;
 	vector<size_t> tri_sizes(3,0);
 
-	get_vertex_tri(mesh, select_vertices, triangle, tri_sizes);
+	get_real_tri(mesh, select_vertices, triangle, tri_sizes);
 
 	index_t i = 0;
 	for(index_t v: select_vertices)

@@ -2,7 +2,7 @@
 
 #include <cmath>
 
-vertex::vertex(const vertex_t & x_, const vertex_t & y_, const vertex_t & z_)
+vertex::vertex(const real_t & x_, const real_t & y_, const real_t & z_)
 {
 	x = x_;
 	y = y_;
@@ -19,29 +19,29 @@ vertex vertex::operator*(const vertex & v) const
 	return vertex(y * v.z - z * v.y, -(x * v.z - z * v.x), x * v.y - y * v.x);
 }
 
-void vertex::operator*=(const vertex_t & a)
+void vertex::operator*=(const real_t & a)
 {
 	x *= a;
 	y *= a;
 	z *= a;
 }
 
-vertex_t vertex::operator*() const
+real_t vertex::operator*() const
 {
 	return sqrt(x * x + y * y + z * z);
 }
 
-vertex vertex::operator/(const vertex_t & a) const
+vertex vertex::operator/(const real_t & a) const
 {
 	return (1. / a) * (*this);
 }
 
-void vertex::operator/=(const vertex_t & a)
+void vertex::operator/=(const real_t & a)
 {
 	(*this) *= (1. / a);
 }
 
-vertex_t vertex::operator,(const vertex & v) const
+real_t vertex::operator,(const vertex & v) const
 {
 	return x * v.x + y * v.y + z * v.z;
 }
@@ -80,12 +80,12 @@ vertex vertex::unit() const
 	return *this / **this;
 }
 
-vertex_t & vertex::operator[](const index_t & i)
+real_t & vertex::operator[](const index_t & i)
 {
 	return (&x)[i];
 }
 
-vertex operator*(const vertex_t & a, const vertex & v)
+vertex operator*(const real_t & a, const vertex & v)
 {
 	return vertex(a * v.x, a * v.y, a * v.z);
 }

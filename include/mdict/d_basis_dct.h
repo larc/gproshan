@@ -9,7 +9,7 @@ namespace mdict {
 class basis_dct: public basis
 {
 	private:
-		vertex_t n; // frequency
+		real_t n; // frequency
 
 	public:
 		basis_dct(const size_t & _n, const distance_t & _radio = 0);

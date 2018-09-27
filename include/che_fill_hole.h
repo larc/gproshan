@@ -119,7 +119,7 @@ che * fill_hole_front_angles_test(che * mesh, vector<index_t> & front_vertices, 
 
 che * fill_hole_front_angles_without_projection(che * mesh, vector<index_t> & front_vertices);
 
-che * fill_hole_front_angles(vector<vertex> & vertices, const vertex_t & lenght, const vertex & normal, const size_t & max_iter, bool is_grow = false);
+che * fill_hole_front_angles(vector<vertex> & vertices, const real_t & lenght, const vertex & normal, const size_t & max_iter, bool is_grow = false);
 
 che * fill_hole_center_triangle(che * mesh, vector<index_t> & select_vertices, index_t index);
 

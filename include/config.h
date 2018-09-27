@@ -5,7 +5,7 @@
 //#define NDEBUG
 
 // uncomment this line to compile gproshan with single precision (float)
-#define SINGLE_P
+//#define SINGLE_P
 
 #endif
 

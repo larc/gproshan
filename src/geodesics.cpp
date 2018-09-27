@@ -1,6 +1,8 @@
 #include "geodesics.h"
 #include "geodesics_ptp.h"
 
+#include "heat_flow.h"
+
 #include <queue>
 #include <cassert>
 
@@ -85,6 +87,8 @@ void geodesics::execute(che * mesh, const vector<index_t> & sources, const size_
 		case PTP_CPU: run_parallel_toplesets_propagation_cpu(mesh, sources, n_iter, radio);
 			break;
 		case PTP_GPU: run_parallel_toplesets_propagation_gpu(mesh, sources, n_iter, radio);
+			break;
+		case HEAT_FLOW: run_heat_flow(mesh, sources);
 			break;
 	}
 }
@@ -196,6 +200,17 @@ void geodesics::run_parallel_toplesets_propagation_gpu(che * mesh, const vector<
 	debug(time_ptp);
 
 	delete [] toplesets;
+}
+
+void geodesics::run_heat_flow(che * mesh, const vector<index_t> & sources)
+{
+	if(distances) delete [] distances;
+
+	float time_ptp;
+	TIC(time_ptp)
+	distances = heat_flow(mesh, sources);
+	TOC(time_ptp)
+	debug(time_ptp)
 }
 
 //d = {NIL, 0, 1} cross edge, next, prev

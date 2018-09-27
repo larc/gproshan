@@ -15,14 +15,14 @@ typedef double matrix_t;
 typedef double percent_t;
 
 #ifdef SINGLE_P
-	typedef float vertex_t;
+	typedef float real_t;
 #else
-	typedef double vertex_t;
+	typedef double real_t;
 #endif
 
-typedef vertex_t distance_t;
-typedef vertex_t area_t;
-typedef vertex_t angle_t;
+typedef real_t distance_t;
+typedef real_t area_t;
+typedef real_t angle_t;
 typedef std::pair<area_t,size_t> areapair_t;
 
 #define PATH_MDATA	std::string("../DATA/")

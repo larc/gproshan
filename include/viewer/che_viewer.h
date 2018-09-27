@@ -15,7 +15,7 @@
 #define GL_VERTEX_T GL_DOUBLE
 #endif
 
-typedef vertex_t color_t;
+typedef real_t color_t;
 
 class che_viewer
 {
@@ -23,7 +23,7 @@ class che_viewer
 		che * mesh;
 		size_t _n_vertices; // current number of vertices
 		bool _invert_orientation;
-		vertex_t factor;
+		real_t factor;
 		vertex v_translate;
 
 		vertex * normals;

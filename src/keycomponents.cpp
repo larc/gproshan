@@ -128,7 +128,7 @@ void keycomponents::calcular_krings(off & shape)
 
 	vertex * centers = new vertex[nc];
 	size_t * nro_x_comp = new size_t[nc];
-	vertex_t * stds = new vertex_t[nc];
+	real_t * stds = new real_t[nc];
 
 	for(size_t i = 1; i < nc; i++)
 	{
@@ -146,7 +146,7 @@ void keycomponents::calcular_krings(off & shape)
 	for(size_t i = 0; i < nc; i++)
 		centers[i] /= nro_x_comp[i];
 
-	vertex_t dist;
+	real_t dist;
 
 	for(size_t i = 0; i < n_keypoints; i++)
 	{
@@ -281,7 +281,7 @@ void keycomponents::new_keypoints(off & shape, keypoints & kps, ostream & os, pe
 	vertex * means = new vertex[set_components.size()];
 
 	size_t ic, min_i;
-	vertex_t min;
+	real_t min;
 	ic = 0;
 	for(auto c: set_components)
 	{
@@ -293,7 +293,7 @@ void keycomponents::new_keypoints(off & shape, keypoints & kps, ostream & os, pe
 		min = INFINITY;
 		for(auto p: c.second)
 		{
-			vertex_t dt = *(means[ic] - shape(p));
+			real_t dt = *(means[ic] - shape(p));
 			if(dt < min)
 			{
 				min = dt;

@@ -25,6 +25,7 @@ int viewer_main(int nargs, const char ** args)
 	viewer::add_process('G', "Geodesics (FM)", viewer_process_geodesics_fm);
 	viewer::add_process('U', "Geodesics (PTP_CPU)", viewer_process_geodesics_ptp_cpu);
 	viewer::add_process('C', "Geodesics (PTP_GPU)", viewer_process_geodesics_ptp_gpu);
+	viewer::add_process('L', "Geodesics (HEAT_FLOW)", viewer_process_geodesics_heat_flow);
 	viewer::add_process('S', "Farthest Point Sampling", viewer_process_farthest_point_sampling);
 	viewer::add_process('Q', "Farthest Point Sampling radio", viewer_process_farthest_point_sampling_radio);
 	viewer::add_process('V', "Voronoi Regions", viewer_process_voronoi);
@@ -613,6 +614,19 @@ void viewer_process_geodesics_ptp_gpu()
 	viewer::mesh().update_colors(&ptp[0]);
 }
 
+void viewer_process_geodesics_heat_flow()
+{
+	debug_me(APP_VIEWER)
+
+	TIC(load_time)
+	geodesics heat_flow(viewer::mesh(), viewer::select_vertices, geodesics::HEAT_FLOW);
+	TOC(load_time)
+	debug(load_time)
+
+	heat_flow.normalize();
+	viewer::mesh().update_colors(&heat_flow[0]);
+}
+
 void viewer_process_fill_holes_biharmonic_splines()
 {
 	debug_me(APP_VIEWER)
@@ -644,7 +658,7 @@ void viewer_process_gaussian_curvature()
 {
 	debug_me(APP_VIEWER)
 
-	vertex_t g, g_max = -INFINITY, g_min = INFINITY;
+	real_t g, g_max = -INFINITY, g_min = INFINITY;
 	vertex a, b;
 
 	a_vec gv(viewer::mesh().n_vertices());
@@ -670,13 +684,13 @@ void viewer_process_gaussian_curvature()
 	for(index_t v = 0; v < viewer::mesh().n_vertices(); v++)
 		gv(v) = (gv(v) - g_min) / g;
 
-	vertex_t gm = mean(gv);
-	vertex_t gs = var(gv);
+	real_t gm = mean(gv);
+	real_t gs = var(gv);
 
 	debug(gm)
 	debug(gs)
 
-	auto f = [&](vertex_t x, vertex_t a = 4) -> vertex_t
+	auto f = [&](real_t x, real_t a = 4) -> real_t
 	{
 		if(x < gm - a * gs) return 0;
 		if(x > gm + a * gs) return 1;

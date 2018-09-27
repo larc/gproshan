@@ -145,10 +145,10 @@ void che::flip(const index_t & e)
 // 4*sqrt(3)*a
 // q = ----------------
 // h1^2+h2^2+h3^2
-vertex_t che::pdetriq(const index_t & t) const
+real_t che::pdetriq(const index_t & t) const
 {
 	index_t he = t * P;
-	vertex_t h[3] = {
+	real_t h[3] = {
 						*(GT[VT[next(he)]] - GT[VT[he]]),
 						*(GT[VT[prev(he)]] - GT[VT[next(he)]]),
 						*(GT[VT[he]] - GT[VT[prev(he)]])
@@ -173,7 +173,7 @@ area_t che::area_trig(const index_t & t) const
 	vertex a = GT[VT[next(he)]] - GT[VT[he]];
 	vertex b = GT[VT[prev(he)]] - GT[VT[he]];
 
-	return abs(*(a * b) / 2);
+	return *(a * b) / 2;
 }
 
 area_t che::area_vertex(const index_t & v)
@@ -286,9 +286,9 @@ area_t che::cotan(const index_t & he) const
 	return (a, b) / *(a * b);
 }
 
-vertex_t che::mean_edge() const
+real_t che::mean_edge() const
 {
-	vertex_t m = 0;
+	real_t m = 0;
 
 	#pragma omp parallel for reduction(+: m)
 	for(index_t e = 0; e < n_edges_; e++)
@@ -322,7 +322,7 @@ void che::normalize()
 
 	center /= n_vertices_;
 
-	vertex_t max_norm = 0;
+	real_t max_norm = 0;
 
 	#pragma omp parallel for reduction(std::max : max_norm)
 	for(index_t v = 0; v < n_vertices_; v++)

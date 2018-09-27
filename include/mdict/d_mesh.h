@@ -94,13 +94,13 @@ struct patch_t
 	}
 };
 
-a_vec gaussian(a_mat & xy, vertex_t sigma, vertex_t cx, vertex_t cy);
+a_vec gaussian(a_mat & xy, real_t sigma, real_t cx, real_t cy);
 
 a_vec cossine(a_mat & xy, distance_t radio, size_t K);
 
 void phi_gaussian(a_mat & phi, a_mat & xy, void ** params);
 
-void get_centers_gaussian(a_vec & cx, a_vec & cy, vertex_t radio, size_t K);
+void get_centers_gaussian(a_vec & cx, a_vec & cy, real_t radio, size_t K);
 
 void save_patches_coordinates( vector<patch_t> & patches, vector< pair<index_t,index_t> > * lpatches, size_t NV);
 

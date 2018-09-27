@@ -28,6 +28,7 @@ void viewer_process_fastmarching();
 void viewer_process_geodesics_fm();
 void viewer_process_geodesics_ptp_gpu();
 void viewer_process_geodesics_ptp_cpu();
+void viewer_process_geodesics_heat_flow();
 void viewer_process_farthest_point_sampling();
 void viewer_process_farthest_point_sampling_radio();
 void viewer_compute_toplesets();

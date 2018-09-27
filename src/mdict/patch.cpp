@@ -13,7 +13,7 @@
 #include <CGAL/Simple_cartesian.h>
 #include <CGAL/Monge_via_jet_fitting.h>
 
-typedef vertex_t DFT;
+typedef real_t DFT;
 typedef CGAL::Simple_cartesian<DFT> Data_Kernel;
 typedef Data_Kernel::Point_3 DPoint;
 typedef Data_Kernel::Vector_3 DVector;

@@ -1,7 +1,7 @@
-INCLUDE_PATH		= -I./include -isystem /usr/include/eigen3 
-LIBRARY_PATH		=
-BLAS_LIBS			= -lumfpack
-SUITESPARSE_LIBS	= -lspqr -lcholmod
+INCLUDE_PATH		= -I./include -isystem /usr/include/eigen3 -I/usr/include/suitesparse 
+LIBRARY_PATH		= -L/usr/local/cuda/lib64
+BLAS_LIBS			= #-lumfpack
+SUITESPARSE_LIBS	= #-lspqr -lcholmod
 OPENGL_LIBS			= -lglut -lGL -lGLU
 
 TARGET = gproshan
@@ -12,7 +12,7 @@ CUDA = nvcc
 CFLAGS = -O3 -fopenmp $(INCLUDE_PATH) 
 CUDAFLAGS = -I./include/cuda -O3 -Xcompiler -fopenmp -D_FORCE_INLINES
 LFLAGS = -O3 -fopenmp $(LIBRARY_PATH) -lcublas -lcuda -lcudart -lX11 -lpthread
-LIBS = $(OPENGL_LIBS) $(SUITESPARSE_LIBS) $(BLAS_LIBS) -larmadillo -lCGAL
+LIBS = $(OPENGL_LIBS) $(SUITESPARSE_LIBS) $(BLAS_LIBS) -larmadillo -lsuperlu -lCGAL
 
 ########################################################################################
 ## !! Do not edit below this line

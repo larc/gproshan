@@ -28,7 +28,7 @@ class off : public mesh
 		ring_t & get_rings(size_t i);
 		face_t & get_faces(size_t i);
 		void save(string file);
-		void generate_grid(size_t s, size_t f, vertex_t r = 1);
+		void generate_grid(size_t s, size_t f, real_t r = 1);
 
 	private:
 		void set_rings();

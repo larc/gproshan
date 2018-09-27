@@ -499,7 +499,7 @@ void holes::divide_faces(size_t k, vector<vertex> & vertices, map<vertex, size_t
 void holes::biharmonic_interp_2(MatrixXd & P, MatrixXd & H)
 {
 	size_t n = P.cols();
-	vertex_t x;
+	real_t x;
 
 	MatrixXd A(n, n);
 	MatrixXd pi(2,1);
@@ -539,7 +539,7 @@ void holes::biharmonic_interp_2(MatrixXd & P, MatrixXd & H)
 void holes::analysis_curvature_2(size_t index, MatrixXd & P, MatrixXd & H, off & p_mesh, off & h_mesh)
 {
 	size_t n = P.cols();
-	vertex_t x;
+	real_t x;
 
 	MatrixXd A(n, n);
 	MatrixXd pi(2,1);
@@ -571,7 +571,7 @@ curv_t holes::analysis_curvature_2(MatrixXd & alpha, MatrixXd & P, MatrixXd & H,
 {
 	MatrixXd pi(2,1);
 	MatrixXd pj(2,1);
-	vertex_t x;
+	real_t x;
 
 	for(size_t i = 0; i < H.cols(); i++)
 	{

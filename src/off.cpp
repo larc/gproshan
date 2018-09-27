@@ -108,7 +108,7 @@ void off::save(string file)
 	os.close();
 }
 
-void off::generate_grid(size_t s, size_t f, vertex_t r)
+void off::generate_grid(size_t s, size_t f, real_t r)
 {
 	srand(time(NULL));
 
@@ -123,7 +123,7 @@ void off::generate_grid(size_t s, size_t f, vertex_t r)
 
 	s = base*f;
 
-	vertex_t x = 0, y = 0;
+	real_t x = 0, y = 0;
 	size_t i, j, k, rnd;
 
 	i = 0;

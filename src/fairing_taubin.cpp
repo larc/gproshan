@@ -29,7 +29,7 @@ void fairing_taubin::compute(che * shape)
 
 	positions = new vertex[shape->n_vertices()];
 
-	a_mat X((vertex_t *) positions, 3, shape->n_vertices(), false, true);
+	a_mat X((real_t *) positions, 3, shape->n_vertices(), false, true);
 
 	#pragma omp parallel for
 	for(index_t v = 0; v < shape->n_vertices(); v++)

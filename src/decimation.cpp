@@ -26,7 +26,7 @@ void decimation::execute(const vertex *const & normals)
 
 	const size_t n_vertices = mesh->n_vertices();
 	index_t * sort_edges = new index_t[mesh->n_edges()];
-	vertex_t * error_edges = new vertex_t[mesh->n_edges()];
+	real_t * error_edges = new real_t[mesh->n_edges()];
 	vertex * corr_v = new vertex[n_vertices];
 	index_t * corr_i = new index_t[n_vertices * che::P];
 
@@ -114,7 +114,7 @@ void decimation::compute_quadrics()
 	}
 }
 
-void decimation::order_edges(index_t * const & sort_edges, vertex_t * const & error_edges)
+void decimation::order_edges(index_t * const & sort_edges, real_t * const & error_edges)
 {
 	#pragma omp parallel for
 	for(int e = 0; e < mesh->n_edges(); e++)
@@ -131,7 +131,7 @@ void decimation::order_edges(index_t * const & sort_edges, vertex_t * const & er
 		);
 }
 
-vertex_t decimation::compute_error(const index_t & e)
+real_t decimation::compute_error(const index_t & e)
 {
 	vertex ve = create_vertex(e);
 	a_vec v(4);

@@ -11,7 +11,7 @@
 #include <CGAL/Simple_cartesian.h>
 #include <CGAL/Monge_via_jet_fitting.h>
 
-typedef vertex_t DFT;
+typedef real_t DFT;
 typedef CGAL::Simple_cartesian<DFT> Data_Kernel;
 typedef Data_Kernel::Point_3 DPoint;
 typedef CGAL::Monge_via_jet_fitting<Data_Kernel> My_Monge_via_jet_fitting;
@@ -23,7 +23,7 @@ namespace mdict {
 size_t patch_t::min_nvp = 36;
 bool patch_t::del_index = false;
 
-a_vec gaussian(a_mat & xy, vertex_t sigma, vertex_t cx, vertex_t cy)
+a_vec gaussian(a_mat & xy, real_t sigma, real_t cx, real_t cy)
 {
 	a_vec x = xy.row(0).t() - cx;
 	a_vec y = xy.row(1).t() - cy;
@@ -57,7 +57,7 @@ void phi_gaussian(a_mat & phi, a_mat & xy, params_t params)
 {
 	a_vec & cx = *( (a_vec * ) params[0] );
 	a_vec & cy = *( (a_vec * ) params[1] );
-	vertex_t sigma = *( (vertex_t * ) params[2] );
+	real_t sigma = *( (real_t * ) params[2] );
 
 	size_t K = phi.n_cols;
 
@@ -65,7 +65,7 @@ void phi_gaussian(a_mat & phi, a_mat & xy, params_t params)
 		phi.col(k) = gaussian(xy, sigma, cx(k), cy(k));
 }
 
-void get_centers_gaussian(a_vec & cx, a_vec & cy, vertex_t radio, size_t K)
+void get_centers_gaussian(a_vec & cx, a_vec & cy, real_t radio, size_t K)
 {
 	if(K == 1)
 	{
@@ -74,7 +74,7 @@ void get_centers_gaussian(a_vec & cx, a_vec & cy, vertex_t radio, size_t K)
 	}
 
 	size_t k = sqrt(K);
-	vertex_t d = 2 * radio / (k - 1);
+	real_t d = 2 * radio / (k - 1);
 
 	for(index_t c = 0, i = 0; i < k; i++)
 	for(index_t j = 0; j < k; j++, c++)
@@ -133,8 +133,8 @@ void principal_curvatures( patch_t & rp, che * mesh)
 	vertex N = mesh->normal(rp[0]);
 
 	vertex max;
-	vertex_t K = -INFINITY;
-	vertex_t k;
+	real_t K = -INFINITY;
+	real_t k;
 
 	for_star(he, mesh, rp[0])
 	{
