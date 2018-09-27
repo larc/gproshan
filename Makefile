@@ -1,7 +1,7 @@
 INCLUDE_PATH		= -I./include -isystem /usr/include/eigen3 -I/usr/include/suitesparse 
 LIBRARY_PATH		= -L/usr/local/cuda/lib64
-BLAS_LIBS			= #-lumfpack
-SUITESPARSE_LIBS	= #-lspqr -lcholmod
+BLAS_LIBS			= -lumfpack
+SUITESPARSE_LIBS	= -lamd -lcholmod -lsuitesparseconfig -lm
 OPENGL_LIBS			= -lglut -lGL -lGLU
 
 TARGET = gproshan

@@ -18,5 +18,10 @@ distance_t * heat_flow(che * mesh, const vector<index_t> & sources);
 
 void compute_divergence(che * mesh, const a_mat & u, a_mat & div);
 
+void solve_positive_definite(a_mat & x, const a_sp_mat & A, const a_mat & b);
+
+cholmod_dense * arma_2_cholmod(const a_mat & m);
+cholmod_sparse * arma_2_cholmod(const a_sp_mat & m);
+
 #endif // HEAT_FLOW_H
 

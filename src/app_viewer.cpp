@@ -579,6 +579,9 @@ void viewer_process_geodesics_fm()
 {
 	debug_me(APP_VIEWER)
 
+	if(!viewer::select_vertices.size())
+		viewer::select_vertices.push_back(0);
+
 	TIC(load_time)
 	geodesics fm(viewer::mesh(), viewer::select_vertices);
 	TOC(load_time)
@@ -592,6 +595,9 @@ void viewer_process_geodesics_ptp_cpu()
 {
 	debug_me(APP_VIEWER)
 
+	if(!viewer::select_vertices.size())
+		viewer::select_vertices.push_back(0);
+	
 	TIC(load_time)
 	geodesics ptp(viewer::mesh(), viewer::select_vertices, geodesics::PTP_CPU);
 	TOC(load_time)
@@ -605,6 +611,9 @@ void viewer_process_geodesics_ptp_gpu()
 {
 	debug_me(APP_VIEWER)
 
+	if(!viewer::select_vertices.size())
+		viewer::select_vertices.push_back(0);
+	
 	TIC(load_time)
 	geodesics ptp(viewer::mesh(), viewer::select_vertices, geodesics::PTP_GPU);
 	TOC(load_time)
@@ -618,6 +627,9 @@ void viewer_process_geodesics_heat_flow()
 {
 	debug_me(APP_VIEWER)
 
+	if(!viewer::select_vertices.size())
+		viewer::select_vertices.push_back(0);
+	
 	TIC(load_time)
 	geodesics heat_flow(viewer::mesh(), viewer::select_vertices, geodesics::HEAT_FLOW);
 	TOC(load_time)
