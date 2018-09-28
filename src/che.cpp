@@ -278,11 +278,13 @@ vertex che::corr_vertex(corr_t & corr) const
 	return corr.alpha[0] * gt_vt(he) + corr.alpha[1] * gt_vt(next(he)) + corr.alpha[2] * gt_vt(prev(he));
 }
 
-area_t che::cotan(const index_t & he) const
+real_t che::cotan(const index_t & he) const
 {
 	if(he == NIL) return 0;
+
 	vertex a = GT[VT[he]] - GT[VT[prev(he)]];
 	vertex b = GT[VT[next(he)]] - GT[VT[prev(he)]];
+
 	return (a, b) / *(a * b);
 }
 

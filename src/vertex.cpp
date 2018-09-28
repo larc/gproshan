@@ -16,7 +16,7 @@ vertex::~vertex()
 
 vertex vertex::operator*(const vertex & v) const
 {
-	return vertex(y * v.z - z * v.y, -(x * v.z - z * v.x), x * v.y - y * v.x);
+	return vertex(y * v.z - z * v.y, z * v.x - x * v.z, x * v.y - y * v.x);
 }
 
 void vertex::operator*=(const real_t & a)
@@ -48,7 +48,7 @@ real_t vertex::operator,(const vertex & v) const
 
 vertex vertex::operator+(const vertex & v) const
 {
-	return vertex(x+v.x, y+v.y, z+v.z);
+	return vertex(x + v.x, y + v.y, z + v.z);
 }
 
 void vertex::operator+=(const vertex & v)
@@ -60,7 +60,7 @@ void vertex::operator+=(const vertex & v)
 
 vertex vertex::operator-(const vertex & v) const
 {
-	return vertex(x-v.x, y-v.y, z-v.z);
+	return vertex(x - v.x, y - v.y, z - v.z);
 }
 
 void vertex::operator-=(const vertex & v)

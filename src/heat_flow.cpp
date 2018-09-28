@@ -36,7 +36,7 @@ distance_t * heat_flow(che * mesh, const vector<index_t> & sources)
 	#endif
 	
 	solve_positive_definite(u, A, u0);
-	// assert(spsolve(u, A, u0));
+	//assert(spsolve(u, A, u0));
 
 	// extract geodesics
 	distance_t * distances = new distance_t[mesh->n_vertices()];
@@ -47,10 +47,12 @@ distance_t * heat_flow(che * mesh, const vector<index_t> & sources)
 	a_mat phi(distances, mesh->n_vertices(), 1, false);
 
 	solve_positive_definite(phi, L, div);
-	// assert(spsolve(phi, L, div));
+	//assert(spsolve(phi, L, div));
 	
-	real_t mp = phi.min();
-	phi.for_each([&mp](a_mat::elem_type & val) { val -= mp; });
+	real_t min_val = phi.min();
+	phi.for_each([&min_val](a_mat::elem_type & val) { val -= min_val; });
+
+	debug(phi.max())
 
 	cholmod_l_gpu_stats(&context);
 	
@@ -69,7 +71,10 @@ void compute_divergence(che * mesh, const a_mat & u, a_mat & div)
 
 		sum = 0;
 		for_star(he, mesh, v)
-			sum += ( - mesh->gradient_he(he, u.memptr()) , mesh->gt_vt(he) - mesh->gt_vt(next(he)) );
+			sum += (
+					mesh->normal_he(he) * ( mesh->gt_vt(prev(he)) - mesh->gt_vt(next(he)) ) ,
+					- mesh->gradient_he(he, u.memptr()) 
+					);
 	}
 }
 
