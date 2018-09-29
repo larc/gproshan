@@ -14,11 +14,11 @@
 
 #include <cholmod.h>
 
-distance_t * heat_flow(che * mesh, const vector<index_t> & sources);
+distance_t * heat_flow(che * mesh, const vector<index_t> & sources, float & solve_time);
 
 void compute_divergence(che * mesh, const a_mat & u, a_mat & div);
 
-void solve_positive_definite(a_mat & x, const a_sp_mat & A, const a_mat & b);
+float solve_positive_definite(a_mat & x, const a_sp_mat & A, const a_mat & b);
 
 void solve_positive_definite_gpu(a_mat & x, const a_sp_mat & A, const a_mat & b);
 

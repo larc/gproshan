@@ -206,11 +206,12 @@ void geodesics::run_heat_flow(che * mesh, const vector<index_t> & sources)
 {
 	if(distances) delete [] distances;
 
-	float time_ptp;
-	TIC(time_ptp)
-	distances = heat_flow(mesh, sources);
-	TOC(time_ptp)
-	debug(time_ptp)
+	float time_total, solve_time;
+	TIC(time_total)
+	distances = heat_flow(mesh, sources, solve_time);
+	TOC(time_total)
+	debug(time_total - solve_time)
+	debug(solve_time)
 }
 
 //d = {NIL, 0, 1} cross edge, next, prev

@@ -6,7 +6,7 @@
 
 cholmod_common context;
 
-distance_t * heat_flow(che * mesh, const vector<index_t> & sources)
+distance_t * heat_flow(che * mesh, const vector<index_t> & sources, float & solve_time)
 {
 	if(!sources.size()) return 0;
 	
@@ -28,16 +28,11 @@ distance_t * heat_flow(che * mesh, const vector<index_t> & sources)
 	A += dt * L;
 	a_mat u(mesh->n_vertices(), 1);
 	
-	float time;
-	TIC(time)
-	/*
 	cholmod_l_start(&context);
-	#ifdef SINGLE_P
-		context.dtype = CHOLMOD_SINGLE;
-	#endif
-	*/
+	
+	solve_time = 0;
 
-	//solve_positive_definite(u, A, u0);	// cholmod (suitesparse)
+	//solve_time += solve_positive_definite(u, A, u0);	// cholmod (suitesparse)
 	solve_positive_definite_gpu(u, A, u0);	// cusorlver (cusparse)
 	//assert(spsolve(u, A, u0));			// arma
 
@@ -49,18 +44,14 @@ distance_t * heat_flow(che * mesh, const vector<index_t> & sources)
 
 	a_mat phi(distances, mesh->n_vertices(), 1, false);
 
-	//solve_positive_definite(phi, L, div);			// cholmod (suitesparse)
+	//solve_time += solve_positive_definite(phi, L, div);			// cholmod (suitesparse)
 	solve_positive_definite_gpu(phi, L, div);		// cusolver (cusparse)
 	//assert(spsolve(phi, L, div));					// arma
 	
 	real_t min_val = phi.min();
 	phi.for_each([&min_val](a_mat::elem_type & val) { val -= min_val; });
 
-	debug(phi.max())
-
-	//cholmod_l_finish(&context);
-	TOC(time)
-	debug(time)
+	cholmod_l_finish(&context);
 
 	return distances;
 }
@@ -80,14 +71,18 @@ void compute_divergence(che * mesh, const a_mat & u, a_mat & div)
 	}
 }
 
-void solve_positive_definite(a_mat & x, const a_sp_mat & A, const a_mat & b)
+float solve_positive_definite(a_mat & x, const a_sp_mat & A, const a_mat & b)
 {
 	cholmod_sparse * cA = arma_2_cholmod(A); cA->stype = 1;
 	cholmod_dense * cb = arma_2_cholmod(b);
 
 	cholmod_factor * L = cholmod_l_analyze(cA, &context);
 	cholmod_l_factorize(cA, L, &context);
+
+	float solve_time;
+	TIC(solve_time)
 	cholmod_dense * cx = cholmod_l_solve(CHOLMOD_A, L, cb, &context);
+	TOC(solve_time)
 
 	assert(x.n_rows == b.n_rows);
 	memcpy(x.memptr(), cx->x, x.n_rows * sizeof(real_t));
@@ -95,6 +90,8 @@ void solve_positive_definite(a_mat & x, const a_sp_mat & A, const a_mat & b)
 	cholmod_l_free_factor(&L, &context);
 	cholmod_l_free_sparse(&cA, &context);
 	cholmod_l_free_dense(&cb, &context);
+
+	return solve_time;
 }
 
 void solve_positive_definite_gpu(a_mat & x, const a_sp_mat & A, const a_mat & b)
