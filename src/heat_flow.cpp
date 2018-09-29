@@ -37,7 +37,6 @@ distance_t * heat_flow(che * mesh, const vector<index_t> & sources)
 	#endif
 	*/
 
-	A = A.t();
 	//solve_positive_definite(u, A, u0);	// cholmod (suitesparse)
 	solve_positive_definite_gpu(u, A, u0);	// cusorlver (cusparse)
 	//assert(spsolve(u, A, u0));			// arma
@@ -112,7 +111,6 @@ void solve_positive_definite_gpu(a_mat & x, const a_sp_mat & A, const a_mat & b)
 		hA_row_indices[i] = A.row_indices[i];
 	
 	int singularity = solve_positive_definite_gpu(A.n_rows, A.n_nonzero, A.values, hA_col_ptrs, hA_row_indices, b.memptr(), x.memptr());
-	debug(singularity)
 
 	delete [] hA_col_ptrs;
 	delete [] hA_row_indices;

@@ -37,7 +37,11 @@ int solve_positive_definite_gpu(const int m, const int nnz, const real_t * hA_va
 	cusparseSetMatType(descr, CUSPARSE_MATRIX_TYPE_GENERAL);
     cusparseSetMatIndexBase(descr, CUSPARSE_INDEX_BASE_ZERO);
 	
+#ifdef SINGLE_P
+	cusolverSpScsrlsvchol(handle_cusolver, m, nnz, descr, dA_values, dA_col_ptrs, dA_row_indices, db, 0, 0, dx, &singularity);
+#else
 	cusolverSpDcsrlsvchol(handle_cusolver, m, nnz, descr, dA_values, dA_col_ptrs, dA_row_indices, db, 0, 0, dx, &singularity);
+#endif
 	
 	cusparseDestroyMatDescr(descr);
 	cusolverSpDestroy(handle_cusolver);
