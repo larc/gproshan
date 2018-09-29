@@ -30,13 +30,17 @@ distance_t * heat_flow(che * mesh, const vector<index_t> & sources)
 	
 	float time;
 	TIC(time)
+	/*
 	cholmod_l_start(&context);
 	#ifdef SINGLE_P
 		context.dtype = CHOLMOD_SINGLE;
 	#endif
-	
-	solve_positive_definite(u, A, u0);
-	//assert(spsolve(u, A, u0));
+	*/
+
+	A = A.t();
+	//solve_positive_definite(u, A, u0);	// cholmod (suitesparse)
+	solve_positive_definite_gpu(u, A, u0);	// cusorlver (cusparse)
+	//assert(spsolve(u, A, u0));			// arma
 
 	// extract geodesics
 	distance_t * distances = new distance_t[mesh->n_vertices()];
@@ -46,17 +50,16 @@ distance_t * heat_flow(che * mesh, const vector<index_t> & sources)
 
 	a_mat phi(distances, mesh->n_vertices(), 1, false);
 
-	solve_positive_definite(phi, L, div);
-	//assert(spsolve(phi, L, div));
+	//solve_positive_definite(phi, L, div);			// cholmod (suitesparse)
+	solve_positive_definite_gpu(phi, L, div);		// cusolver (cusparse)
+	//assert(spsolve(phi, L, div));					// arma
 	
 	real_t min_val = phi.min();
 	phi.for_each([&min_val](a_mat::elem_type & val) { val -= min_val; });
 
 	debug(phi.max())
 
-	cholmod_l_gpu_stats(&context);
-	
-	cholmod_l_finish(&context);
+	//cholmod_l_finish(&context);
 	TOC(time)
 	debug(time)
 
@@ -95,6 +98,26 @@ void solve_positive_definite(a_mat & x, const a_sp_mat & A, const a_mat & b)
 	cholmod_l_free_dense(&cb, &context);
 }
 
+void solve_positive_definite_gpu(a_mat & x, const a_sp_mat & A, const a_mat & b)
+{
+	int * hA_col_ptrs = new int[A.n_cols + 1];
+	int * hA_row_indices = new int[A.n_nonzero];
+	
+	#pragma omp parallel for
+	for(int i = 0; i <= A.n_cols; i++)
+		hA_col_ptrs[i] = A.col_ptrs[i];
+	
+	#pragma omp parallel for
+	for(int i = 0; i < A.n_nonzero; i++)
+		hA_row_indices[i] = A.row_indices[i];
+	
+	int singularity = solve_positive_definite_gpu(A.n_rows, A.n_nonzero, A.values, hA_col_ptrs, hA_row_indices, b.memptr(), x.memptr());
+	debug(singularity)
+
+	delete [] hA_col_ptrs;
+	delete [] hA_row_indices;
+}
+	
 cholmod_dense * arma_2_cholmod(const a_mat & D)
 {
 	cholmod_dense * cD = cholmod_l_allocate_dense(D.n_rows, D.n_cols, D.n_rows, CHOLMOD_REAL, &context);

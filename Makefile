@@ -11,7 +11,7 @@ LD = g++ -no-pie
 CUDA = nvcc
 CFLAGS = -O3 -fopenmp $(INCLUDE_PATH) 
 CUDAFLAGS = -I./include/cuda -O3 -Xcompiler -fopenmp -D_FORCE_INLINES
-LFLAGS = -O3 -fopenmp $(LIBRARY_PATH) -lcublas -lcuda -lcudart -lX11 -lpthread
+LFLAGS = -O3 -fopenmp $(LIBRARY_PATH) -lcublas -lcusolver -lcusparse -lcuda -lcudart -lX11 -lpthread
 LIBS = $(OPENGL_LIBS) $(SUITESPARSE_LIBS) $(BLAS_LIBS) -larmadillo -lsuperlu -lCGAL
 
 ########################################################################################
