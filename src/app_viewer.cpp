@@ -25,7 +25,8 @@ int viewer_main(int nargs, const char ** args)
 	viewer::add_process('G', "Geodesics (FM)", viewer_process_geodesics_fm);
 	viewer::add_process('U', "Geodesics (PTP_CPU)", viewer_process_geodesics_ptp_cpu);
 	viewer::add_process('C', "Geodesics (PTP_GPU)", viewer_process_geodesics_ptp_gpu);
-	viewer::add_process('L', "Geodesics (HEAT_FLOW)", viewer_process_geodesics_heat_flow);
+	viewer::add_process('l', "Geodesics (HEAT_FLOW)", viewer_process_geodesics_heat_flow);
+	viewer::add_process('L', "Geodesics (HEAT_FLOW_GPU)", viewer_process_geodesics_heat_flow_gpu);
 	viewer::add_process('S', "Farthest Point Sampling", viewer_process_farthest_point_sampling);
 	viewer::add_process('Q', "Farthest Point Sampling radio", viewer_process_farthest_point_sampling_radio);
 	viewer::add_process('V', "Voronoi Regions", viewer_process_voronoi);
@@ -632,6 +633,22 @@ void viewer_process_geodesics_heat_flow()
 	
 	TIC(load_time)
 	geodesics heat_flow(viewer::mesh(), viewer::select_vertices, geodesics::HEAT_FLOW);
+	TOC(load_time)
+	debug(load_time)
+
+	heat_flow.normalize();
+	viewer::mesh().update_colors(&heat_flow[0]);
+}
+
+void viewer_process_geodesics_heat_flow_gpu()
+{
+	debug_me(APP_VIEWER)
+
+	if(!viewer::select_vertices.size())
+		viewer::select_vertices.push_back(0);
+	
+	TIC(load_time)
+	geodesics heat_flow(viewer::mesh(), viewer::select_vertices, geodesics::HEAT_FLOW_GPU);
 	TOC(load_time)
 	debug(load_time)
 

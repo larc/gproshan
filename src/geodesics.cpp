@@ -90,6 +90,8 @@ void geodesics::execute(che * mesh, const vector<index_t> & sources, const size_
 			break;
 		case HEAT_FLOW: run_heat_flow(mesh, sources);
 			break;
+		case HEAT_FLOW_GPU: run_heat_flow_gpu(mesh, sources);
+			break;
 	}
 }
 
@@ -209,6 +211,18 @@ void geodesics::run_heat_flow(che * mesh, const vector<index_t> & sources)
 	float time_total, solve_time;
 	TIC(time_total)
 	distances = heat_flow(mesh, sources, solve_time);
+	TOC(time_total)
+	debug(time_total - solve_time)
+	debug(solve_time)
+}
+
+void geodesics::run_heat_flow_gpu(che * mesh, const vector<index_t> & sources)
+{
+	if(distances) delete [] distances;
+
+	float time_total, solve_time;
+	TIC(time_total)
+	distances = heat_flow_gpu(mesh, sources, solve_time);
 	TOC(time_total)
 	debug(time_total - solve_time)
 	debug(solve_time)
