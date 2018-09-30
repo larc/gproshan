@@ -32,8 +32,8 @@ distance_t * heat_flow(che * mesh, const vector<index_t> & sources, float & solv
 	
 	solve_time = 0;
 
-	//solve_time += solve_positive_definite(u, A, u0);	// cholmod (suitesparse)
-	solve_positive_definite_gpu(u, A, u0);	// cusorlver (cusparse)
+	solve_time += solve_positive_definite(u, A, u0);	// cholmod (suitesparse)
+	//solve_positive_definite_gpu(u, A, u0);	// cusorlver (cusparse)
 	//assert(spsolve(u, A, u0));			// arma
 
 	// extract geodesics
@@ -44,8 +44,8 @@ distance_t * heat_flow(che * mesh, const vector<index_t> & sources, float & solv
 
 	a_mat phi(distances, mesh->n_vertices(), 1, false);
 
-	//solve_time += solve_positive_definite(phi, L, div);			// cholmod (suitesparse)
-	solve_positive_definite_gpu(phi, L, div);		// cusolver (cusparse)
+	solve_time += solve_positive_definite(phi, L, div);			// cholmod (suitesparse)
+	//solve_positive_definite_gpu(phi, L, div);		// cusolver (cusparse)
 	//assert(spsolve(phi, L, div));					// arma
 	
 	real_t min_val = phi.min();

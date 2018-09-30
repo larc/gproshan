@@ -2,8 +2,73 @@
 
 #include "che_off.h"
 #include "geodesics_ptp.h"
+#include "heat_flow.h"
 
 #include <cassert>
+
+void main_test_geodesics_heat_flow(const int & nargs, const char ** args)
+{
+	if(nargs < 4)
+	{
+		printf("./test_geodesics [data_path] [test_path] [exact_dist_path] [n_test = 10]\n");
+		return;
+	}
+	
+	const char * data_path = args[1];
+	const char * test_path = args[2];
+	const char * exact_dist_path = args[3];
+
+	int n_test = nargs == 5 ? atoi(args[4]) : 10;
+
+	string filename;
+	while(cin >> filename)
+	{
+		debug(filename)
+		
+		che * mesh = new che_off(data_path + filename + ".off");
+		size_t n_vertices = mesh->n_vertices();
+		
+		float time_precomp, time_solve, ptime, stime;
+		time_precomp = time_solve = 0;
+		
+		distance_t * dist = NULL;
+		for(int i = 0; i < n_test; i++)
+		{
+			if(dist) delete [] dist;
+
+			TIC(ptime)
+			dist = heat_flow(mesh, { 0 }, stime);
+			TOC(ptime)
+
+			time_precomp += ptime - stime;
+			time_solve += stime;
+		}
+		
+		time_precomp /= n_test;
+		time_solve /= n_test;
+		
+		distance_t * exact = load_exact_geodesics(exact_dist_path + filename, n_vertices);
+		distance_t error = 0;
+
+		for(index_t v = 0; v < n_vertices; v++)
+		{
+			if(exact[v] > 0)
+			{
+				error += abs(dist[v] - exact[v]) / exact[v];
+			}
+		}
+
+		error /= n_vertices;
+
+		printf("%18.3f & %18.3f & val & ", time_precomp, time_solve);
+		printf("%18.3e ", error * 100);
+		printf("\\\\\\hline\n");
+
+		delete [] exact;
+		delete [] dist;
+		delete mesh;
+	}	
+}
 
 void main_test_geodesics_ptp(const int & nargs, const char ** args)
 {

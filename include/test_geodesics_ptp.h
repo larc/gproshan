@@ -1,5 +1,8 @@
 #include "geodesics.h"
 
+/// Execute performance and accuracy test for heat method.
+void main_test_geodesics_heat_flow(const int & nargs, const char ** args);
+
 /// Execute performance and accuracy test for ptp algorithm on cpu and gpu.
 void main_test_geodesics_ptp(const int & nargs, const char ** args);
 
