@@ -27,31 +27,46 @@ int solve_positive_definite_gpu(const int m, const int nnz, const real_t * hA_va
 	real_t * dx;
 	cudaMalloc(&dx, m * sizeof(real_t));
 
-	// solve Ax = b
+	// solve Ax = b with Cholesky factorization
 
 	int singularity;
 	
-	cusolverSpHandle_t handle_cusolver;
-	cusolverSpCreate(&handle_cusolver);
+	cusparseHandle_t handle;
+	cusparseCreate(&handle);
 
 	cusparseMatDescr_t descr = 0;
 	cusparseCreateMatDescr(&descr);
 	cusparseSetMatType(descr, CUSPARSE_MATRIX_TYPE_GENERAL);
     cusparseSetMatIndexBase(descr, CUSPARSE_INDEX_BASE_ZERO);
+
+	csric02Info_t info;
+	cusparseCreateCsric02Info(&info);
 	
+	int buffer_size;
+	void * buffer;
+
 #ifdef SINGLE_P
-	cusolverSpScsrlsvchol(handle_cusolver, m, nnz, descr, dA_values, dA_col_ptrs, dA_row_indices, db, 0, 0, dx, &singularity);
 #else
-	cusolverSpDcsrlsvchol(handle_cusolver, m, nnz, descr, dA_values, dA_col_ptrs, dA_row_indices, db, 0, 0, dx, &singularity);
+	cusparseDcsric02_bufferSize(handle, m, nnz, descr, dA_values, dA_col_ptrs, dA_row_indices, info, &buffer_size);
+
+	cudaMalloc(&buffer, buffer_size);
+	cusparseDcsric02_analysis(handle, m, nnz, descr, dA_values, dA_col_ptrs, dA_row_indices, info, CUSPARSE_SOLVE_POLICY_NO_LEVEL, buffer);
+
+	cusparseDcsric02(handle, m, nnz, descr, dA_values, dA_col_ptrs, dA_row_indices, info, CUSPARSE_SOLVE_POLICY_NO_LEVEL, buffer);
+
+
 #endif
-	
-	cusparseDestroyMatDescr(descr);
-	cusolverSpDestroy(handle_cusolver);
 	
 	// copy dx to host x
 	cudaMemcpy(hx, dx, m * sizeof(real_t), cudaMemcpyDeviceToHost);
+	
+	// destroy
+	cusparseDestroyCsric02Info(info);
+	cusparseDestroyMatDescr(descr);
+	cusparseDestroy(handle);
 
 	// free device memory
+	cudaFree(buffer);
 	cudaFree(dA_col_ptrs);
 	cudaFree(dA_row_indices);
 	cudaFree(dA_values);

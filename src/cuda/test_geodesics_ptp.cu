@@ -5,16 +5,19 @@
 #include "geodesics_ptp.h"
 
 #include <fstream>
+#include <omp.h>
 #include <cublas_v2.h>
 
-distance_t * iter_error_parallel_toplesets_propagation_gpu(che * mesh, const vector<index_t> & sources, const vector<index_t> & limits, const index_t * sorted_index, const distance_t * exact_dist, float & time_ptp)
+distance_t * iter_error_parallel_toplesets_propagation_gpu(che * mesh, const vector<index_t> & sources, const vector<index_t> & limits, const index_t * sorted_index, const distance_t * exact_dist, double & time_ptp)
 {
 	cudaDeviceReset();
-
+/*
 	cudaEvent_t start, stop;
 	cudaEventCreate(&start);
 	cudaEventCreate(&stop);
 	cudaEventRecord(start, 0);
+*/
+	TIC(time_ptp)
 
 	// BEGIN PTP
 
@@ -41,6 +44,8 @@ distance_t * iter_error_parallel_toplesets_propagation_gpu(che * mesh, const vec
 
 	// END PTP
 
+	TOC(time_ptp)
+/*
 	cudaEventRecord(stop, 0);
 	cudaEventSynchronize(stop);
 	cudaEventElapsedTime(&time_ptp, start, stop);
@@ -48,12 +53,12 @@ distance_t * iter_error_parallel_toplesets_propagation_gpu(che * mesh, const vec
 
 	cudaEventDestroy(start);
 	cudaEventDestroy(stop);
-
+*/
 	return error;
 }
 
 /// Return an array of time in seconds.
-float * times_farthest_point_sampling_ptp_gpu(che * mesh, vector<index_t> & samples, size_t n, distance_t radio)
+double * times_farthest_point_sampling_ptp_gpu(che * mesh, vector<index_t> & samples, size_t n, distance_t radio)
 {
 	cudaDeviceReset();
 
@@ -85,7 +90,7 @@ float * times_farthest_point_sampling_ptp_gpu(che * mesh, vector<index_t> & samp
 
 	if(n >= h_mesh->n_vertices) n = h_mesh->n_vertices >> 1;
 
-	float * times = new float[n + 1];
+	double * times = new double[n + 1];
 
 	n -= samples.size();
 	samples.reserve(n);

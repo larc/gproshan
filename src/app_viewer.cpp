@@ -3,7 +3,7 @@
 using namespace mdict;
 
 // elapsed time in seconds
-float load_time;
+double load_time;
 
 int viewer_main(int nargs, const char ** args)
 {
@@ -503,7 +503,7 @@ void viewer_process_farthest_point_sampling_radio()
 	distance_t radio;
 	cin >> radio;
 
-	float time_fps;
+	double time_fps;
 
 	TIC(load_time)
 	radio = farthest_point_sampling_ptp_gpu(viewer::mesh(), viewer::select_vertices, time_fps, NIL, radio);

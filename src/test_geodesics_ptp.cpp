@@ -39,7 +39,7 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 		
 		// PERFORMANCE & ACCURACY ___________________________________________________________________
 
-		float Time[5], time;	// FM, PTP GPU, HEAT cholmod, HEAT cusparse
+		double Time[5], time;	// FM, PTP GPU, HEAT cholmod, HEAT cusparse
 		distance_t Error[4];	// FM, PTP GPU, HEAT cholmod, HEAT cusparse
 
 		distance_t * exact = load_exact_geodesics(exact_dist_path + filename, n_vertices);
@@ -48,9 +48,10 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 		Time[1] = test_ptp_gpu(Error[1], exact, mesh, source, limits, sorted_index, n_test);
 		Time[2] = test_heat_method_cholmod(Error[2], Time[3], exact, mesh, source, n_test);
 //		Time[4] = test_heat_method_cholmod_gpu(Error[3], time, exact, mesh, source, n_test);
+		Time[4] = Error[3] = 100000;
 		
 		int t_min = 0;
-		for(int i = 1; i < sizeof(Time) / sizeof(float); i++)
+		for(int i = 1; i < sizeof(Time) / sizeof(double); i++)
 			if(Time[t_min] > Time[i]) t_min = i;
 		
 		int e_min = 0;
@@ -118,7 +119,7 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 		
 		size_t i_samples = source.size();
 		size_t n_samples = 1001;
-		float * times_fps = times_farthest_point_sampling_ptp_gpu(mesh, source, n_samples);
+		double * times_fps = times_farthest_point_sampling_ptp_gpu(mesh, source, n_samples);
 		
 		os.open(test_path + filename + ".fps");
 		for(index_t i = i_samples; i < n_samples; i++)
@@ -137,9 +138,9 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 	}
 }
 
-float test_fast_marching(distance_t & error, const distance_t * exact, che * mesh, const vector<index_t> & source, const int & n_test)
+double test_fast_marching(distance_t & error, const distance_t * exact, che * mesh, const vector<index_t> & source, const int & n_test)
 {
-	float t, time = 0;
+	double t, time = 0;
 
 	for(int i = 0; i < n_test; i++)
 	{
@@ -158,9 +159,9 @@ float test_fast_marching(distance_t & error, const distance_t * exact, che * mes
 	return time / n_test;
 }
 
-float test_ptp_gpu(distance_t & error, const distance_t * exact, che * mesh, const vector<index_t> & source, const vector<index_t> & limits, const index_t * sorted_index, const int & n_test)
+double test_ptp_gpu(distance_t & error, const distance_t * exact, che * mesh, const vector<index_t> & source, const vector<index_t> & limits, const index_t * sorted_index, const int & n_test)
 {
-	float t, time = 0;
+	double t, time = 0;
 	
 	distance_t * dist = NULL;
 	for(int i = 0; i < n_test; i++)
@@ -181,9 +182,9 @@ float test_ptp_gpu(distance_t & error, const distance_t * exact, che * mesh, con
 	return time / n_test;
 }
 
-float test_heat_method_cholmod(distance_t & error, float & stime, const distance_t * exact, che * mesh, const vector<index_t> & source, const int & n_test)
+double test_heat_method_cholmod(distance_t & error, double & stime, const distance_t * exact, che * mesh, const vector<index_t> & source, const int & n_test)
 {
-	float t, st, time = 0;
+	double t, st, time = 0;
 	
 	distance_t * dist = NULL;
 	for(int i = 0; i < n_test; i++)
@@ -207,9 +208,9 @@ float test_heat_method_cholmod(distance_t & error, float & stime, const distance
 	return time / n_test;
 }
 
-float test_heat_method_cholmod_gpu(distance_t & error, float & stime, const distance_t * exact, che * mesh, const vector<index_t> & source, const int & n_test)
+double test_heat_method_cholmod_gpu(distance_t & error, double & stime, const distance_t * exact, che * mesh, const vector<index_t> & source, const int & n_test)
 {
-	float t, st, time = 0;
+	double t, st, time = 0;
 	
 	distance_t * dist = NULL;
 	for(int i = 0; i < n_test; i++)

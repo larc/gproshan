@@ -180,7 +180,7 @@ void geodesics::run_parallel_toplesets_propagation_cpu(che * mesh, const vector<
 	vector<index_t> limits;
 	mesh->compute_toplesets(toplesets, sorted_index, limits, sources);
 
-	float time_ptp;
+	double time_ptp;
 	TIC(time_ptp)
 	distances = parallel_toplesets_propagation_cpu(mesh, sources, limits, sorted_index, clusters);
 	TOC(time_ptp)
@@ -197,7 +197,7 @@ void geodesics::run_parallel_toplesets_propagation_gpu(che * mesh, const vector<
 	vector<index_t> limits;
 	mesh->compute_toplesets(toplesets, sorted_index, limits, sources);
 
-	float time_ptp;
+	double time_ptp;
 	distances = parallel_toplesets_propagation_coalescence_gpu(mesh, sources, limits, sorted_index, time_ptp, clusters);
 	debug(time_ptp);
 
@@ -208,7 +208,7 @@ void geodesics::run_heat_flow(che * mesh, const vector<index_t> & sources)
 {
 	if(distances) delete [] distances;
 
-	float time_total, solve_time;
+	double time_total, solve_time;
 	TIC(time_total)
 	distances = heat_flow(mesh, sources, solve_time);
 	TOC(time_total)
@@ -220,7 +220,7 @@ void geodesics::run_heat_flow_gpu(che * mesh, const vector<index_t> & sources)
 {
 	if(distances) delete [] distances;
 
-	float time_total, solve_time;
+	double time_total, solve_time;
 	TIC(time_total)
 	distances = heat_flow_gpu(mesh, sources, solve_time);
 	TOC(time_total)

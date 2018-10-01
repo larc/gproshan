@@ -4,7 +4,7 @@
 
 #include <cassert>
 
-distance_t * heat_flow(che * mesh, const vector<index_t> & sources, float & solve_time)
+distance_t * heat_flow(che * mesh, const vector<index_t> & sources, double & solve_time)
 {
 	if(!sources.size()) return 0;
 	
@@ -53,7 +53,7 @@ distance_t * heat_flow(che * mesh, const vector<index_t> & sources, float & solv
 	return distances;
 }
 
-distance_t * heat_flow_gpu(che * mesh, const vector<index_t> & sources, float & solve_time)
+distance_t * heat_flow_gpu(che * mesh, const vector<index_t> & sources, double & solve_time)
 {
 	if(!sources.size()) return 0;
 	

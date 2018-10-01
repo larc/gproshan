@@ -58,7 +58,7 @@ bool load_sampling(vector<index_t> & points, distance_t & radio, che * mesh, siz
 		if(!points.size())
 			points.push_back(0);
 
-		float time_fps;
+		double time_fps;
 		radio = farthest_point_sampling_ptp_gpu(mesh, points, time_fps, n);
 		debug(time_fps)
 

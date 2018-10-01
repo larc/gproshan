@@ -6,9 +6,10 @@
 #include "che_off.h"
 
 #include <fstream>
+#include <omp.h>
 #include <cublas_v2.h>
 
-distance_t * iter_error_parallel_toplesets_propagation_coalescence_gpu(che * mesh, const vector<index_t> & sources, const vector<index_t> & limits, const index_t * sorted_index, const distance_t * exact_dist, float & time_ptp)
+distance_t * iter_error_parallel_toplesets_propagation_coalescence_gpu(che * mesh, const vector<index_t> & sources, const vector<index_t> & limits, const index_t * sorted_index, const distance_t * exact_dist, double & time_ptp)
 {
 	// sort data by levels, must be improve the coalescence
 
@@ -36,12 +37,13 @@ distance_t * iter_error_parallel_toplesets_propagation_coalescence_gpu(che * mes
 	// ------------------------------------------------------
 
 	cudaDeviceReset();
-
+/*
 	cudaEvent_t start, stop;
 	cudaEventCreate(&start);
 	cudaEventCreate(&stop);
 	cudaEventRecord(start, 0);
-
+*/
+	TIC(time_ptp)
 	// BEGIN PTP
 
 	CHE * h_mesh = new CHE(mesh);
@@ -62,7 +64,8 @@ distance_t * iter_error_parallel_toplesets_propagation_coalescence_gpu(che * mes
 	cuda_free_CHE(dd_mesh, d_mesh);
 
 	// END PTP
-
+	TOC(time_ptp)
+/*
 	cudaEventRecord(stop, 0);
 	cudaEventSynchronize(stop);
 	cudaEventElapsedTime(&time_ptp, start, stop);
@@ -70,8 +73,8 @@ distance_t * iter_error_parallel_toplesets_propagation_coalescence_gpu(che * mes
 
 	cudaEventDestroy(start);
 	cudaEventDestroy(stop);
-	
-	//
+*/
+
 	delete mesh;
 	delete [] inv;
 
@@ -79,7 +82,7 @@ distance_t * iter_error_parallel_toplesets_propagation_coalescence_gpu(che * mes
 }
 
 /// Return an array of time in seconds.
-float * times_farthest_point_sampling_ptp_coalescence_gpu(che * mesh, vector<index_t> & samples, size_t n, distance_t radio)
+double * times_farthest_point_sampling_ptp_coalescence_gpu(che * mesh, vector<index_t> & samples, size_t n, distance_t radio)
 {
 	cudaDeviceReset();
 
@@ -109,7 +112,7 @@ float * times_farthest_point_sampling_ptp_coalescence_gpu(che * mesh, vector<ind
 
 	if(n >= mesh->n_vertices()) n = mesh->n_vertices() >> 1;
 
-	float * times = new float[n + 1];
+	double * times = new double[n + 1];
 
 	n -= samples.size();
 	samples.reserve(n);

@@ -14,9 +14,9 @@
 
 #include <cholmod.h>
 
-distance_t * heat_flow(che * mesh, const vector<index_t> & sources, float & solve_time);
+distance_t * heat_flow(che * mesh, const vector<index_t> & sources, double & solve_time);
 
-distance_t * heat_flow_gpu(che * mesh, const vector<index_t> & sources, float & solve_time);
+distance_t * heat_flow_gpu(che * mesh, const vector<index_t> & sources, double & solve_time);
 
 void compute_divergence(che * mesh, const a_mat & u, a_mat & div);
 
