@@ -47,7 +47,7 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 		Time[0] = test_fast_marching(Error[0], exact, mesh, source, n_test);
 		Time[1] = test_ptp_gpu(Error[1], exact, mesh, source, limits, sorted_index, n_test);
 		Time[2] = test_heat_method_cholmod(Error[2], Time[3], exact, mesh, source, n_test);
-		Time[4] = test_heat_method_cholmod_gpu(Error[3], time, exact, mesh, source, n_test);
+//		Time[4] = test_heat_method_cholmod_gpu(Error[3], time, exact, mesh, source, n_test);
 		
 		int t_min = 0;
 		for(int i = 1; i < sizeof(Time) / sizeof(float); i++)
@@ -59,10 +59,10 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 
 		const char * str[2] = {"", "\\bf"};
 		printf("%20s & %12lu & ", ("\\verb|" + filename + '|').c_str(), n_vertices);
-		printf("%s %12.3fs & %s %12.3f\\% & ", str[0 == t_min], Time[0], str[0 == e_min], Error[0]);
-		printf("{%6s %.3fs} \\textbf{(%.1fx)} & %s %12.3f\\% & ", str[1 == t_min], Time[1], Time[0] / Time[1], str[1 == e_min], Error[1]);
-		printf("%12.3fs & {%6s %.3fs} \\textbf{(%.1fx)} & %s %12.3f\\% & ", Time[2], str[3 == t_min], Time[3], Time[0] / Time[3], str[2 == e_min], Error[2]);
-		printf("{%6s %.3fs} & %s %12.3f\\% ", str[4 == t_min], Time[4], str[3 == e_min], Error[3]);
+		printf("%s %12.3fs & %s %12.3f\\%% & ", str[0 == t_min], Time[0], str[0 == e_min], Error[0]);
+		printf("{%6s %.3fs} \\textbf{(%.1fx)} & %s %12.3f\\%% & ", str[1 == t_min], Time[1], Time[0] / Time[1], str[1 == e_min], Error[1]);
+		printf("%12.3fs & {%6s %.3fs} \\textbf{(%.1fx)} & %s %12.3f\\%% & & ", Time[2], str[3 == t_min], Time[3], Time[0] / Time[3], str[2 == e_min], Error[2]);
+//		printf("{%6s %.3fs} & %s %12.3f\\%% ", str[4 == t_min], Time[4], str[3 == e_min], Error[3]);
 
 
 		printf("\\\\\n");

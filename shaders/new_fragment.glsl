@@ -43,7 +43,7 @@ void main()
 	if(lines)
 	{
 		float h = color;
-		h = h * 40.;
+		h = h * 30.;
 		h = h - floor( h );
 		h = (1. / (1. + exp(-100.*(h - .55)))) + (1. / (1. + exp(-100.*(-h + .45))));
 		h = 1. - h;

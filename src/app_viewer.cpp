@@ -619,6 +619,7 @@ void viewer_process_geodesics_ptp_gpu()
 	geodesics ptp(viewer::mesh(), viewer::select_vertices, geodesics::PTP_GPU);
 	TOC(load_time)
 	debug(load_time)
+	
 
 	ptp.normalize();
 	viewer::mesh().update_colors(&ptp[0]);

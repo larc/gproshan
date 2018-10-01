@@ -46,7 +46,7 @@ distance_t * heat_flow(che * mesh, const vector<index_t> & sources, float & solv
 	//assert(spsolve(phi, L, div));					// arma
 	
 	real_t min_val = phi.min();
-	phi.for_each([&min_val](a_mat::elem_type & val) { val -= min_val; });
+	phi.for_each([&min_val](a_mat::elem_type & val) { val -= min_val; val *= 0.5; });
 
 	cholmod_l_finish(&context);
 
@@ -90,7 +90,7 @@ distance_t * heat_flow_gpu(che * mesh, const vector<index_t> & sources, float & 
 	solve_positive_definite_gpu(phi, L, div);	// cusolver (cusparse)
 	
 	real_t min_val = phi.min();
-	phi.for_each([&min_val](a_mat::elem_type & val) { val -= min_val; });
+	phi.for_each([&min_val](a_mat::elem_type & val) { val -= min_val; val *= 0.5; });
 
 	return distances;
 }

@@ -3,6 +3,8 @@
 
 int solve_positive_definite_gpu(const int m, const int nnz, const real_t * hA_values, const int * hA_col_ptrs, const int * hA_row_indices, const real_t * hb, real_t * hx)
 {
+	cudaDeviceReset();
+
 	// device sparse matrix A to device (CSC format)
 	int * dA_col_ptrs, * dA_row_indices;
 	real_t * dA_values;
