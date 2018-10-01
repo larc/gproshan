@@ -1,10 +1,15 @@
 #include "geodesics.h"
 
-/// Execute performance and accuracy test for heat method.
-void main_test_geodesics_heat_flow(const int & nargs, const char ** args);
-
 /// Execute performance and accuracy test for ptp algorithm on cpu and gpu.
 void main_test_geodesics_ptp(const int & nargs, const char ** args);
+
+float test_fast_marching(distance_t & error, const distance_t * exact, che * mesh, const vector<index_t> & source, const int & n_test);
+
+float test_ptp_gpu(distance_t & error, const distance_t * exact, che * mesh, const vector<index_t> & source, const vector<index_t> & limits, const index_t * sorted_index, const int & n_test);
+
+float test_heat_method_cholmod(distance_t & error, float & stime, const distance_t * exact, che * mesh, const vector<index_t> & source, const int & n_test);
+
+float test_heat_method_cholmod_gpu(distance_t & error, float & stime, const distance_t * exact, che * mesh, const vector<index_t> & source, const int & n_test);
 
 /// Return an array with the error per iteration.
 /// Starting to store (position 0) errors after number of toplesets.

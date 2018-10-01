@@ -6,70 +6,6 @@
 
 #include <cassert>
 
-void main_test_geodesics_heat_flow(const int & nargs, const char ** args)
-{
-	if(nargs < 4)
-	{
-		printf("./test_geodesics [data_path] [test_path] [exact_dist_path] [n_test = 10]\n");
-		return;
-	}
-	
-	const char * data_path = args[1];
-	const char * test_path = args[2];
-	const char * exact_dist_path = args[3];
-
-	int n_test = nargs == 5 ? atoi(args[4]) : 10;
-
-	string filename;
-	while(cin >> filename)
-	{
-		debug(filename)
-		
-		che * mesh = new che_off(data_path + filename + ".off");
-		size_t n_vertices = mesh->n_vertices();
-		
-		float time_precomp, time_solve, ptime, stime;
-		time_precomp = time_solve = 0;
-		
-		distance_t * dist = NULL;
-		for(int i = 0; i < n_test; i++)
-		{
-			if(dist) delete [] dist;
-
-			TIC(ptime)
-			dist = heat_flow(mesh, { 0 }, stime);
-			TOC(ptime)
-
-			time_precomp += ptime - stime;
-			time_solve += stime;
-		}
-		
-		time_precomp /= n_test;
-		time_solve /= n_test;
-		
-		distance_t * exact = load_exact_geodesics(exact_dist_path + filename, n_vertices);
-		distance_t error = 0;
-
-		for(index_t v = 0; v < n_vertices; v++)
-		{
-			if(exact[v] > 0)
-			{
-				error += abs(dist[v] - exact[v]) / exact[v];
-			}
-		}
-
-		error /= n_vertices;
-
-		printf("%18.3f & %18.3f & val & ", time_precomp, time_solve);
-		printf("%18.3e ", error * 100);
-		printf("\\\\\\hline\n");
-
-		delete [] exact;
-		delete [] dist;
-		delete mesh;
-	}	
-}
-
 void main_test_geodesics_ptp(const int & nargs, const char ** args)
 {
 	if(nargs < 4)
@@ -90,92 +26,46 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 	{
 		debug(filename)
 		
+		vector<index_t> source = { 0 };
+		
 		che * mesh = new che_off(data_path + filename + ".off");
 		size_t n_vertices = mesh->n_vertices();
-		printf("%20s & %12lu &", ("\\verb|" + filename + '|').c_str(), n_vertices);
 		
 		index_t * toplesets = new index_t[n_vertices];
 		index_t * sorted_index = new index_t[n_vertices];
 		vector<index_t> limits;
-		mesh->compute_toplesets(toplesets, sorted_index, limits, {0});
+		mesh->compute_toplesets(toplesets, sorted_index, limits, source);
 		
-		vector<index_t> source = { 0 };
+		
+		// PERFORMANCE & ACCURACY ___________________________________________________________________
 
-		
-		// PERFORMANCE _____________________________________________________________________________
-		
-		float time_fm, time_ptp_cpu, time_ptp_gpu, time;
-		time_fm = time_ptp_cpu = time_ptp_gpu = 0;
-		
-		// fast marching
-		for(int t = 0; t < n_test; t++)
-		{
-			TIC(time) geodesics fm(mesh, source, geodesics::FM); TOC(time)
-			time_fm += time;
-		}
-		time_fm /= n_test;
-		
-		distance_t * ptp_cpu, * ptp_gpu;
-		ptp_cpu = ptp_gpu = NULL;
-
-		// ptp cpu
-		if(cpu)
-		{
-			for(int t = 0; t < n_test; t++)
-			{
-				if(ptp_cpu) delete [] ptp_cpu;
-
-				TIC(time)
-				ptp_cpu = parallel_toplesets_propagation_cpu(mesh, source, limits, sorted_index);
-				TOC(time)
-				time_ptp_cpu += time;
-			}
-			time_ptp_cpu /= n_test;
-		}
-		
-		// ptp gpu
-		for(int t = 0; t < n_test; t++)
-		{
-			if(ptp_gpu) delete [] ptp_gpu;
-
-			ptp_gpu = parallel_toplesets_propagation_coalescence_gpu(mesh, source, limits, sorted_index, time);
-			time_ptp_gpu += time;
-		}
-		time_ptp_gpu /= n_test;
-		
-
-		printf("%18.3f &", time_fm);
-		if(cpu) printf("%18.3f &%18.3f &", time_ptp_cpu, time_fm / time_ptp_cpu);
-		printf("%18.3f &%18.3f &", time_ptp_gpu, time_fm / time_ptp_gpu);
-		
-		
-		// ACCURACY ________________________________________________________________________________
+		float Time[5], time;	// FM, PTP GPU, HEAT cholmod, HEAT cusparse
+		distance_t Error[4];	// FM, PTP GPU, HEAT cholmod, HEAT cusparse
 
 		distance_t * exact = load_exact_geodesics(exact_dist_path + filename, n_vertices);
-		geodesics fm(mesh, source, geodesics::FM);
 
-		distance_t error_fm, error_ptp_cpu, error_ptp_gpu;
-
-		error_fm = error_ptp_cpu = error_ptp_gpu = 0;
-		for(index_t v = 0; v < n_vertices; v++)
-		{
-			if(exact[v] > 0)
-			{
-				error_fm += abs(fm[v] - exact[v]) / exact[v];
-				if(cpu) error_ptp_cpu += abs(ptp_cpu[v] - exact[v]) / exact[v];
-				error_ptp_gpu += abs(ptp_gpu[v] - exact[v]) / exact[v];
-			}
-		}
-
-		error_fm /= n_vertices;
-		if(cpu) error_ptp_cpu /= n_vertices;
-		error_ptp_gpu /= n_vertices;
-
-		printf("%18.3e &", error_fm * 100);
-		if(cpu) printf("%18.3e &", error_ptp_cpu * 100);
-		printf("%18.3e ", error_ptp_gpu * 100);
-		printf("\\\\\\hline\n");
+		Time[0] = test_fast_marching(Error[0], exact, mesh, source, n_test);
+		Time[1] = test_ptp_gpu(Error[1], exact, mesh, source, limits, sorted_index, n_test);
+		Time[2] = test_heat_method_cholmod(Error[2], Time[3], exact, mesh, source, n_test);
+		Time[4] = test_heat_method_cholmod_gpu(Error[3], time, exact, mesh, source, n_test);
 		
+		int t_min = 0;
+		for(int i = 1; i < sizeof(Time) / sizeof(float); i++)
+			if(Time[t_min] > Time[i]) t_min = i;
+		
+		int e_min = 0;
+		for(int i = 1; i < sizeof(Error) / sizeof(distance_t); i++)
+			if(Error[e_min] > Error[i]) e_min = i;
+
+		const char * str[2] = {"", "\\bf"};
+		printf("%20s & %12lu & ", ("\\verb|" + filename + '|').c_str(), n_vertices);
+		printf("%s %12.3fs & %s %12.3f\\% & ", str[0 == t_min], Time[0], str[0 == e_min], Error[0]);
+		printf("{%6s %.3fs} \\textbf{(%.1fx)} & %s %12.3f\\% & ", str[1 == t_min], Time[1], Time[0] / Time[1], str[1 == e_min], Error[1]);
+		printf("%12.3fs & {%6s %.3fs} \\textbf{(%.1fx)} & %s %12.3f\\% & ", Time[2], str[3 == t_min], Time[3], Time[0] / Time[3], str[2 == e_min], Error[2]);
+		printf("{%6s %.3fs} & %s %12.3f\\% ", str[4 == t_min], Time[4], str[3 == e_min], Error[3]);
+
+
+		printf("\\\\\n");
 		
 		// DEGREE HISTOGRAM ________________________________________________________________________
 
@@ -216,7 +106,7 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 		
 		// PTP ITERATION ERROR _____________________________________________________________________
 		
-		distance_t * iter_error = iter_error_parallel_toplesets_propagation_coalescence_gpu(mesh, source, limits, sorted_index, exact, time);
+		distance_t * iter_error = iter_error_parallel_toplesets_propagation_gpu(mesh, source, limits, sorted_index, exact, time);
 
 		os.open(test_path + filename + "_error.iter");
 		index_t n_iter = iterations(limits);
@@ -228,7 +118,7 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 		
 		size_t i_samples = source.size();
 		size_t n_samples = 1001;
-		float * times_fps = times_farthest_point_sampling_ptp_coalescence_gpu(mesh, source, n_samples);
+		float * times_fps = times_farthest_point_sampling_ptp_gpu(mesh, source, n_samples);
 		
 		os.open(test_path + filename + ".fps");
 		for(index_t i = i_samples; i < n_samples; i++)
@@ -240,13 +130,107 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 		delete mesh;
 		delete [] toplesets;
 		delete [] sorted_index;
-		if(cpu) delete [] ptp_cpu;
-		delete [] ptp_gpu;
 		delete [] exact;
 		delete [] toplesets_dist;
 		delete [] iter_error;
 		delete [] times_fps;
 	}
+}
+
+float test_fast_marching(distance_t & error, const distance_t * exact, che * mesh, const vector<index_t> & source, const int & n_test)
+{
+	float t, time = 0;
+
+	for(int i = 0; i < n_test; i++)
+	{
+		TIC(t) geodesics fm(mesh, source, geodesics::FM); TOC(t);
+		time += t;
+	}
+
+	geodesics fm(mesh, source, geodesics::FM);
+
+	error = 0;
+	for(index_t v = 0; v < mesh->n_vertices(); v++)
+		if(exact[v] > 0) error += abs(fm[v] - exact[v]) / exact[v];
+	error *= 100;
+	error /= mesh->n_vertices() - source.size();
+
+	return time / n_test;
+}
+
+float test_ptp_gpu(distance_t & error, const distance_t * exact, che * mesh, const vector<index_t> & source, const vector<index_t> & limits, const index_t * sorted_index, const int & n_test)
+{
+	float t, time = 0;
+	
+	distance_t * dist = NULL;
+	for(int i = 0; i < n_test; i++)
+	{
+		if(dist) delete [] dist;
+
+		dist = parallel_toplesets_propagation_coalescence_gpu(mesh, source, limits, sorted_index, t);
+		time += t;
+	}
+
+	error = 0;
+	for(index_t v = 0; v < mesh->n_vertices(); v++)
+		if(exact[v] > 0) error += abs(dist[v] - exact[v]) / exact[v];
+	error *= 100;
+	error /= mesh->n_vertices() - source.size();
+	
+	delete [] dist;
+	return time / n_test;
+}
+
+float test_heat_method_cholmod(distance_t & error, float & stime, const distance_t * exact, che * mesh, const vector<index_t> & source, const int & n_test)
+{
+	float t, st, time = 0;
+	
+	distance_t * dist = NULL;
+	for(int i = 0; i < n_test; i++)
+	{
+		if(dist) delete [] dist;
+		
+		TIC(t) dist = heat_flow(mesh, source, st); TOC(t)
+		time += t - st;
+		stime += st;
+	}
+
+	error = 0;
+	for(index_t v = 0; v < mesh->n_vertices(); v++)
+		if(exact[v] > 0) error += abs(dist[v] - exact[v]) / exact[v];
+	error *= 100;
+	error /= mesh->n_vertices() - source.size();
+
+	delete [] dist;
+
+	stime /= n_test;
+	return time / n_test;
+}
+
+float test_heat_method_cholmod_gpu(distance_t & error, float & stime, const distance_t * exact, che * mesh, const vector<index_t> & source, const int & n_test)
+{
+	float t, st, time = 0;
+	
+	distance_t * dist = NULL;
+	for(int i = 0; i < n_test; i++)
+	{
+		if(dist) delete [] dist;
+		
+		TIC(t) dist = heat_flow_gpu(mesh, source, st); TOC(t)
+		time += t - st;
+		stime += st;
+	}
+
+	error = 0;
+	for(index_t v = 0; v < mesh->n_vertices(); v++)
+		if(exact[v] > 0) error += abs(dist[v] - exact[v]) / exact[v];
+	error *= 100;
+	error /= mesh->n_vertices() - source.size();
+
+	delete [] dist;
+
+	stime /= n_test;
+	return time / n_test;
 }
 
 distance_t * load_exact_geodesics(const string & file, const size_t & n)
