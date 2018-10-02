@@ -79,7 +79,7 @@ double solve_positive_definite_gpu(const int m, const int nnz, const real_t * hA
 
 	cusparseDcsric02_bufferSize(handle, m, nnz, descr_M, dA_values, dA_col_ptrs, dA_row_indices, info_M, &buffer_size_M);
 	cusparseDcsrsv2_bufferSize(handle, trans_L, m, nnz, descr_L, dA_values, dA_col_ptrs, dA_row_indices, info_L, &buffer_size_L);
-	cusparseDcsrsv2_bufferSize(handle, trans_Lt, m, nnz, descr_L, dA_values, dA_col_ptrs, dA_row_indices, info_Lt,&buffer_size_Lt);
+	cusparseDcsrsv2_bufferSize(handle, trans_Lt, m, nnz, descr_L, dA_values, dA_col_ptrs, dA_row_indices, info_Lt, &buffer_size_Lt);
 
 	buffer_size = max(buffer_size_M, max(buffer_size_L, buffer_size_Lt));
 	cudaMalloc(&buffer, buffer_size);
@@ -89,11 +89,9 @@ double solve_positive_definite_gpu(const int m, const int nnz, const real_t * hA
 		printf("A(%d,%d) is missing\n", structural_zero, structural_zero);
 
 	cusparseDcsrsv2_analysis(handle, trans_L, m, nnz, descr_L, dA_values, dA_col_ptrs, dA_row_indices, info_L, policy_L, buffer);
-
 	cusparseDcsrsv2_analysis(handle, trans_Lt, m, nnz, descr_L, dA_values, dA_col_ptrs, dA_row_indices, info_Lt, policy_Lt, buffer);
 
 	cusparseDcsric02(handle, m, nnz, descr_M, dA_values, dA_col_ptrs, dA_row_indices, info_M, policy_M, buffer);
-
 	if(CUSPARSE_STATUS_ZERO_PIVOT == cusparseXcsric02_zeroPivot(handle, info_M, &numerical_zero))
 		printf("L(%d,%d) is zero\n", numerical_zero, numerical_zero);
 
@@ -120,6 +118,7 @@ double solve_positive_definite_gpu(const int m, const int nnz, const real_t * hA
 	cudaFree(dA_row_indices);
 	cudaFree(dA_values);
 	cudaFree(db);
+	cudaFree(dx);
 	cudaFree(dx);
 	
 	return solve_time;
