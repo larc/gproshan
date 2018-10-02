@@ -87,7 +87,7 @@ distance_t * heat_flow_gpu(che * mesh, const vector<index_t> & sources, double &
 
 	a_mat phi(distances, mesh->n_vertices(), 1, false);
 
-	solve_positive_definite_gpu(phi, L, div);	// cusolver (cusparse)
+	solve_time = solve_positive_definite_gpu(phi, L, div);	// cusolver (cusparse)
 	
 	real_t min_val = phi.min();
 	phi.for_each([&min_val](a_mat::elem_type & val) { val -= min_val; val *= 0.5; });
@@ -110,7 +110,7 @@ void compute_divergence(che * mesh, const a_mat & u, a_mat & div)
 	}
 }
 
-float solve_positive_definite(a_mat & x, const a_sp_mat & A, const a_mat & b, cholmod_common * context)
+double solve_positive_definite(a_mat & x, const a_sp_mat & A, const a_mat & b, cholmod_common * context)
 {
 	cholmod_sparse * cA = arma_2_cholmod(A, context);
 	cA->stype = 1;
@@ -120,7 +120,7 @@ float solve_positive_definite(a_mat & x, const a_sp_mat & A, const a_mat & b, ch
 	cholmod_factor * L = cholmod_l_analyze(cA, context);
 	cholmod_l_factorize(cA, L, context);
 
-	float solve_time;
+	double solve_time;
 	TIC(solve_time)
 	cholmod_dense * cx = cholmod_l_solve(CHOLMOD_A, L, cb, context);
 	TOC(solve_time)
@@ -156,7 +156,7 @@ cholmod_sparse * arma_2_cholmod(const a_sp_mat & S, cholmod_common * context)
 	return cS;
 }
 
-void solve_positive_definite_gpu(a_mat & x, const a_sp_mat & A, const a_mat & b)
+double solve_positive_definite_gpu(a_mat & x, const a_sp_mat & A, const a_mat & b)
 {
 	int * hA_col_ptrs = new int[A.n_cols + 1];
 	int * hA_row_indices = new int[A.n_nonzero];
@@ -169,9 +169,11 @@ void solve_positive_definite_gpu(a_mat & x, const a_sp_mat & A, const a_mat & b)
 	for(int i = 0; i < A.n_nonzero; i++)
 		hA_row_indices[i] = A.row_indices[i];
 	
-	int singularity = solve_positive_definite_gpu(A.n_rows, A.n_nonzero, A.values, hA_col_ptrs, hA_row_indices, b.memptr(), x.memptr());
+	double solve_time = solve_positive_definite_gpu(A.n_rows, A.n_nonzero, A.values, hA_col_ptrs, hA_row_indices, b.memptr(), x.memptr());
 
 	delete [] hA_col_ptrs;
 	delete [] hA_row_indices;
+
+	return solve_time;
 }
 
