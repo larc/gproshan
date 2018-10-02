@@ -45,10 +45,10 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 		distance_t * exact = load_exact_geodesics(exact_dist_path + filename, n_vertices);
 
 		Time[0] = test_fast_marching(Error[0], exact, mesh, source, n_test);
-		Time[1] = test_ptp_gpu(Error[1], exact, mesh, source, limits, sorted_index, n_test);
-		Time[2] = test_heat_method_cholmod(Error[2], Time[3], exact, mesh, source, n_test);
+		Time[1] = test_ptp_cpu(Error[1], exact, mesh, source, limits, sorted_index, n_test);
+		Time[2] = test_ptp_gpu(Error[2], exact, mesh, source, limits, sorted_index, n_test);
+		Time[4] = test_heat_method_cholmod(Error[3], Time[3], exact, mesh, source, n_test);
 //		Time[4] = test_heat_method_cholmod_gpu(Error[3], time, exact, mesh, source, n_test);
-		Time[4] = Error[3] = 100000;
 		
 		int t_min = 0;
 		for(int i = 1; i < sizeof(Time) / sizeof(double); i++)
@@ -60,9 +60,10 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 
 		const char * str[2] = {"", "\\bf"};
 		printf("%20s & %12lu & ", ("\\verb|" + filename + '|').c_str(), n_vertices);
-		printf("%s %12.3fs & %s %12.3f\\%% & ", str[0 == t_min], Time[0], str[0 == e_min], Error[0]);
-		printf("{%6s %.3fs} \\textbf{(%.1fx)} & %s %12.3f\\%% & ", str[1 == t_min], Time[1], Time[0] / Time[1], str[1 == e_min], Error[1]);
-		printf("%12.3fs & {%6s %.3fs} \\textbf{(%.1fx)} & %s %12.3f\\%% & & ", Time[2], str[3 == t_min], Time[3], Time[0] / Time[3], str[2 == e_min], Error[2]);
+		printf("%s %12.3fs & %s %12.3f\\%% & ",	str[0 == t_min], Time[0], str[0 == e_min], Error[0]);
+		printf("%6s %.3fs & \\bf (%.1fx) & %s %12.3f\\%% & ", str[1 == t_min], Time[1], Time[0] / Time[1], str[1 == e_min], Error[1]);
+		printf("%6s %.3fs & \\bf (%.1fx) & %s %12.3f\\%% & ", str[2 == t_min], Time[2], Time[0] / Time[2], str[2 == e_min], Error[2]);
+		printf("%12.3fs & %6s %.3fs & \\bf (%.1fx) & %s %12.3f\\%% ", Time[4], str[3 == t_min], Time[3], Time[0] / Time[3], str[3 == e_min], Error[3]);
 //		printf("{%6s %.3fs} & %s %12.3f\\%% ", str[4 == t_min], Time[4], str[3 == e_min], Error[3]);
 
 
@@ -169,6 +170,31 @@ double test_ptp_gpu(distance_t & error, const distance_t * exact, che * mesh, co
 		if(dist) delete [] dist;
 
 		dist = parallel_toplesets_propagation_coalescence_gpu(mesh, source, limits, sorted_index, t);
+		time += t;
+	}
+
+	error = 0;
+	for(index_t v = 0; v < mesh->n_vertices(); v++)
+		if(exact[v] > 0) error += abs(dist[v] - exact[v]) / exact[v];
+	error *= 100;
+	error /= mesh->n_vertices() - source.size();
+	
+	delete [] dist;
+	return time / n_test;
+}
+
+double test_ptp_cpu(distance_t & error, const distance_t * exact, che * mesh, const vector<index_t> & source, const vector<index_t> & limits, const index_t * sorted_index, const int & n_test)
+{
+	double t, time = 0;
+	
+	distance_t * dist = NULL;
+	for(int i = 0; i < n_test; i++)
+	{
+		if(dist) delete [] dist;
+
+		TIC(t)
+		dist = parallel_toplesets_propagation_cpu(mesh, source, limits, sorted_index);
+		TOC(t)
 		time += t;
 	}
 

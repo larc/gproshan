@@ -19,8 +19,6 @@ index_t end_v(const index_t & i, const vector<index_t> & limits)
 
 distance_t * parallel_toplesets_propagation_cpu(che * mesh, const vector<index_t> & sources, const vector<index_t> & limits, const index_t * sorted_index, index_t * clusters)
 {
-	debug_me(GEODESICS_PTP)
-
 	distance_t * dist[2] = {new distance_t[mesh->n_vertices()], new distance_t[mesh->n_vertices()]};
 
 	#pragma omp parallel for
