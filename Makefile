@@ -6,12 +6,15 @@ OPENGL_LIBS			= -lglut -lGL -lGLU
 
 TARGET = gproshan
 
+# SINGLE_P = -DSINGLE_P to compile with single precision
+SINGLE_P = 
+
 CC = g++
 LD = g++ -no-pie
 CUDA = nvcc
-CFLAGS = -O3 -fopenmp $(INCLUDE_PATH) 
-CUDAFLAGS = -I./include/cuda -O3 -Xcompiler -fopenmp -D_FORCE_INLINES
-LFLAGS = -O3 -fopenmp $(LIBRARY_PATH) -lcublas -lcusolver -lcusparse -lcuda -lcudart -lX11 -lpthread
+CFLAGS = $(SINGLE_P) -O3 -fopenmp $(INCLUDE_PATH) 
+CUDAFLAGS = $(SINGLE_P) -I./include/cuda -O3 -Xcompiler -fopenmp -D_FORCE_INLINES
+LFLAGS = $(SINGLE_P) -O3 -fopenmp $(LIBRARY_PATH) -lcublas -lcusolver -lcusparse -lcuda -lcudart -lX11 -lpthread
 LIBS = $(OPENGL_LIBS) $(SUITESPARSE_LIBS) $(BLAS_LIBS) -larmadillo -lsuperlu -lCGAL
 
 ########################################################################################

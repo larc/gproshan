@@ -1,5 +1,7 @@
 #include "include_arma.h"
 
+#include <cassert>
+
 #include <omp.h>
 #include <cusolverSp.h>
 
@@ -77,28 +79,41 @@ double solve_positive_definite_gpu(const int m, const int nnz, const real_t * hA
 	cusparseCreateCsrsv2Info(&info_L);
 	cusparseCreateCsrsv2Info(&info_Lt);
 
+#ifdef SINGLE_P
+#else
 	cusparseDcsric02_bufferSize(handle, m, nnz, descr_M, dA_values, dA_col_ptrs, dA_row_indices, info_M, &buffer_size_M);
 	cusparseDcsrsv2_bufferSize(handle, trans_L, m, nnz, descr_L, dA_values, dA_col_ptrs, dA_row_indices, info_L, &buffer_size_L);
 	cusparseDcsrsv2_bufferSize(handle, trans_Lt, m, nnz, descr_L, dA_values, dA_col_ptrs, dA_row_indices, info_Lt, &buffer_size_Lt);
+#endif
 
 	buffer_size = max(buffer_size_M, max(buffer_size_L, buffer_size_Lt));
+	printf("%d\n", buffer_size);
 	cudaMalloc(&buffer, buffer_size);
 
+#ifdef SINGLE_P
+#else
 	cusparseDcsric02_analysis(handle, m, nnz, descr_M, dA_values, dA_col_ptrs, dA_row_indices, info_M, policy_M, buffer);
+#endif
 	if(CUSPARSE_STATUS_ZERO_PIVOT == cusparseXcsric02_zeroPivot(handle, info_M, &structural_zero))
 		printf("A(%d,%d) is missing\n", structural_zero, structural_zero);
 
+#ifdef SINGLE_P
+#else
 	cusparseDcsrsv2_analysis(handle, trans_L, m, nnz, descr_L, dA_values, dA_col_ptrs, dA_row_indices, info_L, policy_L, buffer);
 	cusparseDcsrsv2_analysis(handle, trans_Lt, m, nnz, descr_L, dA_values, dA_col_ptrs, dA_row_indices, info_Lt, policy_Lt, buffer);
 
 	cusparseDcsric02(handle, m, nnz, descr_M, dA_values, dA_col_ptrs, dA_row_indices, info_M, policy_M, buffer);
+#endif
 	if(CUSPARSE_STATUS_ZERO_PIVOT == cusparseXcsric02_zeroPivot(handle, info_M, &numerical_zero))
 		printf("L(%d,%d) is zero\n", numerical_zero, numerical_zero);
 
 	TIC(solve_time)
 
-	cusparseDcsrsv2_solve(handle, trans_L, m, nnz, &alpha, descr_L, dA_values, dA_col_ptrs, dA_row_indices, info_L, db, dy, policy_L, buffer);
-	cusparseDcsrsv2_solve(handle, trans_Lt, m, nnz, &alpha, descr_L, dA_values, dA_col_ptrs, dA_row_indices, info_Lt, dy, dx, policy_Lt, buffer);
+#ifdef SINGLE_P
+#else
+	assert(CUSPARSE_STATUS_SUCCESS == cusparseDcsrsv2_solve(handle, trans_L, m, nnz, &alpha, descr_L, dA_values, dA_col_ptrs, dA_row_indices, info_L, db, dy, policy_L, buffer));
+	assert(CUSPARSE_STATUS_SUCCESS == cusparseDcsrsv2_solve(handle, trans_Lt, m, nnz, &alpha, descr_L, dA_values, dA_col_ptrs, dA_row_indices, info_Lt, dy, dx, policy_Lt, buffer));
+#endif
 	
 	// copy sol x to host
 	cudaMemcpy(hx, dx, m * sizeof(real_t), cudaMemcpyDeviceToHost);

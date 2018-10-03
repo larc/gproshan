@@ -21,6 +21,18 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 	int n_test = nargs == 5 ? atoi(args[4]) : 10;
 	bool cpu = 0;
 
+	FILE * ftable;
+#ifdef SINGLE_P
+	ftable = fopen("ptp_results.tex", "w");
+#else
+	ftable = fopen("ptp_results_double.tex", "w");
+#endif
+	const char * str[2] = {"", "\\bf"};
+	const char * ptime = "& %6.3lfs ";
+	const char * pspeedup = "& \\bf (%.1lfx) ";
+	const char * pbtime = "& %6s %6.3lfs ";
+	const char * pberror = "& %6s %6.3lf\\%% ";
+
 	string filename;
 	while(cin >> filename)
 	{
@@ -47,8 +59,13 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 		Time[0] = test_fast_marching(Error[0], exact, mesh, source, n_test);
 		Time[1] = test_ptp_cpu(Error[1], exact, mesh, source, limits, sorted_index, n_test);
 		Time[2] = test_ptp_gpu(Error[2], exact, mesh, source, limits, sorted_index, n_test);
+#ifdef SINGLE_P
+		Time[4] = Time[3] = INFINITY;
+		Error[3] = INFINITY;
+#else
 		Time[4] = test_heat_method_cholmod(Error[3], Time[3], exact, mesh, source, n_test);
 //		Time[4] = test_heat_method_cholmod_gpu(Error[3], time, exact, mesh, source, n_test);
+#endif
 		
 		int t_min = 0;
 		for(int i = 1; i < sizeof(Time) / sizeof(double); i++)
@@ -57,17 +74,34 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 		int e_min = 0;
 		for(int i = 1; i < sizeof(Error) / sizeof(distance_t); i++)
 			if(Error[e_min] > Error[i]) e_min = i;
+		
+		fprintf(ftable, "%20s ", ("\\verb|" + filename + '|').c_str());
+		fprintf(ftable, "& %12lu ", n_vertices);
 
-		const char * str[2] = {"", "\\bf"};
-		printf("%20s & %12lu & ", ("\\verb|" + filename + '|').c_str(), n_vertices);
-		printf("%s %12.3fs & %s %12.3f\\%% & ",	str[0 == t_min], Time[0], str[0 == e_min], Error[0]);
-		printf("%6s %.3fs & \\bf (%.1fx) & %s %12.3f\\%% & ", str[1 == t_min], Time[1], Time[0] / Time[1], str[1 == e_min], Error[1]);
-		printf("%6s %.3fs & \\bf (%.1fx) & %s %12.3f\\%% & ", str[2 == t_min], Time[2], Time[0] / Time[2], str[2 == e_min], Error[2]);
-		printf("%12.3fs & %6s %.3fs & \\bf (%.1fx) & %s %12.3f\\%% ", Time[4], str[3 == t_min], Time[3], Time[0] / Time[3], str[3 == e_min], Error[3]);
-//		printf("{%6s %.3fs} & %s %12.3f\\%% ", str[4 == t_min], Time[4], str[3 == e_min], Error[3]);
+		// FM
+		fprintf(ftable, pbtime, str[0 == t_min], Time[0]);
+		fprintf(ftable, pberror, str[0 == e_min], Error[0]);
 
+		// PTP CPU
+		fprintf(ftable, pbtime, str[1 == t_min], Time[1]);
+		fprintf(ftable, pspeedup, Time[0] / Time[1]);
+		fprintf(ftable, pberror, str[1 == e_min], Error[1]);
+		
+		// PTP GPU
+		fprintf(ftable, pbtime, str[2 == t_min], Time[2]);
+		fprintf(ftable, pspeedup, Time[0] / Time[2]);
+		fprintf(ftable, pberror, str[2 == e_min], Error[2]);
 
-		printf("\\\\\n");
+#ifndef SINGLE_P
+		// HEAT FLOW cholmod
+		fprintf(ftable, ptime, Time[4]);
+		fprintf(ftable, pbtime, str[3 == t_min], Time[3]);
+		fprintf(ftable, pspeedup, Time[0] / Time[3]);
+		fprintf(ftable, pberror, str[3 == e_min], Error[3]);
+//		fprintf("{%6s %.3fs} & %s %12.3f\\%% ", str[4 == t_min], Time[4], str[3 == e_min], Error[3]);
+#endif
+		fprintf(ftable, "\\\\\n");
+
 		
 		// DEGREE HISTOGRAM ________________________________________________________________________
 
@@ -137,6 +171,8 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 		delete [] iter_error;
 		delete [] times_fps;
 	}
+	
+	fclose(ftable);
 }
 
 double test_fast_marching(distance_t & error, const distance_t * exact, che * mesh, const vector<index_t> & source, const int & n_test)
