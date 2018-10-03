@@ -5,19 +5,17 @@
 #include "geodesics_ptp.h"
 
 #include <fstream>
-#include <omp.h>
 #include <cublas_v2.h>
 
 distance_t * iter_error_parallel_toplesets_propagation_gpu(che * mesh, const vector<index_t> & sources, const vector<index_t> & limits, const index_t * sorted_index, const distance_t * exact_dist, double & time_ptp)
 {
 	cudaDeviceReset();
-/*
+
+	float time;
 	cudaEvent_t start, stop;
 	cudaEventCreate(&start);
 	cudaEventCreate(&stop);
 	cudaEventRecord(start, 0);
-*/
-	TIC(time_ptp)
 
 	// BEGIN PTP
 
@@ -44,16 +42,14 @@ distance_t * iter_error_parallel_toplesets_propagation_gpu(che * mesh, const vec
 
 	// END PTP
 
-	TOC(time_ptp)
-/*
 	cudaEventRecord(stop, 0);
 	cudaEventSynchronize(stop);
-	cudaEventElapsedTime(&time_ptp, start, stop);
-	time_ptp /= 1000;
+	cudaEventElapsedTime(&time, start, stop);
+	time_ptp = time / 1000;
 
 	cudaEventDestroy(start);
 	cudaEventDestroy(stop);
-*/
+	
 	return error;
 }
 

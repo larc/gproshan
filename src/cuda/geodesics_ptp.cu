@@ -4,20 +4,17 @@
 #include <cstdio>
 #include <fstream>
 #include <cassert>
-#include <omp.h>
 #include <cublas_v2.h>
 
 distance_t * parallel_toplesets_propagation_gpu(che * mesh, const vector<index_t> & sources, const vector<index_t> & limits, const index_t * sorted_index, double & time_ptp, index_t * clusters)
 {
 	cudaDeviceReset();
-/*
+	
+	float time;
 	cudaEvent_t start, stop;
 	cudaEventCreate(&start);
 	cudaEventCreate(&stop);
 	cudaEventRecord(start, 0);
-*/
-
-	TIC(time_ptp)
 
 	// BEGIN PTP
 
@@ -61,16 +58,13 @@ distance_t * parallel_toplesets_propagation_gpu(che * mesh, const vector<index_t
 
 	// END PTP
 
-/*
 	cudaEventRecord(stop, 0);
 	cudaEventSynchronize(stop);
-	cudaEventElapsedTime(&time_ptp, start, stop);
-	time_ptp /= 1000;
-*/
-	TOC(time_ptp)
+	cudaEventElapsedTime(&time, start, stop);
+	time_ptp = time / 1000;
 
-//	cudaEventDestroy(start);
-//	cudaEventDestroy(stop);
+	cudaEventDestroy(start);
+	cudaEventDestroy(stop);
 
 	return h_dist;
 }
@@ -81,13 +75,12 @@ distance_t farthest_point_sampling_ptp_gpu(che * mesh, vector<index_t> & samples
 
 	cudaDeviceReset();
 
-/*
+	float time;
 	cudaEvent_t start, stop;
 	cudaEventCreate(&start);
 	cudaEventCreate(&stop);
 	cudaEventRecord(start, 0);
-*/
-	TIC(time_fps)
+	
 	// BEGIN FPS PTP
 
 	CHE * h_mesh = new CHE(mesh);
@@ -150,16 +143,13 @@ distance_t farthest_point_sampling_ptp_gpu(che * mesh, vector<index_t> & samples
 	cuda_free_CHE(dd_mesh, d_mesh);
 
 	// END FPS PTP
-/*
 	cudaEventRecord(stop, 0);
 	cudaEventSynchronize(stop);
-	cudaEventElapsedTime(&time_fps, start, stop);
-	time_fps /= 1000;
-**/
-	TOC(time_fps)
-
-//	cudaEventDestroy(start);
-//	cudaEventDestroy(stop);
+	cudaEventElapsedTime(&time, start, stop);
+	time_fps = time / 1000;
+	
+	cudaEventDestroy(start);
+	cudaEventDestroy(stop);
 
 	return max_dist;
 }

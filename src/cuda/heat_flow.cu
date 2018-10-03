@@ -2,7 +2,6 @@
 
 #include <cassert>
 
-#include <omp.h>
 #include <cusolverSp.h>
 
 double solve_positive_definite_gpu(const int m, const int nnz, const real_t * hA_values, const int * hA_col_ptrs, const int * hA_row_indices, const real_t * hb, real_t * hx)
@@ -107,8 +106,6 @@ double solve_positive_definite_gpu(const int m, const int nnz, const real_t * hA
 	if(CUSPARSE_STATUS_ZERO_PIVOT == cusparseXcsric02_zeroPivot(handle, info_M, &numerical_zero))
 		printf("L(%d,%d) is zero\n", numerical_zero, numerical_zero);
 
-	TIC(solve_time)
-
 #ifdef SINGLE_P
 #else
 	assert(CUSPARSE_STATUS_SUCCESS == cusparseDcsrsv2_solve(handle, trans_L, m, nnz, &alpha, descr_L, dA_values, dA_col_ptrs, dA_row_indices, info_L, db, dy, policy_L, buffer));
@@ -117,8 +114,8 @@ double solve_positive_definite_gpu(const int m, const int nnz, const real_t * hA
 	
 	// copy sol x to host
 	cudaMemcpy(hx, dx, m * sizeof(real_t), cudaMemcpyDeviceToHost);
-
-	TOC(solve_time)
+	
+	solve_time = 0;
 
 	// FREE
 	cudaFree(buffer);

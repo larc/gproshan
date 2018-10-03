@@ -8,7 +8,6 @@
 #include <cstdio>
 #include <fstream>
 #include <cassert>
-#include <omp.h>
 #include <cublas_v2.h>
 
 distance_t * parallel_toplesets_propagation_coalescence_gpu(che * mesh, const vector<index_t> & sources, const vector<index_t> & limits, const index_t * sorted_index, double & time_ptp, index_t * clusters)
@@ -40,14 +39,11 @@ distance_t * parallel_toplesets_propagation_coalescence_gpu(che * mesh, const ve
 
 	cudaDeviceReset();
 
-/*
+	float time;
 	cudaEvent_t start, stop;
 	cudaEventCreate(&start);
 	cudaEventCreate(&stop);
 	cudaEventRecord(start, 0);
-*/
-
-	TIC(time_ptp)
 
 	// BEGIN PTP
 
@@ -86,17 +82,14 @@ distance_t * parallel_toplesets_propagation_coalescence_gpu(che * mesh, const ve
 	cuda_free_CHE(dd_mesh, d_mesh);
 
 	// END PTP
-	TOC(time_ptp)
 
-/*
 	cudaEventRecord(stop, 0);
 	cudaEventSynchronize(stop);
-	cudaEventElapsedTime(&time_ptp, start, stop);
-	time_ptp /= 1000;
+	cudaEventElapsedTime(&time, start, stop);
+	time_ptp = time / 1000;
 
 	cudaEventDestroy(start);
 	cudaEventDestroy(stop);
-*/
 
 	delete mesh;
 	delete [] inv;
