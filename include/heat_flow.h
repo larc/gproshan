@@ -40,7 +40,10 @@ double solve_positive_definite_cusolver(const int m, const int nnz, const real_t
 /// https://docs.nvidia.com/cuda/cusparse/index.html#cusparse-lt-t-gt-csric02
 double solve_positive_definite_cusparse(const int m, const int nnz, const real_t * hA_values, const int * hA_col_ptrs, const int * hA_row_indices, const real_t * hb, real_t * hx);
 
-double solve_positive_definite_gpu(const int m, const int nnz, const real_t * hA_values, const int * hA_col_ptrs, const int * hA_row_indices, const real_t * hb, real_t * hx);
+/// host and device support
+/// using cusolverSp_LOWLEVEL_PREVIEW.h library
+/// no documentation, code base on cuda/samples/7_CUDALibraries/cuSolverSp_LowlevelCholesky
+double solve_positive_definite_cusolver_preview(const int m, const int nnz, const real_t * hA_values, const int * hA_col_ptrs, const int * hA_row_indices, const real_t * hb, real_t * hx, const bool host = 1);
 
 #endif // HEAT_FLOW_H
 

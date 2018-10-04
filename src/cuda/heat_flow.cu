@@ -207,11 +207,11 @@ double solve_positive_definite_cusparse(const int m, const int nnz, const real_t
 	// copy sol x to host
 	cudaMemcpy(hx, data.x, m * sizeof(real_t), cudaMemcpyDeviceToHost);
 	
+	// END SOLVE
 	cudaEventRecord(stop, 0);
 	cudaEventSynchronize(stop);
 	cudaEventElapsedTime(&time, start, stop);
 
-	// END SOLVE
 	
 	// FREE
 	cudaFree(buffer);
@@ -228,7 +228,7 @@ double solve_positive_definite_cusparse(const int m, const int nnz, const real_t
 	return (double) time / 1000;
 }
 
-double solve_positive_definite_gpu(const int m, const int nnz, const real_t * hA_values, const int * hA_col_ptrs, const int * hA_row_indices, const real_t * hb, real_t * hx)
+double solve_positive_definite_cusolver_preview(const int m, const int nnz, const real_t * hA_values, const int * hA_col_ptrs, const int * hA_row_indices, const real_t * hb, real_t * hx, const bool host)
 {
 	cudaDeviceReset();
 
@@ -237,31 +237,6 @@ double solve_positive_definite_gpu(const int m, const int nnz, const real_t * hA
 	cudaEventCreate(&start);
 	cudaEventCreate(&stop);
 
-	// device sparse matrix A to device (CSC format)
-	/*
-	int * dA_col_ptrs, * dA_row_indices;
-	real_t * dA_values;
-	
-	cudaMalloc(&dA_col_ptrs, (m + 1) * sizeof(int));
-	cudaMemcpy(dA_col_ptrs, hA_col_ptrs, (m + 1) * sizeof(int), cudaMemcpyHostToDevice);
-
-	cudaMalloc(&dA_row_indices, nnz * sizeof(int));
-	cudaMemcpy(dA_row_indices, hA_row_indices, nnz * sizeof(int), cudaMemcpyHostToDevice);
-
-	cudaMalloc(&dA_values, nnz * sizeof(real_t));
-	cudaMemcpy(dA_values, hA_values, nnz * sizeof(real_t), cudaMemcpyHostToDevice); 
-	
-	// vector b to device
-	real_t * db;
-	cudaMalloc(&db, nnz * sizeof(real_t));
-	cudaMemcpy(db, hb, nnz * sizeof(real_t), cudaMemcpyHostToDevice);
-
-	// vector x to device
-	real_t * dx;
-	cudaMalloc(&dx, m * sizeof(real_t));
-	*/
-
-	double solve_time;
 	// SOLVE Ax = b
 
 	cusolverSpHandle_t cusolver_handle = NULL;
@@ -269,8 +244,6 @@ double solve_positive_definite_gpu(const int m, const int nnz, const real_t * hA
 	cudaStream_t stream = NULL;
 
 	cusparseMatDescr_t descr = NULL;
-
-	csrcholInfoHost_t info;
 
 	size_t size_iternal = 0;
 	size_t size_chol = 0;
@@ -289,45 +262,106 @@ double solve_positive_definite_gpu(const int m, const int nnz, const real_t * hA
 	cusparseCreateMatDescr(&descr);
 	cusparseSetMatType(descr, CUSPARSE_MATRIX_TYPE_GENERAL);
 	cusparseSetMatIndexBase(descr, CUSPARSE_INDEX_BASE_ZERO);
-	cusolverSpCreateCsrcholInfoHost(&info);
 
-	cusolverSpXcsrcholAnalysisHost(cusolver_handle, m, nnz, descr, hA_col_ptrs, hA_row_indices, info);
-	cusolverSpDcsrcholBufferInfoHost(cusolver_handle, m, nnz, descr, hA_values, hA_col_ptrs, hA_row_indices, info, &size_iternal, &size_chol);
 	
-	buffer = new char[size_chol];
+	if(host)
+	{
+		csrcholInfoHost_t info;
+		cusolverSpCreateCsrcholInfoHost(&info);
 
-	cusolverSpDcsrcholFactorHost(cusolver_handle, m, nnz, descr, hA_values, hA_col_ptrs, hA_row_indices, info, buffer);
+		cusolverSpXcsrcholAnalysisHost(cusolver_handle, m, nnz, descr, hA_col_ptrs, hA_row_indices, info);
 
-	cusolverSpDcsrcholZeroPivotHost(cusolver_handle, info, 0, &singularity);
-	assert(singularity == -1);
-
-	// solve
-	cudaEventRecord(start, 0);
+		#ifdef SINGLE_P
+			cusolverSpScsrcholBufferInfoHost(cusolver_handle, m, nnz, descr, hA_values, hA_col_ptrs, hA_row_indices, info, &size_iternal, &size_chol);
+		#else
+			cusolverSpDcsrcholBufferInfoHost(cusolver_handle, m, nnz, descr, hA_values, hA_col_ptrs, hA_row_indices, info, &size_iternal, &size_chol);
+		#endif
 	
-	cusolverSpDcsrcholSolveHost(cusolver_handle, m, hb, hx, info, buffer);
+		buffer = new char[size_chol];
+		
+		#ifdef SINGLE_P
+			cusolverSpScsrcholFactorHost(cusolver_handle, m, nnz, descr, hA_values, hA_col_ptrs, hA_row_indices, info, buffer);
+			cusolverSpScsrcholZeroPivotHost(cusolver_handle, info, 0, &singularity);
+		#else
+			cusolverSpDcsrcholFactorHost(cusolver_handle, m, nnz, descr, hA_values, hA_col_ptrs, hA_row_indices, info, buffer);
+			cusolverSpDcsrcholZeroPivotHost(cusolver_handle, info, 0, &singularity);
+		#endif
+		assert(singularity == -1);
+
+		// SOLVE
+		cudaEventRecord(start, 0);
+		
+		#ifdef SINGLE_P
+			cusolverSpScsrcholSolveHost(cusolver_handle, m, hb, hx, info, buffer);
+		#else
+			cusolverSpDcsrcholSolveHost(cusolver_handle, m, hb, hx, info, buffer);
+		#endif
+		
+		// END SOLVE
+		cudaEventRecord(stop, 0);
+		cudaEventSynchronize(stop);
+		cudaEventElapsedTime(&time, start, stop);
+
+		// FREE
+		delete [] (char*) buffer;
+		cusolverSpDestroyCsrcholInfoHost(info);
+	}
+	else
+	{
+		cu_spAxb data(m, nnz, hA_values, hA_col_ptrs, hA_row_indices, hb, hx);
+
+		csrcholInfo_t info;
+		cusolverSpCreateCsrcholInfo(&info);
+
+		cusolverSpXcsrcholAnalysis(cusolver_handle, m, nnz, descr, data.A_col_ptrs, data.A_row_indices, info);
+
+		#ifdef SINGLE_P
+			cusolverSpScsrcholBufferInfo(cusolver_handle, m, nnz, descr, data.A_values, data.A_col_ptrs, data.A_row_indices, info, &size_iternal, &size_chol);
+		#else
+			cusolverSpDcsrcholBufferInfo(cusolver_handle, m, nnz, descr, data.A_values, data.A_col_ptrs, data.A_row_indices, info, &size_iternal, &size_chol);
+		#endif
 	
-	cudaEventRecord(stop, 0);
-	cudaEventSynchronize(stop);
-	cudaEventElapsedTime(&time, start, stop);
-	solve_time = time / 1000;
+		cudaMalloc(&buffer, size_chol);
 
+		#ifdef SINGLE_P
+			cusolverSpScsrcholFactor(cusolver_handle, m, nnz, descr, data.A_values, data.A_col_ptrs, data.A_row_indices, info, buffer);
+			cusolverSpScsrcholZeroPivot(cusolver_handle, info, 0, &singularity);
+		#else
+			cusolverSpDcsrcholFactor(cusolver_handle, m, nnz, descr, data.A_values, data.A_col_ptrs, data.A_row_indices, info, buffer);
+			cusolverSpDcsrcholZeroPivot(cusolver_handle, info, 0, &singularity);
+		#endif
 
-	//cudaMemcpy(hx, dx, m * sizeof(real_t), cudaMemcpyDeviceToHost);
+		assert(singularity == -1);
 
-	// FREE
-	delete [] (char*) buffer;
-	cusolverSpDestroyCsrcholInfoHost(info);
+		// SOLVE
+		cudaEventRecord(start, 0);
+		
+		#ifdef SINGLE_P
+			cusolverSpScsrcholSolve(cusolver_handle, m, data.b, data.x, info, buffer);
+		#else
+			cusolverSpDcsrcholSolve(cusolver_handle, m, data.b, data.x, info, buffer);
+		#endif
+		
+		// END SOLVE
+		cudaEventRecord(stop, 0);
+		cudaEventSynchronize(stop);
+		cudaEventElapsedTime(&time, start, stop);
+
+		cudaMemcpy(hx, data.x, m * sizeof(real_t), cudaMemcpyDeviceToHost);
+
+		// FREE
+		cudaFree(buffer);
+		cusolverSpDestroyCsrcholInfo(info);
+	}
+
 	cudaStreamDestroy(stream);
 	cusparseDestroyMatDescr(descr);
 	cusparseDestroy(cusparse_handle);
 	cusolverSpDestroy(cusolver_handle);
-/*
-	cudaFree(dA_col_ptrs);
-	cudaFree(dA_row_indices);
-	cudaFree(dA_values);
-	cudaFree(db);
-	cudaFree(dx);
-*/	
-	return solve_time;
+
+	cudaEventDestroy(start);
+	cudaEventDestroy(stop);
+	
+	return (double) time / 1000;
 }
 

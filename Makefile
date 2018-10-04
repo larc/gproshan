@@ -12,9 +12,9 @@ SINGLE_P =
 CC = g++
 LD = g++ -no-pie
 CUDA = nvcc
-CFLAGS = $(SINGLE_P) -O3 -fopenmp $(INCLUDE_PATH) 
-CUDAFLAGS = $(SINGLE_P) -I./include/cuda -O3 -Xcompiler -fopenmp -D_FORCE_INLINES
-LFLAGS = $(SINGLE_P) -O3 -fopenmp $(LIBRARY_PATH) -lcublas -lcusolver -lcusparse -lcuda -lcudart -lX11 -lpthread
+CFLAGS = -O3 -fopenmp $(INCLUDE_PATH) 
+CUDAFLAGS = -I./include/cuda -O3 -Xcompiler -fopenmp -D_FORCE_INLINES
+LFLAGS = -O3 -fopenmp $(LIBRARY_PATH) -lcublas -lcusolver -lcusparse -lcuda -lcudart -lX11 -lpthread
 LIBS = $(OPENGL_LIBS) $(SUITESPARSE_LIBS) $(BLAS_LIBS) -larmadillo -lsuperlu -lCGAL
 
 ########################################################################################
@@ -31,31 +31,31 @@ CUDA_OBJECTS :=	$(addprefix obj/,$(notdir $(CUDA_SOURCES:.cu=_cuda.o)))
 all: $(TARGET) | tmp
 
 $(TARGET): obj/$(TARGET).o $(OBJECTS) $(CUDA_OBJECTS) obj/link_cuda.o
-	$(LD) obj/$(TARGET).o $(OBJECTS) $(CUDA_OBJECTS) obj/link_cuda.o -o $(TARGET) $(CFLAGS) $(LFLAGS) $(LIBS)
+	$(LD) $(SINGLE_P) obj/$(TARGET).o $(OBJECTS) $(CUDA_OBJECTS) obj/link_cuda.o -o $(TARGET) $(CFLAGS) $(LFLAGS) $(LIBS)
 
 test_geodesics: obj/test_geodesics.o $(OBJECTS) $(CUDA_OBJECTS) obj/link_cuda.o
-	$(LD) obj/test_geodesics.o $(OBJECTS) $(CUDA_OBJECTS) obj/link_cuda.o -o test_geodesics $(CFLAGS) $(LFLAGS) $(LIBS)
+	$(LD) $(SINGLE_P) obj/test_geodesics.o $(OBJECTS) $(CUDA_OBJECTS) obj/link_cuda.o -o test_geodesics $(CFLAGS) $(LFLAGS) $(LIBS)
 
 obj/$(TARGET).o: $(TARGET).cpp | obj
-	$(CC) -c $< -o $@ $(CFLAGS) 
+	$(CC) $(SINGLE_P) -c $< -o $@ $(CFLAGS) 
 
 obj/test_geodesics.o: test_geodesics.cpp | obj
-	$(CC) -c $< -o $@ $(CFLAGS) 
+	$(CC) $(SINGLE_P) -c $< -o $@ $(CFLAGS) 
 
 obj/%.o: src/%.cpp | obj
-	$(CC) -c $< -o $@ $(CFLAGS) 
+	$(CC) $(SINGLE_P) -c $< -o $@ $(CFLAGS) 
 
 obj/%.o: src/viewer/%.cpp | obj
-	$(CC) -c $< -o $@ -I./include/viewer $(CFLAGS) 
+	$(CC) $(SINGLE_P) -c $< -o $@ -I./include/viewer $(CFLAGS) 
 
 obj/%.o: src/mdict/%.cpp | obj
-	$(CC) -c $< -o $@ -I./include/mdict $(CFLAGS) 
+	$(CC) $(SINGLE_P) -c $< -o $@ -I./include/mdict $(CFLAGS) 
 
 obj/%_cuda.o: src/cuda/%.cu | obj
-	$(CUDA) -dc $< -o $@ -I./include $(CUDAFLAGS)
+	$(CUDA) $(SINGLE_P) -dc $< -o $@ -I./include $(CUDAFLAGS)
 
 obj/link_cuda.o: $(CUDA_OBJECTS) | obj
-	$(CUDA) -dlink $(CUDA_OBJECTS) -o obj/link_cuda.o $(CUDAFLAGS)
+	$(CUDA) $(SINGLE_P) -dlink $(CUDA_OBJECTS) -o obj/link_cuda.o $(CUDAFLAGS)
 
 obj:
 	mkdir obj
