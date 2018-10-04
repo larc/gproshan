@@ -31,8 +31,8 @@ distance_t * heat_flow(che * mesh, const vector<index_t> & sources, double & sol
 	
 	solve_time = 0;
 
-	solve_time += solve_positive_definite(u, A, u0, &context);	// cholmod (suitesparse)
-	//assert(spsolve(u, A, u0));			// arma
+	solve_time += solve_positive_definite(u, A, u0, &context);		// cholmod (suitesparse)
+	//assert(spsolve(u, A, u0));	// arma
 
 	// extract geodesics
 	distance_t * distances = new distance_t[mesh->n_vertices()];
@@ -42,8 +42,8 @@ distance_t * heat_flow(che * mesh, const vector<index_t> & sources, double & sol
 
 	a_mat phi(distances, mesh->n_vertices(), 1, false);
 
-	solve_time += solve_positive_definite(phi, L, div, &context);			// cholmod (suitesparse)
-	//assert(spsolve(phi, L, div));					// arma
+	solve_time += solve_positive_definite(phi, L, div, &context);	// cholmod (suitesparse)
+	//assert(spsolve(phi, L, div));	// arma
 	
 	real_t min_val = phi.min();
 	phi.for_each([&min_val](a_mat::elem_type & val) { val -= min_val; val *= 0.5; });
@@ -169,7 +169,7 @@ double solve_positive_definite_gpu(a_mat & x, const a_sp_mat & A, const a_mat & 
 	for(int i = 0; i < A.n_nonzero; i++)
 		hA_row_indices[i] = A.row_indices[i];
 	
-	double solve_time = solve_positive_definite_gpu(A.n_rows, A.n_nonzero, A.values, hA_col_ptrs, hA_row_indices, b.memptr(), x.memptr());
+	double solve_time = solve_positive_definite_cusparse(A.n_rows, A.n_nonzero, A.values, hA_col_ptrs, hA_row_indices, b.memptr(), x.memptr());
 
 	delete [] hA_col_ptrs;
 	delete [] hA_row_indices;
