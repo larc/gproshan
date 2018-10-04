@@ -331,7 +331,7 @@ double solve_positive_definite_cusolver_preview(const int m, const int nnz, cons
 			cusolverSpDcsrcholZeroPivot(cusolver_handle, info, 0, &singularity);
 		#endif
 
-		assert(singularity == -1);
+//		assert(singularity == -1);
 
 		// SOLVE
 		cudaEventRecord(start, 0);
