@@ -169,7 +169,7 @@ double solve_positive_definite_gpu(a_mat & x, const a_sp_mat & A, const a_mat & 
 	for(int i = 0; i < A.n_nonzero; i++)
 		hA_row_indices[i] = A.row_indices[i];
 	
-	double solve_time = solve_positive_definite_cusolver_preview(A.n_rows, A.n_nonzero, A.values, hA_col_ptrs, hA_row_indices, b.memptr(), x.memptr(), 1);
+	double solve_time = solve_positive_definite_cusolver_preview(A.n_rows, A.n_nonzero, A.values, hA_col_ptrs, hA_row_indices, b.memptr(), x.memptr());
 
 	delete [] hA_col_ptrs;
 	delete [] hA_row_indices;

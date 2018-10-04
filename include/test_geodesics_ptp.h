@@ -11,7 +11,7 @@ double test_ptp_cpu(distance_t & error, const distance_t * exact, che * mesh, co
 
 double test_heat_method_cholmod(distance_t & error, double & stime, const distance_t * exact, che * mesh, const vector<index_t> & source, const int & n_test);
 
-double test_heat_method_cholmod_gpu(distance_t & error, double & stime, const distance_t * exact, che * mesh, const vector<index_t> & source, const int & n_test);
+double test_heat_method_gpu(distance_t & error, double & stime, const distance_t * exact, che * mesh, const vector<index_t> & source, const int & n_test);
 
 /// Return an array with the error per iteration.
 /// Starting to store (position 0) errors after number of toplesets.

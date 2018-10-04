@@ -51,21 +51,22 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 		
 		// PERFORMANCE & ACCURACY ___________________________________________________________________
 
-		double Time[5], time;	// FM, PTP GPU, HEAT cholmod, HEAT cusparse
-		distance_t Error[4];	// FM, PTP GPU, HEAT cholmod, HEAT cusparse
+		double Time[7], time;	// FM, PTP GPU, HEAT cholmod, HEAT cusparse
+		distance_t Error[5];	// FM, PTP GPU, HEAT cholmod, HEAT cusparse
 
 		distance_t * exact = load_exact_geodesics(exact_dist_path + filename, n_vertices);
 
 		Time[0] = test_fast_marching(Error[0], exact, mesh, source, n_test);
 		Time[1] = test_ptp_cpu(Error[1], exact, mesh, source, limits, sorted_index, n_test);
 		Time[2] = test_ptp_gpu(Error[2], exact, mesh, source, limits, sorted_index, n_test);
-#ifdef SINGLE_P
-		Time[4] = Time[3] = INFINITY;
-		Error[3] = INFINITY;
-#else
-		Time[4] = test_heat_method_cholmod(Error[3], Time[3], exact, mesh, source, n_test);
-//		Time[4] = test_heat_method_cholmod_gpu(Error[3], time, exact, mesh, source, n_test);
-#endif
+		
+		#ifdef SINGLE_P
+			Time[6] = Time[5] = Time[4] = Time[3] = INFINITY;
+			Error[4] = Error[3] = INFINITY;
+		#else
+			Time[4] = test_heat_method_cholmod(Error[3], Time[3], exact, mesh, source, n_test);
+			Time[6] = test_heat_method_gpu(Error[4], Time[5], exact, mesh, source, n_test);
+		#endif
 		
 		int t_min = 0;
 		for(int i = 1; i < sizeof(Time) / sizeof(double); i++)
@@ -87,20 +88,44 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 		fprintf(ftable, pspeedup, Time[0] / Time[1]);
 		fprintf(ftable, pberror, str[1 == e_min], Error[1]);
 		
-		// PTP GPU
-		fprintf(ftable, pbtime, str[2 == t_min], Time[2]);
-		fprintf(ftable, pspeedup, Time[0] / Time[2]);
-		fprintf(ftable, pberror, str[2 == e_min], Error[2]);
+		#ifndef SINGLE_P
+			fprintf(ftable, "& omp ");
+		#endif
 
-#ifndef SINGLE_P
-		// HEAT FLOW cholmod
-		fprintf(ftable, ptime, Time[4]);
-		fprintf(ftable, pbtime, str[3 == t_min], Time[3]);
-		fprintf(ftable, pspeedup, Time[0] / Time[3]);
-		fprintf(ftable, pberror, str[3 == e_min], Error[3]);
-//		fprintf("{%6s %.3fs} & %s %12.3f\\%% ", str[4 == t_min], Time[4], str[3 == e_min], Error[3]);
-#endif
+		#ifdef SINGLE_P
+			// PTP GPU
+			fprintf(ftable, pbtime, str[2 == t_min], Time[2]);
+			fprintf(ftable, pspeedup, Time[0] / Time[2]);
+			fprintf(ftable, pberror, str[2 == e_min], Error[2]);
+		#endif
+
+		#ifndef SINGLE_P
+			// HEAT FLOW cholmod
+			fprintf(ftable, ptime, Time[4]);
+			fprintf(ftable, pbtime, str[3 == t_min], Time[3]);
+			fprintf(ftable, pspeedup, Time[0] / Time[3]);
+			fprintf(ftable, pberror, str[3 == e_min], Error[3]);
+			fprintf(ftable, "& chol ");
+		#endif
 		fprintf(ftable, "\\\\\n");
+
+		#ifndef SINGLE_P
+			// PTP GPU
+			fprintf(ftable, "&&& ");
+			fprintf(ftable, pbtime, str[2 == t_min], Time[2]);
+			fprintf(ftable, pspeedup, Time[0] / Time[2]);
+			fprintf(ftable, pberror, str[2 == e_min], Error[2]);
+			fprintf(ftable, "& cuda ");
+			
+			// HEAT FLOW cusparse
+			fprintf(ftable, ptime, Time[6]);
+			fprintf(ftable, pbtime, str[5 == t_min], Time[5]);
+			fprintf(ftable, pspeedup, Time[0] / Time[5]);
+			fprintf(ftable, pberror, str[4 == e_min], Error[4]);
+			fprintf(ftable, "& cusp ");
+
+			fprintf(ftable, "\\\\\\hline\n");
+		#endif
 
 		
 		// DEGREE HISTOGRAM ________________________________________________________________________
@@ -270,7 +295,7 @@ double test_heat_method_cholmod(distance_t & error, double & stime, const distan
 	return time / n_test;
 }
 
-double test_heat_method_cholmod_gpu(distance_t & error, double & stime, const distance_t * exact, che * mesh, const vector<index_t> & source, const int & n_test)
+double test_heat_method_gpu(distance_t & error, double & stime, const distance_t * exact, che * mesh, const vector<index_t> & source, const int & n_test)
 {
 	double t, st, time = 0;
 	
