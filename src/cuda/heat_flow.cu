@@ -241,7 +241,7 @@ double solve_positive_definite_cusolver_preview(const int m, const int nnz, cons
 
 	cusolverSpHandle_t cusolver_handle = NULL;
 	cusparseHandle_t cusparse_handle = NULL;
-	cudaStream_t stream = NULL;
+//	cudaStream_t stream = NULL;
 
 	cusparseMatDescr_t descr = NULL;
 
@@ -254,11 +254,11 @@ double solve_positive_definite_cusolver_preview(const int m, const int nnz, cons
 
 	cusolverSpCreate(&cusolver_handle);
 	cusparseCreate(&cusparse_handle);
-
+/*
 	cudaStreamCreate(&stream);
 	cusolverSpSetStream(cusolver_handle, stream);
 	cusparseSetStream(cusparse_handle, stream);
-	
+*/	
 	cusparseCreateMatDescr(&descr);
 	cusparseSetMatType(descr, CUSPARSE_MATRIX_TYPE_GENERAL);
 	cusparseSetMatIndexBase(descr, CUSPARSE_INDEX_BASE_ZERO);
@@ -354,7 +354,7 @@ double solve_positive_definite_cusolver_preview(const int m, const int nnz, cons
 		cusolverSpDestroyCsrcholInfo(info);
 	}
 
-	cudaStreamDestroy(stream);
+//	cudaStreamDestroy(stream);
 	cusparseDestroyMatDescr(descr);
 	cusparseDestroy(cusparse_handle);
 	cusolverSpDestroy(cusolver_handle);
