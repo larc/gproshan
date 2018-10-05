@@ -89,7 +89,7 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 		fprintf(ftable, pberror, str[1 == e_min], Error[1]);
 		
 		#ifndef SINGLE_P
-			fprintf(ftable, "& openmp ");
+			fprintf(ftable, "& OpenMp ");
 		#endif
 
 		#ifdef SINGLE_P
@@ -105,7 +105,7 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 			fprintf(ftable, pbtime, str[3 == t_min], Time[3]);
 			fprintf(ftable, pspeedup, Time[0] / Time[3]);
 			fprintf(ftable, pberror, str[3 == e_min], Error[3]);
-			fprintf(ftable, "& cholmod ");
+			fprintf(ftable, "& Cholmod ");
 		#endif
 		fprintf(ftable, "\\\\\n");
 
@@ -115,14 +115,14 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 			fprintf(ftable, pbtime, str[2 == t_min], Time[2]);
 			fprintf(ftable, pspeedup, Time[0] / Time[2]);
 			fprintf(ftable, pberror, str[2 == e_min], Error[2]);
-			fprintf(ftable, "& cuda ");
+			fprintf(ftable, "& Cuda ");
 			
 			// HEAT FLOW cusparse
 			fprintf(ftable, ptime, Time[6]);
 			fprintf(ftable, pbtime, str[5 == t_min], Time[5]);
 			fprintf(ftable, pspeedup, Time[0] / Time[5]);
 			fprintf(ftable, pberror, str[4 == e_min], Error[4]);
-			fprintf(ftable, "& cusparse ");
+			fprintf(ftable, "& cusolverSp ");
 
 			fprintf(ftable, "\\\\\\hline\n");
 		#endif
