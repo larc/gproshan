@@ -76,6 +76,8 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 			}
 			
 			Time[6] += Time[5];
+
+			debug(Time[6])
 		#endif
 		
 		int t_min = 0;
