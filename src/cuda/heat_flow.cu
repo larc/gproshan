@@ -81,7 +81,7 @@ double solve_positive_definite_cusolver(const int m, const int nnz, const real_t
 		cudaMemcpy(hx, data.x, m * sizeof(real_t), cudaMemcpyDeviceToHost);
 	}
 
-	printf("%d\n", singularity != -1);
+//	printf("%d\n", singularity != -1);
 
 	cusparseDestroyMatDescr(descr);
 	cusolverSpDestroy(handle_cusolver);
