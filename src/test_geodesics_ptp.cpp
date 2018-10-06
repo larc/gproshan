@@ -51,7 +51,7 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 		
 		// PERFORMANCE & ACCURACY ___________________________________________________________________
 
-		double Time[6], time;	// FM, PTP GPU, HEAT cholmod, HEAT cusparse
+		double Time[7], time;	// FM, PTP GPU, HEAT cholmod, HEAT cusparse
 		distance_t Error[5];	// FM, PTP GPU, HEAT cholmod, HEAT cusparse
 
 		distance_t * exact = load_exact_geodesics(exact_dist_path + filename, n_vertices);
@@ -74,7 +74,7 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 				Time[6] = Time[5] = INFINITY;
 				Error[4] = INFINITY;
 			}
-
+			
 			Time[6] += Time[5];
 		#endif
 		
