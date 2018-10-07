@@ -208,12 +208,12 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 
 double test_fast_marching(distance_t & error, const distance_t * exact, che * mesh, const vector<index_t> & source, const int & n_test)
 {
-	double t, time = 0;
+	double t, seconds = INFINITY;
 
 	for(int i = 0; i < n_test; i++)
 	{
 		TIC(t) geodesics fm(mesh, source, geodesics::FM); TOC(t);
-		time += t;
+		seconds = min(seconds, t);
 	}
 
 	geodesics fm(mesh, source, geodesics::FM);
@@ -224,12 +224,12 @@ double test_fast_marching(distance_t & error, const distance_t * exact, che * me
 	error *= 100;
 	error /= mesh->n_vertices() - source.size();
 
-	return time / n_test;
+	return seconds;
 }
 
 double test_ptp_gpu(distance_t & error, const distance_t * exact, che * mesh, const vector<index_t> & source, const vector<index_t> & limits, const index_t * sorted_index, const int & n_test)
 {
-	double t, time = 0;
+	double t, seconds = INFINITY;
 	
 	distance_t * dist = NULL;
 	for(int i = 0; i < n_test; i++)
@@ -237,7 +237,7 @@ double test_ptp_gpu(distance_t & error, const distance_t * exact, che * mesh, co
 		if(dist) delete [] dist;
 
 		dist = parallel_toplesets_propagation_coalescence_gpu(mesh, source, limits, sorted_index, t);
-		time += t;
+		seconds = min(seconds, t);
 	}
 
 	error = 0;
@@ -247,12 +247,12 @@ double test_ptp_gpu(distance_t & error, const distance_t * exact, che * mesh, co
 	error /= mesh->n_vertices() - source.size();
 	
 	delete [] dist;
-	return time / n_test;
+	return seconds;
 }
 
 double test_ptp_cpu(distance_t & error, const distance_t * exact, che * mesh, const vector<index_t> & source, const vector<index_t> & limits, const index_t * sorted_index, const int & n_test)
 {
-	double t, time = 0;
+	double t, seconds = INFINITY;
 	
 	distance_t * dist = NULL;
 	for(int i = 0; i < n_test; i++)
@@ -262,7 +262,7 @@ double test_ptp_cpu(distance_t & error, const distance_t * exact, che * mesh, co
 		TIC(t)
 		dist = parallel_toplesets_propagation_cpu(mesh, source, limits, sorted_index);
 		TOC(t)
-		time += t;
+		seconds = min(seconds, t);
 	}
 
 	error = 0;
@@ -272,12 +272,13 @@ double test_ptp_cpu(distance_t & error, const distance_t * exact, che * mesh, co
 	error /= mesh->n_vertices() - source.size();
 	
 	delete [] dist;
-	return time / n_test;
+	return seconds;
 }
 
 double test_heat_method_cholmod(distance_t & error, double & stime, const distance_t * exact, che * mesh, const vector<index_t> & source, const int & n_test)
 {
-	double t, st, time = 0;
+	double t, st, ptime;
+	ptime = stime = INFINITY;
 	
 	distance_t * dist = NULL;
 	for(int i = 0; i < n_test; i++)
@@ -285,8 +286,8 @@ double test_heat_method_cholmod(distance_t & error, double & stime, const distan
 		if(dist) delete [] dist;
 		
 		TIC(t) dist = heat_flow(mesh, source, st); TOC(t)
-		time += t - st;
-		stime += st;
+		ptime = min(t - st, ptime);
+		stime = min(st, stime);
 	}
 
 	error = 0;
@@ -297,13 +298,13 @@ double test_heat_method_cholmod(distance_t & error, double & stime, const distan
 
 	delete [] dist;
 
-	stime /= n_test;
-	return time / n_test;
+	return ptime;
 }
 
 double test_heat_method_gpu(distance_t & error, double & stime, const distance_t * exact, che * mesh, const vector<index_t> & source, const int & n_test)
 {
-	double t, st, time = 0;
+	double t, st, ptime;
+	ptime = stime = INFINITY;
 	
 	distance_t * dist = NULL;
 	for(int i = 0; i < n_test; i++)
@@ -311,8 +312,9 @@ double test_heat_method_gpu(distance_t & error, double & stime, const distance_t
 		if(dist) delete [] dist;
 		
 		TIC(t) dist = heat_flow_gpu(mesh, source, st); TOC(t)
-		time += t - st;
-		stime += st;
+
+		ptime = min(t - st, ptime);
+		stime = min(st, stime);
 	}
 
 	error = 0;
@@ -323,8 +325,7 @@ double test_heat_method_gpu(distance_t & error, double & stime, const distance_t
 
 	delete [] dist;
 
-	stime /= n_test;
-	return time / n_test;
+	return ptime;
 }
 
 distance_t * load_exact_geodesics(const string & file, const size_t & n)
