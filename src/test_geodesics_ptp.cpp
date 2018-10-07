@@ -65,7 +65,13 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 			Error[4] = Error[3] = INFINITY;
 		#else
 			Time[4] = test_heat_method_cholmod(Error[3], Time[3], exact, mesh, source, n_test);
-			Time[6] = test_heat_method_gpu(Error[4], Time[5], exact, mesh, source, n_test);
+			if(n_vertices < 200000)	
+				Time[6] = test_heat_method_gpu(Error[4], Time[5], exact, mesh, source, n_test);
+			else
+			{
+				Time[6] = Time[5] = INFINITY;
+				Error[4] = INFINITY;
+			}
 		#endif
 		
 		int t_min = 0;
