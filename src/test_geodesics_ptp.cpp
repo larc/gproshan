@@ -95,7 +95,7 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 		fprintf(ftable, pberror, str[1 == e_min], Error[1]);
 		
 		#ifndef SINGLE_P
-			fprintf(ftable, "& OpenMp ");
+			fprintf(ftable, "& OpenMP ");
 		#endif
 
 		#ifdef SINGLE_P
