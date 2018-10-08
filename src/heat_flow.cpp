@@ -47,7 +47,8 @@ distance_t * heat_flow(che * mesh, const vector<index_t> & sources, double & sol
 	
 	real_t min_val = phi.min();
 	phi.for_each([&min_val](a_mat::elem_type & val) { val -= min_val; val *= 0.5; });
-
+	
+	//cholmod_l_gpu_stats(&context);
 	cholmod_l_finish(&context);
 
 	return distances;
@@ -119,12 +120,18 @@ double solve_positive_definite(a_mat & x, const a_sp_mat & A, const a_mat & b, c
 
 	cholmod_factor * L = cholmod_l_analyze(cA, context);
 	cholmod_l_factorize(cA, L, context);
+	
+	/* fill ratio
+	debug(L->xsize)
+	debug(cA->nzmax)
+	debug(L->xsize / cA->nzmax)
+	*/
 
 	double solve_time;
 	TIC(solve_time)
 	cholmod_dense * cx = cholmod_l_solve(CHOLMOD_A, L, cb, context);
 	TOC(solve_time)
-
+	
 	assert(x.n_rows == b.n_rows);
 	memcpy(x.memptr(), cx->x, x.n_rows * sizeof(real_t));
 
