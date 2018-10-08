@@ -4,7 +4,7 @@
 
 index_t iterations(const vector<index_t> & limits)
 {
-	return limits.size() << 1;
+	return 1.5 * limits.size();
 }
 
 index_t start_v(const index_t & i, const vector<index_t> & limits)
