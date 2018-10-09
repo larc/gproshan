@@ -18,6 +18,35 @@ finally execute:
 ## Dependencies (linux)
 g++ 7.2, cuda >= 9.1, libarmadillo, libeigen, libsuitesparse, libopenblas, opengl, openmp, gnuplot, libcgal
 
+## Contributions
+
+### CHE implementation
+We have implemented the CHE: compact half-edge data structure, to manipulated the meshes.
+
+### Geodesics
+Fast Marching, Heat Method.
+**We proposed a new parallel algorithm to compute geodesics**.
+See our paper...
+
+### Dictionary Learning
+**We proposed a Dictionary Learning technique** in order to solve the problems of Denoising, Inpainting and Multiresolution.
+See our technical report.
+
+### Hole repairing
+We implemented repairing mesh holes in two steps:
+
+1. Generate a mesh to cover the hole (modified algorithm base on ...).
+2. Approximate the curvature solving the Poisson equation and using Biharmonic splines.
+
+### Decimation
+We are implementing the algorithm ?? to decimate a mesh. 
+
+### Fairing
+Spectral and Taubin algorithms.
+
+### Laplacian and signatures
+Laplace-Beltrami operator and its eigen decomposition, WKS, HKS, GPS signatures.
+
 ## Documentation
 Execute:
 
