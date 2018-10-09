@@ -30,14 +30,28 @@ float fresnel( vec3 N, vec3 E )
 	return pow( sqrt( 1. - NE*NE ), sharpness );
 }
 
+// https://github.com/kbinani/colormap-shaders/blob/master/shaders/glsl/MATLAB_hot.frag
+vec3 colormap(float x)
+{
+	float t = 0.9;
+    float b = clamp(8.0 / 3.0 * x, 0.0, t);
+    float g = clamp(8.0 / 3.0 * x - 1.0, 0.0, t);
+    float r = clamp(4.0 * x - 3.0, 0.0, t);
+    return vec3(r, g, b);
+}
+
 void main()
 {
 	// color
+	/*
 	float d = 1. - color;
 	float r = (1. - d*d) * .8;
 	float g = (1. - (2. * (d - .5)) * (2. * (d - .5))) * .7;
 	float b = (1. - (1. - d) * (1. - d));
 	vec3 vcolor = vec3(r, g, b);
+	*/
+	vec3 vcolor = colormap(1. - color);
+
 
 	// lines
 	if(lines)
