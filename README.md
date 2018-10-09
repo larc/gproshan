@@ -16,17 +16,7 @@ finally execute:
 ![](gproshan.png) 
 
 ## Dependencies (linux)
-- g++ 7.2 (default)
-- g++ 6.4
-- cuda 9.1
-- armadillo
-- eigen
-- suitesparse
-- openblas
-- opengl
-- openmp
-- gnuplot
-- libcgal
+g++ 7.2, cuda >= 9.1, libarmadillo, libeigen, libsuitesparse, libopenblas, opengl, openmp, gnuplot, libcgal
 
 ## Documentation
 Execute:
@@ -36,7 +26,7 @@ Execute:
 to generate the documentation in html and latex.
 
 ## Viewer
-The viewer was initially based in the viewer of [https://github.com/dgpdec/course](https://github.com/dgpdec/course). The current viewer use VAO and VBO to render now, and the shaders have been upgraded.
+The viewer was initially based in the viewer of [https://github.com/dgpdec/course](https://github.com/dgpdec/course). The current viewer use VAO and VBO to render, and the shaders have been modified and upgraded.
 
 ## Authors
 - Lizeth Joseline Fuentes Pérez
