@@ -453,8 +453,7 @@ void viewer_process_multiplicate_vertices()
 	debug_me(APP_VIEWER)
 
 	viewer::mesh()->multiplicate_vertices();
-
-	debug(viewer::mesh()->n_vertices())
+	viewer::mesh().debug_info();
 }
 
 void viewer_compute_toplesets()
@@ -484,7 +483,7 @@ void viewer_process_voronoi()
 	debug_me(APP_VIEWER)
 
 	TIC(load_time)
-	geodesics ptp(viewer::mesh(), viewer::select_vertices, geodesics::PTP_GPU);
+	geodesics ptp(viewer::mesh(), viewer::select_vertices, geodesics::PTP_GPU, 1);
 	TOC(load_time)
 	debug(load_time)
 

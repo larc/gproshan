@@ -8,14 +8,16 @@
 
 #define DP 5e-2
 
-geodesics::geodesics(che * mesh, const vector<index_t> & sources, const option_t & opt, const size_t & n_iter, const distance_t & radio)
+geodesics::geodesics(che * mesh, const vector<index_t> & sources, const option_t & opt, const bool & cluster, const size_t & n_iter, const distance_t & radio)
 {
 	n_vertices = mesh->n_vertices();
 	assert(n_vertices > 0);
 
 	distances = new distance_t[n_vertices];
 	sorted_index = new index_t[n_vertices];
-	clusters = new index_t[n_vertices];
+
+	if(cluster) clusters = new index_t[n_vertices];
+	else clusters = NULL;
 
 	n_sorted = 0;
 
@@ -31,7 +33,7 @@ geodesics::~geodesics()
 {
 	delete [] distances;
 	delete [] sorted_index;
-	delete [] clusters;
+	if(clusters) delete [] clusters;
 }
 
 const distance_t & geodesics::operator[](const index_t & i) const
@@ -121,7 +123,7 @@ void geodesics::run_fastmarching(che * mesh, const vector<index_t> & sources, co
 	for(index_t s: sources)
 	{
 		distances[s] = 0;
-		clusters[s] = ++c;
+		if(clusters) clusters[s] = ++c;
 		color[s] = RED;
 		cola.push(make_pair(distances[s], s));
 	}
@@ -154,12 +156,14 @@ void geodesics::run_fastmarching(che * mesh, const vector<index_t> & sources, co
 			{
 				for_star(v_he, mesh, v)
 				{
-					p = update(d, mesh, v_he, vx);
-					//p = update_step(mesh, distances, v_he);
+					//p = update(d, mesh, v_he, vx);
+					p = update_step(mesh, distances, v_he);
 					if(p < distances[v])
 					{
 						distances[v] = p;
-						clusters[v] = distances[mesh->vt(prev(v_he))] < distances[mesh->vt(next(he))] ? clusters[mesh->vt(prev(he))] : clusters[mesh->vt(next(he))];
+						
+						if(clusters)
+							clusters[v] = distances[mesh->vt(prev(v_he))] < distances[mesh->vt(next(he))] ? clusters[mesh->vt(prev(he))] : clusters[mesh->vt(next(he))];
 					}
 				}
 
@@ -198,7 +202,10 @@ void geodesics::run_parallel_toplesets_propagation_gpu(che * mesh, const vector<
 	mesh->compute_toplesets(toplesets, sorted_index, limits, sources);
 
 	double time_ptp;
-	distances = parallel_toplesets_propagation_coalescence_gpu(mesh, sources, limits, sorted_index, time_ptp, clusters);
+	if(sources.size() > 1)
+		distances = parallel_toplesets_propagation_gpu(mesh, sources, limits, sorted_index, time_ptp, clusters);
+	else
+		distances = parallel_toplesets_propagation_coalescence_gpu(mesh, sources, limits, sorted_index, time_ptp, clusters);
 	debug(time_ptp);
 
 	delete [] toplesets;

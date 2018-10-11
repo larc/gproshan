@@ -23,7 +23,7 @@ class geodesics
 						};
 
 	public:
-		index_t * clusters;			///< Clustering vertices to closet source.
+		index_t * clusters;			///< Clustering vertices to closest source.
 
 	private:
 		distance_t * distances;		///< Results of computation geodesic distances.
@@ -35,6 +35,7 @@ class geodesics
 		geodesics(	che * mesh,							///< input mesh must be a triangular mesh.
 					const vector<index_t> & sources,	///< source vertices.
 					const option_t & opt = FM,			///< specific the algorithm to execute.
+					const bool & cluster = 0,			///< if clustering vertices to closest source.
 					const size_t & n_iter = 0, 			///< maximum number of iterations.
 					const distance_t & radio = INFINITY	///< execute until the specific radio.
 					);

@@ -185,13 +185,13 @@ index_t run_ptp_gpu(CHE * d_mesh, const index_t & n_vertices, distance_t * h_dis
 	{
 		start = start_v(i, limits);
 		end = end_v(i, limits);
+		if(end - start == 0) break;
 
 		if(h_clusters)
-		{
 			relax_ptp <<< NB(end - start), NT >>> (d_mesh, d_dist[!d], d_dist[d], d_clusters[!d], d_clusters[d], d_sorted, end, start);
-		}
 		else
 			relax_ptp <<< NB(end - start), NT >>> (d_mesh, d_dist[!d], d_dist[d], d_sorted, end, start);
+
 		cudaDeviceSynchronize();
 		d = !d;
 	}
