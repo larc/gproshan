@@ -29,22 +29,32 @@ We have implemented a [Compact Half-Edge (CHE)](http://citeseerx.ist.psu.edu/vie
 We proposed a CPU/GPU parallel algorithm to compute geodesics distances on triangular meshes. Our
 approach is competitive with the current methods and is simple of implement. Please cite our paper:
 
+[An Iterative Parallel Algorithm for Computing Geodesic Distances on Triangular Meshes]()
+
 ```bibtex
-@article{rfml2018,
-author	= { Luciano A. Romero Calla and
-			Lizeth J. Fuentes Perez and
-			Anselmo A. Montenegro and Marcos Lage },
-title	= { An Iterative Parallel Algorithm for Computing Geodesic Distances on Triangular Meshes},
-year	= {2018},
-url		= {}
+@article{ptp2018,
+	author	= { Luciano A. Romero Calla and Lizeth J. Fuentes Perez and Anselmo A. Montenegro and Marcos Lage },
+	title	= { An Iterative Parallel Algorithm for Computing Geodesic Distances on Triangular Meshes },
+	year	= {2018},
+	url		= { }
 }
 ```
 
-Also, we have implemented the [Fast Marching algorithm](), and the [Heat method]().
+Also, we have implemented the [Fast Marching algorithm](), and the [Heat method](https://www.cs.cmu.edu/~kmcrane/Projects/HeatMethod/index.html).
 
 ### Dictionary Learning
-**We proposed a Dictionary Learning technique** in order to solve the problems of Denoising, Inpainting and Multiresolution.
-See our technical report.
+We proposed a Dictionary Learning and Sparse Coding framework in order to solve the problems of Denoising, Inpainting and Multiresolution on triangular meshes. Please see an cite our work:
+
+[A Dictionary Learning-based framework on Triangular Meshes]()
+
+```bibtex
+@article{dlspf2018,
+	author	= { Luciano A. Romero Calla and Lizeth J. Fuentes Perez and Anselmo A. Montenegro },
+	title	= { A Dictionary Learning-based framework on Triangular Meshes },
+	year	= { 2018 },
+	url		= { }
+}
+```
 
 ### Hole repairing
 We implemented repairing mesh holes in two steps:
@@ -75,10 +85,3 @@ The viewer was initially based in the viewer of [https://github.com/dgpdec/cours
 - Lizeth Joseline Fuentes Pérez
 - Luciano Arnaldo Romero Calla
 
----
-bibliography: paper.bib
-nocite: '@*'
----
-
-# Bibliography
-## References
