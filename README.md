@@ -1,8 +1,12 @@
 # gproshan
 ### geometry processing and shape analysis framework
 
+![](gproshan.png) 
+
+
 ## Description
-This framework include some algorithms of geometry processing and shape analysis as part of our graduate research.
+This framework include some algorithms of geometry processing and shape analysis as part of our
+graduate research.
 
 ## Build and Run
 Install all dependencies and run:
@@ -13,20 +17,18 @@ finally execute:
 
 	./gproshan [input mesh paths]
 
-![](gproshan.png) 
-
-## Dependencies (linux)
-g++ 7.2, cuda >= 9.1, libarmadillo, libeigen, libsuitesparse, libopenblas, opengl, openmp, gnuplot, libcgal
+### Dependencies (linux)
+g++ 7.2, cuda >= 9.1, libarmadillo, libeigen, libsuitesparse, libopenblas, opengl, gnuplot, libcgal
 
 ## Contributions
 
 ### CHE implementation
-We have implemented the CHE: compact half-edge data structure, to manipulated the meshes.
+We have implemented the [CHE: compact half-edge data structure](), to manipulated the meshes.
 
 ### Geodesics
 Fast Marching, Heat Method.
 **We proposed a new parallel algorithm to compute geodesics**.
-See our paper...
+See our paper... @Bronstein2008
 
 ### Dictionary Learning
 **We proposed a Dictionary Learning technique** in order to solve the problems of Denoising, Inpainting and Multiresolution.
@@ -61,3 +63,10 @@ The viewer was initially based in the viewer of [https://github.com/dgpdec/cours
 - Lizeth Joseline Fuentes Pérez
 - Luciano Arnaldo Romero Calla
 
+---
+bibliography: paper.bib
+nocite: '@*'
+---
+
+# Bibliography
+## References

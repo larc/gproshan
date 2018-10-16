@@ -25,12 +25,14 @@ int viewer_main(int nargs, const char ** args)
 	viewer::add_process('G', "Geodesics (FM)", viewer_process_geodesics_fm);
 	viewer::add_process('U', "Geodesics (PTP_CPU)", viewer_process_geodesics_ptp_cpu);
 	viewer::add_process('C', "Geodesics (PTP_GPU)", viewer_process_geodesics_ptp_gpu);
-	viewer::add_process('l', "Geodesics (HEAT_FLOW)", viewer_process_geodesics_heat_flow);
+	#ifndef SINGLE_P
+		viewer::add_process('l', "Geodesics (HEAT_FLOW)", viewer_process_geodesics_heat_flow);
+	#endif
 	viewer::add_process('L', "Geodesics (HEAT_FLOW_GPU)", viewer_process_geodesics_heat_flow_gpu);
 	viewer::add_process('S', "Farthest Point Sampling", viewer_process_farthest_point_sampling);
 	viewer::add_process('Q', "Farthest Point Sampling radio", viewer_process_farthest_point_sampling_radio);
 	viewer::add_process('V', "Voronoi Regions", viewer_process_voronoi);
-	viewer::add_process('P', "Rings propagations", viewer_compute_toplesets);
+	viewer::add_process('P', "Toplesets", viewer_compute_toplesets);
 
 	viewer::sub_menus.push_back("Dictionary Learning");
 	viewer::add_process('.', "Mark patch", viewer_process_mdict_patch);
@@ -45,20 +47,20 @@ int viewer_main(int nargs, const char ** args)
 	viewer::add_process('W', "WKS (norm)", viewer_process_wks);
 	viewer::add_process('X', "Functional maps", viewer_process_functional_maps);
 
-	viewer::sub_menus.push_back("Poisson");
+	viewer::sub_menus.push_back("Repair Holes");
 	viewer::add_process('o', "Membrane surface", viewer_process_poisson_laplacian_1);
 	viewer::add_process('p', "Thin-plate surface", viewer_process_poisson_laplacian_2);
 	viewer::add_process('q', "Minimum variation surface", viewer_process_poisson_laplacian_3);
+	viewer::add_process('h', "Fill Holes (mesh only)", viewer_process_fill_holes);
+	viewer::add_process('B', "Fill holes (biharmonic splines)", viewer_process_fill_holes_biharmonic_splines);
 
 	viewer::sub_menus.push_back("Others");
 	viewer::add_process('t', "Threshold", viewer_process_thresold);
 	viewer::add_process('N', "Noise", viewer_process_noise);
 	viewer::add_process('M', "Black Noise", viewer_process_black_noise);
 	viewer::add_process('m', "Multiplicate Vertices", viewer_process_multiplicate_vertices);
-	viewer::add_process('h', "Fill Holes", viewer_process_fill_holes);
 	viewer::add_process('-', "Make holes", viewer_process_delete_vertices);
 	viewer::add_process('d', "Delete non manifolds vertices", viewer_process_delete_non_manifold_vertices);
-	viewer::add_process('B', "Fill holes (biharmonic splines)", viewer_process_fill_holes_biharmonic_splines);
 	viewer::add_process('K', "Gaussian curvature", viewer_process_gaussian_curvature);
 	viewer::add_process('/', "Decimation", viewer_process_edge_collapse);
 	viewer::add_process(':', "Select multiple vertices", viewer_select_multiple);
