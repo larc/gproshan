@@ -23,12 +23,24 @@ g++ 7.2, cuda >= 9.1, libarmadillo, libeigen, libsuitesparse, libopenblas, openg
 ## Contributions
 
 ### CHE implementation
-We have implemented the [a Compact Half-Edge data structure (CHE)](http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.523.7580), to manipulated the meshes. (See the paper: [CHE: A scalable topological data structure for triangular meshes](http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.523.7580)
+We have implemented a [Compact Half-Edge (CHE)](http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.523.7580) data structure to manipulated the meshes. (See the paper: [CHE: A scalable topological data structure for triangular meshes](http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.523.7580))
 
 ### Geodesics
-Fast Marching, Heat Method.
-**We proposed a new parallel algorithm to compute geodesics**.
-See our paper... @Bronstein2008
+We proposed a CPU/GPU parallel algorithm to compute geodesics distances on triangular meshes. Our
+approach is competitive with the current methods and is simple of implement. Please cite our paper:
+
+```bibtex
+@article{rfml2018,
+author	= { Luciano A. Romero Calla and
+			Lizeth J. Fuentes Perez and
+			Anselmo A. Montenegro and Marcos Lage },
+title	= { An Iterative Parallel Algorithm for Computing Geodesic Distances on Triangular Meshes},
+year	= {2018},
+url		= {}
+}
+```
+
+Also, we have implemented the [Fast Marching algorithm](), and the [Heat method]().
 
 ### Dictionary Learning
 **We proposed a Dictionary Learning technique** in order to solve the problems of Denoising, Inpainting and Multiresolution.
