@@ -23,7 +23,7 @@ g++ 7.2, cuda >= 9.1, libarmadillo, libeigen, libsuitesparse, libopenblas, openg
 ## Contributions
 
 ### CHE implementation
-We have implemented the [CHE: compact half-edge data structure](), to manipulated the meshes.
+We have implemented the [a Compact Half-Edge data structure (CHE)](http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.523.7580), to manipulated the meshes. (See the paper: [CHE: A scalable topological data structure for triangular meshes](http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.523.7580)
 
 ### Geodesics
 Fast Marching, Heat Method.
