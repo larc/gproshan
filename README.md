@@ -23,11 +23,12 @@ g++ 7.2, cuda >= 9.1, libarmadillo, libeigen, libsuitesparse, libopenblas, openg
 ## Contributions
 
 ### CHE implementation
-We have implemented a [Compact Half-Edge (CHE)](http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.523.7580) data structure to manipulated the meshes. (See the paper: [CHE: A scalable topological data structure for triangular meshes](http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.523.7580))
+We have implemented a [Compact Half-Edge (CHE)](http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.523.7580) data structure to manipulated the meshes.
+See the paper: [CHE: A scalable topological data structure for triangular meshes](http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.523.7580) for more details.
 
 ### Geodesics
 We proposed a CPU/GPU parallel algorithm to compute geodesics distances on triangular meshes. Our
-approach is competitive with the current methods and is simple of implement. Please cite our paper:
+approach is competitive with the current methods and is simple to implement. Please cite our paper:
 
 [An Iterative Parallel Algorithm for Computing Geodesic Distances on Triangular Meshes]()
 
@@ -35,8 +36,8 @@ approach is competitive with the current methods and is simple of implement. Ple
 @article{ptp2018,
 	author	= { Luciano A. Romero Calla and Lizeth J. Fuentes Perez and Anselmo A. Montenegro and Marcos Lage },
 	title	= { An Iterative Parallel Algorithm for Computing Geodesic Distances on Triangular Meshes },
-	year	= {2018},
-	url		= { }
+	year	= { 2018 },
+	url	= { }
 }
 ```
 
@@ -52,7 +53,7 @@ We proposed a Dictionary Learning and Sparse Coding framework in order to solve 
 	author	= { Luciano A. Romero Calla and Lizeth J. Fuentes Perez and Anselmo A. Montenegro },
 	title	= { A Dictionary Learning-based framework on Triangular Meshes },
 	year	= { 2018 },
-	url		= { }
+	url	= { }
 }
 ```
 
@@ -71,6 +72,7 @@ Spectral and Taubin algorithms.
 ### Laplacian and signatures
 Laplace-Beltrami operator and its eigen decomposition, WKS, HKS, GPS signatures.
 
+
 ## Documentation
 Execute:
 
@@ -82,6 +84,6 @@ to generate the documentation in html and latex.
 The viewer was initially based in the viewer of [https://github.com/dgpdec/course](https://github.com/dgpdec/course). The current viewer use VAO and VBO to render, and the shaders have been modified and upgraded.
 
 ## Authors
-- Lizeth Joseline Fuentes Pérez
-- Luciano Arnaldo Romero Calla
+- [Lizeth Joseline Fuentes Pérez](https://github.com/lishh)
+- [Luciano Arnaldo Romero Calla](https://github.com/larc)
 
