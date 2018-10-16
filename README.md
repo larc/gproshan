@@ -64,14 +64,15 @@ We implemented repairing mesh holes in two steps:
 2. Approximate the curvature solving the Poisson equation and using Biharmonic splines.
 
 ### Decimation
-We are implementing the algorithm ?? to decimate a mesh. 
+We are implementing the algorithm described by the paper [Stellar Mesh Simplification Using Probabilistic Optimization](https://doi.org/10.1111/j.1467-8659.2004.00811.x),
+to compute a mesh simplification.
 
 ### Fairing
-Spectral and Taubin algorithms.
+We implemented Spectral and Taubin algorithms to smooth a mesh surface. See the Chapter 4 of the book
+[Polygon Mesh Processing](http://www.pmp-book.org/).
 
 ### Laplacian and signatures
 Laplace-Beltrami operator and its eigen decomposition, WKS, HKS, GPS signatures.
-
 
 ## Documentation
 Execute:
