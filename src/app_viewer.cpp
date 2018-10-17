@@ -536,9 +536,13 @@ void viewer_process_farthest_point_sampling()
 void viewer_process_fairing_spectral()
 {
 	debug_me(APP_VIEWER)
+	
+	d_message(input: [number of eigenbasis])
 
-	fairing * fair = new fairing_spectral(50);
+	size_t k; cin >> k;
+	fairing * fair = new fairing_spectral(k);
 	fair->run(viewer::mesh());
+
 	viewer::mesh()->set_vertices(fair->get_postions());
 	delete fair;
 
