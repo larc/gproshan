@@ -5,8 +5,8 @@
 
 
 ## Description
-This framework include some algorithms of geometry processing and shape analysis as part of our
-graduate research.
+This framework includes some algorithms of Geometry Processing and Shape Analysis as part of our graduate research.
+
 
 ## Build and Run
 Install all dependencies and run:
@@ -44,7 +44,7 @@ approach is competitive with the current methods and is simple to implement. Ple
 Also, we have implemented the [Fast Marching algorithm](), and the [Heat method](https://www.cs.cmu.edu/~kmcrane/Projects/HeatMethod/index.html).
 
 ### Dictionary Learning
-We proposed a Dictionary Learning and Sparse Coding framework in order to solve the problems of Denoising, Inpainting and Multiresolution on triangular meshes. Please see an cite our work:
+We proposed a Dictionary Learning and Sparse Coding framework,  to solve the problems of Denoising, Inpainting, and Multiresolution on triangular meshes. This work is still in process. Please  cite our work:
 
 [A Dictionary Learning-based framework on Triangular Meshes]()
 
@@ -82,7 +82,7 @@ Execute:
 to generate the documentation in html and latex.
 
 ## Viewer
-The viewer was initially based in the viewer of [https://github.com/dgpdec/course](https://github.com/dgpdec/course). The current viewer use VAO and VBO to render, and the shaders have been modified and upgraded.
+The viewer was initially based in the viewer of [https://github.com/dgpdec/course](https://github.com/dgpdec/course). The current viewer uses VAO and VBO to render, and the shaders have been modified and upgraded.
 
 ## Authors
 - [Lizeth Joseline Fuentes Pérez](https://github.com/lishh)
