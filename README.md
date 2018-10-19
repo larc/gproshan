@@ -70,6 +70,28 @@ solving the Poisson equation (see the Chapter 4 of the book [Polygon Mesh Proces
 Please see and cite our [report](http://repositorio.unsa.edu.pe/handle/UNSA/2576) (in Spanish) as
 final undergraduate project.
 
+### Key-Points and Key-Components
+
+Please cite our paper:
+
+[Efficient approach for interest points detection in non-rigid shapes](https://doi.org/10.1109/CLEI.2015.7359459)
+
+```bibtex
+@INPROCEEDINGS{7359459,
+	author		= { C. J. Lopez Del Alamo and L. A. Romero Calla and L. J. Fuentes Perez },
+	booktitle	= { 2015 Latin American Computing Conference (CLEI) },
+	title		= { Efficient approach for interest points detection in non-rigid shapes },
+	year		= { 2015 },
+	pages		= { 1-8 },
+	doi		= { 10.1109/CLEI.2015.7359459 },
+	month		= { Oct },
+}
+```
+
+Please see and cite our [report](http://repositorio.unsa.edu.pe/handle/UNSA/2575) (in Spanish) as
+final undergraduate project.
+
+
 ### Decimation
 We are implementing the algorithm described by the paper [Stellar Mesh Simplification Using Probabilistic Optimization](https://doi.org/10.1111/j.1467-8659.2004.00811.x),
 to compute a mesh simplification.
