@@ -18,7 +18,7 @@ finally execute:
 	./gproshan [input mesh paths]
 
 ### Dependencies (linux)
-g++ 7.2, cuda >= 9.1, libarmadillo, libeigen, libsuitesparse, libopenblas, opengl, gnuplot, libcgal
+g++ 7.2, cuda >= 9.1, libarmadillo, libeigen, libsuitesparse, libopenblas, opengl, gnuplot, libcgal, libgles2-mesa
 
 ## Contributions
 
