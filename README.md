@@ -23,7 +23,7 @@ g++ 7.2, cuda >= 9.1, libarmadillo, libeigen, libsuitesparse, libopenblas, openg
 ## Contributions
 
 ### CHE implementation
-We have implemented a [Compact Half-Edge (CHE)](http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.523.7580) data structure to manipulated the meshes.
+We have implemented a [Compact Half-Edge (CHE)](http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.523.7580) data structure to manipulated triangular meshes, also can be extended for other polygonal meshes.
 See the paper: [CHE: A scalable topological data structure for triangular meshes](http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.523.7580) for more details.
 
 ### Geodesics
@@ -60,16 +60,21 @@ We proposed a Dictionary Learning and Sparse Coding framework,  to solve the pro
 ### Hole repairing
 We implemented repairing mesh holes in two steps:
 
-1. Generate a mesh to cover the hole (modified algorithm base on ...).
-2. Approximate the curvature solving the Poisson equation and using Biharmonic splines.
+1. Generate a mesh to cover the hole. We modified the algorithm presented in the paper: [A robust hole-filling algorithm for triangular mesh](https://doi.org/10.1007/s00371-007-0167-y), in order to
+generate a planar triangular mesh using a priority queue.
+2. Fit the surface described by the new points in order to minimize the variation of the surface,
+solving the Poisson equation (see the Chapter 4 of the book [Polygon Mesh Processing](http://www.pmp-book.org/)) or using Biharmonic splines.
+
+Please see our [report](http://repositorio.unsa.edu.pe/handle/UNSA/2576) (in Spanish) as final
+undergraduate project.
 
 ### Decimation
 We are implementing the algorithm described by the paper [Stellar Mesh Simplification Using Probabilistic Optimization](https://doi.org/10.1111/j.1467-8659.2004.00811.x),
 to compute a mesh simplification.
 
 ### Fairing
-We implemented Spectral and Taubin algorithms to smooth a mesh surface. See the Chapter 4 of the book
-[Polygon Mesh Processing](http://www.pmp-book.org/).
+We implemented Spectral and Taubin fairing algorithms to smooth a mesh surface.
+See the Chapter 4 of the book [Polygon Mesh Processing](http://www.pmp-book.org/).
 
 ### Laplacian and signatures
 Laplace-Beltrami operator and its eigen decomposition, WKS, HKS, GPS signatures.
