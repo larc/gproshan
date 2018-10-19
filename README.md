@@ -18,7 +18,7 @@ finally execute:
 	./gproshan [input mesh paths]
 
 ### Dependencies (linux)
-g++ 7.2, cuda >= 9.1, libarmadillo, libeigen, libsuitesparse, libopenblas, opengl, gnuplot, libcgal, libgles2-mesa
+g++ >= 7.2, fopenmp, cuda >= 9.1, libarmadillo, libeigen, libsuitesparse, libopenblas, opengl, gnuplot, libcgal, libgles2-mesa
 
 ## Contributions
 
@@ -44,7 +44,9 @@ approach is competitive with the current methods and is simple to implement. Ple
 Also, we have implemented the [Fast Marching algorithm](), and the [Heat method](https://www.cs.cmu.edu/~kmcrane/Projects/HeatMethod/index.html).
 
 ### Dictionary Learning
-We proposed a Dictionary Learning and Sparse Coding framework,  to solve the problems of Denoising, Inpainting, and Multiresolution on triangular meshes. This work is still in process. Please  cite our work:
+We proposed a Dictionary Learning and Sparse Coding framework, to solve the problems of Denoising,
+Inpainting, and Multiresolution on triangular meshes. This work is still in process. Please cite
+our work:
 
 [A Dictionary Learning-based framework on Triangular Meshes]()
 
@@ -65,8 +67,8 @@ generate a planar triangular mesh using a priority queue.
 2. Fit the surface described by the new points in order to minimize the variation of the surface,
 solving the Poisson equation (see the Chapter 4 of the book [Polygon Mesh Processing](http://www.pmp-book.org/)) or using Biharmonic splines.
 
-Please see our [report](http://repositorio.unsa.edu.pe/handle/UNSA/2576) (in Spanish) as final
-undergraduate project.
+Please see and cite our [report](http://repositorio.unsa.edu.pe/handle/UNSA/2576) (in Spanish) as
+final undergraduate project.
 
 ### Decimation
 We are implementing the algorithm described by the paper [Stellar Mesh Simplification Using Probabilistic Optimization](https://doi.org/10.1111/j.1467-8659.2004.00811.x),
