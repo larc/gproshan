@@ -67,14 +67,13 @@ generate a planar triangular mesh using a priority queue.
 2. Fit the surface described by the new points in order to minimize the variation of the surface,
 solving the Poisson equation (see the Chapter 4 of the book [Polygon Mesh Processing](http://www.pmp-book.org/)) or using Biharmonic splines.
 
-Please see and cite our [mesh hole repairing report](http://repositorio.unsa.edu.pe/handle/UNSA/2576) (in Spanish) as
-final undergraduate project.
+Please see and cite our final undergraduate project: [mesh hole repairing report](http://repositorio.unsa.edu.pe/handle/UNSA/2576) (in Spanish).
 
 ### Key-Points and Key-Components
 
 We proposed a simple method based in the faces' areas to compute key-points for adaptive meshes...
 
-Please cite our paper:
+Please cite our paper (in Spanish):
 
 [Efficient approach for interest points detection in non-rigid shapes](https://doi.org/10.1109/CLEI.2015.7359459)
 
@@ -94,7 +93,7 @@ Computing key-components depends of the accuracy and definition of the key-point
 by the work of Ivan Sipiran (...) who was the first person to define a key-component in meshes.
 We proposed a method based on geodesics to determine the key-components.
 
-Please see and cite our [key-components report](http://repositorio.unsa.edu.pe/handle/UNSA/2575) (in Spanish) as final undergraduate project.
+Please see and cite our final undergraduate project: [key-components report](http://repositorio.unsa.edu.pe/handle/UNSA/2575) (in Spanish).
 
 
 ### Decimation
@@ -113,7 +112,7 @@ Execute:
 
 	doxygen Doxyfile
 
-to generate the documentation in html and latex.
+to generate the documentation in *html* and *LaTeX*.
 
 ## Viewer
 The viewer was initially based in the viewer of [https://github.com/dgpdec/course](https://github.com/dgpdec/course). The current viewer uses VAO and VBO to render, and the shaders have been modified and upgraded.
