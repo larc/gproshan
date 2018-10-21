@@ -71,7 +71,7 @@ Please see and cite our final undergraduate project: [mesh hole repairing report
 
 ### Key-Points and Key-Components
 
-We proposed a simple method based in the faces' areas to compute key-points for adaptive meshes...
+We proposed a simple method based on the faces' areas to compute key-points for adaptive meshes.
 
 Please cite our paper (in Spanish):
 
