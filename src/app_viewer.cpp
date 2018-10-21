@@ -46,7 +46,8 @@ int viewer_main(int nargs, const char ** args)
 	viewer::add_process('H', "HKS (norm)", viewer_process_hks);
 	viewer::add_process('W', "WKS (norm)", viewer_process_wks);
 	viewer::add_process('X', "Functional maps", viewer_process_functional_maps);
-	viewer::add_process('?', "Key Points (adaptive mesh)", viewer_process_key_points);
+	viewer::add_process('*', "Key Points (adaptive mesh)", viewer_process_key_points);
+	viewer::add_process('^', "Key Components", viewer_process_key_components);
 
 	viewer::sub_menus.push_back("Repair Holes");
 	viewer::add_process('o', "Membrane surface", viewer_process_poisson_laplacian_1);
@@ -337,12 +338,24 @@ void viewer_process_key_points()
 	key_points kps(viewer::mesh());
 
 	viewer::select_vertices.clear();
+	viewer::select_vertices.reserve(kps.size());
 
-	size_t nkp = viewer::mesh()->n_vertices() / 10;
-	viewer::select_vertices.reserve(nkp);
-	
-	for(index_t i = 0; i < nkp; i++)
+	for(index_t i = 0; i < kps.size(); i++)
 		viewer::select_vertices.push_back(kps[i]);
+}
+
+void viewer_process_key_components()
+{
+	debug_me(APP_VIEWER)
+	
+	key_points kps(viewer::mesh());
+	key_components kcs(viewer::mesh(), kps, .50);
+	
+	debug(kcs)
+	
+	#pragma omp parallel for
+	for(index_t v = 0; v < viewer::mesh()->n_vertices(); v++)
+		viewer::vcolor(v) = (real_t) kcs(v) / kcs;
 }
 
 void viewer_process_mdict_patch()

@@ -21,6 +21,7 @@
 #include "mdict/d_basis_dct.h"
 #include "mdict/patch.h"
 #include "key_points.h"
+#include "key_components.h"
 
 void viewer_process_fairing_taubin();
 void viewer_process_fairing_spectral();
@@ -47,6 +48,7 @@ void viewer_process_gps();
 void viewer_process_hks();
 void viewer_process_wks();
 void viewer_process_key_points();
+void viewer_process_key_components();
 
 void viewer_process_poisson(const index_t & lk);
 void viewer_process_poisson_laplacian_1();

@@ -42,6 +42,7 @@ class geodesics
 
 		virtual ~geodesics();
 		const distance_t & operator[](const index_t & i) const;
+		const index_t & operator()(const index_t & i) const;
 		const distance_t & radio() const;
 		const index_t & farthest() const;
 		const size_t & n_sorted_index() const;

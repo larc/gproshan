@@ -42,6 +42,12 @@ const distance_t & geodesics::operator[](const index_t & i) const
 	return distances[i];
 }
 
+const index_t & geodesics::operator()(const index_t & i) const
+{
+	assert(i < n_vertices);
+	return sorted_index[i];
+}
+
 const distance_t & geodesics::radio() const
 {
 	assert(n_sorted != 0);

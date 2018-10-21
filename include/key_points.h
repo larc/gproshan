@@ -16,11 +16,14 @@ class key_points
 		real_idx_t * face_areas;
 		index_t * kps;
 		bool * is_kp;
+		size_t n_kps;
 
 	public:
-		key_points(che * mesh);
+		key_points(che * mesh, const real_t & percent = 0.10);
 		~key_points();
-		const index_t & operator[](const index_t & i);
+		const index_t & operator[](const index_t & i) const;
+		const bool & operator()(const index_t & i) const;
+		const size_t & size() const;
 
 	private:
 		void compute_kps(che * mesh);

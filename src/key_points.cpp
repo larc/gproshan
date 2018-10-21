@@ -6,7 +6,7 @@
 
 using namespace std;
 
-key_points::key_points(che * mesh)
+key_points::key_points(che * mesh, const real_t & percent)
 {
 	n_faces = mesh->n_faces();
 	n_vertices = mesh->n_vertices();
@@ -16,6 +16,7 @@ key_points::key_points(che * mesh)
 	kps = new index_t[n_vertices];
 	is_kp = new bool[n_vertices];
 
+	n_kps = percent * n_vertices;
 	compute_kps(mesh);
 }
 
@@ -26,10 +27,21 @@ key_points::~key_points()
 	delete [] is_kp;
 }
 
-const index_t & key_points::operator[](const index_t & i)
+const index_t & key_points::operator[](const index_t & i) const
 {
 	assert(i < n_vertices);
 	return kps[i]; 
+}
+
+const bool & key_points::operator()(const index_t & i) const
+{
+	assert(i < n_vertices);
+	return is_kp[i]; 
+}
+
+const size_t & key_points::size() const
+{
+	return n_kps;
 }
 
 void key_points::compute_kps(che * mesh)
@@ -63,5 +75,12 @@ void key_points::compute_kps(che * mesh)
 			he = next(he);
 		}
 	}
+	
+	// compute kps
+	memset(is_kp, 0, sizeof(bool) * n_vertices);
+
+	#pragma omp parallel for
+	for(index_t i = 0; i < n_kps; i++)
+		is_kp[kps[i]] = 1;
 }
 
