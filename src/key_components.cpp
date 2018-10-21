@@ -46,8 +46,6 @@ void key_components::compute_kcs(che * mesh, const key_points & kps)
 	geodesics fm(mesh, vector<index_t>(&kps[0], &kps[0] + kps.size()));
 	
 	radio *= fm.radio();
-	debug(radio)
-	debug(fm.radio())
 	for(index_t i = 0; i < n_vertices && fm[fm(i)] <= radio; i++)
 		for_star(he, mesh, fm(i)) join(fm(i), mesh->vt(next(he)));
 	

@@ -21,7 +21,6 @@ int viewer_main(int nargs, const char ** args)
 	viewer::add_process('E', "Fairing Spectral", viewer_process_fairing_spectral);
 
 	viewer::sub_menus.push_back("Geodesics");
-	viewer::add_process('F', "Fast Marching", viewer_process_fastmarching);
 	viewer::add_process('G', "Geodesics (FM)", viewer_process_geodesics_fm);
 	viewer::add_process('U', "Geodesics (PTP_CPU)", viewer_process_geodesics_ptp_cpu);
 	viewer::add_process('C', "Geodesics (PTP_GPU)", viewer_process_geodesics_ptp_gpu);
@@ -349,7 +348,7 @@ void viewer_process_key_components()
 	debug_me(APP_VIEWER)
 	
 	key_points kps(viewer::mesh());
-	key_components kcs(viewer::mesh(), kps, .50);
+	key_components kcs(viewer::mesh(), kps, .25);
 	
 	debug(kcs)
 	
@@ -588,26 +587,6 @@ void viewer_process_fairing_taubin()
 	delete fair;
 
 	viewer::mesh().update_normals();
-}
-
-void viewer_process_fastmarching()
-{
-	debug_me(APP_VIEWER)
-
-	if(!viewer::select_vertices.size()) return;
-
-	off shape(viewer::mesh()->filename());
-
-	#pragma omp parallel for
-	for(index_t v = 0; v < shape.get_nvertices(); v++)
-		shape(v) = viewer::mesh()->get_vertex(v);
-
-	TIC(load_time)
-	fastmarching fm(shape, viewer::select_vertices, INFINITY, true, false);
-	TOC(load_time)
-	debug(load_time)
-
-	viewer::mesh().update_colors(fm.distances);
 }
 
 void viewer_process_geodesics_fm()

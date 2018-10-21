@@ -51,7 +51,7 @@ const index_t & geodesics::operator()(const index_t & i) const
 const distance_t & geodesics::radio() const
 {
 	assert(n_sorted != 0);
-	return distances[n_sorted - 1];
+	return distances[farthest()];
 }
 
 const index_t & geodesics::farthest() const

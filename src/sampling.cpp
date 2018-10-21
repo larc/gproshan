@@ -1,6 +1,5 @@
 #include "sampling.h"
 #include "geodesics_ptp.h"
-#include "test.h"
 #include "che_off.h"
 
 #include <fstream>

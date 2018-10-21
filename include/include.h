@@ -23,7 +23,6 @@ typedef double percent_t;
 typedef real_t distance_t;
 typedef real_t area_t;
 typedef real_t angle_t;
-typedef std::pair<area_t,size_t> areapair_t;
 
 #define PATH_MDATA	std::string("../DATA/")
 #define PATH_DATA	std::string("../DATA/shapes_grande/")
