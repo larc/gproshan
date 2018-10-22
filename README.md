@@ -30,14 +30,18 @@ See the paper: [CHE: A scalable topological data structure for triangular meshes
 We proposed a CPU/GPU parallel algorithm to compute geodesics distances on triangular meshes. Our
 approach is competitive with the current methods and is simple to implement. Please cite our paper:
 
-[An Iterative Parallel Algorithm for Computing Geodesic Distances on Triangular Meshes]()
+[An Iterative Parallel Algorithm for Computing Geodesic Distances on Triangular Meshes](https://arxiv.org/abs/1810.08218)
 
 ```bibtex
-@article{ptp2018,
-	author	= { Luciano A. Romero Calla and Lizeth J. Fuentes Perez and Anselmo A. Montenegro and Marcos Lage },
+
+@ARTICLE{2018arXiv181008218R,
+	author	= { {Romero Calla}, L.~A. and {Fuentes Perez}, L.~J. and {Montenegro}, A.~A. and {Lage}, M. },
 	title	= { An Iterative Parallel Algorithm for Computing Geodesic Distances on Triangular Meshes },
-	year	= { 2018 },
-	url	= { }
+	journal	= { ArXiv e-prints },
+	eprint	= { 1810.08218 },
+	year	= 2018,
+	month	= oct,
+	url	= { https://arxiv.org/abs/1810.08218 }
 }
 ```
 
@@ -48,14 +52,18 @@ We proposed a Dictionary Learning and Sparse Coding framework, to solve the prob
 Inpainting, and Multiresolution on triangular meshes. This work is still in process. Please cite
 our work:
 
-[A Dictionary Learning-based framework on Triangular Meshes]()
+[A Dictionary Learning-based framework on Triangular Meshes](https://arxiv.org/abs/1810.08266)
 
 ```bibtex
-@article{dlspf2018,
-	author	= { Luciano A. Romero Calla and Lizeth J. Fuentes Perez and Anselmo A. Montenegro },
-	title	= { A Dictionary Learning-based framework on Triangular Meshes },
-	year	= { 2018 },
-	url	= { }
+
+@ARTICLE{2018arXiv181008266F,
+	author	= { {Fuentes Perez}, L.~J. and {Romero Calla}, L.~A. and {Montenegro}, A.~A. },
+	title	= { Dictionary Learning-based Inpainting on Triangular Meshes },
+	journal	= { ArXiv e-prints },
+	eprint	= { 1810.08266 },
+	year	= 2018,
+	month	= oct,
+	url	= { https://arxiv.org/abs/1810.08266 }
 }
 ```
 
