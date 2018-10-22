@@ -21,9 +21,9 @@ int viewer_main(int nargs, const char ** args)
 	viewer::add_process('E', "Fairing Spectral", viewer_process_fairing_spectral);
 
 	viewer::sub_menus.push_back("Geodesics");
-	viewer::add_process('G', "Geodesics (FM)", viewer_process_geodesics_fm);
+	viewer::add_process('F', "Geodesics (FM)", viewer_process_geodesics_fm);
 	viewer::add_process('U', "Geodesics (PTP_CPU)", viewer_process_geodesics_ptp_cpu);
-	viewer::add_process('C', "Geodesics (PTP_GPU)", viewer_process_geodesics_ptp_gpu);
+	viewer::add_process('G', "Geodesics (PTP_GPU)", viewer_process_geodesics_ptp_gpu);
 	#ifndef SINGLE_P
 		viewer::add_process('l', "Geodesics (HEAT_FLOW)", viewer_process_geodesics_heat_flow);
 	#endif
@@ -46,7 +46,7 @@ int viewer_main(int nargs, const char ** args)
 	viewer::add_process('W', "WKS (norm)", viewer_process_wks);
 	viewer::add_process('X', "Functional maps", viewer_process_functional_maps);
 	viewer::add_process('*', "Key Points (adaptive mesh)", viewer_process_key_points);
-	viewer::add_process('^', "Key Components", viewer_process_key_components);
+	viewer::add_process('C', "Key Components", viewer_process_key_components);
 
 	viewer::sub_menus.push_back("Repair Holes");
 	viewer::add_process('o', "Membrane surface", viewer_process_poisson_laplacian_1);
@@ -489,6 +489,9 @@ void viewer_process_multiplicate_vertices()
 void viewer_compute_toplesets()
 {
 	debug_me(APP_VIEWER)
+	
+	if(!viewer::select_vertices.size())
+		viewer::select_vertices.push_back(0);
 
 	index_t * toplesets = new index_t[viewer::mesh()->n_vertices()];
 	index_t * sorted = new index_t[viewer::mesh()->n_vertices()];

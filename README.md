@@ -90,8 +90,10 @@ Please cite our paper (in Spanish):
 ```
 
 Computing key-components depends on the accuracy and definition of the key points. We were inspired
-by the work of Ivan Sipiran (https://www.researchgate.net/publication/262350194_Key-component_detection_on_3D_meshes_using_local_features), he defined for the first time the notion of a key-component in meshes.
+by the [work of Ivan Sipiran](https://www.researchgate.net/publication/262350194_Key-component_detection_on_3D_meshes_using_local_features),
+he defined for the first time the notion of a key-component in meshes.
 We proposed a method based on geodesics to determine the key components.
+
 Please see and cite our final undergraduate project: [key-components report](http://repositorio.unsa.edu.pe/handle/UNSA/2575) (in Spanish).
 
 
