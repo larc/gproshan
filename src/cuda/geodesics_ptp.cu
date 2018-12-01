@@ -285,7 +285,11 @@ distance_t cu_update_step(CHE * mesh, const distance_t * dist, const index_t & h
 
 	if(dis >= 0)
 	{
-		p = delta + sqrt(dis);
+		#ifdef SINGLE_P
+			p = delta + sqrtf(dis);
+		#else
+			p = delta + sqrt(dis);
+		#endif
 		p /= Q[0][0] + Q[0][1] + Q[1][0] + Q[1][1];
 	}
 
