@@ -12,9 +12,14 @@ SINGLE_P =
 CC = g++
 LD = g++ -no-pie
 CUDA = nvcc -ccbin g++-7
-CFLAGS = -O3 -fopenmp $(INCLUDE_PATH) 
-CUDAFLAGS = --generate-code arch=compute_50,code=sm_50 \
-			--generate-code arch=compute_60,code=sm_60 \
+CFLAGS = -O3 -fopenmp $(INCLUDE_PATH)
+CUDAFLAGS = -arch=sm_50 \
+			-gencode=arch=compute_50,code=sm_50 \
+			-gencode=arch=compute_52,code=sm_52 \
+			-gencode=arch=compute_60,code=sm_60 \
+			-gencode=arch=compute_61,code=sm_61 \
+			-gencode=arch=compute_70,code=sm_70 \
+			-gencode=arch=compute_70,code=compute_70 \
 			-I./include/cuda -O3 -Xcompiler -fopenmp -D_FORCE_INLINES
 LFLAGS = -O3 -fopenmp $(LIBRARY_PATH) -lcublas -lcusolver -lcusparse -lcuda -lcudart -lX11 -lpthread
 LIBS = $(OPENGL_LIBS) $(SUITESPARSE_LIBS) $(BLAS_LIBS) -larmadillo -lsuperlu -lCGAL
