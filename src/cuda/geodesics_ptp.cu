@@ -249,7 +249,7 @@ void relax_ptp(CHE * mesh, distance_t * new_dist, distance_t * old_dist, index_t
 	}
 }
 
-__device__
+__forceinline__ __device__
 distance_t cu_update_step(CHE * mesh, const distance_t * dist, const index_t & he)
 {
 	index_t x[3];

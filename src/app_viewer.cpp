@@ -14,6 +14,8 @@ int viewer_main(int nargs, const char ** args)
 	for(int i = 1; i < nargs; i++)
 		meshes.push_back(new che_off(args[i]));
 	TOC(load_time)
+
+	debug(sizeof(real_t))
 	debug(load_time)
 
 	viewer::sub_menus.push_back("Fairing");

@@ -204,3 +204,71 @@ void relax_ptp_coalescence(CHE * mesh, distance_t * new_dist, distance_t * old_d
 	}
 }
 
+__forceinline__ __device__
+distance_t cu_update_step(CHE * mesh, const distance_t * dist, const index_t & he)
+{
+	index_t x[3];
+	x[0] = mesh->VT[cu_next(he)];
+	x[1] = mesh->VT[cu_prev(he)];
+	x[2] = mesh->VT[he];
+
+	vertex_cu X[2];
+	X[0] = mesh->GT[x[0]] - mesh->GT[x[2]];
+	X[1] = mesh->GT[x[1]] - mesh->GT[x[2]];
+
+	distance_t t[2];
+	t[0] = dist[x[0]];
+	t[1] = dist[x[1]];
+
+	distance_t q[2][2];
+	q[0][0] = (X[0], X[0]);
+	q[0][1] = (X[0], X[1]);
+	q[1][0] = (X[1], X[0]);
+	q[1][1] = (X[1], X[1]);
+
+	distance_t det = q[0][0] * q[1][1] - q[0][1] * q[1][0];
+	distance_t Q[2][2];
+	Q[0][0] = q[1][1] / det;
+	Q[0][1] = -q[0][1] / det;
+	Q[1][0] = -q[1][0] / det;
+	Q[1][1] = q[0][0] / det;
+
+	distance_t delta = t[0] * (Q[0][0] + Q[1][0]) + t[1] * (Q[0][1] + Q[1][1]);
+	distance_t dis = delta * delta - (Q[0][0] + Q[0][1] + Q[1][0] + Q[1][1]) * (t[0]*t[0]*Q[0][0] + t[0]*t[1]*(Q[1][0] + Q[0][1]) + t[1]*t[1]*Q[1][1] - 1);
+
+	distance_t p;
+
+	if(dis >= 0)
+	{
+		p = delta + sqrt(dis);
+		p /= Q[0][0] + Q[0][1] + Q[1][0] + Q[1][1];
+	}
+
+	distance_t tp[2];
+	tp[0] = t[0] - p;
+	tp[1] = t[1] - p;
+
+	vertex_cu n(tp[0] * (X[0][0]*Q[0][0] + X[1][0]*Q[1][0]) + tp[1] * (X[0][0]*Q[0][1] + X[1][0]*Q[1][1]),
+			 tp[0] * (X[0][1]*Q[0][0] + X[1][1]*Q[1][0]) + tp[1] * (X[0][1]*Q[0][1] + X[1][1]*Q[1][1]),
+			 tp[0] * (X[0][2]*Q[0][0] + X[1][2]*Q[1][0]) + tp[1] * (X[0][2]*Q[0][1] + X[1][2]*Q[1][1]) );
+
+	distance_t cond[2];
+	cond[0] = (X[0] , n);
+	cond[1] = (X[1] , n);
+
+	distance_t c[2];
+	c[0] = cond[0] * Q[0][0] + cond[1] * Q[0][1];
+	c[1] = cond[0] * Q[1][0] + cond[1] * Q[1][1];
+
+	if(t[0] == INFINITY || t[1] == INFINITY || dis < 0 || c[0] >= 0 || c[1] >= 0)
+	{
+		distance_t dp[2];
+		dp[0] = dist[x[0]] + *X[0];
+		dp[1] = dist[x[1]] + *X[1];
+
+		p = dp[dp[1] < dp[0]];
+	}
+
+	return p;
+}
+
