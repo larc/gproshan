@@ -190,6 +190,8 @@ void viewer_process_thresold()
 
 void viewer_process_functional_maps()
 {
+	debug_me(APP_VIEWER)
+
 	size_t K = 50;
 
 	a_sp_mat L, A;
@@ -200,7 +202,7 @@ void viewer_process_functional_maps()
 	a_vec eigval;
 	a_mat eigvec;
 
-	TIC(load_time) K = eigs_laplacian(eigval, eigvec, viewer::mesh(), L, K); TOC(load_time)
+	TIC(load_time) K = eigs_laplacian(eigval, eigvec, viewer::mesh(), L, A, K); TOC(load_time)
 	debug(load_time)
 	
 	debug(K)
@@ -235,7 +237,7 @@ void viewer_process_wks()
 	a_vec eigval;
 	a_mat eigvec;
 
-	TIC(load_time) K = eigs_laplacian(eigval, eigvec, viewer::mesh(), L, K); TOC(load_time)
+	TIC(load_time) K = eigs_laplacian(eigval, eigvec, viewer::mesh(), L, A, K); TOC(load_time)
 	debug(load_time)
 
 	distance_t max_s = 0;
@@ -271,7 +273,7 @@ void viewer_process_hks()
 	a_vec eigval;
 	a_mat eigvec;
 
-	TIC(load_time) K = eigs_laplacian(eigval, eigvec, viewer::mesh(), L, K); TOC(load_time)
+	TIC(load_time) K = eigs_laplacian(eigval, eigvec, viewer::mesh(), L, A, K); TOC(load_time)
 	debug(load_time)
 
 	if(!K) return;
@@ -285,7 +287,7 @@ void viewer_process_hks()
 		for(index_t k = 1; k < K; k++)
 			s(t) += exp(-abs(eigval(k)) * t) * eigvec(v, k) * eigvec(v, k);
 
-		viewer::vcolor(v) = norm(abs(arma::fft(s,128)));
+		viewer::vcolor(v) = norm(abs(arma::fft(s, 128)));
 		//viewer::vcolor(v) = norm(s);
 		max_s = max(max_s, viewer::vcolor(v));
 	}
@@ -309,7 +311,7 @@ void viewer_process_gps()
 	a_vec eigval;
 	a_mat eigvec;
 
-	TIC(load_time) K = eigs_laplacian(eigval, eigvec, viewer::mesh(), L, K); TOC(load_time)
+	TIC(load_time) K = eigs_laplacian(eigval, eigvec, viewer::mesh(), L, A, K); TOC(load_time)
 	debug(load_time)
 	eigvec = abs(eigvec);
 	eigvec.col(0).zeros();

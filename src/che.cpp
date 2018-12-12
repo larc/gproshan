@@ -1179,7 +1179,7 @@ void che::init(const size_t & n_v, const size_t & n_f)
 		return;
 	}
 
-	n_half_edges_ = P * n_faces_;
+	n_half_edges_ = che::P * n_faces_;
 	n_edges_ = 0; //n_half_edges_ / 2;	/**/
 
 	GT = new vertex[n_vertices_];
@@ -1217,9 +1217,11 @@ void che::update_evt_ot_et()
 				{
 					OT[he] = prev(h);
 					OT[prev(h)] = he;
+					break;
 				}
 			}
 		}
+		else assert(he == OT[OT[he]]);
 	}
 
 	//edge table

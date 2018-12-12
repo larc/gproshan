@@ -116,7 +116,7 @@ void geodesics::run_fastmarching(che * mesh, const vector<index_t> & sources, co
 
 	priority_queue<pair<distance_t, size_t>,
 			vector<pair<distance_t, size_t> >,
-			greater<pair<distance_t, size_t> > > cola;
+			greater<pair<distance_t, size_t> > > Q;
 
 	distance_t p;
 	index_t d; // dir propagation
@@ -131,20 +131,20 @@ void geodesics::run_fastmarching(che * mesh, const vector<index_t> & sources, co
 		distances[s] = 0;
 		if(clusters) clusters[s] = ++c;
 		color[s] = RED;
-		cola.push(make_pair(distances[s], s));
+		Q.push(make_pair(distances[s], s));
 	}
 
-	while(green_count-- && !cola.empty())
+	while(green_count-- && !Q.empty())
 	{
-		while(!cola.empty() && color[cola.top().second] == BLACK)
-			cola.pop();
+		while(!Q.empty() && color[Q.top().second] == BLACK)
+			Q.pop();
 
-		if(cola.empty()) break;
+		if(Q.empty()) break;
 
-		black_i = cola.top().second;
+		black_i = Q.top().second;
 		color[black_i] = BLACK;
-		cola.pop();
-
+		Q.pop();
+		
 		if(distances[black_i] > radio) break;
 
 		sorted_index[n_sorted++] = black_i;
@@ -174,7 +174,7 @@ void geodesics::run_fastmarching(che * mesh, const vector<index_t> & sources, co
 				}
 
 				if(distances[v] < INFINITY)
-					cola.push(make_pair(distances[v], v));
+					Q.push(make_pair(distances[v], v));
 			}
 		}
 	}

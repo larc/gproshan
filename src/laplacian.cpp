@@ -67,12 +67,12 @@ void laplacian(che * mesh, sp_mat_e & L, sp_mat_e & A)
 
 	L = D.transpose() * S * D;
 
-	A.resize(n_vertices, n_vertices);
+	A.reserve(VectorXi::Constant(n_vertices, 1));
 	for(index_t v = 0; v < n_vertices; v++)
 		A.insert(v, v) = mesh->area_vertex(v);
 }
 
-size_t eigs_laplacian(a_vec & eigval, a_mat & eigvec, che * mesh, const a_sp_mat & L, const size_t & K)
+size_t eigs_laplacian(a_vec & eigval, a_mat & eigvec, che * mesh, const a_sp_mat & L, const a_sp_mat & A, const size_t & K)
 {
 	debug_me(LAPLACIAN)
 
@@ -84,9 +84,12 @@ size_t eigs_laplacian(a_vec & eigval, a_mat & eigvec, che * mesh, const a_sp_mat
 
 	if(!eigval.load(feigval) || !eigvec.load(feigvec))
 	{
+	//	a_sp_mat D = sqrt(A);
+	//	D.for_each([](a_sp_mat::elem_type & val) { val = 1. / val; });
+
 		if(!eigs_sym(eigval, eigvec, L, K, "sa"))
 			return 0;
-
+		
 		eigval.save(feigval);
 		eigvec.save(feigvec);
 	}
