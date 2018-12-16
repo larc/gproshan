@@ -126,6 +126,10 @@ to generate the documentation in *html* and *LaTeX*.
 ## Viewer
 The viewer was initially based in the viewer of [https://github.com/dgpdec/course](https://github.com/dgpdec/course). The current viewer uses VAO and VBO to render, and the shaders have been modified and upgraded.
 
+## License
+
+MIT License
+
 ## Authors
 - [Lizeth Joseline Fuentes Pérez](https://github.com/lishh)
 - [Luciano Arnaldo Romero Calla](https://github.com/larc)
