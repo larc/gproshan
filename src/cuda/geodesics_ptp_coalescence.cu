@@ -10,6 +10,10 @@
 #include <cassert>
 #include <cublas_v2.h>
 
+#include <thrust/count.h>
+#include <thrust/device_vector.h>
+#include <thrust/execution_policy.h>
+
 distance_t * parallel_toplesets_propagation_coalescence_gpu(che * mesh, const vector<index_t> & sources, const vector<index_t> & limits, const index_t * sorted_index, double & time_ptp, index_t * clusters)
 {
 	// sort data by levels, must be improve the coalescence
@@ -135,14 +139,18 @@ index_t run_ptp_coalescence_gpu(CHE * d_mesh, const index_t & n_vertices, distan
 		cudaMemcpy(d_clusters[1], h_clusters, sizeof(index_t) * n_vertices, cudaMemcpyHostToDevice);
 	}
 
+	distance_t * error;
+	cudaMalloc(&error, sizeof(distance_t) * n_vertices);
+
 	index_t d = 0;
-	index_t start, end;
-	index_t iter = iterations(limits);
-	for(index_t i = 2; i < iter; i++)
+	index_t start, end, n_cond;
+	index_t i = 1, j = 2;
+
+	while(i < j)
 	{
-		start = start_v(i, limits);
-		end = end_v(i, limits);
-		if(end - start == 0) break;
+		start = limits[i];
+		end = limits[j];
+		n_cond = limits[i + 1] - start;
 
 		if(h_clusters)
 			relax_ptp_coalescence <<< NB(end - start), NT >>> (d_mesh, d_dist[!d], d_dist[d], d_clusters[!d], d_clusters[d], end, start);
@@ -150,9 +158,17 @@ index_t run_ptp_coalescence_gpu(CHE * d_mesh, const index_t & n_vertices, distan
 			relax_ptp_coalescence <<< NB(end - start), NT >>> (d_mesh, d_dist[!d], d_dist[d], end, start);
 		
 		cudaDeviceSynchronize();
+
+		relative_error <<< NB(n_cond), NT >>>(error + start, d_dist[!d] + start, d_dist[d] + start, n_cond);
+		cudaDeviceSynchronize();
+
+		if(n_cond == thrust::count_if(thrust::device, error + start, error + start + n_cond, is_ok()))
+			i++;
+		j += j < limits.size() - 1;
 		d = !d;
 	}
-
+	
+	cudaFree(error);
 	return d;
 }
 
@@ -201,6 +217,21 @@ void relax_ptp_coalescence(CHE * mesh, distance_t * new_dist, distance_t * old_d
 				}
 			}
 		}
+	}
+}
+
+__global__
+void relative_error(distance_t * error, distance_t * new_dist, distance_t * old_dist, index_t n)
+{
+	index_t v = blockDim.x * blockIdx.x + threadIdx.x;
+
+	if(v < n)
+	{
+		#ifdef SINGLE_P
+			error[v] = fabsf(new_dist[v] - old_dist[v]) / old_dist[v];
+		#else
+			error[v] = fabs(new_dist[v] - old_dist[v]) / old_dist[v];
+		#endif
 	}
 }
 
