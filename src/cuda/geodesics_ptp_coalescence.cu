@@ -60,6 +60,9 @@ distance_t * parallel_toplesets_propagation_coalescence_gpu(che * mesh, const ve
 	cudaMalloc(&d_dist[0], sizeof(distance_t) * h_mesh->n_vertices);
 	cudaMalloc(&d_dist[1], sizeof(distance_t) * h_mesh->n_vertices);
 
+	distance_t * d_error;
+	cudaMalloc(&d_error, sizeof(distance_t) * h_mesh->n_vertices);
+
 	index_t d;
 	if(clusters)
 	{
@@ -69,7 +72,7 @@ distance_t * parallel_toplesets_propagation_coalescence_gpu(che * mesh, const ve
 		cudaMalloc(&d_clusters[0], sizeof(index_t) * h_mesh->n_vertices);
 		cudaMalloc(&d_clusters[1], sizeof(index_t) * h_mesh->n_vertices);
 
-		d = run_ptp_coalescence_gpu(d_mesh, h_mesh->n_vertices, h_dist, d_dist, sources, limits, inv, h_clusters, d_clusters);
+		d = run_ptp_coalescence_gpu(d_mesh, h_mesh->n_vertices, h_dist, d_dist, sources, limits, inv, d_error, h_clusters, d_clusters);
 		cudaMemcpy(h_clusters, d_clusters[d], sizeof(index_t) * h_mesh->n_vertices, cudaMemcpyDeviceToHost);
 
 		#pragma omp parallel for
@@ -81,13 +84,11 @@ distance_t * parallel_toplesets_propagation_coalescence_gpu(che * mesh, const ve
 
 		delete [] h_clusters;
 	}
-	else
-	{
-		d = run_ptp_coalescence_gpu(d_mesh, h_mesh->n_vertices, h_dist, d_dist, sources, limits, inv);
-	}
+	else d = run_ptp_coalescence_gpu(d_mesh, h_mesh->n_vertices, h_dist, d_dist, sources, limits, inv, d_error);
 
 	cudaMemcpy(h_dist, d_dist[d], sizeof(distance_t) * h_mesh->n_vertices, cudaMemcpyDeviceToHost);
 
+	cudaFree(d_error);
 	cudaFree(d_dist[0]);
 	cudaFree(d_dist[1]);
 	cuda_free_CHE(dd_mesh, d_mesh);
@@ -116,7 +117,7 @@ distance_t * parallel_toplesets_propagation_coalescence_gpu(che * mesh, const ve
 	return dist;
 }
 
-index_t run_ptp_coalescence_gpu(CHE * d_mesh, const index_t & n_vertices, distance_t * h_dist, distance_t ** d_dist, const vector<index_t> & sources, const vector<index_t> & limits, const index_t * inv, index_t * h_clusters, index_t ** d_clusters)
+index_t run_ptp_coalescence_gpu(CHE * d_mesh, const index_t & n_vertices, distance_t * h_dist, distance_t ** d_dist, const vector<index_t> & sources, const vector<index_t> & limits, const index_t * inv, distance_t * d_error, index_t * h_clusters, index_t ** d_clusters)
 {
 	#pragma omp parallel for
 	for(index_t v = 0; v < n_vertices; v++)
@@ -139,9 +140,6 @@ index_t run_ptp_coalescence_gpu(CHE * d_mesh, const index_t & n_vertices, distan
 		cudaMemcpy(d_clusters[1], h_clusters, sizeof(index_t) * n_vertices, cudaMemcpyHostToDevice);
 	}
 
-	distance_t * error;
-	cudaMalloc(&error, sizeof(distance_t) * n_vertices);
-
 	index_t d = 0;
 	index_t start, end, n_cond;
 	index_t i = 1, j = 2;
@@ -159,16 +157,15 @@ index_t run_ptp_coalescence_gpu(CHE * d_mesh, const index_t & n_vertices, distan
 		
 		cudaDeviceSynchronize();
 
-		relative_error <<< NB(n_cond), NT >>>(error + start, d_dist[!d] + start, d_dist[d] + start, n_cond);
+		relative_error <<< NB(n_cond), NT >>>(d_error + start, d_dist[!d] + start, d_dist[d] + start, n_cond);
 		cudaDeviceSynchronize();
 
-		if(n_cond == thrust::count_if(thrust::device, error + start, error + start + n_cond, is_ok()))
+		if(n_cond == thrust::count_if(thrust::device, d_error + start, d_error + start + n_cond, is_ok()))
 			i++;
 		j += j < limits.size() - 1;
 		d = !d;
 	}
 	
-	cudaFree(error);
 	return d;
 }
 

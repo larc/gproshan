@@ -100,6 +100,9 @@ double * times_farthest_point_sampling_ptp_coalescence_gpu(che * mesh, vector<in
 	cudaMalloc(&d_dist[0], sizeof(distance_t) * mesh->n_vertices());
 	cudaMalloc(&d_dist[1], sizeof(distance_t) * mesh->n_vertices());
 
+	distance_t * d_error;
+	cudaMalloc(&d_error, sizeof(distance_t) * mesh->n_vertices());
+
 	vector<index_t> limits;
 	index_t * toplesets = new index_t[mesh->n_vertices()];
 	index_t * sorted_index = new index_t[mesh->n_vertices()];
@@ -145,7 +148,7 @@ double * times_farthest_point_sampling_ptp_coalescence_gpu(che * mesh, vector<in
 		cuda_create_CHE(h_mesh, dd_mesh, d_mesh);
 
 		// exec algorithm
-		d = run_ptp_coalescence_gpu(d_mesh, h_mesh->n_vertices, h_dist, d_dist, samples, limits, inv);
+		d = run_ptp_coalescence_gpu(d_mesh, h_mesh->n_vertices, h_dist, d_dist, samples, limits, inv, d_error);
 
 		// free memory
 		cuda_free_CHE(dd_mesh, d_mesh);
@@ -179,6 +182,7 @@ double * times_farthest_point_sampling_ptp_coalescence_gpu(che * mesh, vector<in
 	delete [] toplesets;
 	delete [] sorted_index;
 
+	cudaFree(d_error);
 	cudaFree(d_dist[0]);
 	cudaFree(d_dist[1]);
 
