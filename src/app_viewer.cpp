@@ -192,7 +192,7 @@ void viewer_process_functional_maps()
 {
 	debug_me(APP_VIEWER)
 
-	size_t K = 50;
+	size_t K = 100;
 
 	a_sp_mat L, A;
 
@@ -262,7 +262,7 @@ void viewer_process_hks()
 {
 	debug_me(APP_VIEWER)
 
-	size_t K = 50;
+	size_t K = 100;
 	size_t T = 100;
 
 	a_sp_mat L, A;

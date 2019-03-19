@@ -18,7 +18,7 @@ void relative_error(distance_t * error, distance_t * new_dist, distance_t * old_
 struct is_ok
 {
 	__host__ __device__
-	bool operator()(distance_t & val)
+	bool operator()(const distance_t & val) const
 	{
 		return val < 1e-5;
 	}

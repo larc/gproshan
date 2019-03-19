@@ -142,7 +142,7 @@ index_t run_ptp_coalescence_gpu(CHE * d_mesh, const index_t & n_vertices, distan
 
 	index_t d = 0;
 	index_t start, end, n_cond;
-	index_t i = 1, j = 2;
+	index_t i = 1, j = 2, n_iter = 0;
 
 	while(i < j)
 	{
@@ -156,7 +156,7 @@ index_t run_ptp_coalescence_gpu(CHE * d_mesh, const index_t & n_vertices, distan
 			relax_ptp_coalescence <<< NB(end - start), NT >>> (d_mesh, d_dist[!d], d_dist[d], end, start);
 		
 		cudaDeviceSynchronize();
-
+		
 		relative_error <<< NB(n_cond), NT >>>(d_error + start, d_dist[!d] + start, d_dist[d] + start, n_cond);
 		cudaDeviceSynchronize();
 
@@ -164,7 +164,10 @@ index_t run_ptp_coalescence_gpu(CHE * d_mesh, const index_t & n_vertices, distan
 			i++;
 		j += j < limits.size() - 1;
 		d = !d;
+		n_iter++;
 	}
+
+	debug(n_iter)
 	
 	return d;
 }
