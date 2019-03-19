@@ -31,3 +31,5 @@ double * times_farthest_point_sampling_ptp_coalescence_gpu(che * mesh, vector<in
 /// Geodesics code: http://code.google.com/p/geodesic/
 distance_t * load_exact_geodesics(const string & file, const size_t & n);
 
+distance_t compute_error(const distance_t * dist, const distance_t * exact, const size_t & n, const size_t & s);
+

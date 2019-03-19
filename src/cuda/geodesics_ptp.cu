@@ -6,6 +6,10 @@
 #include <cassert>
 #include <cublas_v2.h>
 
+#include <thrust/count.h>
+#include <thrust/device_vector.h>
+#include <thrust/execution_policy.h>
+
 distance_t * parallel_toplesets_propagation_gpu(che * mesh, const vector<index_t> & sources, const vector<index_t> & limits, const index_t * sorted_index, double & time_ptp, index_t * clusters)
 {
 	cudaDeviceReset();
@@ -31,6 +35,9 @@ distance_t * parallel_toplesets_propagation_gpu(che * mesh, const vector<index_t
 	index_t * d_sorted;
 	cudaMalloc(&d_sorted, sizeof(index_t) * h_mesh->n_vertices);
 
+	distance_t * d_error;
+	cudaMalloc(&d_error, sizeof(distance_t) * h_mesh->n_vertices);
+	
 	index_t d;
 	if(clusters)
 	{
@@ -38,7 +45,7 @@ distance_t * parallel_toplesets_propagation_gpu(che * mesh, const vector<index_t
 		cudaMalloc(&d_clusters[0], sizeof(index_t) * h_mesh->n_vertices);
 		cudaMalloc(&d_clusters[1], sizeof(index_t) * h_mesh->n_vertices);
 
-		d = run_ptp_gpu(d_mesh, h_mesh->n_vertices, h_dist, d_dist, sources, limits, sorted_index, d_sorted, clusters, d_clusters);
+		d = run_ptp_gpu(d_mesh, h_mesh->n_vertices, h_dist, d_dist, sources, limits, sorted_index, d_sorted, d_error, clusters, d_clusters);
 		cudaMemcpy(clusters, d_clusters[d], sizeof(index_t) * h_mesh->n_vertices, cudaMemcpyDeviceToHost);
 
 		cudaFree(d_clusters[0]);
@@ -46,11 +53,12 @@ distance_t * parallel_toplesets_propagation_gpu(che * mesh, const vector<index_t
 	}
 	else
 	{
-		d = run_ptp_gpu(d_mesh, h_mesh->n_vertices, h_dist, d_dist, sources, limits, sorted_index, d_sorted);
+		d = run_ptp_gpu(d_mesh, h_mesh->n_vertices, h_dist, d_dist, sources, limits, sorted_index, d_sorted, d_error);
 	}
 
 	cudaMemcpy(h_dist, d_dist[d], sizeof(distance_t) * h_mesh->n_vertices, cudaMemcpyDeviceToHost);
-
+	
+	cudaFree(d_error);
 	cudaFree(d_dist[0]);
 	cudaFree(d_dist[1]);
 	cudaFree(d_sorted);
@@ -93,6 +101,9 @@ distance_t farthest_point_sampling_ptp_gpu(che * mesh, vector<index_t> & samples
 	cudaMalloc(&d_dist[0], sizeof(distance_t) * h_mesh->n_vertices);
 	cudaMalloc(&d_dist[1], sizeof(distance_t) * h_mesh->n_vertices);
 
+	distance_t * d_error;
+	cudaMalloc(&d_error, sizeof(distance_t) * h_mesh->n_vertices);
+
 	index_t * d_sorted;
 	cudaMalloc(&d_sorted, sizeof(index_t) * h_mesh->n_vertices);
 
@@ -116,7 +127,7 @@ distance_t farthest_point_sampling_ptp_gpu(che * mesh, vector<index_t> & samples
 		limits.clear();
 		mesh->compute_toplesets(toplesets, sorted_index, limits, samples);
 
-		d = run_ptp_gpu(d_mesh, h_mesh->n_vertices, h_dist, d_dist, samples, limits, sorted_index, d_sorted);
+		d = run_ptp_gpu(d_mesh, h_mesh->n_vertices, h_dist, d_dist, samples, limits, sorted_index, d_sorted, d_error);
 
 		// 1 indexing
 		#ifdef SINGLE_P
@@ -136,7 +147,8 @@ distance_t farthest_point_sampling_ptp_gpu(che * mesh, vector<index_t> & samples
 	delete [] h_dist;
 	delete [] toplesets;
 	delete [] sorted_index;
-
+	
+	cudaFree(d_error);
 	cudaFree(d_dist[0]);
 	cudaFree(d_dist[1]);
 	cudaFree(d_sorted);
@@ -154,7 +166,7 @@ distance_t farthest_point_sampling_ptp_gpu(che * mesh, vector<index_t> & samples
 	return max_dist;
 }
 
-index_t run_ptp_gpu(CHE * d_mesh, const index_t & n_vertices, distance_t * h_dist, distance_t ** d_dist, const vector<index_t> & sources, const vector<index_t> & limits, const index_t * h_sorted, index_t * d_sorted, index_t * h_clusters, index_t ** d_clusters)
+index_t run_ptp_gpu(CHE * d_mesh, const index_t & n_vertices, distance_t * h_dist, distance_t ** d_dist, const vector<index_t> & sources, const vector<index_t> & limits, const index_t * h_sorted, index_t * d_sorted, distance_t * d_error, index_t * h_clusters, index_t ** d_clusters)
 {
 	#pragma omp parallel for
 	for(index_t v = 0; v < n_vertices; v++)
@@ -179,20 +191,29 @@ index_t run_ptp_gpu(CHE * d_mesh, const index_t & n_vertices, distance_t * h_dis
 	}
 
 	index_t d = 0;
-	index_t start, end;
-	index_t iter = iterations(limits);
-	for(index_t i = 2; i < iter; i++)
-	{
-		start = start_v(i, limits);
-		end = end_v(i, limits);
-		if(end - start == 0) break;
+	index_t start, end, n_cond;
+	index_t i = 1, j = 2;
 
+	while(i < j)
+	{
+		start = limits[i];
+		end = limits[j];
+		n_cond = limits[i + 1] - start;
+		
 		if(h_clusters)
 			relax_ptp <<< NB(end - start), NT >>> (d_mesh, d_dist[!d], d_dist[d], d_clusters[!d], d_clusters[d], d_sorted, end, start);
 		else
 			relax_ptp <<< NB(end - start), NT >>> (d_mesh, d_dist[!d], d_dist[d], d_sorted, end, start);
 
 		cudaDeviceSynchronize();
+
+		relative_error <<< NB(n_cond), NT >>> (d_error, d_dist[!d], d_dist[d], start, start + n_cond, d_sorted);
+		cudaDeviceSynchronize();
+
+		if(n_cond == thrust::count_if(thrust::device, d_error + start, d_error + start + n_cond, is_ok()))
+			i++;
+		j += j < limits.size() - 1;
+		
 		d = !d;
 	}
 
@@ -206,7 +227,7 @@ void relax_ptp(CHE * mesh, distance_t * new_dist, distance_t * old_dist, index_t
 
 	if(v < end)
 	{
-		v = sorted ? sorted[v] : v;
+		v = sorted[v];
 		if(v < mesh->n_vertices)
 		{
 			new_dist[v] = old_dist[v];
@@ -229,7 +250,7 @@ void relax_ptp(CHE * mesh, distance_t * new_dist, distance_t * old_dist, index_t
 
 	if(v < end)
 	{
-		v = sorted ? sorted[v] : v;
+		v = sorted[v];
 		if(v < mesh->n_vertices)
 		{
 			new_dist[v] = old_dist[v];
@@ -246,6 +267,23 @@ void relax_ptp(CHE * mesh, distance_t * new_dist, distance_t * old_dist, index_t
 				}
 			}
 		}
+	}
+}
+
+__global__
+void relative_error(distance_t * error, const distance_t * new_dist, const distance_t * old_dist, const index_t start, const index_t end, const index_t * sorted)
+{
+	index_t i = blockDim.x * blockIdx.x + threadIdx.x + start;
+
+	if(i < end)
+	{
+		index_t v = sorted ? sorted[i] : i;
+
+		#ifdef SINGLE_P
+			error[i] = fabsf(new_dist[v] - old_dist[v]) / old_dist[v];
+		#else
+			error[i] = fabs(new_dist[v] - old_dist[v]) / old_dist[v];
+		#endif
 	}
 }
 

@@ -142,7 +142,7 @@ index_t run_ptp_coalescence_gpu(CHE * d_mesh, const index_t & n_vertices, distan
 
 	index_t d = 0;
 	index_t start, end, n_cond;
-	index_t i = 1, j = 2, n_iter = 0;
+	index_t i = 1, j = 2;
 
 	while(i < j)
 	{
@@ -157,18 +157,15 @@ index_t run_ptp_coalescence_gpu(CHE * d_mesh, const index_t & n_vertices, distan
 		
 		cudaDeviceSynchronize();
 		
-		relative_error <<< NB(n_cond), NT >>>(d_error + start, d_dist[!d] + start, d_dist[d] + start, n_cond);
+		relative_error <<< NB(n_cond), NT >>>(d_error, d_dist[!d], d_dist[d], start, start + n_cond);
 		cudaDeviceSynchronize();
 
 		if(n_cond == thrust::count_if(thrust::device, d_error + start, d_error + start + n_cond, is_ok()))
 			i++;
 		j += j < limits.size() - 1;
 		d = !d;
-		n_iter++;
 	}
 
-	debug(n_iter)
-	
 	return d;
 }
 
@@ -217,21 +214,6 @@ void relax_ptp_coalescence(CHE * mesh, distance_t * new_dist, distance_t * old_d
 				}
 			}
 		}
-	}
-}
-
-__global__
-void relative_error(distance_t * error, distance_t * new_dist, distance_t * old_dist, index_t n)
-{
-	index_t v = blockDim.x * blockIdx.x + threadIdx.x;
-
-	if(v < n)
-	{
-		#ifdef SINGLE_P
-			error[v] = fabsf(new_dist[v] - old_dist[v]) / old_dist[v];
-		#else
-			error[v] = fabs(new_dist[v] - old_dist[v]) / old_dist[v];
-		#endif
 	}
 }
 

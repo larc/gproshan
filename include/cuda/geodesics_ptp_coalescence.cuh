@@ -12,17 +12,5 @@ void relax_ptp_coalescence(CHE * mesh, distance_t * new_dist, distance_t * old_d
 __global__
 void relax_ptp_coalescence(CHE * mesh, distance_t * new_dist, distance_t * old_dist, index_t end, index_t start = 0);
 
-__global__
-void relative_error(distance_t * error, distance_t * new_dist, distance_t * old_dist, index_t n);
-
-struct is_ok
-{
-	__host__ __device__
-	bool operator()(const distance_t & val) const
-	{
-		return val < 1e-5;
-	}
-};
-
 #endif // GEODESICS_PTP_COALESCENCE_CUH
 

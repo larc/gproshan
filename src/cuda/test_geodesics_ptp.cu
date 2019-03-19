@@ -74,6 +74,9 @@ double * times_farthest_point_sampling_ptp_gpu(che * mesh, vector<index_t> & sam
 	cudaMalloc(&d_dist[0], sizeof(distance_t) * h_mesh->n_vertices);
 	cudaMalloc(&d_dist[1], sizeof(distance_t) * h_mesh->n_vertices);
 
+	distance_t * d_error;
+	cudaMalloc(&d_error, sizeof(distance_t) * h_mesh->n_vertices);
+
 	index_t * d_sorted;
 	cudaMalloc(&d_sorted, sizeof(index_t) * h_mesh->n_vertices);
 
@@ -102,7 +105,7 @@ double * times_farthest_point_sampling_ptp_gpu(che * mesh, vector<index_t> & sam
 		limits.clear();
 		mesh->compute_toplesets(toplesets, sorted_index, limits, samples);
 
-		d = run_ptp_gpu(d_mesh, h_mesh->n_vertices, h_dist, d_dist, samples, limits, sorted_index, d_sorted);
+		d = run_ptp_gpu(d_mesh, h_mesh->n_vertices, h_dist, d_dist, samples, limits, sorted_index, d_sorted, d_error);
 
 		// 1 indexing
 		#ifdef SINGLE_P
@@ -128,7 +131,8 @@ double * times_farthest_point_sampling_ptp_gpu(che * mesh, vector<index_t> & sam
 	delete [] h_dist;
 	delete [] toplesets;
 	delete [] sorted_index;
-
+	
+	cudaFree(d_error);
 	cudaFree(d_dist[0]);
 	cudaFree(d_dist[1]);
 	cudaFree(d_sorted);
@@ -166,21 +170,14 @@ distance_t * iter_error_run_ptp_gpu(CHE * d_mesh, const index_t & n_vertices, di
 		start = start_v(i, limits);
 		end = end_v(i, limits);
 
+		if(end == start) break;
+
 		relax_ptp <<< NB(end - start), NT >>> (d_mesh, d_dist[!d], d_dist[d], d_sorted, end, start);
 		cudaMemcpy(h_dist, d_dist[!d], sizeof(distance_t) * n_vertices, cudaMemcpyDeviceToHost);
 		
 		// calculating iteration error
 		if(i >= limits.size())
-		{
-			distance_t & error = dist_error[e++] = 0;
-
-			#pragma omp parallel for reduction(+: error)
-			for(index_t v = 0; v < n_vertices; v++)
-				if(exact_dist[v] > 0)
-					error += abs(h_dist[v] - exact_dist[v]) / exact_dist[v];
-
-			error /= n_vertices - sources.size();
-		}
+			dist_error[e++] = compute_error(h_dist, exact_dist, n_vertices, sources.size());
 
 		d = !d;
 	}

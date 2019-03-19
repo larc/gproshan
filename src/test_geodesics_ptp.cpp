@@ -181,6 +181,7 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 			os << i << " " << iter_error[j] << endl;
 		os.close();
 
+
 		// FARTHEST POINT SAMPLING _________________________________________________________________
 		
 		size_t i_samples = source.size();
@@ -218,11 +219,7 @@ double test_fast_marching(distance_t & error, const distance_t * exact, che * me
 
 	geodesics fm(mesh, source, geodesics::FM);
 
-	error = 0;
-	for(index_t v = 0; v < mesh->n_vertices(); v++)
-		if(exact[v] > 0) error += abs(fm[v] - exact[v]) / exact[v];
-	error *= 100;
-	error /= mesh->n_vertices() - source.size();
+	error = compute_error(&fm[0], exact, mesh->n_vertices(), source.size());
 
 	return seconds;
 }
@@ -240,13 +237,10 @@ double test_ptp_gpu(distance_t & error, const distance_t * exact, che * mesh, co
 		seconds = min(seconds, t);
 	}
 
-	error = 0;
-	for(index_t v = 0; v < mesh->n_vertices(); v++)
-		if(exact[v] > 0) error += abs(dist[v] - exact[v]) / exact[v];
-	error *= 100;
-	error /= mesh->n_vertices() - source.size();
-	
+	error = compute_error(dist, exact, mesh->n_vertices(), source.size());
+
 	delete [] dist;
+	
 	return seconds;
 }
 
@@ -265,13 +259,10 @@ double test_ptp_cpu(distance_t & error, const distance_t * exact, che * mesh, co
 		seconds = min(seconds, t);
 	}
 
-	error = 0;
-	for(index_t v = 0; v < mesh->n_vertices(); v++)
-		if(exact[v] > 0) error += abs(dist[v] - exact[v]) / exact[v];
-	error *= 100;
-	error /= mesh->n_vertices() - source.size();
+	error = compute_error(dist, exact, mesh->n_vertices(), source.size());
 	
 	delete [] dist;
+
 	return seconds;
 }
 
@@ -290,11 +281,7 @@ double test_heat_method_cholmod(distance_t & error, double & stime, const distan
 		stime = min(st, stime);
 	}
 
-	error = 0;
-	for(index_t v = 0; v < mesh->n_vertices(); v++)
-		if(exact[v] > 0) error += abs(dist[v] - exact[v]) / exact[v];
-	error *= 100;
-	error /= mesh->n_vertices() - source.size();
+	error = compute_error(dist, exact, mesh->n_vertices(), source.size());
 
 	delete [] dist;
 
@@ -317,11 +304,7 @@ double test_heat_method_gpu(distance_t & error, double & stime, const distance_t
 		stime = min(st, stime);
 	}
 
-	error = 0;
-	for(index_t v = 0; v < mesh->n_vertices(); v++)
-		if(exact[v] > 0) error += abs(dist[v] - exact[v]) / exact[v];
-	error *= 100;
-	error /= mesh->n_vertices() - source.size();
+	error = compute_error(dist, exact, mesh->n_vertices(), source.size());
 
 	delete [] dist;
 
@@ -340,5 +323,16 @@ distance_t * load_exact_geodesics(const string & file, const size_t & n)
 	is.close();
 	
 	return exact;
+}
+
+distance_t compute_error(const distance_t * dist, const distance_t * exact, const size_t & n, const size_t & s)
+{
+	distance_t error = 0;
+
+	#pragma omp parallel for reduction(+: error)
+	for(index_t v = 0; v < n; v++)
+		if(exact[v] > 0) error += abs(dist[v] - exact[v]) / exact[v];
+
+	return error * 100 / (n - s);
 }
 
