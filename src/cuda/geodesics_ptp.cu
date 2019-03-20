@@ -212,7 +212,7 @@ index_t run_ptp_gpu(CHE * d_mesh, const index_t & n_vertices, distance_t * h_dis
 
 		if(n_cond == thrust::count_if(thrust::device, d_error + start, d_error + start + n_cond, is_ok()))
 			i++;
-		j += j < limits.size() - 1;
+		if(j < limits.size() - 1) j++;
 		
 		d = !d;
 	}
@@ -357,5 +357,11 @@ distance_t cu_update_step(CHE * mesh, const distance_t * dist, const index_t & h
 	}
 
 	return p;
+}
+
+__host__ __device__
+bool is_ok::operator()(const distance_t & val) const
+{
+	return val < PTP_TOL;
 }
 

@@ -8,6 +8,8 @@
 
 #include "che.h"
 
+#define PTP_TOL 1e-3
+
 index_t iterations(const vector<index_t> &);
 index_t start_v(const index_t & i, const vector<index_t> & limits);
 index_t end_v(const index_t & i, const vector<index_t> & limits);

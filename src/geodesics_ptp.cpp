@@ -20,6 +20,7 @@ index_t end_v(const index_t & i, const vector<index_t> & limits)
 distance_t * parallel_toplesets_propagation_cpu(che * mesh, const vector<index_t> & sources, const vector<index_t> & limits, const index_t * sorted_index, index_t * clusters)
 {
 	distance_t * dist[2] = {new distance_t[mesh->n_vertices()], new distance_t[mesh->n_vertices()]};
+	distance_t * error = new distance_t[mesh->n_vertices()];
 
 	#pragma omp parallel for
 	for(index_t v = 0; v < mesh->n_vertices(); v++)
@@ -31,13 +32,15 @@ distance_t * parallel_toplesets_propagation_cpu(che * mesh, const vector<index_t
 		if(clusters) clusters[sources[i]] = i + 1;
 	}
 
-	index_t d = 1;
-	index_t start, end;
-	index_t iter = iterations(limits);
-	for(index_t i = 2; i < iter; i++)
+	index_t d = 0;
+	index_t start, end, n_cond, count;
+	index_t i = 1, j = 2;
+
+	while(i < j)
 	{
-		start = start_v(i, limits);
-		end = end_v(i, limits);
+		start = limits[i];
+		end = limits[j];
+		n_cond = limits[i + 1] - start;
 
 		#pragma omp parallel for
 		for(index_t vi = start; vi < end; vi++)
@@ -52,16 +55,34 @@ distance_t * parallel_toplesets_propagation_cpu(che * mesh, const vector<index_t
 				if(p < dist[!d][v])
 				{
 					dist[!d][v] = p;
+
 					if(clusters)
 						clusters[v] = clusters[mesh->vt(prev(he))] != NIL ? clusters[mesh->vt(prev(he))] : clusters[mesh->vt(next(he))];
 				}
 			}
 		}
 
+		#pragma omp parallel for
+		for(index_t vi = start; vi < start + n_cond; vi++)
+		{
+			const index_t & v = sorted_index[vi];
+			error[vi] = abs(dist[!d][v] - dist[d][v]) / dist[d][v];
+		}
+
+		count = 0;
+		#pragma omp parallel for reduction(+: count)
+		for(index_t vi = start; vi < start + n_cond; vi++)
+			count += error[vi] < PTP_TOL;
+
+		if(n_cond == count) i++;
+		if(j < limits.size() - 1) j++;
+
 		d = !d;
 	}
-
+	
+	delete [] error;
 	delete [] dist[d];
+
 	return dist[!d];
 }
 

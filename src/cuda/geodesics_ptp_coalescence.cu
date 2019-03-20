@@ -162,7 +162,7 @@ index_t run_ptp_coalescence_gpu(CHE * d_mesh, const index_t & n_vertices, distan
 
 		if(n_cond == thrust::count_if(thrust::device, d_error + start, d_error + start + n_cond, is_ok()))
 			i++;
-		j += j < limits.size() - 1;
+		if(j < limits.size() - 1) j++;
 		d = !d;
 	}
 

@@ -20,13 +20,11 @@ void relax_ptp(CHE * mesh, distance_t * new_dist, distance_t * old_dist, index_t
 __global__
 void relative_error(distance_t * error, const distance_t * new_dist, const distance_t * old_dist, const index_t start, const index_t end, const index_t * sorted = NULL);
 
+
 struct is_ok
 {
 	__host__ __device__
-	bool operator()(const distance_t & val) const
-	{
-		return val < 1e-5;
-	}
+	bool operator()(const distance_t & val) const;
 };
 
 #endif // GEODESICS_PTP_CUH
