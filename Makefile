@@ -11,7 +11,7 @@ SINGLE_P =
 
 CC = g++
 LD = g++ -no-pie
-CUDA = nvcc -ccbin g++-7
+CUDA = nvcc
 CFLAGS = -O3 -fopenmp $(INCLUDE_PATH)
 CUDAFLAGS = -arch=sm_50 \
 			-gencode=arch=compute_50,code=sm_50 \
