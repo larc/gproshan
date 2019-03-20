@@ -2,6 +2,7 @@
 
 #include "geodesics_ptp_coalescence.cuh"
 #include "geodesics_ptp.h"
+#include "test_geodesics_ptp.h"
 
 #include "che_off.h"
 
@@ -222,16 +223,7 @@ distance_t * iter_error_run_ptp_coalescence_gpu(CHE * d_mesh, const index_t & n_
 		
 		// calculating iteration error
 		if(i >= limits.size())
-		{
-			distance_t & error = dist_error[e++] = 0;
-
-			#pragma omp parallel for reduction(+: error)
-			for(index_t v = 0; v < n_vertices; v++)
-				if(exact_dist[v] > 0)
-					error += abs(h_dist[inv[v]] - exact_dist[v]) / exact_dist[v];
-
-			error /= n_vertices - sources.size();
-		}
+			dist_error[e++] = compute_error(h_dist, exact_dist, n_vertices, sources.size());
 
 		d = !d;
 	}
