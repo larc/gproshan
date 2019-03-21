@@ -13,7 +13,7 @@ geodesics::geodesics(che * mesh, const vector<index_t> & sources, const option_t
 	n_vertices = mesh->n_vertices();
 	assert(n_vertices > 0);
 
-	distances = new distance_t[n_vertices];
+	dist = new distance_t[n_vertices];
 	sorted_index = new index_t[n_vertices];
 
 	if(cluster) clusters = new index_t[n_vertices];
@@ -23,7 +23,7 @@ geodesics::geodesics(che * mesh, const vector<index_t> & sources, const option_t
 
 	memset(sorted_index, -1, n_vertices * sizeof(index_t));
 	for(index_t v = 0; v < n_vertices; v++)
-		distances[v] = INFINITY;
+		dist[v] = INFINITY;
 
 	assert(sources.size() > 0);
 	execute(mesh, sources, n_iter, radio, opt);
@@ -31,7 +31,7 @@ geodesics::geodesics(che * mesh, const vector<index_t> & sources, const option_t
 
 geodesics::~geodesics()
 {
-	delete [] distances;
+	delete [] dist;
 	delete [] sorted_index;
 	if(clusters) delete [] clusters;
 }
@@ -39,7 +39,7 @@ geodesics::~geodesics()
 const distance_t & geodesics::operator[](const index_t & i) const
 {
 	assert(i < n_vertices);
-	return distances[i];
+	return dist[i];
 }
 
 const index_t & geodesics::operator()(const index_t & i) const
@@ -51,7 +51,7 @@ const index_t & geodesics::operator()(const index_t & i) const
 const distance_t & geodesics::radio() const
 {
 	assert(n_sorted != 0);
-	return distances[farthest()];
+	return dist[farthest()];
 }
 
 const index_t & geodesics::farthest() const
@@ -75,15 +75,15 @@ void geodesics::normalize()
 {
 	if(!n_sorted)
 	{
-		normalize_ptp(distances, n_vertices);
+		normalize_ptp(dist, n_vertices);
 		return;
 	}
 
-	distance_t max = distances[farthest()];
+	distance_t max = dist[farthest()];
 
 	#pragma omp parallel for
 	for(size_t i = 0; i < n_sorted; i++)
-		distances[sorted_index[i]] /= max;
+		dist[sorted_index[i]] /= max;
 }
 
 void geodesics::execute(che * mesh, const vector<index_t> & sources, const size_t & n_iter, const distance_t & radio, const option_t & opt)
@@ -128,10 +128,10 @@ void geodesics::run_fastmarching(che * mesh, const vector<index_t> & sources, co
 	n_sorted = 0;
 	for(index_t s: sources)
 	{
-		distances[s] = 0;
+		dist[s] = 0;
 		if(clusters) clusters[s] = ++c;
 		color[s] = RED;
-		Q.push(make_pair(distances[s], s));
+		Q.push(make_pair(dist[s], s));
 	}
 
 	while(green_count-- && !Q.empty())
@@ -145,7 +145,7 @@ void geodesics::run_fastmarching(che * mesh, const vector<index_t> & sources, co
 		color[black_i] = BLACK;
 		Q.pop();
 		
-		if(distances[black_i] > radio) break;
+		if(dist[black_i] > radio) break;
 
 		sorted_index[n_sorted++] = black_i;
 
@@ -163,18 +163,18 @@ void geodesics::run_fastmarching(che * mesh, const vector<index_t> & sources, co
 				for_star(v_he, mesh, v)
 				{
 					//p = update(d, mesh, v_he, vx);
-					p = update_step(mesh, distances, v_he);
-					if(p < distances[v])
+					p = update_step(mesh, dist, v_he);
+					if(p < dist[v])
 					{
-						distances[v] = p;
+						dist[v] = p;
 						
 						if(clusters)
-							clusters[v] = distances[mesh->vt(prev(v_he))] < distances[mesh->vt(next(he))] ? clusters[mesh->vt(prev(he))] : clusters[mesh->vt(next(he))];
+							clusters[v] = dist[mesh->vt(prev(v_he))] < dist[mesh->vt(next(he))] ? clusters[mesh->vt(prev(he))] : clusters[mesh->vt(next(he))];
 					}
 				}
 
-				if(distances[v] < INFINITY)
-					Q.push(make_pair(distances[v], v));
+				if(dist[v] < INFINITY)
+					Q.push(make_pair(dist[v], v));
 			}
 		}
 	}
@@ -184,16 +184,16 @@ void geodesics::run_fastmarching(che * mesh, const vector<index_t> & sources, co
 
 void geodesics::run_parallel_toplesets_propagation_cpu(che * mesh, const vector<index_t> & sources, const size_t & n_iter, const distance_t & radio)
 {
-	if(distances) delete [] distances;
-
 	index_t * toplesets = new index_t[n_vertices];
 	vector<index_t> limits;
 	mesh->compute_toplesets(toplesets, sorted_index, limits, sources);
 
 	double time_ptp;
+	
 	TIC(time_ptp)
-	distances = parallel_toplesets_propagation_cpu(mesh, sources, limits, sorted_index, clusters);
+		parallel_toplesets_propagation_cpu(dist, mesh, sources, limits, sorted_index, clusters);
 	TOC(time_ptp)
+
 	debug(time_ptp)
 
 	delete [] toplesets;
@@ -201,17 +201,16 @@ void geodesics::run_parallel_toplesets_propagation_cpu(che * mesh, const vector<
 
 void geodesics::run_parallel_toplesets_propagation_gpu(che * mesh, const vector<index_t> & sources, const size_t & n_iter, const distance_t & radio)
 {
-	if(distances) delete [] distances;
-
 	index_t * toplesets = new index_t[n_vertices];
 	vector<index_t> limits;
 	mesh->compute_toplesets(toplesets, sorted_index, limits, sources);
 
 	double time_ptp;
 	if(sources.size() > 1)
-		distances = parallel_toplesets_propagation_gpu(mesh, sources, limits, sorted_index, time_ptp, clusters);
+		time_ptp = parallel_toplesets_propagation_gpu(dist, mesh, sources, limits, sorted_index, clusters);
 	else
-		distances = parallel_toplesets_propagation_coalescence_gpu(mesh, sources, limits, sorted_index, time_ptp, clusters);
+		time_ptp = parallel_toplesets_propagation_coalescence_gpu(dist, mesh, sources, limits, sorted_index, clusters);
+
 	debug(time_ptp);
 
 	delete [] toplesets;
@@ -219,11 +218,11 @@ void geodesics::run_parallel_toplesets_propagation_gpu(che * mesh, const vector<
 
 void geodesics::run_heat_flow(che * mesh, const vector<index_t> & sources)
 {
-	if(distances) delete [] distances;
+	if(dist) delete [] dist;
 
 	double time_total, solve_time;
 	TIC(time_total)
-	distances = heat_flow(mesh, sources, solve_time);
+	dist = heat_flow(mesh, sources, solve_time);
 	TOC(time_total)
 	debug(time_total - solve_time)
 	debug(solve_time)
@@ -231,11 +230,11 @@ void geodesics::run_heat_flow(che * mesh, const vector<index_t> & sources)
 
 void geodesics::run_heat_flow_gpu(che * mesh, const vector<index_t> & sources)
 {
-	if(distances) delete [] distances;
+	if(dist) delete [] dist;
 
 	double time_total, solve_time;
 	TIC(time_total)
-	distances = heat_flow_gpu(mesh, sources, solve_time);
+	dist = heat_flow_gpu(mesh, sources, solve_time);
 	TOC(time_total)
 	debug(time_total - solve_time)
 	debug(solve_time)
@@ -281,8 +280,8 @@ distance_t geodesics::planar_update(index_t & d, a_mat & X, index_t * x, vertex 
 
 	a_mat t(2,1);
 
-	t(0) = distances[x[0]];
-	t(1) = distances[x[1]];
+	t(0) = dist[x[0]];
+	t(1) = dist[x[1]];
 
 	distance_t p;
 	a_mat delta = ones.t() * Q * t;
@@ -303,8 +302,8 @@ distance_t geodesics::planar_update(index_t & d, a_mat & X, index_t * x, vertex 
 	if(t(0) == INFINITY || t(1) == INFINITY || dis < 0 || (cond(0) >= 0 || cond(1) >= 0))
 	{
 		distance_t dp[2];
-		dp[0] = distances[x[0]] + norm(X.col(0));
-		dp[1] = distances[x[1]] + norm(X.col(1));
+		dp[0] = dist[x[0]] + norm(X.col(0));
+		dp[1] = dist[x[1]] + norm(X.col(1));
 
 		d = dp[1] < dp[0];
 		v = X.col(d);

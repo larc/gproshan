@@ -228,12 +228,10 @@ double test_ptp_gpu(distance_t & error, const distance_t * exact, che * mesh, co
 {
 	double t, seconds = INFINITY;
 	
-	distance_t * dist = NULL;
+	distance_t * dist = new distance_t[mesh->n_vertices()];
 	for(int i = 0; i < n_test; i++)
 	{
-		if(dist) delete [] dist;
-
-		dist = parallel_toplesets_propagation_coalescence_gpu(mesh, source, limits, sorted_index, t);
+		t = parallel_toplesets_propagation_coalescence_gpu(dist, mesh, source, limits, sorted_index);
 		seconds = min(seconds, t);
 	}
 
@@ -253,9 +251,7 @@ double test_ptp_cpu(distance_t & error, const distance_t * exact, che * mesh, co
 	{
 		if(dist) delete [] dist;
 
-		TIC(t)
-		dist = parallel_toplesets_propagation_cpu(mesh, source, limits, sorted_index);
-		TOC(t)
+		TIC(t) parallel_toplesets_propagation_cpu(dist, mesh, source, limits, sorted_index); TOC(t)
 		seconds = min(seconds, t);
 	}
 

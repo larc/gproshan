@@ -10,7 +10,7 @@
 #include <thrust/device_vector.h>
 #include <thrust/execution_policy.h>
 
-distance_t * parallel_toplesets_propagation_gpu(che * mesh, const vector<index_t> & sources, const vector<index_t> & limits, const index_t * sorted_index, double & time_ptp, index_t * clusters)
+double parallel_toplesets_propagation_gpu(distance_t * dist, che * mesh, const vector<index_t> & sources, const vector<index_t> & limits, const index_t * sorted_index, index_t * clusters)
 {
 	cudaDeviceReset();
 	
@@ -26,7 +26,7 @@ distance_t * parallel_toplesets_propagation_gpu(che * mesh, const vector<index_t
 	CHE * dd_mesh, * d_mesh;
 	cuda_create_CHE(h_mesh, dd_mesh, d_mesh);
 
-	distance_t * h_dist = new distance_t[h_mesh->n_vertices];
+	distance_t * h_dist = dist;
 
 	distance_t * d_dist[2];
 	cudaMalloc(&d_dist[0], sizeof(distance_t) * h_mesh->n_vertices);
@@ -69,12 +69,11 @@ distance_t * parallel_toplesets_propagation_gpu(che * mesh, const vector<index_t
 	cudaEventRecord(stop, 0);
 	cudaEventSynchronize(stop);
 	cudaEventElapsedTime(&time, start, stop);
-	time_ptp = time / 1000;
 
 	cudaEventDestroy(start);
 	cudaEventDestroy(stop);
 
-	return h_dist;
+	return time / 1000;
 }
 
 distance_t farthest_point_sampling_ptp_gpu(che * mesh, vector<index_t> & samples, double & time_fps, size_t n, distance_t radio)

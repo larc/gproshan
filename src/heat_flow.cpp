@@ -35,12 +35,12 @@ distance_t * heat_flow(che * mesh, const vector<index_t> & sources, double & sol
 	//assert(spsolve(u, A, u0));	// arma
 
 	// extract geodesics
-	distance_t * distances = new distance_t[mesh->n_vertices()];
+	distance_t * dist = new distance_t[mesh->n_vertices()];
 	
 	a_mat div(mesh->n_vertices(), 1);
 	compute_divergence(mesh, u, div);
 
-	a_mat phi(distances, mesh->n_vertices(), 1, false);
+	a_mat phi(dist, mesh->n_vertices(), 1, false);
 
 	solve_time += solve_positive_definite(phi, L, div, &context);	// cholmod (suitesparse)
 	//assert(spsolve(phi, L, div));	// arma
@@ -51,7 +51,7 @@ distance_t * heat_flow(che * mesh, const vector<index_t> & sources, double & sol
 	//cholmod_l_gpu_stats(&context);
 	cholmod_l_finish(&context);
 
-	return distances;
+	return dist;
 }
 
 distance_t * heat_flow_gpu(che * mesh, const vector<index_t> & sources, double & solve_time)
@@ -81,19 +81,19 @@ distance_t * heat_flow_gpu(che * mesh, const vector<index_t> & sources, double &
 	solve_time += solve_positive_definite_gpu(u, A, u0);		// cusorlver (cusparse)
 
 	// extract geodesics
-	distance_t * distances = new distance_t[mesh->n_vertices()];
+	distance_t * dist = new distance_t[mesh->n_vertices()];
 	
 	a_mat div(mesh->n_vertices(), 1);
 	compute_divergence(mesh, u, div);
 
-	a_mat phi(distances, mesh->n_vertices(), 1, false);
+	a_mat phi(dist, mesh->n_vertices(), 1, false);
 
 	solve_time += solve_positive_definite_gpu(phi, L, div);	// cusolver (cusparse)
 	
 	real_t min_val = phi.min();
 	phi.for_each([&min_val](a_mat::elem_type & val) { val -= min_val; val *= 0.5; });
 
-	return distances;
+	return dist;
 }
 
 void compute_divergence(che * mesh, const a_mat & u, a_mat & div)

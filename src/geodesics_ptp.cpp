@@ -17,18 +17,18 @@ index_t end_v(const index_t & i, const vector<index_t> & limits)
 	return i < limits.size() ? limits[i] : limits.back();
 }
 
-distance_t * parallel_toplesets_propagation_cpu(che * mesh, const vector<index_t> & sources, const vector<index_t> & limits, const index_t * sorted_index, index_t * clusters)
+void parallel_toplesets_propagation_cpu(distance_t *& dist, che * mesh, const vector<index_t> & sources, const vector<index_t> & limits, const index_t * sorted_index, index_t * clusters)
 {
-	distance_t * dist[2] = {new distance_t[mesh->n_vertices()], new distance_t[mesh->n_vertices()]};
+	distance_t * pdist[2] = {dist, new distance_t[mesh->n_vertices()]};
 	distance_t * error = new distance_t[mesh->n_vertices()];
 
 	#pragma omp parallel for
 	for(index_t v = 0; v < mesh->n_vertices(); v++)
-		dist[0][v] = dist[1][v] = INFINITY;
+		pdist[0][v] = pdist[1][v] = INFINITY;
 
 	for(index_t i = 0; i < sources.size(); i++)
 	{
-		dist[0][sources[i]] = dist[1][sources[i]] = 0;
+		pdist[0][sources[i]] = pdist[1][sources[i]] = 0;
 		if(clusters) clusters[sources[i]] = i + 1;
 	}
 
@@ -46,15 +46,15 @@ distance_t * parallel_toplesets_propagation_cpu(che * mesh, const vector<index_t
 		for(index_t vi = start; vi < end; vi++)
 		{
 			const index_t & v = sorted_index[vi];
-			dist[!d][v] = dist[d][v];
+			pdist[!d][v] = pdist[d][v];
 
 			distance_t p;
 			for_star(he, mesh, v)
 			{
-				p = update_step(mesh, dist[d], he);
-				if(p < dist[!d][v])
+				p = update_step(mesh, pdist[d], he);
+				if(p < pdist[!d][v])
 				{
-					dist[!d][v] = p;
+					pdist[!d][v] = p;
 
 					if(clusters)
 						clusters[v] = clusters[mesh->vt(prev(he))] != NIL ? clusters[mesh->vt(prev(he))] : clusters[mesh->vt(next(he))];
@@ -66,7 +66,7 @@ distance_t * parallel_toplesets_propagation_cpu(che * mesh, const vector<index_t
 		for(index_t vi = start; vi < start + n_cond; vi++)
 		{
 			const index_t & v = sorted_index[vi];
-			error[vi] = abs(dist[!d][v] - dist[d][v]) / dist[d][v];
+			error[vi] = abs(pdist[!d][v] - pdist[d][v]) / pdist[d][v];
 		}
 
 		count = 0;
@@ -81,9 +81,9 @@ distance_t * parallel_toplesets_propagation_cpu(che * mesh, const vector<index_t
 	}
 	
 	delete [] error;
-	delete [] dist[d];
-
-	return dist[!d];
+	delete [] pdist[d];
+	
+	dist = pdist[!d];
 }
 
 distance_t update_step(che * mesh, const distance_t * dist, const index_t & he)

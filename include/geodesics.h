@@ -26,10 +26,10 @@ class geodesics
 		index_t * clusters;			///< Clustering vertices to closest source.
 
 	private:
-		distance_t * distances;		///< Results of computation geodesic distances.
+		distance_t * dist;		///< Results of computation geodesic distances.
 		index_t * sorted_index;		///< Sort vertices by topological level or geodesic distance.
 		size_t n_vertices;			///< Number of vertices.
-		size_t n_sorted;			///< Number of vertices sorted by their geodesics distances.
+		size_t n_sorted;			///< Number of vertices sorted by their geodesics distance.
 
 	public:
 		geodesics(	che * mesh,							///< input mesh must be a triangular mesh.
