@@ -7,7 +7,11 @@
 #include <fstream>
 #include <cublas_v2.h>
 
-distance_t * iter_error_parallel_toplesets_propagation_gpu(che * mesh, const vector<index_t> & sources, const vector<index_t> & limits, const index_t * sorted_index, const distance_t * exact_dist, double & time_ptp)
+#include <thrust/count.h>
+#include <thrust/device_vector.h>
+#include <thrust/execution_policy.h>
+
+vector<pair<index_t, distance_t> > iter_error_parallel_toplesets_propagation_gpu(che * mesh, const vector<index_t> & sources, const vector<index_t> & limits, const index_t * sorted_index, const distance_t * exact_dist, double & time_ptp)
 {
 	cudaDeviceReset();
 
@@ -32,9 +36,13 @@ distance_t * iter_error_parallel_toplesets_propagation_gpu(che * mesh, const vec
 	index_t * d_sorted;
 	cudaMalloc(&d_sorted, sizeof(index_t) * h_mesh->n_vertices);
 
-	distance_t * error = iter_error_run_ptp_gpu(d_mesh, h_mesh->n_vertices, h_dist, d_dist, sources, limits, sorted_index, d_sorted, exact_dist);
+	distance_t * d_error;
+	cudaMalloc(&d_error, sizeof(distance_t) * h_mesh->n_vertices);
+
+	vector<pair<index_t, distance_t> > iter_error = iter_error_run_ptp_gpu(d_mesh, h_mesh->n_vertices, h_dist, d_dist, sources, limits, sorted_index, d_sorted, exact_dist, d_error);
 	
 	delete [] h_dist;
+	cudaFree(d_error);
 	cudaFree(d_dist[0]);
 	cudaFree(d_dist[1]);
 	cudaFree(d_sorted);
@@ -50,7 +58,7 @@ distance_t * iter_error_parallel_toplesets_propagation_gpu(che * mesh, const vec
 	cudaEventDestroy(start);
 	cudaEventDestroy(stop);
 	
-	return error;
+	return iter_error;
 }
 
 /// Return an array of time in seconds.
@@ -146,7 +154,7 @@ double * times_farthest_point_sampling_ptp_gpu(che * mesh, vector<index_t> & sam
 	return times;
 }
 
-distance_t * iter_error_run_ptp_gpu(CHE * d_mesh, const index_t & n_vertices, distance_t * h_dist, distance_t ** d_dist, const vector<index_t> & sources, const vector<index_t> & limits, const index_t * h_sorted, index_t * d_sorted, const distance_t * exact_dist)
+vector<pair<index_t, distance_t> > iter_error_run_ptp_gpu(CHE * d_mesh, const index_t & n_vertices, distance_t * h_dist, distance_t ** d_dist, const vector<index_t> & sources, const vector<index_t> & limits, const index_t * h_sorted, index_t * d_sorted, const distance_t * exact_dist, distance_t * d_error)
 {
 	#pragma omp parallel for
 	for(index_t v = 0; v < n_vertices; v++)
@@ -159,29 +167,40 @@ distance_t * iter_error_run_ptp_gpu(CHE * d_mesh, const index_t & n_vertices, di
 	cudaMemcpy(d_dist[1], h_dist, sizeof(distance_t) * n_vertices, cudaMemcpyHostToDevice);
 	cudaMemcpy(d_sorted, h_sorted, sizeof(index_t) * n_vertices, cudaMemcpyHostToDevice);
 
-	index_t d = 0, e = 0;
-	index_t start, end;
-	index_t iter = iterations(limits);
+	vector<pair<index_t, distance_t> > iter_error;
+	iter_error.reserve(limits.size());	
+	
+	index_t d = 0;
+	index_t start, end, n_cond;
+	index_t i = 1, j = 2;
+	index_t n_iter = 0;
 
-	distance_t * dist_error = new distance_t[iter - limits.size()];	
-
-	for(index_t i = 2; i < iter; i++)
+	while(i < j)
 	{
-		start = start_v(i, limits);
-		end = end_v(i, limits);
-
-		if(end == start) break;
+		n_iter++;
+		start = limits[i];
+		end = limits[j];
+		n_cond = limits[i + 1] - start;
 
 		relax_ptp <<< NB(end - start), NT >>> (d_mesh, d_dist[!d], d_dist[d], d_sorted, end, start);
+		cudaDeviceSynchronize();
+			
+		// begin calculating iteration error
 		cudaMemcpy(h_dist, d_dist[!d], sizeof(distance_t) * n_vertices, cudaMemcpyDeviceToHost);
+		if(j == limits.size() - 1)
+			iter_error.push_back({n_iter, compute_error(h_dist, exact_dist, n_vertices, sources.size())});
+		// end
 		
-		// calculating iteration error
-		if(i >= limits.size())
-			dist_error[e++] = compute_error(h_dist, exact_dist, n_vertices, sources.size());
-
+		relative_error <<< NB(n_cond), NT >>> (d_error, d_dist[!d], d_dist[d], start, start + n_cond, d_sorted);
+		cudaDeviceSynchronize();
+		
+		if(n_cond == thrust::count_if(thrust::device, d_error + start, d_error + start + n_cond, is_ok()))
+			i++;
+		if(j < limits.size() - 1) j++;	
+		
 		d = !d;
 	}
-
-	return dist_error;
+	
+	return iter_error;
 }
 

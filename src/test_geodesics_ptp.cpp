@@ -22,11 +22,12 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 	bool cpu = 0;
 
 	FILE * ftable;
-#ifdef SINGLE_P
-	ftable = fopen("ptp_results.tex", "w");
-#else
-	ftable = fopen("ptp_results_double.tex", "w");
-#endif
+	#ifdef SINGLE_P
+		ftable = fopen("ptp_results.tex", "w");
+	#else
+		ftable = fopen("ptp_results_double.tex", "w");
+	#endif
+	
 	const char * str[2] = {"", "\\bf"};
 	const char * ptime = "& %6.3lfs ";
 	const char * pspeedup = "& \\bf (%.1lfx) ";
@@ -173,12 +174,11 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 		
 		// PTP ITERATION ERROR _____________________________________________________________________
 		
-		distance_t * iter_error = iter_error_parallel_toplesets_propagation_gpu(mesh, source, limits, sorted_index, exact, time);
+		vector<pair<index_t, distance_t> > iter_error = iter_error_parallel_toplesets_propagation_gpu(mesh, source, limits, sorted_index, exact, time);
 
 		os.open(test_path + filename + "_error.iter");
-		index_t n_iter = iterations(limits);
-		for(index_t j = 0, i = limits.size(); i < n_iter; i++, j++)
-			os << i << " " << iter_error[j] << endl;
+		for(auto & p: iter_error)
+			os << p.first << " " << p.second << endl;
 		os.close();
 
 
@@ -200,7 +200,6 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 		delete [] sorted_index;
 		delete [] exact;
 		delete [] toplesets_dist;
-		delete [] iter_error;
 		delete [] times_fps;
 	}
 	
