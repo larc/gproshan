@@ -162,8 +162,8 @@ void geodesics::run_fastmarching(che * mesh, const vector<index_t> & sources, co
 			{
 				for_star(v_he, mesh, v)
 				{
-					//p = update(d, mesh, v_he, vx);
-					p = update_step(mesh, dist, v_he);
+					p = update(d, mesh, v_he, vx);
+					//p = update_step(mesh, dist, v_he);
 					if(p < dist[v])
 					{
 						dist[v] = p;
@@ -285,7 +285,7 @@ distance_t geodesics::planar_update(index_t & d, a_mat & X, index_t * x, vertex 
 
 	distance_t p;
 	a_mat delta = ones.t() * Q * t;
-	distance_t dis = as_scalar(delta*delta - (ones.t() * Q * ones) * (as_scalar(t.t() * Q * t) - 1));
+	distance_t dis = as_scalar(delta * delta - (ones.t() * Q * ones) * (as_scalar(t.t() * Q * t) - 1));
 
 	if(dis >= 0)
 	{

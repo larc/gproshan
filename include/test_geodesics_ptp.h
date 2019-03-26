@@ -15,7 +15,7 @@ double test_heat_method_gpu(distance_t & error, double & stime, const distance_t
 
 /// Return an array with the error per iteration.
 /// Starting to store (position 0) errors after number of toplesets.
-distance_t * iter_error_parallel_toplesets_propagation_coalescence_gpu(che * mesh, const vector<index_t> & sources, const vector<index_t> & limits, const index_t * sorted_index, const distance_t * exact_dist, double & time_ptp);
+vector<pair<index_t, distance_t> > iter_error_parallel_toplesets_propagation_coalescence_gpu(che * mesh, const vector<index_t> & sources, const vector<index_t> & limits, const index_t * sorted_index, const distance_t * exact_dist, double & time_ptp);
 
 /// Return an array with the error per iteration.
 /// Starting to store (position 0) errors after number of toplesets.

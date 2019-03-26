@@ -174,7 +174,7 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 		
 		// PTP ITERATION ERROR _____________________________________________________________________
 		
-		vector<pair<index_t, distance_t> > iter_error = iter_error_parallel_toplesets_propagation_gpu(mesh, source, limits, sorted_index, exact, time);
+		vector<pair<index_t, distance_t> > iter_error = iter_error_parallel_toplesets_propagation_coalescence_gpu(mesh, source, limits, sorted_index, exact, time);
 
 		os.open(test_path + filename + "_error.iter");
 		for(auto & p: iter_error)
