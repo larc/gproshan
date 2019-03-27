@@ -176,7 +176,12 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 		
 		vector<pair<index_t, distance_t> > iter_error = iter_error_parallel_toplesets_propagation_coalescence_gpu(mesh, source, limits, sorted_index, exact, time);
 
-		os.open(test_path + filename + "_error.iter");
+		#ifndef SINGLE_P
+			os.open(test_path + filename + "_error_double.iter");
+		#else	
+			os.open(test_path + filename + "_error.iter");
+		#endif
+
 		for(auto & p: iter_error)
 			os << p.first << " " << p.second << endl;
 		os.close();
