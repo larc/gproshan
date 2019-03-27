@@ -187,7 +187,7 @@ vector<pair<index_t, distance_t> > iter_error_run_ptp_gpu(CHE * d_mesh, const in
 		// begin calculating iteration error
 		cudaMemcpy(h_dist, d_dist[!d], sizeof(distance_t) * n_vertices, cudaMemcpyDeviceToHost);
 		if(j == limits.size() - 1)
-			iter_error.push_back({n_iter, compute_error(h_dist, exact_dist, n_vertices, sources.size())});
+			iter_error.push_back(make_pair(n_iter, compute_error(h_dist, exact_dist, n_vertices, sources.size())));
 		// end
 		
 		relative_error <<< NB(n_cond), NT >>> (d_error, d_dist[!d], d_dist[d], start, start + n_cond, d_sorted);
