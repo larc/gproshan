@@ -140,12 +140,15 @@ index_t run_ptp_coalescence_gpu(CHE * d_mesh, const index_t & n_vertices, distan
 	index_t d = 0;
 	index_t start, end, n_cond;
 	index_t i = 1, j = 2;
+//	index_t n_iter = 1;
 
 	while(i < j)
 	{
 		start = limits[i];
 		end = limits[j];
 		n_cond = limits[i + 1] - start;
+
+//		printf("%u %u %u %u\n", n_iter++, i, j - 1, end - start);
 
 		if(h_clusters)
 			relax_ptp_coalescence <<< NB(end - start), NT >>> (d_mesh, d_dist[!d], d_dist[d], d_clusters[!d], d_clusters[d], end, start);

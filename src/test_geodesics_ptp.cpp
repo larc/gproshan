@@ -55,7 +55,7 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 		double Time[7], time;	// FM, PTP GPU, HEAT cholmod, HEAT cusparse
 		distance_t Error[5];	// FM, PTP GPU, HEAT cholmod, HEAT cusparse
 
-		distance_t * exact = load_exact_geodesics(exact_dist_path + filename, n_vertices);
+		distance_t * exact = load_exact_geodesics(exact_dist_path + filename + ".exact", n_vertices);
 
 		Time[0] = test_fast_marching(Error[0], exact, mesh, source, n_test);
 		Time[1] = test_ptp_cpu(Error[1], exact, mesh, source, limits, sorted_index, n_test);
