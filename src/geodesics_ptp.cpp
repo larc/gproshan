@@ -1,25 +1,14 @@
 #include "geodesics_ptp.h"
 
 #include <cmath>
+#include <cstring>
 
-index_t iterations(const vector<index_t> & limits)
-{
-	return limits.size() << 1;
-}
 
-index_t start_v(const index_t & i, const vector<index_t> & limits)
-{
-	return limits[i >> 1];
-}
+ptp_out_t::ptp_out_t(distance_t *const & d, index_t *const & c): dist(d), clusters(c) {}
 
-index_t end_v(const index_t & i, const vector<index_t> & limits)
+void parallel_toplesets_propagation_cpu(const ptp_out_t & ptp_out, che * mesh, const vector<index_t> & sources, const vector<index_t> & limits, const index_t * sorted_index)
 {
-	return i < limits.size() ? limits[i] : limits.back();
-}
-
-void parallel_toplesets_propagation_cpu(distance_t *& dist, che * mesh, const vector<index_t> & sources, const vector<index_t> & limits, const index_t * sorted_index, index_t * clusters)
-{
-	distance_t * pdist[2] = {dist, new distance_t[mesh->n_vertices()]};
+	distance_t * pdist[2] = {ptp_out.dist, new distance_t[mesh->n_vertices()]};
 	distance_t * error = new distance_t[mesh->n_vertices()];
 
 	#pragma omp parallel for
@@ -29,7 +18,7 @@ void parallel_toplesets_propagation_cpu(distance_t *& dist, che * mesh, const ve
 	for(index_t i = 0; i < sources.size(); i++)
 	{
 		pdist[0][sources[i]] = pdist[1][sources[i]] = 0;
-		if(clusters) clusters[sources[i]] = i + 1;
+		if(ptp_out.clusters) ptp_out.clusters[sources[i]] = i + 1;
 	}
 
 	index_t d = 0;
@@ -56,8 +45,8 @@ void parallel_toplesets_propagation_cpu(distance_t *& dist, che * mesh, const ve
 				{
 					pdist[!d][v] = p;
 
-					if(clusters)
-						clusters[v] = clusters[mesh->vt(prev(he))] != NIL ? clusters[mesh->vt(prev(he))] : clusters[mesh->vt(next(he))];
+					if(ptp_out.clusters)
+						ptp_out.clusters[v] = ptp_out.clusters[mesh->vt(prev(he))] != NIL ? ptp_out.clusters[mesh->vt(prev(he))] : ptp_out.clusters[mesh->vt(next(he))];
 				}
 			}
 		}
@@ -81,9 +70,13 @@ void parallel_toplesets_propagation_cpu(distance_t *& dist, che * mesh, const ve
 	}
 	
 	delete [] error;
-	delete [] pdist[d];
 	
-	dist = pdist[!d];
+	if(ptp_out.dist != pdist[!d])
+	{
+		memcpy(ptp_out.dist, pdist[!d], mesh->n_vertices() * sizeof(distance_t));
+		delete [] pdist[!d];
+	}
+	else delete [] pdist[d];
 }
 
 distance_t update_step(che * mesh, const distance_t * dist, const index_t & he)

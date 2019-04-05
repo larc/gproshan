@@ -6,8 +6,6 @@
 #include <queue>
 #include <cassert>
 
-#define DP 5e-2
-
 geodesics::geodesics(che * mesh, const vector<index_t> & sources, const option_t & opt, const bool & cluster, const size_t & n_iter, const distance_t & radio)
 {
 	n_vertices = mesh->n_vertices();
@@ -191,7 +189,7 @@ void geodesics::run_parallel_toplesets_propagation_cpu(che * mesh, const vector<
 	double time_ptp;
 	
 	TIC(time_ptp)
-		parallel_toplesets_propagation_cpu(dist, mesh, sources, limits, sorted_index, clusters);
+		parallel_toplesets_propagation_cpu({dist, clusters}, mesh, sources, limits, sorted_index);
 	TOC(time_ptp)
 
 	debug(time_ptp)
@@ -207,9 +205,9 @@ void geodesics::run_parallel_toplesets_propagation_gpu(che * mesh, const vector<
 
 	double time_ptp;
 	if(sources.size() > 1)
-		time_ptp = parallel_toplesets_propagation_gpu(dist, mesh, sources, limits, sorted_index, clusters);
+		time_ptp = parallel_toplesets_propagation_gpu({dist, clusters}, mesh, sources, limits, sorted_index);
 	else
-		time_ptp = parallel_toplesets_propagation_coalescence_gpu(dist, mesh, sources, limits, sorted_index, clusters);
+		time_ptp = parallel_toplesets_propagation_coalescence_gpu({dist, clusters}, mesh, sources, limits, sorted_index);
 
 	debug(time_ptp);
 

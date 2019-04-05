@@ -14,7 +14,8 @@
 #include <thrust/device_vector.h>
 #include <thrust/execution_policy.h>
 
-double parallel_toplesets_propagation_coalescence_gpu(distance_t * dist, che * mesh, const vector<index_t> & sources, const vector<index_t> & limits, const index_t * sorted_index, index_t * clusters)
+
+double parallel_toplesets_propagation_coalescence_gpu(const ptp_out_t & ptp_out, che * mesh, const vector<index_t> & sources, const vector<index_t> & limits, const index_t * sorted_index)
 {
 	// sort data by levels, must be improve the coalescence
 
@@ -64,7 +65,7 @@ double parallel_toplesets_propagation_coalescence_gpu(distance_t * dist, che * m
 	cudaMalloc(&d_error, sizeof(distance_t) * h_mesh->n_vertices);
 
 	index_t d;
-	if(clusters)
+	if(ptp_out.clusters)
 	{
 		index_t * h_clusters = new index_t[h_mesh->n_vertices];
 		index_t * d_clusters[2] = {NULL, NULL};
@@ -77,7 +78,7 @@ double parallel_toplesets_propagation_coalescence_gpu(distance_t * dist, che * m
 
 		#pragma omp parallel for
 		for(index_t i = 0; i < h_mesh->n_vertices; i++)
-			clusters[sorted_index[i]] = h_clusters[i];
+			ptp_out.clusters[sorted_index[i]] = h_clusters[i];
 
 		cudaFree(d_clusters[0]);
 		cudaFree(d_clusters[1]);
@@ -98,7 +99,7 @@ double parallel_toplesets_propagation_coalescence_gpu(distance_t * dist, che * m
 
 	#pragma omp parallel for
 	for(index_t i = 0; i < h_mesh->n_vertices; i++)
-		dist[sorted_index[i]] = h_dist[i];
+		ptp_out.dist[sorted_index[i]] = h_dist[i];
 	
 	delete [] h_dist;
 
