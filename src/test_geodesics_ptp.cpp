@@ -176,6 +176,8 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 		
 		vector<pair<index_t, distance_t> > iter_error = iter_error_parallel_toplesets_propagation_coalescence_gpu(mesh, source, limits, sorted_index, exact, time);
 
+		assert(!system(("mv band " + (test_path + filename + ".band")).c_str()));
+
 		#ifndef SINGLE_P
 			os.open(test_path + filename + "_error_double.iter");
 		#else	

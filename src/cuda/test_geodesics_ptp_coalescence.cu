@@ -218,7 +218,9 @@ vector<pair<index_t, distance_t> > iter_error_run_ptp_coalescence_gpu(CHE * d_me
 	cudaMemcpy(d_dist[1], h_dist, sizeof(distance_t) * n_vertices, cudaMemcpyHostToDevice);
 
 	vector<pair<index_t, distance_t> > iter_error;
-	iter_error.reserve(limits.size());	
+	iter_error.reserve(limits.size());
+
+	ofstream os("band");
 	
 	index_t d = 0;
 	index_t start, end, n_cond;
@@ -233,7 +235,9 @@ vector<pair<index_t, distance_t> > iter_error_run_ptp_coalescence_gpu(CHE * d_me
 		n_cond = limits[i + 1] - start;
 
 		relax_ptp_coalescence <<< NB(end - start), NT >>> (d_mesh, d_dist[!d], d_dist[d], end, start);
-		
+		// print band info
+		os << n_iter << " " << i << " " << j << " " << end - start << endl;
+
 		// begin calculating iteration error
 		cudaMemcpy(h_dist, d_dist[!d], sizeof(distance_t) * n_vertices, cudaMemcpyDeviceToHost);
 		if(j == limits.size() - 1)
@@ -249,6 +253,8 @@ vector<pair<index_t, distance_t> > iter_error_run_ptp_coalescence_gpu(CHE * d_me
 		
 		d = !d;
 	}
+
+	os.close();
 
 	return iter_error;
 }
