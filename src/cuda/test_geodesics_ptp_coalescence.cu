@@ -159,7 +159,7 @@ double * times_farthest_point_sampling_ptp_coalescence_gpu(che * mesh, vector<in
 		cuda_create_CHE(h_mesh, dd_mesh, d_mesh);
 
 		// exec algorithm
-		d = run_ptp_coalescence_gpu(d_mesh, h_mesh->n_vertices, h_dist, d_dist, samples, limits, inv, d_error);
+		d = run_ptp_coalescence_gpu(d_mesh, h_mesh->n_vertices, h_dist, d_dist, samples, {limits, inv}, d_error);
 
 		// free memory
 		cuda_free_CHE(dd_mesh, d_mesh);

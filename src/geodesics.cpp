@@ -207,7 +207,7 @@ void geodesics::run_parallel_toplesets_propagation_gpu(che * mesh, const vector<
 	if(sources.size() > 1)
 		time_ptp = parallel_toplesets_propagation_gpu({dist, clusters}, mesh, sources, limits, sorted_index);
 	else
-		time_ptp = parallel_toplesets_propagation_coalescence_gpu({dist, clusters}, mesh, sources, limits, sorted_index);
+		time_ptp = parallel_toplesets_propagation_coalescence_gpu({dist, clusters}, mesh, sources, {limits, sorted_index});
 
 	debug(time_ptp);
 

@@ -4,6 +4,7 @@ using namespace mdict;
 
 // elapsed time in seconds
 double load_time;
+distance_t * dist;
 
 int viewer_main(int nargs, const char ** args)
 {
@@ -640,7 +641,6 @@ void viewer_process_geodesics_ptp_gpu()
 	TOC(load_time)
 	debug(load_time)
 	
-
 	ptp.normalize();
 	viewer::mesh().update_colors(&ptp[0]);
 }

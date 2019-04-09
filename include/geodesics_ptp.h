@@ -10,6 +10,7 @@
 
 #define PTP_TOL 1e-3
 
+
 struct ptp_out_t
 {
 	distance_t * dist;
@@ -18,7 +19,13 @@ struct ptp_out_t
 	ptp_out_t(distance_t *const & d, index_t *const & c = NULL);
 };
 
-double parallel_toplesets_propagation_coalescence_gpu(const ptp_out_t & ptp_out, che * mesh, const vector<index_t> & sources, const vector<index_t> & limits, const index_t * sorted_index);
+struct toplesets_t
+{
+	const vector<index_t> & limits;
+	const index_t *const & index;
+};
+
+double parallel_toplesets_propagation_coalescence_gpu(const ptp_out_t & ptp_out, che * mesh, const vector<index_t> & sources, const toplesets_t & toplesets, const bool & set_inf = 1);
 
 double parallel_toplesets_propagation_gpu(const ptp_out_t & ptp_out, che * mesh, const vector<index_t> & sources, const vector<index_t> & limits, const index_t * sorted_index);
 
