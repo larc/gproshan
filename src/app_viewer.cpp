@@ -69,9 +69,12 @@ int viewer_main(int nargs, const char ** args)
 	viewer::add_process('/', "Decimation", viewer_process_edge_collapse);
 	viewer::add_process(':', "Select multiple vertices", viewer_select_multiple);
 
+	dist = NULL;
+
 	//init viewer
 	viewer::init(meshes);
-
+	
+	if(dist) delete [] dist;
 	return 0;
 }
 
@@ -521,7 +524,7 @@ void viewer_process_voronoi()
 	debug_me(APP_VIEWER)
 
 	TIC(load_time)
-	geodesics ptp(viewer::mesh(), viewer::select_vertices, geodesics::PTP_GPU, 1);
+	geodesics ptp(viewer::mesh(), viewer::select_vertices, geodesics::PTP_GPU, NULL, 1);
 	TOC(load_time)
 	debug(load_time)
 
@@ -609,7 +612,6 @@ void viewer_process_geodesics_fm()
 	TOC(load_time)
 	debug(load_time)
 
-	fm.normalize();
 	viewer::mesh().update_colors(&fm[0]);
 }
 
@@ -625,7 +627,6 @@ void viewer_process_geodesics_ptp_cpu()
 	TOC(load_time)
 	debug(load_time)
 
-	ptp.normalize();
 	viewer::mesh().update_colors(&ptp[0]);
 }
 
@@ -636,12 +637,13 @@ void viewer_process_geodesics_ptp_gpu()
 	if(!viewer::select_vertices.size())
 		viewer::select_vertices.push_back(0);
 	
+	if(!dist) dist = new distance_t[viewer::mesh().n_vertices()];
+
 	TIC(load_time)
-	geodesics ptp(viewer::mesh(), viewer::select_vertices, geodesics::PTP_GPU);
+	geodesics ptp(viewer::mesh(), viewer::select_vertices, geodesics::PTP_GPU, dist);
 	TOC(load_time)
 	debug(load_time)
 	
-	ptp.normalize();
 	viewer::mesh().update_colors(&ptp[0]);
 }
 
@@ -657,7 +659,6 @@ void viewer_process_geodesics_heat_flow()
 	TOC(load_time)
 	debug(load_time)
 
-	heat_flow.normalize();
 	viewer::mesh().update_colors(&heat_flow[0]);
 }
 
@@ -673,7 +674,6 @@ void viewer_process_geodesics_heat_flow_gpu()
 	TOC(load_time)
 	debug(load_time)
 
-	heat_flow.normalize();
 	viewer::mesh().update_colors(&heat_flow[0]);
 }
 

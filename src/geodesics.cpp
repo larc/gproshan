@@ -6,16 +6,14 @@
 #include <queue>
 #include <cassert>
 
-geodesics::geodesics(che * mesh, const vector<index_t> & sources, const option_t & opt, const bool & cluster, const size_t & n_iter, const distance_t & radio)
+geodesics::geodesics(che * mesh, const vector<index_t> & sources, const option_t & opt, distance_t *const & e_dist, const bool & cluster, const size_t & n_iter, const distance_t & radio): n_vertices(mesh->n_vertices())
 {
-	n_vertices = mesh->n_vertices();
 	assert(n_vertices > 0);
 
-	dist = new distance_t[n_vertices];
+	free_dist = e_dist == NULL;
+	dist = free_dist ? new distance_t[n_vertices] : e_dist;
+	clusters = cluster ? new index_t[n_vertices] : NULL;
 	sorted_index = new index_t[n_vertices];
-
-	if(cluster) clusters = new index_t[n_vertices];
-	else clusters = NULL;
 
 	n_sorted = 0;
 
@@ -29,9 +27,9 @@ geodesics::geodesics(che * mesh, const vector<index_t> & sources, const option_t
 
 geodesics::~geodesics()
 {
-	delete [] dist;
-	delete [] sorted_index;
-	if(clusters) delete [] clusters;
+	if(free_dist)		delete [] dist;
+	if(sorted_index)	delete [] sorted_index;
+	if(clusters)		delete [] clusters;
 }
 
 const distance_t & geodesics::operator[](const index_t & i) const

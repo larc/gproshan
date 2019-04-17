@@ -28,13 +28,15 @@ class geodesics
 	private:
 		distance_t * dist;			///< Results of computation geodesic distances.
 		index_t * sorted_index;		///< Sort vertices by topological level or geodesic distance.
-		size_t n_vertices;			///< Number of vertices.
+		const size_t & n_vertices;	///< Number of vertices.
 		size_t n_sorted;			///< Number of vertices sorted by their geodesics distance.
+		bool free_dist;
 
 	public:
 		geodesics(	che * mesh,							///< input mesh must be a triangular mesh.
 					const vector<index_t> & sources,	///< source vertices.
 					const option_t & opt = FM,			///< specific the algorithm to execute.
+					distance_t *const & e_dist = NULL,	///< external dist allocation
 					const bool & cluster = 0,			///< if clustering vertices to closest source.
 					const size_t & n_iter = 0, 			///< maximum number of iterations.
 					const distance_t & radio = INFINITY	///< execute until the specific radio.

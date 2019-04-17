@@ -4,6 +4,7 @@
 #include <GLES3/gl3.h>
 
 #include <cassert>
+#include <cmath>
 
 che_viewer::che_viewer()
 {
@@ -156,9 +157,25 @@ void che_viewer::update_normals()
 
 void che_viewer::update_colors(const color_t *const c)
 {
+	if(!c)
+	{
+		#pragma omp parallel for
+		for(index_t v = 0; v < _n_vertices; v++)
+			colors[v] = COLOR;
+
+		return;
+	}
+
+	distance_t max_c = 0;
+	
+	#pragma omp parallel for reduction(max: max_c)
+	for(index_t v = 0; v < _n_vertices; v++)
+		if(c[v] < INFINITY)
+			max_c = max(c[v], max_c);
+
 	#pragma omp parallel for
 	for(index_t v = 0; v < _n_vertices; v++)
-		colors[v] = c ? c[v] : COLOR;
+		colors[v] = c[v] / max_c;
 }
 
 void che_viewer::draw()
