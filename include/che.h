@@ -46,7 +46,11 @@ class che
 		bool manifold;
 
 	public:
+		che(const size_t & n_v = 0, const size_t & n_f = 0);
+		che(const vertex * vertices, const index_t & n_v, const index_t * faces, const index_t & n_f);
+		
 		virtual ~che();
+		
 		void star(star_t & s, const index_t & v);
 		void link(link_t & l, const index_t & v);
 		void border(vector<index_t> & border, const index_t & b);
@@ -112,10 +116,7 @@ class che
 		void init(const vertex * vertices, const index_t & n_v, const index_t * faces, const index_t & n_f);
 		void init(const string & file);
 		void init(const size_t & n_v, const size_t & n_f);
-		virtual void read_file(const string & file) = 0;
-
-	public:
-		virtual void write_file(const string & file) const = 0;
+		virtual void read_file(const string & file);
 
 	private:
 		void update_evt_ot_et();

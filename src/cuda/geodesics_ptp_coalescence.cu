@@ -31,7 +31,7 @@ double parallel_toplesets_propagation_coalescence_gpu(const ptp_out_t & ptp_out,
 	for(index_t he = 0; he < mesh->n_half_edges(); he++)
 		F[he] = inv[mesh->vt(he)];
 	
-	mesh = new che_off(V, mesh->n_vertices(), F, mesh->n_faces());
+	mesh = new che(V, mesh->n_vertices(), F, mesh->n_faces());
 
 	delete [] V;
 	delete [] F;

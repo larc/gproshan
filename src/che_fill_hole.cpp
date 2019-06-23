@@ -199,7 +199,7 @@ che * mesh_fill_hole(che * mesh, const vector<index_t> & border_vertices, const 
 
 	if(hole && !hole->is_manifold())
 	{
-		hole->write_file(PATH_TEST + "fill_holes/fatal_error.off");
+		che_off::write_file(hole, PATH_TEST + "fill_holes/fatal_error.off");
 		delete hole;
 		return NULL;
 	}
@@ -560,7 +560,7 @@ che * fill_hole_front_angles_test(che * mesh, vector<index_t> & front_vertices, 
 //	debug_me(filling holes)
 //	debug(vertices.size())
 //	debug(faces.size())
-	return faces.size() == 0 ? NULL : new che_off(vertices.data(), vertices.size(), faces.data(), faces.size() / 3);
+	return faces.size() == 0 ? NULL : new che(vertices.data(), vertices.size(), faces.data(), faces.size() / 3);
 }
 
 che * fill_hole_front_angles(vector<vertex> & vertices, const real_t & lenght, const vertex & normal, const size_t & max_iter, bool is_grow)
@@ -834,7 +834,7 @@ che * fill_hole_front_angles(vector<vertex> & vertices, const real_t & lenght, c
 		vertices.push_back(vertex(r[0], r[1], r[2]));
 	}
 
-	return faces.size() ? new che_off(vertices.data(), vertices.size(), faces.data(), faces.size() / 3) : NULL;
+	return faces.size() ? new che(vertices.data(), vertices.size(), faces.data(), faces.size() / 3) : NULL;
 }
 
 void get_real_tri(che * mesh, vector<index_t> & select_vertices, vector<vertex> & triangle, vector<size_t> & tri_sizes )
@@ -974,7 +974,7 @@ che * fill_hole_center_triangle(che * mesh, vector<index_t> & select_vertices, i
 	faces[f++] = tri_init + 1;
 	faces[f++] = tri_init;
 
-	che * new_off = new che_off(vertices, n_vertices, faces, n_faces);
+	che * new_off = new che(vertices, n_vertices, faces, n_faces);
 
 	delete [] vertices;
 	delete [] faces;

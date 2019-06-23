@@ -34,8 +34,7 @@ vector<pair<index_t, distance_t> > iter_error_parallel_toplesets_propagation_coa
 	for(index_t he = 0; he < mesh->n_half_edges(); he++)
 		F[he] = inv[mesh->vt(he)];
 
-	mesh = new che_off(V, mesh->n_vertices(), F, mesh->n_faces());
-//	mesh->write_file("tmp/mesh.off");
+	mesh = new che(V, mesh->n_vertices(), F, mesh->n_faces());
 
 	delete [] V;
 	delete [] F;
@@ -152,7 +151,7 @@ double * times_farthest_point_sampling_ptp_coalescence_gpu(che * mesh, vector<in
 		for(index_t he = 0; he < mesh->n_half_edges(); he++)
 			F[he] = inv[mesh->vt(he)];
 
-		che * tmp_mesh = new che_off(V, mesh->n_vertices(), F, mesh->n_faces());
+		che * tmp_mesh = new che(V, mesh->n_vertices(), F, mesh->n_faces());
 
 		CHE * h_mesh = new CHE(tmp_mesh);
 		CHE * dd_mesh, * d_mesh;

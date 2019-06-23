@@ -8,6 +8,8 @@
 #include <vector>
 #include <cassert>
 
+#include <che_off.h>
+
 using namespace std;
 
 // declare static member variables
@@ -313,7 +315,7 @@ void viewer::menu_save_mesh()
 	index_t p = file.find_last_of('.');
 	file = file.substr(0, p) + "_new.off";
 	cout << __FUNCTION__ << " " << file << endl;
-	mesh()->write_file(file);
+	che_off::write_file(mesh(), file);
 }
 
 void viewer::menu_exit()

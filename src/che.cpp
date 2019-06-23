@@ -39,6 +39,17 @@ CHE::CHE(che * mesh)
 	EVT = mesh->EVT;
 }
 
+
+che::che(const size_t & n_v, const size_t & n_f)
+{
+	init(n_v, n_f);
+}
+
+che::che(const vertex * vertices, const index_t & n_v, const index_t * faces, const index_t & n_f)
+{
+	init(vertices, n_v, faces, n_f);
+}
+
 che::~che()
 {
 	delete_me();
@@ -1299,5 +1310,9 @@ void che::delete_me()
 	if(ET) delete [] ET;
 	if(EHT) delete [] EHT;
 	if(BT) delete [] BT;
+}
+
+void che::read_file(const string & file)
+{
 }
 

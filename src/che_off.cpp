@@ -5,15 +5,6 @@
 #include <cstring>
 #include <cassert>
 
-che_off::che_off(const vertex * vertices, const size_t & n_v, const index_t * faces, const size_t & n_f)
-{
-	init(vertices, n_v, faces, n_f);
-}
-
-che_off::che_off(const size_t & n_v, const size_t & n_f)
-{
-	init(n_v, n_f);
-}
 
 che_off::che_off(const string & file)
 {
@@ -76,20 +67,20 @@ void che_off::read_file(const string & file)
 	is.close();
 }
 
-void che_off::write_file(const string & file) const
+void che_off::write_file(const che * mesh, const string & file)
 {
 	ofstream os(file);
 
 	os << "OFF" << endl;
-	os << n_vertices_ << " " << n_faces_ << " 0" << endl;
+	os << mesh->n_vertices() << " " << mesh->n_faces() << " 0" << endl;
 
-	for(size_t v = 0; v < n_vertices_; v++)
-		os << GT[v] << endl;
+	for(size_t v = 0; v < mesh->n_vertices(); v++)
+		os << mesh->gt(v) << endl;
 
-	for(index_t he = 0; he < n_half_edges_; he++)
+	for(index_t he = 0; he < mesh->n_half_edges(); he++)
 	{
 		if(!(he % che::P)) os << che::P;
-		os << " " << VT[he];
+		os << " " << mesh->vt(he);
 		if(he % che::P == che::P - 1) os << endl;
 	}
 
