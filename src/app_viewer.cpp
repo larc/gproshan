@@ -5,6 +5,7 @@ using namespace mdict;
 // elapsed time in seconds
 double load_time;
 distance_t * dist;
+size_t n_dist;
 
 che * load_mesh(const string & file_path)
 {
@@ -83,6 +84,7 @@ int viewer_main(int nargs, const char ** args)
 	viewer::add_process(':', "Select multiple vertices", viewer_select_multiple);
 
 	dist = NULL;
+	n_dist = 0;
 
 	//init viewer
 	viewer::init(meshes);
@@ -650,7 +652,18 @@ void viewer_process_geodesics_ptp_gpu()
 	if(!viewer::select_vertices.size())
 		viewer::select_vertices.push_back(0);
 	
-	if(!dist) dist = new distance_t[viewer::mesh().n_vertices()];
+	if(dist && n_dist != viewer::mesh().n_vertices())
+	{
+		delete [] dist;
+		n_dist = 0;
+		dist = NULL;
+	}
+
+	if(!dist)
+	{
+		n_dist = viewer::mesh().n_vertices();
+		dist = new distance_t[n_dist];
+	}
 
 	TIC(load_time)
 	geodesics ptp(viewer::mesh(), viewer::select_vertices, geodesics::PTP_GPU, dist);

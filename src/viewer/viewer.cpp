@@ -682,6 +682,8 @@ void viewer::draw_selected_vertices()
 	double h = 0.02 * cam.zoom;
 	for(int v: select_vertices)
 	{
+		glViewport(mesh().vx * ww, mesh().vy * wh, ww, wh);
+		
 		glPushMatrix();
 		glTranslated(mesh()->gt(v).x, mesh()->gt(v).y, mesh()->gt(v).z);
 		glutSolidSphere(h, 10, 10);
