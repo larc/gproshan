@@ -69,7 +69,7 @@ void che_off::read_file(const string & file)
 
 void che_off::write_file(const che * mesh, const string & file)
 {
-	ofstream os(file);
+	ofstream os(file + ".off");
 
 	os << "OFF" << endl;
 	os << mesh->n_vertices() << " " << mesh->n_faces() << " 0" << endl;

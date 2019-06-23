@@ -14,6 +14,7 @@ che * load_mesh(const string & file_path)
 	string extension = file_path.substr(pos + 1);
 
 	if(extension == "off") return new che_off(file_path);
+	if(extension == "obj") return new che_obj(file_path);
 
 	return new che_img(file_path);
 }

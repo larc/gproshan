@@ -9,6 +9,7 @@
 #include <cassert>
 
 #include <che_off.h>
+#include <che_obj.h>
 
 using namespace std;
 
@@ -313,7 +314,7 @@ void viewer::menu_save_mesh()
 {
 	string file = mesh()->filename();
 	index_t p = file.find_last_of('.');
-	file = file.substr(0, p) + "_new.off";
+	file = file.substr(0, p) + "_new";
 	cout << __FUNCTION__ << " " << file << endl;
 	che_off::write_file(mesh(), file);
 }
