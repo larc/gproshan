@@ -6,6 +6,18 @@ using namespace mdict;
 double load_time;
 distance_t * dist;
 
+che * load_mesh(const string & file_path)
+{
+	size_t pos = file_path.rfind('.');
+	assert(pos != string::npos);
+	
+	string extension = file_path.substr(pos + 1);
+
+	if(extension == "off") return new che_off(file_path);
+
+	return new che_img(file_path);
+}
+
 int viewer_main(int nargs, const char ** args)
 {
 	if(nargs < 2) return 0;
@@ -13,7 +25,7 @@ int viewer_main(int nargs, const char ** args)
 	TIC(load_time)
 	vector<che *> meshes;
 	for(int i = 1; i < nargs; i++)
-		meshes.push_back(new che_off(args[i]));
+		meshes.push_back(load_mesh(args[i]));
 	TOC(load_time)
 
 	debug(sizeof(real_t))
