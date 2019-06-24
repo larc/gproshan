@@ -276,8 +276,8 @@ void viewer::mouse(int button, int state, int x, int y)
 {
 	if((glutGetModifiers() & GLUT_ACTIVE_SHIFT) and state == GLUT_UP)
 		pick_vertex(x, y);
-	else if(button == 6) cam.zoomIn();
-	else if(button == 5) cam.zoomOut();
+	else if(button == 6 || button == 4) cam.zoomIn();
+	else if(button == 5 || button == 3) cam.zoomOut();
 	else cam.mouse(button, state, x, y);
 }
 

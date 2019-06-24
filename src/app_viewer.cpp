@@ -592,8 +592,8 @@ void viewer_process_fairing_spectral()
 	debug_me(APP_VIEWER)
 	
 	d_message(input: [number of eigenbasis])
-
 	size_t k; cin >> k;
+	
 	fairing * fair = new fairing_spectral(k);
 	fair->run(viewer::mesh());
 
@@ -607,8 +607,12 @@ void viewer_process_fairing_taubin()
 {
 	debug_me(APP_VIEWER)
 
-	fairing * fair = new fairing_taubin;
+	d_message(input: [step])
+	real_t step; cin >> step;
+	
+	fairing * fair = new fairing_taubin(step);
 	fair->run(viewer::mesh());
+
 	viewer::mesh()->set_vertices(fair->get_postions());
 	delete fair;
 
