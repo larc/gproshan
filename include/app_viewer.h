@@ -5,6 +5,7 @@
 #include "include.h"
 #include "che_off.h"
 #include "che_obj.h"
+#include "che_ply.h"
 #include "che_img.h"
 #include "laplacian.h"
 #include "che_off.h"

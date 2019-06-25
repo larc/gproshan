@@ -10,6 +10,7 @@
 
 #include <che_off.h>
 #include <che_obj.h>
+#include <che_ply.h>
 
 using namespace std;
 
@@ -312,11 +313,18 @@ void viewer::menu_reset_mesh()
 
 void viewer::menu_save_mesh()
 {
-	string file = mesh()->filename();
-	index_t p = file.find_last_of('.');
-	file = file.substr(0, p) + "_new";
-	cout << __FUNCTION__ << " " << file << endl;
-	che_off::write_file(mesh(), file);
+	debug_me(APP_VIEWER)
+	
+	d_message(format: [off obj ply])
+	
+	string format; cin >> format;
+	string file = mesh()->filename() + "_new";
+	
+	if(format == "off") che_off::write_file(mesh(), file);
+	if(format == "obj") che_obj::write_file(mesh(), file);
+	if(format == "ply") che_ply::write_file(mesh(), file);
+
+	cerr << "saved: " << file + "." + format << endl;
 }
 
 void viewer::menu_exit()

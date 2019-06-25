@@ -16,6 +16,7 @@ che * load_mesh(const string & file_path)
 
 	if(extension == "off") return new che_off(file_path);
 	if(extension == "obj") return new che_obj(file_path);
+	if(extension == "ply") return new che_ply(file_path);
 
 	return new che_img(file_path);
 }

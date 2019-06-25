@@ -66,11 +66,12 @@ void che_obj::write_file(const che * mesh, const string & file)
 	for(size_t v = 0; v < mesh->n_vertices(); v++)
 		os << "v " << mesh->gt(v) << endl;
 
-	for(index_t he = 0; he < mesh->n_half_edges(); he++)
+	for(index_t he = 0; he < mesh->n_half_edges(); )
 	{
-		if(!(he % che::P)) os << "f";
-		os << " " << mesh->vt(he) + 1;
-		if(he % che::P == che::P - 1) os << endl;
+		os << "f";
+		for(index_t i = 0; i < che::P; i++)
+			os << " " << mesh->vt(he++) + 1;
+		os << endl;
 	}
 
 	os.close();

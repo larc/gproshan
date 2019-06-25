@@ -40,7 +40,7 @@ void che_off::read_file(const string & file)
 	index_t he = 0;
 	for(index_t i = 0; i < n_faces_; i++)
 	{
-		is>>v;
+		is >> v;
 		if(!i && v > che::P)
 		{
 			vertex * tGT = GT; GT = NULL;
@@ -52,7 +52,7 @@ void che_off::read_file(const string & file)
 		}
 
 		for(index_t j = 0; j < v; j++)
-			is>>VT[he++];
+			is >> VT[he++];
 
 		// divide face
 		if(v > che::P)
@@ -77,11 +77,12 @@ void che_off::write_file(const che * mesh, const string & file)
 	for(size_t v = 0; v < mesh->n_vertices(); v++)
 		os << mesh->gt(v) << endl;
 
-	for(index_t he = 0; he < mesh->n_half_edges(); he++)
+	for(index_t he = 0; he < mesh->n_half_edges(); )
 	{
-		if(!(he % che::P)) os << che::P;
-		os << " " << mesh->vt(he);
-		if(he % che::P == che::P - 1) os << endl;
+		os << che::P;
+		for(index_t i = 0; i < che::P; i++)
+			os << " " << mesh->vt(he++);
+		os << endl;
 	}
 
 	os.close();
