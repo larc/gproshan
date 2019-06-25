@@ -4,6 +4,7 @@
 #include <vector>
 #include <cstring>
 #include <cassert>
+#include <map>
 
 
 che_ply::che_ply(const string & file)
@@ -13,50 +14,130 @@ che_ply::che_ply(const string & file)
 
 void che_ply::read_file(const string & file)
 {
-	size_t n_v, n_f;
+	map<string, size_t> bytes =	{
+									{"char", 1},
+									{"uchar", 1},
+									{"short", 2},
+									{"ushort", 2},
+									{"int", 4},
+									{"uint", 4},
+									{"float", 4},
+									{"float32", 4},
+									{"float64", 8},
+									{"double", 8}
+								};
 
-	string line, word;
+	size_t n_v, n_f, b;
+
+	string str, format, element;
 	
 	ifstream is(file);
 	assert(is.good());
+	
+	size_t xyz, vbytes = 0;
+	size_t fn, fbytes;
 
-	while(getline(is, line) && line != "end_header")
+	while(getline(is, str) && str != "end_header")
 	{
-		stringstream ss(line);
+		stringstream ss(str);
 
-		ss >> word;
-		if(word == "element")
+		ss >> str;
+		if(str == "element")
 		{
-			ss >> word;
-			if(word == "vertex") ss >> n_v;
-			if(word == "face") ss >> n_f;
+			ss >> element;
+			if(element == "vertex") ss >> n_v;
+			if(element == "face") ss >> n_f;
+		}
+		
+		if(str == "property" && element == "vertex")
+		{
+			ss >> str;
+			vbytes += b = bytes[str];
+
+			ss >> str;
+			if(str == "x" || str == "y" || str == "z")
+				xyz = b;
+		}
+		
+		if(str == "property" && element == "face")
+		{
+			ss >> str;
+			if(str == "list")
+			{
+				ss >> str; fn = bytes[str];
+				ss >> str; fbytes = bytes[str];
+			}
 		}
 
-		if(word == "format")
-		{
-			ss >> word;
-			assert(word == "ascii");
-		}
+		if(str == "format") ss >> format;
 	}
 	
 	init(n_v, n_f);
 	
-	for(index_t v = 0; v < n_vertices_; v++)
+	if(format == "ascii")
 	{
-		getline(is, line);
-		stringstream ss(line);
-	
-		ss >> GT[v];
-	}
-	
-	index_t p, he = 0;
-	while(n_f--)
-	{
-		getline(is, line);
-		stringstream ss(line);
+		for(index_t v = 0; v < n_vertices_; v++)
+		{
+			getline(is, str);
+			stringstream ss(str);
 		
-		ss >> p;
-		while(p--) ss >> VT[he++];
+			ss >> GT[v];
+		}
+		
+		index_t p, he = 0;
+		while(n_f--)
+		{
+			getline(is, str);
+			stringstream ss(str);
+			
+			ss >> p;
+			while(p--)
+				ss >> VT[he++];
+		}
+	}
+	else // binary_little_endian
+	{
+		char vbuffer[vbytes];
+		for(index_t v = 0; v < n_vertices_; v++)
+		{
+			is.read(vbuffer, vbytes);
+
+			if(xyz == sizeof(real_t))
+				memcpy(&GT[v], vbuffer, 3 * sizeof(real_t));
+			else
+			{
+				if(xyz == 4)
+				{
+					float * X = (float *) vbuffer;
+					for(index_t i = 0; i < 3; i++)
+						GT[v][i] = X[i];
+				}
+				else
+				{
+					double * X = (double *) vbuffer;
+					for(index_t i = 0; i < 3; i++)
+						GT[v][i] = (real_t) X[i];
+				}
+			}
+		}
+
+		char fbuffer[fbytes];	// preparing for a hexagon
+		index_t p, he = 0;
+		while(n_f--)
+		{
+			is.read(vbuffer, fn);
+			if(fn == 1) p = *((char *) vbuffer);
+			if(fn == 2) p = *((short *) vbuffer);
+			if(fn == 4) p = *((int *) vbuffer);
+			
+			while(p--)
+			{
+				is.read(vbuffer, fbytes);
+				if(fbytes == 1) VT[he++] = *((char *) vbuffer);
+				if(fbytes == 2) VT[he++] = *((short *) vbuffer);
+				if(fbytes == 4) VT[he++] = *((int *) vbuffer);
+			}
+		}
 	}
 
 	is.close();
