@@ -229,7 +229,7 @@ void viewer_process_functional_maps()
 	K = K < N_MESHES ? K : N_MESHES;
 	for(index_t k = 0; k < N_MESHES; k++)
 	{
-		if(k) viewer::add_mesh({new che_off(viewer::mesh()->filename())});
+		if(k) viewer::add_mesh({new che(*viewer::mesh())});
 		viewer::current = k;
 
 		eigvec.col(k) -= eigvec.col(k).min();
@@ -794,7 +794,7 @@ void viewer_process_edge_collapse()
 	debug(load_time)
 
 	if(viewer::n_meshes < 2)
-		viewer::add_mesh({new che_off(viewer::mesh()->filename())});
+		viewer::add_mesh({new che(*viewer::mesh())});
 
 	viewer::corr_mesh[1].init(viewer::meshes[1]->n_vertices(), viewer::current, sampling);
 	viewer::current = 1;

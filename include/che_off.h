@@ -7,6 +7,7 @@ class che_off : public che
 {
 	public:
 		che_off(const string & file);
+		che_off(const che_off & mesh);
 		virtual ~che_off();
 
 		static void write_file(const che * mesh, const string & file);

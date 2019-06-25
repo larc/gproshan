@@ -39,6 +39,36 @@ CHE::CHE(che * mesh)
 	EVT = mesh->EVT;
 }
 
+che::che(const che & mesh)
+{
+	filename_		= mesh.filename_;
+	n_vertices_		= mesh.n_vertices_;
+	n_faces_		= mesh.n_faces_;
+	n_half_edges_	= mesh.n_half_edges_;
+	n_edges_		= mesh.n_edges_;
+	n_borders_		= mesh.n_borders_;
+
+	GT = new vertex[n_vertices_];
+	memcpy(GT, mesh.GT, n_vertices_ * sizeof(vertex));
+
+	VT = new index_t[n_half_edges_];
+	memcpy(VT, mesh.VT, n_half_edges_ * sizeof(index_t));
+
+	OT = new index_t[n_half_edges_];
+	memcpy(OT, mesh.OT, n_half_edges_ * sizeof(index_t));
+
+	EVT = new index_t[n_vertices_];
+	memcpy(EVT, mesh.EVT, n_vertices_ * sizeof(index_t));
+
+	ET = new index_t[n_edges_];
+	memcpy(ET, mesh.ET, n_edges_ * sizeof(index_t));
+
+	EHT = new index_t[n_half_edges_];
+	memcpy(EHT, mesh.EHT, n_half_edges_ * sizeof(index_t));
+
+	BT = new index_t[n_borders_];
+	memcpy(BT, mesh.BT, n_borders_ * sizeof(index_t));
+}
 
 che::che(const size_t & n_v, const size_t & n_f)
 {

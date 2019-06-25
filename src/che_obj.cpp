@@ -11,6 +11,10 @@ che_obj::che_obj(const string & file)
 	init(file);
 }
 
+che_obj::che_obj(const che_obj & mesh): che(mesh)
+{
+}
+
 void che_obj::read_file(const string & file)
 {
 	string soff;

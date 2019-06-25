@@ -11,9 +11,12 @@ che_off::che_off(const string & file)
 	init(file);
 }
 
+che_off::che_off(const che_off & mesh): che(mesh)
+{
+}
+
 che_off::~che_off()
 {
-
 }
 
 void che_off::read_file(const string & file)

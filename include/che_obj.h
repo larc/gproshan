@@ -7,6 +7,7 @@ class che_obj : public che
 {
 	public:
 		che_obj(const string & file);
+		che_obj(const che_obj & mesh);
 		virtual ~che_obj() = default;
 
 		static void write_file(const che * mesh, const string & file);

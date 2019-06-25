@@ -48,7 +48,7 @@ class che
 	public:
 		che(const size_t & n_v = 0, const size_t & n_f = 0);
 		che(const vertex * vertices, const index_t & n_v, const index_t * faces, const index_t & n_f);
-		
+		che(const che & mesh);		
 		virtual ~che();
 		
 		void star(star_t & s, const index_t & v);

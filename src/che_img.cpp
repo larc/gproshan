@@ -10,20 +10,18 @@
 
 using namespace cimg_library;
 
-che_img::che_img(const size_t & n_v, const size_t & n_f)
-{
-	init(n_v, n_f);
-}
 
 che_img::che_img(const string & file)
 {
-	debug(file)
 	init(file);
+}
+
+che_img::che_img(const che_img & mesh): che(mesh)
+{
 }
 
 che_img::~che_img()
 {
-
 }
 
 void che_img::read_file(const string & file)
