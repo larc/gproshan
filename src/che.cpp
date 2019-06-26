@@ -574,17 +574,18 @@ void che::compute_toplesets(index_t *& toplesets, index_t *& sorted, vector<inde
 
 		link_t v_link;
 		link(v_link, v);
-		for(index_t he: v_link)
+		for(const index_t & he: v_link)
 		{
-			if(toplesets[VT[he]] == NIL)
+			const index_t & u = VT[he];
+
+			if(toplesets[u] == NIL)
 			{
-				toplesets[VT[he]] = toplesets[v] + 1;
-				sorted[p++] = VT[he];
+				toplesets[u] = toplesets[v] + 1;
+				sorted[p++] = u;
 			}
 		}
 	}
 	
-	debug(limits.size());
 	assert(p == n_vertices_);
 	limits.push_back(p);
 }
