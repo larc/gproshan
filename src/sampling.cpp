@@ -64,7 +64,7 @@ bool load_sampling(vector<index_t> & points, distance_t & radio, che * mesh, siz
 		ofstream os(file);
 		os << radio << endl;
 		os << points.size() << endl;
-		for(index_t i: points)
+		for(const index_t & i: points)
 			os << i << endl;
 
 		os.close();

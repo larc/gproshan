@@ -541,49 +541,52 @@ void che::reload()
 	init(filename_);
 }
 
-void che::compute_toplesets(index_t *& rings, index_t *& sorted, vector<index_t> & limites, const vector<index_t> & sources, const index_t & k)
+void che::compute_toplesets(index_t *& toplesets, index_t *& sorted, vector<index_t> & limits, const vector<index_t> & sources, const index_t & k)
 {
 	if(!sources.size()) return;
 
-	index_t v;
-	memset(rings, 255, sizeof(index_t) * n_vertices_);
+	memset(toplesets, -1, sizeof(index_t) * n_vertices_);
 
-	index_t r = 0;
+	index_t level = 0;
+
 	index_t p = 0;
-	for(; p < sources.size(); p++)
+	for(const index_t & s: sources)
 	{
-		sorted[p] = sources[p];
-		rings[sources[p]] = r;
+		sorted[p++] = s;
+		
+		if(toplesets[s] == NIL)
+			toplesets[s] = level;
 	}
 
-	limites.push_back(0);
-	index_t s = 0;
-	for(; s < p; s++)
+	limits.push_back(0);
+	for(index_t i = 0; i < p; i++)
 	{
-		v = sorted[s];
-
-		if(rings[v] != NIL && rings[v] > r)
+		const index_t & v = sorted[i];
+		
+		if(toplesets[v] > level)
 		{
-			r++;
+			level++;
 
-			if(r > k) break;
-			limites.push_back(s);
+			if(level > k) break;
+
+			limits.push_back(i);
 		}
 
 		link_t v_link;
 		link(v_link, v);
 		for(index_t he: v_link)
 		{
-			if(rings[VT[he]] == NIL)
+			if(toplesets[VT[he]] == NIL)
 			{
-				rings[VT[he]] = rings[v] + 1;
+				toplesets[VT[he]] = toplesets[v] + 1;
 				sorted[p++] = VT[he];
 			}
 		}
-
 	}
-
-	limites.push_back(s);
+	
+	debug(limits.size());
+	assert(p == n_vertices_);
+	limits.push_back(p);
 }
 
 void che::multiplicate_vertices()

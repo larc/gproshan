@@ -556,8 +556,8 @@ void viewer_process_farthest_point_sampling_radio()
 {
 	debug_me(APP_VIEWER)
 
-	distance_t radio;
-	cin >> radio;
+	d_message(input: [sampling radio])
+	distance_t radio; cin >> radio;
 
 	double time_fps;
 
@@ -575,11 +575,8 @@ void viewer_process_farthest_point_sampling()
 {
 	debug_me(APP_VIEWER)
 
-	if(!viewer::select_vertices.size())
-		viewer::select_vertices.push_back(0);
-
-	index_t n;
-	cin>>n;
+	d_message(input: [sampling size])
+	index_t n; cin >> n;
 
 	distance_t radio;
 	TIC(load_time)
