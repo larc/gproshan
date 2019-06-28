@@ -24,13 +24,19 @@ void parallel_toplesets_propagation_cpu(const ptp_out_t & ptp_out, che * mesh, c
 	index_t d = 0;
 	index_t start, end, n_cond, count;
 	index_t i = 1, j = 2;
+	
+	// maximum number of iterations
+	index_t iter = 0;
+	index_t max_iter = limits.size() << 1;
 
-	while(i < j)
+	while(i < j && iter++ < max_iter)
 	{
+		if(i < (j >> 1)) i = (j >> 1); // K/2 limit band size
+
 		start = limits[i];
 		end = limits[j];
 		n_cond = limits[i + 1] - start;
-
+		
 		#pragma omp parallel for
 		for(index_t vi = start; vi < end; vi++)
 		{
