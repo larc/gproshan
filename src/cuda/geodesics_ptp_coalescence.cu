@@ -15,29 +15,29 @@
 double parallel_toplesets_propagation_coalescence_gpu(const ptp_out_t & ptp_out, che * mesh, const vector<index_t> & sources, const toplesets_t & toplesets, const bool & set_inf)
 {
 	// sort data by levels, must be improve the coalescence
-
-	vertex * V = new vertex[mesh->n_vertices()];
-	index_t * F = new index_t[mesh->n_faces() * che::P];
-	index_t * inv = new index_t[mesh->n_vertices()];
 	
+	vector<vertex> V(mesh->n_vertices());
+	vector<index_t> F;
+	F.reserve(mesh->n_half_edges());
+	
+	index_t * inv = new index_t[mesh->n_vertices()];
+	memset(inv, -1, sizeof(index_t) * mesh->n_vertices());
+
 	#pragma omp parallel for
-	for(index_t i = 0; i < mesh->n_vertices(); i++)
+	for(index_t i = 0; i < toplesets.limits.back(); i++)
 	{
 		V[i] = mesh->gt(toplesets.index[i]);
 		inv[toplesets.index[i]] = i;
 	}
 
-	#pragma omp parallel for
 	for(index_t he = 0; he < mesh->n_half_edges(); he++)
-		F[he] = inv[mesh->vt(he)];
+		if(inv[mesh->vt(he)] != NIL && inv[mesh->vt(prev(he))] != NIL && inv[mesh->vt(next(he))] != NIL)
+			F.push_back(inv[mesh->vt(he)]);
 	
-	mesh = new che(V, mesh->n_vertices(), F, mesh->n_faces());
-
-	delete [] V;
-	delete [] F;
+	mesh = new che(V.data(), toplesets.limits.back(), F.data(), F.size() / che::P);
 
 	// ------------------------------------------------------
-
+	
 	cudaDeviceReset();
 
 	float time;
@@ -95,7 +95,7 @@ double parallel_toplesets_propagation_coalescence_gpu(const ptp_out_t & ptp_out,
 	delete [] inv;
 
 	#pragma omp parallel for
-	for(index_t i = 0; i < h_mesh->n_vertices; i++)
+	for(index_t i = 0; i < toplesets.limits.back(); i++)
 		ptp_out.dist[toplesets.index[i]] = h_dist[i];
 	
 	delete [] h_dist;
@@ -138,15 +138,18 @@ index_t run_ptp_coalescence_gpu(CHE * d_mesh, const index_t & n_vertices, distan
 	index_t d = 0;
 	index_t start, end, n_cond;
 	index_t i = 1, j = 2;
-//	index_t n_iter = 1;
 
-	while(i < j)
+	// maximum number of iterations
+	index_t iter = 0;
+	index_t max_iter = inv.limits.size() << 1;
+
+	while(i < j && iter++ < max_iter)
 	{
+		if(i < (j >> 1)) i = (j >> 1); // K/2 limit band size
+		
 		start = inv.limits[i];
 		end = inv.limits[j];
 		n_cond = inv.limits[i + 1] - start;
-
-//		printf("%u %u %u %u\n", n_iter++, i, j - 1, end - start);
 
 		if(h_clusters)
 			relax_ptp_coalescence <<< NB(end - start), NT >>> (d_mesh, d_dist[!d], d_dist[d], d_clusters[!d], d_clusters[d], end, start);
@@ -157,10 +160,12 @@ index_t run_ptp_coalescence_gpu(CHE * d_mesh, const index_t & n_vertices, distan
 		
 		relative_error <<< NB(n_cond), NT >>>(d_error, d_dist[!d], d_dist[d], start, start + n_cond);
 		cudaDeviceSynchronize();
-
+		
 		if(n_cond == thrust::count_if(thrust::device, d_error + start, d_error + start + n_cond, is_ok()))
 			i++;
+		
 		if(j < inv.limits.size() - 1) j++;
+		
 		d = !d;
 	}
 

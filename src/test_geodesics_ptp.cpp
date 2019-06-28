@@ -59,7 +59,7 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 
 		Time[0] = test_fast_marching(Error[0], exact, mesh, source, n_test);
 		Time[1] = test_ptp_cpu(Error[1], exact, mesh, source, limits, sorted_index, n_test);
-		Time[2] = test_ptp_gpu(Error[2], exact, mesh, source, limits, sorted_index, n_test);
+		Time[2] = test_ptp_gpu(Error[2], exact, mesh, source, {limits, sorted_index}, n_test);
 		
 		#ifdef SINGLE_P
 			Time[6] = Time[5] = Time[4] = Time[3] = INFINITY;
@@ -230,14 +230,14 @@ double test_fast_marching(distance_t & error, const distance_t * exact, che * me
 	return seconds;
 }
 
-double test_ptp_gpu(distance_t & error, const distance_t * exact, che * mesh, const vector<index_t> & source, const vector<index_t> & limits, const index_t * sorted_index, const int & n_test)
+double test_ptp_gpu(distance_t & error, const distance_t * exact, che * mesh, const vector<index_t> & source, const toplesets_t & toplesets, const int & n_test)
 {
 	double t, seconds = INFINITY;
 	
 	distance_t * dist = new distance_t[mesh->n_vertices()];
 	for(int i = 0; i < n_test; i++)
 	{
-		t = parallel_toplesets_propagation_coalescence_gpu(dist, mesh, source, {limits, sorted_index});
+		t = parallel_toplesets_propagation_coalescence_gpu(dist, mesh, source, toplesets);
 		seconds = min(seconds, t);
 	}
 

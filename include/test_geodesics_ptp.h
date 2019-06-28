@@ -1,11 +1,12 @@
 #include "geodesics.h"
+#include "geodesics_ptp.h"
 
 /// Execute performance and accuracy test for ptp algorithm on cpu and gpu.
 void main_test_geodesics_ptp(const int & nargs, const char ** args);
 
 double test_fast_marching(distance_t & error, const distance_t * exact, che * mesh, const vector<index_t> & source, const int & n_test);
 
-double test_ptp_gpu(distance_t & error, const distance_t * exact, che * mesh, const vector<index_t> & source, const vector<index_t> & limits, const index_t * sorted_index, const int & n_test);
+double test_ptp_gpu(distance_t & error, const distance_t * exact, che * mesh, const vector<index_t> & source, const toplesets_t & toplesets, const int & n_test);
 
 double test_ptp_cpu(distance_t & error, const distance_t * exact, che * mesh, const vector<index_t> & source, const vector<index_t> & limits, const index_t * sorted_index, const int & n_test);
 
