@@ -1260,7 +1260,7 @@ void che::update_evt_ot_et()
 			{
 				if(VT[prev(h)] == VT[next(he)])
 				{
-					if(OT[he] == NIL && OT[prev(he)] == NIL)
+					if(OT[he] == NIL && OT[prev(h)] == NIL)
 					{
 						OT[he] = prev(h);
 						OT[prev(h)] = he;
