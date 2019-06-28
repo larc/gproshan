@@ -780,6 +780,7 @@ void viewer::pick_vertex(int x, int y)
 		
 		debug(index)
 		debug(mesh().color(index))
+		debug(mesh()->evt(index))
 
 		if(corr_mesh[current].is_loaded())
 			debug(corr_mesh[current][index].alpha)

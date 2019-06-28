@@ -586,7 +586,7 @@ void che::compute_toplesets(index_t *& toplesets, index_t *& sorted, vector<inde
 		}
 	}
 	
-	assert(p == n_vertices_);
+	assert(p <= n_vertices_);
 	limits.push_back(p);
 }
 
@@ -1248,7 +1248,7 @@ void che::update_evt_ot_et()
 	}
 
 	//opposite table - edge table
-	memset(OT, 255, sizeof(index_t) * n_half_edges_);
+	memset(OT, -1, sizeof(index_t) * n_half_edges_);
 
 	vector<index_t> et;
 	for(index_t he = 0; he < n_half_edges_; he++)
@@ -1260,15 +1260,20 @@ void che::update_evt_ot_et()
 			{
 				if(VT[prev(h)] == VT[next(he)])
 				{
-					OT[he] = prev(h);
-					OT[prev(h)] = he;
-					break;
+					if(OT[he] == NIL && OT[prev(he)] == NIL)
+					{
+						OT[he] = prev(h);
+						OT[prev(h)] = he;
+					}
 				}
 			}
 		}
-		else assert(he == OT[OT[he]]);
 	}
-
+	
+	// non manifold two disk 
+	//for(index_t he = 0; he < n_half_edges_; he++)
+	//	if(OT[he] != NIL) assert(he == OT[OT[he]]);
+	
 	//edge table
 	n_edges_ = et.size();
 	ET = new index_t[n_edges_];

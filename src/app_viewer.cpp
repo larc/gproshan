@@ -522,14 +522,16 @@ void viewer_compute_toplesets()
 	vector<index_t> limites;
 	viewer::mesh()->compute_toplesets(toplesets, sorted, limites, viewer::select_vertices);
 
-	size_t k = limites.size() - 1;
+	size_t n_toplesets = limites.size() - 1;
 
+	#pragma omp parallel for
 	for(index_t v = 0; v < viewer::mesh()->n_vertices(); v++)
 	{
-		if(toplesets[v] < k) 
-			viewer::vcolor(v) = distance_t(toplesets[v]) / (limites.size() - 1);
+		if(toplesets[v] < n_toplesets) 
+			viewer::vcolor(v) = distance_t(toplesets[v]) / (n_toplesets);
 	}
-	debug(k)
+
+	debug(n_toplesets)
 
 	delete [] toplesets;
 	delete [] sorted;
