@@ -10,7 +10,7 @@
 #include <thrust/device_vector.h>
 #include <thrust/execution_policy.h>
 
-double parallel_toplesets_propagation_gpu(const ptp_out_t & ptp_out, che * mesh, const vector<index_t> & sources, const vector<index_t> & limits, const index_t * sorted_index)
+double parallel_toplesets_propagation_gpu(const ptp_out_t & ptp_out, che * mesh, const vector<index_t> & sources, const toplesets_t & toplesets)
 {
 	cudaDeviceReset();
 	
@@ -46,7 +46,7 @@ double parallel_toplesets_propagation_gpu(const ptp_out_t & ptp_out, che * mesh,
 		cudaMalloc(&d_clusters[0], sizeof(index_t) * h_mesh->n_vertices);
 		cudaMalloc(&d_clusters[1], sizeof(index_t) * h_mesh->n_vertices);
 
-		d = run_ptp_gpu(d_mesh, h_mesh->n_vertices, h_dist, d_dist, sources, limits, sorted_index, d_sorted, d_error, h_clusters, d_clusters);
+		d = run_ptp_gpu(d_mesh, h_mesh->n_vertices, h_dist, d_dist, sources, toplesets.limits, toplesets.index, d_sorted, d_error, h_clusters, d_clusters);
 		cudaMemcpy(h_clusters, d_clusters[d], sizeof(index_t) * h_mesh->n_vertices, cudaMemcpyDeviceToHost);
 
 		cudaFree(d_clusters[0]);
@@ -54,7 +54,7 @@ double parallel_toplesets_propagation_gpu(const ptp_out_t & ptp_out, che * mesh,
 	}
 	else
 	{
-		d = run_ptp_gpu(d_mesh, h_mesh->n_vertices, h_dist, d_dist, sources, limits, sorted_index, d_sorted, d_error);
+		d = run_ptp_gpu(d_mesh, h_mesh->n_vertices, h_dist, d_dist, sources, toplesets.limits, toplesets.index, d_sorted, d_error);
 	}
 
 	cudaMemcpy(h_dist, d_dist[d], sizeof(distance_t) * h_mesh->n_vertices, cudaMemcpyDeviceToHost);
@@ -194,8 +194,14 @@ index_t run_ptp_gpu(CHE * d_mesh, const index_t & n_vertices, distance_t * h_dis
 	index_t start, end, n_cond;
 	index_t i = 1, j = 2;
 
-	while(i < j)
+	// maximum number of iterations
+	index_t iter = 0;
+	index_t max_iter = limits.size() << 1;
+
+	while(i < j && iter++ < max_iter)
 	{
+		if(i < (j >> 1)) i = (j >> 1); // K/2 limit band size
+		
 		start = limits[i];
 		end = limits[j];
 		n_cond = limits[i + 1] - start;

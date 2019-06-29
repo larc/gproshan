@@ -6,7 +6,7 @@
 
 ptp_out_t::ptp_out_t(distance_t *const & d, index_t *const & c): dist(d), clusters(c) {}
 
-void parallel_toplesets_propagation_cpu(const ptp_out_t & ptp_out, che * mesh, const vector<index_t> & sources, const vector<index_t> & limits, const index_t * sorted_index)
+void parallel_toplesets_propagation_cpu(const ptp_out_t & ptp_out, che * mesh, const vector<index_t> & sources, const toplesets_t & toplesets)
 {
 	distance_t * pdist[2] = {ptp_out.dist, new distance_t[mesh->n_vertices()]};
 	distance_t * error = new distance_t[mesh->n_vertices()];
@@ -27,20 +27,20 @@ void parallel_toplesets_propagation_cpu(const ptp_out_t & ptp_out, che * mesh, c
 	
 	// maximum number of iterations
 	index_t iter = 0;
-	index_t max_iter = limits.size() << 1;
+	index_t max_iter = toplesets.limits.size() << 1;
 
 	while(i < j && iter++ < max_iter)
 	{
 		if(i < (j >> 1)) i = (j >> 1); // K/2 limit band size
 
-		start = limits[i];
-		end = limits[j];
-		n_cond = limits[i + 1] - start;
+		start = toplesets.limits[i];
+		end = toplesets.limits[j];
+		n_cond = toplesets.limits[i + 1] - start;
 		
 		#pragma omp parallel for
 		for(index_t vi = start; vi < end; vi++)
 		{
-			const index_t & v = sorted_index[vi];
+			const index_t & v = toplesets.index[vi];
 			pdist[!d][v] = pdist[d][v];
 
 			distance_t p;
@@ -60,7 +60,7 @@ void parallel_toplesets_propagation_cpu(const ptp_out_t & ptp_out, che * mesh, c
 		#pragma omp parallel for
 		for(index_t vi = start; vi < start + n_cond; vi++)
 		{
-			const index_t & v = sorted_index[vi];
+			const index_t & v = toplesets.index[vi];
 			error[vi] = abs(pdist[!d][v] - pdist[d][v]) / pdist[d][v];
 		}
 
@@ -70,7 +70,7 @@ void parallel_toplesets_propagation_cpu(const ptp_out_t & ptp_out, che * mesh, c
 			count += error[vi] < PTP_TOL;
 
 		if(n_cond == count) i++;
-		if(j < limits.size() - 1) j++;
+		if(j < toplesets.limits.size() - 1) j++;
 
 		d = !d;
 	}

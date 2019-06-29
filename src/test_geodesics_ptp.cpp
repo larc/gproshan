@@ -58,7 +58,7 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 		distance_t * exact = load_exact_geodesics(exact_dist_path + filename + ".exact", n_vertices);
 
 		Time[0] = test_fast_marching(Error[0], exact, mesh, source, n_test);
-		Time[1] = test_ptp_cpu(Error[1], exact, mesh, source, limits, sorted_index, n_test);
+		Time[1] = test_ptp_cpu(Error[1], exact, mesh, source, {limits, sorted_index}, n_test);
 		Time[2] = test_ptp_gpu(Error[2], exact, mesh, source, {limits, sorted_index}, n_test);
 		
 		#ifdef SINGLE_P
@@ -248,14 +248,14 @@ double test_ptp_gpu(distance_t & error, const distance_t * exact, che * mesh, co
 	return seconds;
 }
 
-double test_ptp_cpu(distance_t & error, const distance_t * exact, che * mesh, const vector<index_t> & source, const vector<index_t> & limits, const index_t * sorted_index, const int & n_test)
+double test_ptp_cpu(distance_t & error, const distance_t * exact, che * mesh, const vector<index_t> & source, const toplesets_t & toplesets, const int & n_test)
 {
 	double t, seconds = INFINITY;
 	
 	distance_t * dist = new distance_t[mesh->n_vertices()];
 	for(int i = 0; i < n_test; i++)
 	{
-		TIC(t) parallel_toplesets_propagation_cpu(dist, mesh, source, limits, sorted_index); TOC(t)
+		TIC(t) parallel_toplesets_propagation_cpu(dist, mesh, source, toplesets); TOC(t)
 		seconds = min(seconds, t);
 	}
 
