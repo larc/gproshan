@@ -25,9 +25,13 @@ struct toplesets_t
 	const index_t *const & index;
 };
 
+che * ptp_coalescence(index_t * & inv, che * mesh, const toplesets_t & toplesets);
+
 double parallel_toplesets_propagation_coalescence_gpu(const ptp_out_t & ptp_out, che * mesh, const vector<index_t> & sources, const toplesets_t & toplesets, const bool & set_inf = 1);
 
 double parallel_toplesets_propagation_gpu(const ptp_out_t & ptp_out, che * mesh, const vector<index_t> & sources, const toplesets_t & toplesets);
+
+void parallel_toplesets_propagation_coalescence_cpu(const ptp_out_t & ptp_out, che * mesh, const vector<index_t> & sources, const toplesets_t & toplesets);
 
 void parallel_toplesets_propagation_cpu(const ptp_out_t & ptp_out, che * mesh, const vector<index_t> & sources, const toplesets_t & toplesets);
 

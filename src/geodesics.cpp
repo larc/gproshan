@@ -187,7 +187,7 @@ void geodesics::run_parallel_toplesets_propagation_cpu(che * mesh, const vector<
 	double time_ptp;
 	
 	TIC(time_ptp)
-		parallel_toplesets_propagation_cpu({dist, clusters}, mesh, sources, {limits, sorted_index});
+		parallel_toplesets_propagation_coalescence_cpu({dist, clusters}, mesh, sources, {limits, sorted_index});
 	TOC(time_ptp)
 
 	debug(time_ptp)

@@ -14,27 +14,8 @@
 
 double parallel_toplesets_propagation_coalescence_gpu(const ptp_out_t & ptp_out, che * mesh, const vector<index_t> & sources, const toplesets_t & toplesets, const bool & set_inf)
 {
-	// sort data by levels, must be improve the coalescence
-	
-	vector<vertex> V(mesh->n_vertices());
-	vector<index_t> F;
-	F.reserve(mesh->n_half_edges());
-	
-	index_t * inv = new index_t[mesh->n_vertices()];
-	memset(inv, -1, sizeof(index_t) * mesh->n_vertices());
-
-	#pragma omp parallel for
-	for(index_t i = 0; i < toplesets.limits.back(); i++)
-	{
-		V[i] = mesh->gt(toplesets.index[i]);
-		inv[toplesets.index[i]] = i;
-	}
-
-	for(index_t he = 0; he < mesh->n_half_edges(); he++)
-		if(inv[mesh->vt(he)] != NIL && inv[mesh->vt(prev(he))] != NIL && inv[mesh->vt(next(he))] != NIL)
-			F.push_back(inv[mesh->vt(he)]);
-	
-	mesh = new che(V.data(), toplesets.limits.back(), F.data(), F.size() / che::P);
+	index_t * inv = NULL;
+	mesh = ptp_coalescence(inv, mesh, toplesets);
 
 	// ------------------------------------------------------
 	
