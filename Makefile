@@ -9,13 +9,13 @@ ifeq ($(UNAME), Darwin)
 endif
 
 
-INCLUDE_PATH		= -I./include -isystem $(USR)include/eigen3 -I$(USR)include/suitesparse 
+INCLUDE_PATH		= -I./include -isystem $(USR)/include/eigen3 -I$(USR)/include/suitesparse 
 
 ifeq ($(UNAME), Darwin)
-	INCLUDE_PATH		+= -isystem $(USR)include
+	INCLUDE_PATH		+= -isystem $(USR)/include
 endif
 
-LIBRARY_PATH		= -L$(USR)local/cuda/lib64
+LIBRARY_PATH		= -L$(USR)/local/cuda/lib64
 BLAS_LIBS			= -lumfpack
 SUITESPARSE_LIBS	= -lamd -lcholmod -lsuitesparseconfig -lm
 OPENGL_LIBS			= -lglut -lGL -lGLU
@@ -25,19 +25,22 @@ TARGET = gproshan
 # SINGLE_P = -DSINGLE_P to compile with single precision
 SINGLE_P = 
 
+
+CUDA_SUPPORT = -DNO_CUDA 
+
 ifeq ($(UNAME), Linux)
 	CC = g++
 	LD = g++ -no-pie
-	CUDA = nvcc -Xcompiler -fopenmp
 endif
 
+# macports GNU gcc/g++ compiler
 ifeq ($(UNAME), Darwin)
 	CC = g++-mp-8
 	LD = g++-mp-8 -no-pie
-	CUDA = nvcc --std=c++14
 endif
 
-CFLAGS = -O3 -fopenmp $(INCLUDE_PATH)
+CUDA = nvcc
+CFLAGS = -O3 -fopenmp $(INCLUDE_PATH) $(CUDA_SUPPORT)
 CUDAFLAGS = -arch=sm_50 \
 			-gencode=arch=compute_50,code=sm_50 \
 			-gencode=arch=compute_52,code=sm_52 \
@@ -54,10 +57,11 @@ LIBS = $(OPENGL_LIBS) $(SUITESPARSE_LIBS) $(BLAS_LIBS) -larmadillo -lsuperlu -lC
 
 HEADERS := $(wildcard include/*.h)
 SOURCES := $(wildcard src/*.cpp) $(wildcard src/viewer/*.cpp) $(wildcard src/mdict/*.cpp)
+OBJECTS :=	$(addprefix obj/,$(notdir $(SOURCES:.cpp=.o)))
+
+
 CUDA_HEADERS := $(wildcard include/cuda/*.cuh)
 CUDA_SOURCES := $(wildcard src/cuda/*.cu)
-
-OBJECTS :=	$(addprefix obj/,$(notdir $(SOURCES:.cpp=.o)))
 CUDA_OBJECTS :=	$(addprefix obj/,$(notdir $(CUDA_SOURCES:.cu=_cuda.o)))
 
 all: $(TARGET) | tmp
