@@ -1,5 +1,21 @@
-INCLUDE_PATH		= -I./include -isystem /usr/include/eigen3 -I/usr/include/suitesparse 
-LIBRARY_PATH		= -L/usr/local/cuda/lib64
+UNAME := $(shell uname)
+
+ifeq ($(UNAME), Linux)
+	USR = /usr/
+endif
+
+ifeq ($(UNAME), Darwin)
+	USR = /opt/local/
+endif
+
+
+INCLUDE_PATH		= -I./include -isystem $(USR)include/eigen3 -I$(USR)include/suitesparse 
+
+ifeq ($(UNAME), Darwin)
+	INCLUDE_PATH		+= -isystem $(USR)include
+endif
+
+LIBRARY_PATH		= -L$(USR)local/cuda/lib64
 BLAS_LIBS			= -lumfpack
 SUITESPARSE_LIBS	= -lamd -lcholmod -lsuitesparseconfig -lm
 OPENGL_LIBS			= -lglut -lGL -lGLU
@@ -9,9 +25,18 @@ TARGET = gproshan
 # SINGLE_P = -DSINGLE_P to compile with single precision
 SINGLE_P = 
 
-CC = g++
-LD = g++ -no-pie
-CUDA = nvcc
+ifeq ($(UNAME), Linux)
+	CC = g++
+	LD = g++ -no-pie
+	CUDA = nvcc -Xcompiler -fopenmp
+endif
+
+ifeq ($(UNAME), Darwin)
+	CC = g++-mp-8
+	LD = g++-mp-8 -no-pie
+	CUDA = nvcc --std=c++14
+endif
+
 CFLAGS = -O3 -fopenmp $(INCLUDE_PATH)
 CUDAFLAGS = -arch=sm_50 \
 			-gencode=arch=compute_50,code=sm_50 \
@@ -20,8 +45,8 @@ CUDAFLAGS = -arch=sm_50 \
 			-gencode=arch=compute_61,code=sm_61 \
 			-gencode=arch=compute_70,code=sm_70 \
 			-gencode=arch=compute_70,code=compute_70 \
-			-I./include/cuda -O3 -Xcompiler -fopenmp -D_FORCE_INLINES
-LFLAGS = -O3 -fopenmp $(LIBRARY_PATH) -lcublas -lcusolver -lcusparse -lcuda -lcudart -lX11 -lpthread
+			-I./include/cuda -O3 -D_FORCE_INLINES
+LFLAGS = -O3 $(LIBRARY_PATH) -lcublas -lcusolver -lcusparse -lcuda -lcudart -lX11 -lpthread
 LIBS = $(OPENGL_LIBS) $(SUITESPARSE_LIBS) $(BLAS_LIBS) -larmadillo -lsuperlu -lCGAL
 
 ########################################################################################
