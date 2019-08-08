@@ -564,7 +564,13 @@ void viewer_process_farthest_point_sampling_radio()
 	double time_fps;
 
 	TIC(load_time)
+
+#ifdef CUDA_SUPPORT
 	radio = farthest_point_sampling_ptp_gpu(viewer::mesh(), viewer::select_vertices, time_fps, NIL, radio);
+#else
+
+#endif
+
 	TOC(load_time)
 	debug(time_fps)
 
