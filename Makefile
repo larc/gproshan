@@ -35,7 +35,7 @@ ifeq ($(UNAME), Darwin)
 	LD = $(CC)
 endif
 
-ifeq (nvcc, $(shell which nvcc))
+ifeq (nvcc, $(shell basename $(shell which nvcc)))
 	LIBRARY_PATH += -L$(USR)/local/cuda/lib64
 	CUDA = nvcc
 	CUDA_SUPPORT = -DCUDA_SUPPORT
@@ -91,10 +91,10 @@ obj/%.o: src/viewer/%.cpp | obj
 obj/%.o: src/mdict/%.cpp | obj
 	$(CC) $(SINGLE_P) -c $< -o $@ -I./include/mdict $(CFLAGS) 
 
-obj/$(CUDA_OBJECTS): src/cuda/%.cu | obj
-	$(CUDA) $(SINGLE_P) -dc $< -o $@ -I./include $(CUDAFLAGS)
+obj/%_cuda.o: src/cuda/%.cu | obj
+	$(CUDA) $(SINGLE_P) -dc $< -o $@ -I./include/ -I./include/cuda $(CUDAFLAGS)
 
-obj/$(CUDA_LINK): $(CUDA_OBJECTS) | obj
+$(CUDA_LINK): $(CUDA_OBJECTS) | obj
 	$(CUDA) $(SINGLE_P) -dlink $(CUDA_OBJECTS) -o $(CUDA_LINK) $(CUDA_FLAGS)
 
 obj:
@@ -104,7 +104,7 @@ tmp:
 	mkdir tmp
 
 library: $(filter-out obj/main.o, $(OBJECTS) $(CUDA_OBJECTS)) $(CUDA_LINK) | lib
-	ar -cvq lib/lib$(TARGET).a $(filter-out obj/main.o, $(OBJECTS) $(CUDA_OBJECTS)) obj/link_cuda.o
+	ar -cvq lib/lib$(TARGET).a $(filter-out obj/main.o, $(OBJECTS) $(CUDA_OBJECTS)) $(CUDA_LINK)
 
 lib:
 	mkdir lib
