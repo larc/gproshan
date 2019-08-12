@@ -38,6 +38,8 @@ void che_off::read_file(const string & file)
 		is >> GT[i];
 		if(soff[0] == 'C') // COFF file, ignore RGBA
 			is >> r >> g >> b >> a;
+		if(soff[0] == 'N') // NOFF file, ignore normals
+			is >> r >> g >> b;
 	}
 
 	index_t he = 0;

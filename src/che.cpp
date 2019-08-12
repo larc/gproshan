@@ -1210,6 +1210,8 @@ void che::init(const string & file)
 
 void che::init(const size_t & n_v, const size_t & n_f)
 {
+	delete_me();
+
 	n_vertices_ = n_v;
 	n_faces_ = n_f;
 	n_half_edges_ = n_edges_ = n_borders_ = 0;
@@ -1218,27 +1220,23 @@ void che::init(const size_t & n_v, const size_t & n_f)
 	VT = OT = EVT = ET = BT = NULL;
 	manifold = true;
 
-	if(!n_vertices_ || !n_faces_)
-	{
-		filename_ = "";
-		return;
-	}
-
 	n_half_edges_ = che::P * n_faces_;
 	n_edges_ = 0; //n_half_edges_ / 2;	/**/
-
-	GT = new vertex[n_vertices_];
-	VT = new index_t[n_half_edges_];
-	OT = new index_t[n_half_edges_];
-	EVT = new index_t[n_vertices_];
-	EHT = new index_t[n_half_edges_];
+	
+	if(n_vertices_)		GT = new vertex[n_vertices_];
+	if(n_half_edges_)	VT = new index_t[n_half_edges_];
+	if(n_half_edges_)	OT = new index_t[n_half_edges_];
+	if(n_vertices_)		EVT = new index_t[n_vertices_];
+	if(n_vertices_)		EHT = new index_t[n_half_edges_];
 }
 
 void che::update_evt_ot_et()
 {
-	vector<index_t> * he_p_vertex = new vector<index_t>[n_vertices_];
+	memset(EVT, -1, sizeof(index_t) * n_vertices_);
+	
+	if(!n_faces_) return;
 
-	memset(EVT, 255, sizeof(index_t) * n_vertices_);
+	vector<index_t> * he_p_vertex = new vector<index_t>[n_vertices_];
 
 	//vertex table
 	for(index_t he = 0; he < n_half_edges_; he++)
@@ -1314,6 +1312,7 @@ void che::update_eht()
 
 void che::update_bt()
 {
+	if(!n_faces_) return;
 	if(!manifold) return;
 
 	bool * border = new bool[n_vertices_];
@@ -1342,13 +1341,13 @@ void che::update_bt()
 
 void che::delete_me()
 {
-	if(GT) delete [] GT;
-	if(VT) delete [] VT;
-	if(OT) delete [] OT;
-	if(EVT) delete [] EVT;
-	if(ET) delete [] ET;
-	if(EHT) delete [] EHT;
-	if(BT) delete [] BT;
+	if(GT)	delete [] GT;
+	if(VT)	delete [] VT;
+	if(OT)	delete [] OT;
+	if(EVT)	delete [] EVT;
+	if(ET)	delete [] ET;
+	if(EHT)	delete [] EHT;
+	if(BT)	delete [] BT;
 }
 
 void che::read_file(const string & file)

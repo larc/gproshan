@@ -31,7 +31,7 @@ void che_ply::read_file(const string & file)
 									{"double", 8}
 								};
 
-	size_t n_v, n_f, b;
+	size_t n_v = 0, n_f = 0, b;
 
 	string str, format, element;
 	

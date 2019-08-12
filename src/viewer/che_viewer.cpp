@@ -5,6 +5,7 @@
 
 #include <cassert>
 #include <cmath>
+#include <numeric>
 
 che_viewer::che_viewer()
 {
@@ -112,9 +113,22 @@ void che_viewer::update_vbo()
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	// INDEXES
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[3]);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh->n_half_edges() * sizeof(index_t), &mesh->vt(0), GL_STATIC_DRAW);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	if(mesh->n_faces())
+	{
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[3]);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh->n_half_edges() * sizeof(index_t), &mesh->vt(0), GL_STATIC_DRAW);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	}
+	else
+	{
+		index_t * indices = new index_t[_n_vertices];
+		iota(indices, indices + _n_vertices, 0);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[3]);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, _n_vertices * sizeof(index_t), indices, GL_STATIC_DRAW);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+		delete [] indices;
+	}
 }
 
 void che_viewer::update_normals()
@@ -180,10 +194,20 @@ void che_viewer::update_colors(const color_t *const c)
 
 void che_viewer::draw()
 {
-	glBindVertexArray(vao);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[3]);
-	glDrawElements(GL_TRIANGLES, mesh->n_half_edges(), GL_UNSIGNED_INT, 0);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	if(mesh->n_faces())
+	{
+		glBindVertexArray(vao);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[3]);
+		glDrawElements(GL_TRIANGLES, mesh->n_half_edges(), GL_UNSIGNED_INT, 0);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	}
+	else
+	{
+		glBindVertexArray(vao);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[3]);
+		glDrawElements(GL_POINTS, mesh->n_vertices(), GL_UNSIGNED_INT, 0);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	}
 }
 
 void che_viewer::draw_normal_field()

@@ -44,7 +44,11 @@ void che_obj::read_file(const string & file)
 
 		if(line[0] == 'f')
 		{
-			ss >> i >> j >> k;
+			ss >> i;
+			ss.ignore(256, ' ');
+			ss >> j;
+			ss.ignore(256, ' ');
+			ss >> k;
 			
 			faces.push_back(i - 1);	
 			faces.push_back(j - 1);	
