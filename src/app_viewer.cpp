@@ -58,6 +58,7 @@ int viewer_main(int nargs, const char ** args)
 	viewer::add_process('D', "Denoising", viewer_process_denoising);
 	viewer::add_process('R', "Super Resolution", viewer_process_super_resolution);
 	viewer::add_process('I', "Inpainting", viewer_process_inpaiting);
+	viewer::add_process('s', "Synthesis", viewer_process_synthesis);
 	viewer::add_process('A', "IT Inpainting", viewer_process_iterative_inpaiting);
 
 	viewer::sub_menus.push_back("Signatures");
@@ -495,6 +496,29 @@ void viewer_process_inpaiting()
 	delete phi;
 	viewer::mesh().update_normals();
 }
+
+
+void viewer_process_synthesis()
+{
+	debug_me(APP_VIEWER)
+
+	size_t freq, rt; // cosine
+	size_t n; // dct
+	size_t m, M;
+	distance_t f;
+	bool learn;
+
+	d_message(parameters: (n, m, M, f, learn))
+	cin >> n >> m >> M >> f >> learn;
+
+	basis * phi = new basis_dct(n);
+	synthesis dict(viewer::mesh(), phi, m, M, f);
+	dict.execute();
+
+	delete phi;
+	viewer::mesh().update_normals();
+}
+
 
 
 void viewer_process_iterative_inpaiting()
