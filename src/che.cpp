@@ -1210,8 +1210,6 @@ void che::init(const string & file)
 
 void che::init(const size_t & n_v, const size_t & n_f)
 {
-	delete_me();
-
 	n_vertices_ = n_v;
 	n_faces_ = n_f;
 	n_half_edges_ = n_edges_ = n_borders_ = 0;
