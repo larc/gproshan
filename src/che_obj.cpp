@@ -17,42 +17,53 @@ che_obj::che_obj(const che_obj & mesh): che(mesh)
 
 void che_obj::read_file(const string & file)
 {
-	string soff;
-	size_t n_v, n_f, v;
-
 	ifstream is(file);
 
 	assert(is.good());
 	
 	real_t x, y, z;
-	index_t i, j, k;
+	index_t face[8], i;
 
 	vector<vertex> vertices;
 	vector<index_t> faces;
 
 	char line[128];
+	string key;
+
 	while(is.getline(line, sizeof(line)))
 	{
-		stringstream ss(line + 2);
+		stringstream ss(line);
 
-		if(line[0] == 'v')
+		ss >> key;
+		if(key == "") continue;
+
+		if(key == "v")
 		{
 			ss >> x >> y >> z;
-			
 			vertices.push_back({x, y, z});
 		}
 
-		if(line[0] == 'f')
+		if(key == "f")
 		{
-			ss >> i;
-			ss.ignore(256, ' ');
-			ss >> j;
-			ss.ignore(256, ' ');
-			ss >> k;
+			for(i = 0; ss >> face[i]; i++)
+				ss.ignore(256, ' ');
 			
-			faces.push_back(i - 1);	
-			faces.push_back(j - 1);	
-			faces.push_back(k - 1);	
+			if(i == che::P) // che::P = 3, triangular mesh
+			{
+				faces.push_back(face[0] - 1);	
+				faces.push_back(face[1] - 1);	
+				faces.push_back(face[2] - 1);	
+			}
+			else if(i == 4) // quadrangular mesh, split two triangles
+			{
+				faces.push_back(face[0] - 1);	
+				faces.push_back(face[1] - 1);	
+				faces.push_back(face[3] - 1);
+
+				faces.push_back(face[1] - 1);	
+				faces.push_back(face[2] - 1);	
+				faces.push_back(face[3] - 1);
+			}
 		}
 	}
 
