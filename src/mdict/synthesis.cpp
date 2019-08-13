@@ -15,7 +15,13 @@ void synthesis::execute()
 	TIC(d_time) init_patches(); TOC(d_time)
 	debug(d_time)
 
-	TIC(d_time) learning(); TOC(d_time)
+	//TIC(d_time) learning(); TOC(d_time)
+	string f_dict;
+	d_message(Dictionary name:)
+	cin>>f_dict;
+	//string f_dict = "tmp/" + mesh->name_size() + '_' + to_string(phi_basis->dim) + '_' + to_string(m) + ".dict";
+	debug(f_dict)
+	if(!A.load(f_dict)) d_message(This dictionary does not exist Bye)
 	debug(d_time)
 
 	TIC(d_time) sparse_coding(); TOC(d_time)
