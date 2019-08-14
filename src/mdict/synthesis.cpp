@@ -21,9 +21,13 @@ void synthesis::execute()
 	cin>>name;
 	string f_dict = "tmp/" + name + ".dict";
 	debug(f_dict)
-	if(!A.load(f_dict)) d_message(This dictionary does not exist Bye) return;
+	d_message(loading dictionary)
+	if(!A.load(f_dict))
+	{ 
+		d_message(This dictionary does not exist Bye) return;
+	}
 	debug(d_time)
-
+	d_message(sparse coding)
 	TIC(d_time) sparse_coding(); TOC(d_time)
 	debug(d_time)
 
