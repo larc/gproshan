@@ -18,7 +18,7 @@ finally execute:
 	./gproshan [input mesh paths]
 
 ### Dependencies (linux)
-g++ >= 7.2, fopenmp, cuda >= 9.1, libarmadillo, libeigen, libsuitesparse, libopenblas, opengl, gnuplot, libcgal, libgles2-mesa
+g++ >= 8.3, cuda >= 10.1, libarmadillo, libeigen, libsuitesparse, libopenblas, opengl, gnuplot, libcgal, libgles2-mesa, cimg
 
 ## Contributions
 
@@ -30,17 +30,17 @@ See the paper: [CHE: A scalable topological data structure for triangular meshes
 We proposed a CPU/GPU parallel algorithm to compute geodesics distances on triangular meshes. Our
 approach is competitive with the current methods and is simple to implement. Please cite our paper:
 
-[An Iterative Parallel Algorithm for Computing Geodesic Distances on Triangular Meshes](https://arxiv.org/abs/1810.08218)
+[A minimalistic approach for fast computation of geodesic distances on triangular meshes](https://arxiv.org/abs/1810.08218)
 
 ```bibtex
 
 @ARTICLE{2018arXiv181008218R,
-	author	= { {Romero Calla}, L.~A. and {Fuentes Perez}, L.~J. and {Montenegro}, A.~A. and {Lage}, M. },
-	title	= { An Iterative Parallel Algorithm for Computing Geodesic Distances on Triangular Meshes },
+	author	= { {Romero Calla}, L.~A. and {Fuentes Perez}, L.~J. and {Montenegro}, A.~A. },
+	title	= { A minimalistic approach for fast computation of geodesic distances on triangular meshes },
 	journal	= { ArXiv e-prints },
 	eprint	= { 1810.08218 },
-	year	= 2018,
-	month	= oct,
+	year	= 2019,
+	month	= aug,
 	url	= { https://arxiv.org/abs/1810.08218 }
 }
 ```
