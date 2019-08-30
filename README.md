@@ -91,9 +91,9 @@ Please cite our paper (in Spanish):
 	booktitle	= { 2015 Latin American Computing Conference (CLEI) },
 	title		= { Efficient approach for interest points detection in non-rigid shapes },
 	year		= { 2015 },
-	pages		= { 1-8 },
-	doi		= { 10.1109/CLEI.2015.7359459 },
 	month		= { Oct },
+	pages		= { 1-8 },
+	doi		= { 10.1109/CLEI.2015.7359459 }
 }
 ```
 
