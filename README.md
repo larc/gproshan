@@ -31,6 +31,7 @@ We proposed a CPU/GPU parallel algorithm to compute geodesics distances on trian
 approach is competitive with the current methods and is simple to implement. Please cite our paper:
 
 [A minimalistic approach for fast computation of geodesic distances on triangular meshes](https://doi.org/10.1016/j.cag.2019.08.014)
+
 [ArXiv preprint](https://arxiv.org/abs/1810.08218)
 
 ```bibtex
