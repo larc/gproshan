@@ -30,18 +30,19 @@ See the paper: [CHE: A scalable topological data structure for triangular meshes
 We proposed a CPU/GPU parallel algorithm to compute geodesics distances on triangular meshes. Our
 approach is competitive with the current methods and is simple to implement. Please cite our paper:
 
-[A minimalistic approach for fast computation of geodesic distances on triangular meshes](https://arxiv.org/abs/1810.08218)
+[A minimalistic approach for fast computation of geodesic distances on triangular meshes](https://doi.org/10.1016/j.cag.2019.08.014)
+[ArXiv preprint](https://arxiv.org/abs/1810.08218)
 
 ```bibtex
-
-@ARTICLE{2018arXiv181008218R,
-	author	= { {Romero Calla}, L.~A. and {Fuentes Perez}, L.~J. and {Montenegro}, A.~A. },
-	title	= { A minimalistic approach for fast computation of geodesic distances on triangular meshes },
-	journal	= { ArXiv e-prints },
-	eprint	= { 1810.08218 },
-	year	= 2019,
-	month	= aug,
-	url	= { https://arxiv.org/abs/1810.08218 }
+@Article{ROMEROCALLA2019,
+  author   = {{Romero Calla}, Luciano A. and {Fuentes Perez}, Lizeth J. and Montenegro, Anselmo A.},
+  title    = {A minimalistic approach for fast computation of geodesic distances on triangular meshes},
+  journal  = {Computers \& Graphics},
+  year     = {2019},
+  issn     = {0097-8493},
+  doi      = {https://doi.org/10.1016/j.cag.2019.08.014},
+  keywords = {Geodesic distance, Fast marching, Triangular meshes, Parallel programming, Breadth-first search},
+  url      = {http://www.sciencedirect.com/science/article/pii/S0097849319301426}
 }
 ```
 
