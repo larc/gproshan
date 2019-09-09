@@ -32,8 +32,6 @@ approach is competitive with the current methods and is simple to implement. Ple
 
 [A minimalistic approach for fast computation of geodesic distances on triangular meshes](https://doi.org/10.1016/j.cag.2019.08.014)
 
-[ArXiv preprint](https://arxiv.org/abs/1810.08218)
-
 ```bibtex
 @Article{ROMEROCALLA2019,
   author   = {{Romero Calla}, Luciano A. and {Fuentes Perez}, Lizeth J. and Montenegro, Anselmo A.},
