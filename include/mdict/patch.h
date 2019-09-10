@@ -24,6 +24,7 @@ class patch
 		vector<index_t> vertices;		///< Vertices of the patch.
 		a_mat T;							///< Transformation matrix.
 		a_vec x;							///< Center point.
+		a_vec n;                         //normal vector
 		a_mat xyz;						///< Matrix of points.
 		a_mat phi;
 	
