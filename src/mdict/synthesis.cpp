@@ -16,6 +16,7 @@ void synthesis::execute()
 	debug(d_time)
 
 	//TIC(d_time) learning(); TOC(d_time)
+	/*
 	string name;
 	d_message(Dictionary name:)
 	cin>>name;
@@ -26,7 +27,7 @@ void synthesis::execute()
 	{ 
 		d_message(This dictionary does not exist Bye) return;
 	}
-	debug(d_time)
+	debug(d_time)*/
 	d_message(sparse coding)
 	TIC(d_time) sparse_coding(); TOC(d_time)
 	debug(d_time)

@@ -241,6 +241,7 @@ void mesh_reconstruction(che * mesh, size_t M, vector<patch> & patches, vector<v
 {
 	a_mat V(3, mesh->n_vertices(), arma::fill::zeros);
 
+	//Returning to the original coordinates.
 	#pragma omp parallel for
 	for(index_t p = 0; p < M; p++)
 	{
@@ -256,7 +257,7 @@ void mesh_reconstruction(che * mesh, size_t M, vector<patch> & patches, vector<v
 	}
 
 	distance_t h = 0.2;
-
+	//Computes the weighted average of vertices
 	#pragma omp parallel for
 	for(index_t v = v_i; v < mesh->n_vertices(); v++)
 	{

@@ -74,6 +74,11 @@ void patch::reset_xyz(che * mesh, vector<vpatches_t> & vpatches, const index_t &
 	}
 }
 
+const a_vec & patch::normal()
+{
+	return T.col(2);
+}
+
 void patch::gather_vertices(che * mesh, const index_t & v, const size_t & n_toplevels, index_t * toplevel)
 {
 	if(vertices.size()) vertices.clear();
@@ -196,11 +201,6 @@ void patch::jet_fit_directions(che * mesh, const index_t & v)
 	T(0, 2) = monge_form.normal_direction()[0];
 	T(1, 2) = monge_form.normal_direction()[1];
 	T(2, 2) = monge_form.normal_direction()[2];
-
-	//Saving the normal vector
-	n(0) = T(0, 2);
-	n(1) = T(1, 2);
-	n(2) = T(2, 2);
 
 }
 

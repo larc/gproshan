@@ -24,7 +24,6 @@ class patch
 		vector<index_t> vertices;		///< Vertices of the patch.
 		a_mat T;							///< Transformation matrix.
 		a_vec x;							///< Center point.
-		a_vec n;                         //normal vector
 		a_mat xyz;						///< Matrix of points.
 		a_mat phi;
 	
@@ -51,6 +50,8 @@ class patch
 						const index_t & p,
 						const fmask_t & mask = nullptr
 						);
+		
+		const a_vec & normal();
 
 	private:
 		/// Gather the vertices needed to compute the jet_fit_directions of the patch.
