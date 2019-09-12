@@ -141,7 +141,7 @@ void dictionary::init_patches(const bool & reset, const fmask_t & mask)
 		p.phi.set_size(p.xyz.n_cols, phi_basis->dim);
 		phi_basis->discrete(p.phi, p.xyz);
 	}
-
+	/*
 	// DRAW NORMALS DEBUG
 	for(index_t s = 0; s < M; s++)
 	{
@@ -149,6 +149,7 @@ void dictionary::init_patches(const bool & reset, const fmask_t & mask)
 		a_vec r = patches[s].x + 0.02 * patches[s].normal();
 		viewer::vectors.push_back({r(0), r(1), r(2)});
 	}
+	*/
 }
 
 void dictionary::mesh_reconstruction()
@@ -157,6 +158,35 @@ void dictionary::mesh_reconstruction()
 
 	assert(n_vertices == mesh->n_vertices());
 	mdict::mesh_reconstruction(mesh, M, patches, patches_map, A, alpha);
+}
+void dictionary::update_alphas(size_t threshold)
+{
+	size_t np_to_change = M - threshold;
+	bool patches_changed[np_to_change];
+	memset(patches_changed, 0, sizeof(patches_changed));
+	size_t count = 0;
+
+	// Choose the border patches using the threshold
+	while(count < threshold)
+	{
+		#pragma omp parallel for
+		for(index_t s = threshold; s < M; s++)
+		{
+			if(!patches_changed[s-threshold])
+			{
+				patch & p = patches[s];
+
+				// Here updating alphas, we need a structure between patches and neighboor patches
+				patches_changed[s-threshold] = 1;
+				count++;
+			}	
+
+		}
+	}
+	
+	// update alphas of choosed patches
+	// update the threshold
+	// repeat until threshold reachs all patches
 }
 
 index_t dictionary::sample(const index_t & s)
