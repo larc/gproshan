@@ -34,6 +34,9 @@ void inpainting::execute()
 	TIC(d_time) init_patches(0); TOC(d_time)
 	debug(d_time)
 
+	// Update new alphas, propagating the info towards the center.
+
+
 	// sparse coding and reconstruction with all patches
 	TIC(d_time) sparse_coding(); TOC(d_time)
 	debug(d_time)

@@ -74,7 +74,7 @@ void patch::reset_xyz(che * mesh, vector<vpatches_t> & vpatches, const index_t &
 	}
 }
 
-const a_vec & patch::normal()
+const a_vec patch::normal()
 {
 	return T.col(2);
 }

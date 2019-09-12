@@ -5,6 +5,8 @@
 #include "che_poisson.h"
 #include "che_fill_hole.h"
 
+#include "viewer/viewer.h"
+
 #include <cassert>
 
 // mesh dictionary learning and sparse coding namespace
@@ -84,6 +86,8 @@ void dictionary::init_patches(const bool & reset, const fmask_t & mask)
 {
 	debug_me(MDICT)
 
+	debug(M)
+
 	if(reset)
 	{
 		patches.resize(M);
@@ -136,6 +140,14 @@ void dictionary::init_patches(const bool & reset, const fmask_t & mask)
 		p.transform();
 		p.phi.set_size(p.xyz.n_cols, phi_basis->dim);
 		phi_basis->discrete(p.phi, p.xyz);
+	}
+
+	// DRAW NORMALS DEBUG
+	for(index_t s = 0; s < M; s++)
+	{
+		viewer::vectors.push_back({patches[s].x(0), patches[s].x(1), patches[s].x(2)});
+		a_vec r = patches[s].x + 0.02 * patches[s].normal();
+		viewer::vectors.push_back({r(0), r(1), r(2)});
 	}
 }
 

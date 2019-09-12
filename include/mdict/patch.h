@@ -51,7 +51,7 @@ class patch
 						const fmask_t & mask = nullptr
 						);
 		
-		const a_vec & normal();
+		const a_vec normal();
 
 	private:
 		/// Gather the vertices needed to compute the jet_fit_directions of the patch.
