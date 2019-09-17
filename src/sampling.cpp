@@ -58,7 +58,13 @@ bool load_sampling(vector<index_t> & points, distance_t & radio, che * mesh, siz
 			points.push_back(0);
 
 		double time_fps;
+
+	#ifdef CUDA_SUPPORT 
 		radio = farthest_point_sampling_ptp_gpu(mesh, points, time_fps, n);
+	#else
+		radio = 0;
+	#endif
+
 		debug(time_fps)
 
 		ofstream os(file);
