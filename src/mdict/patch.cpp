@@ -79,6 +79,46 @@ const a_vec patch::normal()
 	return T.col(2);
 }
 
+void patch::save()
+{
+	// Create images with the patches info
+	
+	//computing the minimun distance between points
+	distance_t min_d = 10;
+	real_t pi, pj, tmp;
+	for(index_t i = 0; i < vertices.size(); i++)
+		{
+			pi =  xyz.col(i)[2];
+			xyz.col(i)[2] = 0;
+			for(index_t j = 0; j < vertices.size(); j++)
+				{
+					if(i!=j)
+					{
+						pj =  xyz.col(j)[2];
+						xyz.col(j)[2] = 0;
+						tmp = norm(xyz.col(i)- xyz.col(j));
+						if(min_d > tmp)
+						min_d =tmp;
+						xyz.col(j)[2] = pj;
+					}
+					
+
+				}
+			xyz.col(i)[2] = pi;
+		}
+	//discretizing the points
+	distance_t range2d = 2;
+	min_d/=2;
+	size_t delta = range2d/min_d;
+
+	//building the grid
+	a_mat img[delta][delta];
+	// initialize matrix in 255 white
+	// for each x y plus 1, multiply by delta and floor, get i and j 
+	debug(delta)
+	
+}
+
 void patch::gather_vertices(che * mesh, const index_t & v, const size_t & n_toplevels, index_t * toplevel)
 {
 	if(vertices.size()) vertices.clear();

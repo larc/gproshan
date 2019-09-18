@@ -53,6 +53,8 @@ class patch
 		
 		const a_vec normal();
 
+		void save();
+
 	private:
 		/// Gather the vertices needed to compute the jet_fit_directions of the patch.
 		void gather_vertices(	che * mesh,
