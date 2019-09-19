@@ -76,10 +76,16 @@ $(TARGET): obj/$(TARGET).o $(OBJECTS) $(CUDA_OBJECTS) $(CUDA_LINK)
 test_geodesics: obj/test_geodesics.o $(OBJECTS) $(CUDA_OBJECTS) $(CUDA_LINK)
 	$(LD) $(SINGLE_P) obj/test_geodesics.o $(OBJECTS) $(CUDA_OBJECTS) $(CUDA_LINK) -o test_geodesics $(CFLAGS) $(LFLAGS) $(LIBS)
 
+test_image_denoising: obj/test_image_denoising.o $(OBJECTS) $(CUDA_OBJECTS) $(CUDA_LINK)
+	$(LD) $(SINGLE_P) obj/test_image_denoising.o $(OBJECTS) $(CUDA_OBJECTS) $(CUDA_LINK) -o test_image_denoising $(CFLAGS) $(LFLAGS) $(LIBS)
+
 obj/$(TARGET).o: $(TARGET).cpp | obj
 	$(CC) $(SINGLE_P) -c $< -o $@ $(CFLAGS) 
 
 obj/test_geodesics.o: test_geodesics.cpp | obj
+	$(CC) $(SINGLE_P) -c $< -o $@ $(CFLAGS) 
+
+obj/test_image_denoising.o: test_image_denoising.cpp | obj
 	$(CC) $(SINGLE_P) -c $< -o $@ $(CFLAGS) 
 
 obj/%.o: src/%.cpp | obj
