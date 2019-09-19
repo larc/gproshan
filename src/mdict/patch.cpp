@@ -85,7 +85,8 @@ void patch::save()
 	
 	//computing the minimun distance between points
 	distance_t min_d = 10;
-	real_t pi, pj, tmp;
+
+	real_t pi, pj, tmp, ratio = 255/2;
 	for(index_t i = 0; i < vertices.size(); i++)
 		{
 			pi =  xyz.col(i)[2];
@@ -106,16 +107,23 @@ void patch::save()
 				}
 			xyz.col(i)[2] = pi;
 		}
-	//discretizing the points
+	//discretizing the points delta  is the height and width
 	distance_t range2d = 2;
 	min_d/=2;
 	size_t delta = range2d/min_d;
 
 	//building the grid
-	a_mat img[delta][delta];
-	// initialize matrix in 255 white
+	a_mat img(delta,delta);
+	size_t x, y;
+	img.zeros();
 	// for each x y plus 1, multiply by delta and floor, get i and j 
-	debug(delta)
+	for(index_t i = 0; i < vertices.size(); i++)
+	{
+		x =  floor ( (xyz.col(i)[0] + 1) * (delta-1)/2 );
+		y =  floor ( (xyz.col(i)[1] + 1) * (delta-1)/2 );
+		img(x,y) = (xyz.col(i)[2]+1) * ratio;
+	}
+	img.save("tmp/images/test_image.jpg");
 	
 }
 
