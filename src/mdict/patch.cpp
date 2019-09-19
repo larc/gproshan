@@ -13,6 +13,10 @@
 #include <CGAL/Simple_cartesian.h>
 #include <CGAL/Monge_via_jet_fitting.h>
 
+#include <CImg.h>
+
+using namespace cimg_library;
+
 typedef real_t DFT;
 typedef CGAL::Simple_cartesian<DFT> Data_Kernel;
 typedef Data_Kernel::Point_3 DPoint;
@@ -113,9 +117,9 @@ void patch::save()
 	size_t delta = range2d/min_d;
 
 	//building the grid
-	a_mat img(delta,delta);
+	CImg<real_t> img(delta,delta);
 	size_t x, y;
-	img.zeros();
+	img.fill(0);
 	// for each x y plus 1, multiply by delta and floor, get i and j 
 	for(index_t i = 0; i < vertices.size(); i++)
 	{
@@ -123,7 +127,8 @@ void patch::save()
 		y =  floor ( (xyz.col(i)[1] + 1) * (delta-1)/2 );
 		img(x,y) = (xyz.col(i)[2]+1) * ratio;
 	}
-	img.save("tmp/images/test_image.jpg");
+	img.display();
+	//img.save("tmp/images/test_image.jpg");
 	
 }
 

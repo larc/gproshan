@@ -140,7 +140,8 @@ void dictionary::init_patches(const bool & reset, const fmask_t & mask)
 		p.transform();
 		p.phi.set_size(p.xyz.n_cols, phi_basis->dim);
 		phi_basis->discrete(p.phi, p.xyz);
-		p.save();
+		if(s == M/2)
+			p.save();
 	}
 	/*
 	// DRAW NORMALS DEBUG
