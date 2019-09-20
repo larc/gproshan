@@ -10,7 +10,7 @@ TARGET = gproshan
 SINGLE_P = 
 
 CC = g++
-LD = g++ -no-pie
+LD = $(CC) -no-pie
 CUDA = nvcc
 CFLAGS = -O3 -fopenmp $(INCLUDE_PATH)
 CUDAFLAGS = -arch=sm_50 \
