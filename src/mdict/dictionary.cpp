@@ -9,6 +9,10 @@
 
 #include <cassert>
 
+#include <CImg.h>
+
+using namespace cimg_library;
+
 // mesh dictionary learning and sparse coding namespace
 namespace mdict {
 
@@ -79,7 +83,9 @@ void dictionary::init_sampling()
 	}
 
 	s_radio = phi_basis->radio;
-	//phi_basis->radio *= f;
+	phi_basis->radio *= f;
+	debug(s_radio)
+	debug(phi_basis->radio)
 }
 
 void dictionary::init_patches(const bool & reset, const fmask_t & mask)
@@ -132,7 +138,8 @@ void dictionary::init_patches(const bool & reset, const fmask_t & mask)
 	for(index_t s = 0; s < M; s++)
 		patches[s].reset_xyz(mesh, patches_map, s, mask);
 
-	#pragma omp parallel for
+	CImgList<real_t> imlist;
+
 	for(index_t s = 0; s < M; s++)
 	{
 		patch & p = patches[s];
@@ -140,9 +147,16 @@ void dictionary::init_patches(const bool & reset, const fmask_t & mask)
 		p.transform();
 		p.phi.set_size(p.xyz.n_cols, phi_basis->dim);
 		phi_basis->discrete(p.phi, p.xyz);
-		if(s == M/2)
-			p.save();
+		
+		p.save(phi_basis->radio, 16, imlist);
 	}
+	
+
+	//imlist.display();
+	imlist.save_ffmpeg_external("tmp/patches.mpg", 5);
+
+
+
 	/*
 	// DRAW NORMALS DEBUG
 	for(index_t s = 0; s < M; s++)

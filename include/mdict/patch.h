@@ -7,6 +7,14 @@
 #include <vector>
 #include "include_arma.h"
 
+#include <CImg.h>
+
+#ifdef Success
+  #undef Success
+#endif
+
+using namespace cimg_library;
+
 using namespace std;
 
 /// Mesh dictionary learning and sparse coding namespace
@@ -53,7 +61,7 @@ class patch
 		
 		const a_vec normal();
 
-		void save();
+		void save(const real_t & radio, const size_t & imsize, CImgList<real_t> & imlist);
 
 	private:
 		/// Gather the vertices needed to compute the jet_fit_directions of the patch.

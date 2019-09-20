@@ -13,9 +13,6 @@
 #include <CGAL/Simple_cartesian.h>
 #include <CGAL/Monge_via_jet_fitting.h>
 
-#include <CImg.h>
-
-using namespace cimg_library;
 
 typedef real_t DFT;
 typedef CGAL::Simple_cartesian<DFT> Data_Kernel;
@@ -83,12 +80,12 @@ const a_vec patch::normal()
 	return T.col(2);
 }
 
-void patch::save()
+void patch::save(const real_t & radio, const size_t & imsize, CImgList<real_t> & imlist)
 {
 	// Create images with the patches info
 	
 	//computing the minimun distance between points
-	distance_t min_d = 10;
+	/*distance_t min_d = 10;
 
 	real_t pi, pj, tmp, ratio = 255/2;
 	for(index_t i = 0; i < vertices.size(); i++)
@@ -113,21 +110,23 @@ void patch::save()
 		}
 	//discretizing the points delta  is the height and width
 	distance_t range2d = 2;
-	min_d/=2;
-	size_t delta = range2d/min_d;
+	//0.min_d/=2;*/
+
 
 	//building the grid
-	CImg<real_t> img(delta,delta);
+	CImg<real_t> img(imsize, imsize);
 	size_t x, y;
 	img.fill(0);
 	// for each x y plus 1, multiply by delta and floor, get i and j 
 	for(index_t i = 0; i < vertices.size(); i++)
 	{
-		x =  floor ( (xyz.col(i)[0] + 1) * (delta-1)/2 );
-		y =  floor ( (xyz.col(i)[1] + 1) * (delta-1)/2 );
-		img(x,y) = (xyz.col(i)[2]+1) * ratio;
+		x = floor((xyz.col(i)[0] + radio) * (imsize - 1) / (2 * radio));
+		y = floor((xyz.col(i)[1] + radio) * (imsize - 1) / (2 * radio));
+		img(x,y) = xyz.col(i)[2];
 	}
-	img.display();
+	
+	img.resize(128, 128);
+	imlist.insert(img.normalize(0, 255));
 	//img.save("tmp/images/test_image.jpg");
 	
 }
@@ -190,7 +189,7 @@ void patch::gather_vertices(che * mesh, const index_t & v, const distance_t & ra
 		p = T.t() * (p - x);
 		p(2) = 0;
 		
-		if(vertices.size() > expected_nv) break;
+		//if(vertices.size() > expected_nv) break;
 		if(toplevel[v] != current_toplevel)
 		{
 			if(count_toplevel == 0) break;
