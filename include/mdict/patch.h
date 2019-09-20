@@ -82,6 +82,8 @@ class patch
 		void jet_fit_directions(che * mesh,
 								const index_t & v
 								);
+		real_t get_min_z();
+		void update_heights(real_t & min);
 		
 
 	friend class dictionary;

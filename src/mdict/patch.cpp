@@ -83,35 +83,6 @@ const a_vec patch::normal()
 void patch::save(const real_t & radio, const size_t & imsize, CImgList<real_t> & imlist)
 {
 	// Create images with the patches info
-	
-	//computing the minimun distance between points
-	/*distance_t min_d = 10;
-
-	real_t pi, pj, tmp, ratio = 255/2;
-	for(index_t i = 0; i < vertices.size(); i++)
-		{
-			pi =  xyz.col(i)[2];
-			xyz.col(i)[2] = 0;
-			for(index_t j = 0; j < vertices.size(); j++)
-				{
-					if(i!=j)
-					{
-						pj =  xyz.col(j)[2];
-						xyz.col(j)[2] = 0;
-						tmp = norm(xyz.col(i)- xyz.col(j));
-						if(min_d > tmp)
-						min_d =tmp;
-						xyz.col(j)[2] = pj;
-					}
-					
-
-				}
-			xyz.col(i)[2] = pi;
-		}
-	//discretizing the points delta  is the height and width
-	distance_t range2d = 2;
-	//0.min_d/=2;*/
-
 
 	//building the grid
 	CImg<real_t> img(imsize, imsize);
@@ -254,6 +225,19 @@ void patch::jet_fit_directions(che * mesh, const index_t & v)
 	T(1, 2) = monge_form.normal_direction()[1];
 	T(2, 2) = monge_form.normal_direction()[2];
 
+}
+
+real_t patch::get_min_z()
+{
+
+	return  xyz.row(2).min();
+}
+void patch::update_heights(real_t & min)
+{
+	for(index_t i = 0; i < vertices.size(); i++)
+	{
+		xyz.col(i)[2] += min;
+	}
 }
 
 } // mdict

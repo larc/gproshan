@@ -138,8 +138,7 @@ void dictionary::init_patches(const bool & reset, const fmask_t & mask)
 	for(index_t s = 0; s < M; s++)
 		patches[s].reset_xyz(mesh, patches_map, s, mask);
 
-	CImgList<real_t> imlist;
-
+	#pragma omp parallel for
 	for(index_t s = 0; s < M; s++)
 	{
 		patch & p = patches[s];
@@ -147,13 +146,24 @@ void dictionary::init_patches(const bool & reset, const fmask_t & mask)
 		p.transform();
 		p.phi.set_size(p.xyz.n_cols, phi_basis->dim);
 		phi_basis->discrete(p.phi, p.xyz);
-		
-		p.save(phi_basis->radio, 16, imlist);
 	}
-	
 
-	//imlist.display();
+	real_t zmin = INFINITY;
+
+	#pragma omp paralle for reduction(min: zmin)
+	for(index_t s = 0; s < M; s++)
+		zmin = min(zmin, patches[s].get_min_z());
+	
+#ifndef NDEBUG
+	CImgList<real_t> imlist;
+	for(index_t s = 0; s < M; s++)
+		patches[s].save(phi_basis->radio, 16, imlist);
 	imlist.save_ffmpeg_external("tmp/patches.mpg", 5);
+#endif	
+
+	#pragma omp parallel for
+	for(index_t s = 0; s < M; s++)
+		patches[s].update_heights(zmin);
 
 
 
