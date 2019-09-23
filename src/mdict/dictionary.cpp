@@ -149,10 +149,14 @@ void dictionary::init_patches(const bool & reset, const fmask_t & mask)
 	}
 
 	real_t zmin = INFINITY;
+	real_t zmax = -INFINITY;
 
-	#pragma omp paralle for reduction(min: zmin)
+	#pragma omp parallel for reduction(min: zmin)
 	for(index_t s = 0; s < M; s++)
-		zmin = min(zmin, patches[s].get_min_z());
+	{
+		zmin = max(zmin, patches[s].get_min_z());
+		zmax = max(zmax, patches[s].get_max_z());
+	}	
 	
 #ifndef NDEBUG
 	CImgList<real_t> imlist;
@@ -163,7 +167,7 @@ void dictionary::init_patches(const bool & reset, const fmask_t & mask)
 
 	#pragma omp parallel for
 	for(index_t s = 0; s < M; s++)
-		patches[s].update_heights(zmin);
+		patches[s].update_heights(zmin, zmax);
 
 
 

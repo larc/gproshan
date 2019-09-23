@@ -83,7 +83,8 @@ class patch
 								const index_t & v
 								);
 		real_t get_min_z();
-		void update_heights(real_t & min);
+		real_t get_max_z();
+		void update_heights(real_t & min, real_t & max);
 		
 
 	friend class dictionary;
