@@ -32,7 +32,10 @@ class dictionary
 		vector<vpatches_t> patches_map;		///< invert index vertex to patches.
 
 		double d_time;							///< time of operations.
-		bool d_plot;							///< plot atoms and basis with gnuplot.
+		bool d_plot;
+									///< plot atoms and basis with gnuplot.
+		real_t minz;
+		real_t maxz;
 	
 	public:
 		static size_t L;					///< sparsity, norm L_0, default 10.

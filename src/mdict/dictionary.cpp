@@ -41,11 +41,11 @@ void dictionary::learning()
 	{
 		A.eye(phi_basis->dim, m);
 		// A.random(phi_basis->dim, m);
-
 		KSVDT(A, patches, M, L);
+			d_message(Ok)
 		A.save(f_dict);
 	}
-
+	
 	assert(A.n_rows == phi_basis->dim);
 	assert(A.n_cols == m);
 
@@ -156,7 +156,9 @@ void dictionary::init_patches(const bool & reset, const fmask_t & mask)
 	{
 		zmin = max(zmin, patches[s].get_min_z());
 		zmax = max(zmax, patches[s].get_max_z());
-	}	
+	}
+	minz = zmin;
+	maxz = zmax;
 /*	
 #ifndef NDEBUG
 	CImgList<real_t> imlist;
@@ -164,11 +166,11 @@ void dictionary::init_patches(const bool & reset, const fmask_t & mask)
 		patches[s].save(phi_basis->radio, 16, imlist);
 	imlist.save_ffmpeg_external("tmp/patches.mpg", 5);
 #endif	
-
+*/
+/*
 	#pragma omp parallel for
 	for(index_t s = 0; s < M; s++)
-		patches[s].update_heights(zmin, zmax);
-
+		patches[s].update_heights(minz, maxz, 1);
 */
 
 	/*
@@ -187,7 +189,7 @@ void dictionary::mesh_reconstruction()
 	debug_me(MDICT)
 
 	assert(n_vertices == mesh->n_vertices());
-	mdict::mesh_reconstruction(mesh, M, patches, patches_map, A, alpha);
+	mdict::mesh_reconstruction(mesh, M, patches, patches_map, A, alpha, minz, maxz);
 }
 void dictionary::update_alphas(a_mat & alpha, size_t threshold)
 {

@@ -237,15 +237,26 @@ real_t patch::get_max_z()
 	return  xyz.row(2).max();
 }
 
-void patch::update_heights(real_t & min, real_t & max)
+void patch::update_heights(real_t & min, real_t & max, bool flag)
 {
 	real_t tmp;
-	for(index_t i = 0; i < vertices.size(); i++)
+	if(flag)
 	{
-		tmp = xyz.col(i)[2];
-		tmp = (tmp - min) / (max - min) ;
-		xyz.col(i)[2] = tmp;
+		for(index_t i = 0; i < xyz.n_cols; i++)
+			{
+				xyz(2, i) = (xyz(2, i) - min)  / (max - min);
+			}
+	}	
+	else
+	{
+		for(index_t i = 0; i < vertices.size(); i++)
+		{
+			tmp = xyz.col(i)[2];
+			tmp = (max - min) * tmp + min;
+			xyz.col(i)[2] = tmp;
+		}
 	}
+	
 }
 
 } // mdict

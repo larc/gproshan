@@ -62,6 +62,7 @@ class patch
 		const a_vec normal();
 
 		void save(const real_t & radio, const size_t & imsize, CImgList<real_t> & imlist);
+		void update_heights(real_t & min, real_t & max, bool flag);
 
 	private:
 		/// Gather the vertices needed to compute the jet_fit_directions of the patch.
@@ -84,7 +85,6 @@ class patch
 								);
 		real_t get_min_z();
 		real_t get_max_z();
-		void update_heights(real_t & min, real_t & max);
 		
 
 	friend class dictionary;

@@ -1,4 +1,4 @@
-#include "d_mesh.h"
+ #include "d_mesh.h"
 
 #ifndef CGAL_PATCH_DEFS
 	#define CGAL_PATCH_DEFS
@@ -237,7 +237,7 @@ void partial_mesh_reconstruction(size_t old_n_vertices, che * mesh, size_t M, ve
 
 }
 
-void mesh_reconstruction(che * mesh, size_t M, vector<patch> & patches, vector<vpatches_t> & patches_map, a_mat & A, a_mat & alpha, const index_t & v_i)
+void mesh_reconstruction(che * mesh, size_t M, vector<patch> & patches, vector<vpatches_t> & patches_map, a_mat & A, a_mat & alpha, real_t & zmin, real_t & zmax, const index_t & v_i)
 {
 	a_mat V(3, mesh->n_vertices(), arma::fill::zeros);
 
@@ -270,6 +270,11 @@ void mesh_reconstruction(che * mesh, size_t M, vector<patch> & patches, vector<v
 			V(2, v) = mesh->gt(v).z;
 		}
 	}
+/*
+	#pragma omp parallel for
+	for(index_t s = 0; s < M; s++)
+		patches[s].update_heights(zmin, zmax, 0);
+*/
 	// ------------------------------------------------------------------------
 
 	vertex * new_vertices = (vertex *) V.memptr();
@@ -355,6 +360,8 @@ void mesh_reconstruction(che * mesh, size_t M, vector<patch_t> & patches, vector
 			V(2, v) = mesh->gt(v).z;
 		}
 	}
+
+	
 	// ------------------------------------------------------------------------
 
 	vertex * new_vertices = (vertex *) V.memptr();

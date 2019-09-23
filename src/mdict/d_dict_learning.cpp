@@ -6,6 +6,8 @@
 #include <vector>
 #include <fstream>
 
+#include <cassert>
+
 // mesh dictionary learning and sparse coding namespace
 namespace mdict {
 
@@ -36,6 +38,7 @@ void OMP(a_vec & alpha, a_vec & x, a_mat & D, size_t L)
 		r = x - DD * aa;
 	}
 
+//	assert(selected_atoms.n_elem == alpha.n_elem);
 	alpha.elem(selected_atoms) = aa;
 }
 
@@ -73,6 +76,8 @@ void KSVD(a_mat & D, a_mat & X, size_t L)
 				svd(U, s, V, E);
 				D.col(j) = U.col(0);
 				a_rowvec a = alpha.row(j);
+
+//				assert(a.n_elem == omega.n_elem);
 				a.elem(omega) = s(0) * V.col(0);
 				alpha.row(j) = a;
 			}
@@ -109,8 +114,8 @@ void KSVDT(a_mat & A, vector<patch> & patches, size_t M, size_t L)
 	size_t iter = L;
 	while(iter--)
 	{
+		
 		OMP_all_patches_ksvt(alpha, A, patches, M, L);
-
 		#pragma omp parallel for
 		for(index_t j = 0; j < m; j++)
 		{
