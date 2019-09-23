@@ -185,11 +185,11 @@ void dictionary::mesh_reconstruction()
 	assert(n_vertices == mesh->n_vertices());
 	mdict::mesh_reconstruction(mesh, M, patches, patches_map, A, alpha);
 }
-void dictionary::update_alphas(size_t threshold)
+void dictionary::update_alphas(a_mat & alpha, size_t threshold)
 {
-	size_t np_to_change = M - threshold;
-	bool patches_changed[np_to_change];
-	memset(patches_changed, 0, sizeof(patches_changed));
+	size_t np_new = M - threshold;
+	bool patches_covered[np_new];
+	memset(patches_covered, 0, sizeof(patches_covered));
 	size_t count = 0;
 
 	// Choose the border patches using the threshold
@@ -197,13 +197,26 @@ void dictionary::update_alphas(size_t threshold)
 	{
 		#pragma omp parallel for
 		for(index_t s = threshold; s < M; s++)
-		{
-			if(!patches_changed[s-threshold])
-			{
-				patch & p = patches[s];
+		{	
 
+			if(!patches_covered[s-threshold])
+			{	
+				a_vec sum;
+				sum.zeros();
+				size_t c = 0;
 				// Here updating alphas, we need a structure between patches and neighboor patches
-				patches_changed[s-threshold] = 1;
+				//We can simulate that structure by using patches map
+				for(auto p: patches_map[s])
+				{
+					if(p.first < threshold || patches_covered[p.first-threshold])
+					{
+						sum += alpha.col(p.first);
+					}	
+					sum /= c;
+
+				}
+				alpha.col(s) = sum;
+				patches_covered[s-threshold] = 1;
 				count++;
 			}	
 

@@ -35,7 +35,7 @@ void inpainting::execute()
 	debug(d_time)
 
 	// Update new alphas, propagating the info towards the center
-	TIC(d_time) update_alphas(threshold); TOC(d_time)
+	TIC(d_time) update_alphas(alpha, threshold); TOC(d_time)
 	debug(d_time)
 
 	// sparse coding and reconstruction with all patches

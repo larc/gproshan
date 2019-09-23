@@ -59,7 +59,7 @@ class dictionary
 							);
 
 		void mesh_reconstruction();
-		void update_alphas(size_t threshold);
+		void update_alphas(a_mat & alpha, size_t threshold);
 
 		index_t sample(const index_t & s);
 };
