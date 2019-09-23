@@ -232,7 +232,7 @@ real_t patch::get_min_z()
 	return  xyz.row(2).min();
 }
 
-real_t patch::get_min_z()
+real_t patch::get_max_z()
 {
 	return  xyz.row(2).max();
 }
@@ -242,7 +242,7 @@ void patch::update_heights(real_t & min, real_t & max)
 	for(index_t i = 0; i < vertices.size(); i++)
 	{
 		xyz.col(i)[2] -= min;
-		xyz.col(i)[2] /= (max - min));
+		xyz.col(i)[2] /= (max - min);
 	}
 }
 
