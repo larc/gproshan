@@ -239,10 +239,12 @@ real_t patch::get_max_z()
 
 void patch::update_heights(real_t & min, real_t & max)
 {
+	real_t tmp;
 	for(index_t i = 0; i < vertices.size(); i++)
 	{
-		xyz.col(i)[2] -= min;
-		xyz.col(i)[2] /= (max - min);
+		tmp = xyz.col(i)[2];
+		tmp = (tmp - min) / (max - min) ;
+		xyz.col(i)[2] = tmp;
 	}
 }
 

@@ -157,7 +157,7 @@ void dictionary::init_patches(const bool & reset, const fmask_t & mask)
 		zmin = max(zmin, patches[s].get_min_z());
 		zmax = max(zmax, patches[s].get_max_z());
 	}	
-	
+/*	
 #ifndef NDEBUG
 	CImgList<real_t> imlist;
 	for(index_t s = 0; s < M; s++)
@@ -169,7 +169,7 @@ void dictionary::init_patches(const bool & reset, const fmask_t & mask)
 	for(index_t s = 0; s < M; s++)
 		patches[s].update_heights(zmin, zmax);
 
-
+*/
 
 	/*
 	// DRAW NORMALS DEBUG
