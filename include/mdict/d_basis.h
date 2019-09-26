@@ -20,6 +20,7 @@ class basis
 		size_t dim;
 
 	public:
+		virtual ~basis() = default;
 		virtual void discrete(a_mat & phi, const a_mat & xy) = 0;
 		void plot_basis();
 		void plot_atoms(const a_mat & A);

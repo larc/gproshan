@@ -169,11 +169,11 @@ double solve_positive_definite_gpu(a_mat & x, const a_sp_mat & A, const a_mat & 
 	int * hA_row_indices = new int[A.n_nonzero];
 	
 	#pragma omp parallel for
-	for(int i = 0; i <= A.n_cols; i++)
+	for(index_t i = 0; i <= A.n_cols; i++)
 		hA_col_ptrs[i] = A.col_ptrs[i];
 	
 	#pragma omp parallel for
-	for(int i = 0; i < A.n_nonzero; i++)
+	for(index_t i = 0; i < A.n_nonzero; i++)
 		hA_row_indices[i] = A.row_indices[i];
 	
 	double solve_time = solve_positive_definite_cusolver(A.n_rows, A.n_nonzero, A.values, hA_col_ptrs, hA_row_indices, b.memptr(), x.memptr());

@@ -100,7 +100,6 @@ che * mesh_fill_hole(che * mesh, const vector<index_t> & border_vertices, const 
 		return end_v - i + 1;
 	};
 
-	index_t h = 0;
 	for(auto & p: split_indices)
 	{
 		if(!hole)
@@ -234,7 +233,7 @@ void split_border(vector<pair<index_t, index_t> > & split_indices, che * mesh, c
 	{
 	//	clusters = new index_t[n];
 		index_t a, b;
-		a = NIL;
+		a = NIL; b = NIL; // review this
 		for(index_t i = 0; i < n; i++)
 		{
 			distance_t d, d_min = INFINITY;

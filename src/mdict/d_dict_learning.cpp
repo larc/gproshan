@@ -11,7 +11,7 @@ namespace mdict {
 
 void OMP(a_vec & alpha, a_vec & x, a_mat & D, size_t L)
 {
-	size_t n = x.n_elem;
+//	size_t n = x.n_elem;
 	size_t m = D.n_cols;
 
 	arma::uword max_i;
@@ -41,7 +41,7 @@ void OMP(a_vec & alpha, a_vec & x, a_mat & D, size_t L)
 
 void KSVD(a_mat & D, a_mat & X, size_t L)
 {
-	size_t n = X.n_rows;
+//	size_t n = X.n_rows;
 	size_t m = D.n_cols;
 	size_t M = X.n_cols;
 

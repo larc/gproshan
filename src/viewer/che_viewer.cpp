@@ -147,9 +147,9 @@ void che_viewer::update_normals()
 		he = f * che::P;
 		n = mesh->normal_he(he);
 
-		for(int i = 0; i < che::P; i++)
+		for(index_t i = 0; i < che::P; i++)
 		{
-			#pragma omp critial
+			#pragma omp critical
 			normals[mesh->vt(he)] += n;
 		
 			#pragma omp atomic
@@ -285,7 +285,7 @@ void che_viewer::draw_mesh_info()
 
 	char str[256];
 	float color[4] = {1, .75, .25, 1};
-	int h = 16, dh = 16;
+	int h = 16; // dh = 16;
 
 	sprintf(str, "%s", mesh->name().c_str());
 	draw_str(str, 32, 32, color, GLUT_BITMAP_HELVETICA_18);

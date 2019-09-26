@@ -437,7 +437,6 @@ void viewer_process_denoising()
 {
 	debug_me(APP_VIEWER)
 
-	size_t freq, rt; // cosine
 	size_t n; // dct
 	size_t m, M;
 	distance_t f;
@@ -458,7 +457,6 @@ void viewer_process_super_resolution()
 {
 	debug_me(APP_VIEWER)
 
-	size_t freq, rt; // cosine
 	size_t n; // dct
 	size_t m, M;
 	distance_t f;
@@ -479,7 +477,6 @@ void viewer_process_inpaiting()
 {
 	debug_me(APP_VIEWER)
 
-	size_t freq, rt; // cosine
 	size_t n; // dct
 	size_t m, M;
 	distance_t f;

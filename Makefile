@@ -9,7 +9,7 @@ TARGET = gproshan
 # SINGLE_P = -DSINGLE_P to compile with single precision
 SINGLE_P = 
 
-CC = g++
+CC = g++ -Wall
 LD = $(CC) -no-pie
 CUDA = nvcc
 CFLAGS = -O3 -fopenmp $(INCLUDE_PATH)
@@ -71,7 +71,7 @@ tmp:
 	mkdir tmp
 
 library: $(filter-out obj/main.o, $(OBJECTS) $(CUDA_OBJECTS)) obj/link_cuda.o | lib
-	ar -cvq lib/lib$(TARGET).a $(filter-out obj/main.o, $(OBJECTS) $(CUDA_OBJECTS)) obj/link_cuda.o
+	ar -cvq lib/lib$(TARGET).a $(filter-out obj/test_geodesics obj/main.o, $(OBJECTS) $(CUDA_OBJECTS)) obj/link_cuda.o
 
 lib:
 	mkdir lib
