@@ -117,7 +117,7 @@ void decimation::compute_quadrics()
 void decimation::order_edges(index_t * const & sort_edges, real_t * const & error_edges)
 {
 	#pragma omp parallel for
-	for(int e = 0; e < mesh->n_edges(); e++)
+	for(index_t e = 0; e < mesh->n_edges(); e++)
 	{
 		sort_edges[e] = e;
 		error_edges[e] = compute_error(e);

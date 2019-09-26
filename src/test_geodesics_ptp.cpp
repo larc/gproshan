@@ -19,7 +19,6 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 	const char * exact_dist_path = args[3];
 
 	int n_test = nargs == 5 ? atoi(args[4]) : 10;
-	bool cpu = 0;
 
 	FILE * ftable;
 	#ifdef SINGLE_P
@@ -75,12 +74,12 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 			}
 		#endif
 		
-		int t_min = 0;
-		for(int i = 1; i < sizeof(Time) / sizeof(double); i++)
+		index_t t_min = 0;
+		for(index_t i = 1; i < sizeof(Time) / sizeof(double); i++)
 			if(Time[t_min] > Time[i]) t_min = i;
 		
-		int e_min = 0;
-		for(int i = 1; i < sizeof(Error) / sizeof(distance_t); i++)
+		index_t e_min = 0;
+		for(index_t i = 1; i < sizeof(Error) / sizeof(distance_t); i++)
 			if(Error[e_min] > Error[i]) e_min = i;
 		
 		fprintf(ftable, "%20s ", ("\\verb|" + filename + '|').c_str());

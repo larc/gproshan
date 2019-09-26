@@ -18,7 +18,7 @@ finally execute:
 	./gproshan [input mesh paths]
 
 ### Dependencies (linux)
-g++ >= 7.2, fopenmp, cuda >= 9.1, libarmadillo, libeigen, libsuitesparse, libopenblas, opengl, gnuplot, libcgal, libgles2-mesa
+g++ >= 8.3, cuda >= 10.1, libarmadillo, libeigen, libsuitesparse, libopenblas, opengl, gnuplot, libcgal, libgles2-mesa, cimg
 
 ## Contributions
 
@@ -30,18 +30,18 @@ See the paper: [CHE: A scalable topological data structure for triangular meshes
 We proposed a CPU/GPU parallel algorithm to compute geodesics distances on triangular meshes. Our
 approach is competitive with the current methods and is simple to implement. Please cite our paper:
 
-[An Iterative Parallel Algorithm for Computing Geodesic Distances on Triangular Meshes](https://arxiv.org/abs/1810.08218)
+[A minimalistic approach for fast computation of geodesic distances on triangular meshes](https://doi.org/10.1016/j.cag.2019.08.014)
 
 ```bibtex
-
-@ARTICLE{2018arXiv181008218R,
-	author	= { {Romero Calla}, L.~A. and {Fuentes Perez}, L.~J. and {Montenegro}, A.~A. and {Lage}, M. },
-	title	= { An Iterative Parallel Algorithm for Computing Geodesic Distances on Triangular Meshes },
-	journal	= { ArXiv e-prints },
-	eprint	= { 1810.08218 },
-	year	= 2018,
-	month	= oct,
-	url	= { https://arxiv.org/abs/1810.08218 }
+@Article{ROMEROCALLA2019,
+  author   = {{Romero Calla}, Luciano A. and {Fuentes Perez}, Lizeth J. and Montenegro, Anselmo A.},
+  title    = {A minimalistic approach for fast computation of geodesic distances on triangular meshes},
+  journal  = {Computers \& Graphics},
+  year     = {2019},
+  issn     = {0097-8493},
+  doi      = {https://doi.org/10.1016/j.cag.2019.08.014},
+  keywords = {Geodesic distance, Fast marching, Triangular meshes, Parallel programming, Breadth-first search},
+  url      = {http://www.sciencedirect.com/science/article/pii/S0097849319301426}
 }
 ```
 
@@ -91,9 +91,9 @@ Please cite our paper (in Spanish):
 	booktitle	= { 2015 Latin American Computing Conference (CLEI) },
 	title		= { Efficient approach for interest points detection in non-rigid shapes },
 	year		= { 2015 },
-	pages		= { 1-8 },
-	doi		= { 10.1109/CLEI.2015.7359459 },
 	month		= { Oct },
+	pages		= { 1-8 },
+	doi		= { 10.1109/CLEI.2015.7359459 }
 }
 ```
 

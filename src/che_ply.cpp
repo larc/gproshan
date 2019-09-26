@@ -38,8 +38,8 @@ void che_ply::read_file(const string & file)
 	ifstream is(file);
 	assert(is.good());
 	
-	size_t xyz, vbytes = 0;
-	size_t fn, fbytes;
+	size_t xyz = 0, vbytes = 0;
+	size_t fn = 0, fbytes = 0;
 
 	while(getline(is, str) && str != "end_header")
 	{
@@ -125,11 +125,13 @@ void che_ply::read_file(const string & file)
 			}
 		}
 
-		char fbuffer[fbytes];	// preparing for a hexagon
+		//char fbuffer[fbytes];	// preparing for a hexagon
 		index_t p, he = 0;
 		while(n_f--)
 		{
+			fn = 0;
 			is.read(vbuffer, fn);
+
 			if(fn == 1) p = *((char *) vbuffer);
 			if(fn == 2) p = *((short *) vbuffer);
 			if(fn == 4) p = *((int *) vbuffer);

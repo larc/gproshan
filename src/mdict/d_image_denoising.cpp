@@ -81,7 +81,7 @@ void test_image_denoising(string file)
 	for(index_t x = 0; x < rows; x++)
 	for(index_t y = 0; y < cols; y++)
 	{
-		int dx = p, dy = p;
+		index_t dx = p, dy = p;
 		if(x < p && x < dx) dx = x + 1;
 		if(y < p && y < dy) dy = y + 1;
 		if((rows - x) < p && (rows - x) < dx) dx = rows - x;

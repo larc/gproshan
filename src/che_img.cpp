@@ -31,8 +31,8 @@ void che_img::read_file(const string & file)
 	init(img.height() * img.width(), 2 * (img.height() - 1) * (img.width() - 1));
 	
 	index_t v = 0, he = 0;
-	for(index_t i = 0; i < img.width(); i++)
-	for(index_t j = 0; j < img.height(); j++)
+	for(int i = 0; i < img.width(); i++)
+	for(int j = 0; j < img.height(); j++)
 	{
 		if(i && j)
 		{

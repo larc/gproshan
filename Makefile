@@ -109,8 +109,8 @@ obj:
 tmp:
 	mkdir tmp
 
-library: $(filter-out obj/main.o, $(OBJECTS) $(CUDA_OBJECTS)) $(CUDA_LINK) | lib
-	ar -cvq lib/lib$(TARGET).a $(filter-out obj/main.o, $(OBJECTS) $(CUDA_OBJECTS)) $(CUDA_LINK)
+library: $(filter-out obj/main.o, $(OBJECTS) $(CUDA_OBJECTS)) obj/link_cuda.o | lib
+	ar -cvq lib/lib$(TARGET).a $(filter-out obj/test_geodesics obj/main.o, $(OBJECTS) $(CUDA_OBJECTS)) obj/link_cuda.o
 
 lib:
 	mkdir lib

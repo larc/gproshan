@@ -513,7 +513,7 @@ void viewer::draw_polygons()
 	glEnable(GL_POLYGON_OFFSET_FILL);
 	glPolygonOffset(1., 1.);
 
-	for(int i = 0; i < n_meshes; i++)
+	for(index_t i = 0; i < n_meshes; i++)
 	{
 		glViewport(meshes[i].vx * ww, meshes[i].vy * wh, ww, wh);
 		meshes[i].draw();
@@ -534,7 +534,7 @@ void viewer::draw_wireframe()
 	
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	
-	for(int i = 0; i < n_meshes; i++)
+	for(index_t i = 0; i < n_meshes; i++)
 	{
 		glViewport(meshes[i].vx * ww, meshes[i].vy * wh, ww, wh);
 		meshes[i].draw();
@@ -761,7 +761,7 @@ void viewer::pick_vertex(int x, int y)
 	glMatrixMode(GL_MODELVIEW);
 	long hits = glRenderMode(GL_RENDER);
 
-	int index = -1;
+	index_t index = -1;
 	double min_z = 1.0e100;
 	for(long i = 0; i < hits; ++i)
 	{
@@ -774,7 +774,7 @@ void viewer::pick_vertex(int x, int y)
 	}
 	delete[] buf;
 
-	if(index >= 0 && index < mesh()->n_vertices())
+	if(index != NIL && index < mesh()->n_vertices())
 	{
 		select_vertices.push_back(index);
 		
