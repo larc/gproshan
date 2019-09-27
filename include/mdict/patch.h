@@ -85,6 +85,8 @@ class patch
 								);
 		real_t get_min_z();
 		real_t get_max_z();
+
+		void save_z(ostream & os);
 		
 
 	friend class dictionary;

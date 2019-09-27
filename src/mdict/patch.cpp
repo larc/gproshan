@@ -160,7 +160,7 @@ void patch::gather_vertices(che * mesh, const index_t & v, const distance_t & ra
 		p = T.t() * (p - x);
 		p(2) = 0;
 		
-		//if(vertices.size() > expected_nv) break;
+		if(vertices.size() > expected_nv) break;
 		if(toplevel[v] != current_toplevel)
 		{
 			if(count_toplevel == 0) break;
@@ -257,6 +257,16 @@ void patch::update_heights(real_t & min, real_t & max, bool flag)
 		}
 	}
 	
+}
+
+void patch::save_z(ostream & os)
+{
+	index_t i;
+	for( i = 0; i < vertices.size()-1; i++)
+	{
+		os<<xyz.col(i)[2]<<"\t";
+	}
+	os<<xyz.col(i)[2]<<"\n";
 }
 
 } // mdict

@@ -159,6 +159,7 @@ void dictionary::init_patches(const bool & reset, const fmask_t & mask)
 	}
 	minz = zmin;
 	maxz = zmax;
+	debug(minz)
 /*	
 #ifndef NDEBUG
 	CImgList<real_t> imlist;
@@ -172,7 +173,18 @@ void dictionary::init_patches(const bool & reset, const fmask_t & mask)
 	for(index_t s = 0; s < M; s++)
 		patches[s].update_heights(minz, maxz, 1);
 */
+	/*Saving Patches*/
 
+	string file = "patches-mat.txt";
+	debug(PATH_TEST)
+	ofstream os(PATH_TEST + file );
+	debug(PATH_TEST)
+	for(index_t s = 0; s < M; s++)
+	{
+		patch & p = patches[s];
+		p.save_z(os);
+	}
+	os.close();
 	/*
 	// DRAW NORMALS DEBUG
 	for(index_t s = 0; s < M; s++)
