@@ -94,6 +94,9 @@ int viewer_main(int nargs, const char ** args)
 	viewer::init(meshes);
 	
 	if(dist) delete [] dist;
+	for(che * mesh: meshes)
+		delete mesh;
+
 	return 0;
 }
 

@@ -23,14 +23,13 @@ che_viewer::che_viewer()
 
 che_viewer::~che_viewer()
 {
-	if(!mesh) return;
+	if(_n_vertices) return;
 
 	glDeleteBuffers(4, vbo);
 	glDeleteVertexArrays(1, &vao);
 
 	if(normals) delete [] normals;
 	if(colors) delete [] colors;
-	delete mesh;
 }
 
 che *& che_viewer::operator -> ()

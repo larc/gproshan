@@ -22,7 +22,7 @@ class vertex
 
 	public:
 		vertex(const real_t & x_ = 0, const real_t & y_ = 0, const real_t & z_ = 0);
-		virtual ~vertex() = default;
+		~vertex() = default;
 
 		real_t & operator [] (const index_t & i);
 		const real_t & operator [] (const index_t & i) const;
