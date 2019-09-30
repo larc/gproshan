@@ -1,9 +1,10 @@
+#include "quaternion.h"
+
 #include <cmath>
 #include <iostream>
 
 using namespace std;
 
-#include "quaternion.h"
 
 quaternion :: quaternion(void)
 : s(0.), v(0., 0., 0.)
@@ -217,7 +218,7 @@ quaternion slerp(const quaternion & q0, const quaternion & q1, real_t t)
 	return m * p;
 }
 
-std::ostream & operator<<(std::ostream & os, const quaternion & q)
+ostream & operator<<(ostream & os, const quaternion & q)
 {
 	return os << "(" << q.re() << ", " << q.im() << ")";
 }

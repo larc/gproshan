@@ -3,6 +3,9 @@
 #include <cstring>
 #include <cmath>
 
+using namespace std;
+
+
 dijkstra::dijkstra(che * shape, index_t src)
 {
 	n_vertices = shape->n_vertices();
@@ -95,3 +98,4 @@ void dijkstra::run(che * shape)
 
 	delete visited;
 }
+

@@ -7,6 +7,9 @@
 #include <cmath>
 #include <numeric>
 
+using namespace std;
+
+
 che_viewer::che_viewer()
 {
 	mesh = NULL;

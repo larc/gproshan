@@ -1,5 +1,6 @@
 #include "fairing.h"
 
+
 fairing::fairing()
 {
 	positions = NULL;

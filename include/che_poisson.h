@@ -8,7 +8,7 @@
 */
 void poisson(che * mesh, const size_t & old_n_vertices, index_t k);
 
-void biharmonic_interp_2(che * mesh, const size_t & old_n_vertices, const size_t & n_vertices, const vector<index_t> & border_vertices, const index_t & k);
+void biharmonic_interp_2(che * mesh, const size_t & old_n_vertices, const size_t & n_vertices, const std::vector<index_t> & border_vertices, const index_t & k);
 
 #endif //CHE_POISSON_H
 

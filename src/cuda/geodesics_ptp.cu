@@ -10,6 +10,9 @@
 #include <thrust/device_vector.h>
 #include <thrust/execution_policy.h>
 
+using namespace std;
+
+
 double parallel_toplesets_propagation_gpu(const ptp_out_t & ptp_out, che * mesh, const vector<index_t> & sources, const toplesets_t & toplesets)
 {
 	cudaDeviceReset();

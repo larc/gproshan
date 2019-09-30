@@ -8,6 +8,7 @@
 
 #include <CImg.h>
 
+using namespace std;
 using namespace cimg_library;
 
 

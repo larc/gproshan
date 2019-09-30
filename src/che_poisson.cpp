@@ -1,7 +1,10 @@
 #include "che_poisson.h"
-#include "laplacian.h"
 
+#include "laplacian.h"
 #include "include_arma.h"
+
+using namespace std;
+
 
 void poisson(che * mesh, const size_t & old_n_vertices, index_t k)
 {
@@ -150,6 +153,5 @@ void biharmonic_interp_2(che * mesh, const size_t & old_n_vertices, const size_t
 	H.each_col() += avg;
 
 	mesh->set_vertices((vertex *) H.memptr(), H.n_cols, old_n_vertices);
-
 }
 

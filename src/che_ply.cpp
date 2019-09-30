@@ -6,6 +6,8 @@
 #include <cassert>
 #include <map>
 
+using namespace std;
+
 
 che_ply::che_ply(const string & file)
 {

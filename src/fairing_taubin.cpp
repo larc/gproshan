@@ -1,5 +1,7 @@
 #include "fairing_taubin.h"
+
 #include "laplacian.h"
+
 
 fairing_taubin::fairing_taubin(matrix_t step_): fairing()
 {

@@ -1,5 +1,9 @@
 #include "laplacian.h"
 
+using namespace std;
+using namespace Eigen;
+
+
 void laplacian(che * mesh, a_sp_mat & L, a_sp_mat & A)
 {
 	size_t n_edges = mesh->n_edges();

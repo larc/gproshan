@@ -27,9 +27,9 @@ class dictionary
 		
 		distance_t f;
 		distance_t s_radio;						///< sampling geodesic radio.
-		vector<index_t> sampling;				///< samples, center of patches if sampling.
-		vector<patch> patches;				///< vector of patches.
-		vector<vpatches_t> patches_map;		///< invert index vertex to patches.
+		std::vector<index_t> sampling;				///< samples, center of patches if sampling.
+		std::vector<patch> patches;				///< vector of patches.
+		std::vector<vpatches_t> patches_map;		///< invert index vertex to patches.
 
 		double d_time;							///< time of operations.
 		bool d_plot;							///< plot atoms and basis with gnuplot.

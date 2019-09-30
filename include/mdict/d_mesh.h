@@ -68,7 +68,7 @@ struct patch_t
 		return xyz.n_cols > min_nvp;
 	}
 
-	void reset_xyz(che * mesh, vector<patches_map_t> & patches_map, const index_t & p, const index_t & threshold = NIL)
+	void reset_xyz(che * mesh, std::vector<patches_map_t> & patches_map, const index_t & p, const index_t & threshold = NIL)
 	{
 		size_t m = n;
 		if(threshold != NIL)
@@ -102,23 +102,23 @@ void phi_gaussian(a_mat & phi, a_mat & xy, void ** params);
 
 void get_centers_gaussian(a_vec & cx, a_vec & cy, real_t radio, size_t K);
 
-void save_patches_coordinates( vector<patch_t> & patches, vector< pair<index_t,index_t> > * lpatches, size_t NV);
+void save_patches_coordinates(std::vector<patch_t> & patches, std::vector<std::pair<index_t,index_t> > * lpatches, size_t NV);
 
-void save_patches(vector<patch_t> patches, size_t M);
+void save_patches(std::vector<patch_t> patches, size_t M);
 
-void partial_mesh_reconstruction(size_t old_n_vertices, che * mesh, size_t M, vector<patch_t> & patches, vector<patches_map_t> & patches_map, a_mat & A, a_mat & alpha);
+void partial_mesh_reconstruction(size_t old_n_vertices, che * mesh, size_t M, std::vector<patch_t> & patches, std::vector<patches_map_t> & patches_map, a_mat & A, a_mat & alpha);
 
-void mesh_reconstruction(che * mesh, size_t M, vector<patch> & patches, vector<vpatches_t> & patches_map, a_mat & A, a_mat & alpha, const index_t & v_i = 0);
+void mesh_reconstruction(che * mesh, size_t M, std::vector<patch> & patches, std::vector<vpatches_t> & patches_map, a_mat & A, a_mat & alpha, const index_t & v_i = 0);
 
-a_vec non_local_means_vertex(a_mat & alpha, const index_t & v, vector<patch> & patches, vector<vpatches_t> & patches_map, const distance_t & h);
-
-/// DEPRECATED
-void mesh_reconstruction(che * mesh, size_t M, vector<patch_t> & patches, vector<patches_map_t> & patches_map, a_mat & A, a_mat & alpha, const index_t & v_i = 0);
+a_vec non_local_means_vertex(a_mat & alpha, const index_t & v, std::vector<patch> & patches, std::vector<vpatches_t> & patches_map, const distance_t & h);
 
 /// DEPRECATED
-a_vec non_local_means_vertex(a_mat & alpha, const index_t & v, vector<patch_t> & patches, vector<patches_map_t> & patches_map, const distance_t & h);
+void mesh_reconstruction(che * mesh, size_t M, std::vector<patch_t> & patches, std::vector<patches_map_t> & patches_map, a_mat & A, a_mat & alpha, const index_t & v_i = 0);
 
-a_vec simple_means_vertex(a_mat & alpha, const index_t & v, vector<patch_t> & patches, vector<patches_map_t> & patches_map, const distance_t & h);
+/// DEPRECATED
+a_vec non_local_means_vertex(a_mat & alpha, const index_t & v, std::vector<patch_t> & patches, std::vector<patches_map_t> & patches_map, const distance_t & h);
+
+a_vec simple_means_vertex(a_mat & alpha, const index_t & v, std::vector<patch_t> & patches, std::vector<patches_map_t> & patches_map, const distance_t & h);
 
 } // mdict
 

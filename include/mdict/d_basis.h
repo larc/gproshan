@@ -26,8 +26,8 @@ class basis
 		void plot_atoms(const a_mat & A);
 
 	private:
-		virtual void plot_basis(ostream & os) = 0;
-		virtual void plot_atoms(ostream & os, const a_vec & A) = 0;
+		virtual void plot_basis(std::ostream & os) = 0;
+		virtual void plot_atoms(std::ostream & os, const a_vec & A) = 0;
 
 	friend class dictionary;
 };

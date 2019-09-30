@@ -1,5 +1,8 @@
 #include "decimation.h"
 
+using namespace std;
+
+
 decimation::decimation(che * mesh_, const vertex *const & normals, const index_t & levels_)
 {
 	mesh = mesh_;

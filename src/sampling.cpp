@@ -1,8 +1,12 @@
 #include "sampling.h"
+
 #include "geodesics_ptp.h"
 #include "che_off.h"
 
 #include <fstream>
+
+using namespace std;
+
 
 index_t ** sampling_shape(vector<index_t> & points, size_t *& sizes, vertex *& normals, che * shape, size_t n_points, distance_t radio)
 {

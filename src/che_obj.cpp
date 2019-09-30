@@ -5,6 +5,8 @@
 #include <cstring>
 #include <cassert>
 
+using namespace std;
+
 
 che_obj::che_obj(const string & file)
 {

@@ -2,13 +2,11 @@
 #define LAPLACIAN_H
 
 #include "che.h"
-
 #include "include_arma.h"
+
 #include <Eigen/Sparse>
 
-using namespace Eigen;
-
-typedef SparseMatrix<double> sp_mat_e;
+typedef Eigen::SparseMatrix<double> sp_mat_e;
 
 void laplacian(che * mesh, a_sp_mat & L, a_sp_mat & A);
 

@@ -1,5 +1,7 @@
 #include "fairing_spectral.h"
+
 #include "laplacian.h"
+
 
 fairing_spectral::fairing_spectral(const size_t & k_): fairing(), k(k_)
 {

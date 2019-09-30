@@ -6,13 +6,13 @@
 class che_img : public che
 {
 	public:
-		che_img(const string & file);
+		che_img(const std::string & file);
 		che_img(const che_img & mesh);
 		virtual ~che_img();
-		void write_file(const string & file) const;
+		void write_file(const std::string & file) const;
 
 	private:
-		void read_file(const string & file);
+		void read_file(const std::string & file);
 };
 
 #endif // CHE_IMG_H

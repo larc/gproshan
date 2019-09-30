@@ -2,11 +2,10 @@
 #define DECIMATION_H
 
 #include "che.h"
-
-#include <string>
 #include "include_arma.h"
 
-using namespace std;
+#include <string>
+
 
 class decimation
 {

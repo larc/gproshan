@@ -1,5 +1,6 @@
 #include "che.cuh"
 
+
 __host__ __device__
 index_t cu_trig(index_t he)
 {

@@ -3,6 +3,8 @@
 #include <cmath>
 #include <cstring>
 
+using namespace std;
+
 
 ptp_out_t::ptp_out_t(distance_t *const & d, index_t *const & c): dist(d), clusters(c) {}
 

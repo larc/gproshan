@@ -6,6 +6,7 @@
 
 using namespace std;
 
+
 key_points::key_points(che * mesh, const real_t & percent)
 {
 	n_faces = mesh->n_faces();

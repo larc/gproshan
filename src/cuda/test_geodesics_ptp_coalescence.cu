@@ -13,6 +13,9 @@
 #include <thrust/device_vector.h>
 #include <thrust/execution_policy.h>
 
+using namespace std;
+
+
 vector<pair<index_t, distance_t> > iter_error_parallel_toplesets_propagation_coalescence_gpu(che * mesh, const vector<index_t> & sources, const vector<index_t> & limits, const index_t * sorted_index, const distance_t * exact_dist, double & time_ptp)
 {
 	// sort data by levels, must be improve the coalescence

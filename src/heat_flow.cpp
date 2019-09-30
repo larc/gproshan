@@ -4,6 +4,9 @@
 
 #include <cassert>
 
+using namespace std;
+
+
 distance_t * heat_flow(che * mesh, const vector<index_t> & sources, double & solve_time)
 {
 	if(!sources.size()) return 0;

@@ -6,6 +6,9 @@
 #include <queue>
 #include <cassert>
 
+using namespace std;
+
+
 geodesics::geodesics(che * mesh, const vector<index_t> & sources, const option_t & opt, distance_t *const & e_dist, const bool & cluster, const size_t & n_iter, const distance_t & radio): n_vertices(mesh->n_vertices())
 {
 	assert(n_vertices > 0);

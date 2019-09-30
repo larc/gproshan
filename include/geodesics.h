@@ -1,9 +1,7 @@
 #ifndef GEODESICS_H
 #define GEODESICS_H
 
-#include "include.h"
 #include "che.h"
-
 #include "include_arma.h"
 
 /*!
@@ -34,7 +32,7 @@ class geodesics
 
 	public:
 		geodesics(	che * mesh,							///< input mesh must be a triangular mesh.
-					const vector<index_t> & sources,	///< source vertices.
+					const std::vector<index_t> & sources,	///< source vertices.
 					const option_t & opt = FM,			///< specific the algorithm to execute.
 					distance_t *const & e_dist = NULL,	///< external dist allocation
 					const bool & cluster = 0,			///< if clustering vertices to closest source.
@@ -52,12 +50,12 @@ class geodesics
 		void normalize();
 
 	private:
-		void execute(che * mesh, const vector<index_t> & sources, const size_t & n_iter, const distance_t & radio, const option_t & opt);
-		void run_fastmarching(che * mesh, const vector<index_t> & sources, const size_t & n_iter, const distance_t & radio);
-		void run_parallel_toplesets_propagation_cpu(che * mesh, const vector<index_t> & sources, const size_t & n_iter, const distance_t & radio);
-		void run_parallel_toplesets_propagation_gpu(che * mesh, const vector<index_t> & sources, const size_t & n_iter, const distance_t & radio);
-		void run_heat_flow(che * mesh, const vector<index_t> & sources);
-		void run_heat_flow_gpu(che * mesh, const vector<index_t> & sources);
+		void execute(che * mesh, const std::vector<index_t> & sources, const size_t & n_iter, const distance_t & radio, const option_t & opt);
+		void run_fastmarching(che * mesh, const std::vector<index_t> & sources, const size_t & n_iter, const distance_t & radio);
+		void run_parallel_toplesets_propagation_cpu(che * mesh, const std::vector<index_t> & sources, const size_t & n_iter, const distance_t & radio);
+		void run_parallel_toplesets_propagation_gpu(che * mesh, const std::vector<index_t> & sources, const size_t & n_iter, const distance_t & radio);
+		void run_heat_flow(che * mesh, const std::vector<index_t> & sources);
+		void run_heat_flow_gpu(che * mesh, const std::vector<index_t> & sources);
 
 		distance_t update(index_t & d, che * mesh, const index_t & he, vertex & vx);
 		distance_t planar_update(index_t & d, a_mat & X, index_t * x, vertex & vx);

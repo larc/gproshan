@@ -1,5 +1,6 @@
 #include "app_viewer.h"
 
+using namespace std;
 using namespace mdict;
 
 // elapsed time in seconds

@@ -5,6 +5,8 @@
 #include <cstring>
 #include <cassert>
 
+using namespace std;
+
 
 che_off::che_off(const string & file)
 {

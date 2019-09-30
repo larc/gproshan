@@ -6,6 +6,9 @@
 
 #include <cassert>
 
+using namespace std;
+
+
 void main_test_geodesics_ptp(const int & nargs, const char ** args)
 {
 	if(nargs < 4)

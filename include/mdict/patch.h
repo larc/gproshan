@@ -15,13 +15,13 @@ namespace mdict {
 class dictionary;
 
 typedef function<bool(const index_t &)> fmask_t;
-typedef vector<pair<index_t, index_t> > vpatches_t;
+typedef std::vector<std::pair<index_t, index_t> > vpatches_t;
 
 /// 
 class patch
 {
 	public:
-		vector<index_t> vertices;		///< Vertices of the patch.
+		std::vector<index_t> vertices;		///< Vertices of the patch.
 		a_mat T;							///< Transformation matrix.
 		a_vec x;							///< Center point.
 		a_mat xyz;						///< Matrix of points.
@@ -46,7 +46,7 @@ class patch
 		void itransform();
 		
 		void reset_xyz(	che * mesh,
-						vector<vpatches_t> & vpatches,
+						std::vector<vpatches_t> & vpatches,
 						const index_t & p,
 						const fmask_t & mask = nullptr
 						);

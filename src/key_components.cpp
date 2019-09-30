@@ -4,6 +4,9 @@
 
 #include <cassert>
 
+using namespace std;
+
+
 key_components::key_components(che * mesh, const key_points & kps, const real_t & r): radio(r)
 {
 	n_vertices = mesh->n_vertices();

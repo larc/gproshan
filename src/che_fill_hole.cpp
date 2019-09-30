@@ -8,6 +8,7 @@
 
 using namespace std;
 
+
 bool operator<(const border_t & a, const border_t & b)
 {
 	return a.theta > b.theta;

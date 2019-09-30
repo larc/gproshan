@@ -1,7 +1,8 @@
-#ifndef VIEWER_QUATERNION_H
-#define VIEWER_QUATERNION_H
+#ifndef QUATERNION_H
+#define QUATERNION_H
 
 #include "vertex.h"
+
 #include <ostream>
 
 class quaternion
@@ -28,31 +29,30 @@ class quaternion
 		vertex & im(void);
 		const vertex & im(void) const;
 
-		quaternion operator+(const quaternion & q) const;
-		quaternion operator-(const quaternion & q) const;
-		quaternion operator-(void) const;
-		quaternion operator*(real_t c) const;
-		quaternion operator/(real_t c) const;
-		void operator+=(const quaternion & q);
-		void operator+=(real_t c);
-		void operator-=(const quaternion & q);
-		void operator-=(real_t c);
-		void operator*=(real_t c);
-		void operator/=(real_t c);
-		quaternion operator*(const quaternion & q) const;
-		void operator*=(const quaternion & q);
+		quaternion operator + (const quaternion & q) const;
+		quaternion operator - (const quaternion & q) const;
+		quaternion operator - (void) const;
+		quaternion operator * (real_t c) const;
+		quaternion operator / (real_t c) const;
+		void operator += (const quaternion & q);
+		void operator += (real_t c);
+		void operator -= (const quaternion & q);
+		void operator -= (real_t c);
+		void operator *= (real_t c);
+		void operator /= (real_t c);
+		quaternion operator * (const quaternion & q) const;
+		void operator *= (const quaternion & q);
 
-		quaternion conj(void) const;
-		quaternion inv(void) const;
-		real_t norm(void) const;
-		real_t norm2(void) const;
-		quaternion unit(void) const;
-		void normalize(void);
-
+		quaternion conj() const;
+		quaternion inv() const;
+		real_t norm() const;
+		real_t norm2() const;
+		quaternion unit() const;
+		void normalize();
 };
 
-quaternion operator*(real_t c, const quaternion & q);
-std::ostream & operator<<(std::ostream & os, const quaternion & q);
+quaternion operator * (real_t c, const quaternion & q);
+std::ostream & operator << (std::ostream & os, const quaternion & q);
 
-#endif
+#endif // QUATERNION_H
 

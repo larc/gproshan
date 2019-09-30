@@ -1,13 +1,15 @@
 #include "che.h"
 
+#include "include_arma.h"
+#include "viewer/viewer.h"
+
 #include <cstring>
 #include <cmath>
 #include <cassert>
 #include <set>
 
-#include "viewer/viewer.h"
+using namespace std;
 
-#include "include_arma.h"
 
 index_t trig(const index_t & he)
 {

@@ -49,24 +49,24 @@ struct vcorr_t
 struct process_t
 {
 	index_t sub_menu;
-	string name_function;
+	std::string name_function;
 	function_t function;
 };
 
 class viewer
 {
 	public:
-		static void init(const vector<che *> & _meshes);
+		static void init(const std::vector<che *> & _meshes);
 
 		static che_viewer meshes[N_MESHES];
 		static vcorr_t corr_mesh[N_MESHES];
 		static size_t n_meshes;
 		static index_t current; // current mesh
 
-		static vector<index_t> select_vertices;
-		static vector<vertex> other_vertices;
-		static vector<vertex> vectors;
-		static vector<string> sub_menus;
+		static std::vector<index_t> select_vertices;
+		static std::vector<vertex> other_vertices;
+		static std::vector<vertex> vectors;
+		static std::vector<std::string> sub_menus;
 
 		static char * share;
 
@@ -75,8 +75,8 @@ class viewer
 
 		static che_viewer & mesh(); //get current che_viewer mesh
 		static color_t & vcolor(const index_t & i);
-		static void add_process(const char & key, const string & name, function_t function);
-		static void add_mesh(const vector<che *> & _meshes);
+		static void add_process(const char & key, const std::string & name, function_t function);
+		static void add_mesh(const std::vector<che *> & _meshes);
 
 	protected:
 		// init
@@ -151,7 +151,7 @@ class viewer
 		static bool is_flat;
 		static float bgc;
 
-		static map<unsigned char, process_t> processes;
+		static std::map<unsigned char, process_t> processes;
 };
 
 void draw_str(const char * str, int x, int y, float color[4], void * font);

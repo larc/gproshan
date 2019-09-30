@@ -2,7 +2,6 @@
 #define DIJKSTRA_H
 
 #include "che.h"
-#include "include.h"
 
 class dijkstra
 {
@@ -17,7 +16,7 @@ class dijkstra
 		~dijkstra();
 		distance_t & operator()(index_t i);
 		index_t & operator[](index_t i);
-		void print(ostream & os);
+		void print(std::ostream & os);
 
 	private:
 		void run(che * shape);
