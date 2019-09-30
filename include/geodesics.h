@@ -4,6 +4,11 @@
 #include "che.h"
 #include "include_arma.h"
 
+
+// geometry processing and shape analysis framework
+namespace gproshan {
+
+
 /*!
 	Compute the geodesics distances on a mesh from a source or multi-source. This class implements
 	the Fast Marching algorithm without deal with obtuse triangles. Also, if the options PTP_CPU or
@@ -60,6 +65,9 @@ class geodesics
 		distance_t update(index_t & d, che * mesh, const index_t & he, vertex & vx);
 		distance_t planar_update(index_t & d, a_mat & X, index_t * x, vertex & vx);
 };
+
+
+} // namespace gproshan
 
 #endif //GEODESICS_H
 

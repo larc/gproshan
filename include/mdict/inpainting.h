@@ -5,8 +5,11 @@
 #include "../che_poisson.h"
 #include "../che_fill_hole.h"
 
+
+// geometry processing and shape analysis framework
 // mesh dictionary learning and sparse coding namespace
-namespace mdict {
+namespace gproshan::mdict {
+
 
 class inpainting : public dictionary
 {
@@ -17,6 +20,7 @@ class inpainting : public dictionary
 		void execute();
 };
 
-} // mdict
+
+} // namespace gproshan::mdict
 
 #endif // INPAINTING_H

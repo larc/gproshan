@@ -8,12 +8,17 @@
 #define COLOR 0.5
 
 #ifdef SINGLE_P
-#define glVertex3v(x) glVertex3fv(x)
-#define GL_VERTEX_T GL_FLOAT
+	#define glVertex3v(x) glVertex3fv(x)
+	#define GL_VERTEX_T GL_FLOAT
 #else
-#define glVertex3v(x) glVertex3dv(x)
-#define GL_VERTEX_T GL_DOUBLE
+	#define glVertex3v(x) glVertex3dv(x)
+	#define GL_VERTEX_T GL_DOUBLE
 #endif
+
+
+// geometry processing and shape analysis framework
+namespace gproshan {
+
 
 typedef real_t color_t;
 
@@ -60,6 +65,9 @@ class che_viewer
 
 		void debug_info();
 };
+
+
+} // namespace gproshan
 
 #endif // CHE_VIEWER_H
 

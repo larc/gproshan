@@ -8,8 +8,11 @@
 
 #include "include_arma.h"
 
+
+// geometry processing and shape analysis framework
 // mesh dictionary learning and sparse coding namespace
-namespace mdict {
+namespace gproshan::mdict {
+
 
 typedef void * params_t[];
 typedef void (* phi_function_t) (a_mat &, a_mat &, params_t);
@@ -120,7 +123,8 @@ a_vec non_local_means_vertex(a_mat & alpha, const index_t & v, std::vector<patch
 
 a_vec simple_means_vertex(a_mat & alpha, const index_t & v, std::vector<patch_t> & patches, std::vector<patches_map_t> & patches_map, const distance_t & h);
 
-} // mdict
+
+} // namespace gproshan::mdict
 
 #endif // D_MESH_H
 

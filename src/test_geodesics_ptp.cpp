@@ -9,6 +9,10 @@
 using namespace std;
 
 
+// geometry processing and shape analysis framework
+namespace gproshan {
+
+
 void main_test_geodesics_ptp(const int & nargs, const char ** args)
 {
 	if(nargs < 4)
@@ -337,4 +341,6 @@ distance_t compute_error(const distance_t * dist, const distance_t * exact, cons
 
 	return error * 100 / (n - s);
 }
+
+} // namespace gproshan
 

@@ -3,6 +3,10 @@
 #include "laplacian.h"
 
 
+// geometry processing and shape analysis framework
+namespace gproshan {
+
+
 fairing_taubin::fairing_taubin(matrix_t step_): fairing()
 {
 	 step = step_;
@@ -47,4 +51,7 @@ void fairing_taubin::compute(che * shape)
 
 	X = R.t();
 }
+
+
+} // namespace gproshan
 

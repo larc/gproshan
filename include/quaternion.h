@@ -5,6 +5,11 @@
 
 #include <ostream>
 
+
+// geometry processing and shape analysis framework
+namespace gproshan {
+
+
 class quaternion
 {
 	protected:
@@ -53,6 +58,9 @@ class quaternion
 
 quaternion operator * (real_t c, const quaternion & q);
 std::ostream & operator << (std::ostream & os, const quaternion & q);
+
+
+} // namespace gproshan
 
 #endif // QUATERNION_H
 

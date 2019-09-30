@@ -1,6 +1,14 @@
+#ifndef INCLUDE_ARMA_H
+#define INCLUDE_ARMA_H
+
 #include "include.h"
 
 #include <armadillo>
+
+
+// geometry processing and shape analysis framework
+namespace gproshan {
+
 
 #ifdef SINGLE_P
 	typedef arma::fmat a_mat;
@@ -13,4 +21,9 @@
 	typedef arma::rowvec a_rowvec;
 	typedef arma::sp_mat a_sp_mat;
 #endif
+
+
+} // namespace gproshan
+
+#endif // INCLUDE_ARMA_H
 

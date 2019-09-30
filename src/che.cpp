@@ -11,6 +11,10 @@
 using namespace std;
 
 
+// geometry processing and shape analysis framework
+namespace gproshan {
+
+
 index_t trig(const index_t & he)
 {
 	if(he == NIL) return NIL;
@@ -1353,4 +1357,7 @@ void che::delete_me()
 void che::read_file(const string & file)
 {
 }
+
+
+} // namespace gproshan
 

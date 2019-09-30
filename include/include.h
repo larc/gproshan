@@ -9,6 +9,11 @@
 
 #define NIL (0u - 1)
 
+
+// geometry processing and shape analysis framework
+namespace gproshan {
+
+
 typedef unsigned int index_t;
 typedef unsigned int length_t;
 typedef double matrix_t;
@@ -46,6 +51,9 @@ typedef real_t angle_t;
 
 #define TIC(t) (t) = omp_get_wtime();
 #define TOC(t) (t) = omp_get_wtime() - (t);
+
+
+} // namespace gproshan
 
 #endif // INCLUDE_H
 

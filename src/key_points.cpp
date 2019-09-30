@@ -7,6 +7,10 @@
 using namespace std;
 
 
+// geometry processing and shape analysis framework
+namespace gproshan {
+
+
 key_points::key_points(che * mesh, const real_t & percent)
 {
 	n_faces = mesh->n_faces();
@@ -84,4 +88,7 @@ void key_points::compute_kps(che * mesh)
 	for(index_t i = 0; i < n_kps; i++)
 		is_kp[kps[i]] = 1;
 }
+
+
+} // namespace gproshan
 

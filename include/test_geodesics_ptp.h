@@ -1,5 +1,13 @@
+#ifndef TEST_GEODESICS_PTP_H
+#define TEST_GEODESICS_PTP_H
+
 #include "geodesics.h"
 #include "geodesics_ptp.h"
+
+
+// geometry processing and shape analysis framework
+namespace gproshan {
+
 
 /// Execute performance and accuracy test for ptp algorithm on cpu and gpu.
 void main_test_geodesics_ptp(const int & nargs, const char ** args);
@@ -33,4 +41,9 @@ double * times_farthest_point_sampling_ptp_coalescence_gpu(che * mesh, std::vect
 distance_t * load_exact_geodesics(const std::string & file, const size_t & n);
 
 distance_t compute_error(const distance_t * dist, const distance_t * exact, const size_t & n, const size_t & s);
+
+
+} // namespace gproshan
+
+#endif // TEST_GEODESICS_PTP_H
 

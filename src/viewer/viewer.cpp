@@ -14,6 +14,11 @@
 
 using namespace std;
 
+
+// geometry processing and shape analysis framework
+namespace gproshan {
+
+
 // declare static member variables
 che_viewer viewer::meshes[N_MESHES];
 vcorr_t viewer::corr_mesh[N_MESHES]; // zero initialization
@@ -802,4 +807,7 @@ void draw_str(const char * str, int x, int y, float color[4], void * font)
 	glEnable(GL_LIGHTING);
 	glPopAttrib();
 }
+
+
+} // namespace gproshan
 

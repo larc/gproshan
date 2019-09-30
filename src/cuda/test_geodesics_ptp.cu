@@ -14,6 +14,10 @@
 using namespace std;
 
 
+// geometry processing and shape analysis framework
+namespace gproshan {
+
+
 vector<pair<index_t, distance_t> > iter_error_parallel_toplesets_propagation_gpu(che * mesh, const vector<index_t> & sources, const vector<index_t> & limits, const index_t * sorted_index, const distance_t * exact_dist, double & time_ptp)
 {
 	cudaDeviceReset();
@@ -205,4 +209,7 @@ vector<pair<index_t, distance_t> > iter_error_run_ptp_gpu(CHE * d_mesh, const in
 	
 	return iter_error;
 }
+
+
+} // namespace gproshan
 

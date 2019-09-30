@@ -6,6 +6,10 @@
 using namespace std;
 
 
+// geometry processing and shape analysis framework
+namespace gproshan {
+
+
 void poisson(che * mesh, const size_t & old_n_vertices, index_t k)
 {
 	if(!k) return;
@@ -154,4 +158,7 @@ void biharmonic_interp_2(che * mesh, const size_t & old_n_vertices, const size_t
 
 	mesh->set_vertices((vertex *) H.memptr(), H.n_cols, old_n_vertices);
 }
+
+
+} // namespace gproshan
 

@@ -6,6 +6,10 @@
 using namespace std;
 
 
+// geometry processing and shape analysis framework
+namespace gproshan {
+
+
 quaternion :: quaternion(void)
 : s(0.), v(0., 0., 0.)
 {
@@ -222,4 +226,7 @@ ostream & operator<<(ostream & os, const quaternion & q)
 {
 	return os << "(" << q.re() << ", " << q.im() << ")";
 }
+
+
+} // namespace gproshan
 

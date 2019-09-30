@@ -13,6 +13,11 @@
 
 #define N_MESHES 12
 
+
+// geometry processing and shape analysis framework
+namespace gproshan {
+
+
 typedef void (*function_t) (void);
 
 struct vcorr_t
@@ -155,6 +160,9 @@ class viewer
 };
 
 void draw_str(const char * str, int x, int y, float color[4], void * font);
+
+
+} // namespace gproshan
 
 #endif // VIEWER_VIEWER_H
 

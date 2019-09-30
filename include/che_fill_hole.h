@@ -4,6 +4,11 @@
 #include "che.h"
 #include "include_arma.h"
 
+
+// geometry processing and shape analysis framework
+namespace gproshan {
+
+
 struct border_t
 {
 	angle_t theta;
@@ -120,6 +125,9 @@ che * fill_hole_front_angles_without_projection(che * mesh, std::vector<index_t>
 che * fill_hole_front_angles(std::vector<vertex> & vertices, const real_t & lenght, const vertex & normal, const size_t & max_iter, bool is_grow = false);
 
 che * fill_hole_center_triangle(che * mesh, std::vector<index_t> & select_vertices, index_t index);
+
+
+} // namespace gproshan
 
 #endif //CHE_FILL_HOLE_H
 

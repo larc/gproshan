@@ -3,6 +3,11 @@
 
 #include "fairing.h"
 
+
+// geometry processing and shape analysis framework
+namespace gproshan {
+
+
 class fairing_spectral : public fairing
 {
 	private:
@@ -15,5 +20,8 @@ class fairing_spectral : public fairing
 	private:
 		void compute(che * shape);
 };
+
+
+} // namespace gproshan
 
 #endif // FAIRING_SPECTRAL_H

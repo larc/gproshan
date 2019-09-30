@@ -7,7 +7,7 @@
 
 
 // geometry processing and shape analysis framework
-//namespace gproshan {
+namespace gproshan {
 
 
 /*!
@@ -52,7 +52,7 @@ std::ostream & operator << (std::ostream & os, const vertex & v);
 std::istream & operator >> (std::istream & is, vertex & v);
 
 
-//}; // namespace gproshan
+} // namespace gproshan
 
 #endif // VERTEX_H
 

@@ -8,6 +8,10 @@
 using namespace std;
 
 
+// geometry processing and shape analysis framework
+namespace gproshan {
+
+
 index_t ** sampling_shape(vector<index_t> & points, size_t *& sizes, vertex *& normals, che * shape, size_t n_points, distance_t radio)
 {
 	normals = new vertex[n_points];
@@ -78,4 +82,7 @@ bool load_sampling(vector<index_t> & points, distance_t & radio, che * mesh, siz
 
 	return true;
 }
+
+
+} // namespace gproshan
 

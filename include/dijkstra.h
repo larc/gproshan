@@ -3,6 +3,11 @@
 
 #include "che.h"
 
+
+// geometry processing and shape analysis framework
+namespace gproshan {
+
+
 class dijkstra
 {
 	private:
@@ -22,4 +27,8 @@ class dijkstra
 		void run(che * shape);
 };
 
+
+} // namespace gproshan
+
 #endif // DIJKSTRA_H
+

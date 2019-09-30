@@ -9,8 +9,11 @@
 
 #include "include_arma.h"
 
-/// Mesh dictionary learning and sparse coding namespace
-namespace mdict {
+
+// geometry processing and shape analysis framework
+// mesh dictionary learning and sparse coding namespace
+namespace gproshan::mdict {
+
 
 class dictionary
 {
@@ -63,7 +66,8 @@ class dictionary
 		index_t sample(const index_t & s);
 };
 
-} // mdict
+
+} // namespace gproshan::mdict
 
 #endif // DICTIONARY_H
 

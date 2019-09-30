@@ -5,6 +5,11 @@
 #include <GL/glut.h>
 #include <string>
 
+
+// geometry processing and shape analysis framework
+namespace gproshan {
+
+
 class shader
 {
 	protected:
@@ -29,4 +34,8 @@ class shader
 		bool readSource( const char * filename, std::string & source);
 };
 
-#endif
+
+} // namespace gproshan
+
+#endif // VIEWER_SHADER_H
+

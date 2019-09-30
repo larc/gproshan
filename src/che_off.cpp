@@ -8,6 +8,10 @@
 using namespace std;
 
 
+// geometry processing and shape analysis framework
+namespace gproshan {
+
+
 che_off::che_off(const string & file)
 {
 	init(file);
@@ -94,4 +98,7 @@ void che_off::write_file(const che * mesh, const string & file)
 
 	os.close();
 }
+
+
+} // namespace gproshan
 

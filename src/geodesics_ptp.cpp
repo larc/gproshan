@@ -6,6 +6,10 @@
 using namespace std;
 
 
+// geometry processing and shape analysis framework
+namespace gproshan {
+
+
 ptp_out_t::ptp_out_t(distance_t *const & d, index_t *const & c): dist(d), clusters(c) {}
 
 che * ptp_coalescence(index_t * & inv, che * mesh, const toplesets_t & toplesets)
@@ -268,4 +272,7 @@ void normalize_ptp(distance_t * dist, const size_t & n)
 	for(index_t v = 0; v < n; v++)
 		dist[v] /= max_d;
 }
+
+
+} // namespace gproshan
 

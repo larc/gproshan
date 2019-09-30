@@ -3,8 +3,11 @@
 
 #include "d_basis.h"
 
+
+// geometry processing and shape analysis framework
 // mesh dictionary learning and sparse coding namespace
-namespace mdict {
+namespace gproshan::mdict {
+
 
 class basis_cosine: public basis
 {
@@ -23,7 +26,8 @@ class basis_cosine: public basis
 		void cosine(std::ostream & os, const real_t & c, const real_t & alpha);
 };
 
-} // mdict
+
+} // namespace gproshan::mdict
 
 #endif // D_BASIS_COSSINE_H
 

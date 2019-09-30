@@ -1,7 +1,10 @@
 #include "d_basis.h"
 
+
+// geometry processing and shape analysis framework
 // mesh dictionary learning and sparse coding namespace
-namespace mdict {
+namespace gproshan::mdict {
+
 
 void basis::plot_basis()
 {
@@ -64,5 +67,6 @@ void basis::plot_atoms(const a_mat & A)
 	debug(system(file.c_str()));
 }
 
-} // mdict
+
+} // namespace gproshan::mdict
 

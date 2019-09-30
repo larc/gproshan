@@ -11,6 +11,10 @@
 #define PTP_TOL 1e-3
 
 
+// geometry processing and shape analysis framework
+namespace gproshan {
+
+
 struct ptp_out_t
 {
 	distance_t * dist;
@@ -40,6 +44,9 @@ distance_t farthest_point_sampling_ptp_gpu(che * mesh, std::vector<index_t> & sa
 distance_t update_step(che * mesh, const distance_t * dist, const index_t & he);
 
 void normalize_ptp(distance_t * dist, const size_t & n);
+
+
+} // namespace gproshan
 
 #endif // GEODESICS_PTP_H
 

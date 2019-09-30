@@ -3,8 +3,11 @@
 
 #include "d_basis.h"
 
+
+// geometry processing and shape analysis framework
 // mesh dictionary learning and sparse coding namespace
-namespace mdict {
+namespace gproshan::mdict {
+
 
 class basis_dct: public basis
 {
@@ -22,7 +25,8 @@ class basis_dct: public basis
 		void dct(std::ostream & os, const index_t & nx, const index_t & ny);
 };
 
-} // mdict
+
+} // namespace gproshan::mdict
 
 #endif // D_BASIS_DCT_H
 

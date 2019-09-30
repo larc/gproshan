@@ -1,7 +1,8 @@
 #include "app_viewer.h"
 
 using namespace std;
-using namespace mdict;
+using namespace gproshan::mdict;
+
 
 // elapsed time in seconds
 double load_time;

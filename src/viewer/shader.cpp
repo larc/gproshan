@@ -5,6 +5,11 @@
 
 using namespace std;
 
+
+// geometry processing and shape analysis framework
+namespace gproshan {
+
+
 shader::shader(): vertexshader(0),
 					fragmentshader(0),
 					geometryshader(0),
@@ -135,4 +140,7 @@ bool shader::readSource(const char * filename, std::string & source)
 
 	return true;
 }
+
+
+} // namespace gproshan
 

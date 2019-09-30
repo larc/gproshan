@@ -9,6 +9,10 @@
 using namespace std;
 
 
+// geometry processing and shape analysis framework
+namespace gproshan {
+
+
 bool operator<(const border_t & a, const border_t & b)
 {
 	return a.theta > b.theta;
@@ -981,4 +985,7 @@ che * fill_hole_center_triangle(che * mesh, vector<index_t> & select_vertices, i
 
 	return new_off;
 }
+
+
+} // namespace gproshan
 

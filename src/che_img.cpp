@@ -12,6 +12,10 @@ using namespace std;
 using namespace cimg_library;
 
 
+// geometry processing and shape analysis framework
+namespace gproshan {
+
+
 che_img::che_img(const string & file)
 {
 	init(file);
@@ -71,4 +75,7 @@ void che_img::write_file(const string & file) const
 
 	os.close();
 }
+
+
+} // namespace gproshan
 

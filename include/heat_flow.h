@@ -15,6 +15,11 @@
 
 #include <cholmod.h>
 
+
+// geometry processing and shape analysis framework
+namespace gproshan {
+
+
 distance_t * heat_flow(che * mesh, const std::vector<index_t> & sources, double & solve_time);
 
 distance_t * heat_flow_gpu(che * mesh, const std::vector<index_t> & sources, double & solve_time);
@@ -44,6 +49,9 @@ double solve_positive_definite_cusparse(const int m, const int nnz, const real_t
 /// using cusolverSp_LOWLEVEL_PREVIEW.h library
 /// no documentation, code base on cuda/samples/7_CUDALibraries/cuSolverSp_LowlevelCholesky
 double solve_positive_definite_cusolver_preview(const int m, const int nnz, const real_t * hA_values, const int * hA_col_ptrs, const int * hA_row_indices, const real_t * hb, real_t * hx, const bool host = 0);
+
+
+} // namespace gproshan
 
 #endif // HEAT_FLOW_H
 

@@ -9,6 +9,10 @@
 using namespace std;
 
 
+// geometry processing and shape analysis framework
+namespace gproshan {
+
+
 geodesics::geodesics(che * mesh, const vector<index_t> & sources, const option_t & opt, distance_t *const & e_dist, const bool & cluster, const size_t & n_iter, const distance_t & radio): n_vertices(mesh->n_vertices())
 {
 	assert(n_vertices > 0);
@@ -322,4 +326,7 @@ distance_t geodesics::planar_update(index_t & d, a_mat & X, index_t * x, vertex 
 
 	return p;
 }
+
+
+} // namespace gproshan
 

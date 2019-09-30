@@ -7,6 +7,10 @@
 using namespace std;
 
 
+// geometry processing and shape analysis framework
+namespace gproshan {
+
+
 key_components::key_components(che * mesh, const key_points & kps, const real_t & r): radio(r)
 {
 	n_vertices = mesh->n_vertices();
@@ -76,4 +80,7 @@ bool key_components::join(index_t x, index_t y)
 
 	return 1;
 }
+
+
+} // namespace gproshan
 

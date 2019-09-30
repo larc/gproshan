@@ -6,6 +6,11 @@
 
 #include <map>
 
+
+// geometry processing and shape analysis framework
+namespace gproshan {
+
+
 class key_components
 {
 	private:
@@ -27,6 +32,9 @@ class key_components
 		index_t find(const index_t & x);
 		bool join(index_t x, index_t y);
 };
+
+
+} // namespace gproshan
 
 #endif // KEY_COMPONENTS_H
 

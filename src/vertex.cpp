@@ -5,6 +5,10 @@
 using namespace std;
 
 
+// geometry processing and shape analysis framework
+namespace gproshan {
+
+
 vertex::vertex(const real_t & x_, const real_t & y_, const real_t & z_)
 {
 	x = x_;
@@ -116,4 +120,7 @@ istream & operator >> (istream & is, vertex & v)
 	is >> v.x >> v.y >> v.z;
 	return is;
 }
+
+
+} // namespace gproshan
 

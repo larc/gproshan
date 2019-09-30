@@ -3,6 +3,10 @@
 #include "laplacian.h"
 
 
+// geometry processing and shape analysis framework
+namespace gproshan {
+
+
 fairing_spectral::fairing_spectral(const size_t & k_): fairing(), k(k_)
 {
 }
@@ -37,4 +41,7 @@ void fairing_spectral::compute(che * shape)
 
 	X = X * eigvec * eigvec.t();
 }
+
+
+} // namespace gproshan
 

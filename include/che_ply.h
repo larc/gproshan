@@ -3,6 +3,11 @@
 
 #include "che.h"
 
+
+// geometry processing and shape analysis framework
+namespace gproshan {
+
+
 class che_ply : public che
 {
 	public:
@@ -15,6 +20,9 @@ class che_ply : public che
 	private:
 		void read_file(const std::string & file);
 };
+
+
+} // namespace gproshan
 
 #endif // CHE_PLY_H
 

@@ -25,6 +25,10 @@
 #include "key_points.h"
 #include "key_components.h"
 
+
+using namespace gproshan;
+
+
 void viewer_process_fairing_taubin();
 void viewer_process_fairing_spectral();
 
@@ -71,6 +75,7 @@ void viewer_process_edge_collapse();
 void viewer_select_multiple();
 
 int viewer_main(int nargs, const char ** args);
+
 
 #endif //APP_VIEWER_H
 

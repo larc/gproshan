@@ -6,6 +6,10 @@
 using namespace std;
 
 
+// geometry processing and shape analysis framework
+namespace gproshan {
+
+
 dijkstra::dijkstra(che * shape, index_t src)
 {
 	n_vertices = shape->n_vertices();
@@ -98,4 +102,7 @@ void dijkstra::run(che * shape)
 
 	delete visited;
 }
+
+
+} // namespace gproshan
 

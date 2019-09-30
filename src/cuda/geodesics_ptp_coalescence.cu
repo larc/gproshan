@@ -14,6 +14,10 @@
 using namespace std;
 
 
+// geometry processing and shape analysis framework
+namespace gproshan {
+
+
 double parallel_toplesets_propagation_coalescence_gpu(const ptp_out_t & ptp_out, che * mesh, const vector<index_t> & sources, const toplesets_t & toplesets, const bool & set_inf)
 {
 	index_t * inv = NULL;
@@ -274,4 +278,7 @@ distance_t cu_update_step(CHE * mesh, const distance_t * dist, const index_t & h
 
 	return p;
 }
+
+
+} // namespace gproshan
 

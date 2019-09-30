@@ -8,8 +8,11 @@
 
 using namespace std;
 
+
+// geometry processing and shape analysis framework
 // mesh dictionary learning and sparse coding namespace
-namespace mdict {
+namespace gproshan::mdict {
+
 
 class dictionary;
 
@@ -32,7 +35,8 @@ class basis
 	friend class dictionary;
 };
 
-} // mdict
+
+} // namespace gproshan::mdict
 
 #endif // D_BASIS_H
 

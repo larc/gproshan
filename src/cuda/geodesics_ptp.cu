@@ -13,6 +13,10 @@
 using namespace std;
 
 
+// geometry processing and shape analysis framework
+namespace gproshan {
+
+
 double parallel_toplesets_propagation_gpu(const ptp_out_t & ptp_out, che * mesh, const vector<index_t> & sources, const toplesets_t & toplesets)
 {
 	cudaDeviceReset();
@@ -373,4 +377,7 @@ bool is_ok::operator()(const distance_t & val) const
 {
 	return val < PTP_TOL;
 }
+
+
+} // namespace gproshan
 

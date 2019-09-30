@@ -5,6 +5,11 @@
 #include <cusolverSp.h>
 #include <cusolverSp_LOWLEVEL_PREVIEW.h>
 
+
+// geometry processing and shape analysis framework
+namespace gproshan {
+
+
 struct cu_spAxb
 {
 	int * A_col_ptrs, * A_row_indices;
@@ -368,4 +373,7 @@ double solve_positive_definite_cusolver_preview(const int m, const int nnz, cons
 	
 	return (double) time / 1000;
 }
+
+
+} // namespace gproshan
 

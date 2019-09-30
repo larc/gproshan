@@ -12,7 +12,7 @@
 
 
 // geometry processing and shape analysis framework
-//namespace gproshan {
+namespace gproshan {
 
 
 typedef std::vector<index_t> star_t;		// star (vector of he)
@@ -166,7 +166,7 @@ struct corr_t
 };
 
 
-//}; // namespace gproshan
+} // namespace gproshan
 
 #endif // CHE_H
 

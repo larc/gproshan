@@ -4,6 +4,10 @@ using namespace std;
 using namespace Eigen;
 
 
+// geometry processing and shape analysis framework
+namespace gproshan {
+
+
 void laplacian(che * mesh, a_sp_mat & L, a_sp_mat & A)
 {
 	size_t n_edges = mesh->n_edges();
@@ -100,4 +104,7 @@ size_t eigs_laplacian(a_vec & eigval, a_mat & eigvec, che * mesh, const a_sp_mat
 
 	return eigval.n_elem;
 }
+
+
+} // namespace gproshan
 

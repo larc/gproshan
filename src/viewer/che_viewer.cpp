@@ -10,6 +10,10 @@
 using namespace std;
 
 
+// geometry processing and shape analysis framework
+namespace gproshan {
+
+
 che_viewer::che_viewer()
 {
 	mesh = NULL;
@@ -365,4 +369,7 @@ void che_viewer::debug_info()
 	debug(mesh->quality())
 	debug(mesh->genus())
 }
+
+
+} // namespace gproshan
 
