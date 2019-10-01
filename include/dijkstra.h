@@ -2,7 +2,11 @@
 #define DIJKSTRA_H
 
 #include "che.h"
-#include "include.h"
+
+
+// geometry processing and shape analysis framework
+namespace gproshan {
+
 
 class dijkstra
 {
@@ -17,10 +21,14 @@ class dijkstra
 		~dijkstra();
 		distance_t & operator()(index_t i);
 		index_t & operator[](index_t i);
-		void print(ostream & os);
+		void print(std::ostream & os);
 
 	private:
 		void run(che * shape);
 };
 
+
+} // namespace gproshan
+
 #endif // DIJKSTRA_H
+

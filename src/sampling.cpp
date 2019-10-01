@@ -1,8 +1,16 @@
 #include "sampling.h"
+
 #include "geodesics_ptp.h"
 #include "che_off.h"
 
 #include <fstream>
+
+using namespace std;
+
+
+// geometry processing and shape analysis framework
+namespace gproshan {
+
 
 index_t ** sampling_shape(vector<index_t> & points, size_t *& sizes, vertex *& normals, che * shape, size_t n_points, distance_t radio)
 {
@@ -18,7 +26,7 @@ index_t ** sampling_shape(vector<index_t> & points, size_t *& sizes, vertex *& n
 		v = points[i];
 		normals[i] = shape->normal(v);
 
-		geodesics fm(shape, {v}, geodesics::FM, NULL, NIL, radio);
+		geodesics fm(shape, {v}, geodesics::FM, nullptr, NIL, radio);
 
 		indexes[i] = new index_t[fm.n_sorted_index()];
 
@@ -80,4 +88,7 @@ bool load_sampling(vector<index_t> & points, distance_t & radio, che * mesh, siz
 
 	return true;
 }
+
+
+} // namespace gproshan
 

@@ -4,6 +4,13 @@
 
 #include <cassert>
 
+using namespace std;
+
+
+// geometry processing and shape analysis framework
+namespace gproshan {
+
+
 distance_t * heat_flow(che * mesh, const vector<index_t> & sources, double & solve_time)
 {
 	if(!sources.size()) return 0;
@@ -191,4 +198,7 @@ double solve_positive_definite_gpu(a_mat & x, const a_sp_mat & A, const a_mat & 
 
 #endif
 }
+
+
+} // namespace gproshan
 

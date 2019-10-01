@@ -11,10 +11,16 @@
 #include <thrust/device_vector.h>
 #include <thrust/execution_policy.h>
 
+using namespace std;
+
+
+// geometry processing and shape analysis framework
+namespace gproshan {
+
 
 double parallel_toplesets_propagation_coalescence_gpu(const ptp_out_t & ptp_out, che * mesh, const vector<index_t> & sources, const toplesets_t & toplesets, const bool & set_inf)
 {
-	index_t * inv = NULL;
+	index_t * inv = nullptr;
 	mesh = ptp_coalescence(inv, mesh, toplesets);
 
 	// ------------------------------------------------------
@@ -46,7 +52,7 @@ double parallel_toplesets_propagation_coalescence_gpu(const ptp_out_t & ptp_out,
 	if(ptp_out.clusters)
 	{
 		index_t * h_clusters = new index_t[h_mesh->n_vertices];
-		index_t * d_clusters[2] = {NULL, NULL};
+		index_t * d_clusters[2] = {nullptr, nullptr};
 		
 		cudaMalloc(&d_clusters[0], sizeof(index_t) * h_mesh->n_vertices);
 		cudaMalloc(&d_clusters[1], sizeof(index_t) * h_mesh->n_vertices);
@@ -272,4 +278,7 @@ distance_t cu_update_step(CHE * mesh, const distance_t * dist, const index_t & h
 
 	return p;
 }
+
+
+} // namespace gproshan
 

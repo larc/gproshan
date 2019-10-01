@@ -3,6 +3,11 @@
 
 #include "che.h"
 
+
+// geometry processing and shape analysis framework
+namespace gproshan {
+
+
 class fairing
 {
 	protected:
@@ -17,6 +22,9 @@ class fairing
 	protected:
 		virtual void compute(che * shape) = 0;
 };
+
+
+} // namespace gproshan
 
 #endif // FAIRING_H
 

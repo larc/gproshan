@@ -1,7 +1,10 @@
 #include "inpainting.h"
 
+
+// geometry processing and shape analysis framework
 // mesh dictionary learning and sparse coding namespace
-namespace mdict {
+namespace gproshan::mdict {
+
 
 inpainting::inpainting(che *const & _mesh, basis *const & _phi_basis, const size_t & _m, const size_t & _M, const distance_t & _f, const bool & _plot): dictionary(_mesh, _phi_basis, _m, _M, _f, _plot)
 {
@@ -46,5 +49,6 @@ void inpainting::execute()
 	debug(d_time)
 }
 
-} // mdict
+
+} // namespace gproshan::mdict
 

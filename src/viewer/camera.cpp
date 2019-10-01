@@ -6,6 +6,11 @@
 
 using namespace std;
 
+
+// geometry processing and shape analysis framework
+namespace gproshan {
+
+
 camera::camera()
 : pClick(1.),
 	pDrag(1.),
@@ -123,4 +128,7 @@ void camera::zoomOut()
 {
 	vZoom += 0.2;
 }
+
+
+} // namespace gproshan
 

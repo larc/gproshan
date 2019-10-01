@@ -3,12 +3,16 @@
 
 #include "d_dict_learning.h"
 
+
+// geometry processing and shape analysis framework
 // mesh dictionary learning and sparse coding namespace
-namespace mdict {
+namespace gproshan::mdict {
+
 
 void test_image_denoising(string file);
 
-} // mdict
+
+} // namespace gproshan::mdict
 
 #endif // D_IMAGE_DENOISING_H
 

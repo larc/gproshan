@@ -2,7 +2,13 @@
 #define VIEWER_CAMERA_H
 
 #include "quaternion.h"
+
 #include <GL/glut.h>
+
+
+// geometry processing and shape analysis framework
+namespace gproshan {
+
 
 class camera
 {
@@ -26,6 +32,9 @@ class camera
 		void zoomOut();
 		quaternion currentRotation() const;
 };
+
+
+} // namespace gproshan
 
 #endif
 

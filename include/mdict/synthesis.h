@@ -3,8 +3,11 @@
 
 #include "dictionary.h"
 
+
+// geometry processing and shape analysis framework
 // mesh dictionary learning and sparse coding namespace
-namespace mdict {
+namespace gproshan::mdict {
+
 
 class synthesis : public dictionary
 {
@@ -15,7 +18,8 @@ class synthesis : public dictionary
 		void execute();
 };
 
-} // mdict
+
+} // namespace gproshan::mdict
 
 #endif // SYNTHESIS_H
 

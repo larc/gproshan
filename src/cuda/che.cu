@@ -1,5 +1,10 @@
 #include "che.cuh"
 
+
+// geometry processing and shape analysis framework
+namespace gproshan {
+
+
 __host__ __device__
 index_t cu_trig(index_t he)
 {
@@ -52,4 +57,7 @@ void cuda_free_CHE(CHE *& dd_che, CHE *& d_che)
 	free(dd_che);
 	cudaFree(d_che);
 }
+
+
+} // namespace gproshan
 

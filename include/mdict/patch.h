@@ -17,19 +17,22 @@ using namespace cimg_library;
 
 using namespace std;
 
-/// Mesh dictionary learning and sparse coding namespace
-namespace mdict {
+
+// geometry processing and shape analysis framework
+// mesh dictionary learning and sparse coding namespace
+namespace gproshan::mdict {
+
 
 class dictionary;
 
 typedef function<bool(const index_t &)> fmask_t;
-typedef vector<pair<index_t, index_t> > vpatches_t;
+typedef std::vector<std::pair<index_t, index_t> > vpatches_t;
 
 /// 
 class patch
 {
 	public:
-		vector<index_t> vertices;		///< Vertices of the patch.
+		std::vector<index_t> vertices;		///< Vertices of the patch.
 		a_mat T;							///< Transformation matrix.
 		a_vec x;							///< Center point.
 		a_mat xyz;						///< Matrix of points.
@@ -46,7 +49,7 @@ class patch
 					const index_t & v,				///< center vertex of the patch.
 					const size_t & n_toplevels,		///< number of toplevels to jet fitting.
 					const distance_t & radio,		///< euclidean radio in XY of the patch.
-					index_t * _toplevel = NULL		///< aux memory to gather toplevel vertices.
+					index_t * _toplevel = nullptr		///< aux memory to gather toplevel vertices.
 					);
 
 		void transform();
@@ -54,7 +57,7 @@ class patch
 		void itransform();
 		
 		void reset_xyz(	che * mesh,
-						vector<vpatches_t> & vpatches,
+						std::vector<vpatches_t> & vpatches,
 						const index_t & p,
 						const fmask_t & mask = nullptr
 						);
@@ -92,7 +95,8 @@ class patch
 	friend class dictionary;
 };
 
-} // mdict
+
+} // namespace gproshan::mdict
 
 #endif // PATCH_H
 

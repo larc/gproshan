@@ -1,8 +1,13 @@
 #include "fairing.h"
 
+
+// geometry processing and shape analysis framework
+namespace gproshan {
+
+
 fairing::fairing()
 {
-	positions = NULL;
+	positions = nullptr;
 }
 
 fairing::~fairing()
@@ -19,3 +24,7 @@ vertex * fairing::get_postions()
 {
 	return positions;
 }
+
+
+} // namespace gproshan
+

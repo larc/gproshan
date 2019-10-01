@@ -2,11 +2,14 @@
 #define DECIMATION_H
 
 #include "che.h"
-
-#include <string>
 #include "include_arma.h"
 
-using namespace std;
+#include <string>
+
+
+// geometry processing and shape analysis framework
+namespace gproshan {
+
 
 class decimation
 {
@@ -28,6 +31,9 @@ class decimation
 		void order_edges(index_t * const & sort_edges, real_t * const & error_edges);
 		vertex create_vertex(const index_t & e);
 };
+
+
+} // namespace gproshan
 
 #endif // DECIMATION_H
 

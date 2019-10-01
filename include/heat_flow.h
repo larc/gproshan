@@ -15,9 +15,14 @@
 
 #include <cholmod.h>
 
-distance_t * heat_flow(che * mesh, const vector<index_t> & sources, double & solve_time);
 
-distance_t * heat_flow_gpu(che * mesh, const vector<index_t> & sources, double & solve_time);
+// geometry processing and shape analysis framework
+namespace gproshan {
+
+
+distance_t * heat_flow(che * mesh, const std::vector<index_t> & sources, double & solve_time);
+
+distance_t * heat_flow_gpu(che * mesh, const std::vector<index_t> & sources, double & solve_time);
 
 void compute_divergence(che * mesh, const a_mat & u, a_mat & div);
 
@@ -48,6 +53,9 @@ double solve_positive_definite_cusparse(const int m, const int nnz, const real_t
 double solve_positive_definite_cusolver_preview(const int m, const int nnz, const real_t * hA_values, const int * hA_col_ptrs, const int * hA_row_indices, const real_t * hb, real_t * hx, const bool host = 0);
 
 #endif
+
+
+} // namespace gproshan
 
 #endif // HEAT_FLOW_H
 

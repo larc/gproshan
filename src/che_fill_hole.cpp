@@ -8,6 +8,11 @@
 
 using namespace std;
 
+
+// geometry processing and shape analysis framework
+namespace gproshan {
+
+
 bool operator<(const border_t & a, const border_t & b)
 {
 	return a.theta > b.theta;
@@ -67,7 +72,7 @@ che * mesh_fill_hole(che * mesh, const vector<index_t> & border_vertices, const 
 
 	size_t size = border_vertices.size();
 	index_t i, j, n_v;
-	che * hole = NULL;
+	che * hole = nullptr;
 	che * aux_hole;
 
 	index_t * vmap_border = new index_t[size];
@@ -185,7 +190,7 @@ che * mesh_fill_hole(che * mesh, const vector<index_t> & border_vertices, const 
 		n_v = add_border_vertices(j, i, hole->n_vertices() - merge_vertices[!c].size());
 		normal /= n_v;
 
-		aux_hole = NULL;
+		aux_hole = nullptr;
 		aux_hole = fill_hole_front_angles(vertices[c], mesh->mean_edge(), normal, max_iter);
 
 		hole->merge(aux_hole, merge_vertices[!c]);
@@ -200,7 +205,7 @@ che * mesh_fill_hole(che * mesh, const vector<index_t> & border_vertices, const 
 	{
 		che_off::write_file(hole, PATH_TEST + "fill_holes/fatal_error.off");
 		delete hole;
-		return NULL;
+		return nullptr;
 	}
 
 	return hole;
@@ -226,7 +231,7 @@ void split_border(vector<pair<index_t, index_t> > & split_indices, che * mesh, c
 		*/
 	}
 
-	//index_t * clusters = NULL;
+	//index_t * clusters = nullptr;
 
 	index_t k = 2;
 	if(kmeans(means, data, k, arma::random_subset, 50, false))
@@ -274,8 +279,8 @@ vector<index_t> * fill_all_holes(che * mesh, const size_t & max_iter)
 
 tuple<vector<index_t> *, che **> fill_all_holes_meshes(che * mesh, const size_t & max_iter)
 {
-	vector<index_t> * border_vertices = NULL;
-	che ** holes = NULL;
+	vector<index_t> * border_vertices = nullptr;
+	che ** holes = nullptr;
 
 	const size_t n_borders = mesh->n_borders();
 	if(!n_borders) return make_tuple(border_vertices, holes);
@@ -540,7 +545,7 @@ che * fill_hole_front_angles_test(che * mesh, vector<index_t> & front_vertices, 
 	if( init_perimeter < perimeter )
 	{
 		is_grow = true;
-	//	return NULL;
+	//	return nullptr;
 	}
 
 	vertices.clear();
@@ -559,7 +564,7 @@ che * fill_hole_front_angles_test(che * mesh, vector<index_t> & front_vertices, 
 //	debug_me(filling holes)
 //	debug(vertices.size())
 //	debug(faces.size())
-	return faces.size() == 0 ? NULL : new che(vertices.data(), vertices.size(), faces.data(), faces.size() / 3);
+	return faces.size() == 0 ? nullptr : new che(vertices.data(), vertices.size(), faces.data(), faces.size() / 3);
 }
 
 che * fill_hole_front_angles(vector<vertex> & vertices, const real_t & lenght, const vertex & normal, const size_t & max_iter, bool is_grow)
@@ -807,7 +812,7 @@ che * fill_hole_front_angles(vector<vertex> & vertices, const real_t & lenght, c
 	{
 		if(!is_grow)
 			return fill_hole_front_angles(vertices, lenght, -normal, max_iter, !is_grow);
-		else return NULL;
+		else return nullptr;
 	}
 /*
 	a_vec axis;
@@ -833,7 +838,7 @@ che * fill_hole_front_angles(vector<vertex> & vertices, const real_t & lenght, c
 		vertices.push_back(vertex(r[0], r[1], r[2]));
 	}
 
-	return faces.size() ? new che(vertices.data(), vertices.size(), faces.data(), faces.size() / 3) : NULL;
+	return faces.size() ? new che(vertices.data(), vertices.size(), faces.data(), faces.size() / 3) : nullptr;
 }
 
 void get_real_tri(che * mesh, vector<index_t> & select_vertices, vector<vertex> & triangle, vector<size_t> & tri_sizes )
@@ -980,4 +985,7 @@ che * fill_hole_center_triangle(che * mesh, vector<index_t> & select_vertices, i
 
 	return new_off;
 }
+
+
+} // namespace gproshan
 

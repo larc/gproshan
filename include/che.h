@@ -1,19 +1,22 @@
 #ifndef CHE_H
 #define CHE_H
 
-#include <vector>
-#include <string>
-
 #include "include.h"
 #include "vertex.h"
+
+#include <vector>
+#include <string>
 
 #define for_star(he, mesh, v) for(index_t stop = mesh->evt(v), he = mesh->evt(v); he != NIL; he = (he = mesh->ot(prev(he))) != stop ? he : NIL)
 #define for_border(he, mesh, v) for(index_t stop = mesh->evt(v), he = mesh->evt(v); he != NIL; he = (he = mesh->evt(mesh->vt(next(he)))) != stop ? he : NIL)
 
-using namespace std;
 
-typedef vector<index_t> star_t;		//star (vector of he)
-typedef vector<index_t> link_t;		//link (vector of he)
+// geometry processing and shape analysis framework
+namespace gproshan {
+
+
+typedef std::vector<index_t> star_t;		// star (vector of he)
+typedef std::vector<index_t> link_t;		// link (vector of he)
 
 index_t trig(const index_t & he);
 index_t next(const index_t & he);
@@ -27,7 +30,7 @@ class che
 		static const size_t P = 3;
 
 	protected:
-		string filename_;
+		std::string filename_;
 
 		size_t n_vertices_;
 		size_t n_faces_;
@@ -35,13 +38,13 @@ class che
 		size_t n_edges_;
 		size_t n_borders_;
 
-		vertex * GT;	//geometry table		v	-> vertex
-		index_t * VT;	//vertex table (faces)	he	-> v
-		index_t * OT;	//opposite table		he	-> he
-		index_t * EVT;	//extra vertex table	v	-> he
-		index_t * ET;	//edge table			e	-> he
-		index_t * EHT;	//extra half edge table	he	-> e
-		index_t * BT;	//boundary table		b 	-> v
+		vertex * GT;	///< geometry table			: v		-> vertex
+		index_t * VT;	///< vertex table (faces)	: he	-> v
+		index_t * OT;	///< opposite table			: he	-> he
+		index_t * EVT;	///< extra vertex table		: v		-> he
+		index_t * ET;	///< edge table				: e		-> he
+		index_t * EHT;	///< extra half edge table	: he	-> e
+		index_t * BT;	///< boundary table			: b 	-> v
 
 		bool manifold;
 
@@ -53,7 +56,7 @@ class che
 		
 		void star(star_t & s, const index_t & v);
 		void link(link_t & l, const index_t & v);
-		void border(vector<index_t> & border, const index_t & b);
+		void border(std::vector<index_t> & border, const index_t & b);
 		bool is_border_v(const index_t & v) const;
 		bool is_border_e(const index_t & e) const;
 		void flip(const index_t & e);
@@ -95,28 +98,28 @@ class che
 		size_t max_degree() const;
 		vertex & get_vertex(index_t v);
 		void set_vertices(const vertex *const& positions, size_t n = 0, const index_t & v_i = 0);
-		void set_filename(const string & f);
-		const string & filename() const;
-		const string filename_size() const;
-		const string name() const;
-		const string name_size() const;
+		void set_filename(const std::string & f);
+		const std::string & filename() const;
+		const std::string filename_size() const;
+		const std::string name() const;
+		const std::string name_size() const;
 		void reload();
-		void compute_toplesets(index_t *& rings, index_t *& sorted, vector<index_t> & limites, const vector<index_t> & sources, const index_t & k = NIL);
+		void compute_toplesets(index_t *& rings, index_t *& sorted, std::vector<index_t> & limites, const std::vector<index_t> & sources, const index_t & k = NIL);
 		void multiplicate_vertices();
 		void remove_non_manifold_vertices();
-		void remove_vertices(const vector<index_t> & vertices);
-		void merge(const che * mesh, const vector<index_t> & com_vertices);
+		void remove_vertices(const std::vector<index_t> & vertices);
+		void merge(const che * mesh, const std::vector<index_t> & com_vertices);
 		void set_head_vertices(index_t * head, const size_t & n);
 		index_t link_intersect(const index_t & v_a, const index_t & v_b);
 		corr_t * edge_collapse(const index_t *const & sort_edges, const vertex *const & normals);
-		corr_t find_corr(const vertex & v, const vertex & n, const vector<index_t> & triangles);
+		corr_t find_corr(const vertex & v, const vertex & n, const std::vector<index_t> & triangles);
 
 	protected:
 		void delete_me();
 		void init(const vertex * vertices, const index_t & n_v, const index_t * faces, const index_t & n_f);
-		void init(const string & file);
+		void init(const std::string & file);
 		void init(const size_t & n_v, const size_t & n_f);
-		virtual void read_file(const string & file);
+		virtual void read_file(const std::string & file);
 
 	private:
 		void update_evt_ot_et();
@@ -161,6 +164,9 @@ struct corr_t
 		t /= che::P;
 	}
 };
+
+
+} // namespace gproshan
 
 #endif // CHE_H
 

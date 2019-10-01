@@ -5,6 +5,12 @@
 #include <cstring>
 #include <cassert>
 
+using namespace std;
+
+
+// geometry processing and shape analysis framework
+namespace gproshan {
+
 
 che_off::che_off(const string & file)
 {
@@ -48,7 +54,7 @@ void che_off::read_file(const string & file)
 		is >> v;
 		if(!i && v > che::P)
 		{
-			vertex * tGT = GT; GT = NULL;
+			vertex * tGT = GT; GT = nullptr;
 
 			delete_me();
 			init(n_v, n_f * (v - che::P + 1));
@@ -92,4 +98,7 @@ void che_off::write_file(const che * mesh, const string & file)
 
 	os.close();
 }
+
+
+} // namespace gproshan
 

@@ -5,6 +5,11 @@
 
 #include "../include.h"
 
+
+// geometry processing and shape analysis framework
+namespace gproshan {
+
+
 struct vertex_cu
 {
 	real_t x;
@@ -111,5 +116,8 @@ struct vertex_cu
 __host__ __device__
 vertex_cu operator*(const real_t & a, const vertex_cu & v);
 
-#endif
+
+} // namespace gproshan
+
+#endif // VERTEX_CUH
 

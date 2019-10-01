@@ -8,13 +8,16 @@
 #include "viewer/viewer.h"
 
 #include <cassert>
-
 #include <CImg.h>
+
 
 using namespace cimg_library;
 
+
+// geometry processing and shape analysis framework
 // mesh dictionary learning and sparse coding namespace
-namespace mdict {
+namespace gproshan::mdict {
+
 
 size_t dictionary::L = 10;
 size_t dictionary::T = 5;
@@ -253,5 +256,6 @@ index_t dictionary::sample(const index_t & s)
 	return s;
 }
 
-} // mdict
+
+} // namespace gproshan::mdict
 

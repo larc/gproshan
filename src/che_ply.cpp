@@ -6,6 +6,12 @@
 #include <cassert>
 #include <map>
 
+using namespace std;
+
+
+// geometry processing and shape analysis framework
+namespace gproshan {
+
 
 che_ply::che_ply(const string & file)
 {
@@ -177,4 +183,7 @@ void che_ply::write_file(const che * mesh, const string & file)
 
 	os.close();
 }
+
+
+} // namespace gproshan
 

@@ -3,6 +3,12 @@
 #include <cmath>
 #include <cstring>
 
+using namespace std;
+
+
+// geometry processing and shape analysis framework
+namespace gproshan {
+
 
 ptp_out_t::ptp_out_t(distance_t *const & d, index_t *const & c): dist(d), clusters(c) {}
 
@@ -35,7 +41,7 @@ void parallel_toplesets_propagation_coalescence_cpu(const ptp_out_t & ptp_out, c
 {
 	const size_t n_vertices = mesh->n_vertices();
 
-	index_t * inv = NULL;
+	index_t * inv = nullptr;
 	mesh = ptp_coalescence(inv, mesh, toplesets);
 
 	// ------------------------------------------------------
@@ -266,4 +272,7 @@ void normalize_ptp(distance_t * dist, const size_t & n)
 	for(index_t v = 0; v < n; v++)
 		dist[v] /= max_d;
 }
+
+
+} // namespace gproshan
 

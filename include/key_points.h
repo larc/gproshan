@@ -6,6 +6,10 @@
 #include <utility>
 
 
+// geometry processing and shape analysis framework
+namespace gproshan {
+
+
 typedef std::pair<real_t, index_t> real_idx_t;
 
 class key_points
@@ -28,6 +32,9 @@ class key_points
 	private:
 		void compute_kps(che * mesh);
 };
+
+
+} // namespace gproshan
 
 #endif // KEY_POINTS_H
 

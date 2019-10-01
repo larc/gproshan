@@ -6,6 +6,13 @@
 
 #include <cassert>
 
+using namespace std;
+
+
+// geometry processing and shape analysis framework
+namespace gproshan {
+
+
 void main_test_geodesics_ptp(const int & nargs, const char ** args)
 {
 	if(nargs < 4)
@@ -282,7 +289,7 @@ double test_heat_method_cholmod(distance_t & error, double & stime, const distan
 	double t, st, ptime;
 	ptime = stime = INFINITY;
 	
-	distance_t * dist = NULL;
+	distance_t * dist = nullptr;
 	for(int i = 0; i < n_test; i++)
 	{
 		if(dist) delete [] dist;
@@ -304,7 +311,7 @@ double test_heat_method_gpu(distance_t & error, double & stime, const distance_t
 	double t, st, ptime;
 	ptime = stime = INFINITY;
 	
-	distance_t * dist = NULL;
+	distance_t * dist = nullptr;
 	for(int i = 0; i < n_test; i++)
 	{
 		if(dist) delete [] dist;
@@ -346,4 +353,6 @@ distance_t compute_error(const distance_t * dist, const distance_t * exact, cons
 
 	return error * 100 / (n - s);
 }
+
+} // namespace gproshan
 

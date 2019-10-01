@@ -2,8 +2,11 @@
 
 #include <cassert>
 
+
+// geometry processing and shape analysis framework
 // mesh dictionary learning and sparse coding namespace
-namespace mdict {
+namespace gproshan::mdict {
+
 
 basis_cosine::basis_cosine(const size_t & _r, const size_t & _n, const distance_t & _radio)
 {
@@ -69,5 +72,6 @@ void basis_cosine::cosine(ostream & os, const real_t & c, const real_t & alpha)
 	os << "cos( " << c << " * (" << alpha << " * v * cos(u) + ( 1 - " << alpha << ") * v * sin(u)))";
 }
 
-} // mdict
+
+} // namespace gproshan::mdict
 

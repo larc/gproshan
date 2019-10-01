@@ -2,82 +2,18 @@
 
 #include <cmath>
 
+using namespace std;
+
+
+// geometry processing and shape analysis framework
+namespace gproshan {
+
+
 vertex::vertex(const real_t & x_, const real_t & y_, const real_t & z_)
 {
 	x = x_;
 	y = y_;
 	z = z_;
-}
-
-vertex::~vertex()
-{
-
-}
-
-vertex vertex::operator * (const vertex & v) const
-{
-	return vertex(y * v.z - z * v.y, z * v.x - x * v.z, x * v.y - y * v.x);
-}
-
-void vertex::operator *= (const real_t & a)
-{
-	x *= a;
-	y *= a;
-	z *= a;
-}
-
-real_t vertex::operator * () const
-{
-	return sqrt(x * x + y * y + z * z);
-}
-
-vertex vertex::operator / (const real_t & a) const
-{
-	return (1. / a) * (*this);
-}
-
-void vertex::operator /= (const real_t & a)
-{
-	(*this) *= (1. / a);
-}
-
-real_t vertex::operator , (const vertex & v) const
-{
-	return x * v.x + y * v.y + z * v.z;
-}
-
-vertex vertex::operator + (const vertex & v) const
-{
-	return vertex(x + v.x, y + v.y, z + v.z);
-}
-
-void vertex::operator += (const vertex & v)
-{
-	x += v.x;
-	y += v.y;
-	z += v.z;
-}
-
-vertex vertex::operator - (const vertex & v) const
-{
-	return vertex(x - v.x, y - v.y, z - v.z);
-}
-
-void vertex::operator -= (const vertex & v)
-{
-	x -= v.x;
-	y -= v.y;
-	z -= v.z;
-}
-
-vertex vertex::operator - () const
-{
-	return vertex(-x, -y, -z);
-}
-
-vertex vertex::unit() const
-{
-	return *this / **this;
 }
 
 real_t & vertex::operator [] (const index_t & i)
@@ -90,21 +26,87 @@ const real_t & vertex::operator [] (const index_t & i) const
 	return (&x)[i];
 }
 
+vertex vertex::unit() const
+{
+	return *this / **this;
+}
+
+real_t vertex::operator * () const
+{
+	return sqrt(x * x + y * y + z * z);
+}
+
+real_t vertex::operator , (const vertex & v) const
+{
+	return x * v.x + y * v.y + z * v.z;
+}
+
+vertex vertex::operator * (const vertex & v) const
+{
+	return vertex(y * v.z - z * v.y, z * v.x - x * v.z, x * v.y - y * v.x);
+}
+
+vertex vertex::operator / (const real_t & a) const
+{
+	return (1. / a) * (*this);
+}
+
+vertex vertex::operator + (const vertex & v) const
+{
+	return vertex(x + v.x, y + v.y, z + v.z);
+}
+
+vertex vertex::operator - (const vertex & v) const
+{
+	return vertex(x - v.x, y - v.y, z - v.z);
+}
+
+vertex vertex::operator - () const
+{
+	return vertex(-x, -y, -z);
+}
+
+void vertex::operator *= (const real_t & a)
+{
+	x *= a;
+	y *= a;
+	z *= a;
+}
+
+void vertex::operator /= (const real_t & a)
+{
+	(*this) *= (1. / a);
+}
+
+void vertex::operator += (const vertex & v)
+{
+	x += v.x;
+	y += v.y;
+	z += v.z;
+}
+
+void vertex::operator -= (const vertex & v)
+{
+	x -= v.x;
+	y -= v.y;
+	z -= v.z;
+}
+
+bool vertex::operator < (const vertex & v)
+{
+	if(x != v.x) return x < v.x;
+	if(y != v.y) return y < v.y;
+	return z < v.z;
+}
+
+bool vertex::operator == (const vertex & v)
+{
+	return x == v.x && y == v.y && z == v.z;
+}
+
 vertex operator * (const real_t & a, const vertex & v)
 {
 	return vertex(a * v.x, a * v.y, a * v.z);
-}
-
-bool operator < (const vertex & a, const vertex & b)
-{
-	if(a.x != b.x) return a.x < b.x;
-	if(a.y != b.y) return a.y < b.y;
-	return a.z < b.z;
-}
-
-bool operator == (const vertex & a, const vertex & b)
-{
-	return a.x == b.x && a.y == b.y && a.z == b.z;
 }
 
 ostream & operator << (ostream & os, const vertex & v)
@@ -118,4 +120,7 @@ istream & operator >> (istream & is, vertex & v)
 	is >> v.x >> v.y >> v.z;
 	return is;
 }
+
+
+} // namespace gproshan
 

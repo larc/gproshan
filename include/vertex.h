@@ -5,11 +5,14 @@
 
 #include <iostream>
 
-using namespace std;
 
-/**
- * @brief The vertex class is a point in the space 3D.
- */
+// geometry processing and shape analysis framework
+namespace gproshan {
+
+
+/*!
+	The vertex class represents a 3D point and implements 3D vector operations.
+*/
 class vertex
 {
 	public:
@@ -19,28 +22,37 @@ class vertex
 
 	public:
 		vertex(const real_t & x_ = 0, const real_t & y_ = 0, const real_t & z_ = 0);
-		~vertex();
-		vertex operator * (const vertex & v) const;		//cross product
-		void operator *= (const real_t & v);			//scalar produc
-		real_t operator * () const;						//norm
-		vertex operator / (const real_t & v) const;
-		void operator /= (const real_t & v);
-		real_t operator , (const vertex & v) const;		//dot product
+		~vertex() = default;
+
+		real_t & operator [] (const index_t & i);
+		const real_t & operator [] (const index_t & i) const;
+		
+		vertex unit() const;
+		real_t operator * () const;						// norm
+		real_t operator , (const vertex & v) const;		// dot product
+		
+		vertex operator * (const vertex & v) const;		// cross product
+		vertex operator / (const real_t & v) const;		// scalar division
 		vertex operator + (const vertex & v) const;
-		void operator += (const vertex & v);
 		vertex operator - (const vertex & v) const;
-		void operator -= (const vertex & v);
 		vertex operator - () const;
 
-		vertex unit() const;
-		real_t & operator[](const index_t & i);
-		const real_t & operator [] (const index_t & i) const;
+		void operator *= (const real_t & v);			// scalar produc
+		void operator /= (const real_t & v);
+		void operator += (const vertex & v);
+		void operator -= (const vertex & v);		
+		
+		bool operator < (const vertex & v);
+		bool operator == (const vertex & v);
 };
 
 vertex operator * (const real_t & a, const vertex & v);
-bool operator < (const vertex & a, const vertex & b);
-bool operator == (const vertex & a, const vertex & b);
-ostream & operator << (ostream & os, const vertex & v);
-istream & operator >> (istream & is, vertex & v);
+
+std::ostream & operator << (std::ostream & os, const vertex & v);
+std::istream & operator >> (std::istream & is, vertex & v);
+
+
+} // namespace gproshan
 
 #endif // VERTEX_H
+

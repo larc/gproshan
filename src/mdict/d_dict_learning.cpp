@@ -5,11 +5,13 @@
 #include <iomanip>
 #include <vector>
 #include <fstream>
-
 #include <cassert>
 
+
+// geometry processing and shape analysis framework
 // mesh dictionary learning and sparse coding namespace
-namespace mdict {
+namespace gproshan::mdict {
+
 
 void OMP(a_vec & alpha, a_vec & x, a_mat & D, size_t L)
 {
@@ -205,5 +207,6 @@ void KSVDT(a_mat & A, vector<patch_t> & patches, size_t M, size_t L)
 	}
 }
 
-} // mdict
+
+} // namespace gproshan::mdict
 

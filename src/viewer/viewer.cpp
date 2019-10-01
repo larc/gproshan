@@ -14,6 +14,11 @@
 
 using namespace std;
 
+
+// geometry processing and shape analysis framework
+namespace gproshan {
+
+
 // declare static member variables
 che_viewer viewer::meshes[N_MESHES];
 vcorr_t viewer::corr_mesh[N_MESHES]; // zero initialization
@@ -25,7 +30,7 @@ vector<vertex> viewer::other_vertices;
 vector<vertex> viewer::vectors;
 vector<string> viewer::sub_menus;
 
-char * viewer::share = NULL;
+char * viewer::share = nullptr;
 
 int viewer::window_size[2] = {1366, 768};
 int viewer::m_window_size[N_MESHES][2] = {	{1, 1}, {1, 2}, {1, 3}, 
@@ -183,8 +188,8 @@ void viewer::init_glsl()
 	//shader_program.loadFragment("shaders/fragment.glsl");
 	//shader_program.loadGeometry("shaders/geometry.glsl");
 	//shader_program.loadGeometry("shaders/new_geometry.glsl");
-	shader_program.loadVertex("shaders/new_vertex.glsl");
-	shader_program.loadFragment("shaders/new_fragment.glsl");
+	shader_program.load_vertex("shaders/new_vertex.glsl");
+	shader_program.load_fragment("shaders/new_fragment.glsl");
 }
 
 color_t & viewer::vcolor(const index_t & i)
@@ -802,4 +807,7 @@ void draw_str(const char * str, int x, int y, float color[4], void * font)
 	glEnable(GL_LIGHTING);
 	glPopAttrib();
 }
+
+
+} // namespace gproshan
 

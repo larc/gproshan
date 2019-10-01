@@ -11,14 +11,19 @@
 #include <CGAL/Simple_cartesian.h>
 #include <CGAL/Monge_via_jet_fitting.h>
 
+
+
+// geometry processing and shape analysis framework
+// mesh dictionary learning and sparse coding namespace
+namespace gproshan::mdict {
+
+
 typedef real_t DFT;
 typedef CGAL::Simple_cartesian<DFT> Data_Kernel;
 typedef Data_Kernel::Point_3 DPoint;
 typedef CGAL::Monge_via_jet_fitting<Data_Kernel> My_Monge_via_jet_fitting;
 typedef My_Monge_via_jet_fitting::Monge_form My_Monge_form;
 
-// mesh dictionary learning and sparse coding namespace
-namespace mdict {
 
 size_t patch_t::min_nvp = 36;
 bool patch_t::del_index = false;
@@ -425,5 +430,6 @@ a_vec simple_means_vertex(a_mat & alpha, const index_t & v, vector<patch_t> & pa
 	return n_a_vec / patches_map[v].size();
 }
 
-} // mdict
+
+} // namespace gproshan::mdict
 

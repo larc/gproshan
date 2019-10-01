@@ -1,4 +1,4 @@
-#version 450 core
+#version 460 core
 
 uniform vec3 eye;
 uniform vec3 light;
