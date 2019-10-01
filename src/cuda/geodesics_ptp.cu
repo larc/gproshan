@@ -49,7 +49,7 @@ double parallel_toplesets_propagation_gpu(const ptp_out_t & ptp_out, che * mesh,
 	if(ptp_out.clusters)
 	{
 		index_t * h_clusters = ptp_out.clusters;
-		index_t * d_clusters[2] = {NULL, NULL};
+		index_t * d_clusters[2] = {nullptr, nullptr};
 		cudaMalloc(&d_clusters[0], sizeof(index_t) * h_mesh->n_vertices);
 		cudaMalloc(&d_clusters[1], sizeof(index_t) * h_mesh->n_vertices);
 

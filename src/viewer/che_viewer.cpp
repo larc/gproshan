@@ -16,11 +16,11 @@ namespace gproshan {
 
 che_viewer::che_viewer()
 {
-	mesh = NULL;
+	mesh = nullptr;
 	_n_vertices = 0;
 
-	normals = NULL;
-	colors = NULL;
+	normals = nullptr;
+	colors = nullptr;
 	
 	vx = vy = 0;
 }
@@ -73,7 +73,7 @@ void che_viewer::reload()
 
 void che_viewer::update()
 {
-	assert(mesh != NULL);
+	assert(mesh != nullptr);
 
 	if(_n_vertices != mesh->n_vertices())
 	{

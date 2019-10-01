@@ -17,9 +17,9 @@ geodesics::geodesics(che * mesh, const vector<index_t> & sources, const option_t
 {
 	assert(n_vertices > 0);
 
-	free_dist = e_dist == NULL;
+	free_dist = e_dist == nullptr;
 	dist = free_dist ? new distance_t[n_vertices] : e_dist;
-	clusters = cluster ? new index_t[n_vertices] : NULL;
+	clusters = cluster ? new index_t[n_vertices] : nullptr;
 	sorted_index = new index_t[n_vertices];
 
 	n_sorted = 0;

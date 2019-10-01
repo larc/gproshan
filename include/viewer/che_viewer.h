@@ -50,7 +50,7 @@ class che_viewer
 		void update();
 		void update_vbo();
 		void update_normals();
-		void update_colors(const color_t *const c = NULL);
+		void update_colors(const color_t *const c = nullptr);
 		void draw();
 		void draw_normal_field();
 		void draw_gradient_field();

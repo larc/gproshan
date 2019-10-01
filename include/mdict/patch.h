@@ -41,7 +41,7 @@ class patch
 					const index_t & v,				///< center vertex of the patch.
 					const size_t & n_toplevels,		///< number of toplevels to jet fitting.
 					const distance_t & radio,		///< euclidean radio in XY of the patch.
-					index_t * _toplevel = NULL		///< aux memory to gather toplevel vertices.
+					index_t * _toplevel = nullptr		///< aux memory to gather toplevel vertices.
 					);
 
 		void transform();

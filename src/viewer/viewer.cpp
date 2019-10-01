@@ -30,7 +30,7 @@ vector<vertex> viewer::other_vertices;
 vector<vertex> viewer::vectors;
 vector<string> viewer::sub_menus;
 
-char * viewer::share = NULL;
+char * viewer::share = nullptr;
 
 int viewer::window_size[2] = {1366, 768};
 int viewer::m_window_size[N_MESHES][2] = {	{1, 1}, {1, 2}, {1, 3}, 

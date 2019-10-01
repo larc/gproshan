@@ -7,7 +7,7 @@ namespace gproshan {
 
 fairing::fairing()
 {
-	positions = NULL;
+	positions = nullptr;
 }
 
 fairing::~fairing()

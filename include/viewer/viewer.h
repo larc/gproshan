@@ -28,7 +28,7 @@ struct vcorr_t
 	vcorr_t()
 	{
 		mesh_i = NIL;
-		corr = NULL;
+		corr = nullptr;
 	}
 
 	void init(const size_t & n, const index_t & _mesh_i, const corr_t * _corr)
@@ -47,7 +47,7 @@ struct vcorr_t
 
 	bool is_loaded()
 	{
-		return mesh_i != NIL && corr != NULL;
+		return mesh_i != NIL && corr != nullptr;
 	}
 };
 

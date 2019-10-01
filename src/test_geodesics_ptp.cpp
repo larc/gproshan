@@ -277,7 +277,7 @@ double test_heat_method_cholmod(distance_t & error, double & stime, const distan
 	double t, st, ptime;
 	ptime = stime = INFINITY;
 	
-	distance_t * dist = NULL;
+	distance_t * dist = nullptr;
 	for(int i = 0; i < n_test; i++)
 	{
 		if(dist) delete [] dist;
@@ -299,7 +299,7 @@ double test_heat_method_gpu(distance_t & error, double & stime, const distance_t
 	double t, st, ptime;
 	ptime = stime = INFINITY;
 	
-	distance_t * dist = NULL;
+	distance_t * dist = nullptr;
 	for(int i = 0; i < n_test; i++)
 	{
 		if(dist) delete [] dist;

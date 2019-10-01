@@ -20,7 +20,7 @@ struct ptp_out_t
 	distance_t * dist;
 	index_t * clusters;
 	
-	ptp_out_t(distance_t *const & d, index_t *const & c = NULL);
+	ptp_out_t(distance_t *const & d, index_t *const & c = nullptr);
 };
 
 struct toplesets_t

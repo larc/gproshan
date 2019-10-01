@@ -54,7 +54,7 @@ void che_off::read_file(const string & file)
 		is >> v;
 		if(!i && v > che::P)
 		{
-			vertex * tGT = GT; GT = NULL;
+			vertex * tGT = GT; GT = nullptr;
 
 			delete_me();
 			init(n_v, n_f * (v - che::P + 1));

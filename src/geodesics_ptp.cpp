@@ -41,7 +41,7 @@ void parallel_toplesets_propagation_coalescence_cpu(const ptp_out_t & ptp_out, c
 {
 	const size_t n_vertices = mesh->n_vertices();
 
-	index_t * inv = NULL;
+	index_t * inv = nullptr;
 	mesh = ptp_coalescence(inv, mesh, toplesets);
 
 	// ------------------------------------------------------

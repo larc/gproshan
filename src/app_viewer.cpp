@@ -88,7 +88,7 @@ int viewer_main(int nargs, const char ** args)
 	viewer::add_process('/', "Decimation", viewer_process_edge_collapse);
 	viewer::add_process(':', "Select multiple vertices", viewer_select_multiple);
 
-	dist = NULL;
+	dist = nullptr;
 	n_dist = 0;
 
 	//init viewer
@@ -176,7 +176,7 @@ void viewer_process_noise()
 	delete [] viewer::share;
 	debug_me(APP_VIEWER)
 
-	srand(time(NULL));
+	srand(time(nullptr));
 
 	#pragma omp parallel for
 	for(index_t v = 0; v < viewer::mesh()->n_vertices(); v++)
@@ -193,7 +193,7 @@ void viewer_process_black_noise()
 {
 	debug_me(APP_VIEWER)
 
-	srand(time(NULL));
+	srand(time(nullptr));
 
 	#pragma omp parallel for
 	for(index_t v = 0; v < viewer::mesh()->n_vertices(); v++)
@@ -546,7 +546,7 @@ void viewer_process_voronoi()
 	debug_me(APP_VIEWER)
 
 	TIC(load_time)
-	geodesics ptp(viewer::mesh(), viewer::select_vertices, geodesics::PTP_GPU, NULL, 1);
+	geodesics ptp(viewer::mesh(), viewer::select_vertices, geodesics::PTP_GPU, nullptr, 1);
 	TOC(load_time)
 	debug(load_time)
 
@@ -664,7 +664,7 @@ void viewer_process_geodesics_ptp_gpu()
 	{
 		delete [] dist;
 		n_dist = 0;
-		dist = NULL;
+		dist = nullptr;
 	}
 
 	if(!dist)

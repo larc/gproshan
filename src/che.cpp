@@ -956,7 +956,7 @@ index_t che::link_intersect(const index_t & v_a, const index_t & v_b)
 
 corr_t * che::edge_collapse(const index_t *const & sort_edges, const vertex *const & normals)
 {
-	if(n_faces_ < 2) return NULL;
+	if(n_faces_ < 2) return nullptr;
 
 	// init default corr
 	corr_t * corr = new corr_t[n_vertices_];
@@ -1220,8 +1220,8 @@ void che::init(const size_t & n_v, const size_t & n_f)
 	n_faces_ = n_f;
 	n_half_edges_ = n_edges_ = n_borders_ = 0;
 
-	GT = NULL;
-	VT = OT = EVT = ET = BT = NULL;
+	GT = nullptr;
+	VT = OT = EVT = ET = BT = nullptr;
 	manifold = true;
 
 	n_half_edges_ = che::P * n_faces_;
@@ -1338,7 +1338,7 @@ void che::update_bt()
 		BT = new index_t[n_borders_];
 		memcpy(BT, borders.data(), sizeof(index_t) * n_borders_);
 	}
-	else BT = NULL;
+	else BT = nullptr;
 
 	delete [] border;
 }

@@ -39,7 +39,7 @@ struct patch_t
 
 	patch_t()
 	{
-		indexes = NULL;
+		indexes = nullptr;
 	}
 
 	~patch_t()

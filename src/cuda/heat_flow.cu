@@ -248,16 +248,16 @@ double solve_positive_definite_cusolver_preview(const int m, const int nnz, cons
 
 	// SOLVE Ax = b
 
-	cusolverSpHandle_t cusolver_handle = NULL;
-	cusparseHandle_t cusparse_handle = NULL;
-//	cudaStream_t stream = NULL;
+	cusolverSpHandle_t cusolver_handle = nullptr;
+	cusparseHandle_t cusparse_handle = nullptr;
+//	cudaStream_t stream = nullptr;
 
-	cusparseMatDescr_t descr = NULL;
+	cusparseMatDescr_t descr = nullptr;
 
 	size_t size_iternal = 0;
 	size_t size_chol = 0;
 
-	void * buffer = NULL;
+	void * buffer = nullptr;
 
 	int singularity;
 
