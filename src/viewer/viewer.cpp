@@ -188,8 +188,8 @@ void viewer::init_glsl()
 	//shader_program.loadFragment("shaders/fragment.glsl");
 	//shader_program.loadGeometry("shaders/geometry.glsl");
 	//shader_program.loadGeometry("shaders/new_geometry.glsl");
-	shader_program.loadVertex("shaders/new_vertex.glsl");
-	shader_program.loadFragment("shaders/new_fragment.glsl");
+	shader_program.load_vertex("shaders/new_vertex.glsl");
+	shader_program.load_fragment("shaders/new_fragment.glsl");
 }
 
 color_t & viewer::vcolor(const index_t & i)

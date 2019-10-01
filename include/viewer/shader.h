@@ -13,25 +13,22 @@ namespace gproshan {
 class shader
 {
 	protected:
-		GLuint vertexshader;
-		GLuint fragmentshader;
-		GLuint geometryshader;
-		GLuint program;
+		GLuint program {0};
 		bool linked;
 
 	public:
-		shader();
+		shader() = default;
 		~shader();
-		void loadVertex( const char* filename );
-		void loadFragment( const char* filename );
-		void loadGeometry( const char* filename );
+		void load_vertex(const char * filename);
+		void load_fragment(const char * filename);
+		void load_geometry(const char * filename);
 		void enable();
 		void disable() const;
-		operator GLuint() const;
+		operator GLuint () const;
 
 	protected:
-		void load(GLenum shaderType, const char * filename, GLuint & shader);
-		bool readSource( const char * filename, std::string & source);
+		bool load(GLenum shader_type, const char * filename);
+		bool read_source(const char * filename, std::string & source);
 };
 
 

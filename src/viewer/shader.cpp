@@ -1,5 +1,6 @@
 #include "shader.h"
 
+#include <cassert>
 #include <fstream>
 #include <iostream>
 
@@ -10,37 +11,25 @@ using namespace std;
 namespace gproshan {
 
 
-shader::shader(): vertexshader(0),
-					fragmentshader(0),
-					geometryshader(0),
-					program(0),
-					linked(false)
-{
-}
-
 shader::~shader()
 {
 	if(program) glDeleteProgram(program);
-
-	if(vertexshader) glDeleteShader(vertexshader);
-	if(fragmentshader) glDeleteShader(fragmentshader);
-	if(geometryshader) glDeleteShader(geometryshader);
 }
 
-void shader::loadVertex(const char * filename)
+void shader::load_vertex(const char * filename)
 {
-	load(GL_VERTEX_SHADER, filename, vertexshader);
+	load(GL_VERTEX_SHADER, filename);
 }
 
-void shader::loadFragment(const char * filename)
+void shader::load_fragment(const char * filename)
 {
-	load(GL_FRAGMENT_SHADER, filename, fragmentshader);
+	load(GL_FRAGMENT_SHADER, filename);
 }
 
-void shader::loadGeometry(const char * filename)
+void shader::load_geometry(const char * filename)
 {
 	#ifdef GL_GEOMETRY_SHADER_EXT
-		load(GL_GEOMETRY_SHADER_EXT, filename, geometryshader);
+		load(GL_GEOMETRY_SHADER_EXT, filename);
 	#else
 		cerr << "Error: geometry shaders not supported!" << endl;
 	#endif
@@ -67,76 +56,70 @@ shader::operator GLuint() const
 	return program;
 }
 
-void shader::load(GLenum shaderType, const char * filename, GLuint & _shader)
+bool shader::load(GLenum shader_type, const char * filename)
 {
 	string source;
 
-	if(!readSource(filename, source))
-	{
-		return;
-	}
+	assert(read_source(filename, source));
 
 	if(program == 0)
-	{
 		program = glCreateProgram();
-	}
 
-	if(_shader != 0)
-	{
-		glDetachShader(program, _shader);
-	}
+	// glDetachShader(program, shader); when/where can we need this?
 
-	_shader = glCreateShader(shaderType);
+	GLuint shader = glCreateShader(shader_type);
+
 	const char * source_c_str = source.c_str();
 	int size = source.size();
-	glShaderSource(_shader, 1, &(source_c_str), &size);
 
-	glCompileShader(_shader);
-	GLint compileStatus;
-	glGetShaderiv(_shader, GL_COMPILE_STATUS, &compileStatus);
+	glShaderSource(shader, 1, &(source_c_str), &size);
 
-	if(compileStatus == GL_TRUE)
+	glCompileShader(shader);
+	
+	GLint compile_status;
+	glGetShaderiv(shader, GL_COMPILE_STATUS, &compile_status);
+
+	if(compile_status == GL_TRUE)
 	{
-		glAttachShader(program, _shader);
+		glAttachShader(program, shader);
 		linked = false;
 	}
 	else
 	{
 		GLsizei maxLength = 0;
-		glGetShaderiv(_shader, GL_INFO_LOG_LENGTH, &maxLength);
+		glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &maxLength);
 
 		if(maxLength > 0)
 		{
 			GLchar* infoLog = new char[ maxLength ];
 			GLsizei length;
 
-			glGetShaderInfoLog(_shader, maxLength, &length, infoLog);
+			glGetShaderInfoLog(shader, maxLength, &length, infoLog);
 
 			cerr << filename << " GLSL Error: " << infoLog << endl;
 
 			delete[] infoLog;
 		}
+		
+		glDeleteShader(shader);
+		return false;
 	}
+
+	glDeleteShader(shader);
+	return true;
 }
 
-bool shader::readSource(const char * filename, std::string & source)
+bool shader::read_source(const char * filename, std::string & source)
 {
 	source = "";
 
 	ifstream in(filename);
-	if(!in.is_open())
-	{
-		cerr << "Error: could not open shader file ";
-		cerr << filename;
-		cerr << " for input!" << endl;
-		return false;
-	}
+
+	assert(in.is_open());
 
 	string line;
 	while(getline(in, line))
-	{
 		source += line + '\n';
-	}
 
 	return true;
 }
