@@ -2,7 +2,7 @@
 
 int main(int nargs, const char ** args)
 {
-	main_test_geodesics_ptp(nargs, args);
+	gproshan::main_test_geodesics_ptp(nargs, args);
 	return 0;
 }
 

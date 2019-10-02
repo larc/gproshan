@@ -36,14 +36,14 @@ class geodesics
 		bool free_dist;
 
 	public:
-		geodesics(	che * mesh,							///< input mesh must be a triangular mesh.
-					const std::vector<index_t> & sources,	///< source vertices.
-					const option_t & opt = FM,			///< specific the algorithm to execute.
-					distance_t *const & e_dist = nullptr,	///< external dist allocation
-					const bool & cluster = 0,			///< if clustering vertices to closest source.
-					const size_t & n_iter = 0, 			///< maximum number of iterations.
-					const distance_t & radio = INFINITY	///< execute until the specific radio.
-					);
+		geodesics(che * mesh,							///< input mesh must be a triangular mesh.
+				const std::vector<index_t> & sources,	///< source vertices.
+				const option_t & opt = FM,				///< specific the algorithm to execute.
+				distance_t *const & e_dist = nullptr,	///< external dist allocation
+				const bool & cluster = false,			///< to cluster vertices to closest source.
+				const size_t & n_iter = 0, 				///< maximum number of iterations.
+				const distance_t & radio = INFINITY		///< execute until the specific radio.
+				);
 
 		virtual ~geodesics();
 		const distance_t & operator[](const index_t & i) const;
