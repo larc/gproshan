@@ -166,8 +166,8 @@ void geodesics::run_fastmarching(che * mesh, const vector<index_t> & sources, co
 				dv = dist[v];
 				for_star(v_he, mesh, v)
 				{
-					//dp = update(dir, mesh, v_he, vx);
-					dp = update_step(mesh, dist, v_he);
+					dp = update(dir, mesh, v_he, vx);
+					//dp = update_step(mesh, dist, v_he);
 					if(dp < dv)
 					{
 						dv = dp;

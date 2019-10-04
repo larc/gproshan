@@ -9,10 +9,10 @@ TARGET = gproshan
 # SINGLE_P = -DSINGLE_P to compile with single precision
 SINGLE_P = 
 
-CC = g++ -Wall
+CC = g++
 LD = $(CC) -no-pie
 CUDA = nvcc
-CFLAGS = -O3 -fopenmp $(INCLUDE_PATH)
+CFLAGS = -Wall -O3 -fopenmp $(INCLUDE_PATH)
 CUDAFLAGS = -arch=sm_50 \
 			-gencode=arch=compute_50,code=sm_50 \
 			-gencode=arch=compute_52,code=sm_52 \

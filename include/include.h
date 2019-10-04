@@ -7,6 +7,8 @@
 #include <iomanip>
 #include <string>
 
+#include <omp.h>
+
 #define NIL (0u - 1)
 
 
