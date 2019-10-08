@@ -1,4 +1,5 @@
  #include "d_mesh.h"
+ #include "che_off.h"
 
 #ifndef CGAL_PATCH_DEFS
 	#define CGAL_PATCH_DEFS
@@ -295,6 +296,7 @@ void mesh_reconstruction(che * mesh, size_t M, vector<patch> & patches, vector<v
 
 	debug(v_i)
 	mesh->set_vertices(new_vertices + v_i, mesh->n_vertices() - v_i, v_i);
+	che_off::write_file(mesh,"tmp/recon_mesh");
 }
 
 a_vec non_local_means_vertex(a_mat & alpha, const index_t & v, vector<patch> & patches, vector<vpatches_t> & patches_map, const distance_t & h)
