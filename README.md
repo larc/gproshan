@@ -11,14 +11,21 @@ This framework includes some algorithms of Geometry Processing and Shape Analysi
 ## Build and Run
 Install all dependencies and run:
 
+	mkdir build
+	cd build
+	cmake ..
 	make
 
 finally execute:
 
 	./gproshan [input mesh paths]
 
-### Dependencies (linux)
+### Dependencies (Linux)
 g++ >= 8.3, cuda >= 10.1, libarmadillo, libeigen, libsuitesparse, libopenblas, opengl, gnuplot, libcgal, libgles2-mesa, cimg
+
+In Ubuntu (>= 18.04) you can install them with:
+
+	sudo apt install libarmadillo-dev libeigen3-dev libopenblas-dev libsuitesparse-dev freeglut3-dev libgles2-mesa-dev cimg-dev libcgal-dev
 
 ## Contributions
 
