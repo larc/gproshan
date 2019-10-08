@@ -203,9 +203,8 @@ void viewer::update_vbo()
 		meshes[i].update();
 }
 
-void viewer::menu(int value)
+void viewer::menu(int )
 {
-
 }
 
 void viewer::menu_process(int value)
@@ -242,7 +241,7 @@ void viewer::add_mesh(const vector<che *> & _meshes)
 	}
 }
 
-void viewer::keyboard(unsigned char c, int x, int y)
+void viewer::keyboard(unsigned char c, int , int )
 {
 	if(c >= '0' && c <= '9')
 	{
@@ -260,7 +259,7 @@ void viewer::menu_meshes(int value)
 	glutSetWindowTitle(mesh()->filename().c_str());
 }
 
-void viewer::special(int i, int x, int y)
+void viewer::special(int i, int , int )
 {
 	switch(i)
 	{
