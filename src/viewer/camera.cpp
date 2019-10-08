@@ -70,7 +70,7 @@ void camera::setView() const
 	glMultMatrixd(M);
 }
 
-void camera::mouse(int button, int state, int x, int y)
+void camera::mouse(int , int state, int x, int y)
 {
 	if(state == GLUT_DOWN)
 	{

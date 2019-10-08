@@ -121,8 +121,8 @@ void geodesics::run_fastmarching(che * mesh, const vector<index_t> & sources, co
 			vector<pair<distance_t, size_t> >,
 			greater<pair<distance_t, size_t> > > Q;
 
-	distance_t p;
-	index_t d; // dir propagation
+	distance_t dv, dp;
+	index_t dir; // dir propagation
 	vertex vx;
 
 	size_t black_i, v;
@@ -154,7 +154,7 @@ void geodesics::run_fastmarching(che * mesh, const vector<index_t> & sources, co
 
 		link_t black_link;
 		mesh->link(black_link, black_i);
-		for(index_t he: black_link)
+		for(const index_t & he: black_link)
 		{
 			v = mesh->vt(he);
 
@@ -163,21 +163,22 @@ void geodesics::run_fastmarching(che * mesh, const vector<index_t> & sources, co
 
 			if(color[v] == RED)
 			{
+				dv = dist[v];
 				for_star(v_he, mesh, v)
 				{
-					p = update(d, mesh, v_he, vx);
-					//p = update_step(mesh, dist, v_he);
-					if(p < dist[v])
+					dp = update(dir, mesh, v_he, vx);
+					//dp = update_step(mesh, dist, v_he);
+					if(dp < dv)
 					{
-						dist[v] = p;
+						dv = dp;
 						
 						if(clusters)
 							clusters[v] = dist[mesh->vt(prev(v_he))] < dist[mesh->vt(next(he))] ? clusters[mesh->vt(prev(he))] : clusters[mesh->vt(next(he))];
 					}
 				}
 
-				if(dist[v] < INFINITY)
-					Q.push(make_pair(dist[v], v));
+				if(dv < dist[v])
+					Q.push(make_pair(dist[v] = dv, v));
 			}
 		}
 	}

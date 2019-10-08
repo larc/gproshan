@@ -1354,7 +1354,7 @@ void che::delete_me()
 	if(BT)	delete [] BT;
 }
 
-void che::read_file(const string & file)
+void che::read_file(const string & )
 {
 }
 

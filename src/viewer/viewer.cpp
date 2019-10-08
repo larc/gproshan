@@ -188,8 +188,8 @@ void viewer::init_glsl()
 	//shader_program.loadFragment("shaders/fragment.glsl");
 	//shader_program.loadGeometry("shaders/geometry.glsl");
 	//shader_program.loadGeometry("shaders/new_geometry.glsl");
-	shader_program.load_vertex("shaders/new_vertex.glsl");
-	shader_program.load_fragment("shaders/new_fragment.glsl");
+	shader_program.load_vertex("../shaders/new_vertex.glsl");
+	shader_program.load_fragment("../shaders/new_fragment.glsl");
 }
 
 color_t & viewer::vcolor(const index_t & i)
@@ -203,9 +203,8 @@ void viewer::update_vbo()
 		meshes[i].update();
 }
 
-void viewer::menu(int value)
+void viewer::menu(int )
 {
-
 }
 
 void viewer::menu_process(int value)
@@ -242,7 +241,7 @@ void viewer::add_mesh(const vector<che *> & _meshes)
 	}
 }
 
-void viewer::keyboard(unsigned char c, int x, int y)
+void viewer::keyboard(unsigned char c, int , int )
 {
 	if(c >= '0' && c <= '9')
 	{
@@ -260,7 +259,7 @@ void viewer::menu_meshes(int value)
 	glutSetWindowTitle(mesh()->filename().c_str());
 }
 
-void viewer::special(int i, int x, int y)
+void viewer::special(int i, int , int )
 {
 	switch(i)
 	{

@@ -13,7 +13,7 @@
 #include "che.h"
 #include "include_arma.h"
 
-#include <cholmod.h>
+#include <suitesparse/cholmod.h>
 
 
 // geometry processing and shape analysis framework

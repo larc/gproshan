@@ -227,9 +227,11 @@ distance_t update_step(che * mesh, const distance_t * dist, const index_t & he)
 	Q[1][1] = q[0][0] / det;
 
 	distance_t delta = t[0] * (Q[0][0] + Q[1][0]) + t[1] * (Q[0][1] + Q[1][1]);
-	distance_t dis = delta * delta - (Q[0][0] + Q[0][1] + Q[1][0] + Q[1][1]) * (t[0]*t[0]*Q[0][0] + t[0]*t[1]*(Q[1][0] + Q[0][1]) + t[1]*t[1]*Q[1][1] - 1);
+	distance_t dis = delta * delta -
+					(Q[0][0] + Q[0][1] + Q[1][0] + Q[1][1]) * 
+					(t[0] * t[0] * Q[0][0] + t[0] * t[1] * (Q[1][0] + Q[0][1]) + t[1] * t[1] * Q[1][1] - 1);
 
-	distance_t p = delta + sqrt(dis) / (Q[0][0] + Q[0][1] + Q[1][0] + Q[1][1]);
+	distance_t p = (delta + sqrt(dis)) / (Q[0][0] + Q[0][1] + Q[1][0] + Q[1][1]);
 
 	distance_t tp[2];
 	tp[0] = t[0] - p;

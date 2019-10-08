@@ -330,19 +330,17 @@ distance_t cu_update_step(CHE * mesh, const distance_t * dist, const index_t & h
 	Q[1][1] = q[0][0] / det;
 
 	distance_t delta = t[0] * (Q[0][0] + Q[1][0]) + t[1] * (Q[0][1] + Q[1][1]);
-	distance_t dis = delta * delta - (Q[0][0] + Q[0][1] + Q[1][0] + Q[1][1]) * (t[0]*t[0]*Q[0][0] + t[0]*t[1]*(Q[1][0] + Q[0][1]) + t[1]*t[1]*Q[1][1] - 1);
+	distance_t dis = delta * delta -
+					(Q[0][0] + Q[0][1] + Q[1][0] + Q[1][1]) *
+					(t[0] * t[0] * Q[0][0] + t[0] * t[1] * (Q[1][0] + Q[0][1]) + t[1] * t[1] * Q[1][1] - 1);
 
-	distance_t p;
+#ifdef SINGLE_P
+	distance_t p = delta + sqrtf(dis);
+#else
+	distance_t p = delta + sqrt(dis);
+#endif
 
-	if(dis >= 0)
-	{
-		#ifdef SINGLE_P
-			p = delta + sqrtf(dis);
-		#else
-			p = delta + sqrt(dis);
-		#endif
-		p /= Q[0][0] + Q[0][1] + Q[1][0] + Q[1][1];
-	}
+	p /= Q[0][0] + Q[0][1] + Q[1][0] + Q[1][1];
 
 	distance_t tp[2];
 	tp[0] = t[0] - p;

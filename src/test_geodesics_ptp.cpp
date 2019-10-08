@@ -38,7 +38,7 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 	const char * ptime = "& %6.3lfs ";
 	const char * pspeedup = "& \\bf (%.1lfx) ";
 	const char * pbtime = "& %6s %6.3lfs ";
-	const char * pberror = "& %6s %6.3lf\\%% ";
+	const char * pberror = "& %6s %6.2lf\\%% ";
 
 	string filename;
 	while(cin >> filename)
