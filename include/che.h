@@ -61,7 +61,7 @@ class che
 		bool is_border_e(const index_t & e) const;
 		void flip(const index_t & e);
 		real_t pdetriq(const index_t & t) const;
-		percent_t quality();
+		real_t quality();
 		area_t area_trig(const index_t & t) const;
 		area_t area_vertex(const index_t & v);
 		area_t area_surface() const;
@@ -133,9 +133,9 @@ struct vertex_cu;
 
 struct CHE
 {
-	length_t n_vertices;
-	length_t n_faces;
-	length_t n_half_edges;
+	size_t n_vertices;
+	size_t n_faces;
+	size_t n_half_edges;
 
 	vertex_cu * GT;
 	index_t * VT;

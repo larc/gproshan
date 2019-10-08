@@ -7,9 +7,8 @@
 namespace gproshan {
 
 
-fairing_taubin::fairing_taubin(matrix_t step_): fairing()
+fairing_taubin::fairing_taubin(const real_t & step_): fairing(), step(step_)
 {
-	 step = step_;
 }
 
 fairing_taubin::~fairing_taubin()

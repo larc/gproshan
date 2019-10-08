@@ -84,8 +84,8 @@ size_t eigs_laplacian(a_vec & eigval, a_mat & eigvec, che * mesh, const a_sp_mat
 {
 	debug_me(LAPLACIAN)
 
-	string feigval = "tmp/" + mesh->name_size() + '_' + to_string(K) + ".L_eigval";
-	string feigvec = "tmp/" + mesh->name_size() + '_' + to_string(K) + ".L_eigvec";
+	string feigval = tmp_file_path(mesh->name_size() + '_' + to_string(K) + ".L_eigval");
+	string feigvec = tmp_file_path(mesh->name_size() + '_' + to_string(K) + ".L_eigvec");
 
 	debug(feigval)
 	debug(feigvec)

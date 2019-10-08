@@ -8,7 +8,7 @@ namespace gproshan::mdict {
 
 void basis::plot_basis()
 {
-	string file = "tmp/basis.gpi";
+	string file = tmp_file_path("basis.gpi");
 	ofstream os(file);
 	os << "set term wxt size 1000,1000;" << endl;
 	os << "set isosamples 50,50;" << endl;
@@ -38,7 +38,7 @@ void basis::plot_atoms(const a_mat & A)
 	size_t s = sqrt(m);
 	s += !(s * s == K);
 
-	string file = "tmp/atoms.gpi";
+	string file = tmp_file_path("atoms.gpi");
 	ofstream os(file);
 
 	os << "set term wxt size 1000,1000;" << endl;

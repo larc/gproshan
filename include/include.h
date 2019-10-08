@@ -17,9 +17,6 @@ namespace gproshan {
 
 
 typedef unsigned int index_t;
-typedef unsigned int length_t;
-typedef double matrix_t;
-typedef double percent_t;
 
 #ifdef SINGLE_P
 	typedef float real_t;
@@ -31,13 +28,9 @@ typedef real_t distance_t;
 typedef real_t area_t;
 typedef real_t angle_t;
 
-#define PATH_MDATA	std::string("../DATA/")
-#define PATH_DATA	std::string("../DATA/shapes_grande/")
-#define PATH_CORR	std::string("../DATA/corr_shapes/")
-#define PATH_KPS	std::string("../TEST/keypoints/")
-#define PATH_KCS	std::string("../TEST/keycomponents/")
-#define PATH_HOLES	std::string("../TEST/holes/")
-#define PATH_TEST	std::string("../TEST/")
+
+#define TMP_DIR	"../tmp/"
+#define tmp_file_path(file) (std::string(TMP_DIR) + file)
 
 
 #ifndef NDEBUG

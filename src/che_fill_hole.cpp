@@ -203,7 +203,7 @@ che * mesh_fill_hole(che * mesh, const vector<index_t> & border_vertices, const 
 
 	if(hole && !hole->is_manifold())
 	{
-		che_off::write_file(hole, PATH_TEST + "fill_holes/fatal_error.off");
+		che_off::write_file(hole, tmp_file_path("fill_holes_error.off"));
 		delete hole;
 		return nullptr;
 	}
@@ -302,7 +302,7 @@ tuple<vector<index_t> *, che **> fill_all_holes_meshes(che * mesh, const size_t 
 //		holes[b] = mesh_fill_hole(mesh, border_vertices[b], max_iter, { {77, 106}, {67, 106}, {38, 11} });
 		holes[b] = mesh_fill_hole(mesh, border_vertices[b], max_iter);
 	debug_me(inpainting)
-		//holes[b]->write_file(PATH_TEST + string("fill_holes/partial") + "_" + to_string(b) + "_" + mesh->name() + ".off");
+		//holes[b]->write_file(tmp_file_path("fill_holes_" + to_string(b) + "_" + mesh->name() + ".off"));
 	debug_me(inpainting)
 	}
 

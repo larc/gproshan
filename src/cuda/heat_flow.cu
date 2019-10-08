@@ -62,7 +62,7 @@ double solve_positive_definite_cusolver(const int m, const int nnz, const real_t
 	cusparseMatDescr_t descr = 0;
 	cusparseCreateMatDescr(&descr);
 	cusparseSetMatType(descr, CUSPARSE_MATRIX_TYPE_GENERAL);
-    cusparseSetMatIndexBase(descr, CUSPARSE_INDEX_BASE_ZERO);
+	cusparseSetMatIndexBase(descr, CUSPARSE_INDEX_BASE_ZERO);
 	
 	if(host)
 	{
@@ -146,10 +146,10 @@ double solve_positive_definite_cusparse(const int m, const int nnz, const real_t
 	int numerical_zero;
 
 	const real_t alpha = 1.;
-	const cusparseSolvePolicy_t policy_M  = CUSPARSE_SOLVE_POLICY_NO_LEVEL;
-	const cusparseSolvePolicy_t policy_L  = CUSPARSE_SOLVE_POLICY_NO_LEVEL;
+	const cusparseSolvePolicy_t policy_M = CUSPARSE_SOLVE_POLICY_NO_LEVEL;
+	const cusparseSolvePolicy_t policy_L = CUSPARSE_SOLVE_POLICY_NO_LEVEL;
 	const cusparseSolvePolicy_t policy_Lt = CUSPARSE_SOLVE_POLICY_USE_LEVEL;
-	const cusparseOperation_t trans_L  = CUSPARSE_OPERATION_NON_TRANSPOSE;
+	const cusparseOperation_t trans_L = CUSPARSE_OPERATION_NON_TRANSPOSE;
 	const cusparseOperation_t trans_Lt = CUSPARSE_OPERATION_TRANSPOSE;
 
 	cusparseCreateMatDescr(&descr_M);
