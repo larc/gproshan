@@ -24,6 +24,7 @@ set(THREADS_PREFER_PTHREAD_FLAG ON)
 
 add_definitions(${EIGEN3_DEFINITIONS})
 include_directories(${EIGEN3_INCLUDE_DIR})
+include_directories(${SuiteSparse_INCLUDE_DIRS})
 
 include_directories(${gproshan_SOURCE_DIR}/include)
 include_directories(${gproshan_SOURCE_DIR}/include/viewer)
