@@ -18,7 +18,7 @@ Install all dependencies and run:
 
 finally execute:
 
-	./gproshan [input mesh paths]
+	./gproshan [mesh_paths.(off,obj,ply)]
 
 ### Dependencies (Linux)
 g++ >= 8.3, cuda >= 10.1, libarmadillo, libeigen, libsuitesparse, libopenblas, opengl, gnuplot, libcgal, libgles2-mesa, cimg

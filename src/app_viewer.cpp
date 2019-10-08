@@ -25,7 +25,11 @@ che * load_mesh(const string & file_path)
 
 int viewer_main(int nargs, const char ** args)
 {
-	if(nargs < 2) return 0;
+	if(nargs < 2)
+	{
+		printf("./gproshan [mesh_paths.(off,obj,ply)]\n");
+		return 0;
+	}
 
 	TIC(load_time)
 
