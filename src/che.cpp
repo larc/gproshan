@@ -203,15 +203,15 @@ real_t che::pdetriq(const index_t & t) const
 	return (4 * sqrt(3) * area_trig(t)) / (h[0] * h[0] + h[1] * h[1] + h[2] * h[2]);
 }
 
-percent_t che::quality()
+real_t che::quality()
 {
-	percent_t q = 0;
+	real_t q = 0;
 
 	#pragma omp parallel for reduction(+: q)
 	for(index_t t = 0; t < n_faces_; t++)
-		q += pdetriq(t) > 0.6; //is confederating good triangle
+		q += pdetriq(t) > 0.6; // is confederating good triangle
 
-	return q * 100.0 / n_faces_;
+	return q * 100 / n_faces_;
 }
 
 area_t che::area_trig(const index_t & t) const

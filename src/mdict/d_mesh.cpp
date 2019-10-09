@@ -171,8 +171,7 @@ void principal_curvatures( patch_t & rp, che * mesh)
 
 void save_patches_coordinates(vector<patch_t> & patches, vector< pair<index_t,index_t> > * lpatches, size_t NV)
 {
-	string file = "test-patches_coordinates";
-	ofstream os(PATH_TEST + file );
+	ofstream os(tmp_file_path("test-patches_coordinates"));
 
 	for(index_t v = 0; v < NV; v++)
 	{
@@ -189,8 +188,7 @@ void save_patches_coordinates(vector<patch_t> & patches, vector< pair<index_t,in
 
 void save_patches(vector<patch_t> & patches, size_t M)
 {
-	string file = "test-patch_wise_coordinates";
-	ofstream os(PATH_TEST + file );
+	ofstream os(tmp_file_path("test-patch_wise_coordinates"));
 
 	for(index_t p = 0; p < M; p++)
 	{

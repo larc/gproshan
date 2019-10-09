@@ -37,7 +37,7 @@ void dictionary::learning()
 {
 	debug_me(MDICT)
 
-	string f_dict = "tmp/" + mesh->name_size() + '_' + to_string(phi_basis->dim) + '_' + to_string(m)  + '_' + to_string(f) + ".dict";
+	string f_dict = tmp_file_path(mesh->name_size() + '_' + to_string(phi_basis->dim) + '_' + to_string(m) + '_' to_string(f) + ".dict");
 	debug(f_dict)
 
 	if(!A.load(f_dict))
