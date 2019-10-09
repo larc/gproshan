@@ -37,7 +37,7 @@ void dictionary::learning()
 {
 	debug_me(MDICT)
 
-	string f_dict = tmp_file_path(mesh->name_size() + '_' + to_string(phi_basis->dim) + '_' + to_string(m) + '_' to_string(f) + ".dict");
+	string f_dict = tmp_file_path(mesh->name_size() + '_' + to_string(phi_basis->dim) + '_' + to_string(m) + '_' + to_string(f) + ".dict");
 	debug(f_dict)
 
 	if(!A.load(f_dict))
@@ -178,10 +178,7 @@ void dictionary::init_patches(const bool & reset, const fmask_t & mask)
 */
 	/*Saving Patches*/
 
-	string file = "patches-mat.txt";
-	debug(PATH_TEST)
-	ofstream os(PATH_TEST + file );
-	debug(PATH_TEST)
+	ofstream os(tmp_file_path("patch-mat"));
 	for(index_t s = 0; s < M; s++)
 	{
 		patch & p = patches[s];
