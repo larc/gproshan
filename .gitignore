@@ -10,3 +10,5 @@ tmp/*
 gproshan
 test_geodesics
 test_geodesics_double
+
+*.user

@@ -2,20 +2,20 @@ cmake_minimum_required(VERSION 3.13)
 
 project(gproshan VERSION 2.0 LANGUAGES CXX CUDA)
 
-find_package(CUDA 10.1 REQUIRED)
+find_package(Threads REQUIRED)
 find_package(OpenMP REQUIRED)
+find_package(CUDA 10.1 REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(GLUT REQUIRED)
 find_package(Armadillo REQUIRED)
 find_package(CGAL REQUIRED)
 find_package(X11 REQUIRED)
-find_package(Eigen3 REQUIRED)
 find_package(SuiteSparse REQUIRED)
-find_package(Threads REQUIRED)
+find_package(Eigen3 REQUIRED)
 
 set(CMAKE_BUILD_TYPE Debug)
 
-set(CMAKE_CXX_FLAGS "-O3 -fopenmp -Wall -Wextra")
+set(CMAKE_CXX_FLAGS "-O3 -fopenmp -Wall")
 set(CMAKE_CXX_FLAGS_DEBUG "")
 set(CMAKE_CUDA_FLAGS "-O3 -Xcompiler -fopenmp")
 set(CMAKE_CUDA_FLAGS_DEBUG "")
@@ -23,6 +23,13 @@ set(CMAKE_CUDA_FLAGS_DEBUG "")
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 
 add_definitions(${EIGEN3_DEFINITIONS})
+
+include_directories(${CUDA_INCLUDE_DIRS})
+include_directories(${OPENGL_INCLUDE_DIR})
+include_directories(${GLUT_INCLUDE_DIR})
+include_directories(${AMADILLO_INCLUDE_DIR})
+include_directories(${CGAL_INCLUDE_DIRS})
+include_directories(${X11_INCLUDE_DIR})
 include_directories(${EIGEN3_INCLUDE_DIR})
 include_directories(${SuiteSparse_INCLUDE_DIRS})
 
