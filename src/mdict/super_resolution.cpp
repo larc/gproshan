@@ -13,19 +13,19 @@ super_resolution::super_resolution(che *const & _mesh, basis *const & _phi_basis
 void super_resolution::execute()
 {
 	TIC(d_time) init_sampling(); TOC(d_time)
-	debug(d_time)
+	gproshan_debug_var(d_time);
 
 	TIC(d_time) init_patches(); TOC(d_time)
-	debug(d_time)
+	gproshan_debug_var(d_time);
 
 	TIC(d_time) learning(); TOC(d_time)
-	debug(d_time)
+	gproshan_debug_var(d_time);
 
 	TIC(d_time) sparse_coding(); TOC(d_time)
-	debug(d_time)
+	gproshan_debug_var(d_time);
 
 	TIC(d_time) mesh_reconstruction(); TOC(d_time)
-	debug(d_time)
+	gproshan_debug_var(d_time);
 }
 
 

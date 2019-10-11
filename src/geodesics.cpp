@@ -198,7 +198,7 @@ void geodesics::run_parallel_toplesets_propagation_cpu(che * mesh, const vector<
 		parallel_toplesets_propagation_coalescence_cpu({dist, clusters}, mesh, sources, {limits, sorted_index});
 	TOC(time_ptp)
 
-	debug(time_ptp)
+	gproshan_debug_var(time_ptp);
 
 	delete [] toplesets;
 }
@@ -216,7 +216,7 @@ void geodesics::run_parallel_toplesets_propagation_gpu(che * mesh, const vector<
 	else
 		time_ptp = parallel_toplesets_propagation_coalescence_gpu({dist, clusters}, mesh, sources, {limits, sorted_index});
 
-	debug(time_ptp);
+	gproshan_debug_var(time_ptp);
 
 	delete [] toplesets;
 #endif
@@ -230,8 +230,9 @@ void geodesics::run_heat_flow(che * mesh, const vector<index_t> & sources)
 	TIC(time_total)
 	dist = heat_flow(mesh, sources, solve_time);
 	TOC(time_total)
-	debug(time_total - solve_time)
-	debug(solve_time)
+
+	gproshan_debug_var(time_total - solve_time);
+	gproshan_debug_var(solve_time);
 }
 
 void geodesics::run_heat_flow_gpu(che * mesh, const vector<index_t> & sources)
@@ -243,8 +244,9 @@ void geodesics::run_heat_flow_gpu(che * mesh, const vector<index_t> & sources)
 	TIC(time_total)
 	dist = heat_flow_gpu(mesh, sources, solve_time);
 	TOC(time_total)
-	debug(time_total - solve_time)
-	debug(solve_time)
+
+	gproshan_debug_var(time_total - solve_time);
+	gproshan_debug_var(solve_time);
 #endif
 }
 

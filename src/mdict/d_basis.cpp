@@ -27,8 +27,8 @@ void basis::plot_basis()
 	os.close();
 
 	file = "gnuplot -persist " + file + " &";
-
-	debug(system(file.c_str()));
+	
+	system(file.c_str());
 }
 
 void basis::plot_atoms(const a_mat & A)
@@ -64,7 +64,7 @@ void basis::plot_atoms(const a_mat & A)
 
 	file = "gnuplot -persist " + file + " &";
 
-	debug(system(file.c_str()));
+	system(file.c_str());
 }
 
 

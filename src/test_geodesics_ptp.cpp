@@ -43,7 +43,7 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 	string filename;
 	while(cin >> filename)
 	{
-		debug(filename)
+		gproshan_debug_var(filename);
 		
 		vector<index_t> source = { 0 };
 		
@@ -62,6 +62,7 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 		distance_t Error[5];	// FM, PTP GPU, HEAT cholmod, HEAT cusparse
 
 		distance_t * exact = load_exact_geodesics(exact_dist_path + filename + ".exact", n_vertices);
+		if(!exact) fprintf(stderr, "no exact geodesics for: %s.\n", filename.c_str());
 
 		Time[0] = test_fast_marching(Error[0], exact, mesh, source, n_test);
 		Time[1] = test_ptp_cpu(Error[1], exact, mesh, source, {limits, sorted_index}, n_test);
@@ -186,7 +187,7 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 		vector<pair<index_t, distance_t> > iter_error;// = iter_error_parallel_toplesets_propagation_coalescence_gpu(mesh, source, limits, sorted_index, exact, time);
 	#endif
 
-		assert(!system(("mv band " + (test_path + filename + ".band")).c_str()));
+		system(("mv band " + (test_path + filename + ".band")).c_str());
 
 		#ifndef SINGLE_P
 			os.open(test_path + filename + "_error_double.iter");
@@ -332,7 +333,8 @@ double test_heat_method_gpu(distance_t & error, double & stime, const distance_t
 distance_t * load_exact_geodesics(const string & file, const size_t & n)
 {
 	ifstream is(file);
-	assert(is.good());
+
+	if(!is.good()) return nullptr;
 
 	distance_t * exact = new distance_t[n];
 

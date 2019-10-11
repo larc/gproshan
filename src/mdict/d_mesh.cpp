@@ -285,11 +285,11 @@ void mesh_reconstruction(che * mesh, size_t M, vector<patch> & patches, vector<v
 	for(index_t v = v_i; v < mesh->n_vertices(); v++)
 		error += *(new_vertices[v] - mesh->get_vertex(v));
 
-	debug(mesh->n_vertices())
+	gproshan_debug_var(mesh->n_vertices());
 	error /= mesh->n_vertices();
-	debug(error)
+	gproshan_debug_var(error);
 
-	debug(v_i)
+	gproshan_debug_var(v_i);
 	mesh->set_vertices(new_vertices + v_i, mesh->n_vertices() - v_i, v_i);
 	che_off::write_file(mesh,"../tmp/recon_mesh");
 }
@@ -373,15 +373,15 @@ void mesh_reconstruction(che * mesh, size_t M, vector<patch_t> & patches, vector
 	for(index_t v = v_i; v < mesh->n_vertices(); v++)
 		error += *(new_vertices[v] - mesh->get_vertex(v));
 
-	debug(mesh->n_vertices())
+	gproshan_debug_var(mesh->n_vertices());
 	error /= mesh->n_vertices();
-	debug(error)
+	gproshan_debug_var(error);
 
-	debug(v_i)
+	gproshan_debug_var(v_i);
 	mesh->set_vertices(new_vertices + v_i, mesh->n_vertices() - v_i, v_i);
 }
 
-/// DEPRECATED
+[[deprecated]]
 a_vec non_local_means_vertex(a_mat & alpha, const index_t & v, vector<patch_t> & patches, vector<patches_map_t> & patches_map, const distance_t & h)
 {
 	a_vec n_a_vec(3, arma::fill::zeros);

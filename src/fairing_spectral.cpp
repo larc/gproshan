@@ -23,7 +23,7 @@ void fairing_spectral::compute(che * shape)
 	a_sp_mat L, A;
 
 	TIC(time) laplacian(shape, L, A); TOC(time)
-	debug(time)
+	gproshan_debug_var(time);
 
 	positions = new vertex[shape->n_vertices()];
 
@@ -37,7 +37,7 @@ void fairing_spectral::compute(che * shape)
 	a_mat eigvec;
 
 	TIC(time) k = eigs_laplacian(eigval, eigvec, shape, L, A, k); TOC(time)
-	debug(time)
+	gproshan_debug_var(time);
 
 	X = X * eigvec * eigvec.t();
 }

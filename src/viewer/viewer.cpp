@@ -80,7 +80,7 @@ void viewer::init(const vector<che *> & _meshes)
 	init_menus();
 
 	debug_info();
-	mesh().debug_info();
+	mesh().log_info();
 
 	set_gl();
 	init_glsl();
@@ -90,18 +90,14 @@ void viewer::init(const vector<che *> & _meshes)
 
 void viewer::debug_info()
 {
-	const GLubyte * renderer = glGetString(GL_RENDERER);
-	const GLubyte * vendor = glGetString(GL_VENDOR);
-	const GLubyte * version = glGetString(GL_VERSION);
-	const GLubyte * glslVersion = glGetString(GL_SHADING_LANGUAGE_VERSION);
 	GLint major, minor;
 	glGetIntegerv(GL_MAJOR_VERSION, &major);
 	glGetIntegerv(GL_MINOR_VERSION, &minor);
-	fprintf(stderr, "GL Vendor %s\n", vendor);
-	fprintf(stderr, "GL Renderer %s\n", renderer);
-	fprintf(stderr, "GL Version (string) %s\n", version);
+	fprintf(stderr, "GL Vendor %s\n", glGetString(GL_VENDOR));
+	fprintf(stderr, "GL Renderer %s\n", glGetString(GL_RENDERER));
+	fprintf(stderr, "GL Version (string) %s\n", glGetString(GL_VERSION));
 	fprintf(stderr, "GL Version (integer) %d.%d\n", major, minor);
-	fprintf(stderr, "GLSL Version %s\n", glslVersion);
+	fprintf(stderr, "GLSL Version %s\n", glGetString(GL_SHADING_LANGUAGE_VERSION));
 }
 
 void viewer::init_glut()
@@ -184,10 +180,6 @@ void viewer::init_menus()
 
 void viewer::init_glsl()
 {
-	//shader_program.loadVertex("shaders/vertex.glsl");
-	//shader_program.loadFragment("shaders/fragment.glsl");
-	//shader_program.loadGeometry("shaders/geometry.glsl");
-	//shader_program.loadGeometry("shaders/new_geometry.glsl");
 	shader_program.load_vertex("../shaders/new_vertex.glsl");
 	shader_program.load_fragment("../shaders/new_fragment.glsl");
 }
@@ -317,9 +309,9 @@ void viewer::menu_reset_mesh()
 
 void viewer::menu_save_mesh()
 {
-	debug_me(APP_VIEWER)
+	gproshan_log(APP_VIEWER);
 	
-	d_message(format: [off obj ply])
+	gproshan_log(format: [off obj ply]);
 	
 	string format; cin >> format;
 	string file = mesh()->filename() + "_new";
@@ -730,7 +722,7 @@ void viewer::draw_gradient_field()
 
 void viewer::pick_vertex(int x, int y)
 {
-	debug_me(VIEWER)
+	gproshan_debug(VIEWER);
 
 	int width = glutGet(GLUT_WINDOW_WIDTH);
 	int height = glutGet(GLUT_WINDOW_HEIGHT);
@@ -783,12 +775,12 @@ void viewer::pick_vertex(int x, int y)
 	{
 		select_vertices.push_back(index);
 		
-		debug(index)
-		debug(mesh().color(index))
-		debug(mesh()->evt(index))
+		gproshan_debug_var(index);
+		gproshan_debug_var(mesh().color(index));
+		gproshan_debug_var(mesh()->evt(index));
 
 		if(corr_mesh[current].is_loaded())
-			debug(corr_mesh[current][index].alpha)
+			gproshan_error_var(corr_mesh[current][index].alpha);
 	}
 }
 

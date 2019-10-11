@@ -46,7 +46,8 @@ bool load_sampling(vector<index_t> & points, distance_t & radio, che * mesh, siz
 	file += "." + to_string(n);
 
 	ifstream is(file);
-	debug(file)
+	gproshan_debug_var(file);
+
 	if(is.good())
 	{
 		is >> radio;
@@ -73,7 +74,7 @@ bool load_sampling(vector<index_t> & points, distance_t & radio, che * mesh, siz
 		radio = 0;
 	#endif
 
-		debug(time_fps)
+		gproshan_debug_var(time_fps);
 
 		ofstream os(file);
 		os << radio << endl;

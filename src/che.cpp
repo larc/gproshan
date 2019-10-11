@@ -689,7 +689,7 @@ void che::remove_non_manifold_vertices()
 	vector<index_t> removed;
 	vector<index_t> new_faces; // each 3
 
-	debug_me(removing vertex);
+	gproshan_debug(removing vertex);
 	for(index_t v = 0; v < n_vertices_; v++)
 	{
 		if(EVT[v] != NIL)
@@ -699,8 +699,8 @@ void che::remove_non_manifold_vertices()
 	}
 	removed.push_back(n_vertices_);
 
-	debug(removed.size())
-	debug(removed[0])
+	gproshan_debug_var(removed.size());
+	gproshan_debug_var(removed[0]);
 	index_t r = 1;
 	index_t d = 1;
 	for(index_t v = removed[0] + 1; v < n_vertices_; v++)
@@ -720,22 +720,22 @@ void che::remove_non_manifold_vertices()
 	for(index_t he = 0; he < n_half_edges_; he++)
 		if(VT[he] != NIL)
 			new_faces.push_back(VT[he]);
-		else { debug(he) }
+		else gproshan_error_var(he);
 
-	debug(new_vertices.size())
-	debug(new_faces.size())
-	debug_me(removing vertex);
+	gproshan_debug_var(new_vertices.size());
+	gproshan_debug_var(new_faces.size());
+	gproshan_debug(removing vertex);
 	delete_me();
-	debug_me(removing vertex);
+	gproshan_debug(removing vertex);
 	init(new_vertices.data(), new_vertices.size(), new_faces.data(), new_faces.size() / P);
-	debug_me(removing vertex);
+	gproshan_debug(removing vertex);
 }
 
 void che::remove_vertices(const vector<index_t> & vertices)
 {
 	if(!vertices.size()) return;
 
-	debug_me(removing vertex);
+	gproshan_debug(removing vertex);
 	for(index_t v: vertices)
 	{
 		for_star(he, this, v)
@@ -744,13 +744,12 @@ void che::remove_vertices(const vector<index_t> & vertices)
 			VT[prev(he)] = NIL;
 			VT[next(he)] = NIL;
 
-			debug(he)
-			debug(next(he))
-			debug(prev(he))
+			gproshan_debug_var(he);
+			gproshan_debug_var(next(he));
+			gproshan_debug_var(prev(he));
 		}
 
-		debug("todos r")
-		debug(EVT[v])
+		gproshan_debug_var(EVT[v]);
 		EVT[v] = NIL;
 	}
 	/* save in vectors */
@@ -758,7 +757,7 @@ void che::remove_vertices(const vector<index_t> & vertices)
 	vector<index_t> removed;
 	vector<index_t> new_faces; // each 3
 
-	debug_me(removing vertex);
+	gproshan_debug(removing vertex);
 	for(index_t v = 0; v < n_vertices_; v++)
 	{
 		if(EVT[v] != NIL)
@@ -768,8 +767,8 @@ void che::remove_vertices(const vector<index_t> & vertices)
 	}
 	removed.push_back(n_vertices_);
 
-	debug(removed.size())
-	debug(removed[0])
+	gproshan_debug_var(removed.size());
+	gproshan_debug_var(removed[0]);
 	index_t r = 1;
 	index_t d = 1;
 	for(index_t v = removed[0] + 1; v < n_vertices_; v++)
@@ -789,25 +788,25 @@ void che::remove_vertices(const vector<index_t> & vertices)
 	for(index_t he = 0; he < n_half_edges_; he++)
 		if(VT[he] != NIL)
 			new_faces.push_back(VT[he]);
-		else debug(he)
+		else gproshan_error_var(he);
 
-	debug(new_vertices.size())
-	debug(new_faces.size())
-	debug_me(removing vertex);
+	gproshan_debug_var(new_vertices.size());
+	gproshan_debug_var(new_faces.size());
+	gproshan_debug(removing vertex);
 	delete_me();
-	debug_me(removing vertex);
+	gproshan_debug(removing vertex);
 	init(new_vertices.data(), new_vertices.size(), new_faces.data(), new_faces.size() / P);
-	debug_me(removing vertex);
+	gproshan_debug(removing vertex);
 }
 
 void che::merge(const che * mesh, const vector<index_t> & com_vertices)
 {
 //	write_file("big.off");
 //	mesh->write_file("small.off");
-debug_me(fill holes)
+gproshan_debug(fill_holes);
 	size_t ncv = com_vertices.size();
 	bool is_open = mesh->VT[next(mesh->EVT[0])] >= ncv;
-	debug(is_open)
+	gproshan_debug_var(is_open);
 
 	size_t nv = n_vertices_ + mesh->n_vertices_ - ncv;
 	size_t nf = n_faces_ + mesh->n_faces_;
@@ -821,7 +820,7 @@ debug_me(fill holes)
 	index_t * aET = new index_t[ne];
 	index_t * aEHT = new index_t[nh];
 
-debug_me(fill holes)
+gproshan_debug(fill_holes);
 	memcpy(aGT, GT, sizeof(vertex) * n_vertices_);
 	memcpy(aGT + n_vertices_, mesh->GT + ncv, sizeof(vertex) * (nv - n_vertices_));
 
@@ -830,15 +829,15 @@ debug_me(fill holes)
 	index_t * t_aVT = aVT + n_half_edges_;
 	for(index_t he = 0; he < mesh->n_half_edges_; he++)
 		t_aVT[he] = mesh->VT[he] < ncv ? com_vertices[mesh->VT[he]] : mesh->VT[he] + n_vertices_ - ncv;
-debug_me(fill holes)
+gproshan_debug(fill_holes);
 
 	memcpy(aOT, OT, sizeof(index_t) * n_half_edges_);
-debug_me(fill holes)
+gproshan_debug(fill_holes);
 
 	index_t * t_aOT = aOT + n_half_edges_;
 	for(index_t he = 0; he < mesh->n_half_edges_; he++)
 		t_aOT[he] = mesh->OT[he] != NIL ? mesh->OT[he] + n_half_edges_ : NIL;
-debug_me(fill holes)
+gproshan_debug(fill_holes);
 
 	for(index_t v, he_v, he_i, i = 0; i < ncv; i++)
 	{
@@ -852,20 +851,20 @@ debug_me(fill holes)
 		}
 	}
 
-debug_me(fill holes)
+gproshan_debug(fill_holes);
 	memcpy(aEVT, EVT, sizeof(index_t) * n_vertices_);
-debug_me(fill holes)
+gproshan_debug(fill_holes);
 	if(is_open)
 		aEVT[com_vertices[0]] = mesh->EVT[0] != NIL ? mesh->EVT[0] + n_half_edges_ : NIL;
 
-debug_me(fill holes)
+gproshan_debug(fill_holes);
 	index_t * t_aEVT = aEVT + n_vertices_;
 	for(index_t v = ncv; v < mesh->n_vertices_; v++)
 		t_aEVT[v - ncv] = mesh->EVT[v] != NIL ? mesh->EVT[v] + n_half_edges_ : NIL;
-debug_me(fill holes)
+gproshan_debug(fill_holes);
 
 	memcpy(aET, ET, sizeof(index_t) * n_edges_);
-debug_me(fill holes)
+gproshan_debug(fill_holes);
 
 	bool * common_edge = new bool[mesh->n_edges_];
 	memset(common_edge, 0, sizeof(bool) * mesh->n_edges_);
@@ -881,15 +880,15 @@ debug_me(fill holes)
 		if(!common_edge[e])
 			aET[ae++] = mesh->ET[e] + n_half_edges_;
 
-	debug(ae == ne)
-	debug(ae)
-	debug(ne)
+	gproshan_debug_var(ae == ne);
+	gproshan_debug_var(ae);
+	gproshan_debug_var(ne);
 	assert(ae == ne);
 	delete [] common_edge;
-debug_me(fill holes)
+gproshan_debug(fill_holes);
 	delete_me();
 
-debug_me(fill holes)
+gproshan_debug(fill_holes);
 	GT = aGT;
 	VT = aVT;
 	OT = aOT;
@@ -902,11 +901,8 @@ debug_me(fill holes)
 	n_half_edges_ = nh;
 	n_edges_ = ne;
 
-	debug_me(inpainting)
 	update_eht();
-	debug_me(inpainting)
 	update_bt();
-	debug_me(inpainting)
 }
 
 void che::set_head_vertices(index_t * head, const size_t & n)
@@ -1049,9 +1045,9 @@ corr_t * che::edge_collapse(const index_t *const & sort_edges, const vertex *con
 				if(faces_fixed[trig(he)] > -1)
 					he_trigs.push_back(trig(he) * P);
 
-				debug(va)
+				gproshan_debug_var(va);
 				corr[va] = find_corr(aux_va, normals[va], he_trigs);
-				debug(vb)
+				gproshan_debug_var(vb);
 				corr[vb] = find_corr(aux_vb, normals[vb], he_trigs);
 
 				EVT[vb] = NIL;
@@ -1140,7 +1136,7 @@ corr_t che::find_corr(const vertex & v, const vertex & n, const vector<index_t> 
 
 		if(solve(a, A, x, arma::solve_opts::no_approx))
 		{
-			debug(a)
+			gproshan_debug_var(a);
 		if(all(a >= 0) && sum(a.head(3)) == 1)
 		{
 			alpha = a.head(3);
@@ -1186,10 +1182,11 @@ corr_t che::find_corr(const vertex & v, const vertex & n, const vector<index_t> 
 
 	if(corr_d.t == NIL)
 	{
-		debug(n)
-		debug(x)
-		debug(A)
+		gproshan_debug_var(n);
+		gproshan_debug_var(x);
+		gproshan_debug_var(A);
 	}
+
 	return corr_d;
 }
 
@@ -1293,12 +1290,12 @@ void che::update_evt_ot_et()
 			else EVT[VT[he]] = he;
 		}
 
-	for(index_t v = 0; v < n_vertices_; v++)
-		if(EVT[v] >= n_half_edges_)
-		{
-//			debug(EVT[v])
+//	for(index_t v = 0; v < n_vertices_; v++)
+//		if(EVT[v] >= n_half_edges_)
+//		{
+//			gproshan_debug_var(EVT[v]);
 //			assert(EVT[v] < n_half_edges_);
-		}
+//		}
 
 	delete [] he_p_vertex;
 }

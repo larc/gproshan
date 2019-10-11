@@ -34,8 +34,6 @@ che * mesh_simple_fill_hole(che * mesh, const vector<index_t> & border_vertices,
 
 	vertices.reserve(border_vertices.size());
 
-	debug_me(unfolding hole)
-
 	for(const index_t & b: border_vertices)
 	{
 		v = mesh->gt(b);
@@ -288,41 +286,41 @@ tuple<vector<index_t> *, che **> fill_all_holes_meshes(che * mesh, const size_t 
 	border_vertices = new vector<index_t>[n_borders];
 	holes = new che*[n_borders];
 
-	debug_me(inpainting)
+	gproshan_debug(inpainting);
 
 	for(index_t b = 0; b < n_borders; b++)
 		mesh->border(border_vertices[b], b);
 
-	debug_me(inpainting)
+	gproshan_debug(inpainting);
 	for(index_t b = 0; b < n_borders; b++)
 	{
-		debug(b)
+		gproshan_debug_var(b);
 //		vector<pair<index_t, index_t> > split_indices;
 //		split_border(split_indices, mesh, border_vertices[b]);
 //		holes[b] = mesh_fill_hole(mesh, border_vertices[b], max_iter, { {77, 106}, {67, 106}, {38, 11} });
 		holes[b] = mesh_fill_hole(mesh, border_vertices[b], max_iter);
-	debug_me(inpainting)
+	gproshan_debug(inpainting);
 		//holes[b]->write_file(tmp_file_path("fill_holes_" + to_string(b) + "_" + mesh->name() + ".off"));
-	debug_me(inpainting)
+	gproshan_debug(inpainting);
 	}
 
-	debug_me(inpainting)
+	gproshan_debug(inpainting);
 	for(index_t b = 0; b < n_borders; b++)
 		if(holes[b])
 		{
-	debug_me(inpainting)
+	gproshan_debug(inpainting);
 			mesh->merge(holes[b], border_vertices[b]);
-	debug_me(inpainting)
+	gproshan_debug(inpainting);
 		}
 
 
-	debug(mesh->n_borders())
+	gproshan_debug_var(mesh->n_borders());
 	return make_tuple(border_vertices, holes);
 }
 
 che * fill_hole_front_angles_test(che * mesh, vector<index_t> & front_vertices, size_t p_iter, bool & is_grow)
 {
-	debug_me(filling holes)
+	gproshan_debug(filling holes);
 	distance_t perimeter = 0.0, init_perimeter = 0.0;
 
 	real_t lenght = mesh->mean_edge();
@@ -560,10 +558,10 @@ che * fill_hole_front_angles_test(che * mesh, vector<index_t> & front_vertices, 
 	//	viewer::vectors.push_back(vertex(normal(0), normal(1), normal(2)));
 	}
 
-	debug(perimeter)
-//	debug_me(filling holes)
-//	debug(vertices.size())
-//	debug(faces.size())
+	gproshan_debug_var(perimeter);
+//	gproshan_debug(filling holes);
+//	gproshan_debug_var(vertices.size());
+//	gproshan_debug_var(faces.size());
 	return faces.size() == 0 ? nullptr : new che(vertices.data(), vertices.size(), faces.data(), faces.size() / 3);
 }
 

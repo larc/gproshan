@@ -32,15 +32,24 @@ typedef real_t angle_t;
 #define TMP_DIR	"../tmp/"
 #define tmp_file_path(file) (std::string(TMP_DIR) + file)
 
+#ifdef LOG
+	#define gproshan_log_var(vari) std::cerr << "\033[0;33m[LOG] " << std::setprecision(3) << std::scientific << #vari << ":\033[0m " << (vari) << std::endl
+	#define gproshan_log(message) fprintf(stderr, "\033[1;31m[LOG] %s: %s\n\033[0m", #message, __FUNCTION__)
+#else
+	#define gproshan_log_var(vari)
+	#define gproshan_log(message)
+#endif
+
+
+#define gproshan_error_var(vari) std::cerr << "\033[0;33m[ERROR] " << std::setprecision(3) << std::scientific << #vari << ":\033[0m " << (vari) << "\t\033[38;5;210m" << __FILE__ ":" << __LINE__ << " > " << __FUNCTION__ << "\033[0m" << std::endl
+#define gproshan_error(message) fprintf(stderr, "\033[1;31m[ERROR] %s: %s (%s:%d)\n\033[0m", #message, __FUNCTION__, __FILE__, __LINE__)
 
 #ifndef NDEBUG
-	#define debug(vari) std::cerr << "\033[0;33m" << std::setprecision(3) << std::scientific << #vari << ":\033[0m " << (vari) << "\t\033[38;5;210m" << __FILE__ ":" << __LINE__ << " > " << __FUNCTION__ << "\033[0m" << std::endl;
-	#define debug_me(message) fprintf(stderr, "\033[1;31m%s: %s (%s:%d)\n\033[0m", #message, __FUNCTION__, __FILE__, __LINE__);
-	#define d_message(message) fprintf(stderr, "\033[0;33m%s\n\033[0m", #message);
+	#define gproshan_debug_var(vari) std::cerr << "\033[0;33m[DEBUG] " << std::setprecision(3) << std::scientific << #vari << ":\033[0m " << (vari) << "\t\033[38;5;210m" << __FILE__ ":" << __LINE__ << " > " << __FUNCTION__ << "\033[0m" << std::endl
+	#define gproshan_debug(message) fprintf(stderr, "\033[1;31m[DEBUG] %s: %s (%s:%d)\n\033[0m", #message, __FUNCTION__, __FILE__, __LINE__)
 #else
-	#define debug(vari) ;
-	#define debug_me(message) ;
-	#define d_message(message) ;
+	#define gproshan_debug_var(vari)
+	#define gproshan_debug(message)
 #endif
 
 

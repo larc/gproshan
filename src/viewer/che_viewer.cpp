@@ -326,20 +326,20 @@ void che_viewer::invert_orientation()
 	_invert_orientation = !_invert_orientation;
 }
 
-void che_viewer::debug_info()
+void che_viewer::log_info()
 {
 	if(!mesh) return;
 
-	debug(mesh->n_vertices())
-	debug(mesh->n_faces())
-	debug(mesh->n_half_edges())
-	debug(mesh->n_edges())
-	debug(mesh->area_surface())
-	debug(mesh->is_manifold())
-	debug(mesh->n_borders())
-	debug(mesh->memory() / 1E6)
-	debug(mesh->quality())
-	debug(mesh->genus())
+	gproshan_log_var(mesh->n_vertices());
+	gproshan_log_var(mesh->n_faces());
+	gproshan_log_var(mesh->n_half_edges());
+	gproshan_log_var(mesh->n_edges());
+	gproshan_log_var(mesh->area_surface());
+	gproshan_log_var(mesh->is_manifold());
+	gproshan_log_var(mesh->n_borders());
+	gproshan_log_var(mesh->memory() / 1E6);
+	gproshan_log_var(mesh->quality());
+	gproshan_log_var(mesh->genus());
 }
 
 

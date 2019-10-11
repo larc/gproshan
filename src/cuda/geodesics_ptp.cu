@@ -86,8 +86,6 @@ double parallel_toplesets_propagation_gpu(const ptp_out_t & ptp_out, che * mesh,
 
 distance_t farthest_point_sampling_ptp_gpu(che * mesh, vector<index_t> & samples, double & time_fps, size_t n, distance_t radio)
 {
-	debug_me(GEODESICS_PTP)
-
 	cudaDeviceReset();
 
 	float time;

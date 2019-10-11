@@ -39,8 +39,8 @@ int viewer_main(int nargs, const char ** args)
 
 	TOC(load_time)
 
-	debug(sizeof(real_t))
-	debug(load_time)
+	gproshan_log_var(sizeof(real_t));
+	gproshan_log_var(load_time);
 
 	viewer::sub_menus.push_back("Fairing");
 	viewer::add_process('T', "Fairing Taubin", viewer_process_fairing_taubin);
@@ -119,22 +119,22 @@ void paint_holes_vertices()
 
 void viewer_process_delete_non_manifold_vertices()
 {
-	debug_me(APP_VIEWER)
+	gproshan_log(APP_VIEWER);
 
-	debug_me(removing vertex);
+	gproshan_debug(removing vertex);
 	viewer::mesh()->remove_non_manifold_vertices();
-	debug_me(removing vertex);
+	gproshan_debug(removing vertex);
 }
 
 void viewer_process_delete_vertices()
 {
-	debug_me(APP_VIEWER)
+	gproshan_log(APP_VIEWER);
 
 	if(!viewer::select_vertices.size()) return;
-	debug_me(removing vertex);
+	gproshan_debug(removing vertex);
 	viewer::mesh()->remove_vertices(viewer::select_vertices);
 	viewer::select_vertices.clear();
-	debug_me(removing vertex);
+	gproshan_debug(removing vertex);
 }
 
 void viewer_process_poisson(const index_t & k)
@@ -143,32 +143,32 @@ void viewer_process_poisson(const index_t & k)
 	delete [] fill_all_holes(viewer::mesh());
 
 	TIC(load_time) poisson(viewer::mesh(), old_n_vertices, k); TOC(load_time)
-	debug(load_time)
+	gproshan_log_var(load_time);
 
 //	paint_holes_vertices();
 }
 
 void viewer_process_poisson_laplacian_1()
 {
-	debug_me(APP_VIEWER)
+	gproshan_log(APP_VIEWER);
 	viewer_process_poisson(1);
 }
 
 void viewer_process_poisson_laplacian_2()
 {
-	debug_me(APP_VIEWER)
+	gproshan_log(APP_VIEWER);
 	viewer_process_poisson(2);
 }
 
 void viewer_process_poisson_laplacian_3()
 {
-	debug_me(APP_VIEWER)
+	gproshan_log(APP_VIEWER);
 	viewer_process_poisson(3);
 }
 
 void viewer_process_fill_holes()
 {
-	debug_me(APP_VIEWER)
+	gproshan_log(APP_VIEWER);
 
 	fill_all_holes(viewer::mesh());
 
@@ -179,7 +179,7 @@ void viewer_process_noise()
 {
 	viewer::share = (char *) new vertex;
 	delete [] viewer::share;
-	debug_me(APP_VIEWER)
+	gproshan_log(APP_VIEWER);
 
 	srand(time(nullptr));
 
@@ -196,7 +196,7 @@ void viewer_process_noise()
 
 void viewer_process_black_noise()
 {
-	debug_me(APP_VIEWER)
+	gproshan_log(APP_VIEWER);
 
 	srand(time(nullptr));
 
@@ -214,7 +214,7 @@ void viewer_process_black_noise()
 
 void viewer_process_thresold()
 {
-	debug_me(APP_VIEWER)
+	gproshan_log(APP_VIEWER);
 
 	for(index_t v = 0; v < viewer::mesh()->n_vertices(); v++)
 		viewer::vcolor(v) = viewer::vcolor(v) > 0.5 ? 1 : 0.5;
@@ -222,22 +222,23 @@ void viewer_process_thresold()
 
 void viewer_process_functional_maps()
 {
-	debug_me(APP_VIEWER)
+	gproshan_log(APP_VIEWER);
 
 	size_t K = 100;
 
 	a_sp_mat L, A;
 
 	TIC(load_time) laplacian(viewer::mesh(), L, A); TOC(load_time)
-	debug(load_time)
+	gproshan_log_var(load_time);
 
 	a_vec eigval;
 	a_mat eigvec;
 
 	TIC(load_time) K = eigs_laplacian(eigval, eigvec, viewer::mesh(), L, A, K); TOC(load_time)
-	debug(load_time)
-	
-	debug(K)
+	gproshan_log_var(load_time);
+
+	gproshan_log_var(K);
+
 	K = K < N_MESHES ? K : N_MESHES;
 	for(index_t k = 0; k < N_MESHES; k++)
 	{
@@ -257,20 +258,20 @@ void viewer_process_functional_maps()
 
 void viewer_process_wks()
 {
-	debug_me(APP_VIEWER)
+	gproshan_log(APP_VIEWER);
 
 	size_t K = 50, T = 100;
 
 	a_sp_mat L, A;
 
 	TIC(load_time) laplacian(viewer::mesh(), L, A); TOC(load_time)
-	debug(load_time)
+	gproshan_log_var(load_time);
 
 	a_vec eigval;
 	a_mat eigvec;
 
 	TIC(load_time) K = eigs_laplacian(eigval, eigvec, viewer::mesh(), L, A, K); TOC(load_time)
-	debug(load_time)
+	gproshan_log_var(load_time);
 
 	distance_t max_s = 0;
 	#pragma omp parallel for reduction(max: max_s)
@@ -292,7 +293,7 @@ void viewer_process_wks()
 
 void viewer_process_hks()
 {
-	debug_me(APP_VIEWER)
+	gproshan_log(APP_VIEWER);
 
 	size_t K = 100;
 	size_t T = 100;
@@ -300,13 +301,13 @@ void viewer_process_hks()
 	a_sp_mat L, A;
 
 	TIC(load_time) laplacian(viewer::mesh(), L, A); TOC(load_time)
-	debug(load_time)
+	gproshan_log_var(load_time);
 
 	a_vec eigval;
 	a_mat eigvec;
 
 	TIC(load_time) K = eigs_laplacian(eigval, eigvec, viewer::mesh(), L, A, K); TOC(load_time)
-	debug(load_time)
+	gproshan_log_var(load_time);
 
 	if(!K) return;
 
@@ -331,20 +332,21 @@ void viewer_process_hks()
 
 void viewer_process_gps()
 {
-	debug_me(APP_VIEWER)
+	gproshan_log(APP_VIEWER);
 
 	size_t K = 50;
 
 	a_sp_mat L, A;
 
 	TIC(load_time) laplacian(viewer::mesh(), L, A); TOC(load_time)
-	debug(load_time)
+	gproshan_log_var(load_time);
 
 	a_vec eigval;
 	a_mat eigvec;
 
 	TIC(load_time) K = eigs_laplacian(eigval, eigvec, viewer::mesh(), L, A, K); TOC(load_time)
-	debug(load_time)
+	gproshan_log_var(load_time);
+
 	eigvec = abs(eigvec);
 	eigvec.col(0).zeros();
 	for(index_t i = 1; i < K; i++)
@@ -368,7 +370,7 @@ void viewer_process_gps()
 
 void viewer_process_key_points()
 {
-	debug_me(APP_VIEWER)
+	gproshan_log(APP_VIEWER);
 	
 	key_points kps(viewer::mesh());
 
@@ -381,12 +383,12 @@ void viewer_process_key_points()
 
 void viewer_process_key_components()
 {
-	debug_me(APP_VIEWER)
+	gproshan_log(APP_VIEWER);
 	
 	key_points kps(viewer::mesh());
 	key_components kcs(viewer::mesh(), kps, .25);
 	
-	debug(kcs)
+	gproshan_debug_var(kcs);
 	
 	#pragma omp parallel for
 	for(index_t v = 0; v < viewer::mesh()->n_vertices(); v++)
@@ -395,7 +397,7 @@ void viewer_process_key_components()
 
 void viewer_process_mdict_patch()
 {
-	debug_me(APP_VIEWER)
+	gproshan_log(APP_VIEWER);
 	
 	TIC(load_time)
 	che * mesh = viewer::mesh();
@@ -436,23 +438,23 @@ void viewer_process_mdict_patch()
 	}
 
 	avg_nvp /= viewer::select_vertices.size();
-	debug(avg_nvp);
+	gproshan_debug_var(avg_nvp);
 	
 	delete [] toplevel;
 	TOC(load_time)
-	debug(load_time)
+	gproshan_debug_var(load_time);
 }
 
 void viewer_process_denoising()
 {
-	debug_me(APP_VIEWER)
+	gproshan_log(APP_VIEWER);
 
 	size_t n; // dct
 	size_t m, M;
 	distance_t f;
 	bool learn;
 
-	d_message(parameters: (n, m, M, f, learn))
+	gproshan_log(parameters: (n, m, M, f, learn));
 	cin >> n >> m >> M >> f >> learn;
 
 	basis * phi = new basis_dct(n);
@@ -465,14 +467,14 @@ void viewer_process_denoising()
 
 void viewer_process_super_resolution()
 {
-	debug_me(APP_VIEWER)
+	gproshan_log(APP_VIEWER);
 
 	size_t n; // dct
 	size_t m, M;
 	distance_t f;
 	bool learn;
 
-	d_message(parameters: (n, m, M, f, learn))
+	gproshan_log(parameters: (n, m, M, f, learn));
 	cin >> n >> m >> M >> f >> learn;
 
 	basis * phi = new basis_dct(n);
@@ -485,14 +487,14 @@ void viewer_process_super_resolution()
 
 void viewer_process_inpaiting()
 {
-	debug_me(APP_VIEWER)
+	gproshan_log(APP_VIEWER);
 
 	size_t n; // dct
 	size_t m, M;
 	distance_t f;
 	bool learn;
 
-	d_message(parameters: (n, m, M, f, learn))
+	gproshan_log(parameters: (n, m, M, f, learn));
 	cin >> n >> m >> M >> f >> learn;
 
 	basis * phi = new basis_dct(n);
@@ -506,15 +508,14 @@ void viewer_process_inpaiting()
 
 void viewer_process_synthesis()
 {
-	debug_me(APP_VIEWER)
+	gproshan_log(APP_VIEWER);
 
-	size_t freq, rt; // cosine
 	size_t n; // dct
 	size_t m, M;
 	distance_t f;
 	bool learn;
 
-	d_message(parameters: (n, m, M, f, learn))
+	gproshan_log(parameters: (n, m, M, f, learn));
 	cin >> n >> m >> M >> f >> learn;
 
 	basis * phi = new basis_dct(n);
@@ -529,22 +530,22 @@ void viewer_process_synthesis()
 
 void viewer_process_iterative_inpaiting()
 {
-	debug_me(APP_VIEWER)
+	gproshan_log(APP_VIEWER);
 
 //	mesh_iterative_inpaiting(viewer::mesh(), viewer::select_vertices, freq, rt, m, M, f, learn);
 }
 
 void viewer_process_multiplicate_vertices()
 {
-	debug_me(APP_VIEWER)
+	gproshan_log(APP_VIEWER);
 
 	viewer::mesh()->multiplicate_vertices();
-	viewer::mesh().debug_info();
+	viewer::mesh().log_info();
 }
 
 void viewer_compute_toplesets()
 {
-	debug_me(APP_VIEWER)
+	gproshan_log(APP_VIEWER);
 	
 	if(!viewer::select_vertices.size())
 		viewer::select_vertices.push_back(0);
@@ -563,7 +564,7 @@ void viewer_compute_toplesets()
 			viewer::vcolor(v) = distance_t(toplesets[v]) / (n_toplesets);
 	}
 
-	debug(n_toplesets)
+	gproshan_debug_var(n_toplesets);
 
 	delete [] toplesets;
 	delete [] sorted;
@@ -571,12 +572,12 @@ void viewer_compute_toplesets()
 
 void viewer_process_voronoi()
 {
-	debug_me(APP_VIEWER)
+	gproshan_log(APP_VIEWER);
 
 	TIC(load_time)
 	geodesics ptp(viewer::mesh(), viewer::select_vertices, geodesics::PTP_GPU, nullptr, 1);
 	TOC(load_time)
-	debug(load_time)
+	gproshan_log_var(load_time);
 
 	#pragma omp parallel for
 	for(index_t i = 0; i < viewer::mesh()->n_vertices(); i++)
@@ -588,9 +589,9 @@ void viewer_process_voronoi()
 
 void viewer_process_farthest_point_sampling_radio()
 {
-	debug_me(APP_VIEWER)
+	gproshan_log(APP_VIEWER);
 
-	d_message(input: [sampling radio])
+	gproshan_log(input: [sampling radio]);
 	distance_t radio; cin >> radio;
 
 	double time_fps;
@@ -604,32 +605,32 @@ void viewer_process_farthest_point_sampling_radio()
 #endif
 
 	TOC(load_time)
-	debug(time_fps)
+	gproshan_log_var(time_fps);
 
-	debug(radio)
-	debug(viewer::select_vertices.size())
-	debug(load_time)
+	gproshan_log_var(radio);
+	gproshan_log_var(viewer::select_vertices.size());
+	gproshan_log_var(load_time);
 }
 
 void viewer_process_farthest_point_sampling()
 {
-	debug_me(APP_VIEWER)
+	gproshan_log(APP_VIEWER);
 
-	d_message(input: [sampling size])
+	gproshan_log(input: [sampling size]);
 	index_t n; cin >> n;
 
 	distance_t radio;
 	TIC(load_time)
 	load_sampling(viewer::select_vertices, radio, viewer::mesh(), n);
 	TOC(load_time)
-	debug(load_time)
+	gproshan_log_var(load_time);
 }
 
 void viewer_process_fairing_spectral()
 {
-	debug_me(APP_VIEWER)
+	gproshan_log(APP_VIEWER);
 	
-	d_message(input: [number of eigenbasis])
+	gproshan_log(input: [number of eigenbasis]);
 	size_t k; cin >> k;
 	
 	fairing * fair = new fairing_spectral(k);
@@ -643,9 +644,9 @@ void viewer_process_fairing_spectral()
 
 void viewer_process_fairing_taubin()
 {
-	debug_me(APP_VIEWER)
+	gproshan_log(APP_VIEWER);
 
-	d_message(input: [step])
+	gproshan_log(input: [step]);
 	real_t step; cin >> step;
 	
 	fairing * fair = new fairing_taubin(step);
@@ -659,7 +660,7 @@ void viewer_process_fairing_taubin()
 
 void viewer_process_geodesics_fm()
 {
-	debug_me(APP_VIEWER)
+	gproshan_log(APP_VIEWER);
 
 	if(!viewer::select_vertices.size())
 		viewer::select_vertices.push_back(0);
@@ -667,14 +668,14 @@ void viewer_process_geodesics_fm()
 	TIC(load_time)
 	geodesics fm(viewer::mesh(), viewer::select_vertices);
 	TOC(load_time)
-	debug(load_time)
+	gproshan_log_var(load_time);
 
 	viewer::mesh().update_colors(&fm[0]);
 }
 
 void viewer_process_geodesics_ptp_cpu()
 {
-	debug_me(APP_VIEWER)
+	gproshan_log(APP_VIEWER);
 
 	if(!viewer::select_vertices.size())
 		viewer::select_vertices.push_back(0);
@@ -682,14 +683,14 @@ void viewer_process_geodesics_ptp_cpu()
 	TIC(load_time)
 	geodesics ptp(viewer::mesh(), viewer::select_vertices, geodesics::PTP_CPU);
 	TOC(load_time)
-	debug(load_time)
+	gproshan_log_var(load_time);
 
 	viewer::mesh().update_colors(&ptp[0]);
 }
 
 void viewer_process_geodesics_ptp_gpu()
 {
-	debug_me(APP_VIEWER)
+	gproshan_log(APP_VIEWER);
 
 	if(!viewer::select_vertices.size())
 		viewer::select_vertices.push_back(0);
@@ -710,14 +711,14 @@ void viewer_process_geodesics_ptp_gpu()
 	TIC(load_time)
 	geodesics ptp(viewer::mesh(), viewer::select_vertices, geodesics::PTP_GPU, dist);
 	TOC(load_time)
-	debug(load_time)
+	gproshan_log_var(load_time);
 	
 	viewer::mesh().update_colors(&ptp[0]);
 }
 
 void viewer_process_geodesics_heat_flow()
 {
-	debug_me(APP_VIEWER)
+	gproshan_log(APP_VIEWER);
 
 	if(!viewer::select_vertices.size())
 		viewer::select_vertices.push_back(0);
@@ -725,14 +726,14 @@ void viewer_process_geodesics_heat_flow()
 	TIC(load_time)
 	geodesics heat_flow(viewer::mesh(), viewer::select_vertices, geodesics::HEAT_FLOW);
 	TOC(load_time)
-	debug(load_time)
+	gproshan_log_var(load_time);
 
 	viewer::mesh().update_colors(&heat_flow[0]);
 }
 
 void viewer_process_geodesics_heat_flow_gpu()
 {
-	debug_me(APP_VIEWER)
+	gproshan_log(APP_VIEWER);
 
 	if(!viewer::select_vertices.size())
 		viewer::select_vertices.push_back(0);
@@ -740,14 +741,14 @@ void viewer_process_geodesics_heat_flow_gpu()
 	TIC(load_time)
 	geodesics heat_flow(viewer::mesh(), viewer::select_vertices, geodesics::HEAT_FLOW_GPU);
 	TOC(load_time)
-	debug(load_time)
+	gproshan_log_var(load_time);
 
 	viewer::mesh().update_colors(&heat_flow[0]);
 }
 
 void viewer_process_fill_holes_biharmonic_splines()
 {
-	debug_me(APP_VIEWER)
+	gproshan_log(APP_VIEWER);
 
 	size_t old_n_vertices, n_vertices = viewer::mesh().n_vertices();
 	size_t n_holes = viewer::mesh()->n_borders();
@@ -774,7 +775,7 @@ void viewer_process_fill_holes_biharmonic_splines()
 
 void viewer_process_gaussian_curvature()
 {
-	debug_me(APP_VIEWER)
+	gproshan_log(APP_VIEWER);
 
 	real_t g, g_max = -INFINITY, g_min = INFINITY;
 	vertex a, b;
@@ -805,8 +806,8 @@ void viewer_process_gaussian_curvature()
 	real_t gm = mean(gv);
 	real_t gs = var(gv);
 
-	debug(gm)
-	debug(gs)
+	gproshan_debug_var(gm);
+	gproshan_debug_var(gs);
 
 	auto f = [&](real_t x, real_t a = 4) -> real_t
 	{
@@ -822,13 +823,13 @@ void viewer_process_gaussian_curvature()
 
 void viewer_process_edge_collapse()
 {
-	debug_me(APP_VIEWER)
+	gproshan_log(APP_VIEWER);
 
 	index_t levels;
 	cin >> levels;
 
 	TIC(load_time) decimation sampling(viewer::mesh(), viewer::mesh().normals_ptr(), levels); TOC(load_time)
-	debug(load_time)
+	gproshan_debug_var(load_time);
 
 	if(viewer::n_meshes < 2)
 		viewer::add_mesh({new che(*viewer::mesh())});
@@ -839,7 +840,7 @@ void viewer_process_edge_collapse()
 
 void viewer_select_multiple()
 {
-	debug_me(APP_VIEWER)
+	gproshan_log(APP_VIEWER);
 
 	char line[128];
 	if(fgets(line, 128, stdin))
