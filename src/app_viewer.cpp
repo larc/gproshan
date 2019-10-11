@@ -142,7 +142,7 @@ void viewer_process_poisson(const index_t & k)
 	delete [] fill_all_holes(viewer::mesh());
 
 	TIC(load_time) poisson(viewer::mesh(), old_n_vertices, k); TOC(load_time)
-	gproshan_debug_var(load_time);
+	gproshan_log_var(load_time);
 
 //	paint_holes_vertices();
 }
@@ -228,15 +228,15 @@ void viewer_process_functional_maps()
 	a_sp_mat L, A;
 
 	TIC(load_time) laplacian(viewer::mesh(), L, A); TOC(load_time)
-	gproshan_debug_var(load_time);
+	gproshan_log_var(load_time);
 
 	a_vec eigval;
 	a_mat eigvec;
 
 	TIC(load_time) K = eigs_laplacian(eigval, eigvec, viewer::mesh(), L, A, K); TOC(load_time)
-	gproshan_debug_var(load_time);
+	gproshan_log_var(load_time);
 
-	gproshan_debug_var(K);
+	gproshan_log_var(K);
 
 	K = K < N_MESHES ? K : N_MESHES;
 	for(index_t k = 0; k < N_MESHES; k++)
@@ -264,13 +264,13 @@ void viewer_process_wks()
 	a_sp_mat L, A;
 
 	TIC(load_time) laplacian(viewer::mesh(), L, A); TOC(load_time)
-	gproshan_debug_var(load_time);
+	gproshan_log_var(load_time);
 
 	a_vec eigval;
 	a_mat eigvec;
 
 	TIC(load_time) K = eigs_laplacian(eigval, eigvec, viewer::mesh(), L, A, K); TOC(load_time)
-	gproshan_debug_var(load_time);
+	gproshan_log_var(load_time);
 
 	distance_t max_s = 0;
 	#pragma omp parallel for reduction(max: max_s)
@@ -300,13 +300,13 @@ void viewer_process_hks()
 	a_sp_mat L, A;
 
 	TIC(load_time) laplacian(viewer::mesh(), L, A); TOC(load_time)
-	gproshan_debug_var(load_time);
+	gproshan_log_var(load_time);
 
 	a_vec eigval;
 	a_mat eigvec;
 
 	TIC(load_time) K = eigs_laplacian(eigval, eigvec, viewer::mesh(), L, A, K); TOC(load_time)
-	gproshan_debug_var(load_time);
+	gproshan_log_var(load_time);
 
 	if(!K) return;
 
@@ -338,13 +338,14 @@ void viewer_process_gps()
 	a_sp_mat L, A;
 
 	TIC(load_time) laplacian(viewer::mesh(), L, A); TOC(load_time)
-	gproshan_debug_var(load_time);
+	gproshan_log_var(load_time);
 
 	a_vec eigval;
 	a_mat eigvec;
 
 	TIC(load_time) K = eigs_laplacian(eigval, eigvec, viewer::mesh(), L, A, K); TOC(load_time)
-	gproshan_debug_var(load_time);
+	gproshan_log_var(load_time);
+
 	eigvec = abs(eigvec);
 	eigvec.col(0).zeros();
 	for(index_t i = 1; i < K; i++)
@@ -553,7 +554,7 @@ void viewer_process_voronoi()
 	TIC(load_time)
 	geodesics ptp(viewer::mesh(), viewer::select_vertices, geodesics::PTP_GPU, nullptr, 1);
 	TOC(load_time)
-	gproshan_debug_var(load_time);
+	gproshan_log_var(load_time);
 
 	#pragma omp parallel for
 	for(index_t i = 0; i < viewer::mesh()->n_vertices(); i++)
@@ -575,11 +576,11 @@ void viewer_process_farthest_point_sampling_radio()
 	TIC(load_time)
 	radio = farthest_point_sampling_ptp_gpu(viewer::mesh(), viewer::select_vertices, time_fps, NIL, radio);
 	TOC(load_time)
-	gproshan_debug_var(time_fps);
+	gproshan_log_var(time_fps);
 
-	gproshan_debug_var(radio);
-	gproshan_debug_var(viewer::select_vertices.size());
-	gproshan_debug_var(load_time);
+	gproshan_log_var(radio);
+	gproshan_log_var(viewer::select_vertices.size());
+	gproshan_log_var(load_time);
 }
 
 void viewer_process_farthest_point_sampling()
@@ -593,7 +594,7 @@ void viewer_process_farthest_point_sampling()
 	TIC(load_time)
 	load_sampling(viewer::select_vertices, radio, viewer::mesh(), n);
 	TOC(load_time)
-	gproshan_debug_var(load_time);
+	gproshan_log_var(load_time);
 }
 
 void viewer_process_fairing_spectral()
@@ -638,7 +639,7 @@ void viewer_process_geodesics_fm()
 	TIC(load_time)
 	geodesics fm(viewer::mesh(), viewer::select_vertices);
 	TOC(load_time)
-	gproshan_debug_var(load_time);
+	gproshan_log_var(load_time);
 
 	viewer::mesh().update_colors(&fm[0]);
 }
@@ -653,7 +654,7 @@ void viewer_process_geodesics_ptp_cpu()
 	TIC(load_time)
 	geodesics ptp(viewer::mesh(), viewer::select_vertices, geodesics::PTP_CPU);
 	TOC(load_time)
-	gproshan_debug_var(load_time);
+	gproshan_log_var(load_time);
 
 	viewer::mesh().update_colors(&ptp[0]);
 }
@@ -681,7 +682,7 @@ void viewer_process_geodesics_ptp_gpu()
 	TIC(load_time)
 	geodesics ptp(viewer::mesh(), viewer::select_vertices, geodesics::PTP_GPU, dist);
 	TOC(load_time)
-	gproshan_debug_var(load_time);
+	gproshan_log_var(load_time);
 	
 	viewer::mesh().update_colors(&ptp[0]);
 }
@@ -696,7 +697,7 @@ void viewer_process_geodesics_heat_flow()
 	TIC(load_time)
 	geodesics heat_flow(viewer::mesh(), viewer::select_vertices, geodesics::HEAT_FLOW);
 	TOC(load_time)
-	gproshan_debug_var(load_time);
+	gproshan_log_var(load_time);
 
 	viewer::mesh().update_colors(&heat_flow[0]);
 }
@@ -711,7 +712,7 @@ void viewer_process_geodesics_heat_flow_gpu()
 	TIC(load_time)
 	geodesics heat_flow(viewer::mesh(), viewer::select_vertices, geodesics::HEAT_FLOW_GPU);
 	TOC(load_time)
-	gproshan_debug_var(load_time);
+	gproshan_log_var(load_time);
 
 	viewer::mesh().update_colors(&heat_flow[0]);
 }
