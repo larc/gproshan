@@ -90,18 +90,14 @@ void viewer::init(const vector<che *> & _meshes)
 
 void viewer::debug_info()
 {
-	const GLubyte * renderer = glGetString(GL_RENDERER);
-	const GLubyte * vendor = glGetString(GL_VENDOR);
-	const GLubyte * version = glGetString(GL_VERSION);
-	const GLubyte * glslVersion = glGetString(GL_SHADING_LANGUAGE_VERSION);
 	GLint major, minor;
 	glGetIntegerv(GL_MAJOR_VERSION, &major);
 	glGetIntegerv(GL_MINOR_VERSION, &minor);
-	fprintf(stderr, "GL Vendor %s\n", vendor);
-	fprintf(stderr, "GL Renderer %s\n", renderer);
-	fprintf(stderr, "GL Version (string) %s\n", version);
+	fprintf(stderr, "GL Vendor %s\n", glGetString(GL_VENDOR));
+	fprintf(stderr, "GL Renderer %s\n", glGetString(GL_RENDERER));
+	fprintf(stderr, "GL Version (string) %s\n", glGetString(GL_VERSION));
 	fprintf(stderr, "GL Version (integer) %d.%d\n", major, minor);
-	fprintf(stderr, "GLSL Version %s\n", glslVersion);
+	fprintf(stderr, "GLSL Version %s\n", glGetString(GL_SHADING_LANGUAGE_VERSION));
 }
 
 void viewer::init_glut()
@@ -184,10 +180,6 @@ void viewer::init_menus()
 
 void viewer::init_glsl()
 {
-	//shader_program.loadVertex("shaders/vertex.glsl");
-	//shader_program.loadFragment("shaders/fragment.glsl");
-	//shader_program.loadGeometry("shaders/geometry.glsl");
-	//shader_program.loadGeometry("shaders/new_geometry.glsl");
 	shader_program.load_vertex("../shaders/new_vertex.glsl");
 	shader_program.load_fragment("../shaders/new_fragment.glsl");
 }

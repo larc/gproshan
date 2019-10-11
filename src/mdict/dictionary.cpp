@@ -76,7 +76,8 @@ void dictionary::init_sampling()
 	else
 	{
 		sampling.reserve(M);
-		assert(load_sampling(sampling, phi_basis->radio, mesh, M));
+		if(!load_sampling(sampling, phi_basis->radio, mesh, M))
+			cerr << "Failed to load sampling" << endl;
 	}
 
 	s_radio = phi_basis->radio;

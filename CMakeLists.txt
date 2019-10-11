@@ -13,12 +13,10 @@ find_package(X11 REQUIRED)
 find_package(SuiteSparse REQUIRED)
 find_package(Eigen3 REQUIRED)
 
-set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_BUILD_TYPE Release)
 
-set(CMAKE_CXX_FLAGS "-O3 -fopenmp -Wall")
-set(CMAKE_CXX_FLAGS_DEBUG "")
-set(CMAKE_CUDA_FLAGS "-O3 -Xcompiler -fopenmp")
-set(CMAKE_CUDA_FLAGS_DEBUG "")
+set(CMAKE_CXX_FLAGS "-fopenmp -Wall")
+set(CMAKE_CUDA_FLAGS "-Xcompiler -fopenmp")
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 

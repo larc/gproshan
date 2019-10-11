@@ -60,7 +60,11 @@ bool shader::load(GLenum shader_type, const char * filename)
 {
 	string source;
 
-	assert(read_source(filename, source));
+	if(!read_source(filename, source))
+	{
+		cerr << "Not load shader file: " << filename << endl;
+		return false;
+	}
 
 	if(program == 0)
 		program = glCreateProgram();
