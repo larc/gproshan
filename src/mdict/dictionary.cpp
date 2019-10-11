@@ -151,19 +151,6 @@ void dictionary::init_patches(const bool & reset, const fmask_t & mask)
 		phi_basis->discrete(p.phi, p.xyz);
 	}
 
-	real_t zmin = INFINITY;
-	real_t zmax = -INFINITY;
-
-	#pragma omp parallel for reduction(min: zmin)
-	for(index_t s = 0; s < M; s++)
-	{
-		zmin = min(zmin, patches[s].get_min_z());
-		zmax = max(zmax, patches[s].get_max_z());
-	}
-	minz = zmin;
-	maxz = zmax;
-	debug(minz)
-	debug(zmax)
 /*	
 #ifndef NDEBUG
 	CImgList<real_t> imlist;
@@ -171,12 +158,9 @@ void dictionary::init_patches(const bool & reset, const fmask_t & mask)
 		patches[s].save(phi_basis->radio, 16, imlist);
 	imlist.save_ffmpeg_external("tmp/patches.mpg", 5);
 #endif	
+
 */
-/*
-	#pragma omp parallel for
-	for(index_t s = 0; s < M; s++)
-		patches[s].update_heights(minz, maxz, 1);
-*/
+
 	/*Saving Patches*/
 
 	ofstream os(tmp_file_path("patch-mat"));

@@ -253,9 +253,9 @@ void mesh_reconstruction(che * mesh, size_t M, vector<patch> & patches, vector<v
 
 		if(rp.phi.n_rows)
 		{
-			a_vec x = rp.phi * A * alpha.col(p);
+		/*	a_vec x = rp.phi * A * alpha.col(p);
 
-			rp.xyz.row(2) = x.t();
+			rp.xyz.row(2) = x.t();*/
 			rp.itransform();
 		}
 	}
@@ -274,10 +274,6 @@ void mesh_reconstruction(che * mesh, size_t M, vector<patch> & patches, vector<v
 			V(2, v) = mesh->gt(v).z;
 		}
 	}
-
-	#pragma omp parallel for
-	for(index_t s = 0; s < M; s++)
-		patches[s].update_heights(zmin, zmax, 0);
 
 	// ------------------------------------------------------------------------
 
@@ -306,7 +302,7 @@ a_vec non_local_means_vertex(a_mat & alpha, const index_t & v, vector<patch> & p
 
 	index_t i = 0;
 	distance_t d = 0;
-
+/*
 	for(auto p: patches_map[v])
 	{
 		d = 0;
@@ -328,8 +324,13 @@ a_vec non_local_means_vertex(a_mat & alpha, const index_t & v, vector<patch> & p
 	}
 
 	delete [] w;
-
-	return n_a_vec;
+*/
+	for(auto p: patches_map[v])
+	{
+		n_a_vec += patches[p.first].xyz.col(p.second);
+		i++;
+	}
+	return n_a_vec/i;
 }
 
 /// DEPRECATED
@@ -407,7 +408,6 @@ a_vec non_local_means_vertex(a_mat & alpha, const index_t & v, vector<patch_t> &
 		i++;
 	}
 
-	i = 0;
 	for(auto p: patches_map[v])
 	{
 		w[i] /= sum;
@@ -417,7 +417,7 @@ a_vec non_local_means_vertex(a_mat & alpha, const index_t & v, vector<patch_t> &
 
 	delete [] w;
 
-	return n_a_vec;
+	return n_a_vec/i;
 }
 
 a_vec simple_means_vertex(a_mat & alpha, const index_t & v, vector<patch_t> & patches, vector<patches_map_t> & patches_map, const distance_t & h)

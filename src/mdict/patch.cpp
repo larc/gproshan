@@ -161,9 +161,9 @@ void patch::gather_vertices(che * mesh, const index_t & v, const distance_t & ra
 		p(1) = mesh->gt(v).y;
 		p(2) = mesh->gt(v).z;
 		p = T.t() * (p - x);
-		p(2) = 0;
+		//p(2) = 0;
 		
-		if(vertices.size() > expected_nv) break;
+		//if(vertices.size() > expected_nv) break;
 		if(toplevel[v] != current_toplevel)
 		{
 			if(count_toplevel == 0) break;

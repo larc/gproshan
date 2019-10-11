@@ -18,11 +18,11 @@ void denoising::execute()
 	TIC(d_time) init_patches(); TOC(d_time)
 	debug(d_time)
 
-	TIC(d_time) learning(); TOC(d_time)
+	/*TIC(d_time) learning(); TOC(d_time)
 	debug(d_time)
 
 	TIC(d_time) sparse_coding(); TOC(d_time)
-	debug(d_time)
+	debug(d_time)*/
 
 	TIC(d_time) mesh_reconstruction(); TOC(d_time)
 	debug(d_time)
