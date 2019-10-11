@@ -29,10 +29,10 @@ dictionary::~dictionary()
 
 void dictionary::learning()
 {
-	debug_me(MDICT)
+	gproshan_debug(MDICT);
 
 	string f_dict = tmp_file_path(mesh->name_size() + '_' + to_string(phi_basis->dim) + '_' + to_string(m) + ".dict");
-	debug(f_dict)
+	gproshan_debug_var(f_dict);
 
 	if(!A.load(f_dict))
 	{
@@ -55,7 +55,7 @@ void dictionary::learning()
 
 void dictionary::sparse_coding()
 {
-	debug_me(MDICT)
+	gproshan_debug(MDICT);
 
 	alpha.zeros(m, M);
 	OMP_all_patches_ksvt(alpha, A, patches, M, L);
@@ -63,7 +63,7 @@ void dictionary::sparse_coding()
 
 void dictionary::init_sampling()
 {
-	debug_me(MDICT)
+	gproshan_debug(MDICT);
 
 	n_vertices = mesh->n_vertices();
 
@@ -86,7 +86,7 @@ void dictionary::init_sampling()
 
 void dictionary::init_patches(const bool & reset, const fmask_t & mask)
 {
-	debug_me(MDICT)
+	gproshan_debug(MDICT);
 
 	if(reset)
 	{
@@ -123,9 +123,9 @@ void dictionary::init_patches(const bool & reset, const fmask_t & mask)
 				patch_max_size = max(patches[s].vertices.size(), patch_max_size);
 
 			patch_avg_size /= M;
-			debug(patch_avg_size)
-			debug(patch_min_size)
-			debug(patch_max_size)
+			gproshan_debug_var(patch_avg_size);
+			gproshan_debug_var(patch_min_size);
+			gproshan_debug_var(patch_max_size);
 		#endif
 	}
 
@@ -145,7 +145,7 @@ void dictionary::init_patches(const bool & reset, const fmask_t & mask)
 
 void dictionary::mesh_reconstruction()
 {
-	debug_me(MDICT)
+	gproshan_debug(MDICT);
 
 	assert(n_vertices == mesh->n_vertices());
 	mdict::mesh_reconstruction(mesh, M, patches, patches_map, A, alpha);

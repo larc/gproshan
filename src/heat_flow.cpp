@@ -129,9 +129,9 @@ double solve_positive_definite(a_mat & x, const a_sp_mat & A, const a_mat & b, c
 	cholmod_l_factorize(cA, L, context);
 	
 	/* fill ratio
-	debug(L->xsize)
-	debug(cA->nzmax)
-	debug(L->xsize / cA->nzmax)
+	gproshan_debug_var(L->xsize);
+	gproshan_debug_var(cA->nzmax);
+	gproshan_debug_var(L->xsize / cA->nzmax);
 	*/
 
 	double solve_time;

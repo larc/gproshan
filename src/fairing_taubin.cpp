@@ -28,9 +28,10 @@ void fairing_taubin::compute(che * shape)
 */
 	a_sp_mat L, A;
 
-	d_message(Compute laplacian...)
+	gproshan_debug(compute laplacian);
+
 	TIC(time) laplacian(shape, L, A); TOC(time)
-	debug(time)
+	gproshan_debug_var(time);
 
 	positions = new vertex[shape->n_vertices()];
 
@@ -44,9 +45,10 @@ void fairing_taubin::compute(che * shape)
 	a_mat AX = A * X.t();
 	a_sp_mat M = A + step * L;
 
-	d_message(Solve system...)
+	gproshan_debug(solve system);
+
 	TIC(time) spsolve(R, M, AX); TOC(time)
-	debug(time)
+	gproshan_debug_var(time);
 
 	X = R.t();
 }

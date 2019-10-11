@@ -63,7 +63,7 @@ class che_viewer
 		void translate(const vertex & p);
 		void invert_orientation();
 
-		void debug_info();
+		void log_info();
 };
 
 

@@ -43,7 +43,7 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 	string filename;
 	while(cin >> filename)
 	{
-		debug(filename)
+		gproshan_debug_var(filename);
 		
 		vector<index_t> source = { 0 };
 		

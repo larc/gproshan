@@ -13,19 +13,19 @@ denoising::denoising(che *const & _mesh, basis *const & _phi_basis, const size_t
 void denoising::execute()
 {
 	TIC(d_time) init_sampling(); TOC(d_time)
-	debug(d_time)
+	gproshan_debug_var(d_time);
 
 	TIC(d_time) init_patches(); TOC(d_time)
-	debug(d_time)
+	gproshan_debug_var(d_time);
 
 	TIC(d_time) learning(); TOC(d_time)
-	debug(d_time)
+	gproshan_debug_var(d_time);
 
 	TIC(d_time) sparse_coding(); TOC(d_time)
-	debug(d_time)
+	gproshan_debug_var(d_time);
 
 	TIC(d_time) mesh_reconstruction(); TOC(d_time)
-	debug(d_time)
+	gproshan_debug_var(d_time);
 }
 
 
