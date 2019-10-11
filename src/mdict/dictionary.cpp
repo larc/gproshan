@@ -186,7 +186,7 @@ void dictionary::mesh_reconstruction()
 	debug_me(MDICT)
 
 	assert(n_vertices == mesh->n_vertices());
-	mdict::mesh_reconstruction(mesh, M, patches, patches_map, A, alpha, minz, maxz);
+	mdict::mesh_reconstruction(mesh, M, patches, patches_map, A, alpha);
 }
 void dictionary::update_alphas(a_mat & alpha, size_t threshold)
 {

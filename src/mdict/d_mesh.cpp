@@ -241,7 +241,7 @@ void partial_mesh_reconstruction(size_t old_n_vertices, che * mesh, size_t M, ve
 
 }
 
-void mesh_reconstruction(che * mesh, size_t M, vector<patch> & patches, vector<vpatches_t> & patches_map, a_mat & A, a_mat & alpha, real_t & zmin, real_t & zmax, const index_t & v_i)
+void mesh_reconstruction(che * mesh, size_t M, vector<patch> & patches, vector<vpatches_t> & patches_map, a_mat & A, a_mat & alpha, const index_t & v_i)
 {
 	a_mat V(3, mesh->n_vertices(), arma::fill::zeros);
 
@@ -266,7 +266,8 @@ void mesh_reconstruction(che * mesh, size_t M, vector<patch> & patches, vector<v
 	for(index_t v = v_i; v < mesh->n_vertices(); v++)
 	{
 		if(patches_map[v].size())
-			V.col(v) = non_local_means_vertex(alpha, v, patches, patches_map, h);
+			V.col(v) = simple_means_vertex(v, patches, patches_map);
+			//V.col(v) = non_local_means_vertex(alpha, v, patches, patches_map, h);
 		else
 		{
 			V(0, v) = mesh->gt(v).x;
@@ -302,7 +303,7 @@ a_vec non_local_means_vertex(a_mat & alpha, const index_t & v, vector<patch> & p
 
 	index_t i = 0;
 	distance_t d = 0;
-/*
+
 	for(auto p: patches_map[v])
 	{
 		d = 0;
@@ -324,13 +325,8 @@ a_vec non_local_means_vertex(a_mat & alpha, const index_t & v, vector<patch> & p
 	}
 
 	delete [] w;
-*/
-	for(auto p: patches_map[v])
-	{
-		n_a_vec += patches[p.first].xyz.col(p.second);
-		i++;
-	}
-	return n_a_vec/i;
+
+	return n_a_vec;
 }
 
 /// DEPRECATED
@@ -420,7 +416,7 @@ a_vec non_local_means_vertex(a_mat & alpha, const index_t & v, vector<patch_t> &
 	return n_a_vec/i;
 }
 
-a_vec simple_means_vertex(a_mat & alpha, const index_t & v, vector<patch_t> & patches, vector<patches_map_t> & patches_map, const distance_t & h)
+a_vec simple_means_vertex( const index_t & v, vector<patch_t> & patches, vector<patches_map_t> & patches_map)
 {
 	a_vec n_a_vec(3, arma::fill::zeros);
 
