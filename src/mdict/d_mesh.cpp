@@ -274,11 +274,11 @@ void mesh_reconstruction(che * mesh, size_t M, vector<patch> & patches, vector<v
 			V(2, v) = mesh->gt(v).z;
 		}
 	}
-/*
+
 	#pragma omp parallel for
 	for(index_t s = 0; s < M; s++)
 		patches[s].update_heights(zmin, zmax, 0);
-*/
+
 	// ------------------------------------------------------------------------
 
 	vertex * new_vertices = (vertex *) V.memptr();
@@ -294,7 +294,7 @@ void mesh_reconstruction(che * mesh, size_t M, vector<patch> & patches, vector<v
 
 	debug(v_i)
 	mesh->set_vertices(new_vertices + v_i, mesh->n_vertices() - v_i, v_i);
-	che_off::write_file(mesh,"tmp/recon_mesh");
+	che_off::write_file(mesh,"../tmp/recon_mesh");
 }
 
 a_vec non_local_means_vertex(a_mat & alpha, const index_t & v, vector<patch> & patches, vector<vpatches_t> & patches_map, const distance_t & h)

@@ -10,7 +10,7 @@ void basis::plot_basis()
 {
 	string file = tmp_file_path("basis.gpi");
 	ofstream os(file);
-	os << "set term wxt size 1000,1000;" << endl;
+	os << "set term qt size 1000,1000;" << endl;
 	os << "set isosamples 50,50;" << endl;
 	os << "set parametric;" << endl;
 	os << "set vrange [-"<< 0 << ":" << radio <<"];" << endl;
@@ -41,7 +41,7 @@ void basis::plot_atoms(const a_mat & A)
 	string file = tmp_file_path("atoms.gpi");
 	ofstream os(file);
 
-	os << "set term wxt size 1000,1000;" << endl;
+	os << "set term qt size 1000,1000;" << endl;
 	os << "set multiplot layout " << s << "," << s << " rowsfirst scale 1.2;" << endl;
 	os << "set isosamples 25,25;" << endl;
 	os << "set parametric;" << endl;

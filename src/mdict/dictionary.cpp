@@ -157,12 +157,13 @@ void dictionary::init_patches(const bool & reset, const fmask_t & mask)
 	#pragma omp parallel for reduction(min: zmin)
 	for(index_t s = 0; s < M; s++)
 	{
-		zmin = max(zmin, patches[s].get_min_z());
+		zmin = min(zmin, patches[s].get_min_z());
 		zmax = max(zmax, patches[s].get_max_z());
 	}
 	minz = zmin;
 	maxz = zmax;
 	debug(minz)
+	debug(zmax)
 /*	
 #ifndef NDEBUG
 	CImgList<real_t> imlist;
