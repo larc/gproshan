@@ -416,7 +416,7 @@ a_vec non_local_means_vertex(a_mat & alpha, const index_t & v, vector<patch_t> &
 	return n_a_vec/i;
 }
 
-a_vec simple_means_vertex( const index_t & v, vector<patch_t> & patches, vector<patches_map_t> & patches_map)
+a_vec simple_means_vertex( const index_t & v, vector<patch> & patches, vector<vpatches_t> & patches_map)
 {
 	a_vec n_a_vec(3, arma::fill::zeros);
 

@@ -115,13 +115,13 @@ void mesh_reconstruction(che * mesh, size_t M, std::vector<patch> & patches, std
 
 a_vec non_local_means_vertex(a_mat & alpha, const index_t & v, std::vector<patch> & patches, std::vector<vpatches_t> & patches_map, const distance_t & h);
 
-/// DEPRECATED
+[[deprecated]]
 void mesh_reconstruction(che * mesh, size_t M, std::vector<patch_t> & patches, std::vector<patches_map_t> & patches_map, a_mat & A, a_mat & alpha, const index_t & v_i = 0);
 
-/// DEPRECATED
+[[deprecated]]
 a_vec non_local_means_vertex(a_mat & alpha, const index_t & v, std::vector<patch_t> & patches, std::vector<patches_map_t> & patches_map, const distance_t & h);
 
-a_vec simple_means_vertex( const index_t & v, std::vector<patch_t> & patches, std::vector<patches_map_t> & patches_map);
+a_vec simple_means_vertex( const index_t & v, std::vector<patch> & patches, std::vector<vpatches_t> & patches_map);
 
 
 } // namespace gproshan::mdict
