@@ -65,3 +65,5 @@ target_link_libraries(test_geodesics ${OpenMP_CXX_LIBRARIES})
 target_link_libraries(test_geodesics ${ARMADILLO_LIBRARIES})
 target_link_libraries(test_geodesics ${SuiteSparse_LIBRARIES})
 
+file(MAKE_DIRECTORY tmp)
+
