@@ -454,7 +454,7 @@ void viewer_process_denoising()
 	distance_t f;
 	bool learn;
 
-	gproshan_log(parameters: (n, m, M, f, learn));
+	gproshan_input(n m M f learn);
 	cin >> n >> m >> M >> f >> learn;
 
 	basis * phi = new basis_dct(n);
@@ -591,7 +591,7 @@ void viewer_process_farthest_point_sampling_radio()
 {
 	gproshan_log(APP_VIEWER);
 
-	gproshan_log(input: [sampling radio]);
+	gproshan_input(radio);
 	distance_t radio; cin >> radio;
 
 	double time_fps;
@@ -616,7 +616,7 @@ void viewer_process_farthest_point_sampling()
 {
 	gproshan_log(APP_VIEWER);
 
-	gproshan_log(input: [sampling size]);
+	gproshan_input(samples_number);
 	index_t n; cin >> n;
 
 	distance_t radio;
@@ -630,7 +630,7 @@ void viewer_process_fairing_spectral()
 {
 	gproshan_log(APP_VIEWER);
 	
-	gproshan_log(input: [number of eigenbasis]);
+	gproshan_input(k (eigenvectors number));
 	size_t k; cin >> k;
 	
 	fairing * fair = new fairing_spectral(k);
@@ -646,7 +646,7 @@ void viewer_process_fairing_taubin()
 {
 	gproshan_log(APP_VIEWER);
 
-	gproshan_log(input: [step]);
+	gproshan_input(step);
 	real_t step; cin >> step;
 	
 	fairing * fair = new fairing_taubin(step);

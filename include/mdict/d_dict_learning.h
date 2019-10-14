@@ -13,7 +13,7 @@
 namespace gproshan::mdict {
 
 
-void OMP(a_vec & alpha, a_vec & x, a_mat & D, size_t L);
+a_vec OMP(const a_vec & x, const a_mat & D, const size_t & L);
 
 void KSVD(a_mat & D, a_mat & X, size_t L);
 
@@ -23,13 +23,13 @@ void OMP_all_patches_ksvt(a_mat & alpha, a_mat & A, std::vector<patch> & patches
 
 void KSVDT(a_mat & A, std::vector<patch> & patches, size_t M, size_t L);
 
-/// DEPRECATED
+[[deprecated]]
 void OMP_patch(a_mat & alpha, const a_mat & A, const index_t & i, patch_t & p, const size_t & L);
 
-/// DEPRECATED
+[[deprecated]]
 void OMP_all_patches_ksvt(a_mat & alpha, a_mat & A, std::vector<patch_t> & patches, size_t M, size_t L);
 
-/// DEPRECATED
+[[deprecated]]
 void KSVDT(a_mat & A, std::vector<patch_t> & patches, size_t M, size_t L);
 
 
