@@ -44,6 +44,7 @@ add_library(gproshan_cu STATIC ${cu_sources})
 
 add_executable(gproshan gproshan.cpp)
 add_executable(test_geodesics test_geodesics.cpp)
+add_executable(test_image_denoising test_image_denoising.cpp)
 
 set_target_properties(gproshan_cu PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 
@@ -64,6 +65,13 @@ target_link_libraries(test_geodesics ${CUDA_LIBRARIES} ${CUDA_cublas_LIBRARY} ${
 target_link_libraries(test_geodesics ${OpenMP_CXX_LIBRARIES})
 target_link_libraries(test_geodesics ${ARMADILLO_LIBRARIES})
 target_link_libraries(test_geodesics ${SuiteSparse_LIBRARIES})
+
+target_link_libraries(test_image_denoising gproshan_cpp gproshan_cu)
+target_link_libraries(test_image_denoising ${CUDA_LIBRARIES} ${CUDA_cublas_LIBRARY} ${CUDA_cusolver_LIBRARY} ${CUDA_cusparse_LIBRARY})
+target_link_libraries(test_image_denoising ${OpenMP_CXX_LIBRARIES})
+target_link_libraries(test_image_denoising ${ARMADILLO_LIBRARIES})
+target_link_libraries(test_image_denoising ${X11_X11_LIB})
+target_link_libraries(test_image_denoising ${SuiteSparse_LIBRARIES})
 
 file(MAKE_DIRECTORY tmp)
 

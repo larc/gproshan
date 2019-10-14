@@ -7,40 +7,36 @@
 #include <fstream>
 
 
-
 // geometry processing and shape analysis framework
 // mesh dictionary learning and sparse coding namespace
 namespace gproshan::mdict {
 
 
-void OMP(a_vec & alpha, a_vec & x, a_mat & D, size_t L)
+a_vec OMP(const a_vec & x, const a_mat & D, const size_t & L)
 {
-//	size_t n = x.n_elem;
-	size_t m = D.n_cols;
-
-	arma::uword max_i;
-
-	alpha.zeros(m);
+	a_vec alpha(D.n_cols, arma::fill::zeros);
 	arma::uvec selected_atoms(L, arma::fill::zeros);
-	a_vec aa;
 
-	double sigma = 0.001;
-	double threshold = norm(x) * sigma;
+	real_t sigma = 0.001;
+	real_t threshold = norm(x) * sigma;
 
-	a_vec r = x;
-	for(index_t l = 0; norm(r) > threshold && l < L; l++)
+	a_mat DD;
+	a_vec aa, r = x;
+	
+	index_t l = 0;
+	while(norm(r) > threshold && l < L)
 	{
-		a_vec Dtr = abs(D.t() * r);
-
-		Dtr.max(max_i);
-		selected_atoms(l) = max_i;
-
-		a_mat DD = D.cols(selected_atoms.head(l + 1));
+		selected_atoms(l) = index_max(abs(D.t() * r));
+		
+		DD = D.cols(selected_atoms.head(l + 1));
 		aa = pinv(DD) * x;
 		r = x - DD * aa;
+
+		l++;
 	}
 
-	alpha.elem(selected_atoms) = aa;
+	alpha.elem(selected_atoms.head(l)) = aa;
+	return alpha;
 }
 
 void KSVD(a_mat & D, a_mat & X, size_t L)
@@ -56,12 +52,7 @@ void KSVD(a_mat & D, a_mat & X, size_t L)
 	{
 		#pragma omp parallel for
 		for(index_t i = 0; i < M; i++)
-		{
-			a_vec a;
-			a_vec x = X.col(i);
-			OMP(a, x, D, L);
-			alpha.col(i) = a;
-		}
+			alpha.col(i) = OMP(X.col(i), D, L);
 
 		#pragma omp parallel for
 		for(index_t j = 0; j < m; j++)
@@ -88,12 +79,7 @@ void KSVD(a_mat & D, a_mat & X, size_t L)
 
 void OMP_patch(a_mat & alpha, const a_mat & A, const index_t & i, patch & p, const size_t & L)
 {
-	a_vec a;
-	a_vec x = p.xyz.row(2).t();
-	a_mat D = p.phi * A;
-
-	OMP(a, x, D, L);
-	alpha.col(i) = a;
+	alpha.col(i) = OMP(p.xyz.row(2).t(), p.phi * A, L);
 }
 
 void OMP_all_patches_ksvt(a_mat & alpha, a_mat & A, vector<patch> & patches, size_t M, size_t L)
@@ -143,18 +129,11 @@ void KSVDT(a_mat & A, vector<patch> & patches, size_t M, size_t L)
 	}
 }
 
-/// DEPRECATED
 void OMP_patch(a_mat & alpha, const a_mat & A, const index_t & i, patch_t & p, const size_t & L)
 {
-	a_vec a;
-	a_vec x = p.xyz.row(2).t();
-	a_mat D = p.phi * A;
-
-	OMP(a, x, D, L);
-	alpha.col(i) = a;
+	alpha.col(i) = OMP(p.xyz.row(2).t(), p.phi * A, L);
 }
 
-/// DEPRECATED
 void OMP_all_patches_ksvt(a_mat & alpha, a_mat & A, vector<patch_t> & patches, size_t M, size_t L)
 {
 	#pragma omp parallel for
@@ -163,7 +142,6 @@ void OMP_all_patches_ksvt(a_mat & alpha, a_mat & A, vector<patch_t> & patches, s
 			OMP_patch(alpha, A, i, patches[i], L);
 }
 
-/// DEPRECATED
 void KSVDT(a_mat & A, vector<patch_t> & patches, size_t M, size_t L)
 {
 	size_t K = A.n_rows;
