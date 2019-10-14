@@ -253,9 +253,9 @@ void mesh_reconstruction(che * mesh, size_t M, vector<patch> & patches, vector<v
 
 		if(rp.phi.n_rows)
 		{
-		/*	a_vec x = rp.phi * A * alpha.col(p);
+			a_vec x = rp.phi * A * alpha.col(p);
 
-			rp.xyz.row(2) = x.t();*/
+			rp.xyz.row(2) = x.t();
 			rp.itransform();
 		}
 	}
