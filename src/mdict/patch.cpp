@@ -45,7 +45,7 @@ void patch::transform()
 {
 	xyz.each_col() -= x;
 	xyz = T.t() * xyz;
-	xyz.row(2).zeros();
+//	xyz.row(2).zeros();
 }
 
 void patch::itransform()

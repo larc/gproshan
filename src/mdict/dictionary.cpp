@@ -163,7 +163,7 @@ void dictionary::init_patches(const bool & reset, const fmask_t & mask)
 */
 
 	/*Saving Patches*/
-
+/*
 	ofstream os(tmp_file_path("patch-mat"));
 	for(index_t s = 0; s < M; s++)
 	{
