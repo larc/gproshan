@@ -73,6 +73,7 @@ target_link_libraries(test_image_denoising ${X11_X11_LIB})
 target_link_libraries(test_image_denoising ${OpenMP_CXX_LIBRARIES})
 target_link_libraries(test_image_denoising ${ARMADILLO_LIBRARIES})
 target_link_libraries(test_image_denoising ${SuiteSparse_LIBRARIES})
+target_link_libraries(test_image_denoising CGAL::CGAL)
 
 if(CUDA_FOUND)
 	target_link_libraries(gproshan gproshan_cu)
