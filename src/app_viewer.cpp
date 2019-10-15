@@ -458,9 +458,9 @@ void viewer_process_denoising()
 	cin >> n >> m >> M >> f >> learn;
 
 	basis * phi = new basis_dct(n);
-	denoising dict(viewer::mesh(), phi, m, M, f);
+	denoising dict(viewer::mesh(), phi, m, M, f, learn);
 	dict.execute();
-
+	
 	delete phi;
 	viewer::mesh().update_normals();
 }
@@ -478,7 +478,7 @@ void viewer_process_super_resolution()
 	cin >> n >> m >> M >> f >> learn;
 
 	basis * phi = new basis_dct(n);
-	super_resolution dict(viewer::mesh(), phi, m, M, f);
+	super_resolution dict(viewer::mesh(), phi, m, M, f, learn);
 	dict.execute();
 
 	delete phi;
@@ -498,7 +498,7 @@ void viewer_process_inpaiting()
 	cin >> n >> m >> M >> f >> learn;
 
 	basis * phi = new basis_dct(n);
-	inpainting dict(viewer::mesh(), phi, m, M, f);
+	inpainting dict(viewer::mesh(), phi, m, M, f, learn);
 	dict.execute();
 
 	delete phi;
@@ -519,7 +519,7 @@ void viewer_process_synthesis()
 	cin >> n >> m >> M >> f >> learn;
 
 	basis * phi = new basis_dct(n);
-	synthesis dict(viewer::mesh(), phi, m, M, f);
+	synthesis dict(viewer::mesh(), phi, m, M, f, learn);
 	dict.execute();
 
 	delete phi;

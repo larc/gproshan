@@ -36,6 +36,7 @@ class dictionary
 
 		double d_time;							///< time of operations.
 		bool d_plot;
+		bool learn;
 									///< plot atoms and basis with gnuplot.
 	
 	public:
@@ -48,6 +49,7 @@ class dictionary
 					const size_t & _m,			///< number of dictionary atoms.
 					const size_t & _M,			///< number of patches.
 					const distance_t & _f,		///< deprecated
+					const bool & _learn,		
 					const bool & _plot			///< flag to plot basis and atoms with gnuplot.
 					);
 

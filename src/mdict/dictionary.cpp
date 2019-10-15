@@ -22,8 +22,8 @@ namespace gproshan::mdict {
 size_t dictionary::L = 10;
 size_t dictionary::T = 5;
 
-dictionary::dictionary(che *const & _mesh, basis *const & _phi_basis, const size_t & _m, const size_t & _M, const distance_t & _f, const bool & _d_plot):
-					mesh(_mesh), phi_basis(_phi_basis), m(_m), M(_M), f(_f), d_plot(_d_plot)
+dictionary::dictionary(che *const & _mesh, basis *const & _phi_basis, const size_t & _m, const size_t & _M, const distance_t & _f, const bool & _learn, const bool & _d_plot):
+					mesh(_mesh), phi_basis(_phi_basis), m(_m), M(_M), f(_f), learn(_learn), d_plot(_d_plot)
 {
 	A.eye(phi_basis->dim, m);
 }
@@ -40,7 +40,7 @@ void dictionary::learning()
 	string f_dict = tmp_file_path(mesh->name_size() + '_' + to_string(phi_basis->dim) + '_' + to_string(m) + '_' + to_string(f) +  '_' + to_string(L) + ".dict");
 	gproshan_debug_var(f_dict);
 
-	if(!A.load(f_dict))
+	if(learn && !A.load(f_dict))
 	{
 		A.eye(phi_basis->dim, m);
 		// A.random(phi_basis->dim, m);
