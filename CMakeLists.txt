@@ -11,11 +11,11 @@ find_package(Threads REQUIRED)
 find_package(OpenMP REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(GLUT REQUIRED)
-find_package(Armadillo REQUIRED)
-find_package(CGAL REQUIRED)
 find_package(X11 REQUIRED)
+find_package(Armadillo REQUIRED)
 find_package(SuiteSparse REQUIRED)
 find_package(Eigen3 REQUIRED)
+find_package(CGAL REQUIRED)
 
 set(CMAKE_BUILD_TYPE Release)
 
