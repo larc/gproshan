@@ -16,6 +16,7 @@ find_package(Armadillo REQUIRED)
 find_package(CGAL REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(SuiteSparse REQUIRED)
+find_package(Boost COMPONENTS thread system)
 
 set(CMAKE_BUILD_TYPE Debug)
 
