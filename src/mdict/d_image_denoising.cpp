@@ -12,8 +12,9 @@ namespace gproshan::mdict {
 
 void test_image_denoising(string file)
 {
-	CImg<double> image(file.c_str());
+	CImg<real_t> image(file.c_str());
 	image.resize(128, 128);
+	image = image.get_normalize(0, 1);
 
 	size_t p = 8;
 	size_t rows = image.width() - p + 1;
@@ -21,7 +22,7 @@ void test_image_denoising(string file)
 	size_t n = p * p;
 	size_t m = 256;
 	size_t M = rows * cols;
-	size_t L = 8;
+	size_t L = 10;
 
 	a_mat X(n, M);
 
@@ -38,16 +39,24 @@ void test_image_denoising(string file)
 			k++;
 		}
 	}
-
+	
 	a_mat D(n, m);
 	D.randu();
+	D = normalise(D);
+	
+	CImgList<real_t> imlist;
+	for(index_t i = 0; i < m; i++)
+		imlist.push_back(CImg<real_t>(D.colptr(i), p, p, 1, 1, true));
+	imlist.display();
 
 	double time = omp_get_wtime();
 
-//	KSVD(D, X, L);
+//	KSVD(D, X, L, 10);
 
 	time = omp_get_wtime() - time;
 	cout << "time KSVD: " << time << endl;
+	
+	imlist.display();
 
 	a_mat alpha(m, M);
 
@@ -89,7 +98,7 @@ void test_image_denoising(string file)
 	}
 
 	CImg<double> diff = abs(image - image_out);
-	(image, image_out, diff).display();
+	(image * 255, image_out * 255, diff * 255).display();
 }
 
 
