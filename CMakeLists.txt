@@ -26,7 +26,10 @@ set(THREADS_PREFER_PTHREAD_FLAG ON)
 
 add_definitions(${EIGEN3_DEFINITIONS})
 
-include_directories(${CUDA_INCLUDE_DIRS})
+if(CUDA_FOUND)
+	include_directories(${CUDA_INCLUDE_DIRS})
+endif(CUDA_FOUND)
+
 include_directories(${OPENGL_INCLUDE_DIR})
 include_directories(${GLUT_INCLUDE_DIR})
 include_directories(${X11_INCLUDE_DIR})
