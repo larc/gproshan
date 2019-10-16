@@ -19,7 +19,7 @@ using namespace cimg_library;
 namespace gproshan::mdict {
 
 
-size_t dictionary::L = 10;
+size_t dictionary::L = 20;
 size_t dictionary::T = 5;
 
 dictionary::dictionary(che *const & _mesh, basis *const & _phi_basis, const size_t & _m, const size_t & _M, const distance_t & _f, const bool & _learn, const bool & _d_plot):

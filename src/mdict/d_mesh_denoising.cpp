@@ -17,17 +17,27 @@ void test_mesh_denoising(string file)
 	distance_t f = 1;
 	bool learn = false;
 	distance_t error;
-	dictionary::L = 25;
+	//dictionary::L = 20;
     basis * phi = new basis_dct(n);
 
-	ofstream os("../tmp/test_mesh.txt");
-	for(;f<1.6; f+=0.2)
+	ofstream os("../tmp/test.txt");
+
+	for(;f<1.5; f+=0.1)
 	{
-		denoising dict(mesh, phi, m, M, f, learn,0); 	
-		error = dict.execute();
-		os<< f << "\t"<<error<<endl;
+		os<< f ;
+		for(size_t i = 10; i<26; i+=5)
+		{
+			dictionary::L = i;
+			denoising dict(mesh, phi, m, M, f, learn,0); 	
+			error = dict.execute();
+			os<< "\t"<<error;
+		}
+		cout<<endl;
 	}
 	os.close();
+	file = tmp_file_path("test_mesh.gp");
+	file = "gnuplot -persist " + file + " &";
+	system(file.c_str());
 	delete phi;
 }
 
