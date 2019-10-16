@@ -22,7 +22,7 @@ void test_mesh_denoising(string file)
     basis * phi = new basis_dct(n);
 
 	ofstream os("../tmp/test_mesh.txt");
-	for(;f<1.3; f+=0.1)
+	for(;f<2; f+=0.2)
 	{
 		denoising dict(mesh, phi, m, M, f, learn,0); 	
 		error = dict.execute();
