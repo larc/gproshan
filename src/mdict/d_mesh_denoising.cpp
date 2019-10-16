@@ -9,22 +9,21 @@ namespace gproshan::mdict {
 
 void test_mesh_denoising(string file)
 {
-	file.c_str();
-	mesh.load_mesh(file.c_str(););
+	che_off mesh(file.c_str());
 
-	/*
-	size_t n; // dct
-	size_t m, M;
-	distance_t f;
-	bool learn;
+	size_t n = 4; 
+	size_t m = 16;
+	size_t M = 0;
+	distance_t f = 1;
+	bool learn = 0;
 
-	gproshan_input(n m M f learn);
-	cin >> n >> m >> M >> f >> learn;
+//	gproshan_input(n m M f learn);
+//	cin >> n >> m >> M >> f >> learn;
     basis * phi = new basis_dct(n);
-	denoising dict(viewer::mesh(), phi, m, M, f, learn);
+	denoising dict(mesh, phi, m, M, f, learn);
 	dict.execute();
 	
-	delete phi;*/
+	delete phi;
 }
 
 

@@ -3,6 +3,8 @@
 
 #include "mdict/denoising.h"
 #include "che_off.h"
+#include "mdict/denoising.h"
+#include "mdict/d_basis_dct.h"
 
 
 // geometry processing and shape analysis framework
