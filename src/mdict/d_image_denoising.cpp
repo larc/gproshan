@@ -10,18 +10,20 @@ using namespace cimg_library;
 namespace gproshan::mdict {
 
 
-void test_image_denoising(string file)
+void test_image_denoising(const string & file)
 {
-	CImg<double> image(file.c_str());
+	CImg<real_t> image(file.c_str());
 	image.resize(128, 128);
+	image = image.get_normalize(0, 1);
 
-	size_t p = 8;
+	size_t p = 8;							// square side of each patche
 	size_t rows = image.width() - p + 1;
-	size_t cols = image.height() - p + 1;
-	size_t n = p * p;
-	size_t m = 256;
-	size_t M = rows * cols;
-	size_t L = 8;
+	size_t cols = image.height() - p + 1;	
+	size_t n = p * p;						// size of each patche
+	size_t m = 256;							// number of atoms
+	size_t M = rows * cols;					// number of patches
+	size_t L = 10;							// sparsity OMP norm L_0
+	size_t K = 10;							// KSVD iterations
 
 	a_mat X(n, M);
 
@@ -38,22 +40,41 @@ void test_image_denoising(string file)
 			k++;
 		}
 	}
+	
+	a_mat D(n, m, arma::fill::randu);
+	D = normalise(D);
+	
+	CImgList<real_t> imlist;
+	for(index_t i = 0; i < p; i++)
+		imlist.push_back(CImg<real_t>(D.colptr(i), p, p, 1, 1, true));
+	imlist.display();
 
-	a_mat D(n, m);
-	D.randu();
+	gproshan_log(KSVD);
 
-	double time = omp_get_wtime();
+	double time;
 
-//	KSVD(D, X, L);
-
-	time = omp_get_wtime() - time;
-	cout << "time KSVD: " << time << endl;
+	TIC(time)
+	KSVD(D, X, L, K);
+	TOC(time)
+	
+	gproshan_log_var(time);
+	
+	imlist.clear();
+	for(index_t i = 0; i < p; i++)
+		imlist.push_back(CImg<real_t>(D.colptr(i), p, p, 1, 1, true));
+	imlist.display();
 
 	a_mat alpha(m, M);
 
+	gproshan_log(OMP);
+
+	TIC(time)
 	#pragma omp parallel for
 	for(index_t i = 0; i < M; i++)
 		alpha.col(i) = OMP(X.col(i), D, L);
+	TOC(time)
+	
+	gproshan_log_var(time);
 
 	a_mat Y = D * alpha;
 

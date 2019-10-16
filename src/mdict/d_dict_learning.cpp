@@ -40,42 +40,36 @@ a_vec OMP(const a_vec & x, const a_mat & D, const size_t & L)
 	return alpha;
 }
 
-void KSVD(a_mat & D, a_mat & X, size_t L)
+void KSVD(a_mat & D, const a_mat & X, const size_t & L, size_t k)
 {
-//	size_t n = X.n_rows;
 	size_t m = D.n_cols;
 	size_t M = X.n_cols;
 
 	a_mat alpha(m, M);
+	
+	arma::uvec omega;
+	a_mat R, E, U, V;
+	a_vec s;
 
-	size_t iter = L;
-	while(iter--)
+	while(k--)
 	{
 		#pragma omp parallel for
 		for(index_t i = 0; i < M; i++)
 			alpha.col(i) = OMP(X.col(i), D, L);
+		
+		R = X - D * alpha;
 
-		#pragma omp parallel for
+		#pragma omp parallel for private(omega, E, U, V, s)
 		for(index_t j = 0; j < m; j++)
 		{
 			arma::uvec omega = find(abs(alpha.row(j)) > 0);
 			if(omega.n_elem)
 			{
-				a_mat E = X - D * alpha - D.col(j) * alpha.row(j);
+				E = R + D.col(j) * alpha.row(j);
 				E = E.cols(omega);
-				a_mat U;
-				a_vec s;
-				a_mat V;
 				svd(U, s, V, E);
 				D.col(j) = U.col(0);
-				a_rowvec a = alpha.row(j);
-
-//				assert(a.n_elem == omega.n_elem);
-				a.elem(omega) = s(0) * V.col(0);
-				alpha.row(j) = a;
 			}
-			//else
-			//	D.col(j).randu();
 		}
 	}
 }
