@@ -57,6 +57,7 @@ endif(CUDA_FOUND)
 add_executable(gproshan gproshan.cpp)
 add_executable(test_geodesics test_geodesics.cpp)
 add_executable(test_image_denoising test_image_denoising.cpp)
+add_executable(test_mesh_denoising test_mesh_denoising.cpp)
 
 target_link_libraries(gproshan gproshan_cpp)
 target_link_libraries(gproshan ${OpenMP_CXX_LIBRARIES})
@@ -79,14 +80,24 @@ target_link_libraries(test_image_denoising ${ARMADILLO_LIBRARIES})
 target_link_libraries(test_image_denoising CGAL::CGAL)
 target_link_libraries(test_image_denoising ${SuiteSparse_LIBRARIES})
 
+target_link_libraries(test_mesh_denoising gproshan_cpp)
+target_link_libraries(test_mesh_denoising ${X11_X11_LIB})
+target_link_libraries(test_mesh_denoising ${OpenMP_CXX_LIBRARIES})
+target_link_libraries(test_mesh_denoising ${ARMADILLO_LIBRARIES})
+target_link_libraries(test_mesh_denoising CGAL::CGAL)
+target_link_libraries(test_mesh_denoising ${SuiteSparse_LIBRARIES})
+
 if(CUDA_FOUND)
 	target_link_libraries(gproshan gproshan_cu)
 	target_link_libraries(test_geodesics gproshan_cu)
 	target_link_libraries(test_image_denoising gproshan_cu)
+	target_link_libraries(test_mesh_denoising gproshan_cu)
 
 	target_link_libraries(gproshan ${CUDA_LIBRARIES} ${CUDA_cublas_LIBRARY} ${CUDA_cusolver_LIBRARY} ${CUDA_cusparse_LIBRARY})
 	target_link_libraries(test_geodesics ${CUDA_LIBRARIES} ${CUDA_cublas_LIBRARY} ${CUDA_cusolver_LIBRARY} ${CUDA_cusparse_LIBRARY})
 	target_link_libraries(test_image_denoising ${CUDA_LIBRARIES} ${CUDA_cublas_LIBRARY} ${CUDA_cusolver_LIBRARY} ${CUDA_cusparse_LIBRARY})
+	target_link_libraries(test_mesh_denoising ${CUDA_LIBRARIES} ${CUDA_cublas_LIBRARY} ${CUDA_cusolver_LIBRARY} ${CUDA_cusparse_LIBRARY})
+
 endif(CUDA_FOUND)
 
 file(MAKE_DIRECTORY tmp)

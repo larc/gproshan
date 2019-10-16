@@ -64,7 +64,7 @@ class dictionary
 							const fmask_t & mask = nullptr
 							);
 
-		void mesh_reconstruction();
+		distance_t mesh_reconstruction();
 		void update_alphas(a_mat & alpha, size_t threshold);
 
 		index_t sample(const index_t & s);

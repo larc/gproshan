@@ -1,4 +1,4 @@
-#include "d_mesh_denoising.h"
+#include "mdict/d_mesh_denoising.h"
 
 
 
@@ -16,13 +16,19 @@ void test_mesh_denoising(string file)
 	size_t M = 0;
 	distance_t f = 1;
 	bool learn = false;
-
+	distance_t error;
 //	gproshan_input(n m M f learn);
 //	cin >> n >> m >> M >> f >> learn;
     basis * phi = new basis_dct(n);
-	denoising dict(mesh, phi, m, M, f, learn);
-	dict.execute();
-	
+
+	ofstream os("../tmp/test_mesh.txt");
+	for(;f<1.3; f+=0.1)
+	{
+		denoising dict(mesh, phi, m, M, f, learn,0); 	
+		error = dict.execute();
+		os<< f << "\t"<<error<<endl;
+	}
+	os.close();
 	delete phi;
 }
 

@@ -24,8 +24,10 @@ distance_t denoising::execute()
 	TIC(d_time) sparse_coding(); TOC(d_time)
 	gproshan_debug_var(d_time);
 
-	TIC(d_time) mesh_reconstruction(); TOC(d_time)
+	TIC(d_time) 
+	distance_t error = mesh_reconstruction(); TOC(d_time)
 	gproshan_debug_var(d_time);
+	return error;
 }
 
 
