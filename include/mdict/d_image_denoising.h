@@ -9,7 +9,7 @@
 namespace gproshan::mdict {
 
 
-void test_image_denoising(string file);
+void test_image_denoising(const string & file);
 
 
 } // namespace gproshan::mdict

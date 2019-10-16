@@ -10,7 +10,7 @@ using namespace cimg_library;
 namespace gproshan::mdict {
 
 
-void test_image_denoising(string file)
+void test_image_denoising(const string & file)
 {
 	CImg<real_t> image(file.c_str());
 	image.resize(128, 128);
@@ -40,29 +40,40 @@ void test_image_denoising(string file)
 		}
 	}
 	
-	a_mat D(n, m);
-	D.randu();
+	a_mat D(n, m, arma::fill::randu);
 	D = normalise(D);
 	
 	CImgList<real_t> imlist;
-	for(index_t i = 0; i < m; i++)
+	for(index_t i = 0; i < p; i++)
 		imlist.push_back(CImg<real_t>(D.colptr(i), p, p, 1, 1, true));
 	imlist.display();
 
-	double time = omp_get_wtime();
+	gproshan_log(KSVD);
 
-//	KSVD(D, X, L, 10);
+	double time;
 
-	time = omp_get_wtime() - time;
-	cout << "time KSVD: " << time << endl;
+	TIC(time)
+	KSVD(D, X, L, 10);
+	TOC(time)
 	
+	gproshan_log_var(time);
+	
+	imlist.clear();
+	for(index_t i = 0; i < p; i++)
+		imlist.push_back(CImg<real_t>(D.colptr(i), p, p, 1, 1, true));
 	imlist.display();
 
 	a_mat alpha(m, M);
 
+	gproshan_log(OMP);
+
+	TIC(time)
 	#pragma omp parallel for
-	for(index_t i = 0; i < M; i++)
+	for(index_t i = 0; i < 64; i++)
 		alpha.col(i) = OMP(X.col(i), D, L);
+	TOC(time)
+	
+	gproshan_log_var(time);
 
 	a_mat Y = D * alpha;
 
@@ -98,7 +109,7 @@ void test_image_denoising(string file)
 	}
 
 	CImg<double> diff = abs(image - image_out);
-	(image * 255, image_out * 255, diff * 255).display();
+	(image, image_out, diff).display();
 }
 
 

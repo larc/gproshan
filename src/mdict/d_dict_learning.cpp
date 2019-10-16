@@ -66,7 +66,7 @@ void KSVD(a_mat & D, const a_mat & X, const size_t & L, size_t k)
 			arma::uvec omega = find(abs(alpha.row(j)) > 0);
 			if(omega.n_elem)
 			{
-				E = R - D.col(j) * alpha.row(j);
+				E = R + D.col(j) * alpha.row(j);
 				E = E.cols(omega);
 				svd(U, s, V, E);
 				D.col(j) = U.col(0);
