@@ -52,8 +52,6 @@ void KSVD(a_mat & D, const a_mat & X, const size_t & L, size_t k)
 
 	while(k--)
 	{
-		gproshan_log_var(k);
-
 		#pragma omp parallel for
 		for(index_t i = 0; i < M; i++)
 			alpha.col(i) = OMP(X.col(i), D, L);

@@ -16,13 +16,14 @@ void test_image_denoising(const string & file)
 	image.resize(128, 128);
 	image = image.get_normalize(0, 1);
 
-	size_t p = 8;
+	size_t p = 8;							// square side of each patche
 	size_t rows = image.width() - p + 1;
-	size_t cols = image.height() - p + 1;
-	size_t n = p * p;
-	size_t m = 256;
-	size_t M = rows * cols;
-	size_t L = 10;
+	size_t cols = image.height() - p + 1;	
+	size_t n = p * p;						// size of each patche
+	size_t m = 256;							// number of atoms
+	size_t M = rows * cols;					// number of patches
+	size_t L = 10;							// sparsity OMP norm L_0
+	size_t K = 10;							// KSVD iterations
 
 	a_mat X(n, M);
 
@@ -53,7 +54,7 @@ void test_image_denoising(const string & file)
 	double time;
 
 	TIC(time)
-	KSVD(D, X, L, 10);
+	KSVD(D, X, L, K);
 	TOC(time)
 	
 	gproshan_log_var(time);
@@ -69,7 +70,7 @@ void test_image_denoising(const string & file)
 
 	TIC(time)
 	#pragma omp parallel for
-	for(index_t i = 0; i < 64; i++)
+	for(index_t i = 0; i < M; i++)
 		alpha.col(i) = OMP(X.col(i), D, L);
 	TOC(time)
 	
