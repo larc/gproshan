@@ -17,12 +17,11 @@ void test_mesh_denoising(string file)
 	distance_t f = 1;
 	bool learn = false;
 	distance_t error;
-//	gproshan_input(n m M f learn);
-//	cin >> n >> m >> M >> f >> learn;
+	dictionary::L = 25;
     basis * phi = new basis_dct(n);
 
 	ofstream os("../tmp/test_mesh.txt");
-	for(;f<2; f+=0.2)
+	for(;f<1.6; f+=0.2)
 	{
 		denoising dict(mesh, phi, m, M, f, learn,0); 	
 		error = dict.execute();
