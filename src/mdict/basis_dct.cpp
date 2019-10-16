@@ -1,4 +1,4 @@
-#include "d_basis_dct.h"
+#include "basis_dct.h"
 
 #include <cassert>
 

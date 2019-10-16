@@ -20,7 +20,7 @@
 #include "mdict/denoising.h"
 #include "mdict/super_resolution.h"
 #include "mdict/inpainting.h"
-#include "mdict/d_basis_dct.h"
+#include "mdict/basis_dct.h"
 #include "mdict/patch.h"
 #include "key_points.h"
 #include "key_components.h"

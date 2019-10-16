@@ -1,4 +1,4 @@
-#include "d_basis_cosine.h"
+#include "basis_cosine.h"
 
 #include <cassert>
 

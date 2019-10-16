@@ -1,7 +1,7 @@
 #include "dictionary.h"
 
 #include "sampling.h"
-#include "d_dict_learning.h"
+#include "mdict.h"
 #include "che_poisson.h"
 #include "che_fill_hole.h"
 

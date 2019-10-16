@@ -3,8 +3,8 @@
 
 #include "che.h"
 #include "patch.h"
-#include "d_dict_learning.h"
-#include "d_basis.h"
+#include "mdict.h"
+#include "basis.h"
 #include "d_mesh.h"
 
 #include "include_arma.h"

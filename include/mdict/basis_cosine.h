@@ -1,7 +1,7 @@
-#ifndef D_BASIS_COSSINE_H
-#define D_BASIS_COSSINE_H
+#ifndef BASIS_COSSINE_H
+#define BASIS_COSSINE_H
 
-#include "d_basis.h"
+#include "basis.h"
 
 
 // geometry processing and shape analysis framework
@@ -29,5 +29,5 @@ class basis_cosine: public basis
 
 } // namespace gproshan::mdict
 
-#endif // D_BASIS_COSSINE_H
+#endif // BASIS_COSSINE_H
 
