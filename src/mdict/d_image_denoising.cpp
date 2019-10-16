@@ -44,10 +44,16 @@ void test_image_denoising(const string & file)
 	a_mat D(n, m, arma::fill::randu);
 	D = normalise(D);
 	
-	CImgList<real_t> imlist;
-	for(index_t i = 0; i < p; i++)
-		imlist.push_back(CImg<real_t>(D.colptr(i), p, p, 1, 1, true));
-	imlist.display();
+	CImg<real_t> imdict;
+	for(index_t i = 0; i < 16; i++)
+	{
+		CImg<real_t> imrow;
+		for(index_t j = 0; j < 16; j++)
+			imrow.append(CImg<real_t>(D.colptr(i * 16 + j), p, p, 1, 1, true), 'x');
+
+		imdict.append(imrow, 'y');
+	}
+	imdict.display();
 
 	gproshan_log(KSVD);
 
@@ -59,10 +65,16 @@ void test_image_denoising(const string & file)
 	
 	gproshan_log_var(time);
 	
-	imlist.clear();
-	for(index_t i = 0; i < p; i++)
-		imlist.push_back(CImg<real_t>(D.colptr(i), p, p, 1, 1, true));
-	imlist.display();
+	CImg<real_t> imdictlearned;
+	for(index_t i = 0; i < 16; i++)
+	{
+		CImg<real_t> imrow;
+		for(index_t j = 0; j < 16; j++)
+			imrow.append(CImg<real_t>(D.colptr(i * 16 + j), p, p, 1, 1, true), 'x');
+
+		imdictlearned.append(imrow, 'y');
+	}
+	(imdict, imdictlearned).display();
 
 	a_mat alpha(m, M);
 
