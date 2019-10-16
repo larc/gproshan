@@ -15,7 +15,7 @@ namespace gproshan::mdict {
 
 a_vec OMP(const a_vec & x, const a_mat & D, const size_t & L);
 
-void KSVD(a_mat & D, a_mat & X, size_t L);
+void KSVD(a_mat & D, const a_mat & X, const size_t & L, size_t k);
 
 void OMP_patch(a_mat & alpha, const a_mat & A, const index_t & i, patch & p, const size_t & L);
 
