@@ -9,13 +9,13 @@ namespace gproshan::mdict {
 
 void test_mesh_denoising(string file)
 {
-	che_off mesh(file.c_str());
+	che * mesh = new  che_off(file.c_str());
 
 	size_t n = 4; 
 	size_t m = 16;
 	size_t M = 0;
 	distance_t f = 1;
-	bool learn = 0;
+	bool learn = false;
 
 //	gproshan_input(n m M f learn);
 //	cin >> n >> m >> M >> f >> learn;
