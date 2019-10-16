@@ -17,7 +17,7 @@ class inpainting : public dictionary
 		inpainting(che *const & _mesh, basis *const & _phi_basis, const size_t & _m, const size_t & _M, const distance_t & _f, const bool & _learn, const bool & _plot = true);
 		virtual ~inpainting() = default;
 
-		void execute();
+		distance_t execute();
 };
 
 

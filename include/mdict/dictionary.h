@@ -55,7 +55,7 @@ class dictionary
 
 		virtual ~dictionary();
 
-		virtual void execute() = 0;
+		virtual distance_t execute() = 0;
 
 		void learning();
 		void sparse_coding();

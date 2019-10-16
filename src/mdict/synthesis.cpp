@@ -10,7 +10,7 @@ synthesis::synthesis(che *const & _mesh, basis *const & _phi_basis, const size_t
 {
 }
 
-void synthesis::execute()
+distance_t synthesis::execute()
 {
 	TIC(d_time) init_sampling(); TOC(d_time)
 	gproshan_debug_var(d_time);

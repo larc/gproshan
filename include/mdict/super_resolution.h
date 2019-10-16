@@ -15,7 +15,7 @@ class super_resolution : public dictionary
 		super_resolution(che *const & _mesh, basis *const & _phi_basis, const size_t & _m, const size_t & _M, const distance_t & _f, const bool &_learn, const bool & _plot = true);
 		virtual ~super_resolution() = default;
 
-		void execute();
+		distance_t execute();
 };
 
 

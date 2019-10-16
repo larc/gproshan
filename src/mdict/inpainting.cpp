@@ -10,7 +10,7 @@ inpainting::inpainting(che *const & _mesh, basis *const & _phi_basis, const size
 {
 }
 
-void inpainting::execute()
+distance_t inpainting::execute()
 {
 	// fill holes
 	size_t threshold = mesh->n_vertices();

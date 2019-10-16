@@ -241,7 +241,7 @@ void partial_mesh_reconstruction(size_t old_n_vertices, che * mesh, size_t M, ve
 
 }
 
-void mesh_reconstruction(che * mesh, size_t M, vector<patch> & patches, vector<vpatches_t> & patches_map, a_mat & A, a_mat & alpha, const index_t & v_i)
+distance_t mesh_reconstruction(che * mesh, size_t M, vector<patch> & patches, vector<vpatches_t> & patches_map, a_mat & A, a_mat & alpha, const index_t & v_i)
 {
 	a_mat V(3, mesh->n_vertices(), arma::fill::zeros);
 
@@ -292,6 +292,7 @@ void mesh_reconstruction(che * mesh, size_t M, vector<patch> & patches, vector<v
 	gproshan_debug_var(v_i);
 	mesh->set_vertices(new_vertices + v_i, mesh->n_vertices() - v_i, v_i);
 	che_off::write_file(mesh,"../tmp/recon_mesh");
+	return error;
 }
 
 a_vec non_local_means_vertex(a_mat & alpha, const index_t & v, vector<patch> & patches, vector<vpatches_t> & patches_map, const distance_t & h)

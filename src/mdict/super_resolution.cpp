@@ -10,7 +10,7 @@ super_resolution::super_resolution(che *const & _mesh, basis *const & _phi_basis
 {
 }
 
-void super_resolution::execute()
+distance_t super_resolution::execute()
 {
 	TIC(d_time) init_sampling(); TOC(d_time)
 	gproshan_debug_var(d_time);
