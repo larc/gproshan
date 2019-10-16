@@ -1,4 +1,4 @@
-#include "d_dict_learning.h"
+#include "mdict.h"
 #include "sampling.h"
 
 #include <cmath>

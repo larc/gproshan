@@ -2,8 +2,8 @@
 #define D_MESH_DENOISING_H
 
 #include "mdict/denoising.h"
+
 #include "che_off.h"
-#include "mdict/d_basis_dct.h"
 
 
 // geometry processing and shape analysis framework
@@ -11,7 +11,7 @@
 namespace gproshan::mdict {
 
 
-void test_mesh_denoising(string file);
+void test_mesh_denoising(const string & file);
 
 
 } // namespace gproshan::mdict

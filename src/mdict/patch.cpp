@@ -233,12 +233,12 @@ void patch::jet_fit_directions(che * mesh, const index_t & v)
 
 real_t patch::get_min_z()
 {
-	return  xyz.row(2).min();
+	return xyz.row(2).min();
 }
 
 real_t patch::get_max_z()
 {
-	return  xyz.row(2).max();
+	return xyz.row(2).max();
 }
 
 void patch::update_heights(real_t & min, real_t & max, bool flag)
@@ -248,7 +248,7 @@ void patch::update_heights(real_t & min, real_t & max, bool flag)
 	{
 		for(index_t i = 0; i < xyz.n_cols; i++)
 			{
-				xyz(2, i) = (xyz(2, i) - min)  / (max - min);
+				xyz(2, i) = (xyz(2, i) - min) / (max - min);
 			}
 	}	
 	else

@@ -1,5 +1,6 @@
 #include "mdict/d_mesh_denoising.h"
 
+#include "mdict/basis_dct.h"
 
 
 // geometry processing and shape analysis framework
@@ -7,9 +8,9 @@
 namespace gproshan::mdict {
 
 
-void test_mesh_denoising(string file)
+void test_mesh_denoising(const string & file)
 {
-	che * mesh = new  che_off(file.c_str());
+	che * mesh = new che_off(file.c_str());
 
 	size_t n = 4; 
 	size_t m = 16;
@@ -18,11 +19,11 @@ void test_mesh_denoising(string file)
 	bool learn = false;
 	distance_t error;
 	//dictionary::L = 20;
-    basis * phi = new basis_dct(n);
+ basis * phi = new basis_dct(n);
 
 	ofstream os("../tmp/test.txt");
 
-	for(;f<1.5; f+=0.1)
+	for(; f<1.5; f+=0.1)
 	{
 		os<< f ;
 		for(size_t i = 10; i<26; i+=5)
@@ -34,10 +35,11 @@ void test_mesh_denoising(string file)
 		}
 		cout<<endl;
 	}
+
 	os.close();
-	file = tmp_file_path("test_mesh.gp");
-	file = "gnuplot -persist " + file + " &";
-	system(file.c_str());
+	
+	system("gnuplot -persist test_mdict.gp &");
+	
 	delete phi;
 }
 

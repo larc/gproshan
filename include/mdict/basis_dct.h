@@ -1,7 +1,7 @@
-#ifndef D_BASIS_DCT_H
-#define D_BASIS_DCT_H
+#ifndef BASIS_DCT_H
+#define BASIS_DCT_H
 
-#include "d_basis.h"
+#include "basis.h"
 
 
 // geometry processing and shape analysis framework
@@ -28,5 +28,5 @@ class basis_dct: public basis
 
 } // namespace gproshan::mdict
 
-#endif // D_BASIS_DCT_H
+#endif // BASIS_DCT_H
 
