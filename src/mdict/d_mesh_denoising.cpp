@@ -19,11 +19,14 @@ void test_mesh_denoising(const string & file)
 	bool learn = false;
 	distance_t error;
 	//dictionary::L = 20;
- basis * phi = new basis_dct(n);
+	basis * phi = new basis_dct(n);
 
+	denoising dict(mesh, phi, m, M, f, learn,0);
+	dict.execute(); 
+/*
 	ofstream os("../tmp/test.txt");
 
-	for(; f<1.5; f+=0.1)
+	for(; f<1.4; f+=0.1)
 	{
 		os<< f ;
 		for(size_t i = 10; i<26; i+=5)
@@ -39,7 +42,7 @@ void test_mesh_denoising(const string & file)
 	os.close();
 	
 	system("gnuplot -persist test_mdict.gp &");
-	
+	*/
 	delete phi;
 }
 
