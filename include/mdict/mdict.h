@@ -13,6 +13,24 @@
 namespace gproshan::mdict {
 
 
+// SPARSE
+
+struct locval_t
+{
+	arma::uword i, j;
+	real_t val;
+
+	bool operator < (const locval_t & lc);
+};
+
+void OMP(vector<locval_t> & alpha, const a_vec & x, const index_t & i, const a_mat & D, const size_t & L);
+
+void sp_KSVD(a_mat & D, const a_mat & X, const size_t & L, size_t k);
+
+// DENSE
+
+tuple<a_vec, arma::uvec> _OMP(const a_vec & x, const a_mat & D, const size_t & L);
+
 a_vec OMP(const a_vec & x, const a_mat & D, const size_t & L);
 
 void KSVD(a_mat & D, const a_mat & X, const size_t & L, size_t k);
