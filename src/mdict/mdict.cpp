@@ -227,59 +227,6 @@ void KSVDT(a_mat & A, vector<patch> & patches, size_t M, size_t L)
 	}
 }
 
-void OMP_patch(a_mat & alpha, const a_mat & A, const index_t & i, patch_t & p, const size_t & L)
-{
-	alpha.col(i) = OMP(p.xyz.row(2).t(), p.phi * A, L);
-}
-
-void OMP_all_patches_ksvt(a_mat & alpha, a_mat & A, vector<patch_t> & patches, size_t M, size_t L)
-{
-	#pragma omp parallel for
-	for(index_t i = 0; i < M; i++)
-		if(patches[i].valid_xyz())
-			OMP_patch(alpha, A, i, patches[i], L);
-}
-
-void KSVDT(a_mat & A, vector<patch_t> & patches, size_t M, size_t L)
-{
-	size_t K = A.n_rows;
-	size_t m = A.n_cols;
-
-	a_mat alpha(m, M);
-
-	size_t iter = L;
-	while(iter--)
-	{
-		OMP_all_patches_ksvt(alpha, A, patches, M, L);
-
-		#pragma omp parallel for
-		for(index_t j = 0; j < m; j++)
-		{
-			arma::uvec omega = find(abs(alpha.row(j)) > 0);
-
-			a_mat sum(K, K, arma::fill::zeros);
-			a_vec sum_error(K, arma::fill::zeros);
-
-			for(arma::uword o: omega)
-			{
-				sum += alpha(j, o) * patches[o].phi.t() * patches[o].phi;
-
-				a_mat D = patches[o].phi * A;
-				D.col(j).zeros();
-				a_mat e = patches[o].xyz.row(2).t() - D * alpha.col(o);
-
-				sum_error += alpha(j, o) * patches[o].phi.t() * e;
-			}
-			if(omega.size())
-			{
-				a_vec X;
-				solve(X, sum, sum_error);
-				A.col(j) = X;
-			}
-		}
-	}
-}
-
 
 } // namespace gproshan::mdict
 
