@@ -2,7 +2,8 @@
 #define D_HYBRID_DENOISING_H
 
 #include "mdict.h"
-
+#include "che_off.h"
+#include "che_img.h"
 
 // geometry processing and shape analysis framework
 // mesh dictionary learning and sparse coding namespace

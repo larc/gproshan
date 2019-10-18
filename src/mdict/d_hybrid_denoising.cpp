@@ -14,11 +14,14 @@ void test_hybrid_denoising(const string & file)
 {
 	CImg<real_t> image(file.c_str());
 	image.resize(128, 128);
+	image.save("../tmp/image_128.jpg");
 	image = image.get_normalize(0, 1);
 
 	size_t p = 8;							// square side of each patche
 	size_t rows = image.width() - p + 1;
+	size_t r = image.width();
 	size_t cols = image.height() - p + 1;	
+	size_t c = image.height();
 	size_t n = p * p;						// size of each patche
 	size_t m = 256;							// number of atoms
 	size_t M = rows * cols;					// number of patches
@@ -26,7 +29,9 @@ void test_hybrid_denoising(const string & file)
 	size_t K = 10;							// KSVD iterations
 
 	a_mat X(n, M);
-
+	che * mesh = new che_img(file.c_str());
+	che_off::write_file(mesh,"../tmp/image_128");
+/*
 	for(index_t x = 0; x < rows; x++)
 	for(index_t y = 0; y < cols; y++)
 	{
@@ -39,8 +44,34 @@ void test_hybrid_denoising(const string & file)
 			X(k, i) = image(a, b);
 			k++;
 		}
+
+	}
+*/
+/*
+	ofstream os("../tmp/mesh.off");
+	os << "OFF" << endl;
+	os << r * c << " " << (c - 1) * 2 *(r - 1) << " 0" << endl;
+	size_t i;
+	for(index_t x = 0; x < r; x++)
+	for(index_t y = 0; y < c; y++)
+	{
+		os<< x << " " << y << " " <<  image(x, y) << endl;
+	}
+	for(index_t x = 0; x < r-1; x++)
+	{
+		i = x * c;
+		for(index_t y = 0; y < c-1; y++)
+		{
+			
+			os<< "3 " << i+1 << " " << i+1+1 << " " <<  i+c +1<< endl;
+			os<< "3 " << i+1+1 << " " << i +1 +c +1 <<" " <<  i+c+1 << endl;
+			i++;
+
+		}
 	}
 	
+	os.close();*/
+	/*
 	a_mat D(n, m, arma::fill::randu);
 	D = normalise(D);
 	
@@ -122,7 +153,8 @@ void test_hybrid_denoising(const string & file)
 	}
 
 	CImg<double> diff = abs(image - image_out);
-	(image, image_out, diff).display();
+	(image, image_out, diff).display();*/
+	(image).display();
 }
 
 
