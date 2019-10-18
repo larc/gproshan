@@ -5,10 +5,6 @@ doc/*
 tmp/*
 *.swp
 *.swo
-.vscode/*
-
-gproshan
-test_geodesics
-test_geodesics_double
-
 *.user
+.vscode/*
+.DS_Store
