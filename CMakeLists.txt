@@ -26,6 +26,9 @@ set(THREADS_PREFER_PTHREAD_FLAG ON)
 
 add_definitions(${EIGEN3_DEFINITIONS})
 
+# ARMA warning ARMA_ALLOW_FAKE_GCC with g++-9
+add_definitions(-DARMA_ALLOW_FAKE_GCC)
+
 if(CUDA_FOUND)
 	include_directories(${CUDA_INCLUDE_DIRS})
 endif(CUDA_FOUND)
