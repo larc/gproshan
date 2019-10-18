@@ -13,16 +13,16 @@ namespace gproshan::mdict {
 void test_hybrid_denoising(const string & file)
 {
 	CImg<real_t> image(file.c_str());
-	image.resize(6, 6);
+	image.resize(64, 64);
 	image.save("../tmp/image_128.jpg");
 	image = image.get_normalize(0, 1);
 
-	size_t p = 3;							// square side of each patche
+	size_t p = 8;							// square side of each patche
 	size_t rows = image.width() - p + 1;
 	size_t cols = image.height() - p + 1;
 	size_t col = image.height();	
 	size_t n = p * p;						// size of each patche
-	size_t m = 256;							// number of atoms
+	size_t m = 16;							// number of atoms
 	size_t M = rows * cols;					// number of patches
 	size_t L = 10;							// sparsity OMP norm L_0
 	size_t K = 10;							// KSVD iterations
@@ -33,16 +33,8 @@ void test_hybrid_denoising(const string & file)
 	std::vector<patch> patches;				///< vector of patches.
 	std::vector<vpatches_t> patches_map;		///< invert index vertex to patches.
 	patches.resize(M);
-//	patches_map.resize(n_vertices);
-/*
-	#pragma omp for 
-	for(index_t s = 0; s < M; s++)
-	{
-		// push back
-		// jet fit directions
-		patches[s].vertices
-	}
-	*/
+
+
 	index_t s = 0;
 
 	for(index_t x = 0; x < rows; x++)
@@ -57,10 +49,15 @@ void test_hybrid_denoising(const string & file)
 			cout<< a*col+b<<" ";
 			s++;
 		}
-		cout<<endl;
 	}
-
-
+/*
+	a_mat A;
+	a_mat alpha;
+	basis * phi = new basis_dct(n);
+	A.eye(n, m);
+	alpha.zeros(m, M);
+	//OMP_all_patches_ksvt(alpha, A, patches, M, L);
+*/
 	/*
 	a_mat D(n, m, arma::fill::randu);
 	D = normalise(D);

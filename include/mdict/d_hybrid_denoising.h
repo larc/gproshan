@@ -7,6 +7,7 @@
 #include "patch.h"
 #include "mdict.h"
 #include "basis.h"
+#include "basis_dct.h"
 #include "d_mesh.h"
 
 // geometry processing and shape analysis framework
