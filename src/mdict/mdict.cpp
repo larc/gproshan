@@ -41,11 +41,34 @@ void OMP(vector<locval_t> & alpha, const a_vec & x, const index_t & i, const a_m
 	}
 }
 
+a_sp_mat OMP_all(vector<locval_t> & locval, const a_mat & X, const a_mat & D, const size_t & L)
+{
+	locval.clear();
+
+	#pragma omp parallel for
+	for(index_t i = 0; i < X.n_cols; i++)
+		OMP(locval, X.col(i), i, D, L);
+
+	arma::umat DI(2, locval.size());
+	a_vec DV(locval.size());
+
+	#pragma omp parallel for
+	for(index_t k = 0; k < locval.size(); k++)
+	{
+		DI(0, k) = locval[k].i; // row
+		DI(1, k) = locval[k].j; // column
+		DV(k) = locval[k].val;
+	}
+
+	return a_sp_mat(DI, DV, D.n_cols, X.n_cols);
+}
+
 void sp_KSVD(a_mat & D, const a_mat & X, const size_t & L, size_t k)
 {
 	size_t m = D.n_cols;
 	size_t M = X.n_cols;
 
+	arma::uvec omega(M);
 	a_mat R, E, U, V;
 	a_vec s;
 
@@ -55,10 +78,8 @@ void sp_KSVD(a_mat & D, const a_mat & X, const size_t & L, size_t k)
 
 	while(k--)
 	{
-		#pragma omp parallel for
-		for(index_t i = 0; i < M; i++)
-			OMP(locval, X.col(i), i, D, L);
-	
+		a_sp_mat alpha = OMP_all(locval, X, D, L);
+		
 		sort(locval.begin(), locval.end());
 
 		rows[r = 0] = 0;
@@ -67,33 +88,19 @@ void sp_KSVD(a_mat & D, const a_mat & X, const size_t & L, size_t k)
 				rows[++r] = k;
 		
 		rows[++r] = locval.size();
-
-		arma::umat DI(2, locval.size());
-		a_vec DV(locval.size());
-	
-		#pragma omp parallel for
-		for(index_t k = 0; k < locval.size(); k++)
-		{
-			DI(0, k) = locval[k].i; // row
-			DI(1, k) = locval[k].j; // column
-			DV(k) = locval[k].val;
-		}
-
-		a_sp_mat alpha(DI, DV, m, M);
 		
 		R = X - D * alpha;
 
-		//#pragma omp parallel for private(E, U, V, s)
+		#pragma omp parallel for firstprivate(omega, E, U, V, s)
 		for(index_t j = 0; j < m; j++)
 		{
-			arma::uvec omega(rows[j + 1] - rows[j]);
 			for(index_t r = rows[j]; r < rows[j + 1]; r++)
 				omega(r - rows[j]) = locval[r].j;
 
-			if(omega.n_elem)
+			if(rows[j + 1] - rows[j])
 			{
 				E = R + D.col(j) * alpha.row(j);
-				E = E.cols(omega);
+				E = E.cols(omega.head(rows[j + 1] - rows[j]));
 				svd(U, s, V, E);
 				D.col(j) = U.col(0);
 			}
@@ -141,29 +148,33 @@ a_vec OMP(const a_vec & x, const a_mat & D, const size_t & L)
 	return alpha;
 }
 
+a_mat OMP_all(const a_mat & X, const a_mat & D, const size_t & L)
+{
+	a_mat alpha(D.n_cols, X.n_cols);
+
+	#pragma omp parallel for
+	for(index_t i = 0; i < X.n_cols; i++)
+		alpha.col(i) = OMP(X.col(i), D, L);
+
+	return alpha;
+}
+
 void KSVD(a_mat & D, const a_mat & X, const size_t & L, size_t k)
 {
-	size_t m = D.n_cols;
-	size_t M = X.n_cols;
-
-	a_mat alpha(m, M);
-	
 	arma::uvec omega;
-	a_mat R, E, U, V;
+	a_mat alpha, R, E, U, V;
 	a_vec s;
 
 	while(k--)
 	{
-		#pragma omp parallel for
-		for(index_t i = 0; i < M; i++)
-			alpha.col(i) = OMP(X.col(i), D, L);
-		
+		alpha = OMP_all(X, D, L);
+
 		R = X - D * alpha;
 
 		#pragma omp parallel for private(omega, E, U, V, s)
-		for(index_t j = 0; j < m; j++)
+		for(index_t j = 0; j < D.n_cols; j++)
 		{
-			arma::uvec omega = find(abs(alpha.row(j)) > 0);
+			omega = find(abs(alpha.row(j)) > 0);
 			if(omega.n_elem)
 			{
 				E = R + D.col(j) * alpha.row(j);
@@ -174,6 +185,8 @@ void KSVD(a_mat & D, const a_mat & X, const size_t & L, size_t k)
 		}
 	}
 }
+
+// MESH 
 
 void OMP_patch(a_mat & alpha, const a_mat & A, const index_t & i, patch & p, const size_t & L)
 {
