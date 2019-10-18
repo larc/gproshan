@@ -43,8 +43,6 @@ void test_image_denoising(const string & file)
 	
 	a_mat D(n, m, arma::fill::randu);
 	D = normalise(D);
-
-	a_mat spD = D;
 	
 	CImg<real_t> imdict;
 	for(index_t i = 0; i < 16; i++)
@@ -62,18 +60,10 @@ void test_image_denoising(const string & file)
 	double time;
 
 	TIC(time)
-	KSVD(D, X, L, K);
+	sp_KSVD(D, X, L, K);
 	TOC(time)
 	
 	gproshan_log_var(time);
-	
-	TIC(time)
-	sp_KSVD(spD, X, L, K);
-	TOC(time)
-	
-	gproshan_log_var(time);
-
-	gproshan_log_var(norm(D - spD));
 	
 	CImg<real_t> imdictlearned;
 	for(index_t i = 0; i < 16; i++)
@@ -86,23 +76,19 @@ void test_image_denoising(const string & file)
 	}
 	(imdict, imdictlearned).display();
 
+	a_mat alpha(m, M);
 
 	gproshan_log(OMP);
 
 	TIC(time)
-	a_mat Y = D * OMP_all(X, D, L);
-	TOC(time)
-	
-	gproshan_log_var(time);
-	
-	TIC(time)
-	vector<locval_t> locval;
-	a_mat spY = D * OMP_all(locval, X, D, L);
+	#pragma omp parallel for
+	for(index_t i = 0; i < M; i++)
+		alpha.col(i) = OMP(X.col(i), D, L);
 	TOC(time)
 	
 	gproshan_log_var(time);
 
-	gproshan_log_var(norm(Y - spY));
+	a_mat Y = D * alpha;
 
 	CImg<double> image_out = image;
 	image_out.fill(0);

@@ -25,8 +25,6 @@ struct locval_t
 
 void OMP(vector<locval_t> & alpha, const a_vec & x, const index_t & i, const a_mat & D, const size_t & L);
 
-a_sp_mat OMP_all(vector<locval_t> & locval, const a_mat & X, const a_mat & D, const size_t & L);
-
 void sp_KSVD(a_mat & D, const a_mat & X, const size_t & L, size_t k);
 
 // DENSE
@@ -34,8 +32,6 @@ void sp_KSVD(a_mat & D, const a_mat & X, const size_t & L, size_t k);
 tuple<a_vec, arma::uvec> _OMP(const a_vec & x, const a_mat & D, const size_t & L);
 
 a_vec OMP(const a_vec & x, const a_mat & D, const size_t & L);
-
-a_mat OMP_all(const a_mat & X, const a_mat & D, const size_t & L);
 
 void KSVD(a_mat & D, const a_mat & X, const size_t & L, size_t k);
 

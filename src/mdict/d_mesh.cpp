@@ -1,4 +1,5 @@
-#include "d_mesh.h"
+ #include "d_mesh.h"
+ #include "che_off.h"
 
 #ifndef CGAL_PATCH_DEFS
 	#define CGAL_PATCH_DEFS
@@ -240,10 +241,11 @@ void partial_mesh_reconstruction(size_t old_n_vertices, che * mesh, size_t M, ve
 
 }
 
-void mesh_reconstruction(che * mesh, size_t M, vector<patch> & patches, vector<vpatches_t> & patches_map, a_mat & A, a_mat & alpha, const index_t & v_i)
+distance_t mesh_reconstruction(che * mesh, size_t M, vector<patch> & patches, vector<vpatches_t> & patches_map, a_mat & A, a_mat & alpha, const index_t & v_i)
 {
 	a_mat V(3, mesh->n_vertices(), arma::fill::zeros);
 
+	//Returning to the original coordinates.
 	#pragma omp parallel for
 	for(index_t p = 0; p < M; p++)
 	{
@@ -259,12 +261,13 @@ void mesh_reconstruction(che * mesh, size_t M, vector<patch> & patches, vector<v
 	}
 
 	distance_t h = 0.2;
-
+	//Computes the weighted average of vertices
 	#pragma omp parallel for
 	for(index_t v = v_i; v < mesh->n_vertices(); v++)
 	{
 		if(patches_map[v].size())
-			V.col(v) = non_local_means_vertex(alpha, v, patches, patches_map, h);
+			V.col(v) = simple_means_vertex(v, patches, patches_map);
+			//V.col(v) = non_local_means_vertex(alpha, v, patches, patches_map, h);
 		else
 		{
 			V(0, v) = mesh->gt(v).x;
@@ -272,6 +275,7 @@ void mesh_reconstruction(che * mesh, size_t M, vector<patch> & patches, vector<v
 			V(2, v) = mesh->gt(v).z;
 		}
 	}
+
 	// ------------------------------------------------------------------------
 
 	vertex * new_vertices = (vertex *) V.memptr();
@@ -287,6 +291,8 @@ void mesh_reconstruction(che * mesh, size_t M, vector<patch> & patches, vector<v
 
 	gproshan_debug_var(v_i);
 	mesh->set_vertices(new_vertices + v_i, mesh->n_vertices() - v_i, v_i);
+	che_off::write_file(mesh,"../tmp/recon_mesh");
+	return error;
 }
 
 a_vec non_local_means_vertex(a_mat & alpha, const index_t & v, vector<patch> & patches, vector<vpatches_t> & patches_map, const distance_t & h)
@@ -357,6 +363,8 @@ void mesh_reconstruction(che * mesh, size_t M, vector<patch_t> & patches, vector
 			V(2, v) = mesh->gt(v).z;
 		}
 	}
+
+	
 	// ------------------------------------------------------------------------
 
 	vertex * new_vertices = (vertex *) V.memptr();
@@ -397,7 +405,6 @@ a_vec non_local_means_vertex(a_mat & alpha, const index_t & v, vector<patch_t> &
 		i++;
 	}
 
-	i = 0;
 	for(auto p: patches_map[v])
 	{
 		w[i] /= sum;
@@ -407,10 +414,10 @@ a_vec non_local_means_vertex(a_mat & alpha, const index_t & v, vector<patch_t> &
 
 	delete [] w;
 
-	return n_a_vec;
+	return n_a_vec/i;
 }
 
-a_vec simple_means_vertex(a_mat & alpha, const index_t & v, vector<patch_t> & patches, vector<patches_map_t> & patches_map, const distance_t & h)
+a_vec simple_means_vertex( const index_t & v, vector<patch> & patches, vector<vpatches_t> & patches_map)
 {
 	a_vec n_a_vec(3, arma::fill::zeros);
 

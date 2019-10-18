@@ -172,6 +172,8 @@ cholmod_sparse * arma_2_cholmod(const a_sp_mat & S, cholmod_common * context)
 
 double solve_positive_definite_gpu(a_mat & x, const a_sp_mat & A, const a_mat & b)
 {
+#ifdef CUDA_SUPPORT
+
 	int * hA_col_ptrs = new int[A.n_cols + 1];
 	int * hA_row_indices = new int[A.n_nonzero];
 	
@@ -189,6 +191,12 @@ double solve_positive_definite_gpu(a_mat & x, const a_sp_mat & A, const a_mat & 
 	delete [] hA_row_indices;
 
 	return solve_time;
+
+#else
+
+	return 0;
+
+#endif
 }
 
 

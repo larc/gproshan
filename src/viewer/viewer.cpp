@@ -120,7 +120,7 @@ void viewer::init_glut()
 	glutMouseFunc(mouse);
 	glutMotionFunc(motion);
 
-	glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_CONTINUE_EXECUTION);
+//	glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_CONTINUE_EXECUTION);
 }
 
 void viewer::init_menus()
@@ -326,7 +326,8 @@ void viewer::menu_save_mesh()
 void viewer::menu_exit()
 {
 //	storeviewerState();
-	glutLeaveMainLoop();
+//	glutLeaveMainLoop();
+	exit(0);
 }
 
 void viewer::menu_zoom_in()

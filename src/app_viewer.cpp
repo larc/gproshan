@@ -64,6 +64,7 @@ int viewer_main(int nargs, const char ** args)
 	viewer::add_process('D', "Denoising", viewer_process_denoising);
 	viewer::add_process('R', "Super Resolution", viewer_process_super_resolution);
 	viewer::add_process('I', "Inpainting", viewer_process_inpaiting);
+	viewer::add_process('s', "Synthesis", viewer_process_synthesis);
 	viewer::add_process('A', "IT Inpainting", viewer_process_iterative_inpaiting);
 
 	viewer::sub_menus.push_back("Signatures");
@@ -457,9 +458,9 @@ void viewer_process_denoising()
 	cin >> n >> m >> M >> f >> learn;
 
 	basis * phi = new basis_dct(n);
-	denoising dict(viewer::mesh(), phi, m, M, f);
+	denoising dict(viewer::mesh(), phi, m, M, f, learn);
 	dict.execute();
-
+	
 	delete phi;
 	viewer::mesh().update_normals();
 }
@@ -477,7 +478,7 @@ void viewer_process_super_resolution()
 	cin >> n >> m >> M >> f >> learn;
 
 	basis * phi = new basis_dct(n);
-	super_resolution dict(viewer::mesh(), phi, m, M, f);
+	super_resolution dict(viewer::mesh(), phi, m, M, f, learn);
 	dict.execute();
 
 	delete phi;
@@ -497,12 +498,34 @@ void viewer_process_inpaiting()
 	cin >> n >> m >> M >> f >> learn;
 
 	basis * phi = new basis_dct(n);
-	inpainting dict(viewer::mesh(), phi, m, M, f);
+	inpainting dict(viewer::mesh(), phi, m, M, f, learn);
 	dict.execute();
 
 	delete phi;
 	viewer::mesh().update_normals();
 }
+
+
+void viewer_process_synthesis()
+{
+	gproshan_log(APP_VIEWER);
+
+	size_t n; // dct
+	size_t m, M;
+	distance_t f;
+	bool learn;
+
+	gproshan_log(parameters: (n, m, M, f, learn));
+	cin >> n >> m >> M >> f >> learn;
+
+	basis * phi = new basis_dct(n);
+	synthesis dict(viewer::mesh(), phi, m, M, f, learn);
+	dict.execute();
+
+	delete phi;
+	viewer::mesh().update_normals();
+}
+
 
 
 void viewer_process_iterative_inpaiting()
@@ -574,7 +597,13 @@ void viewer_process_farthest_point_sampling_radio()
 	double time_fps;
 
 	TIC(load_time)
+
+#ifdef CUDA_SUPPORT
 	radio = farthest_point_sampling_ptp_gpu(viewer::mesh(), viewer::select_vertices, time_fps, NIL, radio);
+#else
+
+#endif
+
 	TOC(load_time)
 	gproshan_log_var(time_fps);
 

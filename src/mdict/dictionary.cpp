@@ -5,7 +5,13 @@
 #include "che_poisson.h"
 #include "che_fill_hole.h"
 
+#include "viewer/viewer.h"
+
 #include <cassert>
+#include <CImg.h>
+
+
+using namespace cimg_library;
 
 
 // geometry processing and shape analysis framework
@@ -16,8 +22,8 @@ namespace gproshan::mdict {
 size_t dictionary::L = 10;
 size_t dictionary::T = 5;
 
-dictionary::dictionary(che *const & _mesh, basis *const & _phi_basis, const size_t & _m, const size_t & _M, const distance_t & _f, const bool & _d_plot):
-					mesh(_mesh), phi_basis(_phi_basis), m(_m), M(_M), f(_f), d_plot(_d_plot)
+dictionary::dictionary(che *const & _mesh, basis *const & _phi_basis, const size_t & _m, const size_t & _M, const distance_t & _f, const bool & _learn, const bool & _d_plot):
+					mesh(_mesh), phi_basis(_phi_basis), m(_m), M(_M), f(_f), learn(_learn), d_plot(_d_plot)
 {
 	A.eye(phi_basis->dim, m);
 }
@@ -31,18 +37,20 @@ void dictionary::learning()
 {
 	gproshan_debug(MDICT);
 
-	string f_dict = tmp_file_path(mesh->name_size() + '_' + to_string(phi_basis->dim) + '_' + to_string(m) + ".dict");
+	string f_dict = tmp_file_path(mesh->name_size() + '_' + to_string(phi_basis->dim) + '_' + to_string(m) + '_' + to_string(f) + '_' + to_string(L) + ".dict");
 	gproshan_debug_var(f_dict);
 
-	if(!A.load(f_dict))
+	if(learn && !A.load(f_dict))
 	{
 		A.eye(phi_basis->dim, m);
 		// A.random(phi_basis->dim, m);
-
 		KSVDT(A, patches, M, L);
+
+		gproshan_debug(Ok);
+		
 		A.save(f_dict);
 	}
-
+	
 	assert(A.n_rows == phi_basis->dim);
 	assert(A.n_cols == m);
 
@@ -81,7 +89,9 @@ void dictionary::init_sampling()
 	}
 
 	s_radio = phi_basis->radio;
-	//phi_basis->radio *= f;
+	phi_basis->radio *= f;
+	gproshan_debug_var(s_radio);
+	gproshan_debug_var(phi_basis->radio);
 }
 
 void dictionary::init_patches(const bool & reset, const fmask_t & mask)
@@ -141,14 +151,85 @@ void dictionary::init_patches(const bool & reset, const fmask_t & mask)
 		p.phi.set_size(p.xyz.n_cols, phi_basis->dim);
 		phi_basis->discrete(p.phi, p.xyz);
 	}
+
+/*	
+#ifndef NDEBUG
+	CImgList<real_t> imlist;
+	for(index_t s = 0; s < M; s++)
+		patches[s].save(phi_basis->radio, 16, imlist);
+	imlist.save_ffmpeg_external("tmp/patches.mpg", 5);
+#endif	
+
+*/
+
+	/*Saving Patches*/
+/*
+	ofstream os(tmp_file_path("patch-mat"));
+	for(index_t s = 0; s < M; s++)
+	{
+		patch & p = patches[s];
+		p.save_z(os);
+	}
+	os.close();
+	/*
+	// DRAW NORMALS DEBUG
+	for(index_t s = 0; s < M; s++)
+	{
+		viewer::vectors.push_back({patches[s].x(0), patches[s].x(1), patches[s].x(2)});
+		a_vec r = patches[s].x + 0.02 * patches[s].normal();
+		viewer::vectors.push_back({r(0), r(1), r(2)});
+	}
+	*/
 }
 
-void dictionary::mesh_reconstruction()
+distance_t dictionary::mesh_reconstruction()
 {
 	gproshan_debug(MDICT);
 
 	assert(n_vertices == mesh->n_vertices());
-	mdict::mesh_reconstruction(mesh, M, patches, patches_map, A, alpha);
+	return mdict::mesh_reconstruction(mesh, M, patches, patches_map, A, alpha);
+}
+void dictionary::update_alphas(a_mat & alpha, size_t threshold)
+{
+	size_t np_new = M - threshold;
+	bool patches_covered[np_new];
+	memset(patches_covered, 0, sizeof(patches_covered));
+	size_t count = 0;
+
+	// Choose the border patches using the threshold
+	while(count < threshold)
+	{
+		#pragma omp parallel for
+		for(index_t s = threshold; s < M; s++)
+		{	
+
+			if(!patches_covered[s-threshold])
+			{	
+				a_vec sum;
+				sum.zeros();
+				size_t c = 0;
+				// Here updating alphas, we need a structure between patches and neighboor patches
+				//We can simulate that structure by using patches map
+				for(auto p: patches_map[s])
+				{
+					if(p.first < threshold || patches_covered[p.first-threshold])
+					{
+						sum += alpha.col(p.first);
+					}	
+					sum /= c;
+
+				}
+				alpha.col(s) = sum;
+				patches_covered[s-threshold] = 1;
+				count++;
+			}	
+
+		}
+	}
+	
+	// update alphas of choosed patches
+	// update the threshold
+	// repeat until threshold reachs all patches
 }
 
 index_t dictionary::sample(const index_t & s)

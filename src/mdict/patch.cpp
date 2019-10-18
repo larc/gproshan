@@ -45,6 +45,7 @@ void patch::transform()
 {
 	xyz.each_col() -= x;
 	xyz = T.t() * xyz;
+//	xyz.row(2).zeros();
 }
 
 void patch::itransform()
@@ -78,6 +79,33 @@ void patch::reset_xyz(che * mesh, vector<vpatches_t> & vpatches, const index_t &
 	}
 }
 
+const a_vec patch::normal()
+{
+	return T.col(2);
+}
+
+void patch::save(const real_t & radio, const size_t & imsize, CImgList<real_t> & imlist)
+{
+	// Create images with the patches info
+
+	//building the grid
+	CImg<real_t> img(imsize, imsize);
+	size_t x, y;
+	img.fill(0);
+	// for each x y plus 1, multiply by delta and floor, get i and j 
+	for(index_t i = 0; i < vertices.size(); i++)
+	{
+		x = floor((xyz.col(i)[0] + radio) * (imsize - 1) / (2 * radio));
+		y = floor((xyz.col(i)[1] + radio) * (imsize - 1) / (2 * radio));
+		img(x,y) = xyz.col(i)[2];
+	}
+	
+	img.resize(128, 128);
+	imlist.insert(img.normalize(0, 255));
+	//img.save("tmp/images/test_image.jpg");
+	
+}
+
 void patch::gather_vertices(che * mesh, const index_t & v, const size_t & n_toplevels, index_t * toplevel)
 {
 	if(vertices.size()) vertices.clear();
@@ -107,6 +135,7 @@ void patch::gather_vertices(che * mesh, const index_t & v, const size_t & n_topl
 
 		link.clear();	
 	}	
+	
 }
 
 void patch::gather_vertices(che * mesh, const index_t & v, const distance_t & radio, index_t * toplevel)
@@ -134,9 +163,8 @@ void patch::gather_vertices(che * mesh, const index_t & v, const distance_t & ra
 		p(1) = mesh->gt(v).y;
 		p(2) = mesh->gt(v).z;
 		p = T.t() * (p - x);
-		p(2) = 0;
 		
-		if(vertices.size() > expected_nv) break;
+		//if(vertices.size() > expected_nv) break;
 		if(toplevel[v] != current_toplevel)
 		{
 			if(count_toplevel == 0) break;
@@ -159,7 +187,7 @@ void patch::gather_vertices(che * mesh, const index_t & v, const distance_t & ra
 				toplevel[u] = toplevel[v] + 1;
 			}
 		}
-
+		//gproshan_debug_var(vertices.size());
 		link.clear();	
 	}	
 }
@@ -200,6 +228,49 @@ void patch::jet_fit_directions(che * mesh, const index_t & v)
 	T(0, 2) = monge_form.normal_direction()[0];
 	T(1, 2) = monge_form.normal_direction()[1];
 	T(2, 2) = monge_form.normal_direction()[2];
+
+}
+
+real_t patch::get_min_z()
+{
+	return xyz.row(2).min();
+}
+
+real_t patch::get_max_z()
+{
+	return xyz.row(2).max();
+}
+
+void patch::update_heights(real_t & min, real_t & max, bool flag)
+{
+	real_t tmp;
+	if(flag)
+	{
+		for(index_t i = 0; i < xyz.n_cols; i++)
+			{
+				xyz(2, i) = (xyz(2, i) - min) / (max - min);
+			}
+	}	
+	else
+	{
+		for(index_t i = 0; i < vertices.size(); i++)
+		{
+			tmp = xyz.col(i)[2];
+			tmp = (max - min) * tmp + min;
+			xyz.col(i)[2] = tmp;
+		}
+	}
+	
+}
+
+void patch::save_z(ostream & os)
+{
+	index_t i;
+	for( i = 0; i < vertices.size()-1; i++)
+	{
+		os<<xyz.col(i)[2]<<"\t";
+	}
+	os<<xyz.col(i)[2]<<"\n";
 }
 
 
