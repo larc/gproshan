@@ -4,6 +4,10 @@
 #include "mdict.h"
 #include "che_off.h"
 #include "che_img.h"
+#include "patch.h"
+#include "mdict.h"
+#include "basis.h"
+#include "d_mesh.h"
 
 // geometry processing and shape analysis framework
 // mesh dictionary learning and sparse coding namespace
