@@ -11,8 +11,4 @@ gproshan
 test_geodesics
 test_geodesics_double
 
-.DS_Store
-
-test_image_denoising
-
 *.user
