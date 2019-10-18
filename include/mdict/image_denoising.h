@@ -1,5 +1,5 @@
-#ifndef D_IMAGE_DENOISING_H
-#define D_IMAGE_DENOISING_H
+#ifndef IMAGE_DENOISING_H
+#define IMAGE_DENOISING_H
 
 #include "mdict.h"
 
@@ -14,5 +14,5 @@ void test_image_denoising(const string & file);
 
 } // namespace gproshan::mdict
 
-#endif // D_IMAGE_DENOISING_H
+#endif // IMAGE_DENOISING_H
 

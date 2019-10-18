@@ -1,4 +1,4 @@
-#include "d_image_denoising.h"
+#include "image_denoising.h"
 
 #include <CImg.h>
 
@@ -60,7 +60,7 @@ void test_image_denoising(const string & file)
 	double time;
 
 	TIC(time)
-	KSVD(D, X, L, K);
+	sp_KSVD(D, X, L, K);
 	TOC(time)
 	
 	gproshan_log_var(time);

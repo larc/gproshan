@@ -1,4 +1,4 @@
-#include "mdict/d_image_denoising.h"
+#include "mdict/image_denoising.h"
 
 int main(int nargs, const char ** args)
 {
