@@ -180,12 +180,8 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 
 		
 		// PTP ITERATION ERROR _____________________________________________________________________
-	
-	#ifdef CUDA_SUPPORT
+		
 		vector<pair<index_t, distance_t> > iter_error = iter_error_parallel_toplesets_propagation_coalescence_gpu(mesh, source, limits, sorted_index, exact, time);
-	#else
-		vector<pair<index_t, distance_t> > iter_error;// = iter_error_parallel_toplesets_propagation_coalescence_gpu(mesh, source, limits, sorted_index, exact, time);
-	#endif
 
 		system(("mv band " + (test_path + filename + ".band")).c_str());
 
@@ -204,12 +200,7 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 		
 		size_t i_samples = source.size();
 		size_t n_samples = 1001;
-	
-	#ifdef CUDA_SUPPORT
 		double * times_fps = times_farthest_point_sampling_ptp_gpu(mesh, source, n_samples);
-	#else
-		double * times_fps = new double[n_samples]; // = times_farthest_point_sampling_ptp_gpu(mesh, source, n_samples);
-	#endif
 		
 		os.open(test_path + filename + ".fps");
 		for(index_t i = i_samples; i < n_samples; i++)
@@ -253,10 +244,7 @@ double test_ptp_gpu(distance_t & error, const distance_t * exact, che * mesh, co
 	distance_t * dist = new distance_t[mesh->n_vertices()];
 	for(int i = 0; i < n_test; i++)
 	{
-		#ifdef CUDA_SUPPORT
 		t = parallel_toplesets_propagation_coalescence_gpu(dist, mesh, source, toplesets);
-		#endif
-
 		seconds = min(seconds, t);
 	}
 

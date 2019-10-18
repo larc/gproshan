@@ -6,11 +6,11 @@
 namespace gproshan::mdict {
 
 
-inpainting::inpainting(che *const & _mesh, basis *const & _phi_basis, const size_t & _m, const size_t & _M, const distance_t & _f, const bool & _learn, const bool & _plot): dictionary(_mesh, _phi_basis, _m, _M, _f, _learn, _plot)
+inpainting::inpainting(che *const & _mesh, basis *const & _phi_basis, const size_t & _m, const size_t & _M, const distance_t & _f, const bool & _plot): dictionary(_mesh, _phi_basis, _m, _M, _f, _plot)
 {
 }
 
-distance_t inpainting::execute()
+void inpainting::execute()
 {
 	// fill holes
 	size_t threshold = mesh->n_vertices();
@@ -35,10 +35,6 @@ distance_t inpainting::execute()
 
 	// including vertices out of threshold
 	TIC(d_time) init_patches(0); TOC(d_time)
-	gproshan_debug_var(d_time);
-
-	// Update new alphas, propagating the info towards the center
-	TIC(d_time) update_alphas(alpha, threshold); TOC(d_time)
 	gproshan_debug_var(d_time);
 
 	// sparse coding and reconstruction with all patches

@@ -16,9 +16,8 @@ find_package(Armadillo REQUIRED)
 find_package(CGAL REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(SuiteSparse REQUIRED)
-find_package(Boost COMPONENTS thread system)
 
-set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_BUILD_TYPE Release)
 
 set(CMAKE_CXX_FLAGS "-fopenmp -Wall")
 set(CMAKE_CUDA_FLAGS "-Xcompiler -fopenmp")
@@ -82,7 +81,6 @@ if(CUDA_FOUND)
 	target_link_libraries(gproshan gproshan_cu)
 	target_link_libraries(test_geodesics gproshan_cu)
 	target_link_libraries(test_image_denoising gproshan_cu)
-	target_link_libraries(test_mesh_denoising gproshan_cu)
 endif(CUDA_FOUND)
 
 file(MAKE_DIRECTORY tmp)

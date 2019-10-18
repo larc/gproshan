@@ -21,7 +21,6 @@
 #include "mdict/super_resolution.h"
 #include "mdict/inpainting.h"
 #include "mdict/basis_dct.h"
-#include "mdict/synthesis.h"
 #include "mdict/patch.h"
 #include "key_points.h"
 #include "key_components.h"
@@ -48,7 +47,6 @@ void viewer_process_mdict_patch();
 void viewer_process_denoising();
 void viewer_process_super_resolution();
 void viewer_process_inpaiting();
-void viewer_process_synthesis();
 void viewer_process_iterative_inpaiting();
 
 void viewer_process_functional_maps();

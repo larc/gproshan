@@ -205,7 +205,6 @@ void geodesics::run_parallel_toplesets_propagation_cpu(che * mesh, const vector<
 
 void geodesics::run_parallel_toplesets_propagation_gpu(che * mesh, const vector<index_t> & sources, const size_t & n_iter, const distance_t & radio)
 {
-#ifdef CUDA_SUPPORT
 	index_t * toplesets = new index_t[n_vertices];
 	vector<index_t> limits;
 	mesh->compute_toplesets(toplesets, sorted_index, limits, sources);
@@ -219,7 +218,6 @@ void geodesics::run_parallel_toplesets_propagation_gpu(che * mesh, const vector<
 	gproshan_log_var(time_ptp);
 
 	delete [] toplesets;
-#endif
 }
 
 void geodesics::run_heat_flow(che * mesh, const vector<index_t> & sources)
@@ -237,7 +235,6 @@ void geodesics::run_heat_flow(che * mesh, const vector<index_t> & sources)
 
 void geodesics::run_heat_flow_gpu(che * mesh, const vector<index_t> & sources)
 {
-#ifdef CUDA_SUPPORT
 	if(dist) delete [] dist;
 
 	double time_total, solve_time;
@@ -247,7 +244,6 @@ void geodesics::run_heat_flow_gpu(che * mesh, const vector<index_t> & sources)
 
 	gproshan_debug_var(time_total - solve_time);
 	gproshan_debug_var(solve_time);
-#endif
 }
 
 //d = {NIL, 0, 1} cross edge, next, prev
