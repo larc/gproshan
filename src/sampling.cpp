@@ -39,14 +39,12 @@ index_t ** sampling_shape(vector<index_t> & points, size_t *& sizes, vertex *& n
 
 bool load_sampling(vector<index_t> & points, distance_t & radio, che * mesh, size_t n)
 {
-	const string filename = mesh->filename();
+	const string & filename = mesh->filename();
 
-	string file = "tmp";
-	file += filename.substr(filename.find_last_of('/'), filename.size() - filename.find_last_of('/'));
-	file += "." + to_string(n);
+	string file = filename.substr(filename.find_last_of('/'), filename.size() - filename.find_last_of('/')) + "." + to_string(n);
 
-	ifstream is(file);
-	gproshan_debug_var(file);
+	ifstream is(tmp_file_path(file));
+	gproshan_log_var(tmp_file_path(file));
 
 	if(is.good())
 	{
@@ -66,11 +64,15 @@ bool load_sampling(vector<index_t> & points, distance_t & radio, che * mesh, siz
 		if(!points.size())
 			points.push_back(0);
 
+#ifdef GPROSHAN_CUDA
 		double time_fps;
 		radio = farthest_point_sampling_ptp_gpu(mesh, points, time_fps, n);
 		gproshan_debug_var(time_fps);
+#else
+		radio = 0; // IMPLEMENT: farthest_point_sampling_ptp_cpu(mesh, points, time_fps, n);
+#endif // GPROSHAN_CUDA
 
-		ofstream os(file);
+		ofstream os(tmp_file_path(file));
 		os << radio << endl;
 		os << points.size() << endl;
 		for(const index_t & i: points)

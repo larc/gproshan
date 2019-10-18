@@ -49,11 +49,15 @@ int viewer_main(int nargs, const char ** args)
 	viewer::sub_menus.push_back("Geodesics");
 	viewer::add_process('F', "Geodesics (FM)", viewer_process_geodesics_fm);
 	viewer::add_process('U', "Geodesics (PTP_CPU)", viewer_process_geodesics_ptp_cpu);
-	viewer::add_process('G', "Geodesics (PTP_GPU)", viewer_process_geodesics_ptp_gpu);
 	#ifndef SINGLE_P
 		viewer::add_process('l', "Geodesics (HEAT_FLOW)", viewer_process_geodesics_heat_flow);
 	#endif
+
+#ifdef GPROSHAN_CUDA
+	viewer::add_process('G', "Geodesics (PTP_GPU)", viewer_process_geodesics_ptp_gpu);
 	viewer::add_process('L', "Geodesics (HEAT_FLOW_GPU)", viewer_process_geodesics_heat_flow_gpu);
+#endif // GPROSHAN_CUDA
+
 	viewer::add_process('S', "Farthest Point Sampling", viewer_process_farthest_point_sampling);
 	viewer::add_process('Q', "Farthest Point Sampling radio", viewer_process_farthest_point_sampling_radio);
 	viewer::add_process('V', "Voronoi Regions", viewer_process_voronoi);
@@ -552,7 +556,11 @@ void viewer_process_voronoi()
 	gproshan_log(APP_VIEWER);
 
 	TIC(load_time)
+#ifdef GPROSHAN_CUDA
 	geodesics ptp(viewer::mesh(), viewer::select_vertices, geodesics::PTP_GPU, nullptr, 1);
+#else
+	geodesics ptp(viewer::mesh(), viewer::select_vertices, geodesics::FM, nullptr, 1);
+#endif
 	TOC(load_time)
 	gproshan_log_var(load_time);
 
@@ -571,12 +579,14 @@ void viewer_process_farthest_point_sampling_radio()
 	gproshan_input(radio);
 	distance_t radio; cin >> radio;
 
+#ifdef GPROSHAN_CUDA	// IMPLEMENT/REVIEW
 	double time_fps;
 
 	TIC(load_time)
 	radio = farthest_point_sampling_ptp_gpu(viewer::mesh(), viewer::select_vertices, time_fps, NIL, radio);
 	TOC(load_time)
 	gproshan_log_var(time_fps);
+#endif // GPROSHAN_CUDA
 
 	gproshan_log_var(radio);
 	gproshan_log_var(viewer::select_vertices.size());
@@ -659,6 +669,24 @@ void viewer_process_geodesics_ptp_cpu()
 	viewer::mesh().update_colors(&ptp[0]);
 }
 
+void viewer_process_geodesics_heat_flow()
+{
+	gproshan_log(APP_VIEWER);
+
+	if(!viewer::select_vertices.size())
+		viewer::select_vertices.push_back(0);
+	
+	TIC(load_time)
+	geodesics heat_flow(viewer::mesh(), viewer::select_vertices, geodesics::HEAT_FLOW);
+	TOC(load_time)
+	gproshan_log_var(load_time);
+
+	viewer::mesh().update_colors(&heat_flow[0]);
+}
+
+
+#ifdef GPROSHAN_CUDA
+
 void viewer_process_geodesics_ptp_gpu()
 {
 	gproshan_log(APP_VIEWER);
@@ -687,21 +715,6 @@ void viewer_process_geodesics_ptp_gpu()
 	viewer::mesh().update_colors(&ptp[0]);
 }
 
-void viewer_process_geodesics_heat_flow()
-{
-	gproshan_log(APP_VIEWER);
-
-	if(!viewer::select_vertices.size())
-		viewer::select_vertices.push_back(0);
-	
-	TIC(load_time)
-	geodesics heat_flow(viewer::mesh(), viewer::select_vertices, geodesics::HEAT_FLOW);
-	TOC(load_time)
-	gproshan_log_var(load_time);
-
-	viewer::mesh().update_colors(&heat_flow[0]);
-}
-
 void viewer_process_geodesics_heat_flow_gpu()
 {
 	gproshan_log(APP_VIEWER);
@@ -716,6 +729,9 @@ void viewer_process_geodesics_heat_flow_gpu()
 
 	viewer::mesh().update_colors(&heat_flow[0]);
 }
+
+#endif // GPROSHAN_CUDA
+
 
 void viewer_process_fill_holes_biharmonic_splines()
 {

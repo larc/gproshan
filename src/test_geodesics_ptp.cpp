@@ -58,7 +58,7 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 		
 		// PERFORMANCE & ACCURACY ___________________________________________________________________
 
-		double Time[7], time;	// FM, PTP GPU, HEAT cholmod, HEAT cusparse
+		double Time[7];			// FM, PTP GPU, HEAT cholmod, HEAT cusparse
 		distance_t Error[5];	// FM, PTP GPU, HEAT cholmod, HEAT cusparse
 
 		distance_t * exact = load_exact_geodesics(exact_dist_path + filename + ".exact", n_vertices);
@@ -66,7 +66,12 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 
 		Time[0] = test_fast_marching(Error[0], exact, mesh, source, n_test);
 		Time[1] = test_ptp_cpu(Error[1], exact, mesh, source, {limits, sorted_index}, n_test);
+
+#ifdef GPROSHAN_CUDA
 		Time[2] = test_ptp_gpu(Error[2], exact, mesh, source, {limits, sorted_index}, n_test);
+#else
+		Time[2] = INFINITY;
+#endif // GPROSHAN_CUDA
 		
 		#ifdef SINGLE_P
 			Time[6] = Time[5] = Time[4] = Time[3] = INFINITY;
@@ -74,7 +79,14 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 		#else
 			Time[4] = test_heat_method_cholmod(Error[3], Time[3], exact, mesh, source, n_test);
 			if(n_vertices < 100000)	
+			{
+#ifdef GPROSHAN_CUDA
 				Time[6] = test_heat_method_gpu(Error[4], Time[5], exact, mesh, source, n_test);
+#else
+				Time[6] = Time[5] = INFINITY;
+				Error[4] = INFINITY;
+#endif // GPROSHAN_CUDA
+			}
 			else
 			{
 				Time[6] = Time[5] = INFINITY;
@@ -180,7 +192,10 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 
 		
 		// PTP ITERATION ERROR _____________________________________________________________________
-		
+
+#ifdef GPROSHAN_CUDA	// IMPLEMENT: iter_error_parallel_toplesets_propagation_coalescence_cpu
+
+		double time;
 		vector<pair<index_t, distance_t> > iter_error = iter_error_parallel_toplesets_propagation_coalescence_gpu(mesh, source, limits, sorted_index, exact, time);
 
 		system(("mv band " + (test_path + filename + ".band")).c_str());
@@ -195,9 +210,12 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 			os << p.first << " " << p.second << endl;
 		os.close();
 
+#endif // GPROSHAN_CUDA
+
 
 		// FARTHEST POINT SAMPLING _________________________________________________________________
 		
+#ifdef GPROSHAN_CUDA	// IMPLEMENT: times_farthest_point_sampling_ptp_cpu
 		size_t i_samples = source.size();
 		size_t n_samples = 1001;
 		double * times_fps = times_farthest_point_sampling_ptp_gpu(mesh, source, n_samples);
@@ -207,6 +225,9 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 			os << i << " " << times_fps[i] << endl;
 		os.close();
 
+		delete [] times_fps;
+#endif // GPROSHAN_CUDA
+		
 		// FREE MEMORY
 
 		delete mesh;
@@ -214,7 +235,6 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 		delete [] sorted_index;
 		delete [] exact;
 		delete [] toplesets_dist;
-		delete [] times_fps;
 	}
 	
 	fclose(ftable);
@@ -234,24 +254,6 @@ double test_fast_marching(distance_t & error, const distance_t * exact, che * me
 
 	error = compute_error(&fm[0], exact, mesh->n_vertices(), source.size());
 
-	return seconds;
-}
-
-double test_ptp_gpu(distance_t & error, const distance_t * exact, che * mesh, const vector<index_t> & source, const toplesets_t & toplesets, const int & n_test)
-{
-	double t, seconds = INFINITY;
-	
-	distance_t * dist = new distance_t[mesh->n_vertices()];
-	for(int i = 0; i < n_test; i++)
-	{
-		t = parallel_toplesets_propagation_coalescence_gpu(dist, mesh, source, toplesets);
-		seconds = min(seconds, t);
-	}
-
-	error = compute_error(dist, exact, mesh->n_vertices(), source.size());
-
-	delete [] dist;
-	
 	return seconds;
 }
 
@@ -295,6 +297,27 @@ double test_heat_method_cholmod(distance_t & error, double & stime, const distan
 	return ptime;
 }
 
+
+#ifdef GPROSHAN_CUDA
+
+double test_ptp_gpu(distance_t & error, const distance_t * exact, che * mesh, const vector<index_t> & source, const toplesets_t & toplesets, const int & n_test)
+{
+	double t, seconds = INFINITY;
+	
+	distance_t * dist = new distance_t[mesh->n_vertices()];
+	for(int i = 0; i < n_test; i++)
+	{
+		t = parallel_toplesets_propagation_coalescence_gpu(dist, mesh, source, toplesets);
+		seconds = min(seconds, t);
+	}
+
+	error = compute_error(dist, exact, mesh->n_vertices(), source.size());
+
+	delete [] dist;
+	
+	return seconds;
+}
+
 double test_heat_method_gpu(distance_t & error, double & stime, const distance_t * exact, che * mesh, const vector<index_t> & source, const int & n_test)
 {
 	double t, st, ptime;
@@ -317,6 +340,9 @@ double test_heat_method_gpu(distance_t & error, double & stime, const distance_t
 
 	return ptime;
 }
+
+#endif // GPROSHAN_CUDA
+
 
 distance_t * load_exact_geodesics(const string & file, const size_t & n)
 {

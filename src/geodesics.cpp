@@ -97,12 +97,15 @@ void geodesics::execute(che * mesh, const vector<index_t> & sources, const size_
 			break;
 		case PTP_CPU: run_parallel_toplesets_propagation_cpu(mesh, sources, n_iter, radio);
 			break;
-		case PTP_GPU: run_parallel_toplesets_propagation_gpu(mesh, sources, n_iter, radio);
-			break;
 		case HEAT_FLOW: run_heat_flow(mesh, sources);
+			break;
+
+#ifdef GPROSHAN_CUDA
+		case PTP_GPU: run_parallel_toplesets_propagation_gpu(mesh, sources, n_iter, radio);
 			break;
 		case HEAT_FLOW_GPU: run_heat_flow_gpu(mesh, sources);
 			break;
+#endif // GPROSHAN_CUDA
 	}
 }
 
@@ -203,6 +206,22 @@ void geodesics::run_parallel_toplesets_propagation_cpu(che * mesh, const vector<
 	delete [] toplesets;
 }
 
+void geodesics::run_heat_flow(che * mesh, const vector<index_t> & sources)
+{
+	if(dist) delete [] dist;
+
+	double time_total, solve_time;
+	TIC(time_total)
+	dist = heat_flow(mesh, sources, solve_time);
+	TOC(time_total)
+
+	gproshan_log_var(time_total - solve_time);
+	gproshan_log_var(solve_time);
+}
+
+
+#ifdef GPROSHAN_CUDA
+
 void geodesics::run_parallel_toplesets_propagation_gpu(che * mesh, const vector<index_t> & sources, const size_t & n_iter, const distance_t & radio)
 {
 	index_t * toplesets = new index_t[n_vertices];
@@ -220,19 +239,6 @@ void geodesics::run_parallel_toplesets_propagation_gpu(che * mesh, const vector<
 	delete [] toplesets;
 }
 
-void geodesics::run_heat_flow(che * mesh, const vector<index_t> & sources)
-{
-	if(dist) delete [] dist;
-
-	double time_total, solve_time;
-	TIC(time_total)
-	dist = heat_flow(mesh, sources, solve_time);
-	TOC(time_total)
-
-	gproshan_log_var(time_total - solve_time);
-	gproshan_log_var(solve_time);
-}
-
 void geodesics::run_heat_flow_gpu(che * mesh, const vector<index_t> & sources)
 {
 	if(dist) delete [] dist;
@@ -245,6 +251,9 @@ void geodesics::run_heat_flow_gpu(che * mesh, const vector<index_t> & sources)
 	gproshan_debug_var(time_total - solve_time);
 	gproshan_debug_var(solve_time);
 }
+
+#endif // GPROSHAN_CUDA
+
 
 //d = {NIL, 0, 1} cross edge, next, prev
 distance_t geodesics::update(index_t & d, che * mesh, const index_t & he, vertex & vx)
