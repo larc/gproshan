@@ -35,7 +35,9 @@ class dictionary
 		std::vector<vpatches_t> patches_map;		///< invert index vertex to patches.
 
 		double d_time;							///< time of operations.
-		bool d_plot;							///< plot atoms and basis with gnuplot.
+		bool d_plot;
+		bool learn;
+									///< plot atoms and basis with gnuplot.
 	
 	public:
 		static size_t L;					///< sparsity, norm L_0, default 10.
@@ -47,12 +49,13 @@ class dictionary
 					const size_t & _m,			///< number of dictionary atoms.
 					const size_t & _M,			///< number of patches.
 					const distance_t & _f,		///< deprecated
+					const bool & _learn,		
 					const bool & _plot			///< flag to plot basis and atoms with gnuplot.
 					);
 
 		virtual ~dictionary();
 
-		virtual void execute() = 0;
+		virtual distance_t execute() = 0;
 
 		void learning();
 		void sparse_coding();
@@ -61,7 +64,8 @@ class dictionary
 							const fmask_t & mask = nullptr
 							);
 
-		void mesh_reconstruction();
+		distance_t mesh_reconstruction();
+		void update_alphas(a_mat & alpha, size_t threshold);
 
 		index_t sample(const index_t & s);
 };

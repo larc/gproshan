@@ -7,6 +7,14 @@
 #include <vector>
 #include "include_arma.h"
 
+#include <CImg.h>
+
+#ifdef Success
+ #undef Success
+#endif
+
+using namespace cimg_library;
+
 using namespace std;
 
 
@@ -53,6 +61,11 @@ class patch
 						const index_t & p,
 						const fmask_t & mask = nullptr
 						);
+		
+		const a_vec normal();
+
+		void save(const real_t & radio, const size_t & imsize, CImgList<real_t> & imlist);
+		void update_heights(real_t & min, real_t & max, bool flag);
 
 	private:
 		/// Gather the vertices needed to compute the jet_fit_directions of the patch.
@@ -73,6 +86,10 @@ class patch
 		void jet_fit_directions(che * mesh,
 								const index_t & v
 								);
+		real_t get_min_z();
+		real_t get_max_z();
+
+		void save_z(ostream & os);
 		
 
 	friend class dictionary;

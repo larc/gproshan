@@ -6,6 +6,7 @@
 #include <iomanip>
 #include <vector>
 #include <fstream>
+#include <cassert>
 
 
 // geometry processing and shape analysis framework
@@ -197,8 +198,8 @@ void KSVDT(a_mat & A, vector<patch> & patches, size_t M, size_t L)
 	size_t iter = L;
 	while(iter--)
 	{
+		
 		OMP_all_patches_ksvt(alpha, A, patches, M, L);
-
 		#pragma omp parallel for
 		for(index_t j = 0; j < m; j++)
 		{

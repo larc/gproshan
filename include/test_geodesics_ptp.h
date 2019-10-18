@@ -22,6 +22,8 @@ double test_heat_method_cholmod(distance_t & error, double & stime, const distan
 
 double test_heat_method_gpu(distance_t & error, double & stime, const distance_t * exact, che * mesh, const std::vector<index_t> & source, const int & n_test);
 
+#ifdef CUDA_SUPPORT
+
 /// Return an array with the error per iteration.
 /// Starting to store (position 0) errors after number of toplesets.
 std::vector<std::pair<index_t, distance_t> > iter_error_parallel_toplesets_propagation_coalescence_gpu(che * mesh, const std::vector<index_t> & sources, const std::vector<index_t> & limits, const index_t * sorted_index, const distance_t * exact_dist, double & time_ptp);
@@ -35,6 +37,8 @@ double * times_farthest_point_sampling_ptp_gpu(che * mesh, std::vector<index_t> 
 
 /// Return an array with the time per iteration.
 double * times_farthest_point_sampling_ptp_coalescence_gpu(che * mesh, std::vector<index_t> & samples, size_t n, distance_t radio = 0);
+
+#endif
 
 /// Exact geodesics computed using MeshLP https://github.com/areslp/matlab/tree/master/MeshLP/MeshLP,
 /// Geodesics code: http://code.google.com/p/geodesic/
