@@ -187,7 +187,7 @@ void patch::gather_vertices(che * mesh, const index_t & v, const distance_t & ra
 				toplevel[u] = toplevel[v] + 1;
 			}
 		}
-		gproshan_debug_var(vertices.size());
+		//gproshan_debug_var(vertices.size());
 		link.clear();	
 	}	
 }
