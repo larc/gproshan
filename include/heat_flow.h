@@ -22,7 +22,9 @@ namespace gproshan {
 
 distance_t * heat_flow(che * mesh, const std::vector<index_t> & sources, double & solve_time);
 
+#ifdef GPROSHAN_CUDA
 distance_t * heat_flow_gpu(che * mesh, const std::vector<index_t> & sources, double & solve_time);
+#endif // GPROSHAN_CUDA
 
 void compute_divergence(che * mesh, const a_mat & u, a_mat & div);
 
@@ -34,10 +36,10 @@ cholmod_dense * arma_2_cholmod(const a_mat & m, cholmod_common * context);
 
 cholmod_sparse * arma_2_cholmod(const a_sp_mat & m, cholmod_common * context);
 
+#ifdef GPROSHAN_CUDA
 /// 
 double solve_positive_definite_gpu(a_mat & x, const a_sp_mat & A, const a_mat & b);
-
-#ifdef CUDA_SUPPORT
+#endif // GPROSHAN_CUDA
 
 /// host and device support
 /// https://docs.nvidia.com/cuda/cusolver/index.html#cusolver-lt-t-gt-csrlsvchol
@@ -51,8 +53,6 @@ double solve_positive_definite_cusparse(const int m, const int nnz, const real_t
 /// using cusolverSp_LOWLEVEL_PREVIEW.h library
 /// no documentation, code base on cuda/samples/7_CUDALibraries/cuSolverSp_LowlevelCholesky
 double solve_positive_definite_cusolver_preview(const int m, const int nnz, const real_t * hA_values, const int * hA_col_ptrs, const int * hA_row_indices, const real_t * hb, real_t * hx, const bool host = 0);
-
-#endif
 
 
 } // namespace gproshan

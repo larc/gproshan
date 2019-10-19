@@ -97,12 +97,15 @@ void geodesics::execute(che * mesh, const vector<index_t> & sources, const size_
 			break;
 		case PTP_CPU: run_parallel_toplesets_propagation_cpu(mesh, sources, n_iter, radio);
 			break;
-		case PTP_GPU: run_parallel_toplesets_propagation_gpu(mesh, sources, n_iter, radio);
-			break;
 		case HEAT_FLOW: run_heat_flow(mesh, sources);
+			break;
+
+#ifdef GPROSHAN_CUDA
+		case PTP_GPU: run_parallel_toplesets_propagation_gpu(mesh, sources, n_iter, radio);
 			break;
 		case HEAT_FLOW_GPU: run_heat_flow_gpu(mesh, sources);
 			break;
+#endif // GPROSHAN_CUDA
 	}
 }
 
@@ -203,25 +206,6 @@ void geodesics::run_parallel_toplesets_propagation_cpu(che * mesh, const vector<
 	delete [] toplesets;
 }
 
-void geodesics::run_parallel_toplesets_propagation_gpu(che * mesh, const vector<index_t> & sources, const size_t & n_iter, const distance_t & radio)
-{
-#ifdef CUDA_SUPPORT
-	index_t * toplesets = new index_t[n_vertices];
-	vector<index_t> limits;
-	mesh->compute_toplesets(toplesets, sorted_index, limits, sources);
-
-	double time_ptp;
-	if(sources.size() > 1)
-		time_ptp = parallel_toplesets_propagation_gpu({dist, clusters}, mesh, sources, {limits, sorted_index});
-	else
-		time_ptp = parallel_toplesets_propagation_coalescence_gpu({dist, clusters}, mesh, sources, {limits, sorted_index});
-
-	gproshan_log_var(time_ptp);
-
-	delete [] toplesets;
-#endif
-}
-
 void geodesics::run_heat_flow(che * mesh, const vector<index_t> & sources)
 {
 	if(dist) delete [] dist;
@@ -235,9 +219,28 @@ void geodesics::run_heat_flow(che * mesh, const vector<index_t> & sources)
 	gproshan_log_var(solve_time);
 }
 
+
+#ifdef GPROSHAN_CUDA
+
+void geodesics::run_parallel_toplesets_propagation_gpu(che * mesh, const vector<index_t> & sources, const size_t & n_iter, const distance_t & radio)
+{
+	index_t * toplesets = new index_t[n_vertices];
+	vector<index_t> limits;
+	mesh->compute_toplesets(toplesets, sorted_index, limits, sources);
+
+	double time_ptp;
+	if(sources.size() > 1)
+		time_ptp = parallel_toplesets_propagation_gpu({dist, clusters}, mesh, sources, {limits, sorted_index});
+	else
+		time_ptp = parallel_toplesets_propagation_coalescence_gpu({dist, clusters}, mesh, sources, {limits, sorted_index});
+
+	gproshan_log_var(time_ptp);
+
+	delete [] toplesets;
+}
+
 void geodesics::run_heat_flow_gpu(che * mesh, const vector<index_t> & sources)
 {
-#ifdef CUDA_SUPPORT
 	if(dist) delete [] dist;
 
 	double time_total, solve_time;
@@ -247,8 +250,10 @@ void geodesics::run_heat_flow_gpu(che * mesh, const vector<index_t> & sources)
 
 	gproshan_debug_var(time_total - solve_time);
 	gproshan_debug_var(solve_time);
-#endif
 }
+
+#endif // GPROSHAN_CUDA
+
 
 //d = {NIL, 0, 1} cross edge, next, prev
 distance_t geodesics::update(index_t & d, che * mesh, const index_t & he, vertex & vx)

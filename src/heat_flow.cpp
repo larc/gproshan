@@ -61,6 +61,8 @@ distance_t * heat_flow(che * mesh, const vector<index_t> & sources, double & sol
 	return dist;
 }
 
+#ifdef GPROSHAN_CUDA
+
 distance_t * heat_flow_gpu(che * mesh, const vector<index_t> & sources, double & solve_time)
 {
 	if(!sources.size()) return 0;
@@ -102,6 +104,9 @@ distance_t * heat_flow_gpu(che * mesh, const vector<index_t> & sources, double &
 
 	return dist;
 }
+
+#endif // GPROSHAN_CUDA
+
 
 void compute_divergence(che * mesh, const a_mat & u, a_mat & div)
 {
@@ -170,10 +175,11 @@ cholmod_sparse * arma_2_cholmod(const a_sp_mat & S, cholmod_common * context)
 	return cS;
 }
 
+
+#ifdef GPROSHAN_CUDA
+
 double solve_positive_definite_gpu(a_mat & x, const a_sp_mat & A, const a_mat & b)
 {
-#ifdef CUDA_SUPPORT
-
 	int * hA_col_ptrs = new int[A.n_cols + 1];
 	int * hA_row_indices = new int[A.n_nonzero];
 	
@@ -191,13 +197,9 @@ double solve_positive_definite_gpu(a_mat & x, const a_sp_mat & A, const a_mat & 
 	delete [] hA_row_indices;
 
 	return solve_time;
-
-#else
-
-	return 0;
-
-#endif
 }
+
+#endif // GPROSHAN_CUDA
 
 
 } // namespace gproshan

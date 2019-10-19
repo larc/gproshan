@@ -14,15 +14,16 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args);
 
 double test_fast_marching(distance_t & error, const distance_t * exact, che * mesh, const std::vector<index_t> & source, const int & n_test);
 
-double test_ptp_gpu(distance_t & error, const distance_t * exact, che * mesh, const std::vector<index_t> & source, const toplesets_t & toplesets, const int & n_test);
-
 double test_ptp_cpu(distance_t & error, const distance_t * exact, che * mesh, const std::vector<index_t> & source, const toplesets_t & toplesets, const int & n_test);
 
 double test_heat_method_cholmod(distance_t & error, double & stime, const distance_t * exact, che * mesh, const std::vector<index_t> & source, const int & n_test);
 
-double test_heat_method_gpu(distance_t & error, double & stime, const distance_t * exact, che * mesh, const std::vector<index_t> & source, const int & n_test);
 
-#ifdef CUDA_SUPPORT
+#ifdef GPROSHAN_CUDA
+
+double test_ptp_gpu(distance_t & error, const distance_t * exact, che * mesh, const std::vector<index_t> & source, const toplesets_t & toplesets, const int & n_test);
+
+double test_heat_method_gpu(distance_t & error, double & stime, const distance_t * exact, che * mesh, const std::vector<index_t> & source, const int & n_test);
 
 /// Return an array with the error per iteration.
 /// Starting to store (position 0) errors after number of toplesets.
@@ -38,7 +39,8 @@ double * times_farthest_point_sampling_ptp_gpu(che * mesh, std::vector<index_t> 
 /// Return an array with the time per iteration.
 double * times_farthest_point_sampling_ptp_coalescence_gpu(che * mesh, std::vector<index_t> & samples, size_t n, distance_t radio = 0);
 
-#endif
+#endif // GPROSHAN_CUDA
+
 
 /// Exact geodesics computed using MeshLP https://github.com/areslp/matlab/tree/master/MeshLP/MeshLP,
 /// Geodesics code: http://code.google.com/p/geodesic/

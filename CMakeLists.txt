@@ -20,7 +20,7 @@ find_package(Boost COMPONENTS thread system)
 
 set(CMAKE_BUILD_TYPE Debug)
 
-set(CMAKE_CXX_FLAGS "-fopenmp -Wall")
+set(CMAKE_CXX_FLAGS "-fopenmp -Wall -Wno-unused-result")
 set(CMAKE_CUDA_FLAGS "-Xcompiler -fopenmp")
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
@@ -31,6 +31,7 @@ add_definitions(${EIGEN3_DEFINITIONS})
 add_definitions(-DARMA_ALLOW_FAKE_GCC)
 
 if(CUDA_FOUND)
+	add_definitions(-DGPROSHAN_CUDA)
 	include_directories(${CUDA_INCLUDE_DIRS})
 endif(CUDA_FOUND)
 
