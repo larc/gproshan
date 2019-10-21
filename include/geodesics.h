@@ -19,12 +19,12 @@ class geodesics
 {
 	public:
 		enum option_t {	FM,				///< Execute Fast Marching algorithm
-						PTP_CPU,		///< Execute Parallel Toplesets Propagation algorithm on CPU
-						HEAT_FLOW,		///< Execute Heat Flow - cholmod (CPU)
 				#ifdef GPROSHAN_CUDA
 						PTP_GPU,		///< Execute Parallel Toplesets Propagation algorithm on GPU
-						HEAT_FLOW_GPU	///< Execute Heat Flow - cusparse (GPU)
+						HEAT_FLOW_GPU,	///< Execute Heat Flow - cusparse (GPU)
 				#endif // GPROSHAN_CUDA
+						PTP_CPU,		///< Execute Parallel Toplesets Propagation algorithm on CPU
+						HEAT_FLOW		///< Execute Heat Flow - cholmod (CPU)
 						};
 
 	public:
