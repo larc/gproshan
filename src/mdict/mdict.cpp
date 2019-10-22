@@ -115,7 +115,6 @@ void sp_KSVD(a_mat & D, const a_mat & X, const size_t & L, size_t k)
 tuple<a_vec, arma::uvec> _OMP(const a_vec & x, const a_mat & D, const size_t & L)
 {
 	arma::uvec selected_atoms(L);
-
 	real_t threshold = norm(x) * sigma;
 
 	a_mat DD;
@@ -129,7 +128,6 @@ tuple<a_vec, arma::uvec> _OMP(const a_vec & x, const a_mat & D, const size_t & L
 		DD = D.cols(selected_atoms.head(l + 1));
 		aa = pinv(DD) * x;
 		r = x - DD * aa;
-		
 		l++;
 	}
 
@@ -144,7 +142,7 @@ a_vec OMP(const a_vec & x, const a_mat & D, const size_t & L)
 
 	tie(aa, selected_atoms) = _OMP(x, D, L);
 	alpha.elem(selected_atoms) = aa;
-
+//	gproshan_debug_var(size(alpha));
 	return alpha;
 }
 
@@ -152,7 +150,7 @@ a_mat OMP_all(const a_mat & X, const a_mat & D, const size_t & L)
 {
 	a_mat alpha(D.n_cols, X.n_cols);
 
-	#pragma omp parallel for
+//	#pragma omp parallel for
 	for(index_t i = 0; i < X.n_cols; i++)
 		alpha.col(i) = OMP(X.col(i), D, L);
 

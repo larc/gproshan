@@ -12,7 +12,7 @@ namespace gproshan::mdict {
 
 void test_hybrid_denoising(const string & file)
 {
-	size_t N = 64;
+	size_t N = 128;
 
 	CImg<real_t> image(file.c_str());
 	image.resize(N, N);
@@ -24,17 +24,19 @@ void test_hybrid_denoising(const string & file)
 	size_t cols = image.height() - p + 1;
 	size_t col = image.height();	
 	size_t n = p * p;						// size of each patche
-	size_t m = 2 * N;							// number of atoms
+	size_t n_basis = 4;
+	size_t m = n_basis * n_basis;							// number of atoms
 	size_t M = rows * cols;					// number of patches
 	size_t L = 10;							// sparsity OMP norm L_0
 	size_t K = 10;							// KSVD iterations
+
 
 	a_mat X(n, M);
 	che * mesh = new che_img("../tmp/image_128.jpg");
 	che_off::write_file(mesh,"../tmp/image_128");
 	std::vector<patch> patches(M);				///< vector of patches.
 	std::vector<vpatches_t> patches_map;		///< invert index vertex to patches.
-
+	patches_map.resize(M);
 	gproshan_debug(patches);
 
 	index_t s = 0;
@@ -48,6 +50,7 @@ void test_hybrid_denoising(const string & file)
 		for(index_t a = x; a < x + p; a++)
 		{
 			patches[s].vertices.push_back(a * col + b);
+
 			//cout<< a*col+b<<" ";
 		}
 		
@@ -56,12 +59,53 @@ void test_hybrid_denoising(const string & file)
 	
 	a_mat A;
 	a_mat alpha;
-	basis * phi = new basis_dct(n);
-	A.eye(n, m);
+	basis * phi_basis = new basis_dct(n_basis);
+	A.eye(m, m);
 	alpha.zeros(m, M);
 	
-	OMP_all_patches_ksvt(alpha, A, patches, M, L);
+
+	for(index_t s = 0; s < M; s++)
+	{
+		patches[s].reset_xyz(mesh, patches_map, s, nullptr);
+	}
 	
+
+	//#pragma omp parallel for
+	for(index_t s = 0; s < M; s++)
+	{
+		patch & p = patches[s];
+		//p.T.eye(3, 3);
+		//p.transform();
+		p.phi.set_size(p.xyz.n_cols, n_basis*n_basis);
+	//	gproshan_debug_var(p.xyz);
+		phi_basis->discrete(p.phi, p.xyz);
+	}
+
+	OMP_all_patches_ksvt(alpha, A, patches, M, L);
+	gproshan_debug_var(size(alpha));
+
+	//Mesh reconstruction
+	for(index_t p = 0; p < M; p++)
+	{
+		patch & rp = patches[p];
+
+		if(rp.phi.n_rows)
+		{
+			a_vec x = rp.phi * A * alpha.col(p);
+		//	gproshan_debug_var(x);
+			rp.xyz.row(2) = x.t();
+		//	rp.itransform();
+		}
+	}
+	a_mat V(3, mesh->n_vertices(), arma::fill::zeros);
+	#pragma omp parallel for
+	for(index_t v = 0; v < mesh->n_vertices(); v++)
+	{
+		if(patches_map[v].size())
+			V.col(v) = mdict::simple_means_vertex(v, patches, patches_map);
+	}
+	vertex * new_vertices = (vertex *) V.memptr();
+	mesh->set_vertices(new_vertices, mesh->n_vertices(), 0);
 	/*
 	a_mat D(n, m, arma::fill::randu);
 	D = normalise(D);

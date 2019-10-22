@@ -21,10 +21,12 @@ void basis_dct::discrete(a_mat & phi, const a_mat & xy)
 
 	a_vec x = xy.row(0).t();
 	a_vec y = xy.row(1).t();
-
 	for(index_t k = 0, nx = 0; nx < n; nx++)
 	for(index_t ny = 0; ny < n; ny++, k++)
+	{
 		phi.col(k) = dct(x, y, nx, ny);
+//		gproshan_debug_var(k);
+	}	
 }
 
 void basis_dct::plot_basis(ostream & os)

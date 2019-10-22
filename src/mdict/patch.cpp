@@ -73,7 +73,7 @@ void patch::reset_xyz(che * mesh, vector<vpatches_t> & vpatches, const index_t &
 			xyz(0, j) = v.x;
 			xyz(1, j) = v.y;
 			xyz(2, j) = v.z;
-
+			
 			vpatches[vertices[i]].push_back({p, j++});
 		}
 	}
