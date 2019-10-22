@@ -50,8 +50,7 @@ void test_hybrid_denoising(const string & file)
 		for(index_t a = x; a < x + p; a++)
 		{
 			patches[s].vertices.push_back(a * col + b);
-
-			//cout<< a*col+b<<" ";
+		//	cout<< a*col+b<<" ";
 		}
 		
 		s++;
@@ -92,7 +91,7 @@ void test_hybrid_denoising(const string & file)
 		if(rp.phi.n_rows)
 		{
 			a_vec x = rp.phi * A * alpha.col(p);
-		//	gproshan_debug_var(x);
+		//	gproshan_debug_var(x);          
 			rp.xyz.row(2) = x.t();
 		//	rp.itransform();
 		}
@@ -106,55 +105,7 @@ void test_hybrid_denoising(const string & file)
 	}
 	vertex * new_vertices = (vertex *) V.memptr();
 	mesh->set_vertices(new_vertices, mesh->n_vertices(), 0);
-	/*
-	a_mat D(n, m, arma::fill::randu);
-	D = normalise(D);
-	
-	CImg<real_t> imdict;
-	for(index_t i = 0; i < 16; i++)
-	{
-		CImg<real_t> imrow;
-		for(index_t j = 0; j < 16; j++)
-			imrow.append(CImg<real_t>(D.colptr(i * 16 + j), p, p, 1, 1, true), 'x');
 
-		imdict.append(imrow, 'y');
-	}
-	imdict.display();
-
-	gproshan_log(KSVD);
-
-	double time;
-
-	TIC(time)
-	KSVD(D, X, L, K);
-	TOC(time)
-	
-	gproshan_log_var(time);
-	
-	CImg<real_t> imdictlearned;
-	for(index_t i = 0; i < 16; i++)
-	{
-		CImg<real_t> imrow;
-		for(index_t j = 0; j < 16; j++)
-			imrow.append(CImg<real_t>(D.colptr(i * 16 + j), p, p, 1, 1, true), 'x');
-
-		imdictlearned.append(imrow, 'y');
-	}
-	(imdict, imdictlearned).display();
-
-	a_mat alpha(m, M);
-
-	gproshan_log(OMP);
-
-	TIC(time)
-	#pragma omp parallel for
-	for(index_t i = 0; i < M; i++)
-		alpha.col(i) = OMP(X.col(i), D, L);
-	TOC(time)
-	
-	gproshan_log_var(time);
-
-	a_mat Y = D * alpha;
 
 	CImg<double> image_out = image;
 	image_out.fill(0);
@@ -163,16 +114,12 @@ void test_hybrid_denoising(const string & file)
 	for(index_t y = 0; y < cols; y++)
 	{
 		index_t i = x + y * rows;
-		index_t k = 0;
 
-		for(index_t b = y; b < y + p; b++)
-		for(index_t a = x; a < x + p; a++)
-		{
-			image_out(a, b) += Y(k, i);
-			k++;
-		}
+		image_out(x, y) = mesh->gt(i).z;
+		gproshan_debug_var(mesh->gt(i).z);
+
 	}
-
+/*
 	rows = image.width();
 	cols = image.height();
 	for(index_t x = 0; x < rows; x++)
@@ -186,10 +133,12 @@ void test_hybrid_denoising(const string & file)
 
 		image_out(x, y) /= dx * dy;
 	}
-
-	CImg<double> diff = abs(image - image_out);
-	(image, image_out, diff).display();*/
-	(image).display();
+*/
+//	CImg<double> diff = abs(image - image_out);
+//	(image, image_out, diff).display();
+//	(image_out).display();
+//	image_out = image_out.get_normalize(0, 255);	
+	(image, image_out).display();
 }
 
 
