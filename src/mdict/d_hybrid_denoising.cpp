@@ -20,9 +20,8 @@ void test_hybrid_denoising(const string & file)
 	image = image.get_normalize(0, 1);
 
 	size_t p = 8;							// square side of each patche
-	size_t rows = image.width() - p + 1;
-	size_t cols = image.height() - p + 1;
-	size_t col = image.height();	
+	size_t rows = image.width();
+	size_t cols = image.height();
 	size_t n = p * p;						// size of each patche
 	size_t n_basis = 4;
 	size_t m = n_basis * n_basis;							// number of atoms
@@ -35,25 +34,16 @@ void test_hybrid_denoising(const string & file)
 	che * mesh = new che_img("../tmp/image_128.jpg");
 	che_off::write_file(mesh,"../tmp/image_128");
 	std::vector<patch> patches(M);				///< vector of patches.
-	std::vector<vpatches_t> patches_map;		///< invert index vertex to patches.
-	patches_map.resize(M);
-	gproshan_debug(patches);
-
-	index_t s = 0;
+	std::vector<vpatches_t> patches_map(M);		///< invert index vertex to patches.
 
 	for(index_t x = 0; x < rows; x++)
 	for(index_t y = 0; y < cols; y++)
 	{
 		index_t i = x + y * rows;
 
-		for(index_t b = y; b < y + p; b++)
-		for(index_t a = x; a < x + p; a++)
-		{
-			patches[s].vertices.push_back(a * col + b);
-		//	cout<< a*col+b<<" ";
-		}
-		
-		s++;
+		for(index_t b = y; b < cols && b < y + p; b++)
+		for(index_t a = x; a < rows && a < x + p; a++)
+			patches[i].vertices.push_back(a + b * rows);
 	}
 	
 	a_mat A;
@@ -62,12 +52,8 @@ void test_hybrid_denoising(const string & file)
 	A.eye(m, m);
 	alpha.zeros(m, M);
 	
-
 	for(index_t s = 0; s < M; s++)
-	{
 		patches[s].reset_xyz(mesh, patches_map, s, nullptr);
-	}
-	
 
 	//#pragma omp parallel for
 	for(index_t s = 0; s < M; s++)
@@ -117,7 +103,6 @@ void test_hybrid_denoising(const string & file)
 
 		image_out(x, y) = mesh->gt(i).z;
 		gproshan_debug_var(mesh->gt(i).z);
-
 	}
 /*
 	rows = image.width();
@@ -138,7 +123,7 @@ void test_hybrid_denoising(const string & file)
 //	(image, image_out, diff).display();
 //	(image_out).display();
 //	image_out = image_out.get_normalize(0, 255);	
-	(image, image_out).display();
+//	(image, image_out).display();
 }
 
 

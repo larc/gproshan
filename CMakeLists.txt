@@ -84,6 +84,7 @@ if(CUDA_FOUND)
 	target_link_libraries(test_geodesics gproshan_cu)
 	target_link_libraries(test_image_denoising gproshan_cu)
 	target_link_libraries(test_mesh_denoising gproshan_cu)
+	target_link_libraries(test_hybrid_denoising gproshan_cu)
 endif(CUDA_FOUND)
 
 file(MAKE_DIRECTORY tmp)
