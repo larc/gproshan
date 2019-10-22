@@ -12,7 +12,7 @@ namespace gproshan::mdict {
 
 void test_hybrid_denoising(const string & file)
 {
-	size_t N = 128;
+	size_t N = 64;
 
 	CImg<real_t> image(file.c_str());
 	image.resize(N, N);
@@ -53,7 +53,9 @@ void test_hybrid_denoising(const string & file)
 	alpha.zeros(m, M);
 	
 	for(index_t s = 0; s < M; s++)
+	{
 		patches[s].reset_xyz(mesh, patches_map, s, nullptr);
+	}	
 
 	//#pragma omp parallel for
 	for(index_t s = 0; s < M; s++)
@@ -62,7 +64,7 @@ void test_hybrid_denoising(const string & file)
 		//p.T.eye(3, 3);
 		//p.transform();
 		p.phi.set_size(p.xyz.n_cols, n_basis*n_basis);
-	//	gproshan_debug_var(p.xyz);
+		// gproshan_debug_var(p.xyz);
 		phi_basis->discrete(p.phi, p.xyz);
 	}
 
@@ -77,11 +79,12 @@ void test_hybrid_denoising(const string & file)
 		if(rp.phi.n_rows)
 		{
 			a_vec x = rp.phi * A * alpha.col(p);
-		//	gproshan_debug_var(x);          
+			gproshan_debug_var(alpha.col(p));          
 			rp.xyz.row(2) = x.t();
 		//	rp.itransform();
 		}
 	}
+	
 	a_mat V(3, mesh->n_vertices(), arma::fill::zeros);
 	#pragma omp parallel for
 	for(index_t v = 0; v < mesh->n_vertices(); v++)
@@ -102,7 +105,7 @@ void test_hybrid_denoising(const string & file)
 		index_t i = x + y * rows;
 
 		image_out(x, y) = mesh->gt(i).z;
-		gproshan_debug_var(mesh->gt(i).z);
+	//	gproshan_debug_var(mesh->gt(i).z);
 	}
 /*
 	rows = image.width();

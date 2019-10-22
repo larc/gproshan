@@ -292,6 +292,26 @@ distance_t mesh_reconstruction(che * mesh, size_t M, vector<patch> & patches, ve
 	gproshan_debug_var(v_i);
 	mesh->set_vertices(new_vertices + v_i, mesh->n_vertices() - v_i, v_i);
 	che_off::write_file(mesh,"../tmp/recon_mesh");
+
+	size_t N = 64;
+	CImg<real_t> image("../../../barbara.jpg");
+	image.resize(N, N);
+	CImg<double> image_out = image;
+	size_t rows = image.width();
+	size_t cols = image.height();
+	image_out.fill(0);
+
+	for(index_t x = 0; x < rows; x++)
+	for(index_t y = 0; y < cols; y++)
+	{
+		index_t i = x + y * rows;
+
+		image_out(x, y) = mesh->gt(i).z;
+	//	gproshan_debug_var(mesh->gt(i).z);
+	}
+	image = image.get_normalize(0, 255);
+	(image_out).display();
+
 	return error;
 }
 
