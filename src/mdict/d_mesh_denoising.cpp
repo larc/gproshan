@@ -12,18 +12,20 @@ void test_mesh_denoising(const string & file)
 {
 	che * mesh = new che_off(file.c_str());
 
-	size_t n = 4; 
-	size_t m = 16;
+	size_t n = 16; 
+	size_t m = 256;
 	size_t M = 0;
-	distance_t f = 1.2;
+	distance_t f = 1;
 	bool learn = false;
 	distance_t error;
-	//dictionary::L = 20;
+	dictionary::L = 20;
 	basis * phi = new basis_dct(n);
-
+	denoising dict(mesh, phi, m, M, f, learn,0); 	
+	error = dict.execute();
+	dictionary::T = 3;
 	//denoising dict(mesh, phi, m, M, f, learn,0);
 	//dict.execute(); 
-
+/*
 	ofstream os("../tmp/test.txt");
 
 	for(; f<1.4; f+=0.1)
@@ -44,7 +46,7 @@ void test_mesh_denoising(const string & file)
 	os.close();
 	
 	system("gnuplot -persist ../tmp/test_mesh.gp &");
-	
+	*/
 	delete phi;
 }
 

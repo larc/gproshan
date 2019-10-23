@@ -164,18 +164,18 @@ void patch::gather_vertices(che * mesh, const index_t & v, const distance_t & ra
 		p(2) = mesh->gt(v).z;
 		p = T.t() * (p - x);
 		
-		//if(vertices.size() > expected_nv) break;
+			if(vertices.size() > expected_nv) break;
 		if(toplevel[v] != current_toplevel)
 		{
 			if(count_toplevel == 0) break;
 			current_toplevel++;
 			count_toplevel = 0;
 		}
-		if(norm(p) <= radio)
-		{
+		//if(norm(p) <= radio)
+		//{
 			vertices.push_back(v);
 			count_toplevel++;
-		}
+		//}
 		
 		mesh->link(link, v);
 		for(const index_t & he: link)

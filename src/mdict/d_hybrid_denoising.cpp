@@ -12,7 +12,7 @@ namespace gproshan::mdict {
 
 void test_hybrid_denoising(const string & file)
 {
-	size_t N = 4;
+	size_t N = 128;
 
 	CImg<real_t> image(file.c_str());
 	image.resize(N, N);
@@ -34,7 +34,7 @@ void test_hybrid_denoising(const string & file)
 	a_mat X(n, M);
 	che * mesh = new che_img("../tmp/image_128.jpg");
 	//mesh->write_file("../tmp/image_128");
-	che_off::write_file(mesh,"../tmp/image_128");
+	che_off::write_file(mesh,"../tmp/barbara_input_img");
 
 	std::vector<patch> patches(M);				///< vector of patches.
 	std::vector<vpatches_t> patches_map(M);		///< invert index vertex to patches.
@@ -98,13 +98,13 @@ void test_hybrid_denoising(const string & file)
 	vertex * new_vertices = (vertex *) V.memptr();
 	mesh->set_vertices(new_vertices, mesh->n_vertices(), 0);
 */
-	string input_str = "barbara_input.jpg";
+	char * input_str = "barbara_input.jpg";
 	CImg<double> image_out=image;
 
 	for(size_t v = 0; v < mesh->n_vertices(); v++)
 		image_out(mesh->gt(v).x, mesh->gt(v).y) = mesh->gt(v).z;
 
-	image_out.save(file.c_str());
+	image_out.save("../tmp/barbara_input.jpg");
 	//che_img::save_img(mesh, "../tmp/barbara_input.jpg", rows);
 /*
 	CImg<double> image_out = image;
