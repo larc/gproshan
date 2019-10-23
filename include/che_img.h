@@ -15,6 +15,8 @@ class che_img : public che
 		che_img(const che_img & mesh);
 		virtual ~che_img();
 		void write_file(const std::string & file) const;
+		//void save_img(const std::string & file, size_t tam) const;
+		static void save_img(const che * mesh, const std::string & file, size_t tam);
 
 	private:
 		void read_file(const std::string & file);

@@ -12,13 +12,14 @@ namespace gproshan::mdict {
 
 void test_hybrid_denoising(const string & file)
 {
-	size_t N = 64;
+	size_t N = 4;
 
 	CImg<real_t> image(file.c_str());
 	image.resize(N, N);
 	image.save("../tmp/image_128.jpg");
+	(image).display();
 	image = image.get_normalize(0, 1);
-
+	(image).display();
 	size_t p = 8;							// square side of each patche
 	size_t rows = image.width();
 	size_t cols = image.height();
@@ -32,10 +33,12 @@ void test_hybrid_denoising(const string & file)
 
 	a_mat X(n, M);
 	che * mesh = new che_img("../tmp/image_128.jpg");
+	//mesh->write_file("../tmp/image_128");
 	che_off::write_file(mesh,"../tmp/image_128");
+
 	std::vector<patch> patches(M);				///< vector of patches.
 	std::vector<vpatches_t> patches_map(M);		///< invert index vertex to patches.
-
+/*
 	for(index_t x = 0; x < rows; x++)
 	for(index_t y = 0; y < cols; y++)
 	{
@@ -94,8 +97,16 @@ void test_hybrid_denoising(const string & file)
 	}
 	vertex * new_vertices = (vertex *) V.memptr();
 	mesh->set_vertices(new_vertices, mesh->n_vertices(), 0);
+*/
+	string input_str = "barbara_input.jpg";
+	CImg<double> image_out=image;
 
+	for(size_t v = 0; v < mesh->n_vertices(); v++)
+		image_out(mesh->gt(v).x, mesh->gt(v).y) = mesh->gt(v).z;
 
+	image_out.save(file.c_str());
+	//che_img::save_img(mesh, "../tmp/barbara_input.jpg", rows);
+/*
 	CImg<double> image_out = image;
 	image_out.fill(0);
 
@@ -107,26 +118,13 @@ void test_hybrid_denoising(const string & file)
 		image_out(x, y) = mesh->gt(i).z;
 	//	gproshan_debug_var(mesh->gt(i).z);
 	}
-/*
-	rows = image.width();
-	cols = image.height();
-	for(index_t x = 0; x < rows; x++)
-	for(index_t y = 0; y < cols; y++)
-	{
-		index_t dx = p, dy = p;
-		if(x < p && x < dx) dx = x + 1;
-		if(y < p && y < dy) dy = y + 1;
-		if((rows - x) < p && (rows - x) < dx) dx = rows - x;
-		if((cols - y) < p && (cols - y) < dy) dy = cols - y;
-
-		image_out(x, y) /= dx * dy;
-	}
-*/
+	image_out.save(tmp_file_path("barbara_input.jpg").c_str());
 //	CImg<double> diff = abs(image - image_out);
-//	(image, image_out, diff).display();
+//	(image, image_out, diff).display();*/
 //	(image_out).display();
 //	image_out = image_out.get_normalize(0, 255);	
-//	(image, image_out).display();
+//	CImg<real_t> image_out("../tmp/barbara_input.jpg");
+	(image, image_out).display();
 }
 
 

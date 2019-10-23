@@ -50,7 +50,7 @@ void che_img::read_file(const string & file)
 			VT[he++] = (i - 1) * img.height() + j - 1;
 		}
 		
-		GT[v++] = vertex(i, img.height() - j - 1, -img(i, j));
+		GT[v++] = vertex(i,j, img(i, j));
 	}
 
 	thread([](CImg<real_t> img) { img.display(); }, img).detach();
@@ -75,7 +75,15 @@ void che_img::write_file(const string & file) const
 
 	os.close();
 }
+void save_img(const che * mesh, const std::string & file, size_t tam)
+{
+	CImg<double> image_out(tam,tam);
 
+	for(size_t v = 0; v < mesh->n_vertices(); v++)
+		image_out(mesh->gt(v).x, mesh->gt(v).y) = mesh->gt(v).z;
+
+	image_out.save(file.c_str());
+}
 
 } // namespace gproshan
 
