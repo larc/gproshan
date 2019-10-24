@@ -144,14 +144,12 @@ void patch::gather_vertices(che * mesh, const index_t & v, const distance_t & ra
 	if(vertices.size()) vertices.clear();
 	
 	vector<index_t> qvertices;
+
 	qvertices.reserve(expected_nv);
-	
 	vertices.reserve(expected_nv);
+
 	memset(toplevel, -1, sizeof(index_t) * mesh->n_vertices());
 	
-	size_t count_toplevel = 0;
-	size_t current_toplevel = 0;
-
 	a_vec p(3);
 	link_t link;
 	toplevel[v] = 0;
@@ -163,32 +161,24 @@ void patch::gather_vertices(che * mesh, const index_t & v, const distance_t & ra
 		p(1) = mesh->gt(v).y;
 		p(2) = mesh->gt(v).z;
 		p = T.t() * (p - x);
-		
-			if(vertices.size() > expected_nv) break;
-		if(toplevel[v] != current_toplevel)
+		p(2) = 0;
+
+		if(norm(p) <= radio)
 		{
-			if(count_toplevel == 0) break;
-			current_toplevel++;
-			count_toplevel = 0;
-		}
-		//if(norm(p) <= radio)
-		//{
 			vertices.push_back(v);
-			count_toplevel++;
-		//}
 		
-		mesh->link(link, v);
-		for(const index_t & he: link)
-		{
-			const index_t & u = mesh->vt(he);
-			if(toplevel[u] == NIL)
+			mesh->link(link, v);
+			for(const index_t & he: link)
 			{
-				qvertices.push_back(u);
-				toplevel[u] = toplevel[v] + 1;
+				const index_t & u = mesh->vt(he);
+				if(toplevel[u] == NIL)
+				{
+					qvertices.push_back(u);
+					toplevel[u] = toplevel[v] + 1;
+				}
 			}
+			link.clear();
 		}
-		//gproshan_debug_var(vertices.size());
-		link.clear();	
 	}	
 }
 
