@@ -79,7 +79,7 @@ void dictionary::init_sampling()
 	if(M == 0)
 	{
 		M = mesh->n_vertices();
-		phi_basis->radio = T * mesh->mean_edge();
+		phi_basis->radio = mesh->mean_edge();
 	}
 	else
 	{
@@ -103,16 +103,17 @@ void dictionary::init_patches(const bool & reset, const fmask_t & mask)
 		patches.resize(M);
 		patches_map.resize(n_vertices);
 
-		#pragma omp parallel
+	//	#pragma omp parallel
 		{
 			index_t * toplevel = new index_t[n_vertices];
 
-			#pragma omp for 
+	//		#pragma omp for 
 			for(index_t s = 0; s < M; s++)
 			{
 				index_t v = sample(s);
 				patches[s].init(mesh, v, dictionary::T, phi_basis->radio);
 			}
+			
 
 			delete [] toplevel;
 		}

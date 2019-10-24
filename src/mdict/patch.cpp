@@ -13,6 +13,7 @@
 #include <CGAL/Simple_cartesian.h>
 #include <CGAL/Monge_via_jet_fitting.h>
 
+#include <queue>
 
 // geometry processing and shape analysis framework
 // mesh dictionary learning and sparse coding namespace
@@ -135,51 +136,52 @@ void patch::gather_vertices(che * mesh, const index_t & v, const size_t & n_topl
 
 		link.clear();	
 	}	
-	
 }
 
 void patch::gather_vertices(che * mesh, const index_t & v, const distance_t & radio, index_t * toplevel)
 {
+	gproshan_debug(PATCH);
+
 	assert(x.n_elem == 3 && T.n_rows == 3 && T.n_cols == 3);
 	if(vertices.size()) vertices.clear();
-	
-	vector<index_t> qvertices;
-
-	qvertices.reserve(expected_nv);
 	vertices.reserve(expected_nv);
+	
+	priority_queue<pair<distance_t, index_t> > qvertices;
 
 	memset(toplevel, -1, sizeof(index_t) * mesh->n_vertices());
 	
 	a_vec p(3);
 	link_t link;
 	toplevel[v] = 0;
-	qvertices.push_back(v);
-	for(index_t i = 0; i < qvertices.size(); i++)
-	{
-		const index_t & v = qvertices[i];
-		p(0) = mesh->gt(v).x;
-		p(1) = mesh->gt(v).y;
-		p(2) = mesh->gt(v).z;
-		p = T.t() * (p - x);
-		p(2) = 0;
+	qvertices.push({0, v});
 
-		if(norm(p) <= radio)
-		{
-			vertices.push_back(v);
+	gproshan_debug(PATCH);
+	while(!qvertices.empty())
+	{
+		if(-qvertices.top().first > radio) break;
+
+		const index_t & v = qvertices.top().second;
+		qvertices.pop();
 		
-			mesh->link(link, v);
-			for(const index_t & he: link)
+		vertices.push_back(v);
+		
+		mesh->link(link, v);
+		for(const index_t & he: link)
+		{
+			const index_t & u = mesh->vt(he);
+			if(toplevel[u] == NIL)
 			{
-				const index_t & u = mesh->vt(he);
-				if(toplevel[u] == NIL)
-				{
-					qvertices.push_back(u);
-					toplevel[u] = toplevel[v] + 1;
-				}
+				p(0) = mesh->gt(u).x;
+				p(1) = mesh->gt(u).y;
+				p(2) = mesh->gt(u).z;
+				p = T.t() * (p - x);
+				qvertices.push({-norm(p), u});
+				toplevel[u] = toplevel[v] + 1;
 			}
 			link.clear();
 		}
 	}	
+	gproshan_debug(PATCH);
 }
 
 /// Compute the principal directions of the patch, centering in the vertex \f$v\f$.
