@@ -103,15 +103,15 @@ void dictionary::init_patches(const bool & reset, const fmask_t & mask)
 		patches.resize(M);
 		patches_map.resize(n_vertices);
 
-	//	#pragma omp parallel
+		#pragma omp parallel
 		{
 			index_t * toplevel = new index_t[n_vertices];
 
-	//		#pragma omp for 
+			#pragma omp for 
 			for(index_t s = 0; s < M; s++)
 			{
 				index_t v = sample(s);
-				patches[s].init(mesh, v, dictionary::T, phi_basis->radio);
+				patches[s].init(mesh, v, dictionary::T, phi_basis->radio, toplevel);
 			}
 			
 
