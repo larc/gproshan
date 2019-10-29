@@ -296,7 +296,7 @@ distance_t mesh_reconstruction(che * mesh, size_t M, vector<patch> & patches, ve
 ////// Images test
 	CImg<real_t> image("../tmp/barbara_input.jpg");
 
-	CImg<double> image_out=image;
+	CImg<double> image_out(image.width(), image.height());
 	//image_out(mesh->gt(v).x, mesh->gt(v).y) = mesh->gt(v).z;
 
 	index_t v = 0;
