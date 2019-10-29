@@ -241,7 +241,7 @@ void partial_mesh_reconstruction(size_t old_n_vertices, che * mesh, size_t M, ve
 
 }
 
-distance_t mesh_reconstruction(che * mesh, size_t M, vector<patch> & patches, vector<vpatches_t> & patches_map, a_mat & A, a_mat & alpha,  distance_t & dist, const index_t & v_i)
+distance_t mesh_reconstruction(che * mesh, size_t M, vector<patch> & patches, vector<vpatches_t> & patches_map, a_mat & A, a_mat & alpha, distance_t * dist, const index_t & v_i)
 {
 	a_mat V(3, mesh->n_vertices(), arma::fill::zeros);
 
@@ -284,7 +284,7 @@ distance_t mesh_reconstruction(che * mesh, size_t M, vector<patch> & patches, ve
 	#pragma omp parallel for reduction(+: error)
 	for(index_t v = v_i; v < mesh->n_vertices(); v++)
 	{
-		dist[v] = *(new_vertices[v] - mesh->get_vertex(v))
+		dist[v] = *(new_vertices[v] - mesh->get_vertex(v));
 	//	error += dist[v];
 	}
 		
