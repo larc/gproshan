@@ -466,6 +466,7 @@ void viewer_process_denoising()
 	dict.execute();
 	
 	delete phi;
+	//viewer::mesh().update_colors(&fm[0]);
 	viewer::mesh().update_normals();
 }
 

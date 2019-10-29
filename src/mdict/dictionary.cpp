@@ -26,6 +26,7 @@ dictionary::dictionary(che *const & _mesh, basis *const & _phi_basis, const size
 					mesh(_mesh), phi_basis(_phi_basis), m(_m), M(_M), f(_f), learn(_learn), d_plot(_d_plot)
 {
 	A.eye(phi_basis->dim, m);
+	dist = new distance_t[mesh->n_vertices()]; 
 }
 
 dictionary::~dictionary()
@@ -240,6 +241,11 @@ index_t dictionary::sample(const index_t & s)
 	return s;
 }
 
+const distance_t & dictionary::operator[](const index_t & i) const
+{
+	assert(i < mesh->n_vertices());
+	return dist[i];
+}
 
 } // namespace gproshan::mdict
 

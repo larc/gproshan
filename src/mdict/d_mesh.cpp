@@ -241,7 +241,7 @@ void partial_mesh_reconstruction(size_t old_n_vertices, che * mesh, size_t M, ve
 
 }
 
-distance_t mesh_reconstruction(che * mesh, size_t M, vector<patch> & patches, vector<vpatches_t> & patches_map, a_mat & A, a_mat & alpha, const index_t & v_i)
+distance_t mesh_reconstruction(che * mesh, size_t M, vector<patch> & patches, vector<vpatches_t> & patches_map, a_mat & A, a_mat & alpha,  distance_t & dist, const index_t & v_i)
 {
 	a_mat V(3, mesh->n_vertices(), arma::fill::zeros);
 
@@ -283,7 +283,11 @@ distance_t mesh_reconstruction(che * mesh, size_t M, vector<patch> & patches, ve
 	distance_t error = 0;
 	#pragma omp parallel for reduction(+: error)
 	for(index_t v = v_i; v < mesh->n_vertices(); v++)
-		error += *(new_vertices[v] - mesh->get_vertex(v));
+	{
+		dist[v] = *(new_vertices[v] - mesh->get_vertex(v))
+	//	error += dist[v];
+	}
+		
 
 	gproshan_debug_var(mesh->n_vertices());
 	error /= mesh->n_vertices();
@@ -292,7 +296,7 @@ distance_t mesh_reconstruction(che * mesh, size_t M, vector<patch> & patches, ve
 	gproshan_debug_var(v_i);
 	mesh->set_vertices(new_vertices + v_i, mesh->n_vertices() - v_i, v_i);
 	che_off::write_file(mesh,"../tmp/recon_mesh");
-
+/*
 ////// Images test
 	CImg<real_t> image("../tmp/barbara_input.jpg");
 
@@ -307,7 +311,7 @@ distance_t mesh_reconstruction(che * mesh, size_t M, vector<patch> & patches, ve
 	}
 
 	image_out.save("../tmp/barbara_output.jpg");
-	(image,image_out).display();
+	(image,image_out).display();*/
 	return error;
 }
 
