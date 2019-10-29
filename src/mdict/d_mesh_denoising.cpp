@@ -15,14 +15,14 @@ void test_mesh_denoising(const string & file)
 	size_t n = 16; 
 	size_t m = 256;
 	size_t M = 0;
-	distance_t f = 1;
+	distance_t f = 1.3;
 	bool learn = false;
 	distance_t error;
-	dictionary::L = 20;
+//	dictionary::L = 10;
 	basis * phi = new basis_dct(n);
 	denoising dict(mesh, phi, m, M, f, learn,0); 	
 	error = dict.execute();
-	dictionary::T = 3;
+	//dictionary::T = 3;
 	//denoising dict(mesh, phi, m, M, f, learn,0);
 	//dict.execute(); 
 /*

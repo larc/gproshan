@@ -297,9 +297,14 @@ distance_t mesh_reconstruction(che * mesh, size_t M, vector<patch> & patches, ve
 	CImg<real_t> image("../tmp/barbara_input.jpg");
 
 	CImg<double> image_out=image;
+	//image_out(mesh->gt(v).x, mesh->gt(v).y) = mesh->gt(v).z;
 
-	for(size_t v = 0; v < mesh->n_vertices(); v++)
-		image_out(mesh->gt(v).x, mesh->gt(v).y) = mesh->gt(v).z;
+	index_t v = 0;
+	for(int i = 0; i < image.width(); i++)
+	for(int j = 0; j < image.height(); j++)
+	{
+		image_out(i,j) = mesh->gt(v++).z;
+	}
 
 	image_out.save("../tmp/barbara_output.jpg");
 	(image,image_out).display();
