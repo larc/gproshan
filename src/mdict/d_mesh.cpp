@@ -285,7 +285,7 @@ distance_t mesh_reconstruction(che * mesh, size_t M, vector<patch> & patches, ve
 	for(index_t v = v_i; v < mesh->n_vertices(); v++)
 	{
 		dist[v] = *(new_vertices[v] - mesh->get_vertex(v));
-	//	error += dist[v];
+		error += *(new_vertices[v] - mesh->get_vertex(v));
 	}
 		
 
