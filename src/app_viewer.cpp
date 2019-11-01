@@ -467,6 +467,10 @@ void viewer_process_denoising()
 	
 	delete phi;
 	viewer::mesh().update_colors(&dict[0]);
+	
+	#pragma omp parallel for
+	for(index_t v = 0; v < viewer::mesh()->n_vertices(); v++)
+		viewer::vcolor(v) = 2 * atan(viewer::vcolor(v) * 10) / M_PI;
 	viewer::mesh().update_normals();
 }
 
