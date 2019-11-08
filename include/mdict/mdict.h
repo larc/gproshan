@@ -29,6 +29,7 @@ a_sp_mat OMP_all(vector<locval_t> & locval, const a_mat & X, const a_mat & D, co
 
 void sp_KSVD(a_mat & D, const a_mat & X, const size_t & L, size_t k);
 
+
 // DENSE
 
 tuple<a_vec, arma::uvec> _OMP(const a_vec & x, const a_mat & D, const size_t & L);
@@ -39,11 +40,14 @@ a_mat OMP_all(const a_mat & X, const a_mat & D, const size_t & L);
 
 void KSVD(a_mat & D, const a_mat & X, const size_t & L, size_t k);
 
-void OMP_patch(a_mat & alpha, const a_mat & A, const index_t & i, patch & p, const size_t & L);
 
-void OMP_all_patches_ksvt(a_mat & alpha, a_mat & A, std::vector<patch> & patches, size_t M, size_t L);
+// MESH DENSE
 
-void KSVDT(a_mat & A, std::vector<patch> & patches, size_t M, size_t L);
+a_vec OMP(const a_mat & A, const patch & p, const size_t & L);
+
+a_mat OMP_all(const vector<patch> & patches, const a_mat & A, const size_t & L);
+
+void KSVD(a_mat & A, const vector<patch> & patches, const size_t & L, size_t k);
 
 
 } // namespace gproshan::mdict

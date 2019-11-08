@@ -20,6 +20,7 @@ namespace gproshan::mdict {
 
 
 size_t dictionary::L = 10;
+size_t dictionary::K = 10;
 size_t dictionary::T = 5;
 
 dictionary::dictionary(che *const & _mesh, basis *const & _phi_basis, const size_t & _m, const size_t & _M, const distance_t & _f, const bool & _learn, const bool & _d_plot):
@@ -45,7 +46,7 @@ void dictionary::learning()
 	{
 		A.eye(phi_basis->dim, m);
 		// A.random(phi_basis->dim, m);
-		KSVDT(A, patches, M, L);
+		KSVD(A, patches, L, K);
 
 		gproshan_debug(Ok);
 		
@@ -66,8 +67,7 @@ void dictionary::sparse_coding()
 {
 	gproshan_debug(MDICT);
 
-	alpha.zeros(m, M);
-	OMP_all_patches_ksvt(alpha, A, patches, M, L);
+	alpha = OMP_all(patches, A, L);
 }
 
 void dictionary::init_sampling()

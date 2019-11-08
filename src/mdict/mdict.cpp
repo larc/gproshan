@@ -14,6 +14,7 @@ namespace gproshan::mdict {
 
 const real_t sigma = 0.001;
 
+
 // SPARSE
 
 bool locval_t::operator < (const locval_t & lc)
@@ -37,7 +38,7 @@ void OMP(vector<locval_t> & alpha, const a_vec & x, const index_t & i, const a_m
 	for(index_t k = 0; k < selected_atoms.size(); k++)
 	{
 		#pragma omp critical
-			alpha.push_back({selected_atoms(k), i, aa(k)});
+		alpha.push_back({selected_atoms(k), i, aa(k)});
 	}
 }
 
@@ -110,6 +111,7 @@ void sp_KSVD(a_mat & D, const a_mat & X, const size_t & L, size_t k)
 	}
 }
 
+
 // DENSE
 
 tuple<a_vec, arma::uvec> _OMP(const a_vec & x, const a_mat & D, const size_t & L)
@@ -142,7 +144,7 @@ a_vec OMP(const a_vec & x, const a_mat & D, const size_t & L)
 
 	tie(aa, selected_atoms) = _OMP(x, D, L);
 	alpha.elem(selected_atoms) = aa;
-//	gproshan_debug_var(size(alpha));
+	
 	return alpha;
 }
 
@@ -150,7 +152,7 @@ a_mat OMP_all(const a_mat & X, const a_mat & D, const size_t & L)
 {
 	a_mat alpha(D.n_cols, X.n_cols);
 
-//	#pragma omp parallel for
+	#pragma omp parallel for
 	for(index_t i = 0; i < X.n_cols; i++)
 		alpha.col(i) = OMP(X.col(i), D, L);
 
@@ -184,34 +186,37 @@ void KSVD(a_mat & D, const a_mat & X, const size_t & L, size_t k)
 	}
 }
 
-// MESH 
 
-void OMP_patch(a_mat & alpha, const a_mat & A, const index_t & i, patch & p, const size_t & L)
+// MESH DENSE 
+
+a_vec OMP(const a_mat & A, const patch & p, const size_t & L)
 {
-	alpha.col(i) = OMP(p.xyz.row(2).t(), p.phi * A, L);
+	return OMP(p.xyz.row(2).t(), p.phi * A, L);
 }
 
-void OMP_all_patches_ksvt(a_mat & alpha, a_mat & A, vector<patch> & patches, size_t M, size_t L)
+a_mat OMP_all(const vector<patch> & patches, const a_mat & A, const size_t & L)
 {
+	a_mat alpha(A.n_cols, patches.size());
+
 	#pragma omp parallel for
-	for(index_t i = 0; i < M; i++)
-		OMP_patch(alpha, A, i, patches[i], L);
+	for(index_t i = 0; i < patches.size(); i++)
+		alpha.col(i) = OMP(A, patches[i], L);
+	
+	return alpha;
 }
 
-void KSVDT(a_mat & A, vector<patch> & patches, size_t M, size_t L)
+void KSVD(a_mat & A, const vector<patch> & patches, const size_t & L, size_t k)
 {
 	size_t K = A.n_rows;
-	size_t m = A.n_cols;
 
-	a_mat alpha(m, M);
+	a_mat alpha;
 
-	size_t iter = L;
-	while(iter--)
+	while(k--)
 	{
-		OMP_all_patches_ksvt(alpha, A, patches, M, L);
+		alpha = OMP_all(patches, A, L);
 
 		#pragma omp parallel for
-		for(index_t j = 0; j < m; j++)
+		for(index_t j = 0; j < A.n_cols; j++)
 		{
 			arma::uvec omega = find(abs(alpha.row(j)) > 0);
 

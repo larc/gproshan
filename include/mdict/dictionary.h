@@ -25,24 +25,26 @@ class dictionary
 
 		size_t m;								///< number of dictionary atoms.
 		size_t M;								///< number of patches.
-		a_mat A;									///< dictionary continuous matrix.
-		a_mat alpha;								///< sparse coding matrix.
+		a_mat A;								///< dictionary continuous matrix.
+		a_mat alpha;							///< sparse coding matrix.
 		
 		distance_t f;
 		distance_t s_radio;						///< sampling geodesic radio.
-		std::vector<index_t> sampling;				///< samples, center of patches if sampling.
+		std::vector<index_t> sampling;			///< samples, center of patches if sampling.
 		std::vector<patch> patches;				///< vector of patches.
-		std::vector<vpatches_t> patches_map;		///< invert index vertex to patches.
+		std::vector<vpatches_t> patches_map;	///< invert index vertex to patches.
 
 		double d_time;							///< time of operations.
-		bool d_plot;
+		bool d_plot;							///< plot atoms and basis with gnuplot.
 		bool learn;
-									///< plot atoms and basis with gnuplot.
 		distance_t * dist;
 	
 	public:
-		static size_t L;					///< sparsity, norm L_0, default 10.
-		static size_t T;					///< factor of patches' size, default 5 toplesets.
+		static size_t K;						///< number of iterations KSVD.
+		static size_t L;						///< sparsity, norm L_0, default 10.
+		static size_t T;						///< factor of patches' size, default 5 toplesets.
+	
+	public:
 		const distance_t & operator[](const index_t & i) const;
 
 	protected:
