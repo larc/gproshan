@@ -67,6 +67,10 @@ void basis::plot_atoms(const a_mat & A)
 	system(file.c_str());
 }
 
+size_t basis::get_dim()
+{
+	return dim;
+}
 
 } // namespace gproshan::mdict
 

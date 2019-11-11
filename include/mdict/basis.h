@@ -27,6 +27,7 @@ class basis
 		virtual void discrete(a_mat & phi, const a_mat & xy) = 0;
 		void plot_basis();
 		void plot_atoms(const a_mat & A);
+		size_t get_dim();
 
 	private:
 		virtual void plot_basis(std::ostream & os) = 0;

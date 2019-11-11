@@ -41,6 +41,18 @@ void patch::init(che * mesh, const index_t & v, const size_t & n_toplevels, cons
 	if(!_toplevel) delete [] toplevel;
 }	
 
+void patch::init_disjoint(che * mesh, const index_t & v, const size_t & n_toplevels, vector<index_t> & _vertices, index_t * _toplevel)
+{
+	index_t * toplevel = _toplevel ? _toplevel : new index_t[mesh->n_vertices()];
+	
+	gather_vertices(mesh, v, n_toplevels, toplevel);
+	jet_fit_directions(mesh, v);
+	vertices = std::move(_vertices);
+//	gather_vertices(mesh, v, radio, toplevel);
+
+	if(!_toplevel) delete [] toplevel;
+}
+
 // xyz = E.t * (xyz - avg)
 void patch::transform()
 {
@@ -69,6 +81,31 @@ void patch::reset_xyz(che * mesh, vector<vpatches_t> & vpatches, const index_t &
 	for(index_t j = 0, i = 0; i < vertices.size(); i++)
 	{
 		if(!mask || mask(vertices[i]))
+		{
+			const vertex & v = mesh->gt(vertices[i]);
+			xyz(0, j) = v.x;
+			xyz(1, j) = v.y;
+			xyz(2, j) = v.z;
+			
+			vpatches[vertices[i]].push_back({p, j++});
+		}
+	}
+}
+
+void patch::reset_xyz_disjoint(che * mesh, vector<vpatches_t> & vpatches, const index_t & p, const fmask_local_t & mask)
+{
+	size_t m = vertices.size();
+	if(mask)
+	{
+		m = 0;
+		for(index_t i = 0; i < vertices.size(); i++)
+			if(mask(i, vertices.size())) m++;
+	}
+
+	xyz.set_size(3, m);
+	for(index_t j = 0, i = 0; i < vertices.size(); i++)
+	{
+		if(!mask || mask(i, vertices.size()))
 		{
 			const vertex & v = mesh->gt(vertices[i]);
 			xyz(0, j) = v.x;

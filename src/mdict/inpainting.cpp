@@ -12,6 +12,98 @@ inpainting::inpainting(che *const & _mesh, basis *const & _phi_basis, const size
 
 distance_t inpainting::execute()
 {
+	size_t M = mesh->n_vertices()/36;
+	gproshan_log(Sampling);
+
+	distance_t radio;
+	static std::vector<index_t> select_vertices;
+	TIC(d_time)
+	load_sampling(select_vertices,  radio, mesh, M);
+	TOC(d_time)
+	gproshan_log_var(d_time);	
+	TIC(d_time)
+#ifdef GPROSHAN_CUDA
+	geodesics ptp( mesh, select_vertices, geodesics::PTP_GPU, nullptr, 1);
+#else
+	geodesics ptp( mesh, select_vertices, geodesics::FM, nullptr, 1);
+#endif
+	TOC(d_time)
+	gproshan_log_var(d_time);
+
+	// creating new patches
+	std::vector<index_t> vertices[M];
+
+	//saving first vertex aka seed vertices
+	#pragma omp for 
+	for(index_t s = 0; s < M; s++)
+	{
+		vertices[s].push_back(select_vertices[s]);
+	}
+
+	#pragma omp parallel for
+	for(index_t i = 0; i < mesh->n_vertices(); i++)
+	{
+		vertices[ ptp.clusters[i] ].push_back(i) ;
+	}
+	//initializing patch
+	#pragma omp parallel
+		{
+			index_t * toplevel = new index_t[n_vertices];
+
+			#pragma omp for 
+			for(index_t s = 0; s < M; s++)
+			{
+				patches[s].init_disjoint(mesh, select_vertices[s], dictionary::T, vertices[s], toplevel);
+			}
+			
+			delete [] toplevel;
+		}
+		#ifndef NDEBUG
+			size_t patch_avg_size = 0;
+			size_t patch_min_size = NIL;
+			size_t patch_max_size = 0;
+
+			#pragma omp parallel for reduction(+: patch_avg_size)
+			for(index_t s = 0; s < M; s++)
+				patch_avg_size += patches[s].vertices.size();
+			#pragma omp parallel for reduction(min: patch_min_size)
+			for(index_t s = 0; s < M; s++)
+				patch_min_size = min(patches[s].vertices.size(), patch_min_size);
+			#pragma omp parallel for reduction(max: patch_max_size)
+			for(index_t s = 0; s < M; s++)
+				patch_max_size = max(patches[s].vertices.size(), patch_max_size);
+
+			patch_avg_size /= M;
+			gproshan_debug_var(patch_avg_size);
+			gproshan_debug_var(patch_min_size);
+			gproshan_debug_var(patch_max_size);
+		#endif
+	
+	size_t percent = 30;
+	
+	for(index_t s = 0; s < M; s++)
+		patches[s].reset_xyz_disjoint(mesh, patches_map, s, [&percent](const index_t & i, size_t tam) -> bool { return i < ceil(tam * percent/ 100); });
+
+	#pragma omp parallel for
+	for(index_t s = 0; s < M; s++)
+	{
+		patch & p = patches[s];
+
+		p.transform();
+		p.phi.set_size(p.xyz.n_cols, phi_basis->get_dim());
+		phi_basis->discrete(p.phi, p.xyz);
+
+	}
+		//	patches[s].init(mesh, v, dictionary::T, phi_basis->radio, toplevel);
+	/*		p(0) = mesh->gt(u).x;
+				p(1) = mesh->gt(u).y;
+				p(2) = mesh->gt(u).z;
+				p = T.t() * (p - x);*/
+
+}
+
+distance_t inpainting::execute_tmp()
+{
 	// fill holes
 	size_t threshold = mesh->n_vertices();
 	delete [] fill_all_holes(mesh);

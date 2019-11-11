@@ -4,6 +4,9 @@
 #include "dictionary.h"
 #include "../che_poisson.h"
 #include "../che_fill_hole.h"
+#include "sampling.h"
+#include "geodesics.h"
+#include "geodesics_ptp.h"
 
 
 // geometry processing and shape analysis framework
@@ -18,6 +21,7 @@ class inpainting : public dictionary
 		virtual ~inpainting() = default;
 
 		distance_t execute();
+		distance_t execute_tmp();
 };
 
 

@@ -26,6 +26,7 @@ namespace gproshan::mdict {
 class dictionary;
 
 typedef function<bool(const index_t &)> fmask_t;
+typedef function<bool(const index_t &, size_t tam)> fmask_local_t;
 typedef std::vector<std::pair<index_t, index_t> > vpatches_t;
 
 /// 
@@ -51,6 +52,11 @@ class patch
 					const distance_t & radio,		///< euclidean radio in XY of the patch.
 					index_t * _toplevel = nullptr		///< aux memory to gather toplevel vertices.
 					);
+		void init_disjoint(che * mesh,
+					const index_t & v,
+					const size_t & n_toplevels,
+					vector<index_t> & _vertices, 
+					index_t * _toplevel = nullptr);
 
 		void transform();
 		
@@ -61,7 +67,11 @@ class patch
 						const index_t & p,
 						const fmask_t & mask = nullptr
 						);
-		
+		void reset_xyz_disjoint(	che * mesh,
+						std::vector<vpatches_t> & vpatches,
+						const index_t & p,
+						const fmask_local_t & mask = nullptr
+						);
 		const a_vec normal();
 
 		void save(const real_t & radio, const size_t & imsize, CImgList<real_t> & imlist);
