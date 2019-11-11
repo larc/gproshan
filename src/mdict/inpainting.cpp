@@ -82,7 +82,7 @@ distance_t inpainting::execute()
 	size_t percent = 30;
 	
 	for(index_t s = 0; s < M; s++)
-		patches[s].reset_xyz_disjoint(mesh, patches_map, s, [&percent](const index_t & i, size_t tam) -> bool { return i < ceil(tam * percent/ 100); });
+		patches[s].reset_xyz_disjoint(mesh, dist, patches_map, s, [&percent](const index_t & i, size_t tam) -> bool { return i < ceil(tam * percent/ 100); });
 
 	#pragma omp parallel for
 	for(index_t s = 0; s < M; s++)
@@ -94,11 +94,7 @@ distance_t inpainting::execute()
 		phi_basis->discrete(p.phi, p.xyz);
 
 	}
-		//	patches[s].init(mesh, v, dictionary::T, phi_basis->radio, toplevel);
-	/*		p(0) = mesh->gt(u).x;
-				p(1) = mesh->gt(u).y;
-				p(2) = mesh->gt(u).z;
-				p = T.t() * (p - x);*/
+
 
 }
 

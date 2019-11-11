@@ -68,6 +68,7 @@ class patch
 						const fmask_t & mask = nullptr
 						);
 		void reset_xyz_disjoint(	che * mesh,
+						distance_t * dist,
 						std::vector<vpatches_t> & vpatches,
 						const index_t & p,
 						const fmask_local_t & mask = nullptr
@@ -76,6 +77,7 @@ class patch
 
 		void save(const real_t & radio, const size_t & imsize, CImgList<real_t> & imlist);
 		void update_heights(real_t & min, real_t & max, bool flag);
+		
 
 	private:
 		/// Gather the vertices needed to compute the jet_fit_directions of the patch.

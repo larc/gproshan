@@ -511,6 +511,8 @@ void viewer_process_inpaiting()
 	dict.execute();
 
 	delete phi;
+	viewer::mesh().update_colors(&dict[0]);
+	
 	viewer::mesh().update_normals();
 }
 
