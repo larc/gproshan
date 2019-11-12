@@ -503,7 +503,7 @@ void viewer_process_inpaiting()
 	distance_t f;
 	bool learn;
 
-	gproshan_log(parameters: (n, m, M, f, learn));
+	gproshan_input(n m M f learn);
 	cin >> n >> m >> M >> f >> learn;
 
 	basis * phi = new basis_dct(n);

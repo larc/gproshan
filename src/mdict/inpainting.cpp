@@ -12,20 +12,18 @@ inpainting::inpainting(che *const & _mesh, basis *const & _phi_basis, const size
 
 distance_t inpainting::execute()
 {
-	size_t M = mesh->n_vertices()/36;
-	gproshan_log(Sampling);
+	M = mesh->n_vertices()/36;
+	gproshan_log_var(M);
 
-	distance_t radio;
-	static std::vector<index_t> select_vertices;
-	TIC(d_time)
-	load_sampling(select_vertices,  radio, mesh, M);
-	TOC(d_time)
-	gproshan_log_var(d_time);	
-	TIC(d_time)
+
+	TIC(d_time) init_sampling(); TOC(d_time)
+	gproshan_debug_var(d_time);
+
+
 #ifdef GPROSHAN_CUDA
-	geodesics ptp( mesh, select_vertices, geodesics::PTP_GPU, nullptr, 1);
+	geodesics ptp( mesh, sampling, geodesics::PTP_GPU, nullptr, 1);
 #else
-	geodesics ptp( mesh, select_vertices, geodesics::FM, nullptr, 1);
+	geodesics ptp( mesh, sampling, geodesics::FM, nullptr, 1);
 #endif
 	TOC(d_time)
 	gproshan_log_var(d_time);
@@ -37,27 +35,36 @@ distance_t inpainting::execute()
 	#pragma omp for 
 	for(index_t s = 0; s < M; s++)
 	{
-		vertices[s].push_back(select_vertices[s]);
+		vertices[s].push_back(sample(s));
 	}
 
-	#pragma omp parallel for
+	
+	//#pragma omp parallel for
 	for(index_t i = 0; i < mesh->n_vertices(); i++)
 	{
-		vertices[ ptp.clusters[i] ].push_back(i) ;
+		ptp.clusters[i]--;
+		if(sample(ptp.clusters[i]) != i)
+			vertices[ ptp.clusters[i] ].push_back(i) ;
 	}
+
+
+
+
+	gproshan_log(seed vertices);
+
+	patches.resize(M);
+	patches_map.resize(n_vertices);
 	//initializing patch
 	#pragma omp parallel
-		{
-			index_t * toplevel = new index_t[n_vertices];
+	{
+		index_t * toplevel = new index_t[mesh->n_vertices()];
 
-			#pragma omp for 
-			for(index_t s = 0; s < M; s++)
-			{
-				patches[s].init_disjoint(mesh, select_vertices[s], dictionary::T, vertices[s], toplevel);
-			}
+		#pragma omp for 
+		for(index_t s = 0; s < M; s++)
+		{
+			patches[s].init_disjoint(mesh, sample(s), dictionary::T, vertices[s], toplevel);
 			
-			delete [] toplevel;
-		}
+		}		
 		#ifndef NDEBUG
 			size_t patch_avg_size = 0;
 			size_t patch_min_size = NIL;
@@ -78,8 +85,8 @@ distance_t inpainting::execute()
 			gproshan_debug_var(patch_min_size);
 			gproshan_debug_var(patch_max_size);
 		#endif
-	
-	size_t percent = 30;
+	}
+	size_t percent = 90;
 	
 	for(index_t s = 0; s < M; s++)
 		patches[s].reset_xyz_disjoint(mesh, dist, patches_map, s, [&percent](const index_t & i, size_t tam) -> bool { return i < ceil(tam * percent/ 100); });
@@ -93,7 +100,7 @@ distance_t inpainting::execute()
 		p.phi.set_size(p.xyz.n_cols, phi_basis->get_dim());
 		phi_basis->discrete(p.phi, p.xyz);
 
-	}
+	} 
 
 
 }

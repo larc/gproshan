@@ -47,10 +47,10 @@ void patch::init_disjoint(che * mesh, const index_t & v, const size_t & n_toplev
 	
 	gather_vertices(mesh, v, n_toplevels, toplevel);
 	jet_fit_directions(mesh, v);
+	//vertices = _vertices;
 	vertices = std::move(_vertices);
-//	gather_vertices(mesh, v, radio, toplevel);
 
-	if(!_toplevel) delete [] toplevel;
+	if(!_toplevel) delete [] toplevel; // If it is null
 }
 
 // xyz = E.t * (xyz - avg)
@@ -99,7 +99,7 @@ void patch::reset_xyz_disjoint(che * mesh, distance_t * dist, vector<vpatches_t>
 	{
 		m = 0;
 		for(index_t i = 0; i < vertices.size(); i++)
-			if(mask(i, vertices.size())) { dist[vertices[i] ] = 1; m++; } else {dist[vertices[i] ] = 0;};
+			if(mask(i, vertices.size())) { dist[vertices[i] ] = float(p + 1) / 4804; m++; } else {dist[vertices[i] ] = INFINITY;};
 	}
 
 	xyz.set_size(3, m);
@@ -154,6 +154,7 @@ void patch::gather_vertices(che * mesh, const index_t & v, const size_t & n_topl
 	link_t link;
 	toplevel[v] = 0;
 	vertices.push_back(v);
+	
 	for(index_t i = 0; i < vertices.size(); i++)
 	{
 		const index_t & v = vertices[i];
