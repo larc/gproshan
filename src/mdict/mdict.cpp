@@ -209,13 +209,16 @@ void KSVD(a_mat & A, const vector<patch> & patches, const size_t & L, size_t k)
 {
 	size_t K = A.n_rows;
 
-	a_mat alpha;
+	a_mat & new_A = A;
+	a_mat alpha, D, E, sum, sum_error;
+	real_t aj;
+	a_vec a;
 
 	while(k--)
 	{
 		alpha = OMP_all(patches, A, L);
 
-		#pragma omp parallel for
+		#pragma omp parallel for private(a, aj, D, E, sum, sum_error)
 		for(index_t j = 0; j < A.n_cols; j++)
 		{
 			arma::uvec omega = find(abs(alpha.row(j)) > 0);
@@ -223,23 +226,24 @@ void KSVD(a_mat & A, const vector<patch> & patches, const size_t & L, size_t k)
 			a_mat sum(K, K, arma::fill::zeros);
 			a_vec sum_error(K, arma::fill::zeros);
 
-			for(arma::uword o: omega)
+			for(arma::uword & i: omega)
 			{
-				sum += alpha(j, o) * patches[o].phi.t() * patches[o].phi;
+				a = alpha.col(i);
+				a(j) = 0;
 
-				a_mat D = patches[o].phi * A;
-				D.col(j).zeros();
-				a_mat e = patches[o].xyz.row(2).t() - D * alpha.col(o);
+				D = patches[i].phi * A;
+				E = patches[i].xyz.row(2).t() - D * alpha.col(i);
+				aj = as_scalar(E.t() * D.col(j) / (D.col(j).t() * D.col(j)));
 
-				sum_error += alpha(j, o) * patches[o].phi.t() * e;
+				sum += aj * aj * patches[i].phi.t() * patches[i].phi;
+				sum_error += aj * patches[i].phi.t() * E;
 			}
+
 			if(omega.size())
-			{
-				a_vec X;
-				solve(X, sum, sum_error);
-				A.col(j) = X;
-			}
+				new_A.col(j) = solve(sum, sum_error);
 		}
+
+		A = new_A;
 	}
 }
 
