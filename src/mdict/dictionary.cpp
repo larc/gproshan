@@ -19,7 +19,7 @@ using namespace cimg_library;
 namespace gproshan::mdict {
 
 
-size_t dictionary::L = 20;
+size_t dictionary::L = 8;
 size_t dictionary::K = 10;
 size_t dictionary::T = 5;
 
@@ -173,7 +173,6 @@ void dictionary::init_patches(const bool & reset, const fmask_t & mask)
 		p.save_z(os);
 	}
 	os.close();
-	/*
 	// DRAW NORMALS DEBUG
 	for(index_t s = 0; s < M; s++)
 	{

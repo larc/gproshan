@@ -35,8 +35,8 @@ class dictionary
 		std::vector<vpatches_t> patches_map;	///< invert index vertex to patches.
 
 		double d_time;							///< time of operations.
-		bool d_plot;							///< plot atoms and basis with gnuplot.
 		bool learn;
+		bool d_plot;							///< plot atoms and basis with gnuplot.
 		distance_t * dist;
 	
 	public:
