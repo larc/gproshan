@@ -71,7 +71,7 @@ class patch
 						distance_t * dist,
 						std::vector<vpatches_t> & vpatches,
 						const index_t & p,
-						const fmask_local_t & mask = nullptr
+						const fmask_t & mask = nullptr
 						);
 		const a_vec normal();
 

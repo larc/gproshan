@@ -51,7 +51,7 @@ distance_t inpainting::execute()
 	}
 	
 	// create initial desired percentage sizes
-	size_t percent = 50;
+	size_t percent = 35;
 
 	#pragma omp for 
 	for(index_t s = 0; s < M; s++)
@@ -70,20 +70,15 @@ distance_t inpainting::execute()
 		if(!mask[rn] && percentages_size[ptp.clusters[rn] ] > 0)
 		{
 			mask[rn] = 1;
-			percentages_size[ ptp.clusters[rn] ]--;
-			
+			percentages_size[ ptp.clusters[rn] ]--;			
 		}
 		if(percentages_size[ptp.clusters[rn] ] == 0)	
 			k++;
-
-		gproshan_log_var(mask[rn]);
-			
-		
 	}
 	
 	gproshan_log(our mask is ready);
 
-	gproshan_log(seed vertices);
+	gproshan_log(initializing patches);
 
 	patches.resize(M);
 	patches_map.resize(n_vertices);
@@ -114,15 +109,15 @@ distance_t inpainting::execute()
 				patch_max_size = max(patches[s].vertices.size(), patch_max_size);
 
 			patch_avg_size /= M;
-			gproshan_debug_var(patch_avg_size);
-			gproshan_debug_var(patch_min_size);
-			gproshan_debug_var(patch_max_size);
+			//gproshan_debug_var(patch_avg_size);
+			//gproshan_debug_var(patch_min_size);
+			//gproshan_debug_var(patch_max_size);
 		#endif
 	}
 
 	
 	for(index_t s = 0; s < M; s++)
-		patches[s].reset_xyz(mesh, patches_map, s, [&mask](const index_t & i) -> bool { return mask[i]; } );
+		patches[s].reset_xyz_disjoint(mesh, dist, patches_map, s, [&mask](const index_t & i) -> bool { return mask[i]; } );
 
 	#pragma omp parallel for
 	for(index_t s = 0; s < M; s++)
@@ -135,6 +130,14 @@ distance_t inpainting::execute()
 
 	} 
 
+	gproshan_log(our patches are ready); 
+
+	// sparse coding and reconstruction with all patches
+	TIC(d_time) sparse_coding(); TOC(d_time)
+	gproshan_debug_var(d_time);
+
+	TIC(d_time) mesh_reconstruction(); TOC(d_time)
+	gproshan_debug_var(d_time);
 
 }
 
