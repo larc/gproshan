@@ -7,6 +7,7 @@
 #include "sampling.h"
 #include "geodesics.h"
 #include "geodesics_ptp.h"
+#include <random>
 
 
 // geometry processing and shape analysis framework

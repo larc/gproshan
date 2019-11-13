@@ -38,17 +38,50 @@ distance_t inpainting::execute()
 		vertices[s].push_back(sample(s));
 	}
 
+	bool * mask = new bool[mesh->n_vertices()];
+	size_t * percentages_size = new size_t[M];
 	
 	//#pragma omp parallel for
 	for(index_t i = 0; i < mesh->n_vertices(); i++)
 	{
+		mask[i] = 0;
 		ptp.clusters[i]--;
 		if(sample(ptp.clusters[i]) != i)
 			vertices[ ptp.clusters[i] ].push_back(i) ;
 	}
+	
+	// create initial desired percentage sizes
+	size_t percent = 50;
 
+	#pragma omp for 
+	for(index_t s = 0; s < M; s++)
+	{
+		percentages_size[s] = ceil(vertices[s].size() * percent/ 100) ;
+	}
 
+	std::default_random_engine generator;
+  	std::uniform_int_distribution<int> distribution(0,M);
 
+	int k = 0;
+	size_t rn=0;
+	while( k < M )
+	{
+		rn = distribution(generator);
+		if(!mask[rn] && percentages_size[ptp.clusters[rn] ] > 0)
+		{
+			mask[rn] = 1;
+			percentages_size[ ptp.clusters[rn] ]--;
+			
+		}
+		if(percentages_size[ptp.clusters[rn] ] == 0)	
+			k++;
+
+		gproshan_log_var(mask[rn]);
+			
+		
+	}
+	
+	gproshan_log(our mask is ready);
 
 	gproshan_log(seed vertices);
 
@@ -86,10 +119,10 @@ distance_t inpainting::execute()
 			gproshan_debug_var(patch_max_size);
 		#endif
 	}
-	size_t percent = 90;
+
 	
 	for(index_t s = 0; s < M; s++)
-		patches[s].reset_xyz_disjoint(mesh, dist, patches_map, s, [&percent](const index_t & i, size_t tam) -> bool { return i < ceil(tam * percent/ 100); });
+		patches[s].reset_xyz(mesh, patches_map, s, [&mask](const index_t & i) -> bool { return mask[i]; } );
 
 	#pragma omp parallel for
 	for(index_t s = 0; s < M; s++)
