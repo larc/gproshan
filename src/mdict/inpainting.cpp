@@ -14,7 +14,7 @@ distance_t inpainting::execute()
 {
 	M = mesh->n_vertices()/36;
 	gproshan_log_var(M);
-
+	gproshan_debug_var(M);
 
 	TIC(d_time) init_sampling(); TOC(d_time)
 	gproshan_debug_var(d_time);
@@ -135,6 +135,9 @@ distance_t inpainting::execute()
 	// sparse coding and reconstruction with all patches
 	TIC(d_time) sparse_coding(); TOC(d_time)
 	gproshan_debug_var(d_time);
+
+	for(index_t s = 0; s < M; s++)
+		patches[s].reset_xyz(mesh, patches_map, s);
 
 	TIC(d_time) mesh_reconstruction(); TOC(d_time)
 	gproshan_debug_var(d_time);
