@@ -12,14 +12,16 @@ inpainting::inpainting(che *const & _mesh, basis *const & _phi_basis, const size
 
 distance_t inpainting::execute()
 {
+	// M: the number of seeds
 	M = mesh->n_vertices()/36;
 	gproshan_log_var(M);
 	gproshan_debug_var(M);
 
+	//FPS sampling with desired number of sources
 	TIC(d_time) init_sampling(); TOC(d_time)
 	gproshan_debug_var(d_time);
 
-
+	// creating disjoint clusters with geodesics aka voronoi
 #ifdef GPROSHAN_CUDA
 	geodesics ptp( mesh, sampling, geodesics::PTP_GPU, nullptr, 1);
 #else
@@ -28,6 +30,7 @@ distance_t inpainting::execute()
 	TOC(d_time)
 	gproshan_log_var(d_time);
 
+	//mapping the vertices to disjoint patches 1 vertex belongs only to one patch
 	// creating new patches
 	std::vector<index_t> vertices[M];
 
@@ -41,6 +44,7 @@ distance_t inpainting::execute()
 	bool * mask = new bool[mesh->n_vertices()];
 	size_t * percentages_size = new size_t[M];
 	
+	// vertices contains the mapping.
 	//#pragma omp parallel for
 	for(index_t i = 0; i < mesh->n_vertices(); i++)
 	{
@@ -49,9 +53,9 @@ distance_t inpainting::execute()
 		if(sample(ptp.clusters[i]) != i)
 			vertices[ ptp.clusters[i] ].push_back(i) ;
 	}
-	
+	//Randomly remove a percentage of points for each patch
 	// create initial desired percentage sizes
-	size_t percent = 35;
+	size_t percent = 50;
 
 	#pragma omp for 
 	for(index_t s = 0; s < M; s++)
@@ -75,7 +79,7 @@ distance_t inpainting::execute()
 		if(percentages_size[ptp.clusters[rn] ] == 0)	
 			k++;
 	}
-	
+	//Initializing patches
 	gproshan_log(our mask is ready);
 
 	gproshan_log(initializing patches);
@@ -117,7 +121,7 @@ distance_t inpainting::execute()
 
 	
 	for(index_t s = 0; s < M; s++)
-		patches[s].reset_xyz_disjoint(mesh, dist, patches_map, s, [&mask](const index_t & i) -> bool { return mask[i]; } );
+		patches[s].reset_xyz_disjoint(mesh, dist, patches_map, s, 0 ,[&mask](const index_t & i) -> bool { return mask[i]; } );
 
 	#pragma omp parallel for
 	for(index_t s = 0; s < M; s++)
@@ -136,8 +140,21 @@ distance_t inpainting::execute()
 	TIC(d_time) sparse_coding(); TOC(d_time)
 	gproshan_debug_var(d_time);
 
+
+
+for(index_t s = 0; s < M; s++)
+//	patches[s].reset_xyz_disjoint(mesh, dist, patches_map, s, 1 ,[&mask](const index_t & i) -> bool { return !mask[i]; } );
+	patches[s].reset_xyz(mesh, patches_map, s, 0);
+
+	#pragma omp parallel for
 	for(index_t s = 0; s < M; s++)
-		patches[s].reset_xyz(mesh, patches_map, s);
+	{
+		patch & p = patches[s];
+
+		p.transform();
+		p.phi.set_size(p.xyz.n_cols, phi_basis->get_dim());
+		phi_basis->discrete(p.phi, p.xyz);
+	}
 
 	TIC(d_time) mesh_reconstruction(); TOC(d_time)
 	gproshan_debug_var(d_time);

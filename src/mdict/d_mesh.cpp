@@ -254,7 +254,6 @@ distance_t mesh_reconstruction(che * mesh, size_t M, vector<patch> & patches, ve
 		if(rp.phi.n_rows)
 		{
 			a_vec x = rp.phi * A * alpha.col(p);
-
 			rp.xyz.row(2) = x.t();
 			rp.itransform();
 		}
@@ -312,6 +311,7 @@ distance_t mesh_reconstruction(che * mesh, size_t M, vector<patch> & patches, ve
 
 	image_out.save("../tmp/barbara_output.jpg");
 	(image,image_out).display();*/
+	//distance_t error = 0;
 	return error;
 }
 
@@ -444,7 +444,8 @@ a_vec simple_means_vertex( const index_t & v, vector<patch> & patches, vector<vp
 	for(auto p: patches_map[v])
 		n_a_vec += patches[p.first].xyz.col(p.second);
 
-	return n_a_vec / patches_map[v].size();
+//	if (patches_map[v].size() > 1) { gproshan_debug_var(v); }
+	return n_a_vec/ patches_map[v].size();
 }
 
 

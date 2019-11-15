@@ -70,7 +70,7 @@ class patch
 		void reset_xyz_disjoint(	che * mesh,
 						distance_t * dist,
 						std::vector<vpatches_t> & vpatches,
-						const index_t & p,
+						const index_t & p, bool reverse,
 						const fmask_t & mask = nullptr
 						);
 		const a_vec normal();

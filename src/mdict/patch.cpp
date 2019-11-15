@@ -86,13 +86,16 @@ void patch::reset_xyz(che * mesh, vector<vpatches_t> & vpatches, const index_t &
 			xyz(0, j) = v.x;
 			xyz(1, j) = v.y;
 			xyz(2, j) = v.z;
-			
+			//p idx patche where belongs to
+			//j: local index 
+			//i: global index
+			//if(vpatches[vertices[i]].size() == 0)
 			vpatches[vertices[i]].push_back({p, j++});
 		}
 	}
 }
 
-void patch::reset_xyz_disjoint(che * mesh, distance_t * dist, vector<vpatches_t> & vpatches, const index_t & p, const fmask_t & mask)
+void patch::reset_xyz_disjoint(che * mesh, distance_t * dist, vector<vpatches_t> & vpatches, const index_t & p,  bool reverse, const fmask_t & mask)
 {
 	size_t m = vertices.size();
 	if(mask)
@@ -101,7 +104,7 @@ void patch::reset_xyz_disjoint(che * mesh, distance_t * dist, vector<vpatches_t>
 		for(index_t i = 0; i < vertices.size(); i++)
 			if(mask(i)) { dist[vertices[i] ] = float(p + 1) / 4804; m++; } else {dist[vertices[i] ] = INFINITY;};
 	}
-
+	if(reverse) m = vertices.size();
 	xyz.set_size(3, m);
 	for(index_t j = 0, i = 0; i < vertices.size(); i++)
 	{
