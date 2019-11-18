@@ -70,10 +70,10 @@ void patch::itransform()
 void patch::reset_xyz(che * mesh, vector<vpatches_t> & vpatches, const index_t & p, const fmask_t & mask)
 {
 	size_t m = vertices.size();
-	for(index_t j = 0, i = 0; i < vertices.size(); i++)
+	/*for(index_t j = 0, i = 0; i < vertices.size(); i++)
 	{
 		vpatches[j].clear();
-	}
+	}*/
 	
 	if(mask)
 	{
@@ -103,19 +103,20 @@ void patch::reset_xyz(che * mesh, vector<vpatches_t> & vpatches, const index_t &
 void patch::reset_xyz_disjoint(che * mesh, distance_t * dist, vector<vpatches_t> & vpatches, const index_t & p,  bool reverse, const fmask_t & mask)
 {
 	size_t m = vertices.size();
-	for(index_t j = 0, i = 0; i < vertices.size(); i++)
+	/*for(index_t j = 0, i = 0; i < vertices.size(); i++)
 	{
 		vpatches[j].clear();
-	}
+	}*/
 	if(mask)
 	{
 		m = 0;
 		for(index_t i = 0; i < vertices.size(); i++)
 			if(mask(i)) { dist[vertices[i] ] = float(p + 1) / 4804; m++; } else {dist[vertices[i] ] = INFINITY;};
 	}
-	if(reverse) m = vertices.size();
+	index_t j = 0;
+	if(reverse) {	m = vertices.size(); j = vertices.size();	}
 	xyz.set_size(3, m);
-	for(index_t j = 0, i = 0; i < vertices.size(); i++)
+	for(index_t  i = 0; i < vertices.size(); i++)
 	{
 		if(!mask || mask(i))
 		{

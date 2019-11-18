@@ -143,8 +143,8 @@ distance_t inpainting::execute()
 
 
 for(index_t s = 0; s < M; s++)
-//	patches[s].reset_xyz_disjoint(mesh, dist, patches_map, s, 1 ,[&mask](const index_t & i) -> bool { return !mask[i]; } );
-	patches[s].reset_xyz(mesh, patches_map, s, 0);
+	patches[s].reset_xyz_disjoint(mesh, dist, patches_map, s, 1 ,[&mask](const index_t & i) -> bool { return !mask[i]; } );
+//	patches[s].reset_xyz(mesh, patches_map, s, 0);
 
 	#pragma omp parallel for
 	for(index_t s = 0; s < M; s++)
