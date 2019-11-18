@@ -70,10 +70,7 @@ void patch::itransform()
 void patch::reset_xyz(che * mesh, vector<vpatches_t> & vpatches, const index_t & p, const fmask_t & mask)
 {
 	size_t m = vertices.size();
-	/*for(index_t j = 0, i = 0; i < vertices.size(); i++)
-	{
-		vpatches[j].clear();
-	}*/
+
 	
 	if(mask)
 	{
@@ -103,10 +100,7 @@ void patch::reset_xyz(che * mesh, vector<vpatches_t> & vpatches, const index_t &
 void patch::reset_xyz_disjoint(che * mesh, distance_t * dist, vector<vpatches_t> & vpatches, const index_t & p,  bool reverse, const fmask_t & mask)
 {
 	size_t m = vertices.size();
-	/*for(index_t j = 0, i = 0; i < vertices.size(); i++)
-	{
-		vpatches[j].clear();
-	}*/
+
 	if(mask)
 	{
 		m = 0;

@@ -140,11 +140,15 @@ distance_t inpainting::execute()
 	TIC(d_time) sparse_coding(); TOC(d_time)
 	gproshan_debug_var(d_time);
 
+	//patches_map.resize(n_vertices);
+	for(index_t  i = 0; i < n_vertices; i++)
+	{
+		patches_map[i].clear();
+	}
 
-
-for(index_t s = 0; s < M; s++)
-	patches[s].reset_xyz_disjoint(mesh, dist, patches_map, s, 1 ,[&mask](const index_t & i) -> bool { return !mask[i]; } );
-//	patches[s].reset_xyz(mesh, patches_map, s, 0);
+	for(index_t s = 0; s < M; s++)
+//	patches[s].reset_xyz_disjoint(mesh, dist, patches_map, s, 1 ,[&mask](const index_t & i) -> bool { return !mask[i]; } );
+		patches[s].reset_xyz(mesh, patches_map, s, 0);
 
 	#pragma omp parallel for
 	for(index_t s = 0; s < M; s++)

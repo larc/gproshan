@@ -444,7 +444,7 @@ a_vec simple_means_vertex( const index_t & v, vector<patch> & patches, vector<vp
 	for(auto p: patches_map[v])
 		n_a_vec += patches[p.first].xyz.col(p.second);
 
-//	if (patches_map[v].size() > 1) { gproshan_debug_var(v); }
+	if (patches_map[v].size() > 1) { gproshan_debug_var(patches_map[v].size()); }
 	return n_a_vec/ patches_map[v].size();
 }
 
