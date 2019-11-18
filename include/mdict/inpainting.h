@@ -22,7 +22,9 @@ class inpainting : public dictionary
 		virtual ~inpainting() = default;
 
 		distance_t execute();
+		void create_save_mask();
 		distance_t execute_tmp();
+	
 };
 
 

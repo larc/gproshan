@@ -1,4 +1,5 @@
 #include "inpainting.h"
+#include <cassert>
 
 
 // geometry processing and shape analysis framework
@@ -12,14 +13,24 @@ inpainting::inpainting(che *const & _mesh, basis *const & _phi_basis, const size
 
 distance_t inpainting::execute()
 {
+	//size avg of number of vertices per patch
+	size_t avg_p = 36;
 	// M: the number of seeds
-	M = mesh->n_vertices()/36;
+	M = mesh->n_vertices()/avg_p;
+	size_t percent = 50;
 	gproshan_log_var(M);
 	gproshan_debug_var(M);
 
-	//FPS sampling with desired number of sources
+	string f_mask = tmp_file_path(mesh->name_size() + '_' + to_string(avg_p) + '_' + to_string(percent)  + ".msk");
+	a_vec vdist;
+
+	bool * mask = new bool[mesh->n_vertices()];
+
+	//FPS samplif_dictng with desired number of sources
 	TIC(d_time) init_sampling(); TOC(d_time)
 	gproshan_debug_var(d_time);
+
+	
 
 	// creating disjoint clusters with geodesics aka voronoi
 #ifdef GPROSHAN_CUDA
@@ -41,47 +52,73 @@ distance_t inpainting::execute()
 		vertices[s].push_back(sample(s));
 	}
 
-	bool * mask = new bool[mesh->n_vertices()];
-	size_t * percentages_size = new size_t[M];
-	
-	// vertices contains the mapping.
-	//#pragma omp parallel for
-	for(index_t i = 0; i < mesh->n_vertices(); i++)
-	{
-		mask[i] = 0;
-		ptp.clusters[i]--;
-		if(sample(ptp.clusters[i]) != i)
-			vertices[ ptp.clusters[i] ].push_back(i) ;
-	}
-	//Randomly remove a percentage of points for each patch
-	// create initial desired percentage sizes
-	size_t percent = 50;
+	a_vec V(mesh->n_vertices());
 
-	#pragma omp for 
-	for(index_t s = 0; s < M; s++)
-	{
-		percentages_size[s] = ceil(vertices[s].size() * percent/ 100) ;
-	}
-
-	std::default_random_engine generator;
-  	std::uniform_int_distribution<int> distribution(0,M);
-
-	int k = 0;
-	size_t rn=0;
-	while( k < M )
-	{
-		rn = distribution(generator);
-		if(!mask[rn] && percentages_size[ptp.clusters[rn] ] > 0)
+	if(!V.load(f_mask))
+	{	
+		V.zeros();
+		//bool * mask = new bool[mesh->n_vertices()];
+		size_t * percentages_size = new size_t[M];
+		
+		// vertices contains the mapping.
+		//#pragma omp parallel for
+		for(index_t i = 0; i < mesh->n_vertices(); i++)
 		{
-			mask[rn] = 1;
-			percentages_size[ ptp.clusters[rn] ]--;			
+			mask[i] = 0;
+		
+			ptp.clusters[i]--;
+			if(sample(ptp.clusters[i]) != i)
+				vertices[ ptp.clusters[i] ].push_back(i) ;
 		}
-		if(percentages_size[ptp.clusters[rn] ] == 0)	
-			k++;
+		//Randomly remove a percentage of points for each patch
+		// create initial desired percentage sizes
+
+
+		#pragma omp for 
+		for(index_t s = 0; s < M; s++)
+		{
+			percentages_size[s] = ceil(vertices[s].size() * percent/ 100) ;
+		}
+
+		std::default_random_engine generator;
+		std::uniform_int_distribution<int> distribution(0,M);
+
+		int k = 0;
+		size_t rn=0;
+
+		//gproshan_debug();
+		while( k < M )
+		{
+			rn = distribution(generator);
+			if(rn < V.n_elem) {gproshan_debug_var(rn); }
+			if(!mask[rn] && percentages_size[ptp.clusters[rn] ] > 0)
+			{
+
+		//gproshan_debug();
+				mask[rn] = 1;
+				//V(rn) = 1;
+
+		//gproshan_debug();
+				percentages_size[ ptp.clusters[rn] ]--;			
+			}
+			if(percentages_size[ptp.clusters[rn] ] == 0)	
+				k++;
+		}
+		
+		//gproshan_debug();
+		V.save(f_mask);
+		gproshan_log(our mask is ready);
+	}
+	else
+	{
+		gproshan_debug(here not reading);
+		#pragma omp for 
+		for(index_t i = 0; i < mesh->n_vertices(); i++)
+		{
+			mask[i] = V(i);
+		}
 	}
 	//Initializing patches
-	gproshan_log(our mask is ready);
-
 	gproshan_log(initializing patches);
 
 	patches.resize(M);
@@ -135,6 +172,7 @@ distance_t inpainting::execute()
 	} 
 
 	gproshan_log(our patches are ready); 
+	
 
 	// sparse coding and reconstruction with all patches
 	TIC(d_time) sparse_coding(); TOC(d_time)
