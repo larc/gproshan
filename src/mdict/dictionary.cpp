@@ -46,7 +46,7 @@ void dictionary::learning()
 	{
 		A.eye(phi_basis->dim, m);
 		// A.random(phi_basis->dim, m);
-		KSVD(A, patches, L, K);
+		sp_KSVD(A, patches, L, K);
 
 		gproshan_debug(Ok);
 		
@@ -66,8 +66,9 @@ void dictionary::learning()
 void dictionary::sparse_coding()
 {
 	gproshan_debug(MDICT);
-
-	alpha = OMP_all(patches, A, L);
+	
+	vector<locval_t> locval;
+	alpha = OMP_all(locval, patches, A, L);
 }
 
 void dictionary::init_sampling()
