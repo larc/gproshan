@@ -255,7 +255,7 @@ void KSVD(a_mat & A, const vector<patch> & patches, const size_t & L, size_t k)
 
 void OMP(vector<locval_t> & alpha, const patch & p, const index_t & i, const a_mat & A, const size_t & L)
 {
-	OMP(alpha, p.xyz.col(2).t(), i, p.phi * A, L);
+	OMP(alpha, p.xyz.row(2).t(), i, p.phi * A, L);
 }
 
 a_sp_mat OMP_all(vector<locval_t> & locval, const vector<patch> & patches, const a_mat & A, const size_t & L)
