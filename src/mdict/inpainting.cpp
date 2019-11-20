@@ -142,7 +142,7 @@ void inpainting::init_patches_disjoint()
 
 	bool * pmask = mask;
 	for(index_t s = 0; s < M; s++)
-		patches[s].reset_xyz_disjoint(mesh, dist, patches_map, s, 0 ,[&pmask](const index_t & i) -> bool { return pmask[i]; } );
+		patches[s].reset_xyz_disjoint(mesh, dist, patches_map, s ,[&pmask](const index_t & i) -> bool { return pmask[i]; } );
 
 	#pragma omp parallel for
 	for(index_t s = 0; s < M; s++)
