@@ -18,12 +18,17 @@ namespace gproshan::mdict {
 class inpainting : public dictionary
 {
 	public:
-		inpainting(che *const & _mesh, basis *const & _phi_basis, const size_t & _m, const size_t & _M, const distance_t & _f, const bool & _learn, const bool & _plot = true);
+		inpainting(che *const & _mesh, basis *const & _phi_basis, const size_t & _m, const size_t & _M, const distance_t & _f, const bool & _learn, size_t _avg_p = 36, size_t _perc = 50, const bool & _plot = false);
 		virtual ~inpainting() = default;
 
 		distance_t execute();
-		void create_save_mask();
+		void load_mask(std::vector<index_t>  vertices[], geodesics & ptp );
+		void init_patches_disjoint();
 		distance_t execute_tmp();
+	private:
+		size_t avg_p;
+		size_t percent;
+		bool * mask;
 	
 };
 

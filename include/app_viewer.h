@@ -52,6 +52,7 @@ void viewer_process_mdict_patch();
 void viewer_process_denoising();
 void viewer_process_super_resolution();
 void viewer_process_inpaiting();
+void viewer_process_mask();
 void viewer_process_synthesis();
 void viewer_process_iterative_inpaiting();
 

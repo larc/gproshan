@@ -1,37 +1,79 @@
 #include "inpainting.h"
 #include <cassert>
-
+#include <fstream>
 
 // geometry processing and shape analysis framework
 // mesh dictionary learning and sparse coding namespace
 namespace gproshan::mdict {
 
 
-inpainting::inpainting(che *const & _mesh, basis *const & _phi_basis, const size_t & _m, const size_t & _M, const distance_t & _f, const bool & _learn, const bool & _plot): dictionary(_mesh, _phi_basis, _m, _M, _f, _learn, _plot)
+inpainting::inpainting(che *const & _mesh, basis *const & _phi_basis, const size_t & _m, const size_t & _M, const distance_t & _f, const bool & _learn, size_t _avg_p, size_t _perc, const bool & _plot): dictionary(_mesh, _phi_basis, _m, _M, _f, _learn, _plot)
 {
+	avg_p = _avg_p;	//size avg of number of vertices per patch
+	percent = _perc; // mask percentage
+	M = mesh->n_vertices()/avg_p;
+	mask = new bool[mesh->n_vertices()];
 }
 
-distance_t inpainting::execute()
+void inpainting::load_mask(std::vector<index_t>  vertices[], geodesics & ptp )
 {
-	//size avg of number of vertices per patch
-	size_t avg_p = 36;
-	// M: the number of seeds
-	M = mesh->n_vertices()/avg_p;
-	size_t percent = 50;
-	gproshan_log_var(M);
-	gproshan_debug_var(M);
-
 	string f_mask = tmp_file_path(mesh->name_size() + '_' + to_string(avg_p) + '_' + to_string(percent)  + ".msk");
-	a_vec vdist;
+	arma::uvec V;
 
-	bool * mask = new bool[mesh->n_vertices()];
+	if(V.load(f_mask))
+	{
+		#pragma omp for 
+		for(index_t i = 0; i < mesh->n_vertices(); i++)
+		{
+			mask[i] = V(i);
+		}
+	}
+	else
+	{
+		V.zeros(mesh->n_vertices());
+		size_t * percentages_size = new size_t[M];
+
+			
+		// create initial desired percentage sizes
+		#pragma omp for 
+		for(index_t s = 0; s < M; s++)
+		{
+			percentages_size[s] = ceil(vertices[s].size() * percent/ 100) ;
+		}
+		//Generate random mask according to a percentage of patches capacity
+		std::default_random_engine generator;
+		std::uniform_int_distribution<int> distribution(0,M);
+
+		int k = 0;
+		size_t rn=0;
+
+		while( k < M )
+		{
+			rn = distribution(generator);
+			if(!mask[rn] && percentages_size[ptp.clusters[rn] ] > 0)
+			{
+
+				mask[rn] = 1;
+				V(rn) = 1;
+
+				percentages_size[ ptp.clusters[rn] ]--;			
+			}
+			if(percentages_size[ptp.clusters[rn] ] == 0)	
+				k++;
+		}
+		V.save(f_mask);
+	}
+	
+}
+
+void inpainting::init_patches_disjoint()
+{
+	gproshan_log_var(M);
 
 	//FPS samplif_dictng with desired number of sources
 	TIC(d_time) init_sampling(); TOC(d_time)
 	gproshan_debug_var(d_time);
-
 	
-
 	// creating disjoint clusters with geodesics aka voronoi
 #ifdef GPROSHAN_CUDA
 	geodesics ptp( mesh, sampling, geodesics::PTP_GPU, nullptr, 1);
@@ -41,8 +83,6 @@ distance_t inpainting::execute()
 	TOC(d_time)
 	gproshan_log_var(d_time);
 
-	//mapping the vertices to disjoint patches 1 vertex belongs only to one patch
-	// creating new patches
 	std::vector<index_t> vertices[M];
 
 	//saving first vertex aka seed vertices
@@ -52,72 +92,16 @@ distance_t inpainting::execute()
 		vertices[s].push_back(sample(s));
 	}
 
-	a_vec V(mesh->n_vertices());
-
-	if(!V.load(f_mask))
-	{	
-		V.zeros();
-		//bool * mask = new bool[mesh->n_vertices()];
-		size_t * percentages_size = new size_t[M];
-		
-		// vertices contains the mapping.
-		//#pragma omp parallel for
-		for(index_t i = 0; i < mesh->n_vertices(); i++)
-		{
-			mask[i] = 0;
-		
+	for(index_t i = 0; i < mesh->n_vertices(); i++)
+		{		
 			ptp.clusters[i]--;
 			if(sample(ptp.clusters[i]) != i)
 				vertices[ ptp.clusters[i] ].push_back(i) ;
 		}
-		//Randomly remove a percentage of points for each patch
-		// create initial desired percentage sizes
+	
+	load_mask(vertices, ptp);
 
 
-		#pragma omp for 
-		for(index_t s = 0; s < M; s++)
-		{
-			percentages_size[s] = ceil(vertices[s].size() * percent/ 100) ;
-		}
-
-		std::default_random_engine generator;
-		std::uniform_int_distribution<int> distribution(0,M);
-
-		int k = 0;
-		size_t rn=0;
-
-		//gproshan_debug();
-		while( k < M )
-		{
-			rn = distribution(generator);
-			if(rn < V.n_elem) {gproshan_debug_var(rn); }
-			if(!mask[rn] && percentages_size[ptp.clusters[rn] ] > 0)
-			{
-
-		//gproshan_debug();
-				mask[rn] = 1;
-				//V(rn) = 1;
-
-		//gproshan_debug();
-				percentages_size[ ptp.clusters[rn] ]--;			
-			}
-			if(percentages_size[ptp.clusters[rn] ] == 0)	
-				k++;
-		}
-		
-		//gproshan_debug();
-		V.save(f_mask);
-		gproshan_log(our mask is ready);
-	}
-	else
-	{
-		gproshan_debug(here not reading);
-		#pragma omp for 
-		for(index_t i = 0; i < mesh->n_vertices(); i++)
-		{
-			mask[i] = V(i);
-		}
-	}
 	//Initializing patches
 	gproshan_log(initializing patches);
 
@@ -156,9 +140,9 @@ distance_t inpainting::execute()
 		#endif
 	}
 
-	
+	bool * pmask = mask;
 	for(index_t s = 0; s < M; s++)
-		patches[s].reset_xyz_disjoint(mesh, dist, patches_map, s, 0 ,[&mask](const index_t & i) -> bool { return mask[i]; } );
+		patches[s].reset_xyz_disjoint(mesh, dist, patches_map, s ,[&pmask](const index_t & i) -> bool { return pmask[i]; } );
 
 	#pragma omp parallel for
 	for(index_t s = 0; s < M; s++)
@@ -171,8 +155,14 @@ distance_t inpainting::execute()
 
 	} 
 
-	gproshan_log(our patches are ready); 
-	
+	gproshan_log(our patches are ready);
+}
+
+distance_t inpainting::execute()
+{
+
+	TIC(d_time) init_patches_disjoint(); TOC(d_time)
+	gproshan_debug_var(d_time);
 
 	// sparse coding and reconstruction with all patches
 	TIC(d_time) sparse_coding(); TOC(d_time)
@@ -185,7 +175,6 @@ distance_t inpainting::execute()
 	}
 
 	for(index_t s = 0; s < M; s++)
-//	patches[s].reset_xyz_disjoint(mesh, dist, patches_map, s, 1 ,[&mask](const index_t & i) -> bool { return !mask[i]; } );
 		patches[s].reset_xyz(mesh, patches_map, s, 0);
 
 	#pragma omp parallel for
@@ -200,8 +189,8 @@ distance_t inpainting::execute()
 
 	TIC(d_time) mesh_reconstruction(); TOC(d_time)
 	gproshan_debug_var(d_time);
-
 }
+
 
 distance_t inpainting::execute_tmp()
 {
