@@ -37,21 +37,22 @@ dictionary::~dictionary()
 
 void dictionary::learning()
 {
-	gproshan_debug(MDICT);
+	gproshan_log(MDICT);
 
 	string f_dict = tmp_file_path(mesh->name_size() + '_' + to_string(phi_basis->dim) + '_' + to_string(m) + '_' + to_string(f) + '_' + to_string(L) + ".dict");
-	gproshan_debug_var(f_dict);
 
-	if(learn && !A.load(f_dict))
+	if(learn)
 	{
-		A.eye(phi_basis->dim, m);
-		// A.random(phi_basis->dim, m);
-		sp_KSVD(A, patches, L, K);
+		gproshan_log_var(f_dict);
 
-		gproshan_debug(Ok);
-		
-		A.save(f_dict);
+		if(!A.load(f_dict))
+		{
+			A.randu(phi_basis->dim, m);
+			KSVD(A, patches, L, K);
+			A.save(f_dict);
+		}
 	}
+	else A.eye(phi_basis->dim, m);
 	
 	assert(A.n_rows == phi_basis->dim);
 	assert(A.n_cols == m);
@@ -65,15 +66,15 @@ void dictionary::learning()
 
 void dictionary::sparse_coding()
 {
-	gproshan_debug(MDICT);
+	gproshan_log(MDICT);
 	
 	vector<locval_t> locval;
-	alpha = OMP_all(locval, patches, A, L);
+	alpha = OMP_all(patches, A, L);
 }
 
 void dictionary::init_sampling()
 {
-	gproshan_debug(MDICT);
+	gproshan_log(MDICT);
 
 	n_vertices = mesh->n_vertices();
 
@@ -92,13 +93,14 @@ void dictionary::init_sampling()
 
 	s_radio = phi_basis->radio;
 	phi_basis->radio *= f;
+
 	gproshan_debug_var(s_radio);
 	gproshan_debug_var(phi_basis->radio);
 }
 
 void dictionary::init_patches(const bool & reset, const fmask_t & mask)
 {
-	gproshan_debug(MDICT);
+	gproshan_log(MDICT);
 
 	if(reset)
 	{
@@ -186,7 +188,7 @@ void dictionary::init_patches(const bool & reset, const fmask_t & mask)
 
 distance_t dictionary::mesh_reconstruction()
 {
-	gproshan_debug(MDICT);
+	gproshan_log(MDICT);
 
 	assert(n_vertices == mesh->n_vertices());
 	return mdict::mesh_reconstruction(mesh, M, patches, patches_map, A, alpha, dist);
@@ -246,6 +248,7 @@ const distance_t & dictionary::operator[](const index_t & i) const
 	assert(i < mesh->n_vertices());
 	return dist[i];
 }
+
 
 } // namespace gproshan::mdict
 
