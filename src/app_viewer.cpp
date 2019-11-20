@@ -504,12 +504,14 @@ void viewer_process_inpaiting()
 	size_t m, M;
 	distance_t f;
 	bool learn;
+	size_t avg_p; 
+	size_t percentage;
 
-	gproshan_input(n m M f learn);
-	cin >> n >> m >> M >> f >> learn;
+	gproshan_input(n m M f learn avg_p percentage);
+	cin >> n >> m >> M >> f >> learn >> avg_p >> percentage;
 
 	basis * phi = new basis_dct(n);
-	inpainting dict(viewer::mesh(), phi, m, M, f, learn);
+	inpainting dict(viewer::mesh(), phi, m, M, f, learn, avg_p, percentage);
 	dict.execute();
 
 	delete phi;
