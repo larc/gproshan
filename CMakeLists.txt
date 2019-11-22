@@ -17,7 +17,9 @@ find_package(CGAL REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(SuiteSparse REQUIRED)
 
-set(CMAKE_BUILD_TYPE Release)
+if(NOT CMAKE_BUILD_TYPE)
+	set(CMAKE_BUILD_TYPE Release)
+endif()
 
 set(CMAKE_CXX_FLAGS "-fopenmp -Wall -Wno-unused-result")
 set(CMAKE_CUDA_FLAGS "-Xcompiler -fopenmp")
