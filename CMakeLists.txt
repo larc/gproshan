@@ -18,7 +18,9 @@ find_package(Eigen3 REQUIRED)
 find_package(SuiteSparse REQUIRED)
 find_package(Boost COMPONENTS thread system)
 
-set(CMAKE_BUILD_TYPE Debug)
+if(NOT CMAKE_BUILD_TYPE)
+	set(CMAKE_BUILD_TYPE Release)
+endif()
 
 set(CMAKE_CXX_FLAGS "-fopenmp -Wall -Wno-unused-result")
 set(CMAKE_CUDA_FLAGS "-Xcompiler -fopenmp")

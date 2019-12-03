@@ -27,6 +27,9 @@ quaternion camera::clickToSphere(int x, int y)
 	int w = viewport[2];
 	int h = viewport[3];
 
+	x %= w;
+	y %= h;
+
 	quaternion p(0.,
 					2. * (double) x / (double) w - 1.,
 					2. * (double) y / (double) h - 1.,
