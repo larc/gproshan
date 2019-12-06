@@ -2,7 +2,7 @@
 #define INCLUDE_OPENGL_H
 
 #include <GL/glew.h>
-#include <GL/glut.h>
+#include <GL/freeglut.h>
 
 #endif // INCLUDE_OPENGL_H
 
