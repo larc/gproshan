@@ -249,6 +249,11 @@ const distance_t & dictionary::operator[](const index_t & i) const
 	return dist[i];
 }
 
+void dictionary::draw_patches(index_t i)
+{
+	phi_basis->plot_patch(A*alpha.col(i),patches[i].xyz);
+}
+
 
 } // namespace gproshan::mdict
 

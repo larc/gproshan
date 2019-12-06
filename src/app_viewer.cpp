@@ -513,7 +513,6 @@ void viewer_process_inpaiting()
 	basis * phi = new basis_dct(n);
 	inpainting dict(viewer::mesh(), phi, m, M, f, learn, avg_p, percentage);
 	dict.execute();
-
 	delete phi;
 	viewer::mesh().update_colors(&dict[0]);
 	
@@ -538,6 +537,7 @@ void viewer_process_mask()
 
 	basis * phi = new basis_dct(n);
 	inpainting dict(viewer::mesh(),  phi, m, M, f, learn, avg_p, percentage);
+
 	dict.init_patches_disjoint();
 
 	delete phi;

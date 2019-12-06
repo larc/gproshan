@@ -46,6 +46,7 @@ class dictionary
 	
 	public:
 		const distance_t & operator[](const index_t & i) const;
+		void draw_patches(index_t i);
 
 	protected:
 		dictionary(	che *const & _mesh, 		///< pointer to input mesh.
@@ -72,6 +73,7 @@ class dictionary
 		void update_alphas(a_mat & alpha, size_t threshold);
 
 		index_t sample(const index_t & s);
+		
 };
 
 
