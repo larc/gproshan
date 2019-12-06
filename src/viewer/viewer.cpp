@@ -32,6 +32,7 @@ vector<string> viewer::sub_menus;
 
 char * viewer::share = nullptr;
 
+GLFWwindow * viewer::window = nullptr;
 int viewer::window_size[2] = {1366, 768};
 int viewer::m_window_size[N_MESHES][2] = {	{1, 1}, {1, 2}, {1, 3}, 
 											{2, 2}, {2, 3}, {2, 3},
@@ -76,7 +77,7 @@ void viewer::init(const vector<che *> & _meshes)
 	init_glut();
 	add_mesh(_meshes);
 
-	glutSetWindowTitle(mesh()->filename().c_str());
+	glfwSetWindowTitle(window, mesh()->filename().c_str());
 	init_menus();
 
 	debug_info();
@@ -85,7 +86,13 @@ void viewer::init(const vector<che *> & _meshes)
 	set_gl();
 	init_glsl();
 
-	glutMainLoop();
+	while(!glfwWindowShouldClose(window))
+	{
+		display();
+	}
+
+	glfwDestroyWindow(window);
+	glfwTerminate();
 }
 
 void viewer::debug_info()
@@ -100,38 +107,34 @@ void viewer::debug_info()
 	fprintf(stderr, "GLSL Version %s\n", glGetString(GL_SHADING_LANGUAGE_VERSION));
 }
 
+void error_callback(int error, const char* description)
+{
+	fprintf(stderr, "Error %d: %s\n", error, description);
+}
+
 void viewer::init_glut()
 {
-	int argc = 0;
-	vector< vector<char> > argv(1);
+	glfwSetErrorCallback(error_callback);
 
-	// initialize window
-	glutInitWindowSize(window_size[0], window_size[1]);
-	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
-	glutInit(&argc, (char**)&argv);
-	glutCreateWindow("gproshan");
+	glfwInit();
+	
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+
+	window = glfwCreateWindow(window_size[0], window_size[1], "gproshan", NULL, NULL);
+
+	glfwSetKeyCallback(window, keyboard);
+	glfwSetMouseButtonCallback(window, mouse);
+
+	glfwMakeContextCurrent(window);
 
 	glewInit();
 
-	// specify callbacks
-	glutDisplayFunc(display);
-	glutIdleFunc(idle);
-	glutKeyboardFunc(keyboard);
-	glutSpecialFunc(special);
-	glutMouseFunc(mouse);
-	glutMotionFunc(motion);
-
-	glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_CONTINUE_EXECUTION);
+	glfwSwapInterval(1);
 }
 
 void viewer::init_menus()
 {
-	// set current mesh menu
-	int mesh_menu = glutCreateMenu(viewer::menu_meshes);
-	glutSetMenu(mesh_menu);
-	for(index_t i = 0; i < n_meshes; i++)
-		glutAddMenuEntry(meshes[i]->filename().c_str(), i);
-
 	// init viewer menu
 	sub_menus.push_back("viewer");
 	add_process('i', "Invert Orientation", invert_orientation);
@@ -150,33 +153,6 @@ void viewer::init_menus()
 	add_process('<', "Zoom In", menu_zoom_in);
 	add_process('>', "Zoom Out", menu_zoom_out);
 	add_process(27, "Exit", menu_exit);
-
-
-	// init
-	// process sub menus
-	int * sub_menu = new int[sub_menus.size()];
-
-	for(index_t sm = 0; sm < sub_menus.size(); sm++)
-		sub_menu[sm] = glutCreateMenu(viewer::menu_process);
-
-	char ss[128];
-	for(auto mp: viewer::processes)
-	{
-		sprintf(ss, "[%c] %s", mp.first, mp.second.name_function.c_str());
-		glutSetMenu(sub_menu[mp.second.sub_menu]);
-		glutAddMenuEntry(ss, mp.first);
-	}
-
-	int mainMenu = glutCreateMenu(viewer::menu);
-	glutSetMenu(mainMenu);
-
-	glutAddSubMenu("Select Mesh", mesh_menu);
-	for(index_t sm = 0; sm < sub_menus.size(); sm++)
-		glutAddSubMenu(sub_menus[sm].c_str(), sub_menu[sm]);
-
-	glutAttachMenu(GLUT_RIGHT_BUTTON);
-
-	delete [] sub_menu;
 }
 
 void viewer::init_glsl()
@@ -234,49 +210,50 @@ void viewer::add_mesh(const vector<che *> & _meshes)
 	}
 }
 
-void viewer::keyboard(unsigned char c, int , int )
+void viewer::keyboard(GLFWwindow * w, int key, int scancode, int action, int mods)
 {
-	if(c >= '0' && c <= '9')
+	if(action == GLFW_RELEASE) return;
+
+	switch(key)
 	{
-		bgc = (c - '0') / 9.;
+		case GLFW_KEY_UP:
+			cam.zoomIn();
+			break;
+		case GLFW_KEY_DOWN:
+			cam.zoomOut();
+			break;
+		case GLFW_KEY_ESCAPE:
+			glfwSetWindowShouldClose(w, GLFW_TRUE);
+			break;
+	}
+	
+	if(key >= '0' && key <= '9')
+	{
+		bgc = (key - '0') / 9.;
 		glClearColor(bgc, bgc, bgc, 1.);
 	}
 
-	menu_process(processes[c].function);
+	menu_process(processes[key].function);
 }
 
 void viewer::menu_meshes(int value)
 {
 	current = value;
 	select_vertices.clear();
-	glutSetWindowTitle(mesh()->filename().c_str());
+	glfwSetWindowTitle(window, mesh()->filename().c_str());
 }
 
-void viewer::special(int i, int , int )
+void viewer::mouse(GLFWwindow* window, int button, int action, int mods)
 {
-	switch(i)
-	{
-		case GLUT_KEY_UP:
-			cam.zoomIn();
-			break;
-		case GLUT_KEY_DOWN:
-			cam.zoomOut();
-			break;
-		case 27:
-			menu_exit();
-			break;
-		default:
-			break;
-	}
-}
-
-void viewer::mouse(int button, int state, int x, int y)
-{
-	if((glutGetModifiers() & GLUT_ACTIVE_SHIFT) and state == GLUT_UP)
-		pick_vertex(x, y);
-	else if(button == 6 || button == 4) cam.zoomIn();
-	else if(button == 5 || button == 3) cam.zoomOut();
-	else cam.mouse(button, state, x, y);
+	double xpos, ypos;
+	glfwGetCursorPos(window, &xpos, &ypos);
+	
+	if(mods == GLFW_MOD_SHIFT && action == GLFW_RELEASE)
+		pick_vertex(xpos, ypos);
+		
+	//else if(button == 6 || button == 4) cam.zoomIn();
+	//else if(button == 5 || button == 3) cam.zoomOut();
+	else cam.mouse(button, action, xpos, ypos);
 }
 
 void viewer::motion(int x, int y)
@@ -287,7 +264,7 @@ void viewer::motion(int x, int y)
 void viewer::idle()
 {
 	cam.idle();
-	glutPostRedisplay();
+	//glutPostRedisplay();
 }
 
 void viewer::menu_process(function_t pro)
@@ -326,7 +303,6 @@ void viewer::menu_save_mesh()
 
 void viewer::menu_exit()
 {
-	glutLeaveMainLoop();
 }
 
 void viewer::menu_zoom_in()
@@ -447,14 +423,18 @@ void viewer::display()
 
 	set_mesh_materia();
 	
-	ww = (double) glutGet(GLUT_WINDOW_WIDTH) / m_window_size[n_meshes - 1][1];
-	wh = (double) glutGet(GLUT_WINDOW_HEIGHT) / m_window_size[n_meshes - 1][0];
+	int width, height;
+	glfwGetFramebufferSize(window, &width, &height);	
+	ww = width;
+	wh = height;
 	draw_scene();
 
 	//glPopAttrib();
 
 	shader_program.disable();
-	glutSwapBuffers();
+
+	glfwSwapBuffers(window);
+	glfwPollEvents();
 }
 
 void viewer::set_gl()
@@ -581,7 +561,7 @@ void viewer::draw_isolated_vertices()
 	{
 		glPushMatrix();
 		glTranslated(v.x, v.y, v.z);
-		glutSolidSphere(h, 10, 10);
+		//glutSolidSphere(h, 10, 10);
 		glPopMatrix();
 	}
 
@@ -645,7 +625,7 @@ void viewer::draw_corr()
 		glPushMatrix();
 		corr_v = meshes[corr_mesh[current].mesh_i]->corr_vertex(corr_mesh[current][v]);
 		glTranslated(corr_v.x, corr_v.y, corr_v.z);
-		glutSolidSphere(h, 10, 10);
+//		glutSolidSphere(h, 10, 10);
 		glPopMatrix();
 	}
 
@@ -690,7 +670,7 @@ void viewer::draw_selected_vertices()
 		
 		glPushMatrix();
 		glTranslated(mesh()->gt(v).x, mesh()->gt(v).y, mesh()->gt(v).z);
-		glutSolidSphere(h, 10, 10);
+	//	glutSolidSphere(h, 10, 10);
 		glPopMatrix();
 	}
 
@@ -723,8 +703,9 @@ void viewer::pick_vertex(int x, int y)
 {
 	gproshan_debug(VIEWER);
 
-	int width = glutGet(GLUT_WINDOW_WIDTH);
-	int height = glutGet(GLUT_WINDOW_HEIGHT);
+	int width, height;
+	glfwGetFramebufferSize(window, &width, &height);
+
 	if(x < 0 || x >= width || y < 0 || y >= height) return;
 
 	int bufSize = mesh()->n_vertices();
@@ -792,7 +773,7 @@ void draw_str(const char * str, int x, int y, float color[4], void * font)
 	glColor4fv(color);
 	glRasterPos2i(x, y);
 
-	while(*str) glutBitmapCharacter(font, *str++);
+	//while(*str) glutBitmapCharacter(font, *str++);
 
 	glEnable(GL_TEXTURE_2D);
 	glEnable(GL_LIGHTING);

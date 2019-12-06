@@ -249,6 +249,7 @@ void che_viewer::draw_gradient_field()
 
 void che_viewer::draw_mesh_info()
 {
+/*	
 	if(!mesh) return;
 
 	glMatrixMode(GL_PROJECTION);
@@ -288,6 +289,7 @@ void che_viewer::draw_mesh_info()
 	glPopMatrix();
 	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();
+*/
 }
 
 const size_t & che_viewer::n_vertices() const

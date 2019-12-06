@@ -75,12 +75,12 @@ void camera::setView() const
 
 void camera::mouse(int , int state, int x, int y)
 {
-	if(state == GLUT_DOWN)
+	if(state == GLFW_PRESS)
 	{
 		pClick = pDrag = pLast = clickToSphere(x, y);
 		momentum = 1.;
 	}
-	if(state == GLUT_UP)
+	if(state == GLFW_RELEASE)
 	{
 		double timeSinceDrag = (clock() - tLast) / (double) CLOCKS_PER_SEC;
 

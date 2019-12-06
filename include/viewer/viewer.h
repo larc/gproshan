@@ -93,9 +93,8 @@ class viewer
 		// GLUT callbacks
 		static void display();
 		static void idle();
-		static void keyboard(unsigned char c, int x, int y);
-		static void special(int i, int x, int y);
-		static void mouse(int button, int state, int x, int y);
+		static void keyboard(GLFWwindow * w, int key, int scancode, int action, int mods);
+		static void mouse(GLFWwindow* window, int button, int action, int mods);
 		static void motion(int x, int y);
 
 		// menu functions
@@ -135,7 +134,8 @@ class viewer
 		static void draw_vectors();
 		static void draw_isolated_vertices();
 		static void pick_vertex(int x, int y);
-
+		
+		static GLFWwindow * window;
 		static int window_size[2];
 		static double ww, wh;
 		static int m_window_size[N_MESHES][2];
