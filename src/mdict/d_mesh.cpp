@@ -241,7 +241,7 @@ void partial_mesh_reconstruction(size_t old_n_vertices, che * mesh, size_t M, ve
 
 }
 
-distance_t mesh_reconstruction(che * mesh, size_t M, vector<patch> & patches, vector<vpatches_t> & patches_map, a_mat & A, a_mat & alpha, distance_t * dist, const index_t & v_i)
+distance_t mesh_reconstruction(che * mesh, size_t M, vector<patch> & patches, vector<vpatches_t> & patches_map, a_mat & A, a_mat & alpha, distance_t * dist,const fmask_t & mask, const index_t & v_i)
 {
 	a_mat V(3, mesh->n_vertices(), arma::fill::zeros);
 
@@ -264,7 +264,7 @@ distance_t mesh_reconstruction(che * mesh, size_t M, vector<patch> & patches, ve
 	#pragma omp parallel for
 	for(index_t v = v_i; v < mesh->n_vertices(); v++)
 	{
-		if(patches_map[v].size())
+		if(patches_map[v].size() && (!mask || mask(v)) )
 			V.col(v) = simple_means_vertex(v, patches, patches_map);
 			//V.col(v) = non_local_means_vertex(alpha, v, patches, patches_map, h);
 		else
@@ -443,8 +443,6 @@ a_vec simple_means_vertex( const index_t & v, vector<patch> & patches, vector<vp
 
 	for(auto p: patches_map[v])
 		n_a_vec += patches[p.first].xyz.col(p.second);
-
-	if (patches_map[v].size() > 1) { gproshan_debug_var(patches_map[v].size()); }
 	return n_a_vec/ patches_map[v].size();
 }
 

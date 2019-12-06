@@ -164,6 +164,11 @@ distance_t inpainting::execute()
 	TIC(d_time) init_patches_disjoint(); TOC(d_time)
 	gproshan_debug_var(d_time);
 
+	//L = 15;
+
+	//TIC(d_time) learning(); TOC(d_time)
+	//gproshan_debug_var(d_time);
+
 	// sparse coding and reconstruction with all patches
 	TIC(d_time) sparse_coding(); TOC(d_time)
 	gproshan_debug_var(d_time);
@@ -187,7 +192,9 @@ distance_t inpainting::execute()
 		phi_basis->discrete(p.phi, p.xyz);
 	}
 
-	TIC(d_time) mesh_reconstruction(); TOC(d_time)
+	bool *pmask;
+
+	TIC(d_time) mesh_reconstruction([&pmask](const index_t & i) -> bool { return pmask[i]; }); TOC(d_time)
 	gproshan_debug_var(d_time);
 }
 

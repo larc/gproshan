@@ -19,7 +19,7 @@ using namespace cimg_library;
 namespace gproshan::mdict {
 
 
-size_t dictionary::L = 8;
+size_t dictionary::L = 10;
 size_t dictionary::K = 10;
 size_t dictionary::T = 5;
 
@@ -186,7 +186,7 @@ void dictionary::init_patches(const bool & reset, const fmask_t & mask)
 	*/
 }
 
-distance_t dictionary::mesh_reconstruction()
+distance_t dictionary::mesh_reconstruction(const fmask_t & mask)
 {
 	gproshan_log(MDICT);
 
