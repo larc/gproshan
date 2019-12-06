@@ -164,10 +164,10 @@ distance_t inpainting::execute()
 	TIC(d_time) init_patches_disjoint(); TOC(d_time)
 	gproshan_debug_var(d_time);
 
-	//L = 15;
+//	L = 15;
 
-	//TIC(d_time) learning(); TOC(d_time)
-	//gproshan_debug_var(d_time);
+	TIC(d_time) learning(); TOC(d_time)
+	gproshan_debug_var(d_time);
 
 	// sparse coding and reconstruction with all patches
 	TIC(d_time) sparse_coding(); TOC(d_time)

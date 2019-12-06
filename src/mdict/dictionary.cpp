@@ -19,7 +19,7 @@ using namespace cimg_library;
 namespace gproshan::mdict {
 
 
-size_t dictionary::L = 10;
+size_t dictionary::L = 8;
 size_t dictionary::K = 10;
 size_t dictionary::T = 5;
 
