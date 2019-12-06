@@ -1,8 +1,6 @@
 #include "che_viewer.h"
 #include "viewer.h"
 
-#include <GLES3/gl3.h>
-
 #include <cassert>
 #include <cmath>
 #include <numeric>

@@ -109,8 +109,9 @@ void viewer::init_glut()
 	glutInitWindowSize(window_size[0], window_size[1]);
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
 	glutInit(&argc, (char**)&argv);
-	glutCreateWindow("che_viewer");
-	//glutFullScreen();
+	glutCreateWindow("gproshan");
+
+	glewInit();
 
 	// specify callbacks
 	glutDisplayFunc(display);
@@ -325,9 +326,7 @@ void viewer::menu_save_mesh()
 
 void viewer::menu_exit()
 {
-//	storeviewerState();
-//	glutLeaveMainLoop();
-	exit(0);
+	glutLeaveMainLoop();
 }
 
 void viewer::menu_zoom_in()
