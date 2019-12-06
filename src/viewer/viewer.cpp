@@ -109,8 +109,9 @@ void viewer::init_glut()
 	glutInitWindowSize(window_size[0], window_size[1]);
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
 	glutInit(&argc, (char**)&argv);
-	glutCreateWindow("che_viewer");
-	//glutFullScreen();
+	glutCreateWindow("gproshan");
+
+	glewInit();
 
 	// specify callbacks
 	glutDisplayFunc(display);
@@ -119,8 +120,6 @@ void viewer::init_glut()
 	glutSpecialFunc(special);
 	glutMouseFunc(mouse);
 	glutMotionFunc(motion);
-
-	glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_CONTINUE_EXECUTION);
 }
 
 void viewer::init_menus()
@@ -326,7 +325,8 @@ void viewer::menu_save_mesh()
 void viewer::menu_exit()
 {
 //	storeviewerState();
-	glutLeaveMainLoop();
+//	glutLeaveMainLoop();
+	exit(0);
 }
 
 void viewer::menu_zoom_in()

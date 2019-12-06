@@ -3,7 +3,7 @@
 
 #include "che.h"
 
-#include <GL/freeglut.h>
+#include "include_opengl.h"
 
 #define COLOR 0.5
 

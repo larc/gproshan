@@ -1,10 +1,9 @@
 #ifndef VIEWER_SHADER_H
 #define VIEWER_SHADER_H
 
-#include <GLES3/gl3.h>
-#include <GL/glut.h>
 #include <string>
 
+#include "include_opengl.h"
 
 // geometry processing and shape analysis framework
 namespace gproshan {
