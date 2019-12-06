@@ -1,15 +1,14 @@
 #ifndef VIEWER_VIEWER_H
 #define VIEWER_VIEWER_H
 
-#include <GLES3/gl3.h>
-#include <GL/glut.h>
-#include <GL/freeglut.h>
 #include <map>
 #include <cstring>
 
 #include "camera.h"
 #include "shader.h"
 #include "che_viewer.h"
+
+#include "include_opengl.h"
 
 #define N_MESHES 12
 

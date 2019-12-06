@@ -3,7 +3,7 @@
 
 #include "quaternion.h"
 
-#include <GL/glut.h>
+#include "include_opengl.h"
 
 
 // geometry processing and shape analysis framework
