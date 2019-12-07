@@ -170,20 +170,16 @@ void che_viewer::update_colors(const color_t *const c)
 
 void che_viewer::draw()
 {
+	glBindVertexArray(vao);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[3]);
+	
 	if(mesh->n_faces())
-	{
-		glBindVertexArray(vao);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[3]);
 		glDrawElements(GL_TRIANGLES, mesh->n_half_edges(), GL_UNSIGNED_INT, 0);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-	}
 	else
-	{
-		glBindVertexArray(vao);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[3]);
 		glDrawElements(GL_POINTS, mesh->n_vertices(), GL_UNSIGNED_INT, 0);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-	}
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
 }
 
 void che_viewer::draw_normal_field()

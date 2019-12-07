@@ -117,9 +117,15 @@ void viewer::init_glut()
 	glfwSetErrorCallback(error_callback);
 
 	glfwInit();
-	
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+
+	#ifdef __APPLE__
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+		glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+		glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_TRUE);
+		glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+	#endif
 
 	window = glfwCreateWindow(window_size[0], window_size[1], "gproshan", NULL, NULL);
 
@@ -127,10 +133,9 @@ void viewer::init_glut()
 	glfwSetMouseButtonCallback(window, mouse);
 
 	glfwMakeContextCurrent(window);
+	glfwSwapInterval(0);
 
 	glewInit();
-
-	glfwSwapInterval(1);
 }
 
 void viewer::init_menus()
