@@ -26,59 +26,76 @@
 #include "key_components.h"
 
 
-using namespace gproshan;
+// geometry processing and shape analysis framework
+namespace gproshan {
 
 
-void viewer_process_fairing_taubin();
-void viewer_process_fairing_spectral();
+class app_viewer : public viewer
+{
+	private:
+		double time;
+		distance_t * dist;
+		size_t n_dist;
 
-void viewer_process_fastmarching();
-void viewer_process_geodesics_fm();
-void viewer_process_geodesics_ptp_cpu();
-void viewer_process_geodesics_heat_flow();
+	public:
+		app_viewer();
+		~app_viewer();
+		
+		int main(int nargs, const char ** args);
+	
+	private:
+		static void process_fairing_taubin(viewer * p_view);
+		static void process_fairing_spectral(viewer * p_view);
 
-#ifdef GPROSHAN_CUDA
-void viewer_process_geodesics_ptp_gpu();
-void viewer_process_geodesics_heat_flow_gpu();
-#endif // GPROSHAN_CUDA
+		static void process_fastmarching(viewer * p_view);
+		static void process_geodesics_fm(viewer * p_view);
+		static void process_geodesics_ptp_cpu(viewer * p_view);
+		static void process_geodesics_heat_flow(viewer * p_view);
 
-void viewer_process_farthest_point_sampling();
-void viewer_process_farthest_point_sampling_radio();
-void viewer_compute_toplesets();
-void viewer_process_voronoi();
+	#ifdef GPROSHAN_CUDA
+		static void process_geodesics_ptp_gpu(viewer * p_view);
+		static void process_geodesics_heat_flow_gpu(viewer * p_view);
+	#endif // GPROSHAN_CUDA
 
-void viewer_process_mdict_patch();
-void viewer_process_denoising();
-void viewer_process_super_resolution();
-void viewer_process_inpaiting();
-void viewer_process_iterative_inpaiting();
+		static void process_farthest_point_sampling(viewer * p_view);
+		static void process_farthest_point_sampling_radio(viewer * p_view);
+		static void compute_toplesets(viewer * p_view);
+		static void process_voronoi(viewer * p_view);
 
-void viewer_process_functional_maps();
-void viewer_process_gps();
-void viewer_process_hks();
-void viewer_process_wks();
-void viewer_process_key_points();
-void viewer_process_key_components();
+		static void process_mdict_patch(viewer * p_view);
+		static void process_denoising(viewer * p_view);
+		static void process_super_resolution(viewer * p_view);
+		static void process_inpaiting(viewer * p_view);
+		static void process_iterative_inpaiting(viewer * p_view);
 
-void viewer_process_poisson(const index_t & lk);
-void viewer_process_poisson_laplacian_1();
-void viewer_process_poisson_laplacian_2();
-void viewer_process_poisson_laplacian_3();
+		static void process_functional_maps(viewer * p_view);
+		static void process_gps(viewer * p_view);
+		static void process_hks(viewer * p_view);
+		static void process_wks(viewer * p_view);
+		static void process_key_points(viewer * p_view);
+		static void process_key_components(viewer * p_view);
 
-void viewer_process_thresold();
-void viewer_process_noise();
-void viewer_process_black_noise();
-void viewer_process_multiplicate_vertices();
-void viewer_process_fill_holes();
-void viewer_process_delete_vertices();
-void viewer_process_fill_holes_test();
-void viewer_process_delete_non_manifold_vertices();
-void viewer_process_fill_holes_biharmonic_splines();
-void viewer_process_gaussian_curvature();
-void viewer_process_edge_collapse();
-void viewer_select_multiple();
+		static void process_poisson(viewer * p_view, const index_t & k);
+		static void process_poisson_laplacian_1(viewer * p_view);
+		static void process_poisson_laplacian_2(viewer * p_view);
+		static void process_poisson_laplacian_3(viewer * p_view);
 
-int viewer_main(int nargs, const char ** args);
+		static void process_thresold(viewer * p_view);
+		static void process_noise(viewer * p_view);
+		static void process_black_noise(viewer * p_view);
+		static void process_multiplicate_vertices(viewer * p_view);
+		static void process_fill_holes(viewer * p_view);
+		static void process_delete_vertices(viewer * p_view);
+		static void process_fill_holes_test(viewer * p_view);
+		static void process_delete_non_manifold_vertices(viewer * p_view);
+		static void process_fill_holes_biharmonic_splines(viewer * p_view);
+		static void process_gaussian_curvature(viewer * p_view);
+		static void process_edge_collapse(viewer * p_view);
+		static void select_multiple(viewer * p_view);
+};
+
+
+} // namespace gproshan
 
 
 #endif //APP_VIEWER_H

@@ -19,63 +19,16 @@ using namespace std;
 namespace gproshan {
 
 
-// declare static member variables
-che_viewer viewer::meshes[N_MESHES];
-vcorr_t viewer::corr_mesh[N_MESHES]; // zero initialization
-size_t viewer::n_meshes = 0;
-index_t viewer::current = 0;
-
-vector<index_t> viewer::select_vertices;
-vector<vertex> viewer::other_vertices;
-vector<vertex> viewer::vectors;
-vector<string> viewer::sub_menus;
-
-char * viewer::share = nullptr;
-
-GLFWwindow * viewer::window = nullptr;
-int viewer::window_size[2] = {1366, 768};
-int viewer::m_window_size[N_MESHES][2] = {	{1, 1}, {1, 2}, {1, 3}, 
+const int viewer::m_window_size[N_MESHES][2] = {	{1, 1}, {1, 2}, {1, 3}, 
 											{2, 2}, {2, 3}, {2, 3},
 											{2, 4}, {2, 4}, {2, 5},
 											{2, 5}, {3, 4}, {3, 4} };
-double viewer::ww = 0;
-double viewer::wh = 0;
 
-camera viewer::cam;
-shader viewer::shader_program;
-bool viewer::render_wireframe = false;
-bool viewer::render_gradient_field = false;
-bool viewer::render_normal_field = false;
-bool viewer::render_border = false;
-bool viewer::render_corr = false;
-bool viewer::render_lines = false;
-bool viewer::is_flat = false;
-float viewer::bgc = 0.;
 
-map<unsigned char, process_t> viewer::processes;
-
-const int & viewer::window_width()
+viewer::viewer()
 {
-	return window_size[0];
-}
-
-const int & viewer::window_height()
-{
-	return window_size[1];
-}
-
-che_viewer & viewer::mesh()
-{
-	assert(n_meshes > 0);
-	return meshes[current];
-}
-
-void viewer::init(const vector<che *> & _meshes)
-{
-//	restoreviewerState();
-
 	init_glut();
-	add_mesh(_meshes);
+//	add_mesh(_meshes);
 
 	glfwSetWindowTitle(window, mesh()->filename().c_str());
 	init_menus();
@@ -85,14 +38,27 @@ void viewer::init(const vector<che *> & _meshes)
 
 	set_gl();
 	init_glsl();
+}
 
+viewer::~viewer()
+{
+	glfwDestroyWindow(window);
+	glfwTerminate();
+}
+
+bool viewer::run()
+{
 	while(!glfwWindowShouldClose(window))
 	{
 		display();
 	}
 
-	glfwDestroyWindow(window);
-	glfwTerminate();
+	return true;
+}
+
+che_viewer & viewer::mesh()
+{
+	return meshes[current];
 }
 
 void viewer::debug_info()
@@ -127,7 +93,9 @@ void viewer::init_glut()
 		glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 	#endif
 
-	window = glfwCreateWindow(window_size[0], window_size[1], "gproshan", NULL, NULL);
+	window = glfwCreateWindow(1600, 900, "gproshan", NULL, NULL);
+
+	glfwSetWindowUserPointer(window, this);
 
 	glfwSetKeyCallback(window, keyboard);
 	glfwSetMouseButtonCallback(window, mouse);
@@ -157,7 +125,6 @@ void viewer::init_menus()
 	add_process('w', "Write Mesh", menu_save_mesh);
 	add_process('<', "Zoom In", menu_zoom_in);
 	add_process('>', "Zoom Out", menu_zoom_out);
-	add_process(27, "Exit", menu_exit);
 }
 
 void viewer::init_glsl()
@@ -166,19 +133,10 @@ void viewer::init_glsl()
 	shader_program.load_fragment("../shaders/new_fragment.glsl");
 }
 
-color_t & viewer::vcolor(const index_t & i)
-{
-	return mesh().color(i);
-}
-
 void viewer::update_vbo()
 {
 	for(index_t i = 0; i < n_meshes; i++)
 		meshes[i].update();
-}
-
-void viewer::menu(int )
-{
 }
 
 void viewer::menu_process(int value)
@@ -203,7 +161,7 @@ void viewer::add_mesh(const vector<che *> & _meshes)
 		meshes[n_meshes++].init(_mesh);
 	}
 	
-	int * mw = m_window_size[n_meshes - 1];
+	const int * mw = m_window_size[n_meshes - 1];
 
 	index_t m = n_meshes - 1;
 	for(int i = mw[1] - 1; i >= 0; i--)
@@ -215,30 +173,32 @@ void viewer::add_mesh(const vector<che *> & _meshes)
 	}
 }
 
-void viewer::keyboard(GLFWwindow * w, int key, int scancode, int action, int mods)
+void viewer::keyboard(GLFWwindow * window, int key, int scancode, int action, int mods)
 {
 	if(action == GLFW_RELEASE) return;
+	
+	viewer * view = (viewer *) glfwGetWindowUserPointer(window);
 
 	switch(key)
 	{
 		case GLFW_KEY_UP:
-			cam.zoomIn();
+			view->cam.zoomIn();
 			break;
 		case GLFW_KEY_DOWN:
-			cam.zoomOut();
+			view->cam.zoomOut();
 			break;
 		case GLFW_KEY_ESCAPE:
-			glfwSetWindowShouldClose(w, GLFW_TRUE);
+			glfwSetWindowShouldClose(window, GLFW_TRUE);
 			break;
 	}
 	
 	if(key >= '0' && key <= '9')
 	{
-		bgc = (key - '0') / 9.;
-		glClearColor(bgc, bgc, bgc, 1.);
+		view->bgc = (key - '0') / 9.;
+		glClearColor(view->bgc, view->bgc, view->bgc, 1.);
 	}
-
-	menu_process(processes[key].function);
+	
+	view->menu_process(view->processes[key].function);
 }
 
 void viewer::menu_meshes(int value)
@@ -250,117 +210,117 @@ void viewer::menu_meshes(int value)
 
 void viewer::mouse(GLFWwindow* window, int button, int action, int mods)
 {
+	viewer * view = (viewer *) glfwGetWindowUserPointer(window);
+	
 	double xpos, ypos;
 	glfwGetCursorPos(window, &xpos, &ypos);
 	
 	if(mods == GLFW_MOD_SHIFT && action == GLFW_RELEASE)
-		pick_vertex(xpos, ypos);
+		view->pick_vertex(xpos, ypos);
 		
 	//else if(button == 6 || button == 4) cam.zoomIn();
 	//else if(button == 5 || button == 3) cam.zoomOut();
-	else cam.mouse(button, action, xpos, ypos);
+	else view->cam.mouse(button, action, xpos, ypos);
 }
 
 void viewer::motion(int x, int y)
 {
-	cam.motion(x, y);
+	//viewer * view = (viewer *) glfwGetWindowUserPointer(window);
+	//view->cam.motion(x, y);
 }
 
 void viewer::idle()
 {
-	cam.idle();
+	//cam.idle();
 	//glutPostRedisplay();
 }
 
 void viewer::menu_process(function_t pro)
 {
-	if(pro) pro();
+	if(pro) pro(this);
+
 	update_vbo();
 }
 
-void viewer::menu_reset_mesh()
+void viewer::menu_reset_mesh(viewer * view)
 {
-	select_vertices.clear();
-	other_vertices.clear();
-	vectors.clear();
+	view->select_vertices.clear();
+	view->other_vertices.clear();
+	view->vectors.clear();
 
-	mesh().reload();
+	view->mesh().reload();
 //	mesh().debug_info();
 
-	update_vbo();
+	view->update_vbo();
 }
 
-void viewer::menu_save_mesh()
+void viewer::menu_save_mesh(viewer * view)
 {
 	gproshan_log(APP_VIEWER);
 	
 	gproshan_log(format: [off obj ply]);
 	
 	string format; cin >> format;
-	string file = mesh()->filename() + "_new";
+	string file = view->mesh()->filename() + "_new";
 	
-	if(format == "off") che_off::write_file(mesh(), file);
-	if(format == "obj") che_obj::write_file(mesh(), file);
-	if(format == "ply") che_ply::write_file(mesh(), file);
+	if(format == "off") che_off::write_file(view->mesh(), file);
+	if(format == "obj") che_obj::write_file(view->mesh(), file);
+	if(format == "ply") che_ply::write_file(view->mesh(), file);
 
 	cerr << "saved: " << file + "." + format << endl;
 }
 
-void viewer::menu_exit()
+void viewer::menu_zoom_in(viewer * view)
 {
+	view->cam.zoomIn();
 }
 
-void viewer::menu_zoom_in()
+void viewer::menu_zoom_out(viewer * view)
 {
-	cam.zoomIn();
+	view->cam.zoomOut();
 }
 
-void viewer::menu_zoom_out()
+void viewer::invert_orientation(viewer * view)
 {
-	cam.zoomOut();
+	view->mesh().invert_orientation();
+	view->mesh().update_normals();
+	view->update_vbo();
 }
 
-void viewer::invert_orientation()
+void viewer::set_render_wireframe(viewer * view)
 {
-	mesh().invert_orientation();
-	mesh().update_normals();
-	update_vbo();
+	view->render_wireframe = !view->render_wireframe;
 }
 
-void viewer::set_render_wireframe()
+void viewer::set_render_gradient_field(viewer * view)
 {
-	render_wireframe = !render_wireframe;
+	view->render_gradient_field = !view->render_gradient_field;
 }
 
-void viewer::set_render_gradient_field()
+void viewer::set_render_normal_field(viewer * view)
 {
-	render_gradient_field = !render_gradient_field;
+	view->render_normal_field = !view->render_normal_field;
 }
 
-void viewer::set_render_normal_field()
+void viewer::set_render_border(viewer * view)
 {
-	render_normal_field = !render_normal_field;
+	view->render_border = !view->render_border;
+	if(!view->render_border) view->select_vertices.clear();
 }
 
-void viewer::set_render_border()
+void viewer::set_render_lines(viewer * view)
 {
-	render_border = !render_border;
-	if(!render_border) select_vertices.clear();
+	view->render_lines = !view->render_lines;
 }
 
-void viewer::set_render_lines()
+void viewer::set_render_corr(viewer * view)
 {
-	render_lines = !render_lines;
+	view->render_corr = !view->render_corr;
 }
 
-void viewer::set_render_corr()
+void viewer::set_is_flat(viewer * view)
 {
-	render_corr = !render_corr;
-}
-
-void viewer::set_is_flat()
-{
-	is_flat = !is_flat;
+	view->is_flat = !view->is_flat;
 }
 
 void viewer::display()
@@ -428,10 +388,6 @@ void viewer::display()
 
 	set_mesh_materia();
 	
-	int width, height;
-	glfwGetFramebufferSize(window, &width, &height);	
-	ww = width;
-	wh = height;
 	draw_scene();
 
 	//glPopAttrib();
@@ -494,6 +450,9 @@ void viewer::draw_polygons()
 	glEnable(GL_POLYGON_OFFSET_FILL);
 	glPolygonOffset(1., 1.);
 
+	int ww, wh;
+	glfwGetFramebufferSize(window, &ww, &wh);
+
 	for(index_t i = 0; i < n_meshes; i++)
 	{
 		glViewport(meshes[i].vx * ww, meshes[i].vy * wh, ww, wh);
@@ -514,6 +473,9 @@ void viewer::draw_wireframe()
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	
+	int ww, wh;
+	glfwGetFramebufferSize(window, &ww, &wh);
 	
 	for(index_t i = 0; i < n_meshes; i++)
 	{
@@ -669,6 +631,10 @@ void viewer::draw_selected_vertices()
 	glColor3f(0., 0.5, 0.5);
 
 	double h = 0.02 * cam.zoom;
+	
+	int ww, wh;
+	glfwGetFramebufferSize(window, &ww, &wh);
+	
 	for(int v: select_vertices)
 	{
 		glViewport(mesh().vx * ww, mesh().vy * wh, ww, wh);
@@ -687,6 +653,10 @@ void viewer::draw_selected_vertices()
 void viewer::draw_normal_field()
 {
 	shader_program.disable();
+	
+	int ww, wh;
+	glfwGetFramebufferSize(window, &ww, &wh);
+	
 	for(index_t i = 0; i < n_meshes; i++)
 	{
 		glViewport(meshes[i].vx * ww, meshes[i].vy * wh, ww, wh);
@@ -697,6 +667,10 @@ void viewer::draw_normal_field()
 void viewer::draw_gradient_field()
 {
 	shader_program.disable();
+	
+	int ww, wh;
+	glfwGetFramebufferSize(window, &ww, &wh);
+	
 	for(index_t i = 0; i < n_meshes; i++)
 	{
 		glViewport(meshes[i].vx * ww, meshes[i].vy * wh, ww, wh);

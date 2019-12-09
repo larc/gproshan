@@ -2,6 +2,7 @@
 
 int main(int nargs, const char ** args)
 {
-	return viewer_main(nargs, args);
+	gproshan::app_viewer app;
+	return app.main(nargs, args);
 }
 

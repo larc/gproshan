@@ -56,7 +56,7 @@ che * mesh_simple_fill_hole(che * mesh, const vector<index_t> & border_vertices,
 
 		ve = E.t() * ve;
 		vertices.push_back(*((vertex *) ve.memptr()));
-		viewer::other_vertices.push_back(vertices.back());
+		//viewer::other_vertices.push_back(vertices.back());
 	}
 
 	return fill_hole_front_angles(vertices, mesh->mean_edge(), normal, max_iter);

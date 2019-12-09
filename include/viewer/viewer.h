@@ -17,7 +17,8 @@
 namespace gproshan {
 
 
-typedef void (*function_t) (void);
+class viewer;
+
 
 struct vcorr_t
 {
@@ -50,112 +51,117 @@ struct vcorr_t
 	}
 };
 
-struct process_t
-{
-	index_t sub_menu;
-	std::string name_function;
-	function_t function;
-};
 
 class viewer
 {
-	public:
-		static void init(const std::vector<che *> & _meshes);
-
-		static che_viewer meshes[N_MESHES];
-		static vcorr_t corr_mesh[N_MESHES];
-		static size_t n_meshes;
-		static index_t current; // current mesh
-
-		static std::vector<index_t> select_vertices;
-		static std::vector<vertex> other_vertices;
-		static std::vector<vertex> vectors;
-		static std::vector<std::string> sub_menus;
-
-		static char * share;
-
-		static const int & window_width();
-		static const int & window_height();
-
-		static che_viewer & mesh(); //get current che_viewer mesh
-		static color_t & vcolor(const index_t & i);
-		static void add_process(const char & key, const std::string & name, function_t function);
-		static void add_mesh(const std::vector<che *> & _meshes);
-
 	protected:
+
+		typedef void (*function_t) (viewer *);
+		
+		struct process_t
+		{
+			index_t sub_menu;
+			std::string name_function;
+			function_t function;
+		};
+
+		static const int m_window_size[N_MESHES][2];
+
+
+		GLFWwindow * window;
+		shader shader_program;
+		camera cam;
+
+		che_viewer meshes[N_MESHES];
+		vcorr_t corr_mesh[N_MESHES];
+		size_t n_meshes;
+		index_t current; // current mesh
+
+		char * share;
+
+		bool render_wireframe;
+		bool render_gradient_field;
+		bool render_normal_field;
+		bool render_border;
+		bool render_corr;
+		bool render_lines;
+		bool is_flat;
+		float bgc;
+
+		std::map<unsigned char, process_t> processes;
+	
+	public:
+
+		std::vector<index_t> select_vertices;
+		std::vector<vertex> other_vertices;
+		std::vector<vertex> vectors;
+		std::vector<std::string> sub_menus;
+
+	public:
+
+		viewer();
+		virtual ~viewer();
+		
+		bool run();
+		
+		che_viewer & mesh();
+		void add_process(const char & key, const std::string & name, function_t function);
+		void add_mesh(const std::vector<che *> & _meshes);
+		
+	private:
+
 		// init
-		static void debug_info();
-		static void init_glut();
-		static void init_menus();
-		static void init_glsl();
-		static void update_vbo();
+		void debug_info();
+		void init_glut();
+		void init_menus();
+		void init_glsl();
+		void update_vbo();
+
+		void display();
 
 		// GLUT callbacks
-		static void display();
 		static void idle();
-		static void keyboard(GLFWwindow * w, int key, int scancode, int action, int mods);
-		static void mouse(GLFWwindow* window, int button, int action, int mods);
+		static void keyboard(GLFWwindow * window, int key, int scancode, int action, int mods);
+		static void mouse(GLFWwindow * window, int button, int action, int mods);
 		static void motion(int x, int y);
 
 		// menu functions
-		static void menu(int value);
-		static void menu_process(int value);
-		static void menu_meshes(int value);
-		static void menu_process(function_t pro);
-		static void menu_reset_mesh();
-		static void menu_save_mesh();
-		static void menu_exit();
-		static void menu_zoom_in();
-		static void menu_zoom_out();
+		void menu_meshes(int value);
+		void menu_process(int value);
+		void menu_process(function_t pro);
+
+		static void menu_reset_mesh(viewer * view);
+		static void menu_save_mesh(viewer * view);
+		static void menu_zoom_in(viewer * view);
+		static void menu_zoom_out(viewer * view);
 
 		// render options
-		static void invert_orientation();
-		static void set_render_wireframe();
-		static void set_render_gradient_field();
-		static void set_render_normal_field();
-		static void set_render_border();
-		static void set_render_lines();
-		static void set_render_corr();
-		static void set_is_flat();
+		static void invert_orientation(viewer * view);
+		static void set_render_wireframe(viewer * view);
+		static void set_render_gradient_field(viewer * view);
+		static void set_render_normal_field(viewer * view);
+		static void set_render_border(viewer * view);
+		static void set_render_lines(viewer * view);
+		static void set_render_corr(viewer * view);
+		static void set_is_flat(viewer * view);
 
 		// draw routines
-		static void set_gl();
-		static void set_lighting();
-		static void set_mesh_materia();
-		static void draw_scene();
-		static void draw_corr();
-		static void draw_polygons();
-		static void draw_wireframe();
-		static void draw_gradient_field();
-		static void draw_normal_field();
-		static void draw_vertices();
-		static void draw_border();
-		static void draw_selected_vertices();
-		static void draw_vectors();
-		static void draw_isolated_vertices();
-		static void pick_vertex(int x, int y);
+		void set_gl();
+		void set_lighting();
+		void set_mesh_materia();
+		void draw_scene();
+		void draw_corr();
+		void draw_polygons();
+		void draw_wireframe();
+		void draw_gradient_field();
+		void draw_normal_field();
+		void draw_vertices();
+		void draw_border();
+		void draw_selected_vertices();
+		void draw_vectors();
+		void draw_isolated_vertices();
 		
-		static GLFWwindow * window;
-		static int window_size[2];
-		static double ww, wh;
-		static int m_window_size[N_MESHES][2];
-
-		static camera cam;
-		// keeps track of view state
-
-		static shader shader_program;
-		// shader used to determine appearance of surface
-
-		static bool render_wireframe;
-		static bool render_gradient_field;
-		static bool render_normal_field;
-		static bool render_border;
-		static bool render_corr;
-		static bool render_lines;
-		static bool is_flat;
-		static float bgc;
-
-		static std::map<unsigned char, process_t> processes;
+		void pick_vertex(int x, int y);
 };
 
 void draw_str(const char * str, int x, int y, float color[4], void * font);
