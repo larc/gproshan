@@ -40,12 +40,13 @@ viewer::viewer()
 
 	bgc = 0;
 
-	init_glut();
+	init_gl();
 	init_menus();
+	
 	set_gl();
 	init_glsl();
 	
-	debug_info();
+	info_gl();
 }
 
 viewer::~viewer()
@@ -69,7 +70,7 @@ che_viewer & viewer::mesh()
 	return meshes[current];
 }
 
-void viewer::debug_info()
+void viewer::info_gl()
 {
 	GLint major, minor;
 	glGetIntegerv(GL_MAJOR_VERSION, &major);
@@ -86,7 +87,7 @@ void error_callback(int error, const char* description)
 	fprintf(stderr, "Error %d: %s\n", error, description);
 }
 
-void viewer::init_glut()
+void viewer::init_gl()
 {
 	glfwSetErrorCallback(error_callback);
 
@@ -105,9 +106,10 @@ void viewer::init_glut()
 
 	glfwSetWindowUserPointer(window, this);
 
-	glfwSetKeyCallback(window, keyboard);
-	glfwSetMouseButtonCallback(window, mouse);
-	glfwSetCursorPosCallback(window, motion);
+	glfwSetKeyCallback(window, keyboard_callback);
+	glfwSetMouseButtonCallback(window, mouse_callback);
+	glfwSetCursorPosCallback(window, cursor_callback);
+	glfwSetScrollCallback(window, scroll_callback);
 
 	glfwMakeContextCurrent(window);
 	glfwSwapInterval(0);
@@ -190,7 +192,7 @@ void viewer::add_mesh(const vector<che *> & _meshes)
 	}
 }
 
-void viewer::keyboard(GLFWwindow * window, int key, int scancode, int action, int mods)
+void viewer::keyboard_callback(GLFWwindow * window, int key, int scancode, int action, int mods)
 {
 	if(action == GLFW_RELEASE) return;
 	
@@ -212,7 +214,7 @@ void viewer::menu_meshes(int value)
 	glfwSetWindowTitle(window, mesh()->filename().c_str());
 }
 
-void viewer::mouse(GLFWwindow* window, int button, int action, int mods)
+void viewer::mouse_callback(GLFWwindow* window, int button, int action, int mods)
 {
 	viewer * view = (viewer *) glfwGetWindowUserPointer(window);
 	
@@ -227,7 +229,7 @@ void viewer::mouse(GLFWwindow* window, int button, int action, int mods)
 	else view->cam.mouse(button, action, xpos, ypos);
 }
 
-void viewer::motion(GLFWwindow * window, double x, double y)
+void viewer::cursor_callback(GLFWwindow * window, double x, double y)
 {
 	int state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
 	if(state == GLFW_PRESS)
@@ -235,6 +237,14 @@ void viewer::motion(GLFWwindow * window, double x, double y)
 		viewer * view = (viewer *) glfwGetWindowUserPointer(window);
 		view->cam.motion(x, y);
 	}
+}
+
+void viewer::scroll_callback(GLFWwindow * window, double xoffset, double yoffset)
+{
+	viewer * view = (viewer *) glfwGetWindowUserPointer(window);
+	
+	if(yoffset > 0) view->cam.zoomIn();
+	if(yoffset < 0) view->cam.zoomOut();
 }
 
 void viewer::idle()

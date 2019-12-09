@@ -111,19 +111,20 @@ class viewer
 	private:
 
 		// init
-		void debug_info();
-		void init_glut();
+		void info_gl();
+		void init_gl();
 		void init_menus();
 		void init_glsl();
 		void update_vbo();
 
 		void display();
 
-		// GLUT callbacks
+		// callbacks
 		static void idle();
-		static void keyboard(GLFWwindow * window, int key, int scancode, int action, int mods);
-		static void mouse(GLFWwindow * window, int button, int action, int mods);
-		static void motion(GLFWwindow * window, double x, double y);
+		static void keyboard_callback(GLFWwindow * window, int key, int scancode, int action, int mods);
+		static void mouse_callback(GLFWwindow * window, int button, int action, int mods);
+		static void cursor_callback(GLFWwindow * window, double x, double y);
+		static void scroll_callback(GLFWwindow * window, double xoffset, double yoffset);
 
 		// menu functions
 		void menu_meshes(int value);
