@@ -121,14 +121,15 @@ void viewer::init_menus()
 {
 	// init viewer menu
 	sub_menus.push_back("viewer");
-	add_process(GLFW_KEY_PERIOD, "Invert Orientation", invert_orientation);
+	add_process(GLFW_KEY_F1, "Help", menu_help);
 	add_process(GLFW_KEY_F2, "Wireframe", set_render_wireframe);
 	add_process(GLFW_KEY_F3, "Gradient Field", set_render_gradient_field);
 	add_process(GLFW_KEY_F4, "Normal Field", set_render_normal_field);
 	add_process(GLFW_KEY_F5, "Show Border", set_render_border);
 	add_process(GLFW_KEY_SPACE, "Lines", set_render_lines);
-	add_process('+', "Show Corr", set_render_corr);
 	add_process(GLFW_KEY_TAB, "Flat", set_is_flat);
+	add_process(GLFW_KEY_PERIOD, "Invert Orientation", invert_orientation);
+	add_process('+', "Show Corr", set_render_corr);
 
 	// init mesh menu
 	sub_menus.push_back("Mesh");
@@ -258,6 +259,12 @@ void viewer::menu_process(function_t pro)
 	if(pro) pro(this);
 
 	update_vbo();
+}
+
+void viewer::menu_help(viewer * view)
+{
+	const char * key_name = glfwGetKeyName(GLFW_KEY_W, 0);
+	gproshan_log(key_name);
 }
 
 void viewer::menu_reset_mesh(viewer * view)

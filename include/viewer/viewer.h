@@ -131,6 +131,7 @@ class viewer
 		void menu_process(int value);
 		void menu_process(function_t pro);
 
+		static void menu_help(viewer * view);
 		static void menu_reset_mesh(viewer * view);
 		static void menu_save_mesh(viewer * view);
 		static void menu_zoom_in(viewer * view);
