@@ -152,7 +152,7 @@ class viewer
 		// draw routines
 		void set_gl();
 		void set_lighting();
-		void set_mesh_materia();
+		void set_mesh_material();
 		void draw_scene();
 		void draw_corr();
 		void draw_polygons();

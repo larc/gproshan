@@ -124,12 +124,12 @@ void camera::idle()
 
 void camera::zoomIn()
 {
-	vZoom -= 0.2;
+	zoom -= 0.01;
 }
 
 void camera::zoomOut()
 {
-	vZoom += 0.2;
+	zoom += 0.01;
 }
 
 

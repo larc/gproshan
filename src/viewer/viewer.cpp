@@ -413,8 +413,7 @@ void viewer::display()
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_LIGHTING);
 
-	set_mesh_materia();
-	
+	set_mesh_material();
 	draw_scene();
 
 	//glPopAttrib();
@@ -439,7 +438,7 @@ void viewer::set_lighting()
 	glEnable(GL_NORMALIZE);
 }
 
-void viewer::set_mesh_materia()
+void viewer::set_mesh_material()
 {
 	GLfloat diffuse[4] = { .8, .5, .3, 1. };
 	GLfloat specular[4] = { .3, .3, .3, 1. };
