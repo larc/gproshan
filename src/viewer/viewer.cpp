@@ -107,6 +107,7 @@ void viewer::init_glut()
 
 	glfwSetKeyCallback(window, keyboard);
 	glfwSetMouseButtonCallback(window, mouse);
+	glfwSetCursorPosCallback(window, motion);
 
 	glfwMakeContextCurrent(window);
 	glfwSwapInterval(0);
@@ -235,10 +236,14 @@ void viewer::mouse(GLFWwindow* window, int button, int action, int mods)
 	else view->cam.mouse(button, action, xpos, ypos);
 }
 
-void viewer::motion(int x, int y)
+void viewer::motion(GLFWwindow * window, double x, double y)
 {
-	//viewer * view = (viewer *) glfwGetWindowUserPointer(window);
-	//view->cam.motion(x, y);
+	int state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
+	if(state == GLFW_PRESS)
+	{
+		viewer * view = (viewer *) glfwGetWindowUserPointer(window);
+		view->cam.motion(x, y);
+	}
 }
 
 void viewer::idle()
@@ -261,7 +266,6 @@ void viewer::menu_reset_mesh(viewer * view)
 	view->vectors.clear();
 
 	view->mesh().reload();
-//	mesh().debug_info();
 
 	view->update_vbo();
 }

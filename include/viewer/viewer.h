@@ -123,7 +123,7 @@ class viewer
 		static void idle();
 		static void keyboard(GLFWwindow * window, int key, int scancode, int action, int mods);
 		static void mouse(GLFWwindow * window, int button, int action, int mods);
-		static void motion(int x, int y);
+		static void motion(GLFWwindow * window, double x, double y);
 
 		// menu functions
 		void menu_meshes(int value);
