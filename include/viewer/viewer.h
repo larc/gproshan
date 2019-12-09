@@ -88,7 +88,7 @@ class viewer
 		bool is_flat;
 		float bgc;
 
-		std::map<unsigned char, process_t> processes;
+		std::map<int, process_t> processes;
 	
 	public:
 
@@ -105,7 +105,7 @@ class viewer
 		bool run();
 		
 		che_viewer & mesh();
-		void add_process(const char & key, const std::string & name, function_t function);
+		void add_process(const int & key, const std::string & name, function_t function);
 		void add_mesh(const std::vector<che *> & _meshes);
 		
 	private:
@@ -134,6 +134,10 @@ class viewer
 		static void menu_save_mesh(viewer * view);
 		static void menu_zoom_in(viewer * view);
 		static void menu_zoom_out(viewer * view);
+		static void menu_bgc_inc(viewer * view);
+		static void menu_bgc_dec(viewer * view);
+		static void menu_bgc_white(viewer * view);
+		static void menu_bgc_black(viewer * view);
 
 		// render options
 		static void invert_orientation(viewer * view);

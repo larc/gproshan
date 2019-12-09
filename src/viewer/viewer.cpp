@@ -119,21 +119,25 @@ void viewer::init_menus()
 {
 	// init viewer menu
 	sub_menus.push_back("viewer");
-	add_process('i', "Invert Orientation", invert_orientation);
-	add_process('f', "Wireframe", set_render_wireframe);
-	add_process('g', "Gradient Field", set_render_gradient_field);
-	add_process('n', "Normal Field", set_render_normal_field);
-	add_process('b', "Show Border", set_render_border);
-	add_process(' ', "Lines", set_render_lines);
+	add_process(GLFW_KEY_PERIOD, "Invert Orientation", invert_orientation);
+	add_process(GLFW_KEY_F2, "Wireframe", set_render_wireframe);
+	add_process(GLFW_KEY_F3, "Gradient Field", set_render_gradient_field);
+	add_process(GLFW_KEY_F4, "Normal Field", set_render_normal_field);
+	add_process(GLFW_KEY_F5, "Show Border", set_render_border);
+	add_process(GLFW_KEY_SPACE, "Lines", set_render_lines);
 	add_process('+', "Show Corr", set_render_corr);
-	add_process('\t', "Flat", set_is_flat);
+	add_process(GLFW_KEY_TAB, "Flat", set_is_flat);
 
 	// init mesh menu
 	sub_menus.push_back("Mesh");
-	add_process('r', "Reset Mesh", menu_reset_mesh);
-	add_process('w', "Write Mesh", menu_save_mesh);
-	add_process('<', "Zoom In", menu_zoom_in);
-	add_process('>', "Zoom Out", menu_zoom_out);
+	add_process(GLFW_KEY_BACKSPACE, "Reset Mesh", menu_reset_mesh);
+	add_process(GLFW_KEY_W, "Write Mesh", menu_save_mesh);
+	add_process(GLFW_KEY_UP, "Zoom In", menu_zoom_in);
+	add_process(GLFW_KEY_DOWN, "Zoom Out", menu_zoom_out);
+	add_process(GLFW_KEY_RIGHT, "Bgc Inc", menu_bgc_inc);
+	add_process(GLFW_KEY_LEFT, "Bgc Dec", menu_bgc_dec);
+	add_process(GLFW_KEY_1, "Bgc White", menu_bgc_white);
+	add_process(GLFW_KEY_0, "Bgc Black", menu_bgc_black);
 }
 
 void viewer::init_glsl()
@@ -153,7 +157,7 @@ void viewer::menu_process(int value)
 	menu_process(processes[value].function);
 }
 
-void viewer::add_process(const char & key, const string & name, function_t function)
+void viewer::add_process(const int & key, const string & name, function_t function)
 {
 	if(processes.find(key) == processes.end())
 	{
@@ -190,28 +194,15 @@ void viewer::keyboard(GLFWwindow * window, int key, int scancode, int action, in
 {
 	if(action == GLFW_RELEASE) return;
 	
+	if(key == GLFW_KEY_ESCAPE)
+	{
+		glfwSetWindowShouldClose(window, GLFW_TRUE);
+		return;
+	}
+	
 	viewer * view = (viewer *) glfwGetWindowUserPointer(window);
-
-	switch(key)
-	{
-		case GLFW_KEY_UP:
-			view->cam.zoomIn();
-			break;
-		case GLFW_KEY_DOWN:
-			view->cam.zoomOut();
-			break;
-		case GLFW_KEY_ESCAPE:
-			glfwSetWindowShouldClose(window, GLFW_TRUE);
-			break;
-	}
-	
-	if(key >= '0' && key <= '9')
-	{
-		view->bgc = (key - '0') / 9.;
-		glClearColor(view->bgc, view->bgc, view->bgc, 1.);
-	}
-	
 	view->menu_process(view->processes[key].function);
+	glClearColor(view->bgc, view->bgc, view->bgc, 1.);
 }
 
 void viewer::menu_meshes(int value)
@@ -294,6 +285,26 @@ void viewer::menu_zoom_in(viewer * view)
 void viewer::menu_zoom_out(viewer * view)
 {
 	view->cam.zoomOut();
+}
+
+void viewer::menu_bgc_inc(viewer * view)
+{
+	if(view->bgc < 1) view->bgc += 0.05;
+}
+
+void viewer::menu_bgc_dec(viewer * view)
+{
+	if(view->bgc > 0) view->bgc -= 0.05;
+}
+
+void viewer::menu_bgc_white(viewer * view)
+{
+	view->bgc = 1;
+}
+
+void viewer::menu_bgc_black(viewer * view)
+{
+	view->bgc = 0;
 }
 
 void viewer::invert_orientation(viewer * view)
