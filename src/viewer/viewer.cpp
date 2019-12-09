@@ -19,25 +19,33 @@ using namespace std;
 namespace gproshan {
 
 
-const int viewer::m_window_size[N_MESHES][2] = {	{1, 1}, {1, 2}, {1, 3}, 
-											{2, 2}, {2, 3}, {2, 3},
-											{2, 4}, {2, 4}, {2, 5},
-											{2, 5}, {3, 4}, {3, 4} };
+const int viewer::m_window_size[N_MESHES][2] = {{1, 1}, {1, 2}, {1, 3}, 
+												{2, 2}, {2, 3}, {2, 3},
+												{2, 4}, {2, 4}, {2, 5},
+												{2, 5}, {3, 4}, {3, 4}};
 
 
 viewer::viewer()
 {
+	window = nullptr;
+	
+	n_meshes = current = 0;
+	
+	render_wireframe = false;
+	render_gradient_field = false;
+	render_normal_field = false;
+	render_border = false;
+	render_lines = false;
+	render_corr = false;
+
+	bgc = 0;
+
 	init_glut();
-//	add_mesh(_meshes);
-
-	glfwSetWindowTitle(window, mesh()->filename().c_str());
 	init_menus();
-
-	debug_info();
-	mesh().log_info();
-
 	set_gl();
 	init_glsl();
+	
+	debug_info();
 }
 
 viewer::~viewer()
@@ -161,6 +169,10 @@ void viewer::add_mesh(const vector<che *> & _meshes)
 		meshes[n_meshes++].init(_mesh);
 	}
 	
+	if(!n_meshes) return;
+
+	glfwSetWindowTitle(window, mesh()->filename().c_str());
+
 	const int * mw = m_window_size[n_meshes - 1];
 
 	index_t m = n_meshes - 1;

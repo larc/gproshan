@@ -61,7 +61,7 @@ target_link_libraries(gproshan_cpp GLEW::GLEW)
 target_link_libraries(gproshan_cpp glfw)
 target_link_libraries(gproshan_cpp ${X11_X11_LIB})
 target_link_libraries(gproshan_cpp ${ARMADILLO_LIBRARIES})
-target_link_libraries(gproshan_cpp ${CGAL_LIBRARIES})
+target_link_libraries(gproshan_cpp CGAL::CGAL)
 target_link_libraries(gproshan_cpp ${SuiteSparse_LIBRARIES})
 
 if(CUDA_FOUND)
