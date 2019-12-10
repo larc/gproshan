@@ -431,6 +431,11 @@ void viewer::display()
 	glEnable(GL_LIGHTING);
 
 	set_mesh_material();
+
+	glfwGetFramebufferSize(window, &viewport_width, &viewport_height);
+	viewport_width /= m_window_size[n_meshes - 1][1];
+	viewport_height /= m_window_size[n_meshes - 1][0];
+
 	draw_scene();
 
 	//glPopAttrib();
@@ -493,12 +498,9 @@ void viewer::draw_polygons()
 	glEnable(GL_POLYGON_OFFSET_FILL);
 	glPolygonOffset(1., 1.);
 
-	int ww, wh;
-	glfwGetFramebufferSize(window, &ww, &wh);
-
 	for(index_t i = 0; i < n_meshes; i++)
 	{
-		glViewport(meshes[i].vx * ww, meshes[i].vy * wh, ww, wh);
+		glViewport(meshes[i].vx * viewport_width, meshes[i].vy * viewport_height, viewport_width, viewport_height);
 		meshes[i].draw();
 	}
 	
@@ -517,12 +519,9 @@ void viewer::draw_wireframe()
 	
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	
-	int ww, wh;
-	glfwGetFramebufferSize(window, &ww, &wh);
-	
 	for(index_t i = 0; i < n_meshes; i++)
 	{
-		glViewport(meshes[i].vx * ww, meshes[i].vy * wh, ww, wh);
+		glViewport(meshes[i].vx * viewport_width, meshes[i].vy * viewport_height, viewport_width, viewport_height);
 		meshes[i].draw();
 	}
 	
@@ -675,12 +674,9 @@ void viewer::draw_selected_vertices()
 
 	double h = 0.02 * cam.zoom;
 	
-	int ww, wh;
-	glfwGetFramebufferSize(window, &ww, &wh);
-	
 	for(int v: select_vertices)
 	{
-		glViewport(mesh().vx * ww, mesh().vy * wh, ww, wh);
+		glViewport(mesh().vx * viewport_width, mesh().vy * viewport_height, viewport_width, viewport_height);
 		
 		glPushMatrix();
 		glTranslated(mesh()->gt(v).x, mesh()->gt(v).y, mesh()->gt(v).z);
@@ -697,12 +693,9 @@ void viewer::draw_normal_field()
 {
 	shader_program.disable();
 	
-	int ww, wh;
-	glfwGetFramebufferSize(window, &ww, &wh);
-	
 	for(index_t i = 0; i < n_meshes; i++)
 	{
-		glViewport(meshes[i].vx * ww, meshes[i].vy * wh, ww, wh);
+		glViewport(meshes[i].vx * viewport_width, meshes[i].vy * viewport_height, viewport_width, viewport_height);
 		meshes[i].draw_normal_field();
 	}
 }
@@ -711,12 +704,9 @@ void viewer::draw_gradient_field()
 {
 	shader_program.disable();
 	
-	int ww, wh;
-	glfwGetFramebufferSize(window, &ww, &wh);
-	
 	for(index_t i = 0; i < n_meshes; i++)
 	{
-		glViewport(meshes[i].vx * ww, meshes[i].vy * wh, ww, wh);
+		glViewport(meshes[i].vx * viewport_width, meshes[i].vy * viewport_height, viewport_width, viewport_height);
 		meshes[i].draw_gradient_field();
 	}
 }
@@ -795,7 +785,7 @@ void draw_str(const char * str, int x, int y, float color[4], void * font)
 	glColor4fv(color);
 	glRasterPos2i(x, y);
 
-	//while(*str) glutBitmapCharacter(font, *str++);
+	//viewport_heightile(*str) glutBitmapCharacter(font, *str++);
 
 	glEnable(GL_TEXTURE_2D);
 	glEnable(GL_LIGHTING);

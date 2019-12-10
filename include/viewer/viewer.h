@@ -71,6 +71,8 @@ class viewer
 		GLFWwindow * window;
 		shader shader_program;
 		camera cam;
+		int viewport_width;
+		int viewport_height;
 
 		che_viewer meshes[N_MESHES];
 		vcorr_t corr_mesh[N_MESHES];
