@@ -12,7 +12,7 @@
 // mesh dictionary learning and sparse coding namespace
 namespace gproshan::mdict {
 
-const real_t sigma = 0.001;
+const real_t sigma = 0.5;
 
 
 // SPARSE
@@ -118,6 +118,8 @@ tuple<a_vec, arma::uvec> _OMP(const a_vec & x, const a_mat & D, const size_t & L
 {
 	arma::uvec selected_atoms(L);
 	real_t threshold = norm(x) * sigma;
+	gproshan_debug_var(threshold);
+	
 
 	a_mat DD;
 	a_vec aa, r = x;
@@ -125,6 +127,7 @@ tuple<a_vec, arma::uvec> _OMP(const a_vec & x, const a_mat & D, const size_t & L
 	index_t l = 0;
 	while(norm(r) > threshold && l < L)
 	{
+		gproshan_debug_var(norm(r));
 		selected_atoms(l) = index_max(abs(D.t() * r));
 		
 		DD = D.cols(selected_atoms.head(l + 1));
@@ -132,7 +135,6 @@ tuple<a_vec, arma::uvec> _OMP(const a_vec & x, const a_mat & D, const size_t & L
 		r = x - DD * aa;
 		l++;
 	}
-
 	return {aa, selected_atoms.head(l)};
 }
 
@@ -144,7 +146,7 @@ a_vec OMP(const a_vec & x, const a_mat & D, const size_t & L)
 
 	tie(aa, selected_atoms) = _OMP(x, D, L);
 	alpha.elem(selected_atoms) = aa;
-	
+
 	return alpha;
 }
 

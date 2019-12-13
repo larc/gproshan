@@ -19,7 +19,7 @@ using namespace cimg_library;
 namespace gproshan::mdict {
 
 
-size_t dictionary::L = 8;
+size_t dictionary::L = 20;
 size_t dictionary::K = 10;
 size_t dictionary::T = 5;
 
@@ -155,6 +155,7 @@ void dictionary::init_patches(const bool & reset, const fmask_t & mask)
 		p.transform();
 		p.phi.set_size(p.xyz.n_cols, phi_basis->dim);
 		phi_basis->discrete(p.phi, p.xyz);
+		p.phi = normalise(p.phi);
 	}
 
 /*	
