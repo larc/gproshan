@@ -19,7 +19,7 @@ using namespace cimg_library;
 namespace gproshan::mdict {
 
 
-size_t dictionary::L = 20;
+size_t dictionary::L = 12;
 size_t dictionary::K = 10;
 size_t dictionary::T = 5;
 
@@ -51,12 +51,13 @@ void dictionary::learning()
 			KSVD(A, patches, L, K);
 			A.save(f_dict);
 		}
+		gproshan_debug(Dicti);
+		gproshan_debug_var(A);
 	}
 	else A.eye(phi_basis->dim, m);
 	
 	assert(A.n_rows == phi_basis->dim);
 	assert(A.n_cols == m);
-
 	if(d_plot)
 	{
 		phi_basis->plot_basis();
@@ -252,7 +253,7 @@ const distance_t & dictionary::operator[](const index_t & i) const
 
 void dictionary::draw_patches(index_t i)
 {
-	phi_basis->plot_patch(A*alpha.col(i),patches[i].xyz);
+	phi_basis->plot_patch(A*alpha.col(i),patches[i].xyz, i);
 }
 
 

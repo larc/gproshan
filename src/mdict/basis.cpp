@@ -72,9 +72,9 @@ size_t basis::get_dim()
 	return dim;
 }
 
-void basis::plot_patch(const a_mat & A, const a_mat & xyz )
+void basis::plot_patch(const a_mat & A, const a_mat & xyz, index_t i)
 {
-	string data = tmp_file_path("xyz.dat");
+	string data = tmp_file_path("xyz_" + to_string(i) + ".dat");
 	a_mat tmp = xyz.t();
 	tmp.save(data.c_str(),arma::arma_ascii);
 
@@ -83,7 +83,7 @@ void basis::plot_patch(const a_mat & A, const a_mat & xyz )
 	size_t s = sqrt(m);
 	s += !(s * s == K);
 
-	string file = tmp_file_path("atoms.gpi");
+	string file = tmp_file_path("atoms_patch_"+ to_string(i) + ".gpi");
 	ofstream os(file);
 
 	os << "set term qt size 1000,1000;" << endl;
@@ -108,9 +108,9 @@ void basis::plot_patch(const a_mat & A, const a_mat & xyz )
 
 	os.close();
 
-	file = "gnuplot -persist " + file + " &";
+	//file = "gnuplot -persist " + file + " &";
 
-	system(file.c_str());
+	//system(file.c_str());
 
 }
 

@@ -195,7 +195,7 @@ distance_t inpainting::execute()
 	bool *pmask;
 
 	draw_patches(10);
-	gproshan_debug_var(alpha.col(463));
+	//gproshan_debug_var(alpha.col(463));
 	
 
 	TIC(d_time) mesh_reconstruction([&pmask](const index_t & i) -> bool { return pmask[i]; }); TOC(d_time)

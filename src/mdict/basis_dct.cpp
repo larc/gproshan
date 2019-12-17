@@ -25,7 +25,6 @@ void basis_dct::discrete(a_mat & phi, const a_mat & xy)
 	for(index_t ny = 0; ny < n; ny++, k++)
 	{
 		phi.col(k) = dct(x, y, nx, ny);
-//		gproshan_debug_var(k);
 	}	
 }
 

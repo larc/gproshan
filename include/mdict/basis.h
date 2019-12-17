@@ -27,7 +27,7 @@ class basis
 		virtual void discrete(a_mat & phi, const a_mat & xy) = 0;
 		void plot_basis();
 		void plot_atoms(const a_mat & A);
-		void plot_patch(const a_mat & A, const a_mat & xyz );
+		void plot_patch(const a_mat & A, const a_mat & xyz, index_t i);
 		size_t get_dim();
 
 	private:

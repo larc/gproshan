@@ -12,7 +12,7 @@
 // mesh dictionary learning and sparse coding namespace
 namespace gproshan::mdict {
 
-const real_t sigma = 0.5;
+const real_t sigma = 0.01;
 
 
 // SPARSE
@@ -117,9 +117,7 @@ void sp_KSVD(a_mat & D, const a_mat & X, const size_t & L, size_t k)
 tuple<a_vec, arma::uvec> _OMP(const a_vec & x, const a_mat & D, const size_t & L)
 {
 	arma::uvec selected_atoms(L);
-	real_t threshold = norm(x) * sigma;
-	gproshan_debug_var(threshold);
-	
+	real_t threshold = norm(x) * sigma;	
 
 	a_mat DD;
 	a_vec aa, r = x;
@@ -127,7 +125,6 @@ tuple<a_vec, arma::uvec> _OMP(const a_vec & x, const a_mat & D, const size_t & L
 	index_t l = 0;
 	while(norm(r) > threshold && l < L)
 	{
-		gproshan_debug_var(norm(r));
 		selected_atoms(l) = index_max(abs(D.t() * r));
 		
 		DD = D.cols(selected_atoms.head(l + 1));
