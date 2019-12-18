@@ -49,7 +49,7 @@ void dictionary::learning()
 		{
 			A.eye(phi_basis->dim, m);
 			A = normalise(A);
-			gproshan_debug_var(phi_basis->dim);
+			gproshan_debug_var(phi_basis->radio);
 			gproshan_debug_var(m);
 			phi_basis->plot_atoms(A);
 			KSVD(A, patches, L, K);
@@ -59,7 +59,7 @@ void dictionary::learning()
 		gproshan_debug_var(A);
 	}
 	else A.eye(phi_basis->dim, m);
-	
+	gproshan_debug_var(phi_basis->radio);
 	assert(A.n_rows == phi_basis->dim);
 	assert(A.n_cols == m);
 	if(d_plot)
@@ -160,7 +160,7 @@ void dictionary::init_patches(const bool & reset, const fmask_t & mask)
 		p.transform();
 		p.phi.set_size(p.xyz.n_cols, phi_basis->dim);
 		phi_basis->discrete(p.phi, p.xyz);
-		//p.phi = normalise(p.phi);
+		p.phi = normalise(p.phi);
 	}
 
 /*	

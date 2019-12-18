@@ -24,6 +24,7 @@ distance_t denoising::execute()
 	TIC(d_time) sparse_coding(); TOC(d_time)
 	gproshan_debug_var(d_time);
 	draw_patches(128);
+	draw_patches(12);
 	phi_basis->plot_atoms(A);
 	phi_basis->plot_basis();
 	TIC(d_time) 

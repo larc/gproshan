@@ -195,6 +195,7 @@ distance_t inpainting::execute()
 	bool *pmask;
 
 	draw_patches(10);
+	phi_basis->plot_basis();
 	//gproshan_debug_var(alpha.col(463));
 	
 
