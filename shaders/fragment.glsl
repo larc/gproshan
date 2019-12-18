@@ -2,8 +2,8 @@
 
 uniform vec3 eye;
 uniform vec3 light;
-uniform bool is_flat;
-uniform bool lines;
+uniform bool render_flat;
+uniform bool render_lines;
 
 in vec3 position;
 in vec3 normal;
@@ -77,7 +77,7 @@ void main()
 
 
 	// lines
-	if(lines)
+	if(render_lines)
 	{
 		float h = color;
 		h = h * 40.;
@@ -89,7 +89,7 @@ void main()
 
  	vec3 N;
 
- 	if(is_flat)
+ 	if(render_flat)
 	{
 		vec3 X = dFdx(position);
 		vec3 Y = dFdy(position);

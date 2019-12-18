@@ -37,6 +37,7 @@ viewer::viewer()
 	render_border = false;
 	render_lines = false;
 	render_corr = false;
+	render_flat = false;
 
 	bgc = 0;
 
@@ -72,12 +73,22 @@ bool viewer::run()
 		
 		if(ImGui::BeginMainMenuBar())
     	{
+        	if(ImGui::BeginMenu("Select"))
+			{
+				for(index_t i = 0; i < n_meshes; i++)
+					if(ImGui::MenuItem((to_string(i) + ". " + meshes[i]->name()).c_str()))
+						current = i;	
+
+            	ImGui::EndMenu();
+			}
+
 			for(index_t i = 0; i < sub_menus.size(); i++)
 			{
         		if(ImGui::BeginMenu(sub_menus[i].c_str()))
         		{
 					for(auto & p: processes)
-            			if(p.second.sub_menu == i && ImGui::MenuItem(p.second.name_function.c_str()))
+            			if(p.second.function != nullptr && p.second.sub_menu == i &&
+							ImGui::MenuItem(p.second.name.c_str(), ('[' + p.second.key + ']').c_str()))
 							p.second.function(this);
 
             		ImGui::EndMenu();
@@ -164,26 +175,26 @@ void viewer::init_menus()
 {
 	// init viewer menu
 	sub_menus.push_back("Viewer");
-	add_process(GLFW_KEY_F1, "[F1] Help", menu_help);
-	add_process(GLFW_KEY_F2, "[F2] Invert Orintation", invert_orientation);
-	add_process(GLFW_KEY_F3, "[F3] Render Wireframe", set_render_wireframe);
-	add_process(GLFW_KEY_F4, "[F4] Gradient Field", set_render_gradient_field);
-	add_process(GLFW_KEY_F5, "[F5] Normal Field", set_render_normal_field);
-	add_process(GLFW_KEY_F6, "[F6] Show Borders", set_render_border);
-	add_process(GLFW_KEY_SPACE, "[SPACE] Level Curves", set_render_lines);
-	add_process(GLFW_KEY_TAB, "[TAB] Render Flat", set_is_flat);
+	add_process(GLFW_KEY_F1, {"F1", "Help", menu_help});
+	add_process(GLFW_KEY_F2, {"F2", "Invert Orientation", invert_orientation});
+	add_process(GLFW_KEY_F3, {"F3", "Render Wireframe", set_render_wireframe});
+	add_process(GLFW_KEY_F4, {"F4", "Gradient Field", set_render_gradient_field});
+	add_process(GLFW_KEY_F5, {"F5", "Normal Field", set_render_normal_field});
+	add_process(GLFW_KEY_F6, {"F6", "Show Borders", set_render_border});
+	add_process(GLFW_KEY_SPACE, {"SPACE", "Level Curves", set_render_lines});
+	add_process(GLFW_KEY_TAB, {"TAB", "Render Flat", set_is_flat});
 //	add_process('+', "Show Corr", set_render_corr);
 
 	// init mesh menu
 	sub_menus.push_back("Mesh");
-	add_process(GLFW_KEY_BACKSPACE, "[BACKSPACE] Reload/Reset", menu_reset_mesh);
-	add_process(GLFW_KEY_W, "[W] Save Mesh", menu_save_mesh);
-	add_process(GLFW_KEY_UP, "[UP] Zoom in", menu_zoom_in);
-	add_process(GLFW_KEY_DOWN, "[DOWN] Zoom out", menu_zoom_out);
-	add_process(GLFW_KEY_RIGHT, "[RIGHT] Background color inc", menu_bgc_inc);
-	add_process(GLFW_KEY_LEFT, "[LEFT] Background color dec", menu_bgc_dec);
-	add_process(GLFW_KEY_1, "[1] Background color white", menu_bgc_white);
-	add_process(GLFW_KEY_0, "[0] Background color black", menu_bgc_black);
+	add_process(GLFW_KEY_BACKSPACE, {"BACKSPACE", "Reload/Reset", menu_reset_mesh});
+	add_process(GLFW_KEY_W, {"W", "Save Mesh", menu_save_mesh});
+	add_process(GLFW_KEY_UP, {"UP", "Zoom in", menu_zoom_in});
+	add_process(GLFW_KEY_DOWN, {"DOWN", "Zoom out", menu_zoom_out});
+	add_process(GLFW_KEY_RIGHT, {"RIGHT", "Background color inc", menu_bgc_inc});
+	add_process(GLFW_KEY_LEFT, {"LEFT", "Background color dec", menu_bgc_dec});
+	add_process(GLFW_KEY_1, {"1", "Background color white", menu_bgc_white});
+	add_process(GLFW_KEY_0, {"0", "Background color black", menu_bgc_black});
 }
 
 void viewer::init_glsl()
@@ -203,11 +214,12 @@ void viewer::menu_process(int value)
 	menu_process(processes[value].function);
 }
 
-void viewer::add_process(const int & key, const string & name, function_t function)
+void viewer::add_process(const int & key, const process_t & process)
 {
 	if(processes.find(key) == processes.end())
 	{
-		processes[key] = {(index_t) sub_menus.size() - 1, name, function};
+		processes[key] = process;
+		processes[key].sub_menu = sub_menus.size() - 1;
 	}
 	else cerr << "Repeat key: " << key << endl;
 }
@@ -304,8 +316,8 @@ void viewer::menu_process(function_t pro)
 void viewer::menu_help(viewer * view)
 {
 	for(auto & p: view->processes)
-		if(p.second.name_function != "")
-			fprintf(stderr, "%s\n", p.second.name_function.c_str());
+		if(p.second.function != nullptr)
+			fprintf(stderr, "%16s: %s\n", ('[' + p.second.key + ']').c_str(), p.second.name.c_str());
 }
 
 void viewer::menu_reset_mesh(viewer * view)
@@ -405,7 +417,7 @@ void viewer::set_render_corr(viewer * view)
 
 void viewer::set_is_flat(viewer * view)
 {
-	view->is_flat = !view->is_flat;
+	view->render_flat = !view->render_flat;
 }
 
 void viewer::display()
@@ -449,11 +461,11 @@ void viewer::display()
 
 	cam.setView();
 
-	GLint uniformIsFlat = glGetUniformLocation(shader_program, "is_flat");
-	glUniform1i(uniformIsFlat, is_flat);
+	GLint uniform_render_flat = glGetUniformLocation(shader_program, "render_flat");
+	glUniform1i(uniform_render_flat, render_flat);
 
-	GLint uniformLines = glGetUniformLocation(shader_program, "lines");
-	glUniform1i(uniformLines, render_lines);
+	GLint uniform_render_lines = glGetUniformLocation(shader_program, "render_lines");
+	glUniform1i(uniform_render_lines, render_lines);
 
 	GLfloat ModelViewMatrix[16];
 	GLfloat ProjectionMatrix[16];

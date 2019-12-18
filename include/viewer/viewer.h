@@ -65,9 +65,10 @@ class viewer
 		
 		struct process_t
 		{
-			index_t sub_menu;
-			std::string name_function;
+			std::string key;
+			std::string name;
 			function_t function;
+			index_t sub_menu;
 		};
 
 		static const int m_window_size[N_MESHES][2];
@@ -84,15 +85,13 @@ class viewer
 		size_t n_meshes;
 		index_t current; // current mesh
 
-		char * share;
-
 		bool render_wireframe;
 		bool render_gradient_field;
 		bool render_normal_field;
 		bool render_border;
 		bool render_corr;
 		bool render_lines;
-		bool is_flat;
+		bool render_flat;
 		float bgc;
 
 		std::map<int, process_t> processes;
@@ -112,7 +111,7 @@ class viewer
 		bool run();
 		
 		che_viewer & mesh();
-		void add_process(const int & key, const std::string & name, function_t function);
+		void add_process(const int & key, const process_t & process);
 		void add_mesh(const std::vector<che *> & _meshes);
 		
 	private:

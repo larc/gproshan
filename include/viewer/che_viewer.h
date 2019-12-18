@@ -5,7 +5,7 @@
 
 #include "include_opengl.h"
 
-#define COLOR 0.5
+#define COLOR 0.4
 
 #ifdef SINGLE_P
 	#define glVertex3v(x) glVertex3fv(x)
