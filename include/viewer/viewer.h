@@ -115,6 +115,7 @@ class viewer
 		// init
 		void info_gl();
 		void init_gl();
+		void init_imgui();
 		void init_menus();
 		void init_glsl();
 		void update_vbo();

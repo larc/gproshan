@@ -50,8 +50,9 @@ include_directories(${gproshan_SOURCE_DIR}/include)
 include_directories(${gproshan_SOURCE_DIR}/include/viewer)
 include_directories(${gproshan_SOURCE_DIR}/include/mdict)
 include_directories(${gproshan_SOURCE_DIR}/include/cuda)
+include_directories(${gproshan_SOURCE_DIR}/imgui)
 
-FILE(GLOB_RECURSE cpp_sources ${gproshan_SOURCE_DIR}/src/*.cpp)
+FILE(GLOB_RECURSE cpp_sources ${gproshan_SOURCE_DIR}/src/*.cpp ${gproshan_SOURCE_DIR}/imgui/*.cpp)
 add_library(gproshan_cpp STATIC ${cpp_sources})
 
 target_link_libraries(gproshan_cpp ${OpenMP_CXX_LIBRARIES})

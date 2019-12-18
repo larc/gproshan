@@ -8,9 +8,13 @@
 #include <vector>
 #include <cassert>
 
-#include <che_off.h>
-#include <che_obj.h>
-#include <che_ply.h>
+#include "che_off.h"
+#include "che_obj.h"
+#include "che_ply.h"
+
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
 
 using namespace std;
 
@@ -41,6 +45,7 @@ viewer::viewer()
 	bgc = 0;
 
 	init_gl();
+	init_imgui();
 	init_menus();
 	
 	set_gl();
@@ -51,6 +56,10 @@ viewer::viewer()
 
 viewer::~viewer()
 {
+	ImGui_ImplOpenGL3_Shutdown();
+	ImGui_ImplGlfw_Shutdown();
+	ImGui::DestroyContext();
+
 	glfwDestroyWindow(window);
 	glfwTerminate();
 }
@@ -60,6 +69,32 @@ bool viewer::run()
 	while(!glfwWindowShouldClose(window))
 	{
 		display();
+		
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
+		
+		if(ImGui::BeginMainMenuBar())
+    	{
+			for(index_t i = 0; i < sub_menus.size(); i++)
+			{
+        		if(ImGui::BeginMenu(sub_menus[i].c_str()))
+        		{
+					for(auto & p: processes)
+            			if(p.second.sub_menu == i && ImGui::MenuItem(p.second.name_function.c_str()))
+							p.second.function(this);
+
+            		ImGui::EndMenu();
+				}
+        	}
+        	ImGui::EndMainMenuBar();
+		}
+
+		// Rendering
+		ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+		
+		glfwSwapBuffers(window);
 	}
 
 	return true;
@@ -117,10 +152,22 @@ void viewer::init_gl()
 	glewInit();
 }
 
+void viewer::init_imgui()
+{
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO(); (void) io;
+	
+	ImGui::StyleColorsDark();
+
+	ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init("#version 460");
+}
+
 void viewer::init_menus()
 {
 	// init viewer menu
-	sub_menus.push_back("viewer");
+	sub_menus.push_back("Viewer");
 	add_process(GLFW_KEY_F1, "[F1] Help", menu_help);
 	add_process(GLFW_KEY_F2, "[F2] Invert Orintation", invert_orientation);
 	add_process(GLFW_KEY_F3, "[F3] Render Wireframe", set_render_wireframe);
@@ -440,7 +487,6 @@ void viewer::display()
 
 	shader_program.disable();
 
-	glfwSwapBuffers(window);
 	glfwPollEvents();
 }
 
