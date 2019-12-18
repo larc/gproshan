@@ -47,7 +47,11 @@ void dictionary::learning()
 
 		if(!A.load(f_dict))
 		{
-			A.randu(phi_basis->dim, m);
+			A.eye(phi_basis->dim, m);
+			A = normalise(A);
+			gproshan_debug_var(phi_basis->dim);
+			gproshan_debug_var(m);
+			phi_basis->plot_atoms(A);
 			KSVD(A, patches, L, K);
 			A.save(f_dict);
 		}
@@ -156,7 +160,7 @@ void dictionary::init_patches(const bool & reset, const fmask_t & mask)
 		p.transform();
 		p.phi.set_size(p.xyz.n_cols, phi_basis->dim);
 		phi_basis->discrete(p.phi, p.xyz);
-		p.phi = normalise(p.phi);
+		//p.phi = normalise(p.phi);
 	}
 
 /*	
