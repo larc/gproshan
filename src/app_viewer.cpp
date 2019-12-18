@@ -60,58 +60,58 @@ int app_viewer::main(int nargs, const char ** args)
 	add_mesh(meshes);
 
 	sub_menus.push_back("Fairing");
-	add_process('T', "Fairing Taubin", process_fairing_taubin);
-	add_process('E', "Fairing Spectral", process_fairing_spectral);
+	add_process(GLFW_KEY_T, "[T] Fairing Taubin", process_fairing_taubin);
+	add_process(GLFW_KEY_E, "[E] Fairing Spectral", process_fairing_spectral);
 
 	sub_menus.push_back("Geodesics");
-	add_process('F', "Geodesics (FM)", process_geodesics_fm);
-	add_process('U', "Geodesics (PTP_CPU)", process_geodesics_ptp_cpu);
+	add_process(GLFW_KEY_F, "[F] Fast Marching", process_geodesics_fm);
+	add_process(GLFW_KEY_U, "[C] Parallel Toplesets Propagation CPU", process_geodesics_ptp_cpu);
 #ifndef SINGLE_P
-	add_process('l', "Geodesics (HEAT_FLOW)", process_geodesics_heat_flow);
+	add_process(GLFW_KEY_L, "[L] Heat Method", process_geodesics_heat_flow);
 #endif
 
 #ifdef GPROSHAN_CUDA
-	add_process('G', "Geodesics (PTP_GPU)", process_geodesics_ptp_gpu);
-	add_process('L', "Geodesics (HEAT_FLOW_GPU)", process_geodesics_heat_flow_gpu);
+	add_process(GLFW_KEY_G, "[G] Parallel Toplesets Propagation GPU", process_geodesics_ptp_gpu);
+//	add_process('L', "Geodesics (HEAT_FLOW_GPU)", process_geodesics_heat_flow_gpu);
 #endif // GPROSHAN_CUDA
 
-	add_process('S', "Farthest Point Sampling", process_farthest_point_sampling);
-	add_process('Q', "Farthest Point Sampling radio", process_farthest_point_sampling_radio);
-	add_process('V', "Voronoi Regions", process_voronoi);
-	add_process('P', "Toplesets", compute_toplesets);
+	add_process(GLFW_KEY_S, "[S] Geodesic Farthest Point Sampling", process_farthest_point_sampling);
+	add_process(GLFW_KEY_R, "[R] Geodesic Farthest Point Sampling (radio)", process_farthest_point_sampling_radio);
+	add_process(GLFW_KEY_V, "[V] Geodesic Voronoi", process_voronoi);
+	add_process(GLFW_KEY_P, "[P] Toplesets", compute_toplesets);
 
 	sub_menus.push_back("Dictionary Learning");
-	add_process('.', "Mark patch", process_mdict_patch);
-	add_process('D', "Denoising", process_denoising);
-	add_process('R', "Super Resolution", process_super_resolution);
-	add_process('I', "Inpainting", process_inpaiting);
-	add_process('A', "IT Inpainting", process_iterative_inpaiting);
+	add_process(GLFW_KEY_J, "[J] MDICT Patch", process_mdict_patch);
+	add_process(GLFW_KEY_D, "[D] MDICT Denoising", process_denoising);
+	add_process(GLFW_KEY_A, "[A] MDICT Super Resolution", process_super_resolution);
+	add_process(GLFW_KEY_I, "[I] MDICT Inpaiting", process_inpaiting);
+//	add_process('A', "IT Inpainting", process_iterative_inpaiting);
 
 	sub_menus.push_back("Signatures");
-	add_process('s', "GPS (norm)", process_gps);
-	add_process('H', "HKS (norm)", process_hks);
-	add_process('W', "WKS (norm)", process_wks);
-	add_process('X', "Functional maps", process_functional_maps);
-	add_process('*', "Key Points (adaptive mesh)", process_key_points);
-	add_process('C', "Key Components", process_key_components);
+	add_process(GLFW_KEY_2, "[2] GPS", process_gps);
+	add_process(GLFW_KEY_3, "[3] HKS", process_hks);
+	add_process(GLFW_KEY_4, "[4] WKS", process_wks);
+	add_process(GLFW_KEY_5, "[5] Functional Maps", process_functional_maps);
+	add_process(GLFW_KEY_6, "[6] Key Points", process_key_points);
+	add_process(GLFW_KEY_7, "[7] Key Components", process_key_components);
 
 	sub_menus.push_back("Repair Holes");
-	add_process('o', "Membrane surface", process_poisson_laplacian_1);
-	add_process('p', "Thin-plate surface", process_poisson_laplacian_2);
-	add_process('q', "Minimum variation surface", process_poisson_laplacian_3);
-	add_process('h', "Fill Holes (mesh only)", process_fill_holes);
-	add_process('B', "Fill holes (biharmonic splines)", process_fill_holes_biharmonic_splines);
+	add_process(GLFW_KEY_X, "[X] Poisson Membrane surface", process_poisson_laplacian_1);
+	add_process(GLFW_KEY_Y, "[Y] Poisson Thin-plate surface", process_poisson_laplacian_2);
+	add_process(GLFW_KEY_Z, "[Z] Poisson Minimum variation surface", process_poisson_laplacian_3);
+	add_process(GLFW_KEY_H, "[H] Fill hole - planar mesh", process_fill_holes);
+	add_process(GLFW_KEY_B, "[B] Fill hole - biharmonic splines", process_fill_holes_biharmonic_splines);
 
 	sub_menus.push_back("Others");
-	add_process('t', "Threshold", process_thresold);
-	add_process('N', "Noise", process_noise);
-	add_process('M', "Black Noise", process_black_noise);
-	add_process('m', "Multiplicate Vertices", process_multiplicate_vertices);
-	add_process('-', "Make holes", process_delete_vertices);
-	add_process('d', "Delete non manifolds vertices", process_delete_non_manifold_vertices);
-	add_process('K', "Gaussian curvature", process_gaussian_curvature);
-	add_process('/', "Decimation", process_edge_collapse);
-	add_process(':', "Select multiple vertices", select_multiple);
+	add_process(GLFW_KEY_SLASH, "[SLASH] Threshold", process_threshold);
+	add_process(GLFW_KEY_N, "[N] Noise", process_noise);
+	add_process(GLFW_KEY_COMMA, "[COMMA] Black noise", process_black_noise);
+	add_process(GLFW_KEY_M, "[M] Multiplicate", process_multiplicate_vertices);
+	add_process(GLFW_KEY_PERIOD, "[PERIOD] Delete vertices", process_delete_vertices);
+	add_process(GLFW_KEY_MINUS, "[MINUS] Delete non-manifold vertices", process_delete_non_manifold_vertices);
+	add_process(GLFW_KEY_K, "[K] Gaussian curvature", process_gaussian_curvature);
+	add_process(GLFW_KEY_9, "[9] Edge Collapse", process_edge_collapse);
+	add_process(GLFW_KEY_SEMICOLON, "[SEMICOLON] Select multiple vertices", select_multiple);
 
 
 	run();
@@ -241,7 +241,7 @@ void app_viewer::process_black_noise(viewer * p_view)
 	mesh.update_normals();
 }
 
-void app_viewer::process_thresold(viewer * p_view)
+void app_viewer::process_threshold(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;

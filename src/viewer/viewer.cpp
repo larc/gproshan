@@ -121,32 +121,32 @@ void viewer::init_menus()
 {
 	// init viewer menu
 	sub_menus.push_back("viewer");
-	add_process(GLFW_KEY_F1, "Help", menu_help);
-	add_process(GLFW_KEY_F2, "Wireframe", set_render_wireframe);
-	add_process(GLFW_KEY_F3, "Gradient Field", set_render_gradient_field);
-	add_process(GLFW_KEY_F4, "Normal Field", set_render_normal_field);
-	add_process(GLFW_KEY_F5, "Show Border", set_render_border);
-	add_process(GLFW_KEY_SPACE, "Lines", set_render_lines);
-	add_process(GLFW_KEY_TAB, "Flat", set_is_flat);
-	add_process(GLFW_KEY_PERIOD, "Invert Orientation", invert_orientation);
-	add_process('+', "Show Corr", set_render_corr);
+	add_process(GLFW_KEY_F1, "[F1] Help", menu_help);
+	add_process(GLFW_KEY_F2, "[F2] Invert Orintation", invert_orientation);
+	add_process(GLFW_KEY_F3, "[F3] Render Wireframe", set_render_wireframe);
+	add_process(GLFW_KEY_F4, "[F4] Gradient Field", set_render_gradient_field);
+	add_process(GLFW_KEY_F5, "[F5] Normal Field", set_render_normal_field);
+	add_process(GLFW_KEY_F6, "[F6] Show Borders", set_render_border);
+	add_process(GLFW_KEY_SPACE, "[SPACE] Level Curves", set_render_lines);
+	add_process(GLFW_KEY_TAB, "[TAB] Render Flat", set_is_flat);
+//	add_process('+', "Show Corr", set_render_corr);
 
 	// init mesh menu
 	sub_menus.push_back("Mesh");
-	add_process(GLFW_KEY_BACKSPACE, "Reset Mesh", menu_reset_mesh);
-	add_process(GLFW_KEY_W, "Write Mesh", menu_save_mesh);
-	add_process(GLFW_KEY_UP, "Zoom In", menu_zoom_in);
-	add_process(GLFW_KEY_DOWN, "Zoom Out", menu_zoom_out);
-	add_process(GLFW_KEY_RIGHT, "Bgc Inc", menu_bgc_inc);
-	add_process(GLFW_KEY_LEFT, "Bgc Dec", menu_bgc_dec);
-	add_process(GLFW_KEY_1, "Bgc White", menu_bgc_white);
-	add_process(GLFW_KEY_0, "Bgc Black", menu_bgc_black);
+	add_process(GLFW_KEY_BACKSPACE, "[BACKSPACE] Reload/Reset", menu_reset_mesh);
+	add_process(GLFW_KEY_W, "[W] Save Mesh", menu_save_mesh);
+	add_process(GLFW_KEY_UP, "[UP] Zoom in", menu_zoom_in);
+	add_process(GLFW_KEY_DOWN, "[DOWN] Zoom out", menu_zoom_out);
+	add_process(GLFW_KEY_RIGHT, "[RIGHT] Background color inc", menu_bgc_inc);
+	add_process(GLFW_KEY_LEFT, "[LEFT] Background color dec", menu_bgc_dec);
+	add_process(GLFW_KEY_1, "[1] Background color white", menu_bgc_white);
+	add_process(GLFW_KEY_0, "[0] Background color black", menu_bgc_black);
 }
 
 void viewer::init_glsl()
 {
-	shader_program.load_vertex("../shaders/new_vertex.glsl");
-	shader_program.load_fragment("../shaders/new_fragment.glsl");
+	shader_program.load_vertex("../shaders/vertex.glsl");
+	shader_program.load_fragment("../shaders/fragment.glsl");
 }
 
 void viewer::update_vbo()
@@ -224,9 +224,6 @@ void viewer::mouse_callback(GLFWwindow* window, int button, int action, int mods
 	
 	if(mods == GLFW_MOD_SHIFT && action == GLFW_RELEASE)
 		view->pick_vertex(xpos, ypos);
-		
-	//else if(button == 6 || button == 4) cam.zoomIn();
-	//else if(button == 5 || button == 3) cam.zoomOut();
 	else view->cam.mouse(button, action, xpos, ypos);
 }
 
@@ -263,8 +260,9 @@ void viewer::menu_process(function_t pro)
 
 void viewer::menu_help(viewer * view)
 {
-	const char * key_name = glfwGetKeyName(GLFW_KEY_W, 0);
-	gproshan_log(key_name);
+	for(auto & p: view->processes)
+		if(p.second.name_function != "")
+			fprintf(stderr, "%s\n", p.second.name_function.c_str());
 }
 
 void viewer::menu_reset_mesh(viewer * view)

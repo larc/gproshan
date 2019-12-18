@@ -1,11 +1,21 @@
-varying vec3 position;
-varying vec3 normal;
+#version 460 core
+
+layout (location=0) in vec3 VertexPosition;
+layout (location=1) in vec3 VertexNormal;
+layout (location=2) in float VertexColor;
+
+out vec3 position;
+out vec3 normal;
+out float color;
+
+uniform mat4 ModelViewMatrix;
+uniform mat4 ProjectionMatrix;
 
 void main()
-{	
-   gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
-   gl_FrontColor = gl_Color;
-
-   position = gl_Vertex.xyz;
-   normal = gl_Normal.xyz;
+{
+	position = VertexPosition;
+	normal = VertexNormal;
+	color = VertexColor;
+	gl_Position =  ProjectionMatrix * ModelViewMatrix * vec4(VertexPosition, 1.);
 }
+

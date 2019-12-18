@@ -80,7 +80,7 @@ class app_viewer : public viewer
 		static void process_poisson_laplacian_2(viewer * p_view);
 		static void process_poisson_laplacian_3(viewer * p_view);
 
-		static void process_thresold(viewer * p_view);
+		static void process_threshold(viewer * p_view);
 		static void process_noise(viewer * p_view);
 		static void process_black_noise(viewer * p_view);
 		static void process_multiplicate_vertices(viewer * p_view);
