@@ -95,7 +95,7 @@ void basis::plot_patch(const a_mat & A, const a_mat & xyz, index_t i)
 	os << "unset key;" << endl;
 	os << "set pm3d at b;" << endl;
 	os << "unset colorbox;" << endl;
-	os << "splot \"xyz.dat\" u 1:2:3 with points palette pointsize 2 pointtype 7,";
+	os << "splot \"xyz_" << to_string(i) << ".dat\" u 1:2:3 with points palette pointsize 2 pointtype 7,";
 
 	for(index_t i = 0; i < m; i++)
 	{
