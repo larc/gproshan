@@ -55,8 +55,6 @@ void dictionary::learning()
 			KSVD(A, patches, L, K);
 			A.save(f_dict);
 		}
-		gproshan_debug(Dicti);
-		gproshan_debug_var(A);
 	}
 	else A.eye(phi_basis->dim, m);
 	gproshan_debug_var(phi_basis->radio);

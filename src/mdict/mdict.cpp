@@ -190,7 +190,7 @@ void KSVD(a_mat & D, const a_mat & X, const size_t & L, size_t k)
 
 a_vec OMP(const patch & p, const a_mat & A, const size_t & L)
 {
-	return OMP(p.xyz.row(2).t(), p.phi * A, L);
+	return OMP(p.xyz.row(2).t(), normalise(p.phi * A), L);
 }
 
 a_mat OMP_all(const vector<patch> & patches, const a_mat & A, const size_t & L)
