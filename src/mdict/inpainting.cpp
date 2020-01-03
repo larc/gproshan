@@ -15,7 +15,7 @@ inpainting::inpainting(che *const & _mesh, basis *const & _phi_basis, const size
 	mask = new bool[mesh->n_vertices()];
 }
 
-void inpainting::load_mask(std::vector<index_t>  vertices[], geodesics & ptp )
+void inpainting::load_mask(const std::vector<index_t> * vertices, const index_t * clusters)
 {
 	string f_mask = tmp_file_path(mesh->name_size() + '_' + to_string(avg_p) + '_' + to_string(percent)  + ".msk");
 	arma::uvec V;
@@ -50,15 +50,15 @@ void inpainting::load_mask(std::vector<index_t>  vertices[], geodesics & ptp )
 		while( k < M )
 		{
 			rn = distribution(generator);
-			if(!mask[rn] && percentages_size[ptp.clusters[rn] ] > 0)
+			if(!mask[rn] && percentages_size[clusters[rn] ] > 0)
 			{
 
 				mask[rn] = 1;
 				V(rn) = 1;
 
-				percentages_size[ ptp.clusters[rn] ]--;			
+				percentages_size[ clusters[rn] ]--;			
 			}
-			if(percentages_size[ptp.clusters[rn] ] == 0)	
+			if(percentages_size[clusters[rn] ] == 0)	
 				k++;
 		}
 		V.save(f_mask);
@@ -99,7 +99,7 @@ void inpainting::init_patches_disjoint()
 				vertices[ ptp.clusters[i] ].push_back(i) ;
 		}
 	
-	load_mask(vertices, ptp);
+	load_mask(vertices, ptp.clusters);
 
 
 	//Initializing patches

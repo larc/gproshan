@@ -22,8 +22,9 @@ class inpainting : public dictionary
 		virtual ~inpainting() = default;
 
 		distance_t execute();
-		void load_mask(std::vector<index_t>  vertices[], geodesics & ptp );
+		void load_mask(const std::vector<index_t> * vertices, const index_t * clusters);
 		void init_patches_disjoint();
+		void init_voronoi_sampling(const std::vector<index_t> * vertices, const index_t * clusters);
 		distance_t execute_tmp();
 	private:
 		size_t avg_p;
