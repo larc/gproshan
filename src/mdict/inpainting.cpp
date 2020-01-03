@@ -65,41 +65,52 @@ void inpainting::load_mask(const std::vector<index_t> * vertices, const index_t 
 	}
 	
 }
+index_t *  inpainting::init_radial_sampling(const distance_t & radio, std::vector<index_t> * vertices)
+{
 
-void inpainting::init_patches_disjoint()
+}
+
+index_t *  inpainting::init_voronoi_sampling( std::vector<index_t> * vertices)
 {
 	gproshan_log_var(M);
 
-	//FPS samplif_dictng with desired number of sources
-	TIC(d_time) init_sampling(); TOC(d_time)
-	gproshan_debug_var(d_time);
-	
-	// creating disjoint clusters with geodesics aka voronoi
-#ifdef GPROSHAN_CUDA
-	geodesics ptp( mesh, sampling, geodesics::PTP_GPU, nullptr, 1);
-#else
-	geodesics ptp( mesh, sampling, geodesics::FM, nullptr, 1);
-#endif
-	TOC(d_time)
-	gproshan_log_var(d_time);
+		//FPS samplif_dictng with desired number of sources
+		TIC(d_time) init_sampling(); TOC(d_time)
+		gproshan_debug_var(d_time);
+		
+		// creating disjoint clusters with geodesics aka voronoi
+	#ifdef GPROSHAN_CUDA
+		geodesics ptp( mesh, sampling, geodesics::PTP_GPU, nullptr, 1);
+	#else
+		geodesics ptp( mesh, sampling, geodesics::FM, nullptr, 1);
+	#endif
+		TOC(d_time)
+		gproshan_log_var(d_time);
 
+
+		//saving first vertex aka seed vertices
+		#pragma omp for 
+		for(index_t s = 0; s < M; s++)
+		{
+			vertices[s].push_back(sample(s));
+		}
+
+		for(index_t i = 0; i < mesh->n_vertices(); i++)
+			{		
+				ptp.clusters[i]--;
+				if(sample(ptp.clusters[i]) != i)
+					vertices[ ptp.clusters[i] ].push_back(i) ;
+			}
+	return ptp.clusters;
+		
+}
+
+void inpainting::init_patches_disjoint()
+{
+	
 	std::vector<index_t> vertices[M];
 
-	//saving first vertex aka seed vertices
-	#pragma omp for 
-	for(index_t s = 0; s < M; s++)
-	{
-		vertices[s].push_back(sample(s));
-	}
-
-	for(index_t i = 0; i < mesh->n_vertices(); i++)
-		{		
-			ptp.clusters[i]--;
-			if(sample(ptp.clusters[i]) != i)
-				vertices[ ptp.clusters[i] ].push_back(i) ;
-		}
-	
-	load_mask(vertices, ptp.clusters);
+	load_mask(vertices, init_voronoi_sampling(vertices));
 
 
 	//Initializing patches

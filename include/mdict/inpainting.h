@@ -24,7 +24,8 @@ class inpainting : public dictionary
 		distance_t execute();
 		void load_mask(const std::vector<index_t> * vertices, const index_t * clusters);
 		void init_patches_disjoint();
-		void init_voronoi_sampling(const std::vector<index_t> * vertices, const index_t * clusters);
+		index_t * init_voronoi_sampling(std::vector<index_t> * vertices);
+		index_t * init_radial_sampling(const distance_t & radio, std::vector<index_t> * vertices);
 		distance_t execute_tmp();
 	private:
 		size_t avg_p;
