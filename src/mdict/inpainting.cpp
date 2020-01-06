@@ -69,43 +69,19 @@ void inpainting::load_mask(const std::vector<index_t> * vertices, const index_t 
 	}
 	
 }
-index_t *  inpainting::init_radial_sampling(const distance_t & radio, std::vector<index_t> * vertices)
+void  inpainting::init_radial_patches(const distance_t & radio)
 {
+	// ensure that M is large enough using the radio
 		gproshan_log_var(M);
+		std::vector<index_t> vertices[M];
 		//FPS samplif_dictng with desired number of sources
 		TIC(d_time) init_sampling(); TOC(d_time)
 		gproshan_debug_var(d_time);
 
 		//sampling
-		size_t count = 0;
-
-		while(count < mesh->n_vertices() )
-		{
-			//Choose a sample and get the points neighboring points
-			// Check the points are inside and add them
-		//	while( )
-			count++;
-		}
-
-}
-
-index_t *  inpainting::init_voronoi_sampling( std::vector<index_t> * vertices)
-{
-		gproshan_log_var(M);
-
-		//FPS samplif_dictng with desired number of sources
-		TIC(d_time) init_sampling(); TOC(d_time)
-		gproshan_debug_var(d_time);
-		
-		// creating disjoint clusters with geodesics aka voronoi
-	#ifdef GPROSHAN_CUDA
-		geodesics ptp( mesh, sampling, geodesics::PTP_GPU, nullptr, 1);
-	#else
-		geodesics ptp( mesh, sampling, geodesics::FM, nullptr, 1);
-	#endif
-		TOC(d_time)
-		gproshan_log_var(d_time);
-
+		size_t count = 0, s = 0;
+		patches.resize(M);
+		patches_map.resize(n_vertices);
 
 		//saving first vertex aka seed vertices
 		#pragma omp for 
@@ -114,17 +90,25 @@ index_t *  inpainting::init_voronoi_sampling( std::vector<index_t> * vertices)
 			vertices[s].push_back(sample(s));
 		}
 
-		for(index_t i = 0; i < mesh->n_vertices(); i++)
-			{		
-				ptp.clusters[i]--;
-				if(sample(ptp.clusters[i]) != i)
-					vertices[ ptp.clusters[i] ].push_back(i) ;
-			}
-	return ptp.clusters;
+		while(count < mesh->n_vertices() )
+		{
+			//Choose a sample and get the points neighboring points
+			// Check the points are inside and add them
+			//	while( )
+			// mask at the end
+			index_t * toplevel = new index_t[mesh->n_vertices()];
+			patches[s].init_radial_disjoint(mesh, radio, sample(s), dictionary::T, vertices[s], toplevel);
+
+			count+= patches[s].vertices.size();
+			count++;
+		}
+		//mask at the end no need to call the function
 		
+
 }
 
-void inpainting::init_patches_disjoint()
+
+void inpainting::init_voronoi_patches()
 {
 	/////
 	std::vector<index_t> vertices[M];
@@ -160,14 +144,9 @@ void inpainting::init_patches_disjoint()
 				if(sample(ptp.clusters[i]) != i)
 					vertices[ ptp.clusters[i] ].push_back(i) ;
 			}
-	//return ptp.clusters;
 	
 	
 	load_mask(vertices, ptp.clusters);
-	//////
-	
-	//load_mask(vertices, clusters_tmp);
-
 
 	//Initializing patches
 	gproshan_log(initializing patches);
@@ -228,7 +207,7 @@ void inpainting::init_patches_disjoint()
 distance_t inpainting::execute()
 {
 
-	TIC(d_time) init_patches_disjoint(); TOC(d_time)
+	TIC(d_time) init_voronoi_patches(); TOC(d_time)
 	gproshan_debug_var(d_time);
 
 //	L = 15;
