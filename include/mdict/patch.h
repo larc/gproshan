@@ -57,6 +57,11 @@ class patch
 					const size_t & n_toplevels,
 					vector<index_t> & _vertices, 
 					index_t * _toplevel = nullptr);
+		void init_radial_disjoint(che * mesh,
+					const index_t & v,
+					const size_t & n_toplevels,
+					vector<index_t> & _vertices, 
+					index_t * _toplevel = nullptr);
 
 		void transform();
 		

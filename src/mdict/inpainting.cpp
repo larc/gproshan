@@ -30,6 +30,7 @@ void inpainting::load_mask(const std::vector<index_t> * vertices, const index_t 
 	}
 	else
 	{
+
 		V.zeros(mesh->n_vertices());
 		size_t * percentages_size = new size_t[M];
 
@@ -39,6 +40,7 @@ void inpainting::load_mask(const std::vector<index_t> * vertices, const index_t 
 		for(index_t s = 0; s < M; s++)
 		{
 			percentages_size[s] = ceil(vertices[s].size() * percent/ 100) ;
+			
 		}
 		//Generate random mask according to a percentage of patches capacity
 		std::default_random_engine generator;
@@ -48,7 +50,9 @@ void inpainting::load_mask(const std::vector<index_t> * vertices, const index_t 
 		size_t rn=0;
 
 		while( k < M )
-		{
+		{	
+			//gproshan_debug_var(clusters[rn]);
+
 			rn = distribution(generator);
 			if(!mask[rn] && percentages_size[clusters[rn] ] > 0)
 			{
@@ -67,12 +71,27 @@ void inpainting::load_mask(const std::vector<index_t> * vertices, const index_t 
 }
 index_t *  inpainting::init_radial_sampling(const distance_t & radio, std::vector<index_t> * vertices)
 {
+		gproshan_log_var(M);
+		//FPS samplif_dictng with desired number of sources
+		TIC(d_time) init_sampling(); TOC(d_time)
+		gproshan_debug_var(d_time);
+
+		//sampling
+		size_t count = 0;
+
+		while(count < mesh->n_vertices() )
+		{
+			//Choose a sample and get the points neighboring points
+			// Check the points are inside and add them
+		//	while( )
+			count++;
+		}
 
 }
 
 index_t *  inpainting::init_voronoi_sampling( std::vector<index_t> * vertices)
 {
-	gproshan_log_var(M);
+		gproshan_log_var(M);
 
 		//FPS samplif_dictng with desired number of sources
 		TIC(d_time) init_sampling(); TOC(d_time)
@@ -107,10 +126,47 @@ index_t *  inpainting::init_voronoi_sampling( std::vector<index_t> * vertices)
 
 void inpainting::init_patches_disjoint()
 {
-	
+	/////
 	std::vector<index_t> vertices[M];
+	//index_t * clusters_tmp = init_voronoi_sampling(vertices);
+	
+	//////
+	gproshan_log_var(M);
 
-	load_mask(vertices, init_voronoi_sampling(vertices));
+		//FPS samplif_dictng with desired number of sources
+		TIC(d_time) init_sampling(); TOC(d_time)
+		gproshan_debug_var(d_time);
+		
+		// creating disjoint clusters with geodesics aka voronoi
+	#ifdef GPROSHAN_CUDA
+		geodesics ptp( mesh, sampling, geodesics::PTP_GPU, nullptr, 1);
+	#else
+		geodesics ptp( mesh, sampling, geodesics::FM, nullptr, 1);
+	#endif
+		TOC(d_time)
+		gproshan_log_var(d_time);
+
+
+		//saving first vertex aka seed vertices
+		#pragma omp for 
+		for(index_t s = 0; s < M; s++)
+		{
+			vertices[s].push_back(sample(s));
+		}
+
+		for(index_t i = 0; i < mesh->n_vertices(); i++)
+			{		
+				ptp.clusters[i]--;
+				if(sample(ptp.clusters[i]) != i)
+					vertices[ ptp.clusters[i] ].push_back(i) ;
+			}
+	//return ptp.clusters;
+	
+	
+	load_mask(vertices, ptp.clusters);
+	//////
+	
+	//load_mask(vertices, clusters_tmp);
 
 
 	//Initializing patches
