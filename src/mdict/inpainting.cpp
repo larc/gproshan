@@ -34,7 +34,6 @@ void inpainting::load_mask(const distance_t & radio)
 		for(index_t i = 0; i < mesh->n_vertices(); i++)
 		{
 			mask[i] = V(i);
-			//gproshan_debug_var(mask[i]);
 		}
 	}
 	else
@@ -49,33 +48,36 @@ void inpainting::load_mask(const distance_t & radio)
 		#pragma omp for 
 		for(index_t s = 0; s < M; s++)
 		{
-			
-
-			percentages_size[s] = ceil(patches[s].vertices.size() * percent/ 100) ;
+			percentages_size[s] = patches[s].vertices.size() - (patches[s].vertices.size() * (percent/ 100)) ;
 			//Generate random mask according to a percentage of patches capacity
 			std::default_random_engine generator;
 			std::uniform_int_distribution<int> distribution(0, patches[s].vertices.size());
 			//if some patch has been already masked then it already counts 
 			for(auto i: patches[s].vertices)
-				if(mask[i] && percentages_size[s]-1)
+				if(mask[i] && percentages_size[s])
 				{
 					percentages_size[s]--;
 				} 
 
 			
 			k = 0;
+		//	gproshan_debug_var(percentages_size[s]);
+		//	gproshan_debug_var(patches[s].vertices.size());
 			while(k < percentages_size[s] )
 			{
-			//	gproshan_debug_var(percentages_size[s]);
-			//	gproshan_debug_var(k);
+				//gproshan_debug_var(percentages_size[s]);
+				
 				rn = distribution(generator);
-				mask[rn] = 1;
-				V(rn) = 1;
+				mask[patches[s].vertices[rn]] = 1;
+				V(patches[s].vertices[rn]) = 1;
 				k++;
+				
 			}
 		}
-
-	//	V.save(f_mask);
+	/*	for(index_t s = 0; s < n_vertices; s++)
+			gproshan_debug_var(mask[s]);
+*/
+		V.save(f_mask);
 	}
 	
 }
@@ -104,7 +106,7 @@ void inpainting::load_mask(const std::vector<index_t> * vertices, const index_t 
 		#pragma omp for 
 		for(index_t s = 0; s < M; s++)
 		{
-			percentages_size[s] = ceil(vertices[s].size() * percent/ 100) ;
+			percentages_size[s] = vertices[s].size() * (percent/ 100) ;
 			
 		}
 		//Generate random mask according to a percentage of patches capacity
@@ -130,7 +132,10 @@ void inpainting::load_mask(const std::vector<index_t> * vertices, const index_t 
 			if(percentages_size[clusters[rn] ] == 0)	
 				k++;
 		}
-		V.save(f_mask);
+		for(index_t s = 0; s < n_vertices; s++)
+			gproshan_debug_var(V(s));
+		//V.save(f_mask);
+
 	}
 	
 }
@@ -201,13 +206,13 @@ void  inpainting::init_radial_patches(const distance_t & radio)
 	{
 		index_t * toplevel = new index_t[mesh->n_vertices()];
 
-		#pragma omp for 
+		/*#pragma omp for 
 		for(index_t s = 0; s < M; s++)
 		{
 			
 			patches[s].init_disjoint(mesh, sample(s), dictionary::T, vertices[s], toplevel);
 			
-		}		
+		}	*/	
 		#ifndef NDEBUG
 			size_t patch_avg_size = 0;
 			size_t patch_min_size = NIL;
@@ -229,11 +234,11 @@ void  inpainting::init_radial_patches(const distance_t & radio)
 			//gproshan_debug_var(patch_max_size);
 		#endif
 	}
-
+	
 	bool * pmask = mask;
 	for(index_t s = 0; s < M; s++)
 		patches[s].reset_xyz_disjoint(mesh, dist, patches_map, s ,[&pmask](const index_t & i) -> bool { return pmask[i]; } );
-
+	gproshan_debug(passed);
 	#pragma omp parallel for
 	for(index_t s = 0; s < M; s++)
 	{
