@@ -59,9 +59,6 @@ void patch::init_radial_disjoint(che * mesh, const distance_t & radio, const ind
 	
 	gather_vertices(mesh, v, n_toplevels, toplevel);
 
-	// Implementing radial constraint
-	//_vertices.push_back(v);
-
 	for(index_t i = 0; i < vertices.size(); i++)
 	{
 		vertex n = mesh->normal(v);// normal at the center
@@ -75,7 +72,6 @@ void patch::init_radial_disjoint(che * mesh, const distance_t & radio, const ind
 	}
 
 	vertices = std::move(_vertices);
-
 	if(!_toplevel) delete [] toplevel; // If it is null
 }
 

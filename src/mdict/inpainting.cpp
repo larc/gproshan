@@ -13,6 +13,11 @@ inpainting::inpainting(che *const & _mesh, basis *const & _phi_basis, const size
 	percent = _perc; // mask percentage
 	M = mesh->n_vertices()/avg_p;
 	mask = new bool[mesh->n_vertices()];
+	#pragma omp for 
+		for(index_t i = 0; i < mesh->n_vertices(); i++)
+		{
+			mask[i] = 0;
+		}
 }
 
 
@@ -20,6 +25,8 @@ void inpainting::load_mask(const distance_t & radio)
 {
 	string f_mask = tmp_file_path(mesh->name_size() + '_' + to_string(avg_p) + '_' + to_string(percent)  + '_' + to_string(radio)  + ".msk");
 	arma::uvec V;
+	gproshan_log(loading radial mask);
+	
 
 	if(V.load(f_mask))
 	{
@@ -27,6 +34,7 @@ void inpainting::load_mask(const distance_t & radio)
 		for(index_t i = 0; i < mesh->n_vertices(); i++)
 		{
 			mask[i] = V(i);
+			//gproshan_debug_var(mask[i]);
 		}
 	}
 	else
@@ -35,29 +43,39 @@ void inpainting::load_mask(const distance_t & radio)
 		V.zeros(mesh->n_vertices());
 		size_t * percentages_size = new size_t[M];
 
-		int k = 0;
-		size_t rn = 0;
+		int k;
+		size_t rn;
 		// create initial desired percentage sizes
 		#pragma omp for 
 		for(index_t s = 0; s < M; s++)
 		{
+			
+
 			percentages_size[s] = ceil(patches[s].vertices.size() * percent/ 100) ;
 			//Generate random mask according to a percentage of patches capacity
 			std::default_random_engine generator;
 			std::uniform_int_distribution<int> distribution(0, patches[s].vertices.size());
+			//if some patch has been already masked then it already counts 
+			for(auto i: patches[s].vertices)
+				if(mask[i] && percentages_size[s]-1)
+				{
+					percentages_size[s]--;
+				} 
+
+			
+			k = 0;
 			while(k < percentages_size[s] )
 			{
+			//	gproshan_debug_var(percentages_size[s]);
+			//	gproshan_debug_var(k);
 				rn = distribution(generator);
-				if(!mask[rn]) 
-				{
-					mask[rn] = 1;
-					V(rn) = 1;
-					k++;
-				}
+				mask[rn] = 1;
+				V(rn) = 1;
+				k++;
 			}
 		}
 
-		V.save(f_mask);
+	//	V.save(f_mask);
 	}
 	
 }
@@ -119,17 +137,19 @@ void inpainting::load_mask(const std::vector<index_t> * vertices, const index_t 
 void  inpainting::init_radial_patches(const distance_t & radio)
 	{
 	// ensure that M is large enough using the radio
+	gproshan_log(Init radial patches);
 	gproshan_log_var(M);
+	gproshan_log_var(radio);
 	std::vector<index_t> vertices[M];
 	//FPS samplif_dictng with desired number of sources
 	TIC(d_time) init_sampling(); TOC(d_time)
 	gproshan_debug_var(d_time);
 
 	//sampling
-	size_t count = 0, s = 0;
+	size_t count = 0, s;
 	patches.resize(M);
 	patches_map.resize(n_vertices);
-
+	
 	//saving first vertex aka seed vertices
 	#pragma omp for 
 	for(index_t s = 0; s < M; s++)
@@ -137,18 +157,33 @@ void  inpainting::init_radial_patches(const distance_t & radio)
 		vertices[s].push_back(sample(s));
 	}
 
-	while(count < mesh->n_vertices() )
+	bool covered[mesh->n_vertices()];
+	#pragma omp for 
+		for(index_t i = 0; i < mesh->n_vertices(); i++)
+		{
+			covered[i] = 0;
+		}
+
+	s = 0;
+	while(count < mesh->n_vertices()  &&  s < M)
 	{
+		
 		//Choose a sample and get the points neighboring points
 		// Check the points are inside and add them
 		//	while( )
 		// mask at the end
 		index_t * toplevel = new index_t[mesh->n_vertices()];
 		patches[s].init_radial_disjoint(mesh, radio, sample(s), dictionary::T, vertices[s], toplevel);
+		for(auto i:patches[s].vertices)
+			if(!covered[i]) 
+			{
+				covered[i] = 1;
+				count++;
+			}
 		s++;
-		count+= patches[s].vertices.size();
-		count++;
 	}
+	gproshan_debug(finished);
+
 	M = s-1; // updating number of vertices
 	//mask at the end no need to call the function
 	patches.resize(M); //??? 
@@ -161,6 +196,7 @@ void  inpainting::init_radial_patches(const distance_t & radio)
 	patches.resize(M);
 	patches_map.resize(n_vertices);
 	//initializing patch
+	gproshan_debug_var(M);
 	#pragma omp parallel
 	{
 		index_t * toplevel = new index_t[mesh->n_vertices()];
@@ -168,6 +204,7 @@ void  inpainting::init_radial_patches(const distance_t & radio)
 		#pragma omp for 
 		for(index_t s = 0; s < M; s++)
 		{
+			
 			patches[s].init_disjoint(mesh, sample(s), dictionary::T, vertices[s], toplevel);
 			
 		}		
