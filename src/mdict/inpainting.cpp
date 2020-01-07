@@ -15,6 +15,53 @@ inpainting::inpainting(che *const & _mesh, basis *const & _phi_basis, const size
 	mask = new bool[mesh->n_vertices()];
 }
 
+
+void inpainting::load_mask(const distance_t & radio)
+{
+	string f_mask = tmp_file_path(mesh->name_size() + '_' + to_string(avg_p) + '_' + to_string(percent)  + '_' + to_string(radio)  + ".msk");
+	arma::uvec V;
+
+	if(V.load(f_mask))
+	{
+		#pragma omp for 
+		for(index_t i = 0; i < mesh->n_vertices(); i++)
+		{
+			mask[i] = V(i);
+		}
+	}
+	else
+	{
+
+		V.zeros(mesh->n_vertices());
+		size_t * percentages_size = new size_t[M];
+
+		int k = 0;
+		size_t rn = 0;
+		// create initial desired percentage sizes
+		#pragma omp for 
+		for(index_t s = 0; s < M; s++)
+		{
+			percentages_size[s] = ceil(patches[s].vertices.size() * percent/ 100) ;
+			//Generate random mask according to a percentage of patches capacity
+			std::default_random_engine generator;
+			std::uniform_int_distribution<int> distribution(0, patches[s].vertices.size());
+			while(k < percentages_size[s] )
+			{
+				rn = distribution(generator);
+				if(!mask[rn]) 
+				{
+					mask[rn] = 1;
+					V(rn) = 1;
+					k++;
+				}
+			}
+		}
+
+		V.save(f_mask);
+	}
+	
+}
+
 void inpainting::load_mask(const std::vector<index_t> * vertices, const index_t * clusters)
 {
 	string f_mask = tmp_file_path(mesh->name_size() + '_' + to_string(avg_p) + '_' + to_string(percent)  + ".msk");
@@ -70,41 +117,98 @@ void inpainting::load_mask(const std::vector<index_t> * vertices, const index_t 
 	
 }
 void  inpainting::init_radial_patches(const distance_t & radio)
-{
+	{
 	// ensure that M is large enough using the radio
-		gproshan_log_var(M);
-		std::vector<index_t> vertices[M];
-		//FPS samplif_dictng with desired number of sources
-		TIC(d_time) init_sampling(); TOC(d_time)
-		gproshan_debug_var(d_time);
+	gproshan_log_var(M);
+	std::vector<index_t> vertices[M];
+	//FPS samplif_dictng with desired number of sources
+	TIC(d_time) init_sampling(); TOC(d_time)
+	gproshan_debug_var(d_time);
 
-		//sampling
-		size_t count = 0, s = 0;
-		patches.resize(M);
-		patches_map.resize(n_vertices);
+	//sampling
+	size_t count = 0, s = 0;
+	patches.resize(M);
+	patches_map.resize(n_vertices);
 
-		//saving first vertex aka seed vertices
+	//saving first vertex aka seed vertices
+	#pragma omp for 
+	for(index_t s = 0; s < M; s++)
+	{
+		vertices[s].push_back(sample(s));
+	}
+
+	while(count < mesh->n_vertices() )
+	{
+		//Choose a sample and get the points neighboring points
+		// Check the points are inside and add them
+		//	while( )
+		// mask at the end
+		index_t * toplevel = new index_t[mesh->n_vertices()];
+		patches[s].init_radial_disjoint(mesh, radio, sample(s), dictionary::T, vertices[s], toplevel);
+		s++;
+		count+= patches[s].vertices.size();
+		count++;
+	}
+	M = s-1; // updating number of vertices
+	//mask at the end no need to call the function
+	patches.resize(M); //??? 
+
+	load_mask(radio);
+
+	//Initializing patches
+	gproshan_log(initializing patches);
+
+	patches.resize(M);
+	patches_map.resize(n_vertices);
+	//initializing patch
+	#pragma omp parallel
+	{
+		index_t * toplevel = new index_t[mesh->n_vertices()];
+
 		#pragma omp for 
 		for(index_t s = 0; s < M; s++)
 		{
-			vertices[s].push_back(sample(s));
-		}
+			patches[s].init_disjoint(mesh, sample(s), dictionary::T, vertices[s], toplevel);
+			
+		}		
+		#ifndef NDEBUG
+			size_t patch_avg_size = 0;
+			size_t patch_min_size = NIL;
+			size_t patch_max_size = 0;
 
-		while(count < mesh->n_vertices() )
-		{
-			//Choose a sample and get the points neighboring points
-			// Check the points are inside and add them
-			//	while( )
-			// mask at the end
-			index_t * toplevel = new index_t[mesh->n_vertices()];
-			patches[s].init_radial_disjoint(mesh, radio, sample(s), dictionary::T, vertices[s], toplevel);
+			#pragma omp parallel for reduction(+: patch_avg_size)
+			for(index_t s = 0; s < M; s++)
+				patch_avg_size += patches[s].vertices.size();
+			#pragma omp parallel for reduction(min: patch_min_size)
+			for(index_t s = 0; s < M; s++)
+				patch_min_size = min(patches[s].vertices.size(), patch_min_size);
+			#pragma omp parallel for reduction(max: patch_max_size)
+			for(index_t s = 0; s < M; s++)
+				patch_max_size = max(patches[s].vertices.size(), patch_max_size);
 
-			count+= patches[s].vertices.size();
-			count++;
-		}
-		//mask at the end no need to call the function
-		
+			patch_avg_size /= M;
+			//gproshan_debug_var(patch_avg_size);
+			//gproshan_debug_var(patch_min_size);
+			//gproshan_debug_var(patch_max_size);
+		#endif
+	}
 
+	bool * pmask = mask;
+	for(index_t s = 0; s < M; s++)
+		patches[s].reset_xyz_disjoint(mesh, dist, patches_map, s ,[&pmask](const index_t & i) -> bool { return pmask[i]; } );
+
+	#pragma omp parallel for
+	for(index_t s = 0; s < M; s++)
+	{
+		patch & p = patches[s];
+
+		p.transform();
+		p.phi.set_size(p.xyz.n_cols, phi_basis->get_dim());
+		phi_basis->discrete(p.phi, p.xyz);
+
+	} 
+	gproshan_log(radial patches are ready);
+	
 }
 
 

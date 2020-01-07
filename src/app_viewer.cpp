@@ -528,7 +528,7 @@ void viewer_process_mask()
 
 	size_t n=12; // dct
 	size_t m = 144, M = 0;
-	distance_t f = 3;
+	distance_t f = 1;
 	bool learn = 0;
 
 
@@ -538,7 +538,7 @@ void viewer_process_mask()
 	basis * phi = new basis_dct(n);
 	inpainting dict(viewer::mesh(),  phi, m, M, f, learn, avg_p, percentage);
 
-	dict.init_voronoi_patches();
+	dict.init_radial_patches(2.263e-02);
 
 	delete phi;
 	viewer::mesh().update_colors(&dict[0]);

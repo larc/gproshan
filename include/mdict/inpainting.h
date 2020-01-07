@@ -23,6 +23,7 @@ class inpainting : public dictionary
 
 		distance_t execute();
 		void load_mask(const std::vector<index_t> * vertices, const index_t * clusters);
+		void load_mask(const distance_t & radio);
 		void init_voronoi_patches();
 		void init_radial_patches(const distance_t & radio);
 		distance_t execute_tmp();
