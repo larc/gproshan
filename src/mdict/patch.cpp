@@ -70,7 +70,7 @@ void patch::init_radial_disjoint(che * mesh, const distance_t & radio, const ind
 		if(*p <= radio)	_vertices.push_back(vertices[i]);
 
 	}
-
+	jet_fit_directions(mesh, v);
 	vertices = std::move(_vertices);
 	if(!_toplevel) delete [] toplevel; // If it is null
 }
@@ -129,10 +129,10 @@ void patch::reset_xyz_disjoint(che * mesh, distance_t * dist, size_t M, vector<v
 		for(index_t i = 0; i < vertices.size(); i++)
 			if(mask(i)) { dist[vertices[i] ] = float(p + 1) / M; m++;  } else {dist[vertices[i] ] = INFINITY; };
 		
-		gproshan_debug(number vertices considered);
+	/*	gproshan_debug(number vertices considered);
 		gproshan_debug_var(m);
 		gproshan_debug(number vertices masked);
-		gproshan_debug_var(vertices.size() - m);
+		gproshan_debug_var(vertices.size() - m);*/
 	}
 	
 	xyz.set_size(3, m);

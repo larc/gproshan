@@ -148,6 +148,7 @@ void inpainting::load_mask(const std::vector<index_t> * vertices, const index_t 
 	}
 	
 }
+
 void  inpainting::init_radial_patches(const distance_t & radio)
 	{
 	// ensure that M is large enough using the radio
@@ -196,9 +197,12 @@ void  inpainting::init_radial_patches(const distance_t & radio)
 			}
 		s++;
 	}
+	gproshan_debug_var(M);
+	gproshan_debug_var(s);
+
 	gproshan_debug(finished);
 
-	M = s-1; // updating number of vertices
+	M = s; // updating number of vertices
 	//mask at the end no need to call the function
 	patches.resize(M); //??? 
 
@@ -247,7 +251,9 @@ void  inpainting::init_radial_patches(const distance_t & radio)
 	bool * pmask = mask;
 	for(index_t s = 0; s < M; s++)
 		patches[s].reset_xyz_disjoint(mesh, dist, M,  patches_map, s ,[&pmask](const index_t & i) -> bool { return pmask[i]; } );
+	
 	gproshan_debug(passed);
+	
 	#pragma omp parallel for
 	for(index_t s = 0; s < M; s++)
 	{
