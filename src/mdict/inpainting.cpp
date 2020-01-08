@@ -23,7 +23,8 @@ inpainting::inpainting(che *const & _mesh, basis *const & _phi_basis, const size
 
 void inpainting::load_mask(const distance_t & radio)
 {
-	string f_mask = tmp_file_path(mesh->name_size() + '_' + to_string(avg_p) + '_' + to_string(percent)  + '_' + to_string(radio)  + ".msk");
+	//string f_mask = tmp_file_path(mesh->name_size() + '_' + to_string(avg_p) + '_' + to_string(percent)  + '_' + to_string(radio)  + ".msk");
+	string f_mask = tmp_file_path(mesh->name_size() + '_' + to_string(avg_p) + '_' + to_string(percent)  + ".msk");
 	arma::uvec V;
 	gproshan_log(loading radial mask);
 	
@@ -38,7 +39,27 @@ void inpainting::load_mask(const distance_t & radio)
 	}
 	else
 	{
+		V.zeros(mesh->n_vertices());
+		std::default_random_engine generator;
+		std::uniform_int_distribution<int> distribution(0, mesh->n_vertices()-1);
+		size_t percentage = mesh->n_vertices() - ceil(mesh->n_vertices() * (percent/ 100.0)) ;
 
+		int k = 0;
+		size_t rn = 0;
+		while (k < percentage)
+		{
+		
+			rn = distribution(generator);
+			if(!mask[rn])
+			{
+				mask[rn] = 1;
+				V(rn) = 1;
+				k++;
+			}
+				
+		}
+		/*
+/////////////////////////
 		V.zeros(mesh->n_vertices());
 		size_t * percentages_size = new size_t[M];
 
