@@ -48,7 +48,7 @@ void inpainting::load_mask(const distance_t & radio)
 		#pragma omp for 
 		for(index_t s = 0; s < M; s++)
 		{
-			percentages_size[s] = patches[s].vertices.size() - (patches[s].vertices.size() * (percent/ 100.0)) ;
+			percentages_size[s] = patches[s].vertices.size() - ceil(patches[s].vertices.size() * (percent/ 100.0)) ;
 			//Generate random mask according to a percentage of patches capacity
 			std::default_random_engine generator;
 			std::uniform_int_distribution<int> distribution(0, patches[s].vertices.size());

@@ -123,7 +123,6 @@ void patch::reset_xyz(che * mesh, vector<vpatches_t> & vpatches, const index_t &
 void patch::reset_xyz_disjoint(che * mesh, distance_t * dist, size_t M, vector<vpatches_t> & vpatches, const index_t & p,  const fmask_t & mask)
 {
 	size_t m = vertices.size();
-//	gproshan_debug_var(m); 
 	if(mask)
 	{
 		m = 0;
@@ -135,7 +134,6 @@ void patch::reset_xyz_disjoint(che * mesh, distance_t * dist, size_t M, vector<v
 		gproshan_debug(number vertices masked);
 		gproshan_debug_var(vertices.size() - m);
 	}
-//	gproshan_debug_var(m);
 	
 	xyz.set_size(3, m);
 	for(index_t  j = 0, i = 0; i < vertices.size(); i++)
