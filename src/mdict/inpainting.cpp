@@ -48,7 +48,7 @@ void inpainting::load_mask(const distance_t & radio)
 		#pragma omp for 
 		for(index_t s = 0; s < M; s++)
 		{
-			percentages_size[s] = patches[s].vertices.size() - (patches[s].vertices.size() * (percent/ 100)) ;
+			percentages_size[s] = patches[s].vertices.size() - (patches[s].vertices.size() * (percent/ 100.0)) ;
 			//Generate random mask according to a percentage of patches capacity
 			std::default_random_engine generator;
 			std::uniform_int_distribution<int> distribution(0, patches[s].vertices.size());
@@ -94,27 +94,32 @@ void inpainting::load_mask(const std::vector<index_t> * vertices, const index_t 
 		{
 			mask[i] = V(i);
 		}
+
 	}
 	else
 	{
 
 		V.zeros(mesh->n_vertices());
 		size_t * percentages_size = new size_t[M];
+		bool cover_cluster[M];
 
 			
 		// create initial desired percentage sizes
 		#pragma omp for 
 		for(index_t s = 0; s < M; s++)
 		{
-			percentages_size[s] = vertices[s].size() * (percent/ 100) ;
+		
+			percentages_size[s] = ceil(vertices[s].size() * (percent/ 100.0)) ;
+			cover_cluster[s] = 0;
 			
 		}
 		//Generate random mask according to a percentage of patches capacity
 		std::default_random_engine generator;
-		std::uniform_int_distribution<int> distribution(0,M);
+		std::uniform_int_distribution<int> distribution(0,n_vertices-1);
 
 		int k = 0;
 		size_t rn=0;
+		
 
 		while( k < M )
 		{	
@@ -126,15 +131,19 @@ void inpainting::load_mask(const std::vector<index_t> * vertices, const index_t 
 
 				mask[rn] = 1;
 				V(rn) = 1;
-
-				percentages_size[ clusters[rn] ]--;			
+				percentages_size[ clusters[rn] ]--;
+							
 			}
-			if(percentages_size[clusters[rn] ] == 0)	
+			if( !cover_cluster[ clusters[rn] ] && percentages_size[clusters[rn] ] == 0)
+			{
+				cover_cluster[ clusters[rn]] = 1; // It is finished
 				k++;
+			}	
+				
 		}
-		for(index_t s = 0; s < n_vertices; s++)
-			gproshan_debug_var(V(s));
-		//V.save(f_mask);
+	
+	
+		V.save(f_mask);
 
 	}
 	
@@ -237,7 +246,7 @@ void  inpainting::init_radial_patches(const distance_t & radio)
 	
 	bool * pmask = mask;
 	for(index_t s = 0; s < M; s++)
-		patches[s].reset_xyz_disjoint(mesh, dist, patches_map, s ,[&pmask](const index_t & i) -> bool { return pmask[i]; } );
+		patches[s].reset_xyz_disjoint(mesh, dist, M,  patches_map, s ,[&pmask](const index_t & i) -> bool { return pmask[i]; } );
 	gproshan_debug(passed);
 	#pragma omp parallel for
 	for(index_t s = 0; s < M; s++)
@@ -334,7 +343,7 @@ void inpainting::init_voronoi_patches()
 
 	bool * pmask = mask;
 	for(index_t s = 0; s < M; s++)
-		patches[s].reset_xyz_disjoint(mesh, dist, patches_map, s ,[&pmask](const index_t & i) -> bool { return pmask[i]; } );
+		patches[s].reset_xyz_disjoint(mesh, dist, M, patches_map, s ,[&pmask](const index_t & i) -> bool { return pmask[i]; } );
 
 	#pragma omp parallel for
 	for(index_t s = 0; s < M; s++)

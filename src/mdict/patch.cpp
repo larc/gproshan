@@ -111,7 +111,7 @@ void patch::reset_xyz(che * mesh, vector<vpatches_t> & vpatches, const index_t &
 			xyz(0, j) = v.x;
 			xyz(1, j) = v.y;
 			xyz(2, j) = v.z;
-			//p idx patche where belongs to
+		//p idx patche where belongs to
 			//j: local index 
 			//i: global index
 			//if(vpatches[vertices[i]].size() == 0)
@@ -120,15 +120,20 @@ void patch::reset_xyz(che * mesh, vector<vpatches_t> & vpatches, const index_t &
 	}
 }
 
-void patch::reset_xyz_disjoint(che * mesh, distance_t * dist, vector<vpatches_t> & vpatches, const index_t & p,  const fmask_t & mask)
+void patch::reset_xyz_disjoint(che * mesh, distance_t * dist, size_t M, vector<vpatches_t> & vpatches, const index_t & p,  const fmask_t & mask)
 {
 	size_t m = vertices.size();
-//	gproshan_debug_var(m);
+//	gproshan_debug_var(m); 
 	if(mask)
 	{
 		m = 0;
 		for(index_t i = 0; i < vertices.size(); i++)
-			if(mask(i)) { dist[vertices[i] ] = float(p + 1) / 4804; m++; } else {dist[vertices[i] ] = INFINITY;};
+			if(mask(i)) { dist[vertices[i] ] = float(p + 1) / M; m++;  } else {dist[vertices[i] ] = INFINITY; };
+		
+		gproshan_debug(number vertices considered);
+		gproshan_debug_var(m);
+		gproshan_debug(number vertices masked);
+		gproshan_debug_var(vertices.size() - m);
 	}
 //	gproshan_debug_var(m);
 	

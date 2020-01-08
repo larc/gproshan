@@ -75,6 +75,7 @@ class patch
 						);
 		void reset_xyz_disjoint(	che * mesh,
 						distance_t * dist,
+						size_t M,
 						std::vector<vpatches_t> & vpatches,
 						const index_t & p,
 						const fmask_t & mask = nullptr
