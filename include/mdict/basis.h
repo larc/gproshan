@@ -22,6 +22,7 @@ class basis
 		distance_t radio;
 		size_t dim;
 
+
 	public:
 		virtual ~basis() = default;
 		virtual void discrete(a_mat & phi, const a_mat & xy) = 0;
@@ -30,6 +31,7 @@ class basis
 		void plot_patch(const a_mat & A, const a_mat & xyz, index_t i);
 		size_t get_dim();
 		distance_t get_radio();
+		virtual double get_frequency(size_t idx) = 0;
 
 	private:
 		virtual void plot_basis(std::ostream & os) = 0;

@@ -77,6 +77,7 @@ distance_t basis::get_radio()
 	return radio;
 }
 
+
 void basis::plot_patch(const a_mat & A, const a_mat & xyz, index_t i)
 {
 	string data = tmp_file_path("xyz_" + to_string(i) + ".dat");

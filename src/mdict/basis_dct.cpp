@@ -58,7 +58,12 @@ void basis_dct::dct(ostream & os, const index_t & nx, const index_t & ny)
 	os << "cos( (pi * v * cos(u) * " << nx << " ) / " << radio << " ) *";
 	os << "cos( (pi * v * sin(u) * " << ny << " ) / " << radio << " )";
 }
-
+double basis_dct::get_frequency(size_t idx)
+{
+	if(idx == 0 ) return INFINITY;
+	int tmp = (idx/n > idx%n)? idx/n:idx%n;
+	return (radio/tmp);
+}
 
 } // namespace gproshan::mdict
 
