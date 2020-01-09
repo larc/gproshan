@@ -284,6 +284,7 @@ void  inpainting::init_radial_patches()
 		p.transform();
 		p.phi.set_size(p.xyz.n_cols, phi_basis->get_dim());
 		phi_basis->discrete(p.phi, p.xyz);
+		p.compute_avg_distance();
 
 	} 
 	gproshan_log(radial patches are ready);

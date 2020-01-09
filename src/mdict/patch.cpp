@@ -335,6 +335,15 @@ void patch::save_z(ostream & os)
 	os<<xyz.col(i)[2]<<"\n";
 }
 
+void patch::compute_avg_distance()
+{
+	avg_dist = 0;
+	for(int i = 0; i < vertices.size(); i++)
+		for(int j = i+1; j < vertices.size(); j++)
+			avg_dist = avg_dist + norm(xyz.col(i)- xyz.col(j));
 
+	avg_dist = avg_dist/vertices.size();
+
+}
 } // namespace gproshan::mdict
 

@@ -38,6 +38,7 @@ class patch
 		a_vec x;							///< Center point.
 		a_mat xyz;						///< Matrix of points.
 		a_mat phi;
+		double avg_dist; // Average distance betweenn points in a patch
 	
 	public:
 		static size_t expected_nv;		///< Expected number of patch vertices.
@@ -84,6 +85,7 @@ class patch
 
 		void save(const real_t & radio, const size_t & imsize, CImgList<real_t> & imlist);
 		void update_heights(real_t & min, real_t & max, bool flag);
+		void compute_avg_distance();
 		
 
 	private:
