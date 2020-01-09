@@ -29,6 +29,7 @@ class basis
 		void plot_atoms(const a_mat & A);
 		void plot_patch(const a_mat & A, const a_mat & xyz, index_t i);
 		size_t get_dim();
+		distance_t get_radio();
 
 	private:
 		virtual void plot_basis(std::ostream & os) = 0;

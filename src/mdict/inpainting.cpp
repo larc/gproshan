@@ -21,7 +21,7 @@ inpainting::inpainting(che *const & _mesh, basis *const & _phi_basis, const size
 }
 
 
-void inpainting::load_mask(const distance_t & radio)
+void inpainting::load_mask()
 {
 	//string f_mask = tmp_file_path(mesh->name_size() + '_' + to_string(avg_p) + '_' + to_string(percent)  + '_' + to_string(radio)  + ".msk");
 	string f_mask = tmp_file_path(mesh->name_size() + '_' + to_string(avg_p) + '_' + to_string(percent)  + ".msk");
@@ -170,12 +170,11 @@ void inpainting::load_mask(const std::vector<index_t> * vertices, const index_t 
 	
 }
 
-void  inpainting::init_radial_patches(const distance_t & radio)
+void  inpainting::init_radial_patches()
 	{
 	// ensure that M is large enough using the radio
 	gproshan_log(Init radial patches);
 	gproshan_log_var(M);
-	gproshan_log_var(radio);
 	std::vector<index_t> vertices[M];
 	//FPS samplif_dictng with desired number of sources
 	TIC(d_time) init_sampling(); TOC(d_time)
@@ -209,7 +208,7 @@ void  inpainting::init_radial_patches(const distance_t & radio)
 		//	while( )
 		// mask at the end
 		index_t * toplevel = new index_t[mesh->n_vertices()];
-		patches[s].init_radial_disjoint(mesh, radio, sample(s), dictionary::T, vertices[s], toplevel);
+		patches[s].init_radial_disjoint(mesh, phi_basis->get_radio(), sample(s), dictionary::T, vertices[s], toplevel);
 		for(auto i:patches[s].vertices)
 			if(!covered[i]) 
 			{
@@ -227,7 +226,7 @@ void  inpainting::init_radial_patches(const distance_t & radio)
 	//mask at the end no need to call the function
 	patches.resize(M); //??? 
 
-	load_mask(radio);
+	load_mask();
 
 	//Initializing patches
 	gproshan_log(initializing patches);
@@ -389,7 +388,7 @@ void inpainting::init_voronoi_patches()
 distance_t inpainting::execute()
 {
 
-	TIC(d_time) init_voronoi_patches(); TOC(d_time)
+	TIC(d_time) init_radial_patches(); TOC(d_time)
 	gproshan_debug_var(d_time);
 
 //	L = 15;
