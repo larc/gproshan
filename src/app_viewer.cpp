@@ -532,8 +532,8 @@ void viewer_process_mask()
 	bool learn = 0;
 
 
-	gproshan_input(avg_p percentage );
-	cin >> avg_p >> percentage;
+	gproshan_input(avg_p percentage f );
+	cin >> avg_p >> percentage >> f;
 
 	basis * phi = new basis_dct(n);
 	inpainting dict(viewer::mesh(),  phi, m, M, f, learn, avg_p, percentage);

@@ -200,6 +200,7 @@ void  inpainting::init_radial_patches()
 		}
 
 	s = 0;
+	index_t * toplevel = new index_t[mesh->n_vertices()];
 	while(count < mesh->n_vertices()  &&  s < M)
 	{
 		
@@ -207,7 +208,7 @@ void  inpainting::init_radial_patches()
 		// Check the points are inside and add them
 		//	while( )
 		// mask at the end
-		index_t * toplevel = new index_t[mesh->n_vertices()];
+		
 		patches[s].init_radial_disjoint(mesh, phi_basis->get_radio(), sample(s), dictionary::T, vertices[s], toplevel);
 		for(auto i:patches[s].vertices)
 			if(!covered[i]) 
@@ -217,6 +218,7 @@ void  inpainting::init_radial_patches()
 			}
 		s++;
 	}
+	assert(count == mesh->n_vertices());
 	gproshan_debug_var(M);
 	gproshan_debug_var(s);
 
@@ -262,9 +264,9 @@ void  inpainting::init_radial_patches()
 				patch_max_size = max(patches[s].vertices.size(), patch_max_size);
 
 			patch_avg_size /= M;
-			//gproshan_debug_var(patch_avg_size);
-			//gproshan_debug_var(patch_min_size);
-			//gproshan_debug_var(patch_max_size);
+			gproshan_debug_var(patch_avg_size);
+			gproshan_debug_var(patch_min_size);
+			gproshan_debug_var(patch_max_size);
 		#endif
 	}
 	
