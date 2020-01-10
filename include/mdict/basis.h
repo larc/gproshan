@@ -14,7 +14,7 @@ using namespace std;
 namespace gproshan::mdict {
 
 
-class dictionary;
+class dictionary; 
 
 class basis
 {

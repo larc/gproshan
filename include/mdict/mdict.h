@@ -4,6 +4,8 @@
 #include "include.h"
 #include "patch.h"
 #include "d_mesh.h"
+#include "basis.h"
+
 
 #include "include_arma.h"
 
@@ -35,6 +37,7 @@ void sp_KSVD(a_mat & D, const a_mat & X, const size_t & L, size_t k);
 tuple<a_vec, arma::uvec> _OMP(const a_vec & x, const a_mat & D, const size_t & L);
 
 a_vec OMP(const a_vec & x, const a_mat & D, const size_t & L);
+a_vec OMP(const a_vec & x, const a_mat & D, const size_t & L, const arma::uchar_vec & mask);
 
 a_mat OMP_all(const a_mat & X, const a_mat & D, const size_t & L);
 
@@ -44,8 +47,11 @@ void KSVD(a_mat & D, const a_mat & X, const size_t & L, size_t k);
 // MESH DENSE
 
 a_vec OMP(const patch & p, const a_mat & A, const size_t & L);
+a_vec OMP(const patch & p, const a_mat & A, const size_t & L);
 
 a_mat OMP_all(const vector<patch> & patches, const a_mat & A, const size_t & L);
+a_mat OMP_all(const vector<patch> & patches, basis * phi_basis, const a_mat & A, const size_t & L);
+
 
 void KSVD(a_mat & A, const vector<patch> & patches, const size_t & L, size_t k);
 

@@ -135,6 +135,37 @@ tuple<a_vec, arma::uvec> _OMP(const a_vec & x, const a_mat & D, const size_t & L
 	return {aa, selected_atoms.head(l)};
 }
 
+arma::uword max_index(const a_vec & V,const arma::uchar_vec & mask)
+{
+
+	arma::uvec indices = arma::sort_index( V , "desscend");
+
+	for(int i=0; i< V.size(); i++)
+		if(mask[ indices [i]]) return indices[i];
+	
+}
+
+tuple<a_vec, arma::uvec> _OMP(const a_vec & x, const a_mat & D, const size_t & L, const arma::uchar_vec & mask)
+{
+	arma::uvec selected_atoms(L);
+	real_t threshold = norm(x) * sigma;	
+
+	a_mat DD;
+	a_vec aa, r = x;	
+	
+	index_t l = 0;
+	while(norm(r) > threshold && l < L)
+	{
+		selected_atoms(l) = max_index(abs(D.t() * r), mask);
+		
+		DD = D.cols(selected_atoms.head(l + 1));
+		aa = pinv(DD) * x;
+		r = x - DD * aa;
+		l++;
+	}
+	return {aa, selected_atoms.head(l)};
+}
+
 a_vec OMP(const a_vec & x, const a_mat & D, const size_t & L)
 {
 	a_vec alpha(D.n_cols, arma::fill::zeros);
@@ -142,6 +173,18 @@ a_vec OMP(const a_vec & x, const a_mat & D, const size_t & L)
 	arma::uvec selected_atoms;
 
 	tie(aa, selected_atoms) = _OMP(x, D, L);
+	alpha.elem(selected_atoms) = aa;
+
+	return alpha;
+}
+
+a_vec OMP(const a_vec & x, const a_mat & D, const size_t & L, const arma::uchar_vec & mask)
+{
+	a_vec alpha(D.n_cols, arma::fill::zeros);
+	a_vec aa;
+	arma::uvec selected_atoms;
+
+	tie(aa, selected_atoms) = _OMP(x, D, L, mask);
 	alpha.elem(selected_atoms) = aa;
 
 	return alpha;
@@ -191,6 +234,26 @@ void KSVD(a_mat & D, const a_mat & X, const size_t & L, size_t k)
 a_vec OMP(const patch & p, const a_mat & A, const size_t & L)
 {
 	return OMP(p.xyz.row(2).t(), p.phi * A, L);
+}
+a_vec OMP(const patch & p, basis * phi_basis, const a_mat & A, const size_t & L)
+{
+	arma::uchar_vec mask;
+	mask.ones(A.n_cols);
+	for(int i = 0; i < A.n_cols; i++)
+		if( phi_basis->get_frequency(i) >= p.avg_dist) mask(i) = 0;
+	
+	return OMP(p.xyz.row(2).t(), p.phi * A, L, mask);
+}
+
+a_mat OMP_all(const vector<patch> & patches, basis * phi_basis, const a_mat & A, const size_t & L)
+{
+	a_mat alpha(A.n_cols, patches.size());
+
+	#pragma omp parallel for
+	for(index_t i = 0; i < patches.size(); i++)
+		alpha.col(i) = OMP(patches[i],phi_basis, A, L);
+	
+	return alpha;
 }
 
 a_mat OMP_all(const vector<patch> & patches, const a_mat & A, const size_t & L)
