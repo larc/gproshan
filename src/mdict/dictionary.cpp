@@ -72,7 +72,7 @@ void dictionary::sparse_coding()
 	gproshan_log(MDICT);
 	
 	vector<locval_t> locval;
-	alpha = OMP_all(patches, A, L);
+	alpha = OMP_all(patches, phi_basis, A, L);
 }
 
 void dictionary::init_sampling()

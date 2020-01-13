@@ -238,9 +238,9 @@ a_vec OMP(const patch & p, const a_mat & A, const size_t & L)
 a_vec OMP(const patch & p, basis * phi_basis, const a_mat & A, const size_t & L)
 {
 	arma::uchar_vec mask;
-	mask.ones(A.n_cols);
+	mask.zeros(A.n_cols);
 	for(int i = 0; i < A.n_cols; i++)
-		if( phi_basis->get_frequency(i) >= p.avg_dist) mask(i) = 0;
+		if( phi_basis->get_frequency(i) >= 100*p.avg_dist) mask(i) = 1;
 	
 	return OMP(p.xyz.row(2).t(), p.phi * A, L, mask);
 }
