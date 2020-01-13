@@ -425,7 +425,11 @@ distance_t inpainting::execute()
 	bool *pmask;
 
 	draw_patches(10);
-	phi_basis->plot_basis();
+	draw_patches(200);
+	draw_patches(500);
+	draw_patches(56);
+	gproshan_debug_var(patches[56].vertices[0]);
+	//phi_basis->plot_basis();
 	//gproshan_debug_var(alpha.col(463));
 	
 

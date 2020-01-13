@@ -62,7 +62,7 @@ double basis_dct::get_frequency(size_t idx)
 {
 	if(idx == 0 ) return INFINITY;
 	int tmp = (idx/n > idx%n)? idx/n:idx%n;
-	return (radio/tmp);
+	return (2*radio/tmp);
 }
 
 } // namespace gproshan::mdict
