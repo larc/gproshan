@@ -226,7 +226,6 @@ void  inpainting::init_radial_patches()
 
 	M = s; // updating number of vertices
 	//mask at the end no need to call the function
-	patches.resize(M); //??? 
 
 	load_mask();
 
@@ -282,9 +281,10 @@ void  inpainting::init_radial_patches()
 		patch & p = patches[s];
 
 		p.transform();
+		p.compute_avg_distance();
 		p.phi.set_size(p.xyz.n_cols, phi_basis->get_dim());
 		phi_basis->discrete(p.phi, p.xyz);
-		p.compute_avg_distance();
+		
 
 	} 
 	gproshan_log(radial patches are ready);
@@ -382,6 +382,7 @@ void inpainting::init_voronoi_patches()
 		p.transform();
 		p.phi.set_size(p.xyz.n_cols, phi_basis->get_dim());
 		phi_basis->discrete(p.phi, p.xyz);
+		p.compute_avg_distance();
 
 	} 
 

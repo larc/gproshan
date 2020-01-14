@@ -59,7 +59,7 @@ void patch::init_radial_disjoint(che * mesh, const distance_t & radio, const ind
 	
 	gather_vertices(mesh, v, n_toplevels, toplevel);
 
-	for(index_t i = 0; i < vertices.size(); i++)
+	for(index_t i = 1; i < vertices.size(); i++)
 	{
 		vertex n = mesh->normal(v);// normal at the center
 		vertex p = mesh->get_vertex(vertices[i]); 
@@ -144,7 +144,6 @@ void patch::reset_xyz_disjoint(che * mesh, distance_t * dist, size_t M, vector<v
 			xyz(0, j) = v.x;
 			xyz(1, j) = v.y;
 			xyz(2, j) = v.z;
-			
 			vpatches[vertices[i]].push_back({p, j++});
 		}
 	}
@@ -337,10 +336,27 @@ void patch::save_z(ostream & os)
 
 void patch::compute_avg_distance()
 {
-	avg_dist = 0;
+	avg_dist = INFINITY;
 	for(int i = 0; i < vertices.size(); i++)
 		for(int j = i+1; j < vertices.size(); j++)
-			if(avg_dist > norm(xyz.col(i)- xyz.col(j))) avg_dist = norm(xyz.col(i)- xyz.col(j));
+		{
+			a_vec a = xyz.col(i);
+			a_vec b = xyz.col(j);
+			a(2) = 0;
+			b(2) = 0;
+
+			if(avg_dist > norm(a - b)) 
+			{
+				avg_dist = norm(a - b);
+			}
+			/*if(approx_equal(a,b,"absdiff", 0.0000001) )
+			{
+				gproshan_debug_var(i);
+				gproshan_debug_var(j);
+			}	*/
+
+		}
+			
 			//avg_dist = avg_dist + norm(xyz.col(i)- xyz.col(j));
 
 	//avg_dist = avg_dist/vertices.size();
