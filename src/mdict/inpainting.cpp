@@ -209,7 +209,7 @@ void  inpainting::init_radial_patches()
 		//	while( )
 		// mask at the end
 		
-		patches[s].init_radial_disjoint(mesh, phi_basis->get_radio(), sample(s), dictionary::T, vertices[s], toplevel);
+		patches[s].init_radial_disjoint(mesh, phi_basis->get_radio(), avg_p, sample(s), dictionary::T, vertices[s], toplevel);
 		for(auto i:patches[s].vertices)
 			if(!covered[i]) 
 			{

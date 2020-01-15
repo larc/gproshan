@@ -53,25 +53,38 @@ void patch::init_disjoint(che * mesh, const index_t & v, const size_t & n_toplev
 	if(!_toplevel) delete [] toplevel; // If it is null
 }
 
-void patch::init_radial_disjoint(che * mesh, const distance_t & radio, const index_t & v, const size_t & n_toplevels, vector<index_t> & _vertices, index_t * _toplevel)
+void patch::init_radial_disjoint(che * mesh, const distance_t & radio, const size_t & avg_p, const index_t & v, const size_t & n_toplevels, vector<index_t> & _vertices, index_t * _toplevel)
 {
 	index_t * toplevel = _toplevel ? _toplevel : new index_t[mesh->n_vertices()];
-	
-	gather_vertices(mesh, v, n_toplevels, toplevel);
+	distance_t *distances;
+	geodesics geo(mesh, {v}, geodesics::FM,  distances, false,  2*avg_p);
+	index_t * indexes = new index_t[geo.n_sorted_index()];
+	geo.copy_sorted_index(indexes, geo.n_sorted_index());
+	gproshan_debug_var(v);
+	gproshan_debug_var(geo.n_sorted_index());
 
-	for(index_t i = 1; i < vertices.size(); i++)
+	//gather_vertices(mesh, v, n_toplevels, toplevel);
+	distance_t frontier = INFINITY;	gproshan_debug_var(vertices.size());
+	for(int i=1; i<geo.n_sorted_index(); i++)
 	{
 		vertex n = mesh->normal(v);// normal at the center
-		vertex p = mesh->get_vertex(vertices[i]); 
+		vertex p = mesh->get_vertex(indexes[i]); 
 		vertex c = mesh->get_vertex(v); // central vertices
 
 		p = p - c ;
 		p = p - ((p,n)*n);
-		if(*p <= radio)	_vertices.push_back(vertices[i]);
-
+		gproshan_debug_var(frontier);
+		gproshan_debug_var(*p);
+		if(*p <= radio && *p <=frontier)	
+		{
+			_vertices.push_back(indexes[i]);
+			frontier = *p;
+		}
 	}
+	gproshan_debug_var(_vertices.size());
 	jet_fit_directions(mesh, v);
 	vertices = std::move(_vertices);
+
 	if(!_toplevel) delete [] toplevel; // If it is null
 }
 
@@ -337,6 +350,7 @@ void patch::save_z(ostream & os)
 void patch::compute_avg_distance()
 {
 	avg_dist = INFINITY;
+	vector<double> distances;
 	for(int i = 0; i < vertices.size(); i++)
 		for(int j = i+1; j < vertices.size(); j++)
 		{
@@ -344,8 +358,9 @@ void patch::compute_avg_distance()
 			a_vec b = xyz.col(j);
 			a(2) = 0;
 			b(2) = 0;
+			distances.push_back(norm(a - b));
 
-			if(avg_dist > norm(a - b)) 
+		/*	if(avg_dist > norm(a - b)) 
 			{
 				avg_dist = norm(a - b);
 			}
@@ -356,11 +371,18 @@ void patch::compute_avg_distance()
 			}	*/
 
 		}
-			
+	sort(distances.begin(), distances.end());
+	size_t n_elem = distances.size();
+	if(distances.size()%2 ==0)
+	{
+		avg_dist = (distances[n_elem/2] + distances[(n_elem/2 -1) ])/2;
+	}
+	else 
+	{	
+		avg_dist = distances[n_elem/2];
+	}	
 			//avg_dist = avg_dist + norm(xyz.col(i)- xyz.col(j));
-
-	//avg_dist = avg_dist/vertices.size();
-
 }
+	//avg_dist = avg_dist/vertices.size();
 } // namespace gproshan::mdict
 
