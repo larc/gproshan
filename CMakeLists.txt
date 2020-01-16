@@ -52,10 +52,13 @@ include_directories(${gproshan_SOURCE_DIR}/include/mdict)
 include_directories(${gproshan_SOURCE_DIR}/include/cuda)
 include_directories(${gproshan_SOURCE_DIR}/imgui)
 
-FILE(GLOB_RECURSE cpp_sources ${gproshan_SOURCE_DIR}/src/*.cpp ${gproshan_SOURCE_DIR}/imgui/*.cpp)
+FILE(GLOB_RECURSE imgui_sources ${gproshan_SOURCE_DIR}/imgui/*.cpp)
+add_library(imgui STATIC ${imgui_sources})
+
+FILE(GLOB_RECURSE cpp_sources ${gproshan_SOURCE_DIR}/src/*.cpp)
 add_library(gproshan_cpp STATIC ${cpp_sources})
 
-target_link_libraries(gproshan_cpp ${OpenMP_CXX_LIBRARIES})
+target_link_libraries(gproshan_cpp ${OpenMP_CXX})
 target_link_libraries(gproshan_cpp OpenGL::GL)
 target_link_libraries(gproshan_cpp OpenGL::GLU)
 target_link_libraries(gproshan_cpp GLEW::GLEW)
@@ -64,6 +67,7 @@ target_link_libraries(gproshan_cpp ${X11_X11_LIB})
 target_link_libraries(gproshan_cpp ${ARMADILLO_LIBRARIES})
 target_link_libraries(gproshan_cpp CGAL::CGAL)
 target_link_libraries(gproshan_cpp ${SuiteSparse_LIBRARIES})
+target_link_libraries(gproshan_cpp imgui)
 
 if(CUDA_FOUND)
 	FILE(GLOB_RECURSE cu_sources ${gproshan_SOURCE_DIR}/src/*.cu)

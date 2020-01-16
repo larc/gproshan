@@ -230,6 +230,7 @@ void viewer::add_mesh(const vector<che *> & _meshes)
 	{
 		assert(n_meshes < N_MESHES);
 		meshes[n_meshes++].init(_mesh);
+		meshes[n_meshes - 1].log_info();
 	}
 	
 	if(!n_meshes) return;
@@ -765,7 +766,7 @@ void viewer::draw_gradient_field()
 
 void viewer::pick_vertex(int x, int y)
 {
-	gproshan_debug(VIEWER);
+	gproshan_log(VIEWER);
 
 	int width, height;
 	glfwGetFramebufferSize(window, &width, &height);
@@ -819,7 +820,7 @@ void viewer::pick_vertex(int x, int y)
 	{
 		select_vertices.push_back(index);
 		
-		gproshan_debug_var(index);
+		gproshan_log_var(index);
 		gproshan_debug_var(mesh().color(index));
 		gproshan_debug_var(mesh()->evt(index));
 
