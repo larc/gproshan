@@ -218,6 +218,8 @@ void  inpainting::init_radial_patches()
 			}
 		s++;
 	}
+	gproshan_debug_var(count);
+	gproshan_debug_var(mesh->n_vertices());
 	assert(count == mesh->n_vertices());
 	gproshan_debug_var(M);
 	gproshan_debug_var(s);

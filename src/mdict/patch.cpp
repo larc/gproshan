@@ -57,14 +57,12 @@ void patch::init_radial_disjoint(che * mesh, const distance_t & radio, const siz
 {
 	index_t * toplevel = _toplevel ? _toplevel : new index_t[mesh->n_vertices()];
 	distance_t *distances;
-	geodesics geo(mesh, {v}, geodesics::FM,  distances, false,  2*avg_p);
+	geodesics geo(mesh, {v}, geodesics::FM,  distances, false,  10*avg_p);
 	index_t * indexes = new index_t[geo.n_sorted_index()];
 	geo.copy_sorted_index(indexes, geo.n_sorted_index());
-	gproshan_debug_var(v);
-	gproshan_debug_var(geo.n_sorted_index());
 
 	//gather_vertices(mesh, v, n_toplevels, toplevel);
-	distance_t frontier = INFINITY;	gproshan_debug_var(vertices.size());
+	distance_t frontier = -1;		
 	for(int i=1; i<geo.n_sorted_index(); i++)
 	{
 		vertex n = mesh->normal(v);// normal at the center
@@ -73,17 +71,18 @@ void patch::init_radial_disjoint(che * mesh, const distance_t & radio, const siz
 
 		p = p - c ;
 		p = p - ((p,n)*n);
-		gproshan_debug_var(frontier);
-		gproshan_debug_var(*p);
-		if(*p <= radio && *p <=frontier)	
+		if(*p <= radio)	_vertices.push_back(indexes[i]);
+		/*
+		if(*p <= radio && *p >=frontier)	
 		{
 			_vertices.push_back(indexes[i]);
 			frontier = *p;
-		}
+		}*/
 	}
-	gproshan_debug_var(_vertices.size());
-	jet_fit_directions(mesh, v);
+	
 	vertices = std::move(_vertices);
+	//gproshan_debug_var(vertices.size());
+	jet_fit_directions(mesh, v);
 
 	if(!_toplevel) delete [] toplevel; // If it is null
 }
@@ -141,7 +140,6 @@ void patch::reset_xyz_disjoint(che * mesh, distance_t * dist, size_t M, vector<v
 		m = 0;
 		for(index_t i = 0; i < vertices.size(); i++)
 			if(mask(i)) { dist[vertices[i] ] = float(p + 1) / M; m++;  } else {dist[vertices[i] ] = INFINITY; };
-		
 		/*gproshan_debug(number vertices considered);
 		gproshan_debug_var(m);
 		gproshan_debug(number vertices masked);
@@ -273,7 +271,9 @@ void patch::jet_fit_directions(che * mesh, const index_t & v)
 	size_t d_fitting = 2;
 	size_t d_monge = 2;
 	size_t min_points = (d_fitting + 1) * (d_fitting + 2) / 2;
+
 	assert(vertices.size() > min_points);
+	
 
 	vector<DPoint> in_points;
 	in_points.reserve(vertices.size());
