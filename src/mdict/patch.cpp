@@ -56,8 +56,11 @@ void patch::init_disjoint(che * mesh, const index_t & v, const size_t & n_toplev
 void patch::init_radial_disjoint(che * mesh, const distance_t & radio, const size_t & avg_p, const index_t & v, const size_t & n_toplevels, vector<index_t> & _vertices, index_t * _toplevel)
 {
 	index_t * toplevel = _toplevel ? _toplevel : new index_t[mesh->n_vertices()];
-	distance_t *distances;
-	geodesics geo(mesh, {v}, geodesics::FM,  distances, false,  10*avg_p);
+	
+	gather_vertices(mesh, v, n_toplevels, toplevel);
+	jet_fit_directions(mesh, v);
+	
+	geodesics geo(mesh, {v}, geodesics::FM,  NULL, false,  5*avg_p);
 	index_t * indexes = new index_t[geo.n_sorted_index()];
 	geo.copy_sorted_index(indexes, geo.n_sorted_index());
 
@@ -65,24 +68,25 @@ void patch::init_radial_disjoint(che * mesh, const distance_t & radio, const siz
 	distance_t frontier = -1;		
 	for(int i=1; i<geo.n_sorted_index(); i++)
 	{
-		vertex n = mesh->normal(v);// normal at the center
+	//	gproshan_debug_var(geo[indexes[i]]);
+		a_vec vn = T.col(2);// normal at the center
+		vertex n;
+		n.x = vn(0); n.y = vn(1); n.z = vn(2);
 		vertex p = mesh->get_vertex(indexes[i]); 
 		vertex c = mesh->get_vertex(v); // central vertices
 
 		p = p - c ;
 		p = p - ((p,n)*n);
-		if(*p <= radio)	_vertices.push_back(indexes[i]);
-		/*
+		//if(*p <= radio)	_vertices.push_back(indexes[i]);
+		
 		if(*p <= radio && *p >=frontier)	
 		{
 			_vertices.push_back(indexes[i]);
 			frontier = *p;
-		}*/
+		}
 	}
 	
 	vertices = std::move(_vertices);
-	//gproshan_debug_var(vertices.size());
-	jet_fit_directions(mesh, v);
 
 	if(!_toplevel) delete [] toplevel; // If it is null
 }
