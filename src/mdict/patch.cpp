@@ -79,11 +79,18 @@ void patch::init_radial_disjoint(che * mesh, const distance_t & radio, const siz
 		p = p - ((p,n)*n);
 		//if(*p <= radio)	_vertices.push_back(indexes[i]);
 		
-		if(*p <= radio && *p >=frontier)	
+		if(*p <= radio && ( n, mesh->normal(indexes[i]) ) >= 0)	
+		{
+			_vertices.push_back(indexes[i]);
+			//frontier = *p;
+		}
+
+	/*	if(*p <= radio && *p >=frontier)	
 		{
 			_vertices.push_back(indexes[i]);
 			frontier = *p;
-		}
+		}*/
+
 	}
 	
 	vertices = std::move(_vertices);
