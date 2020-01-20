@@ -39,16 +39,17 @@ struct border_t
 	a_vec new_vertex(const std::vector<a_vec> & V, angle_t div, const distance_t & lenght, const std::array<index_t, 2> & neighbors, const bool & o)
 	{
 		index_t p_v = neighbors[!o];
+		index_t n_v = neighbors[o];
 
 		a_vec a = V[p_v] - V[v];
+		a_vec b = V[n_v] - V[v];
+		
+		a(2) = b(2) = 0;
 
-		a_vec r(3);
-		r[0] = cos(theta * div + atan2(a[1], a[0]));
-		r[1] = sin(theta * div + atan2(a[1], a[0]));
+		a_vec r = div * a + (1 - div) * b;
 
-		r = lenght * normalise(r);
-		r += V[v];
-		r[2] = 0;
+		r = lenght * normalise(r) + V[v];
+		r(2) = 0;
 
 		return r;
 	}

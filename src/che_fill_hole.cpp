@@ -2,7 +2,6 @@
 
 #include "che_off.h"
 #include "laplacian.h"
-#include "viewer/viewer.h"
 
 #include <queue>
 
@@ -56,7 +55,6 @@ che * mesh_simple_fill_hole(che * mesh, const vector<index_t> & border_vertices,
 
 		ve = E.t() * ve;
 		vertices.push_back(*((vertex *) ve.memptr()));
-		//viewer::other_vertices.push_back(vertices.back());
 	}
 
 	return fill_hole_front_angles(vertices, mesh->mean_edge(), normal, max_iter);
@@ -254,7 +252,6 @@ void split_border(vector<pair<index_t, index_t> > & split_indices, che * mesh, c
 			{
 				cerr << b << " " << i << endl;
 				a = b;
-//				viewer::select_vertices.push_back(border_vertices[i]);
 			}
 		}
 	}
@@ -300,7 +297,7 @@ tuple<vector<index_t> *, che **> fill_all_holes_meshes(che * mesh, const size_t 
 //		holes[b] = mesh_fill_hole(mesh, border_vertices[b], max_iter, { {77, 106}, {67, 106}, {38, 11} });
 		holes[b] = mesh_fill_hole(mesh, border_vertices[b], max_iter);
 	gproshan_debug(inpainting);
-		//holes[b]->write_file(tmp_file_path("fill_holes_" + to_string(b) + "_" + mesh->name() + ".off"));
+		if(holes[b]) che_off::write_file(holes[b], tmp_file_path("fill_holes_" + to_string(b) + "_" + mesh->name() + ".off"));
 	gproshan_debug(inpainting);
 	}
 
@@ -376,9 +373,6 @@ che * fill_hole_front_angles_test(che * mesh, vector<index_t> & front_vertices, 
 		neighbors[v][o] = n_v;
 
 		front.push(border_t(tmp_vertices, v, neighbors[v], o, tmp_normals[v]));
-	//	viewer::vectors.push_back(vertex(tmp_vertices[v](0), tmp_vertices[v](1), tmp_vertices[v](2)));
-	//	a_vec normal = tmp_vertices[v] + lenght * 3 * normalise(tmp_normals[v]);
-	//	viewer::vectors.push_back(vertex(normal(0), normal(1), normal(2)));
 	}
 
 	border_t top;
@@ -552,11 +546,7 @@ che * fill_hole_front_angles_test(che * mesh, vector<index_t> & front_vertices, 
 		vertices.push_back(vertex(r[0], r[1], r[2]));
 
 	for(index_t v = 0; false && v < tmp_vertices.size(); v++)
-	{
-	//	viewer::vectors.push_back(vertex(tmp_vertices[v](0), tmp_vertices[v](1), tmp_vertices[v](2)));
 		a_vec normal = tmp_vertices[v] + lenght * 3 * normalise(tmp_normals[v]);
-	//	viewer::vectors.push_back(vertex(normal(0), normal(1), normal(2)));
-	}
 
 	gproshan_debug_var(perimeter);
 //	gproshan_debug(filling holes);
@@ -812,21 +802,7 @@ che * fill_hole_front_angles(vector<vertex> & vertices, const real_t & lenght, c
 			return fill_hole_front_angles(vertices, lenght, -normal, max_iter, !is_grow);
 		else return nullptr;
 	}
-/*
-	a_vec axis;
-	axis = avg + E.col(0) * lenght * 3;
-	viewer::vectors.push_back(vertex(avg(0), avg(1), avg(2)));
-	viewer::vectors.push_back(vertex(axis(0), axis(1), axis(2)));
-	axis = avg + E.col(1) * lenght * 3;
-	viewer::vectors.push_back(vertex(avg(0), avg(1), avg(2)));
-	viewer::vectors.push_back(vertex(axis(0), axis(1), axis(2)));
-	axis = avg + E.col(2) * lenght * 3;
-	viewer::vectors.push_back(vertex(avg(0), avg(1), avg(2)));
-	viewer::vectors.push_back(vertex(axis(0), axis(1), axis(2)));
-	axis = avg + normalise(orientation) * lenght * 3;
-	viewer::vectors.push_back(vertex(avg(0), avg(1), avg(2)));
-	viewer::vectors.push_back(vertex(axis(0), axis(1), axis(2)));
-*/
+	
 	vertices.clear();
 	vertices.reserve(tmp_vertices.size());
 

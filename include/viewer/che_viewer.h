@@ -39,6 +39,7 @@ class che_viewer
 	
 	public:
 		int vx, vy;					///< viewport positions.
+		std::vector<index_t> selected;
 
 	public:
 		che_viewer();
