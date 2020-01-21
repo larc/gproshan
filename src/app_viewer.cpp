@@ -840,16 +840,21 @@ void viewer_process_gaussian_curvature()
 			b = viewer::mesh()->gt_vt(prev(he)) - viewer::mesh()->gt(v);
 			g += acos((a,b) / (*a * *b));
 		}
-		gv(v) = (2 * M_PI - g) / viewer::mesh()->area_vertex(v);
+		//gv(v) = (2 * M_PI - g) / viewer::mesh()->area_vertex(v);
+		gv(v) = viewer::mesh()->mean_curvature(v);
+		
 		g_max = max(g_max, gv(v));
 		g_min = min(g_min, gv(v));
 	}
 
 	g = g_max - g_min;
+	gproshan_log_var(g);
+	gproshan_log_var(g_min);
+	gproshan_log_var(g_max);
 
 	#pragma omp parallel for
 	for(index_t v = 0; v < viewer::mesh().n_vertices(); v++)
-		gv(v) = (gv(v) - g_min) / g;
+		gv(v) = (gv(v) + g_min) / g;
 
 	real_t gm = mean(gv);
 	real_t gs = var(gv);
@@ -866,7 +871,7 @@ void viewer_process_gaussian_curvature()
 
 	#pragma omp parallel for
 	for(index_t v = 0; v < viewer::mesh().n_vertices(); v++)
-		viewer::vcolor(v) = f(gv(v));
+		viewer::vcolor(v) = 2 * atan(gv(v) * 10) / M_PI;
 }
 
 void viewer_process_edge_collapse()

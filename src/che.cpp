@@ -360,7 +360,16 @@ size_t che::genus() const
 
 real_t che::mean_curvature(const index_t & v)
 {
-	//here it goes
+	real_t h = 0;
+	real_t a = 0;
+	
+	for_star(he, this, v)
+	{
+		a += area_trig(trig(he));
+		h += *(GT[next(he)] - GT[v]) * (normal(v), normal_he(he));
+	}
+
+	return 0.75 * h / a;
 }
 
 void che::normalize()
