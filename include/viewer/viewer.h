@@ -14,6 +14,8 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 
+#include "embree.h"
+
 
 #define N_MESHES 12
 
@@ -157,6 +159,8 @@ class viewer
 		static void set_render_lines(viewer * view);
 		static void set_render_corr(viewer * view);
 		static void set_is_flat(viewer * view);
+		
+		static void raycasting(viewer * view);
 
 		// draw routines
 		void set_gl();

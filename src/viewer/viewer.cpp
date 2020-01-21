@@ -7,11 +7,15 @@
 #include <fstream>
 #include <vector>
 #include <cassert>
+#include <thread>
 
 #include "che_off.h"
 #include "che_obj.h"
 #include "che_ply.h"
 
+#include "CImg.h"
+
+using namespace cimg_library;
 using namespace std;
 
 
@@ -181,6 +185,7 @@ void viewer::init_menus()
 	add_process(GLFW_KEY_F4, {"F4", "Gradient Field", set_render_gradient_field});
 	add_process(GLFW_KEY_F5, {"F5", "Normal Field", set_render_normal_field});
 	add_process(GLFW_KEY_F6, {"F6", "Show Borders", set_render_border});
+	add_process(GLFW_KEY_F7, {"F7", "Raycasting", raycasting});
 	add_process(GLFW_KEY_SPACE, {"SPACE", "Level Curves", set_render_lines});
 	add_process(GLFW_KEY_TAB, {"TAB", "Render Flat", set_is_flat});
 //	add_process('+', "Show Corr", set_render_corr);
@@ -419,6 +424,36 @@ void viewer::set_render_corr(viewer * view)
 void viewer::set_is_flat(viewer * view)
 {
 	view->render_flat = !view->render_flat;
+}
+
+void viewer::raycasting(viewer * view)
+{
+	gproshan_log(VIEWER);
+
+	embree rc;
+	
+	rc.add_mesh(view->mesh());
+
+	rc.build_bvh();
+	
+	glm::uvec2 window_size;
+	glfwGetFramebufferSize(view->window, (int *) &window_size.x, (int *) &window_size.y);
+	
+	glm::mat4 model_view;
+	glGetFloatv(GL_MODELVIEW_MATRIX, (GLfloat *) &model_view);
+
+	glm::mat4 projection;
+	glGetFloatv(GL_PROJECTION_MATRIX, (GLfloat *) &projection);
+
+	float * frame = rc.raycaster(window_size, projection * model_view, {0., 0., -2.5 * view->cam.zoom});
+
+	std::thread([](CImg<float> img)
+	{
+		img.display();
+	},
+	CImg<float>(frame, window_size.x, window_size.y)).detach();
+
+	delete [] frame;
 }
 
 void viewer::display()
