@@ -75,6 +75,7 @@ class che
 		real_t mean_edge() const;
 		size_t memory() const;
 		size_t genus() const;
+		real_t mean_curvature(const index_t & v);
 
 		void normalize();
 		bool is_manifold() const;

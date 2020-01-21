@@ -358,6 +358,11 @@ size_t che::genus() const
 	return (g - 2) / (-2);
 }
 
+real_t che::mean_curvature(const index_t & v)
+{
+	//here it goes
+}
+
 void che::normalize()
 {
 	vertex center;
