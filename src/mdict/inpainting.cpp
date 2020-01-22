@@ -2,9 +2,27 @@
 #include <cassert>
 #include <fstream>
 
+#ifndef CGAL_PATCH_DEFS
+	#define CGAL_PATCH_DEFS
+	#define CGAL_EIGEN3_ENABLED
+	#define CGAL_USE_BOOST_PROGRAM_OPTIONS
+	#define CGAL_USE_GMP
+	#define DCGAL_USE_MPFR
+#endif
+
+#include <CGAL/Simple_cartesian.h>
+#include <CGAL/Monge_via_jet_fitting.h>
+
 // geometry processing and shape analysis framework
 // mesh dictionary learning and sparse coding namespace
 namespace gproshan::mdict {
+
+typedef real_t DFT;
+typedef CGAL::Simple_cartesian<DFT> Data_Kernel;
+typedef Data_Kernel::Point_3 DPoint;
+typedef Data_Kernel::Vector_3 DVector;
+typedef CGAL::Monge_via_jet_fitting<Data_Kernel> My_Monge_via_jet_fitting;
+typedef My_Monge_via_jet_fitting::Monge_form My_Monge_form;
 
 
 inpainting::inpainting(che *const & _mesh, basis *const & _phi_basis, const size_t & _m, const size_t & _M, const distance_t & _f, const bool & _learn, size_t _avg_p, size_t _perc, const bool & _plot): dictionary(_mesh, _phi_basis, _m, _M, _f, _learn, _plot)
@@ -170,6 +188,8 @@ void inpainting::load_mask(const std::vector<index_t> * vertices, const index_t 
 	
 }
 
+
+
 void  inpainting::init_radial_patches()
 	{
 	// ensure that M is large enough using the radio
@@ -293,6 +313,194 @@ void  inpainting::init_radial_patches()
 	
 }
 
+void  inpainting::init_radial_curvature_patches()
+{
+
+	//compute mean curvature 
+	real_t *mean_curvature = new real_t[mesh->n_vertices()];
+	vector<index_t> points;
+
+	map<size_t, char> non_rep;
+	map<size_t, char>::iterator it;
+	size_t d_fitting = 2;
+	size_t d_monge = 2;
+	size_t min_points = (d_fitting + 1) * (d_fitting + 2) / 2;
+
+	real_t min = INFINITY;
+	real_t max = -INFINITY;
+
+	for(index_t v = 0; v < mesh->n_vertices(); v++)
+	{
+		link_t linkv;
+		mesh->link(linkv, v);
+		for(const index_t & he: linkv)
+		{
+			link_t linku;
+			const index_t & u = mesh->vt(he);
+			mesh->link(linku, u);
+			for(const index_t & he: linku)
+			{
+				it = non_rep.find(u);
+				if(it == non_rep.end()) 
+					points.push_back(u);
+				
+			}
+		}
+		assert(points.size() > min_points);
+		vector<DPoint> in_points;
+		in_points.reserve(points.size());
+		for(const index_t & u: points)
+			in_points.push_back(DPoint(mesh->gt(u).x, mesh->gt(u).y, mesh->gt(u).z));
+		
+		My_Monge_form monge_form;
+		My_Monge_via_jet_fitting monge_fit;
+		monge_form = monge_fit(in_points.begin(), in_points.end(), d_fitting, d_monge);
+
+		vertex normal = mesh->normal(v);
+		monge_form.comply_wrt_given_normal(DVector(normal.x, normal.y, normal.z));
+		mean_curvature[v] = ( monge_form.principal_curvatures(0) + monge_form.principal_curvatures(0) ) / 2;
+		//gproshan_debug_var(mean_curvature[v]);
+		points.clear();
+		non_rep.clear();
+		
+	
+	}
+	real_t offset = 0.05;
+	real_t center = max - ( ( max + abs(min) ) / 2 );
+
+	for(index_t v = 0; v < mesh->n_vertices(); v++)
+	{
+		//if( abs (mean_curvature[v]) > 0.01 ) dist[v] = 1; 
+		 dist[v] = abs (mean_curvature[v]);
+		/*if( mean_curvature[v] > center - offset && mean_curvature[v] < center + offset ) dist[v] = 0.5;
+		else if( mean_curvature[v] <= center - offset) dist[v] = 0;
+		else if( mean_curvature[v] >= center + offset) dist[v] = 1;*/
+	}
+	
+
+	/*
+	
+	// ensure that M is large enough using the radio
+	gproshan_log(Init radial patches);
+	gproshan_log_var(M);
+	std::vector<index_t> vertices[M];
+	//FPS samplif_dictng with desired number of sources
+	TIC(d_time) init_sampling(); TOC(d_time)
+	gproshan_debug_var(d_time);
+
+	//sampling
+	size_t count = 0, s;
+	patches.resize(M);
+	patches_map.resize(n_vertices);
+	
+	//saving first vertex aka seed vertices
+	#pragma omp for 
+	for(index_t s = 0; s < M; s++)
+	{
+		vertices[s].push_back(sample(s));
+	}
+
+	bool covered[mesh->n_vertices()];
+	#pragma omp for 
+		for(index_t i = 0; i < mesh->n_vertices(); i++)
+		{
+			covered[i] = 0;
+		}
+
+	s = 0;
+	index_t * toplevel = new index_t[mesh->n_vertices()];
+	while(count < mesh->n_vertices()  &&  s < M)
+	{
+		
+		//Choose a sample and get the points neighboring points
+		// Check the points are inside and add them
+		//	while( )
+		// mask at the end
+		
+		patches[s].init_radial_disjoint(mesh, phi_basis->get_radio(), avg_p, sample(s), dictionary::T, vertices[s], toplevel);
+		for(auto i:patches[s].vertices)
+			if(!covered[i]) 
+			{
+				covered[i] = 1;
+				count++;
+			}
+		s++;
+	}
+	gproshan_debug_var(count);
+	gproshan_debug_var(mesh->n_vertices());
+	assert(count == mesh->n_vertices());
+	gproshan_debug_var(M);
+	gproshan_debug_var(s);
+
+	gproshan_debug(finished);
+
+	M = s; // updating number of vertices
+	//mask at the end no need to call the function
+
+	load_mask();
+
+	//Initializing patches
+	gproshan_log(initializing patches);
+
+	patches.resize(M);
+	patches_map.resize(n_vertices);
+	//initializing patch
+	gproshan_debug_var(M);
+	#pragma omp parallel
+	{
+		index_t * toplevel = new index_t[mesh->n_vertices()];
+
+		/*#pragma omp for 
+		for(index_t s = 0; s < M; s++)
+		{
+			
+			patches[s].init_disjoint(mesh, sample(s), dictionary::T, vertices[s], toplevel);
+			
+		}	
+		#ifndef NDEBUG
+			size_t patch_avg_size = 0;
+			size_t patch_min_size = NIL;
+			size_t patch_max_size = 0;
+
+			#pragma omp parallel for reduction(+: patch_avg_size)
+			for(index_t s = 0; s < M; s++)
+				patch_avg_size += patches[s].vertices.size();
+			#pragma omp parallel for reduction(min: patch_min_size)
+			for(index_t s = 0; s < M; s++)
+				patch_min_size = min(patches[s].vertices.size(), patch_min_size);
+			#pragma omp parallel for reduction(max: patch_max_size)
+			for(index_t s = 0; s < M; s++)
+				patch_max_size = max(patches[s].vertices.size(), patch_max_size);
+
+			patch_avg_size /= M;
+			gproshan_debug_var(patch_avg_size);
+			gproshan_debug_var(patch_min_size);
+			gproshan_debug_var(patch_max_size);
+		#endif
+	}
+	
+	bool * pmask = mask;
+	for(index_t s = 0; s < M; s++)
+		patches[s].reset_xyz_disjoint(mesh, dist, M,  patches_map, s ,[&pmask](const index_t & i) -> bool { return pmask[i]; } );
+	
+	gproshan_debug(passed);
+	
+	#pragma omp parallel for
+	for(index_t s = 0; s < M; s++)
+	{
+		patch & p = patches[s];
+
+		p.transform();
+		p.compute_avg_distance();
+		p.phi.set_size(p.xyz.n_cols, phi_basis->get_dim());
+		phi_basis->discrete(p.phi, p.xyz);
+		
+
+	} */
+	gproshan_log(radial patches are ready);
+	
+}
+
 
 void inpainting::init_voronoi_patches()
 {
@@ -394,11 +602,11 @@ void inpainting::init_voronoi_patches()
 distance_t inpainting::execute()
 {
 
-	TIC(d_time) init_radial_patches(); TOC(d_time)
+	TIC(d_time) init_radial_curvature_patches(); TOC(d_time)
 	gproshan_debug_var(d_time);
 
 //	L = 15;
-
+/*
 	TIC(d_time) learning(); TOC(d_time)
 	gproshan_debug_var(d_time);
 
@@ -437,7 +645,7 @@ distance_t inpainting::execute()
 	
 
 	TIC(d_time) mesh_reconstruction([&pmask](const index_t & i) -> bool { return pmask[i]; }); TOC(d_time)
-	gproshan_debug_var(d_time);
+	gproshan_debug_var(d_time);*/
 }
 
 

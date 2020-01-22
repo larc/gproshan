@@ -313,7 +313,6 @@ void patch::jet_fit_directions(che * mesh, const index_t & v)
 	T(0, 2) = monge_form.normal_direction()[0];
 	T(1, 2) = monge_form.normal_direction()[1];
 	T(2, 2) = monge_form.normal_direction()[2];
-	//double min_curv = monge_form.principal_curvatures(0);
 
 }
 
