@@ -65,6 +65,7 @@ class dictionary
 		void learning();
 		void sparse_coding();
 		void init_sampling();
+		void load_curvatures(a_vec & curvatures);
 		void init_patches(	const bool & reset = 1,
 							const fmask_t & mask = nullptr
 							);

@@ -1,28 +1,12 @@
 #include "inpainting.h"
 #include <cassert>
 #include <fstream>
+#include <queue>
 
-#ifndef CGAL_PATCH_DEFS
-	#define CGAL_PATCH_DEFS
-	#define CGAL_EIGEN3_ENABLED
-	#define CGAL_USE_BOOST_PROGRAM_OPTIONS
-	#define CGAL_USE_GMP
-	#define DCGAL_USE_MPFR
-#endif
-
-#include <CGAL/Simple_cartesian.h>
-#include <CGAL/Monge_via_jet_fitting.h>
 
 // geometry processing and shape analysis framework
 // mesh dictionary learning and sparse coding namespace
 namespace gproshan::mdict {
-
-typedef real_t DFT;
-typedef CGAL::Simple_cartesian<DFT> Data_Kernel;
-typedef Data_Kernel::Point_3 DPoint;
-typedef Data_Kernel::Vector_3 DVector;
-typedef CGAL::Monge_via_jet_fitting<Data_Kernel> My_Monge_via_jet_fitting;
-typedef My_Monge_via_jet_fitting::Monge_form My_Monge_form;
 
 
 inpainting::inpainting(che *const & _mesh, basis *const & _phi_basis, const size_t & _m, const size_t & _M, const distance_t & _f, const bool & _learn, size_t _avg_p, size_t _perc, const bool & _plot): dictionary(_mesh, _phi_basis, _m, _M, _f, _learn, _plot)
@@ -317,64 +301,21 @@ void  inpainting::init_radial_curvature_patches()
 {
 
 	//compute mean curvature 
-	real_t *mean_curvature = new real_t[mesh->n_vertices()];
-	vector<index_t> points;
+	a_vec curvatures;
+	load_curvatures(curvatures);
 
-	map<size_t, char> non_rep;
-	map<size_t, char>::iterator it;
-	size_t d_fitting = 2;
-	size_t d_monge = 2;
-	size_t min_points = (d_fitting + 1) * (d_fitting + 2) / 2;
-
-	real_t min = INFINITY;
-	real_t max = -INFINITY;
-
-	for(index_t v = 0; v < mesh->n_vertices(); v++)
-	{
-		link_t linkv;
-		mesh->link(linkv, v);
-		for(const index_t & he: linkv)
-		{
-			link_t linku;
-			const index_t & u = mesh->vt(he);
-			mesh->link(linku, u);
-			for(const index_t & he: linku)
-			{
-				it = non_rep.find(u);
-				if(it == non_rep.end()) 
-					points.push_back(u);
-				
-			}
-		}
-		assert(points.size() > min_points);
-		vector<DPoint> in_points;
-		in_points.reserve(points.size());
-		for(const index_t & u: points)
-			in_points.push_back(DPoint(mesh->gt(u).x, mesh->gt(u).y, mesh->gt(u).z));
-		
-		My_Monge_form monge_form;
-		My_Monge_via_jet_fitting monge_fit;
-		monge_form = monge_fit(in_points.begin(), in_points.end(), d_fitting, d_monge);
-
-		vertex normal = mesh->normal(v);
-		monge_form.comply_wrt_given_normal(DVector(normal.x, normal.y, normal.z));
-		mean_curvature[v] = ( monge_form.principal_curvatures(0) + monge_form.principal_curvatures(0) ) / 2;
-		//gproshan_debug_var(mean_curvature[v]);
-		points.clear();
-		non_rep.clear();
-		
-	
-	}
-	real_t offset = 0.05;
-	real_t center = max - ( ( max + abs(min) ) / 2 );
-
+	priority_queue< pair<real_t, size_t> > Q;
 	for(index_t v = 0; v < mesh->n_vertices(); v++)
 	{
 		//if( abs (mean_curvature[v]) > 0.01 ) dist[v] = 1; 
-		 dist[v] = abs (mean_curvature[v]);
-		/*if( mean_curvature[v] > center - offset && mean_curvature[v] < center + offset ) dist[v] = 0.5;
-		else if( mean_curvature[v] <= center - offset) dist[v] = 0;
-		else if( mean_curvature[v] >= center + offset) dist[v] = 1;*/
+		 Q.push ( make_pair(abs (curvatures(v)), v ) );
+	}
+	while(!Q.empty())
+	{
+		//gproshan_debug_var(Q.top().first);
+		//gproshan_debug_var(Q.top().second);
+		
+		Q.pop();
 	}
 	
 
