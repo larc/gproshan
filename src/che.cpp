@@ -366,7 +366,7 @@ real_t che::mean_curvature(const index_t & v)
 	for_star(he, this, v)
 	{
 		a += area_trig(trig(he));
-		h += *(GT[next(he)] - GT[v]) * (normal(v), normal_he(he));
+		h += *(GT[VT[next(he)]] - GT[v]) * (normal(v), normal_he(he));
 	}
 
 	return 0.75 * h / a;
