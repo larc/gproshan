@@ -69,8 +69,7 @@ class patch
 		void init_curvature_growing(che * mesh,
 					const index_t & v,
 					bool * covered,
-					a_mat & normals,
-					vector<index_t> & _vertices);
+					a_mat & normals);
 
 		void transform();
 		

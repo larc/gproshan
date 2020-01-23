@@ -88,36 +88,43 @@ void patch::init_radial_disjoint(che * mesh, const distance_t & radio, const siz
 }
 
 
-void patch::init_curvature_growing(che * mesh, const index_t & v, bool * covered, a_mat & normals, vector<index_t> & _vertices)
+void patch::init_curvature_growing(che * mesh, const index_t & v, bool * covered, a_mat & normals)
 {
 	geodesics geo(mesh, {v}, geodesics::FM,  NULL, false);
 	index_t * indexes = new index_t[geo.n_sorted_index()];
 	geo.copy_sorted_index(indexes, geo.n_sorted_index());
-		
+	a_vec vn = normals.col(v);
+	vertex n;
+	n.x = vn(0); n.y = vn(1); n.z = vn(2);
 	gproshan_debug_var(geo.n_sorted_index());
+
+	vertices.push_back(v);
+
 	for(int i=1; i<geo.n_sorted_index(); i++)
 	{
-		a_vec vn = normals.col(v);// normal at the center
-		vertex n;
-		n.x = vn(0); n.y = vn(1); n.z = vn(2);
+		//gproshan_debug_var(i);
+		// normal at the center
+	
 		vertex p = mesh->get_vertex(indexes[i]); 
 		vertex c = mesh->get_vertex(v); // central vertices
 
 		p = p - c ;
 		p = p - ((p,n)*n);
 		//gather the good ones
-		gproshan_debug_var(i);
-		if( (n, mesh->normal(indexes[i]) ) >= 0)	
+		//gproshan_debug_var((n, mesh->normal(indexes[i]) ) );
+		if( (n, mesh->normal(indexes[i]) ) >= 0 )	
 		{
 			radio = *p;
-			_vertices.push_back(indexes[i]);
+			vertices.push_back(indexes[i]);
 			covered[ indexes[i]] = 1;
 		}
-		
-		gproshan_debug_var(i);
+		else
+			break;
+
 	}
-	
-	vertices = std::move(_vertices);
+	gproshan_debug_var(vertices.size());
+	jet_fit_directions(mesh, v);
+
 }
 // xyz = E.t * (xyz - avg)
 void patch::transform()
