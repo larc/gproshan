@@ -39,6 +39,7 @@ class patch
 		a_mat xyz;						///< Matrix of points.
 		a_mat phi;
 		double avg_dist; // Average distance betweenn points in a patch
+		distance_t radio; // radio of a patch
 	
 	public:
 		static size_t expected_nv;		///< Expected number of patch vertices.
@@ -65,6 +66,11 @@ class patch
 					const size_t & n_toplevels,
 					vector<index_t> & _vertices, 
 					index_t * _toplevel = nullptr);
+		void init_curvature_growing(che * mesh,
+					const index_t & v,
+					bool * covered,
+					a_mat & normals,
+					vector<index_t> & _vertices);
 
 		void transform();
 		

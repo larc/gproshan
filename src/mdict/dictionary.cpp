@@ -123,6 +123,8 @@ void dictionary::init_sampling()
 void dictionary::load_curvatures(a_vec & curvatures)
 {
 	string f_curv = tmp_file_path(mesh->name_size()  + ".curv");
+	string f_norm = tmp_file_path(mesh->name_size()  + ".n");
+
 	if(! curvatures.load(f_curv))
 	{
 		curvatures.zeros(mesh->n_vertices());
@@ -137,6 +139,8 @@ void dictionary::load_curvatures(a_vec & curvatures)
 
 		real_t min = INFINITY;
 		real_t max = -INFINITY;
+		a_mat normals;
+		normals.zeros(3, mesh->n_vertices());
 
 		for(index_t v = 0; v < mesh->n_vertices(); v++)
 		{
@@ -168,12 +172,18 @@ void dictionary::load_curvatures(a_vec & curvatures)
 			vertex normal = mesh->normal(v);
 			monge_form.comply_wrt_given_normal(DVector(normal.x, normal.y, normal.z));
 			curvatures(v) = ( monge_form.principal_curvatures(0) + monge_form.principal_curvatures(0) ) / 2;
+
+
+			normals(0, v) = monge_form.normal_direction()[0];
+			normals(1, v) = monge_form.normal_direction()[1];
+			normals(2, v) = monge_form.normal_direction()[2];
 			//gproshan_debug_var(mean_curvature[v]);
 			points.clear();
 			non_rep.clear();
 			
 		}
 		curvatures.save(f_curv);
+		normals.save(f_norm);
 	}
 	gproshan_debug(curvatures ready);
 

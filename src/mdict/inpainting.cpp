@@ -244,15 +244,6 @@ void  inpainting::init_radial_patches()
 	gproshan_debug_var(M);
 	#pragma omp parallel
 	{
-		index_t * toplevel = new index_t[mesh->n_vertices()];
-
-		/*#pragma omp for 
-		for(index_t s = 0; s < M; s++)
-		{
-			
-			patches[s].init_disjoint(mesh, sample(s), dictionary::T, vertices[s], toplevel);
-			
-		}	*/	
 		#ifndef NDEBUG
 			size_t patch_avg_size = 0;
 			size_t patch_min_size = NIL;
@@ -302,144 +293,50 @@ void  inpainting::init_radial_curvature_patches()
 
 	//compute mean curvature 
 	a_vec curvatures;
+	TIC(d_time) 
 	load_curvatures(curvatures);
+	TOC(d_time)
+	gproshan_debug_var(d_time);
 
-	priority_queue< pair<real_t, size_t> > Q;
+	string f_norm = tmp_file_path(mesh->name_size()  + ".n");
+	
+	a_mat normals;
+	normals.load(f_norm);
+
+	priority_queue< pair<real_t, index_t> > Q;
 	for(index_t v = 0; v < mesh->n_vertices(); v++)
 	{
 		//if( abs (mean_curvature[v]) > 0.01 ) dist[v] = 1; 
 		 Q.push ( make_pair(abs (curvatures(v)), v ) );
 	}
-	while(!Q.empty())
-	{
-		//gproshan_debug_var(Q.top().first);
-		//gproshan_debug_var(Q.top().second);
-		
-		Q.pop();
-	}
-	
 
-	/*
-	
-	// ensure that M is large enough using the radio
-	gproshan_log(Init radial patches);
-	gproshan_log_var(M);
-	std::vector<index_t> vertices[M];
-	//FPS samplif_dictng with desired number of sources
-	TIC(d_time) init_sampling(); TOC(d_time)
-	gproshan_debug_var(d_time);
-
-	//sampling
-	size_t count = 0, s;
-	patches.resize(M);
-	patches_map.resize(n_vertices);
-	
-	//saving first vertex aka seed vertices
-	#pragma omp for 
-	for(index_t s = 0; s < M; s++)
-	{
-		vertices[s].push_back(sample(s));
-	}
-
+	std::vector<index_t> vertices;
 	bool covered[mesh->n_vertices()];
+	index_t * toplevel = new index_t[mesh->n_vertices()];
 	#pragma omp for 
 		for(index_t i = 0; i < mesh->n_vertices(); i++)
 		{
 			covered[i] = 0;
 		}
-
-	s = 0;
-	index_t * toplevel = new index_t[mesh->n_vertices()];
-	while(count < mesh->n_vertices()  &&  s < M)
+	//dictionary::T = 3;
+	index_t  ns;
+	size_t count = 0;
+	while(!Q.empty()) // You will give the seeds and the patch will save its points and kept the radio and give you the next fathest point
 	{
-		
-		//Choose a sample and get the points neighboring points
-		// Check the points are inside and add them
-		//	while( )
-		// mask at the end
-		
-		patches[s].init_radial_disjoint(mesh, phi_basis->get_radio(), avg_p, sample(s), dictionary::T, vertices[s], toplevel);
-		for(auto i:patches[s].vertices)
-			if(!covered[i]) 
-			{
-				covered[i] = 1;
-				count++;
-			}
-		s++;
-	}
-	gproshan_debug_var(count);
-	gproshan_debug_var(mesh->n_vertices());
-	assert(count == mesh->n_vertices());
-	gproshan_debug_var(M);
-	gproshan_debug_var(s);
-
-	gproshan_debug(finished);
-
-	M = s; // updating number of vertices
-	//mask at the end no need to call the function
-
-	load_mask();
-
-	//Initializing patches
-	gproshan_log(initializing patches);
-
-	patches.resize(M);
-	patches_map.resize(n_vertices);
-	//initializing patch
-	gproshan_debug_var(M);
-	#pragma omp parallel
-	{
-		index_t * toplevel = new index_t[mesh->n_vertices()];
-
-		/*#pragma omp for 
-		for(index_t s = 0; s < M; s++)
+		index_t s = Q.top().second;
+		//gproshan_debug_var(Q.top().first);
+		//gproshan_debug_var(Q.top().second);
+		if(!covered[s])
 		{
-			
-			patches[s].init_disjoint(mesh, sample(s), dictionary::T, vertices[s], toplevel);
-			
-		}	
-		#ifndef NDEBUG
-			size_t patch_avg_size = 0;
-			size_t patch_min_size = NIL;
-			size_t patch_max_size = 0;
+			count++;
+			vertices.push_back(s);
+			patches[s].init_curvature_growing(mesh, s, covered, normals, vertices);
+		}
 
-			#pragma omp parallel for reduction(+: patch_avg_size)
-			for(index_t s = 0; s < M; s++)
-				patch_avg_size += patches[s].vertices.size();
-			#pragma omp parallel for reduction(min: patch_min_size)
-			for(index_t s = 0; s < M; s++)
-				patch_min_size = min(patches[s].vertices.size(), patch_min_size);
-			#pragma omp parallel for reduction(max: patch_max_size)
-			for(index_t s = 0; s < M; s++)
-				patch_max_size = max(patches[s].vertices.size(), patch_max_size);
-
-			patch_avg_size /= M;
-			gproshan_debug_var(patch_avg_size);
-			gproshan_debug_var(patch_min_size);
-			gproshan_debug_var(patch_max_size);
-		#endif
+		Q.pop();
 	}
-	
-	bool * pmask = mask;
-	for(index_t s = 0; s < M; s++)
-		patches[s].reset_xyz_disjoint(mesh, dist, M,  patches_map, s ,[&pmask](const index_t & i) -> bool { return pmask[i]; } );
-	
-	gproshan_debug(passed);
-	
-	#pragma omp parallel for
-	for(index_t s = 0; s < M; s++)
-	{
-		patch & p = patches[s];
-
-		p.transform();
-		p.compute_avg_distance();
-		p.phi.set_size(p.xyz.n_cols, phi_basis->get_dim());
-		phi_basis->discrete(p.phi, p.xyz);
-		
-
-	} */
-	gproshan_log(radial patches are ready);
-	
+	M = count;
+	gproshan_debug_var(M);
 }
 
 

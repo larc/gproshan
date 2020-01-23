@@ -64,11 +64,8 @@ void patch::init_radial_disjoint(che * mesh, const distance_t & radio, const siz
 	index_t * indexes = new index_t[geo.n_sorted_index()];
 	geo.copy_sorted_index(indexes, geo.n_sorted_index());
 
-	//gather_vertices(mesh, v, n_toplevels, toplevel);
-	distance_t frontier = -1;		
 	for(int i=1; i<geo.n_sorted_index(); i++)
 	{
-	//	gproshan_debug_var(geo[indexes[i]]);
 		a_vec vn = T.col(2);// normal at the center
 		vertex n;
 		n.x = vn(0); n.y = vn(1); n.z = vn(2);
@@ -77,19 +74,11 @@ void patch::init_radial_disjoint(che * mesh, const distance_t & radio, const siz
 
 		p = p - c ;
 		p = p - ((p,n)*n);
-		//if(*p <= radio)	_vertices.push_back(indexes[i]);
 		
 		if(*p <= radio && ( n, mesh->normal(indexes[i]) ) >= 0)	
 		{
 			_vertices.push_back(indexes[i]);
-			//frontier = *p;
 		}
-
-	/*	if(*p <= radio && *p >=frontier)	
-		{
-			_vertices.push_back(indexes[i]);
-			frontier = *p;
-		}*/
 
 	}
 	
@@ -99,6 +88,37 @@ void patch::init_radial_disjoint(che * mesh, const distance_t & radio, const siz
 }
 
 
+void patch::init_curvature_growing(che * mesh, const index_t & v, bool * covered, a_mat & normals, vector<index_t> & _vertices)
+{
+	geodesics geo(mesh, {v}, geodesics::FM,  NULL, false);
+	index_t * indexes = new index_t[geo.n_sorted_index()];
+	geo.copy_sorted_index(indexes, geo.n_sorted_index());
+		
+	gproshan_debug_var(geo.n_sorted_index());
+	for(int i=1; i<geo.n_sorted_index(); i++)
+	{
+		a_vec vn = normals.col(v);// normal at the center
+		vertex n;
+		n.x = vn(0); n.y = vn(1); n.z = vn(2);
+		vertex p = mesh->get_vertex(indexes[i]); 
+		vertex c = mesh->get_vertex(v); // central vertices
+
+		p = p - c ;
+		p = p - ((p,n)*n);
+		//gather the good ones
+		gproshan_debug_var(i);
+		if( (n, mesh->normal(indexes[i]) ) >= 0)	
+		{
+			radio = *p;
+			_vertices.push_back(indexes[i]);
+			covered[ indexes[i]] = 1;
+		}
+		
+		gproshan_debug_var(i);
+	}
+	
+	vertices = std::move(_vertices);
+}
 // xyz = E.t * (xyz - avg)
 void patch::transform()
 {
