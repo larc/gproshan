@@ -99,10 +99,11 @@ void patch::init_curvature_growing(che * mesh, const index_t & v, bool * covered
 	gproshan_debug_var(geo.n_sorted_index());
 
 	vertices.push_back(v);
+	covered[v] = 1;
 
 	for(int i=1; i<geo.n_sorted_index(); i++)
 	{
-		//gproshan_debug_var(i);
+	//	gproshan_debug_var(geo[indexes[i]]);
 		// normal at the center
 	
 		vertex p = mesh->get_vertex(indexes[i]); 
@@ -111,7 +112,7 @@ void patch::init_curvature_growing(che * mesh, const index_t & v, bool * covered
 		p = p - c ;
 		p = p - ((p,n)*n);
 		//gather the good ones
-		//gproshan_debug_var((n, mesh->normal(indexes[i]) ) );
+	//	gproshan_debug_var((n, mesh->normal(indexes[i]) ) );
 		if( (n, mesh->normal(indexes[i]) ) >= 0 )	
 		{
 			radio = *p;
@@ -123,7 +124,20 @@ void patch::init_curvature_growing(che * mesh, const index_t & v, bool * covered
 
 	}
 	gproshan_debug_var(vertices.size());
-	jet_fit_directions(mesh, v);
+	size_t d_fitting = 2;
+	size_t d_monge = 2;
+	size_t min_points = (d_fitting + 1) * (d_fitting + 2) / 2;
+	if(vertices.size() <= min_points )
+	{
+		for(index_t i = 0; i < vertices.size(); i++)
+		{
+			covered[indexes[i]] = 0;
+		}
+		vertices.clear();
+
+	}
+	else
+		jet_fit_directions(mesh, v);
 
 }
 // xyz = E.t * (xyz - avg)

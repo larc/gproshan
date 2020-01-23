@@ -334,7 +334,8 @@ void  inpainting::init_radial_curvature_patches()
 			count++;
 			patch tmp;
 			tmp.init_curvature_growing(mesh, s, covered, normals);
-			patches.push_back(tmp);
+			if(covered[s])
+				patches.push_back(tmp);
 
 		}
 		Q.pop();
