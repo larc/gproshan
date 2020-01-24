@@ -147,6 +147,7 @@ arma::uword max_index(const a_vec & V,const arma::uchar_vec & mask)
 
 tuple<a_vec, arma::uvec> _OMP(const a_vec & x, const a_mat & D, const size_t & L, const arma::uchar_vec & mask)
 {
+	gproshan_debug_var(x);
 	arma::uvec selected_atoms(L);
 	real_t threshold = norm(x) * sigma;	
 
@@ -156,6 +157,7 @@ tuple<a_vec, arma::uvec> _OMP(const a_vec & x, const a_mat & D, const size_t & L
 	index_t l = 0;
 	while(norm(r) > threshold && l < L)
 	{
+	//	gproshan_debug_var(D.t() * r);
 		selected_atoms(l) = max_index(abs(D.t() * r), mask);
 		
 		DD = D.cols(selected_atoms.head(l + 1));

@@ -90,13 +90,13 @@ void patch::init_radial_disjoint(che * mesh, const distance_t & radio, const siz
 
 void patch::init_curvature_growing(che * mesh, const index_t & v, bool * covered, a_mat & normals)
 {
-	geodesics geo(mesh, {v}, geodesics::FM,  NULL, false);
+	geodesics geo(mesh, {v}, geodesics::FM,  NULL, false, mesh->n_vertices()/100);
 	index_t * indexes = new index_t[geo.n_sorted_index()];
 	geo.copy_sorted_index(indexes, geo.n_sorted_index());
 	a_vec vn = normals.col(v);
 	vertex n;
 	n.x = vn(0); n.y = vn(1); n.z = vn(2);
-	gproshan_debug_var(geo.n_sorted_index());
+//	gproshan_debug_var(geo.n_sorted_index());
 
 	vertices.push_back(v);
 	covered[v] = 1;
@@ -123,18 +123,13 @@ void patch::init_curvature_growing(che * mesh, const index_t & v, bool * covered
 			break;
 
 	}
-	gproshan_debug_var(vertices.size());
+	//gproshan_debug_var(vertices.size());
 	size_t d_fitting = 2;
 	size_t d_monge = 2;
 	size_t min_points = (d_fitting + 1) * (d_fitting + 2) / 2;
 	if(vertices.size() <= min_points )
 	{
-		for(index_t i = 0; i < vertices.size(); i++)
-		{
-			covered[indexes[i]] = 0;
-		}
 		vertices.clear();
-
 	}
 	else
 		jet_fit_directions(mesh, v);
@@ -197,12 +192,14 @@ void patch::reset_xyz_disjoint(che * mesh, distance_t * dist, size_t M, vector<v
 		gproshan_debug(number vertices masked);
 		gproshan_debug_var(vertices.size() - m);*/
 	}
-	
+
 	xyz.set_size(3, m);
 	for(index_t  j = 0, i = 0; i < vertices.size(); i++)
 	{
 		if(!mask || mask(i))
 		{
+		
+
 			const vertex & v = mesh->gt(vertices[i]);
 			xyz(0, j) = v.x;
 			xyz(1, j) = v.y;

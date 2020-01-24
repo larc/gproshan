@@ -26,7 +26,7 @@ inpainting::inpainting(che *const & _mesh, basis *const & _phi_basis, const size
 void inpainting::load_mask()
 {
 	//string f_mask = tmp_file_path(mesh->name_size() + '_' + to_string(avg_p) + '_' + to_string(percent)  + '_' + to_string(radio)  + ".msk");
-	string f_mask = tmp_file_path(mesh->name_size() + '_' + to_string(avg_p) + '_' + to_string(percent)  + ".msk");
+	string f_mask = tmp_file_path(mesh->name_size() +  '_' + to_string(percent)  + ".msk");
 	arma::uvec V;
 	gproshan_log(loading radial mask);
 	
@@ -331,17 +331,26 @@ void  inpainting::init_radial_curvature_patches()
 		
 		if(!covered[s])
 		{
-			count++;
+			
 			patch tmp;
 			tmp.init_curvature_growing(mesh, s, covered, normals);
-			if(covered[s])
+			if(tmp.vertices.size() > 0)
+			{
 				patches.push_back(tmp);
+				count++;
+			}
+				
 
 		}
 		Q.pop();
 	}
 	M = count;
 	gproshan_debug_var(M);
+	for(index_t i = 0; i < mesh->n_vertices(); i++)
+	{
+		if(!covered[i] )
+			gproshan_debug_var( covered[i] );
+	}
 
 	//////////////////////////////////////////////////////////////////////////////////
 	load_mask();
@@ -387,6 +396,7 @@ void  inpainting::init_radial_curvature_patches()
 	for(index_t s = 0; s < M; s++)
 	{
 		patch & p = patches[s];
+		if(p.vertices.size() == 0) gproshan_debug_var(s);
 
 		p.transform();
 		p.compute_avg_distance();
@@ -504,7 +514,7 @@ distance_t inpainting::execute()
 	gproshan_debug_var(d_time);
 
 //	L = 15;
-/*
+
 	TIC(d_time) learning(); TOC(d_time)
 	gproshan_debug_var(d_time);
 
@@ -543,7 +553,7 @@ distance_t inpainting::execute()
 	
 
 	TIC(d_time) mesh_reconstruction([&pmask](const index_t & i) -> bool { return pmask[i]; }); TOC(d_time)
-	gproshan_debug_var(d_time);*/
+	gproshan_debug_var(d_time);
 }
 
 
