@@ -30,19 +30,21 @@ typedef My_Monge_via_jet_fitting::Monge_form My_Monge_form;
 
 size_t patch::expected_nv = 3 * dictionary::T * (dictionary::T + 1);
 
-void patch::init(che * mesh, const index_t & v, const size_t & n_toplevels, const distance_t & radio, index_t * _toplevel)
+void patch::init(che * mesh, const index_t & v, const size_t & n_toplevels, const distance_t & radio_, index_t * _toplevel)
 {
+	radio = radio_;
 	index_t * toplevel = _toplevel ? _toplevel : new index_t[mesh->n_vertices()];
 	
 	gather_vertices(mesh, v, n_toplevels, toplevel);
 	jet_fit_directions(mesh, v);
-	gather_vertices(mesh, v, radio, toplevel);
+	gather_vertices(mesh, v, radio_, toplevel);
 
 	if(!_toplevel) delete [] toplevel;
 }	
 
 void patch::init_disjoint(che * mesh, const index_t & v, const size_t & n_toplevels, vector<index_t> & _vertices, index_t * _toplevel)
 {
+	radio = 1;
 	index_t * toplevel = _toplevel ? _toplevel : new index_t[mesh->n_vertices()];
 	
 	gather_vertices(mesh, v, n_toplevels, toplevel);
@@ -53,8 +55,9 @@ void patch::init_disjoint(che * mesh, const index_t & v, const size_t & n_toplev
 	if(!_toplevel) delete [] toplevel; // If it is null
 }
 
-void patch::init_radial_disjoint(che * mesh, const distance_t & radio, const size_t & avg_p, const index_t & v, const size_t & n_toplevels, vector<index_t> & _vertices, index_t * _toplevel)
+void patch::init_radial_disjoint(che * mesh, const distance_t & radio_, const size_t & avg_p, const index_t & v, const size_t & n_toplevels, vector<index_t> & _vertices, index_t * _toplevel)
 {
+	radio = radio_;
 	index_t * toplevel = _toplevel ? _toplevel : new index_t[mesh->n_vertices()];
 	
 	gather_vertices(mesh, v, n_toplevels, toplevel);
@@ -90,6 +93,7 @@ void patch::init_radial_disjoint(che * mesh, const distance_t & radio, const siz
 
 void patch::init_curvature_growing(che * mesh, const index_t & v, bool * covered, a_mat & normals)
 {
+	radio = 1;
 	geodesics geo(mesh, {v}, geodesics::FM,  NULL, false, mesh->n_vertices()/100);
 	index_t * indexes = new index_t[geo.n_sorted_index()];
 	geo.copy_sorted_index(indexes, geo.n_sorted_index());
@@ -178,6 +182,7 @@ void patch::reset_xyz(che * mesh, vector<vpatches_t> & vpatches, const index_t &
 		}
 	}
 }
+		
 
 void patch::reset_xyz_disjoint(che * mesh, distance_t * dist, size_t M, vector<vpatches_t> & vpatches, const index_t & p,  const fmask_t & mask)
 {
@@ -197,9 +202,7 @@ void patch::reset_xyz_disjoint(che * mesh, distance_t * dist, size_t M, vector<v
 	for(index_t  j = 0, i = 0; i < vertices.size(); i++)
 	{
 		if(!mask || mask(i))
-		{
-		
-
+		{ 
 			const vertex & v = mesh->gt(vertices[i]);
 			xyz(0, j) = v.x;
 			xyz(1, j) = v.y;
@@ -207,6 +210,18 @@ void patch::reset_xyz_disjoint(che * mesh, distance_t * dist, size_t M, vector<v
 			vpatches[vertices[i]].push_back({p, j++});
 		}
 	}
+}
+
+void patch::scale_xyz(const real_t & radio_f)
+{
+	real_t factor = radio_f/radio;
+	xyz = factor * xyz;
+}
+
+void patch::iscale_xyz(const real_t & radio_f)
+{
+	real_t factor = radio_f/radio;
+	xyz =  xyz / factor;
 }
 
 const a_vec patch::normal()

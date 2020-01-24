@@ -241,7 +241,7 @@ void partial_mesh_reconstruction(size_t old_n_vertices, che * mesh, size_t M, ve
 
 }
 
-distance_t mesh_reconstruction(che * mesh, size_t M, vector<patch> & patches, vector<vpatches_t> & patches_map, a_mat & A, a_mat & alpha, distance_t * dist,const fmask_t & mask, const index_t & v_i)
+distance_t mesh_reconstruction(che * mesh, size_t M, const distance_t & radio, vector<patch> & patches, vector<vpatches_t> & patches_map, a_mat & A, a_mat & alpha, distance_t * dist,const fmask_t & mask, const index_t & v_i)
 {
 	a_mat V(3, mesh->n_vertices(), arma::fill::zeros);
 
@@ -256,6 +256,7 @@ distance_t mesh_reconstruction(che * mesh, size_t M, vector<patch> & patches, ve
 			a_vec x = rp.phi * A * alpha.col(p);
 			rp.xyz.row(2) = x.t();
 			rp.itransform();
+			rp.iscale_xyz(radio);
 		}
 	}
 

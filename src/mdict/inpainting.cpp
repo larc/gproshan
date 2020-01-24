@@ -310,7 +310,6 @@ void  inpainting::init_radial_curvature_patches()
 		 Q.push ( make_pair(abs (curvatures(v)), v ) );
 	}
 
-	
 	bool covered[mesh->n_vertices()];
 	index_t * toplevel = new index_t[mesh->n_vertices()];
 	#pragma omp for 
@@ -402,7 +401,7 @@ void  inpainting::init_radial_curvature_patches()
 		p.compute_avg_distance();
 		p.phi.set_size(p.xyz.n_cols, phi_basis->get_dim());
 		phi_basis->discrete(p.phi, p.xyz);
-		
+		p.scale_xyz(phi_basis->get_radio());
 
 	} 
 	gproshan_log(radial patches are ready);
@@ -539,6 +538,7 @@ distance_t inpainting::execute()
 		p.transform();
 		p.phi.set_size(p.xyz.n_cols, phi_basis->get_dim());
 		phi_basis->discrete(p.phi, p.xyz);
+		p.scale_xyz(phi_basis->get_radio());
 	}
 
 	bool *pmask;

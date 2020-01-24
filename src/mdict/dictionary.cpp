@@ -283,7 +283,7 @@ distance_t dictionary::mesh_reconstruction(const fmask_t & mask)
 	gproshan_log(MDICT);
 
 	assert(n_vertices == mesh->n_vertices());
-	return mdict::mesh_reconstruction(mesh, M, patches, patches_map, A, alpha, dist);
+	return mdict::mesh_reconstruction(mesh, M, phi_basis->get_radio(), patches, patches_map, A, alpha, dist);
 }
 void dictionary::update_alphas(a_mat & alpha, size_t threshold)
 {

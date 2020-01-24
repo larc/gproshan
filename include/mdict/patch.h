@@ -51,7 +51,7 @@ class patch
 		void init(	che * mesh,						///< input mesh.
 					const index_t & v,				///< center vertex of the patch.
 					const size_t & n_toplevels,		///< number of toplevels to jet fitting.
-					const distance_t & radio,		///< euclidean radio in XY of the patch.
+					const distance_t & radio_,		///< euclidean radio in XY of the patch.
 					index_t * _toplevel = nullptr		///< aux memory to gather toplevel vertices.
 					);
 		void init_disjoint(che * mesh,
@@ -60,7 +60,7 @@ class patch
 					vector<index_t> & _vertices, 
 					index_t * _toplevel = nullptr);
 		void init_radial_disjoint(che * mesh,
-					const distance_t & radio,
+					const distance_t & radio_,
 					const size_t & avg_p, 
 					const index_t & v,
 					const size_t & n_toplevels,
@@ -92,6 +92,8 @@ class patch
 		void save(const real_t & radio, const size_t & imsize, CImgList<real_t> & imlist);
 		void update_heights(real_t & min, real_t & max, bool flag);
 		void compute_avg_distance();
+		void scale_xyz(const real_t & radio_f);
+		void iscale_xyz(const real_t & radio_f);
 		
 
 	private:
