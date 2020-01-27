@@ -395,7 +395,6 @@ void  inpainting::init_radial_curvature_patches()
 	for(index_t s = 0; s < M; s++)
 	{
 		patch & p = patches[s];
-		if(p.vertices.size() == 0) gproshan_debug_var(s);
 
 		p.transform();
 		p.compute_avg_distance();
@@ -511,7 +510,6 @@ distance_t inpainting::execute()
 
 	TIC(d_time) init_radial_curvature_patches(); TOC(d_time)
 	gproshan_debug_var(d_time);
-
 //	L = 15;
 
 	TIC(d_time) learning(); TOC(d_time)
@@ -521,14 +519,17 @@ distance_t inpainting::execute()
 	TIC(d_time) sparse_coding(); TOC(d_time)
 	gproshan_debug_var(d_time);
 
+
 	//patches_map.resize(n_vertices);
 	for(index_t  i = 0; i < n_vertices; i++)
 	{
 		patches_map[i].clear();
 	}
 
+	
 	for(index_t s = 0; s < M; s++)
 		patches[s].reset_xyz(mesh, patches_map, s, 0);
+
 
 	#pragma omp parallel for
 	for(index_t s = 0; s < M; s++)
@@ -545,9 +546,10 @@ distance_t inpainting::execute()
 
 	draw_patches(10);
 	draw_patches(200);
-	draw_patches(500);
-	draw_patches(56);
-	gproshan_debug_var(patches[56].vertices[0]);
+	draw_patches(120);
+	draw_patches(50);
+	//draw_patches(500);
+	//draw_patches(56);
 	//phi_basis->plot_basis();
 	//gproshan_debug_var(alpha.col(463));
 	

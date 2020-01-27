@@ -523,7 +523,7 @@ void viewer_process_mask()
 {
 	gproshan_log(APP_VIEWER);
 
-	size_t avg_p; 
+	size_t avg_p = 20; 
 	size_t percentage;
 
 	size_t n=12; // dct
@@ -533,12 +533,12 @@ void viewer_process_mask()
 
 
 	gproshan_input(avg_p percentage f );
-	cin >> avg_p >> percentage >> f;
-
+	//cin >> avg_p >> percentage >> f;
+	cin>> percentage;
 	basis * phi = new basis_dct(n);
 	inpainting dict(viewer::mesh(),  phi, m, M, f, learn, avg_p, percentage);
 
-	dict.init_radial_patches();
+	dict.init_radial_curvature_patches();
 	//dict.init_voronoi_patches();
 	delete phi;
 	viewer::mesh().update_colors(&dict[0]);

@@ -222,6 +222,7 @@ void patch::iscale_xyz(const real_t & radio_f)
 {
 	real_t factor = radio_f/radio;
 	xyz =  xyz / factor;
+
 }
 
 const a_vec patch::normal()

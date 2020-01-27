@@ -260,7 +260,7 @@ distance_t mesh_reconstruction(che * mesh, size_t M, const distance_t & radio, v
 		}
 	}
 
-	distance_t h = 0.2;
+//	distance_t h = 0.2;
 	//Computes the weighted average of vertices
 	#pragma omp parallel for
 	for(index_t v = v_i; v < mesh->n_vertices(); v++)
