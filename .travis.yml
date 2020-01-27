@@ -1,21 +1,7 @@
+dist: bionic
 language: cpp
-matrix:
-  include:
-    - name: "Ubuntu 19.10"
-      os: linux
-      dist: bionic
-      group: travis_latest
-      env: DOCKER="ubuntu:eoan" VARIANT="ubuntu" TOOL="compile" COMPILER_C="gcc" COMPILER_CXX="g++"
-    - name: "Ubuntu 19.04"
-      os: linux
-      dist: bionic
-      group: travis_latest
-      env: DOCKER="ubuntu:disco" VARIANT="ubuntu" TOOL="compile" COMPILER_C="gcc" COMPILER_CXX="g++"
-    - name: "Ubuntu 18.04"
-      os: linux
-      dist: bionic
-      group: travis_latest
-      env: DOCKER="ubuntu:bionic" VARIANT="ubuntu" TOOL="compile" COMPILER_C="gcc" COMPILER_CXX="g++"
+compiler: gcc
+os: linux
 addons:
   apt:
     sources:
@@ -27,13 +13,16 @@ addons:
       - libarmadillo-dev
       - libeigen3-dev
       - libopenblas-dev
-      - libsuitesparse-dev
-      - libsuitesparseconfig5
       - libglew-dev
       - freeglut3-dev
       - libgles2-mesa-dev
       - cimg-dev
       - libcgal-dev
+install:
+  - wget https://github.com/DrTimothyAldenDavis/SuiteSparse/archive/v5.6.0.tar.gz
+  - tar -xzvf v5.6.0.tar.gz
+  - cd cd SuiteSparse-5.6.0/ 
+  - make && sudo make install
 script:
   - export CC=/usr/bin/gcc-8
   - export CXX=/usr/bin/g++-8
