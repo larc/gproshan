@@ -1,4 +1,4 @@
-[![Build Status (Ubuntu 18.04)](https://travis-ci.com/larc/gproshan.svg?branch=master)](https://travis-ci.com/larc/gproshan)
+[[Build Status (Ubuntu 18.04)](https://travis-ci.com/larc/gproshan.svg?branch=master)](https://travis-ci.com/larc/gproshan)
 
 # gproshan
 ### geometry processing and shape analysis framework

@@ -20,8 +20,7 @@ addons:
 	  - libgles2-mesa-dev
 	  - cimg-dev
 	  - libcgal-dev
-  snap:
-  	packages:
+  snaps:
       - cmake
 script:
   # Export CC and CXX to tell cmake which compiler to use
