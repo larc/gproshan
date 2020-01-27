@@ -9,6 +9,7 @@ addons:
     packages:
       - gcc-8
       - g++-8
+      - cmake
       - libarmadillo-dev
       - libeigen3-dev
       - libopenblas-dev
@@ -18,9 +19,6 @@ addons:
       - libgles2-mesa-dev
       - cimg-dev
       - libcgal-dev
-  snaps:
-    - name: cmake
-      confinement: classic
 script:
   - export CC=/usr/bin/gcc-8
   - export CXX=/usr/bin/g++-8
