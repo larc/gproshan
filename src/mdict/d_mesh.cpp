@@ -255,8 +255,8 @@ distance_t mesh_reconstruction(che * mesh, size_t M, const distance_t & radio, v
 		{
 			a_vec x = rp.phi * A * alpha.col(p);
 			rp.xyz.row(2) = x.t();
-			rp.itransform();
 			rp.iscale_xyz(radio);
+			rp.itransform();
 		}
 	}
 

@@ -93,7 +93,7 @@ void patch::init_radial_disjoint(che * mesh, const distance_t & radio_, const si
 
 void patch::init_curvature_growing(che * mesh, const index_t & v, bool * covered, a_mat & normals)
 {
-	radio = 1;
+	radio = -INFINITY;
 	geodesics geo(mesh, {v}, geodesics::FM,  NULL, false, mesh->n_vertices()/100);
 	index_t * indexes = new index_t[geo.n_sorted_index()];
 	geo.copy_sorted_index(indexes, geo.n_sorted_index());
@@ -119,7 +119,8 @@ void patch::init_curvature_growing(che * mesh, const index_t & v, bool * covered
 	//	gproshan_debug_var((n, mesh->normal(indexes[i]) ) );
 		if( (n, mesh->normal(indexes[i]) ) >= 0 )	
 		{
-			radio = *p;
+			if(*p > radio)
+				radio = *p;
 			vertices.push_back(indexes[i]);
 			covered[ indexes[i]] = 1;
 		}
@@ -216,12 +217,14 @@ void patch::scale_xyz(const real_t & radio_f)
 {
 	real_t factor = radio_f/radio;
 	xyz = factor * xyz;
+	//radio *= factor;
 }
 
 void patch::iscale_xyz(const real_t & radio_f)
 {
 	real_t factor = radio_f/radio;
 	xyz =  xyz / factor;
+	//radio /= factor;
 
 }
 
