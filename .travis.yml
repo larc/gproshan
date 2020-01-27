@@ -1,9 +1,7 @@
 dist: bionic
-sudo: required
-language:
-  - cpp
-compiler:
-  - gcc
+language: cpp
+compiler: gcc
+os: linux
 addons:
   apt:
     sources:
