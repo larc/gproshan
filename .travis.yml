@@ -11,6 +11,15 @@ addons:
     packages:
       - gcc-8
       - g++-8
+	  - libarmadillo-dev
+	  - libeigen3-dev
+	  - libopenblas-dev
+	  - libsuitesparse-dev
+	  - libglew-dev
+	  - freeglut3-dev
+	  - libgles2-mesa-dev
+	  - cimg-dev
+	  - libcgal-dev
   snap:
   	packages:
       - cmake
