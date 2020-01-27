@@ -17,5 +17,7 @@ script:
   - export CC=/usr/bin/gcc-8
   - export CXX=/usr/bin/g++-8
   # Check versions of gcc, g++ and cmake
-  - gcc -v && g++ -v && cmake --version
+  - CC -v && CXX -v && cmake --version
   # Run your build commands next
+  - mkdir build && cd build
+  - cmake ..
