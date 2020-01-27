@@ -3,29 +3,27 @@ language: cpp
 compiler: gcc
 os: linux
 addons:
-  apt:
-    sources:
-      - ubuntu-toolchain-r-test
-    packages:
-      - gcc-8
-      - g++-8
-	  - libarmadillo-dev
-	  - libeigen3-dev
-	  - libopenblas-dev
-	  - libsuitesparse-dev
-	  - libglew-dev
-	  - freeglut3-dev
-	  - libgles2-mesa-dev
-	  - cimg-dev
-	  - libcgal-dev
-  snaps:
-      - cmake
+	apt:
+		sources:
+			- ubuntu-toolchain-r-test
+		packages:
+			- gcc-8
+			- g++-8
+			- libarmadillo-dev
+			- libeigen3-dev
+			- libopenblas-dev
+			- libsuitesparse-dev
+			- libglew-dev
+			- freeglut3-dev
+			- libgles2-mesa-dev
+			- cimg-dev
+			- libcgal-dev
+	snaps:
+		- cmake
 script:
-  # Export CC and CXX to tell cmake which compiler to use
-  - export CC=/usr/bin/gcc-8
-  - export CXX=/usr/bin/g++-8
-  # Check versions of gcc, g++ and cmake
-  - $CC -v && $CXX -v && cmake --version
-  # Run your build commands next
-  - mkdir build && cd build
-  - cmake ..
+	- export CC=/usr/bin/gcc-8
+	- export CXX=/usr/bin/g++-8
+	- $CC -v && $CXX -v && cmake --version
+	- mkdir build && cd build
+	- cmake ..
+
