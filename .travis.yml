@@ -24,7 +24,7 @@ install:
   - cd SuiteSparse-5.6.0/ 
   - make library && sudo make install
   - cd .. 
-  - sudo rm -r SuiSuiteSparse-5.6.0/ 
+  - sudo rm -r SuiteSparse-5.6.0/ 
 script:
   - export CC=/usr/bin/gcc-8
   - export CXX=/usr/bin/g++-8
