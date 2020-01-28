@@ -1,5 +1,3 @@
-Ubuntu 18.04 (Bionic) | [![Build Status (Ubuntu 18.04)](https://travis-ci.com/larc/gproshan.svg?branch=master)](https://travis-ci.com/larc/gproshan)
-
 # gproshan
 ### geometry processing and shape analysis framework
 
@@ -28,6 +26,11 @@ g++ >= 8.3, cuda >= 10.1, libarmadillo, libeigen, libsuitesparse, libopenblas, o
 In Ubuntu (>= 18.04) you can install them with:
 
 	sudo apt install libarmadillo-dev libeigen3-dev libopenblas-dev libsuitesparse-dev libglew-dev freeglut3-dev libgles2-mesa-dev cimg-dev libcgal-dev
+
+### Build Status
+
+#### Ubuntu 18.04 (Bionic)
+[![Build Status](https://travis-ci.com/larc/gproshan.svg?branch=master)](https://travis-ci.com/larc/gproshan)
 
 ## Contributions
 
