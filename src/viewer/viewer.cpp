@@ -460,30 +460,31 @@ void viewer::display()
 	viewport_width /= m_window_size[n_meshes - 1][1];
 	viewport_height /= m_window_size[n_meshes - 1][0];
 
-	proj_mat = glm::perspective(45.f, float(viewport_width) / float(viewport_height), .1f, 100.f);
-
 	quaternion eye = vertex(0., 0., -2. * cam.zoom);
 	quaternion center = vertex(0., 0., 0.);
 	quaternion up = vertex(0., 1., 0.);
+	
+	quaternion light = vertex(-1., 1., -2.);
 
+	quaternion r = cam.currentRotation();
+
+	eye = r.conj() * eye * r;
+	light = r.conj() * light * r;
+	
+	proj_mat = glm::perspective(45.f, float(viewport_width) / float(viewport_height), .01f, 1000.f);
 	view_mat = glm::lookAt(	glm::vec3(eye[1], eye[2], eye[3]), 
 							glm::vec3(center[1], center[2], center[3]), 
 							glm::vec3(up[1], up[2], up[3])
 							);
 
+
 	shader_program.enable();
 
-	quaternion r = cam.currentRotation();
-	eye = r.conj() * eye * r;
 	GLint uniformEye = glGetUniformLocation(shader_program, "eye");
 	glUniform3f(uniformEye, eye[1], eye[2], eye[3]);
 
-	quaternion light = vertex(-1., 1., -2.);
-	light = r.conj() * light * r;
 	GLint uniformLight = glGetUniformLocation(shader_program, "light");
 	glUniform3f(uniformLight, light[1], light[2], light[3]);
-
-	//cam.setView();
 
 	GLint uniform_render_flat = glGetUniformLocation(shader_program, "render_flat");
 	glUniform1i(uniform_render_flat, render_flat);
