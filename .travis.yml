@@ -1,0 +1,28 @@
+dist: bionic
+language: cpp
+compiler: gcc
+os: linux
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - gcc-8
+      - g++-8
+      - cmake
+      - libarmadillo-dev
+      - libeigen3-dev
+      - libopenblas-dev
+      - libsuitesparse-dev
+      - libglew-dev
+      - freeglut3-dev
+      - libgles2-mesa-dev
+      - cimg-dev
+      - libcgal-dev
+script:
+  - export CC=/usr/bin/gcc-8
+  - export CXX=/usr/bin/g++-8
+  - $CC -v && $CXX -v && cmake --version
+  - mkdir build && cd build
+  - cmake .. && make
+
