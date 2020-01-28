@@ -71,8 +71,6 @@ bool viewer::run()
 {
 	while(!glfwWindowShouldClose(window))
 	{
-		glfwPollEvents();
-
 		display();
 		
 		ImGui_ImplOpenGL3_NewFrame();
@@ -110,6 +108,7 @@ bool viewer::run()
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		
 		glfwSwapBuffers(window);
+		glfwPollEvents();
 	}
 
 	return true;
@@ -500,7 +499,6 @@ void viewer::display()
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_LIGHTING);
 	
 	draw_scene();
 	
@@ -530,16 +528,11 @@ void viewer::draw_polygons()
 {
 	shader_program.enable();
 
-	glEnable(GL_POLYGON_OFFSET_FILL);
-	glPolygonOffset(1., 1.);
-
 	for(index_t i = 0; i < n_meshes; i++)
 	{
 		glViewport(meshes[i].vx * viewport_width, meshes[i].vy * viewport_height, viewport_width, viewport_height);
 		meshes[i].draw();
 	}
-	
-	glDisable(GL_POLYGON_OFFSET_FILL);
 }
 
 void viewer::draw_wireframe()
