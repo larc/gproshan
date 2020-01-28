@@ -308,7 +308,7 @@ void  inpainting::init_radial_curvature_patches()
 	for(index_t v = 0; v < mesh->n_vertices(); v++)
 	{
 		//if( abs (mean_curvature[v]) > 0.01 ) dist[v] = 1; 
-		 Q.push ( make_pair(-1*curvatures(v), v ) );
+		 Q.push ( make_pair(-1* curvatures(v), v ) );
 	}
 
 	bool covered[mesh->n_vertices()];
@@ -550,6 +550,7 @@ distance_t inpainting::execute()
 	draw_patches(200);
 	draw_patches(120);
 	draw_patches(50);
+	//draw_patches(400);
 	//draw_patches(500);
 	//draw_patches(56);
 	//phi_basis->plot_basis();

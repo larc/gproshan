@@ -12,7 +12,7 @@
 
 #include <CGAL/Simple_cartesian.h>
 #include <CGAL/Monge_via_jet_fitting.h>
-
+#define PI 3.14159265
 #include <queue>
 
 // geometry processing and shape analysis framework
@@ -113,14 +113,9 @@ void patch::init_curvature_growing(che * mesh, const index_t & v, bool * covered
 		vertex p = mesh->get_vertex(indexes[i]); 
 		vertex c = mesh->get_vertex(v); // central vertices
 
-		p = p - c ;
-		p = p - ((p,n)*n);
 		//gather the good ones
-	//	gproshan_debug_var((n, mesh->normal(indexes[i]) ) );
 		if( (n, mesh->normal(indexes[i]) ) >= 0 )	
 		{
-			if(*p > radio)
-				radio = *p;
 			vertices.push_back(indexes[i]);
 			covered[ indexes[i]] = 1;
 		}
@@ -128,6 +123,7 @@ void patch::init_curvature_growing(che * mesh, const index_t & v, bool * covered
 			break;
 
 	}
+	
 	//gproshan_debug_var(vertices.size());
 	size_t d_fitting = 2;
 	size_t d_monge = 2;
@@ -137,7 +133,40 @@ void patch::init_curvature_growing(che * mesh, const index_t & v, bool * covered
 		vertices.clear();
 	}
 	else
+	{
 		jet_fit_directions(mesh, v);
+		size_t n_vertices = vertices.size();
+		vertices.clear();
+		vertices.push_back(v);
+		covered[v] = 1;
+
+		vn = T.col(2);// normal at the center
+		n.x = vn(0); n.y = vn(1); n.z = vn(2);
+
+		for(int i=1; i < n_vertices; i++)
+		{
+			vertex p = mesh->get_vertex(indexes[i]); 
+			vertex c = mesh->get_vertex(v); // central vertices
+
+			p = p - c ;
+			p = p - ((p,n)*n);
+			//if( acos(n, mesh->normal(indexes[i]))*180 / PI >= 90 )	
+			if( (n, mesh->normal(indexes[i])) >= 0 )	
+			{
+				if(*p > radio)
+					radio = *p;
+				vertices.push_back(indexes[i]);
+				covered[ indexes[i]] = 1;
+			}
+			else
+				break;
+		}
+
+		if(vertices.size() <= min_points )
+			vertices.clear();
+
+	}
+		
 
 }
 // xyz = E.t * (xyz - avg)
@@ -217,15 +246,13 @@ void patch::scale_xyz(const real_t & radio_f)
 {
 	real_t factor = radio_f/radio;
 	xyz = factor * xyz;
-	//radio *= factor;
+
 }
 
 void patch::iscale_xyz(const real_t & radio_f)
 {
 	real_t factor = radio_f/radio;
 	xyz =  xyz / factor;
-	//radio /= factor;
-
 }
 
 const a_vec patch::normal()
