@@ -449,7 +449,7 @@ void viewer::raycasting(viewer * view)
 	{
 		img.display();
 	},
-	CImg<float>(frame, window_size.x, window_size.y)).detach();
+	CImg<float>(frame, view->viewport_width, view->viewport_height)).detach();
 
 	delete [] frame;
 }
