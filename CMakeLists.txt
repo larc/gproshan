@@ -16,7 +16,7 @@ find_package(X11 REQUIRED)
 find_package(Armadillo REQUIRED)
 find_package(CGAL REQUIRED)
 find_package(Eigen3 REQUIRED)
-find_package(SuiteSparse REQUIRED)
+find_package(SuiteSparse CONFIG REQUIRED)
 
 if(NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE Release)
