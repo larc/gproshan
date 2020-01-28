@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.12)
 
 project(gproshan VERSION 2.0 LANGUAGES CXX)
 
+list(APPEND CMAKE_MODULE_PATH "${gproshan_SOURCE_DIR}/cmake")
+
 find_package(CUDA 10.1)
 if(CUDA_FOUND)
 	enable_language(CUDA)
