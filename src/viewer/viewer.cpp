@@ -9,6 +9,9 @@
 #include <cassert>
 #include <thread>
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
 #include "che_off.h"
 #include "che_obj.h"
 #include "che_ply.h"
@@ -49,7 +52,6 @@ viewer::viewer()
 	init_imgui();
 	init_menus();
 	
-	set_gl();
 	init_glsl();
 	
 	info_gl();
@@ -69,6 +71,8 @@ bool viewer::run()
 {
 	while(!glfwWindowShouldClose(window))
 	{
+		glfwPollEvents();
+
 		display();
 		
 		ImGui_ImplOpenGL3_NewFrame();
@@ -309,7 +313,7 @@ void viewer::scroll_callback(GLFWwindow * window, double xoffset, double yoffset
 void viewer::idle()
 {
 	//cam.idle();
-	//glutPostRedisplay();
+	////glutPostRedisplay();
 }
 
 void viewer::menu_process(function_t pro)
@@ -439,13 +443,7 @@ void viewer::raycasting(viewer * view)
 	glm::uvec2 window_size;
 	glfwGetFramebufferSize(view->window, (int *) &window_size.x, (int *) &window_size.y);
 	
-	glm::mat4 model_view;
-	glGetFloatv(GL_MODELVIEW_MATRIX, (GLfloat *) &model_view);
-
-	glm::mat4 projection;
-	glGetFloatv(GL_PROJECTION_MATRIX, (GLfloat *) &projection);
-
-	float * frame = rc.raycaster(window_size, projection * model_view, {0., 0., -2.5 * view->cam.zoom});
+	float * frame = rc.raycaster(window_size, view->proj_mat * view->view_mat, {0., 0., -2. * view->cam.zoom});
 
 	std::thread([](CImg<float> img)
 	{
@@ -458,32 +456,20 @@ void viewer::raycasting(viewer * view)
 
 void viewer::display()
 {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	shader_program.enable();
+	glfwGetFramebufferSize(window, &viewport_width, &viewport_height);
 
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	GLint viewport[4];
-	glGetIntegerv(GL_VIEWPORT, viewport);
-	double aspect = (double) viewport[2] / (double) viewport[3];
-	const double fovy = 50.;
-	const double clipNear = .01;
-	const double clipFar = 1000.;
-	gluPerspective(fovy, aspect, clipNear, clipFar);
-	//glFrustum(-1.0, 1.0, -1.0, 1.0, 1.5, 20.0);
-	//glOrtho(-1.0, 1.0, -1.0, 1.0, 100, 1000);
+	proj_mat = glm::perspective(45.f, float(viewport_width) / float(viewport_height), .1f, 100.f);
 
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-
-
-	quaternion eye = vertex(0., 0., -2.5 * cam.zoom);
+	quaternion eye = vertex(0., 0., -2. * cam.zoom);
 	quaternion center = vertex(0., 0., 0.);
 	quaternion up = vertex(0., 1., 0.);
-	gluLookAt(	eye[1],		eye[2],		eye[3],
-			center[1],	center[2],	center[3],
-			up[1],		up[2],		up[3]);
 
+	view_mat = glm::lookAt(	glm::vec3(eye[1], eye[2], eye[3]), 
+							glm::vec3(center[1], center[2], center[3]), 
+							glm::vec3(up[1], up[2], up[3])
+							);
+
+	shader_program.enable();
 
 	quaternion r = cam.currentRotation();
 	eye = r.conj() * eye * r;
@@ -495,7 +481,7 @@ void viewer::display()
 	GLint uniformLight = glGetUniformLocation(shader_program, "light");
 	glUniform3f(uniformLight, light[1], light[2], light[3]);
 
-	cam.setView();
+	//cam.setView();
 
 	GLint uniform_render_flat = glGetUniformLocation(shader_program, "render_flat");
 	glUniform1i(uniform_render_flat, render_flat);
@@ -503,61 +489,24 @@ void viewer::display()
 	GLint uniform_render_lines = glGetUniformLocation(shader_program, "render_lines");
 	glUniform1i(uniform_render_lines, render_lines);
 
-	GLfloat ModelViewMatrix[16];
-	GLfloat ProjectionMatrix[16];
-
-	glGetFloatv(GL_MODELVIEW_MATRIX, ModelViewMatrix);
-	glGetFloatv(GL_PROJECTION_MATRIX, ProjectionMatrix);
-
 	GLint uniformModelViewMatrix = glGetUniformLocation(shader_program, "ModelViewMatrix");
+	glUniformMatrix4fv(uniformModelViewMatrix, 1, 0,&view_mat[0][0]);
+	
 	GLint uniformProjectionMatrix = glGetUniformLocation(shader_program, "ProjectionMatrix");
+	glUniformMatrix4fv(uniformProjectionMatrix, 1, 0, &proj_mat[0][0]);
 
-	glUniformMatrix4fv(uniformModelViewMatrix, 1, 0, ModelViewMatrix);
-	glUniformMatrix4fv(uniformProjectionMatrix, 1, 0, ProjectionMatrix);
-
-	//glPushAttrib(GL_ALL_ATTRIB_BITS);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_LIGHTING);
 
-	set_mesh_material();
-
-	glfwGetFramebufferSize(window, &viewport_width, &viewport_height);
 	viewport_width /= m_window_size[n_meshes - 1][1];
 	viewport_height /= m_window_size[n_meshes - 1][0];
 
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	
 	draw_scene();
-
-	//glPopAttrib();
-
+	
 	shader_program.disable();
 
-	glfwPollEvents();
-}
-
-void viewer::set_gl()
-{
-	glClearColor(bgc, bgc, bgc, 1.);
-	set_lighting();
-}
-
-void viewer::set_lighting()
-{
-	GLfloat position[4] = {20, 30, 40, 0};
-	glLightfv(GL_LIGHT0, GL_POSITION, position);
-	glEnable(GL_LIGHT0);
-	glEnable(GL_NORMALIZE);
-}
-
-void viewer::set_mesh_material()
-{
-	GLfloat diffuse[4] = { .8, .5, .3, 1. };
-	GLfloat specular[4] = { .3, .3, .3, 1. };
-	GLfloat ambient[4] = { .2, .2, .5, 1. };
-
-	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE,	diffuse);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specular);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT,	ambient);
-	glMaterialf (GL_FRONT_AND_BACK, GL_SHININESS, 16.);
 }
 
 void viewer::draw_scene()
@@ -658,7 +607,7 @@ void viewer::draw_isolated_vertices()
 	{
 		glPushMatrix();
 		glTranslated(v.x, v.y, v.z);
-		//glutSolidSphere(h, 10, 10);
+		////glutSolidSphere(h, 10, 10);
 		glPopMatrix();
 	}
 
@@ -722,7 +671,7 @@ void viewer::draw_corr()
 		glPushMatrix();
 		corr_v = meshes[corr_mesh[current].mesh_i]->corr_vertex(corr_mesh[current][v]);
 		glTranslated(corr_v.x, corr_v.y, corr_v.z);
-//		glutSolidSphere(h, 10, 10);
+//		//glutSolidSphere(h, 10, 10);
 		glPopMatrix();
 	}
 
@@ -768,7 +717,7 @@ void viewer::draw_selected_vertices()
 		
 		glPushMatrix();
 		glTranslated(mesh()->gt(v).x, mesh()->gt(v).y, mesh()->gt(v).z);
-	//	glutSolidSphere(h, 10, 10);
+	//	//glutSolidSphere(h, 10, 10);
 		glPopMatrix();
 	}
 
@@ -824,7 +773,7 @@ void viewer::pick_vertex(int x, int y)
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
 	glLoadIdentity();
-	gluPickMatrix(x, viewport[3] - y, 10, 10, viewport);
+	//gluPickMatrix(x, viewport[3] - y, 10, 10, viewport);
 	glMultMatrixd(projection);
 
 	glMatrixMode(GL_MODELVIEW);
@@ -873,7 +822,7 @@ void draw_str(const char * str, int x, int y, float color[4], void * font)
 	glColor4fv(color);
 	glRasterPos2i(x, y);
 
-	//viewport_heightile(*str) glutBitmapCharacter(font, *str++);
+	//viewport_heightile(*str) //glutBitmapCharacter(font, *str++);
 
 	glEnable(GL_TEXTURE_2D);
 	glEnable(GL_LIGHTING);

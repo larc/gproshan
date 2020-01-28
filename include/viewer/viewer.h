@@ -77,10 +77,15 @@ class viewer
 
 
 		GLFWwindow * window;
+
 		shader shader_program;
 		camera cam;
+		
 		int viewport_width;
 		int viewport_height;
+
+		glm::mat4 view_mat;
+		glm::mat4 proj_mat;
 
 		che_viewer meshes[N_MESHES];
 		vcorr_t corr_mesh[N_MESHES];
@@ -163,9 +168,6 @@ class viewer
 		static void raycasting(viewer * view);
 
 		// draw routines
-		void set_gl();
-		void set_lighting();
-		void set_mesh_material();
 		void draw_scene();
 		void draw_corr();
 		void draw_polygons();
