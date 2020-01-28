@@ -150,8 +150,9 @@ void patch::init_curvature_growing(che * mesh, const index_t & v, bool * covered
 
 			p = p - c ;
 			p = p - ((p,n)*n);
-			//if( acos(n, mesh->normal(indexes[i]))*180 / PI >= 90 )	
-			if( (n, mesh->normal(indexes[i])) >= 0 )	
+			//gproshan_debug_var((acos((n, mesh->normal(indexes[i])))*180 / PI));
+			if( (acos((n, mesh->normal(indexes[i])))*180 / PI) <= 45 )	
+			//if( (n, mesh->normal(indexes[i])) >= 0 )	
 			{
 				if(*p > radio)
 					radio = *p;
