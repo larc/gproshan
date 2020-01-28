@@ -13,12 +13,12 @@ addons:
       - libarmadillo-dev
       - libeigen3-dev
       - libopenblas-dev
+      - libsuitesparse-dev
       - libglew-dev
       - freeglut3-dev
       - libgles2-mesa-dev
       - cimg-dev
       - libcgal-dev
-      - libsuitesparse-dev
 script:
   - export CC=/usr/bin/gcc-8
   - export CXX=/usr/bin/g++-8
