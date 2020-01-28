@@ -3,7 +3,6 @@
 
 #include "che.h"
 
-
 #include <embree3/rtcore.h>
 #include <glm/glm.hpp>
 
@@ -78,8 +77,11 @@ class embree
 
 		void build_bvh();
 		unsigned add_sphere(const glm::vec4 & xyzr);
-		unsigned add_mesh(const che * mesh, const glm::mat4 & model_matrix = glm::mat4());
-		float * raycaster(const glm::uvec2 & windows_size, const glm::mat4 & projection_view, const glm::vec3 & cam_pos, const unsigned & samples = 4);
+		unsigned add_mesh(const che * mesh, const glm::mat4 & model_matrix = glm::mat4(1.f));
+		float * raycaster(	const glm::uvec2 & windows_size,
+							const glm::mat4 & view_mat,
+							const glm::mat4 & proj_mat,
+							const unsigned & samples = 4	);
 
 		bool intersect(ray_hit & r);
 };

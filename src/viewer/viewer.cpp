@@ -151,7 +151,7 @@ void viewer::init_gl()
 		glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_TRUE);
 		glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 	#endif
-
+		
 	window = glfwCreateWindow(1600, 900, "gproshan", NULL, NULL);
 
 	glfwSetWindowUserPointer(window, this);
@@ -440,10 +440,10 @@ void viewer::raycasting(viewer * view)
 
 	rc.build_bvh();
 	
-	glm::uvec2 window_size;
-	glfwGetFramebufferSize(view->window, (int *) &window_size.x, (int *) &window_size.y);
-	
-	float * frame = rc.raycaster(window_size, view->proj_mat * view->view_mat, {0., 0., -2. * view->cam.zoom});
+
+	float * frame = rc.raycaster(	glm::uvec2(view->viewport_width, view->viewport_height),
+									view->view_mat, view->proj_mat	
+									); 
 
 	std::thread([](CImg<float> img)
 	{
@@ -457,6 +457,8 @@ void viewer::raycasting(viewer * view)
 void viewer::display()
 {
 	glfwGetFramebufferSize(window, &viewport_width, &viewport_height);
+	viewport_width /= m_window_size[n_meshes - 1][1];
+	viewport_height /= m_window_size[n_meshes - 1][0];
 
 	proj_mat = glm::perspective(45.f, float(viewport_width) / float(viewport_height), .1f, 100.f);
 
@@ -489,24 +491,19 @@ void viewer::display()
 	GLint uniform_render_lines = glGetUniformLocation(shader_program, "render_lines");
 	glUniform1i(uniform_render_lines, render_lines);
 
-	GLint uniformModelViewMatrix = glGetUniformLocation(shader_program, "ModelViewMatrix");
-	glUniformMatrix4fv(uniformModelViewMatrix, 1, 0,&view_mat[0][0]);
+	GLint uniform_model_view_mat = glGetUniformLocation(shader_program, "model_view_mat");
+	glUniformMatrix4fv(uniform_model_view_mat, 1, 0, &view_mat[0][0]);
 	
-	GLint uniformProjectionMatrix = glGetUniformLocation(shader_program, "ProjectionMatrix");
-	glUniformMatrix4fv(uniformProjectionMatrix, 1, 0, &proj_mat[0][0]);
-
-	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_LIGHTING);
-
-	viewport_width /= m_window_size[n_meshes - 1][1];
-	viewport_height /= m_window_size[n_meshes - 1][0];
+	GLint uniform_proj_mat = glGetUniformLocation(shader_program, "proj_mat");
+	glUniformMatrix4fv(uniform_proj_mat, 1, 0, &proj_mat[0][0]);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_LIGHTING);
 	
 	draw_scene();
 	
 	shader_program.disable();
-
 }
 
 void viewer::draw_scene()

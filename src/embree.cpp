@@ -58,11 +58,12 @@ unsigned embree::add_mesh(const che * mesh, const glm::mat4 & model_matrix)
 																RTC_FORMAT_UINT3, 3 * sizeof(int),
 																mesh->n_faces());
 	
-	const glm::vec3 * V = (glm::vec3 *) &mesh->gt(0);
-
 	#pragma omp parallel for
 	for(unsigned i = 0; i < mesh->n_vertices(); i++)
-		vertices[i] = glm::vec3(model_matrix * glm::vec4(V[i], 1.f));
+	{
+		glm::vec4 v(mesh->gt(i).x, mesh->gt(i).y, mesh->gt(i).z, 1.f);
+		vertices[i] = glm::vec3(model_matrix * v);
+	}
 	
 	memcpy(tri_idxs, &mesh->vt(0), mesh->n_half_edges() * sizeof(index_t));
 
@@ -74,13 +75,18 @@ unsigned embree::add_mesh(const che * mesh, const glm::mat4 & model_matrix)
 	return geom_id;
 }
 
-float * embree::raycaster(const glm::uvec2 & windows_size, const glm::mat4 & projection_view, const glm::vec3 & cam_pos, const unsigned & samples)
+float * embree::raycaster(	const glm::uvec2 & windows_size,
+							const glm::mat4 & view_mat,
+							const glm::mat4 & proj_mat,
+							const unsigned & samples	)
 {
 	float * frame = new float[windows_size.x * windows_size.y];
 	
 	std::default_random_engine gen;
-	std::uniform_real_distribution<float> randf(0.0,1.0);	
-	
+	std::uniform_real_distribution<float> randf(0.f, 1.f);
+
+	glm::vec3 cam_pos = glm::vec3(glm::inverse(view_mat) * glm::vec4(0.f, 0.f, 0.f, 1.f));
+	glm::mat4 inv_proj_view = glm::inverse(proj_mat * view_mat);
 	#pragma omp parallel for
 	for(unsigned i = 0; i < windows_size.x; i++)
 	for(unsigned j = 0; j < windows_size.y; j++)
@@ -93,7 +99,7 @@ float * embree::raycaster(const glm::uvec2 & windows_size, const glm::mat4 & pro
 			glm::vec2 screen = glm::vec2( (float(i) + randf(gen)) / windows_size.x, 
 											(float(j) + randf(gen)) / windows_size.y );
 			glm::vec4 view = glm::vec4(screen.x * 2.f - 1.f, screen.y * 2.f - 1.f, 1.f, 1.f);
-			glm::vec4 q = glm::inverse(projection_view) * view;
+			glm::vec4 q = inv_proj_view * view;
 			glm::vec3 p = glm::vec3(q * (1.f / q.w));
 
 			ray_hit r(cam_pos, glm::normalize(p - cam_pos));
