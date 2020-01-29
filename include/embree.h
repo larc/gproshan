@@ -78,6 +78,11 @@ class embree
 		void build_bvh();
 		unsigned add_sphere(const glm::vec4 & xyzr);
 		unsigned add_mesh(const che * mesh, const glm::mat4 & model_matrix = glm::mat4(1.f));
+		void raytracing(	float * frame,
+							const glm::uvec2 & windows_size,
+							const glm::mat4 & view_mat,
+							const glm::mat4 & proj_mat,
+							const unsigned & samples = 4	);
 		float * raycaster(	const glm::uvec2 & windows_size,
 							const glm::mat4 & view_mat,
 							const glm::mat4 & proj_mat,

@@ -99,6 +99,8 @@ class viewer
 		index_t current; // current mesh
 
 		index_t render_opt;
+		embree * r_embree;
+		float * frame;
 
 		bool render_wireframe;
 		bool render_gradient_field;

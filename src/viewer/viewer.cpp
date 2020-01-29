@@ -39,6 +39,8 @@ viewer::viewer()
 	n_meshes = current = 0;
 
 	render_opt = 0;
+	r_embree = nullptr;
+	frame = nullptr;
 
 	render_wireframe = false;
 	render_gradient_field = false;
@@ -67,6 +69,9 @@ viewer::~viewer()
 
 	glfwDestroyWindow(window);
 	glfwTerminate();
+
+	if(r_embree) delete r_embree;
+	if(frame) delete [] frame;
 }
 
 bool viewer::run()
@@ -483,10 +488,8 @@ void viewer::raycasting(viewer * view)
 	embree rc;
 	
 	rc.add_mesh(view->mesh());
-
 	rc.build_bvh();
 	
-
 	float * frame = rc.raycaster(	glm::uvec2(view->viewport_width, view->viewport_height),
 									view->view_mat, view->proj_mat	
 									); 
@@ -532,6 +535,24 @@ void viewer::render_gl()
 
 void viewer::render_embree()
 {
+	if(r_embree == nullptr)
+	{
+		double time_build_embree;
+		TIC(time_build_embree);
+
+			r_embree = new embree;
+			r_embree->add_mesh(mesh());
+			r_embree->build_bvh();
+
+			frame = new float[viewport_width * viewport_height];
+
+		TOC(time_build_embree);
+		gproshan_log_var(time_build_embree);
+	}
+	
+	r_embree->raytracing(frame, glm::uvec2(viewport_width, viewport_height), view_mat, proj_mat, 1);	
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glDrawPixels(viewport_width, viewport_height, GL_LUMINANCE, GL_FLOAT, frame);
 }
 
 void viewer::render_optix()
