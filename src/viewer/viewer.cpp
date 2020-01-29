@@ -37,7 +37,9 @@ viewer::viewer()
 	window = nullptr;
 	
 	n_meshes = current = 0;
-	
+
+	render_opt = 0;
+
 	render_wireframe = false;
 	render_gradient_field = false;
 	render_normal_field = false;
@@ -71,7 +73,34 @@ bool viewer::run()
 {
 	while(!glfwWindowShouldClose(window))
 	{
-		display();
+		glfwGetFramebufferSize(window, &viewport_width, &viewport_height);
+		viewport_width /= m_window_size[n_meshes - 1][1];
+		viewport_height /= m_window_size[n_meshes - 1][0];
+
+		eye		= vertex(0., 0., -2. * cam.zoom);
+		center	= vertex(0., 0., 0.);
+		up		= vertex(0., 1., 0.);
+		
+		light = vertex(-1., 1., -2.);
+
+		quaternion r = cam.currentRotation();
+
+		eye = r.conj() * eye * r;
+		light = r.conj() * light * r;
+		
+		proj_mat = glm::perspective(45.f, float(viewport_width) / float(viewport_height), .01f, 1000.f);
+		view_mat = glm::lookAt(	glm::vec3(eye[1], eye[2], eye[3]), 
+								glm::vec3(center[1], center[2], center[3]), 
+								glm::vec3(up[1], up[2], up[3])
+								);
+
+		// RENDER 
+		switch(render_opt)
+		{
+			case 1: render_embree(); break;
+			case 2: render_optix(); break;
+			default: render_gl();
+		}
 		
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
@@ -189,6 +218,9 @@ void viewer::init_menus()
 	add_process(GLFW_KEY_F5, {"F5", "Normal Field", set_render_normal_field});
 	add_process(GLFW_KEY_F6, {"F6", "Show Borders", set_render_border});
 	add_process(GLFW_KEY_F7, {"F7", "Raycasting", raycasting});
+	add_process(GLFW_KEY_F8, {"F8", "Render GL", set_render_gl});
+	add_process(GLFW_KEY_F9, {"F9", "Render Embree", set_render_embree});
+	add_process(GLFW_KEY_F10, {"F10", "Render OptiX", set_render_optix});
 	add_process(GLFW_KEY_SPACE, {"SPACE", "Level Curves", set_render_lines});
 	add_process(GLFW_KEY_TAB, {"TAB", "Render Flat", set_is_flat});
 //	add_process('+', "Show Corr", set_render_corr);
@@ -393,6 +425,21 @@ void viewer::invert_orientation(viewer * view)
 	view->update_vbo();
 }
 
+void viewer::set_render_gl(viewer * view)
+{
+	view->render_opt = 0;
+}
+
+void viewer::set_render_embree(viewer * view)
+{
+	view->render_opt = 1;
+}
+
+void viewer::set_render_optix(viewer * view)
+{
+	view->render_opt = 2;
+}
+
 void viewer::set_render_wireframe(viewer * view)
 {
 	view->render_wireframe = !view->render_wireframe;
@@ -453,30 +500,8 @@ void viewer::raycasting(viewer * view)
 	delete [] frame;
 }
 
-void viewer::display()
+void viewer::render_gl()
 {
-	glfwGetFramebufferSize(window, &viewport_width, &viewport_height);
-	viewport_width /= m_window_size[n_meshes - 1][1];
-	viewport_height /= m_window_size[n_meshes - 1][0];
-
-	quaternion eye = vertex(0., 0., -2. * cam.zoom);
-	quaternion center = vertex(0., 0., 0.);
-	quaternion up = vertex(0., 1., 0.);
-	
-	quaternion light = vertex(-1., 1., -2.);
-
-	quaternion r = cam.currentRotation();
-
-	eye = r.conj() * eye * r;
-	light = r.conj() * light * r;
-	
-	proj_mat = glm::perspective(45.f, float(viewport_width) / float(viewport_height), .01f, 1000.f);
-	view_mat = glm::lookAt(	glm::vec3(eye[1], eye[2], eye[3]), 
-							glm::vec3(center[1], center[2], center[3]), 
-							glm::vec3(up[1], up[2], up[3])
-							);
-
-
 	shader_program.enable();
 
 	GLint uniformEye = glGetUniformLocation(shader_program, "eye");
@@ -503,6 +528,14 @@ void viewer::display()
 	draw_scene();
 	
 	shader_program.disable();
+}
+
+void viewer::render_embree()
+{
+}
+
+void viewer::render_optix()
+{
 }
 
 void viewer::draw_scene()

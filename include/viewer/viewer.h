@@ -83,6 +83,12 @@ class viewer
 		
 		int viewport_width;
 		int viewport_height;
+		
+		quaternion eye;
+		quaternion center;
+		quaternion up;
+		
+		quaternion light;
 
 		glm::mat4 view_mat;
 		glm::mat4 proj_mat;
@@ -91,6 +97,8 @@ class viewer
 		vcorr_t corr_mesh[N_MESHES];
 		size_t n_meshes;
 		index_t current; // current mesh
+
+		index_t render_opt;
 
 		bool render_wireframe;
 		bool render_gradient_field;
@@ -131,7 +139,9 @@ class viewer
 		void init_glsl();
 		void update_vbo();
 
-		void display();
+		void render_gl();
+		void render_embree();
+		void render_optix();
 
 		// callbacks
 		static void idle();
@@ -157,6 +167,9 @@ class viewer
 
 		// render options
 		static void invert_orientation(viewer * view);
+		static void set_render_gl(viewer * view);
+		static void set_render_embree(viewer * view);
+		static void set_render_optix(viewer * view);
 		static void set_render_wireframe(viewer * view);
 		static void set_render_gradient_field(viewer * view);
 		static void set_render_normal_field(viewer * view);
