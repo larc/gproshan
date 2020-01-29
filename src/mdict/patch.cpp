@@ -91,10 +91,10 @@ void patch::init_radial_disjoint(che * mesh, const distance_t & radio_, const si
 }
 
 
-void patch::init_curvature_growing(che * mesh, const index_t & v, bool * covered, a_mat & normals)
+void patch::init_curvature_growing(che * mesh, const index_t & v, a_mat & normals)
 {
 	radio = -INFINITY;
-	geodesics geo(mesh, {v}, geodesics::FM,  NULL, false, mesh->n_vertices()/100);
+	geodesics geo(mesh, {v}, geodesics::FM,  NULL, false, mesh->n_vertices()/200);
 	index_t * indexes = new index_t[geo.n_sorted_index()];
 	geo.copy_sorted_index(indexes, geo.n_sorted_index());
 	a_vec vn = normals.col(v);
@@ -103,7 +103,6 @@ void patch::init_curvature_growing(che * mesh, const index_t & v, bool * covered
 //	gproshan_debug_var(geo.n_sorted_index());
 
 	vertices.push_back(v);
-	covered[v] = 1;
 
 	for(int i=1; i<geo.n_sorted_index(); i++)
 	{
@@ -114,13 +113,18 @@ void patch::init_curvature_growing(che * mesh, const index_t & v, bool * covered
 		vertex c = mesh->get_vertex(v); // central vertices
 
 		//gather the good ones
-		if( (n, mesh->normal(indexes[i]) ) >= 0 )	
+		/*gproshan_debug_var(i);
+		gproshan_debug_var(acos((n, mesh->normal(indexes[i]))) );
+		gproshan_debug_var(PI/2);*/
+		if( acos((n, mesh->normal(indexes[i]) )) <= PI/4 )		
 		{
 			vertices.push_back(indexes[i]);
-			covered[ indexes[i]] = 1;
 		}
 		else
+		{
 			break;
+		}
+			
 
 	}
 	
@@ -138,7 +142,6 @@ void patch::init_curvature_growing(che * mesh, const index_t & v, bool * covered
 		size_t n_vertices = vertices.size();
 		vertices.clear();
 		vertices.push_back(v);
-		covered[v] = 1;
 
 		vn = T.col(2);// normal at the center
 		n.x = vn(0); n.y = vn(1); n.z = vn(2);
@@ -150,21 +153,27 @@ void patch::init_curvature_growing(che * mesh, const index_t & v, bool * covered
 
 			p = p - c ;
 			p = p - ((p,n)*n);
-			//gproshan_debug_var((acos((n, mesh->normal(indexes[i])))*180 / PI));
-			if( (acos((n, mesh->normal(indexes[i])))*180 / PI) <= 45 )	
-			//if( (n, mesh->normal(indexes[i])) >= 0 )	
+		
+			if( acos( (n, mesh->normal(indexes[i]) ) ) <= PI/4 )	
+			//if( (n, mesh->normal(indexes[i])) >= 0 )	// zerear los otroso
 			{
 				if(*p > radio)
 					radio = *p;
 				vertices.push_back(indexes[i]);
-				covered[ indexes[i]] = 1;
 			}
 			else
+			{
 				break;
+			}
+				
 		}
-
+	//	gproshan_debug(after);
+	//	gproshan_debug_var(vertices.size());
 		if(vertices.size() <= min_points )
+		{
 			vertices.clear();
+		}
+			
 
 	}
 		

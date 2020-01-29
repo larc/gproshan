@@ -542,6 +542,11 @@ void viewer_process_mask()
 	//dict.init_voronoi_patches();
 	delete phi;
 	viewer::mesh().update_colors(&dict[0]);
+	string f_points = tmp_file_path(viewer::mesh()->name_size()  + ".points");
+	a_vec points_out;
+	points_out.load(f_points);
+	for(int i = 0; i< points_out.size(); i++)
+		viewer::select_vertices.push_back(points_out(i));
 	
 	viewer::mesh().update_normals();
 }
