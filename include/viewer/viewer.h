@@ -101,6 +101,7 @@ class viewer
 		index_t render_opt;
 		embree * r_embree;
 		float * frame;
+		size_t frame_size;
 
 		bool render_wireframe;
 		bool render_gradient_field;

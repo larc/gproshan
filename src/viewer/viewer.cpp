@@ -544,10 +544,19 @@ void viewer::render_embree()
 			r_embree->add_mesh(mesh());
 			r_embree->build_bvh();
 
-			frame = new float[viewport_width * viewport_height];
+			frame_size = viewport_width * viewport_height;
+			frame = new float[frame_size];
 
 		TOC(time_build_embree);
 		gproshan_log_var(time_build_embree);
+	}
+
+	if(frame_size < viewport_width * viewport_height)
+	{
+		delete [] frame;
+		
+		frame_size = viewport_width * viewport_height;
+		frame = new float[frame_size];
 	}
 	
 	r_embree->raytracing(frame, glm::uvec2(viewport_width, viewport_height), view_mat, proj_mat, 1);	
