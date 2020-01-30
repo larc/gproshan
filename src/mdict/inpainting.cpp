@@ -204,33 +204,64 @@ void  inpainting::init_radial_patches()
 		}
 
 	s = 0;
+	size_t it = 0;
 	index_t * toplevel = new index_t[mesh->n_vertices()];
-	while(count < mesh->n_vertices()  &&  s < M)
+	while(it < M)
 	{
 		
 		//Choose a sample and get the points neighboring points
 		// Check the points are inside and add them
 		//	while( )
 		// mask at the end
-		
-		patches[s].init_radial_disjoint(mesh, phi_basis->get_radio(), avg_p, sample(s), dictionary::T, vertices[s], toplevel);
-		for(auto i:patches[s].vertices)
-			if(!covered[i]) 
+		if(!covered[sample(it)])
+		{
+			patches[s].init_radial_disjoint(mesh, phi_basis->get_radio(), avg_p, sample(s), dictionary::T, vertices[s], toplevel);
+			for(auto i:patches[s].vertices)
+				if(!covered[i]) 
+				{
+					covered[i] = 1;
+				}
+			s++;
+			gproshan_debug(seed);
+			gproshan_debug_var(sample(it));
+			/*for(index_t i = 0; i < mesh->n_vertices(); i++)
 			{
-				covered[i] = 1;
-				count++;
-			}
-		s++;
+				if(!covered[i] )
+				{
+					gproshan_debug_var(i);
+				}
+					
+			}*/
+			
+		}	
+		it++;
 	}
-	gproshan_debug_var(count);
-	gproshan_debug_var(mesh->n_vertices());
-	assert(count == mesh->n_vertices());
+
+	vector<index_t> outliers;
+	string f_points = tmp_file_path(mesh->name_size()  + ".points");
+	for(index_t i = 0; i < mesh->n_vertices(); i++)
+	{
+		if(!covered[i] )
+		{
+			outliers.push_back(i);
+		}
+			
+	}
+	a_vec outlv(outliers.size());
+	for(index_t i = 0; i < outliers.size(); i++)
+	{	
+		outlv(i) = outliers[i];
+	}
+	outlv.save(f_points);
+
+	
+	//assert(outliers.size()>0);
+	M = s; // updating number of vertices
+
 	gproshan_debug_var(M);
-	gproshan_debug_var(s);
 
 	gproshan_debug(finished);
 
-	M = s; // updating number of vertices
 	//mask at the end no need to call the function
 
 	load_mask();
@@ -310,7 +341,7 @@ void  inpainting::init_radial_curvature_patches()
 
 		// -1 * curvatures(v) alta curvatura
 		// curvatures(v) baja curvatura
-		 Q.push ( make_pair( abs(curvatures(v)), v ) );
+		 Q.push ( make_pair( -1 * curvatures(v), v ) );
 	}
 
 	bool covered[mesh->n_vertices()];
@@ -523,7 +554,7 @@ void inpainting::init_voronoi_patches()
 distance_t inpainting::execute()
 {
 
-	TIC(d_time) init_radial_curvature_patches(); TOC(d_time)
+	TIC(d_time) init_radial_patches(); TOC(d_time)
 	gproshan_debug_var(d_time);
 //	L = 15;
 
@@ -560,10 +591,10 @@ distance_t inpainting::execute()
 
 	bool *pmask;
 
-	draw_patches(10);
-	draw_patches(200);
-	draw_patches(120);
-	draw_patches(50);
+	draw_patches(1);
+	draw_patches(3);
+	draw_patches(4);
+//	draw_patches(50);
 	//draw_patches(400);
 	//draw_patches(500);
 	//draw_patches(56);

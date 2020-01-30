@@ -57,30 +57,40 @@ void patch::init_disjoint(che * mesh, const index_t & v, const size_t & n_toplev
 
 void patch::init_radial_disjoint(che * mesh, const distance_t & radio_, const size_t & avg_p, const index_t & v, const size_t & n_toplevels, vector<index_t> & _vertices, index_t * _toplevel)
 {
-	radio = radio_;
+	//radio = radio_;
+	radio = -INFINITY;
 	index_t * toplevel = _toplevel ? _toplevel : new index_t[mesh->n_vertices()];
 	
 	gather_vertices(mesh, v, n_toplevels, toplevel);
 	jet_fit_directions(mesh, v);
 	
-	geodesics geo(mesh, {v}, geodesics::FM,  NULL, false,  5*avg_p);
+	geodesics geo(mesh, {v}, geodesics::FM,  NULL, false,  mesh->n_vertices());
 	index_t * indexes = new index_t[geo.n_sorted_index()];
 	geo.copy_sorted_index(indexes, geo.n_sorted_index());
 
+	a_vec vn = T.col(2);// normal at the center
+	vertex n;
+	n.x = vn(0); n.y = vn(1); n.z = vn(2);
+	vertex p, c;
 	for(int i=1; i<geo.n_sorted_index(); i++)
 	{
-		a_vec vn = T.col(2);// normal at the center
-		vertex n;
-		n.x = vn(0); n.y = vn(1); n.z = vn(2);
-		vertex p = mesh->get_vertex(indexes[i]); 
-		vertex c = mesh->get_vertex(v); // central vertices
+		
+		p = mesh->get_vertex(indexes[i]); 
+		c = mesh->get_vertex(v); // central vertices
 
 		p = p - c ;
 		p = p - ((p,n)*n);
 		
-		if(*p <= radio && ( n, mesh->normal(indexes[i]) ) >= 0)	
+		//if(*p <= radio && ( n, mesh->normal(indexes[i]) ) >= 0)	
+		if( *p <= 2*radio && acos( (n, mesh->normal(indexes[i]) ) ) <= PI/2 )
 		{
+			if(*p > radio)
+				radio = *p;
 			_vertices.push_back(indexes[i]);
+		}
+		else
+		{
+			break;
 		}
 
 	}
@@ -94,12 +104,12 @@ void patch::init_radial_disjoint(che * mesh, const distance_t & radio_, const si
 void patch::init_curvature_growing(che * mesh, const index_t & v, a_mat & normals)
 {
 	radio = -INFINITY;
-	geodesics geo(mesh, {v}, geodesics::FM,  NULL, false, mesh->n_vertices()/200);
+	geodesics geo(mesh, {v}, geodesics::FM,  NULL, false, mesh->n_vertices());
 	index_t * indexes = new index_t[geo.n_sorted_index()];
 	geo.copy_sorted_index(indexes, geo.n_sorted_index());
 	a_vec vn = normals.col(v);
-	vertex n;
-	n.x = vn(0); n.y = vn(1); n.z = vn(2);
+	vertex n = mesh->normal( v ) ;
+	//n.x = vn(0); n.y = vn(1); n.z = vn(2);
 //	gproshan_debug_var(geo.n_sorted_index());
 
 	vertices.push_back(v);
@@ -116,7 +126,8 @@ void patch::init_curvature_growing(che * mesh, const index_t & v, a_mat & normal
 		/*gproshan_debug_var(i);
 		gproshan_debug_var(acos((n, mesh->normal(indexes[i]))) );
 		gproshan_debug_var(PI/2);*/
-		if( acos((n, mesh->normal(indexes[i]) )) <= PI/4 )		
+		//
+		if( acos((n, mesh->normal(indexes[i]) )) <= PI/2 )		
 		{
 			vertices.push_back(indexes[i]);
 		}
@@ -154,7 +165,7 @@ void patch::init_curvature_growing(che * mesh, const index_t & v, a_mat & normal
 			p = p - c ;
 			p = p - ((p,n)*n);
 		
-			if( acos( (n, mesh->normal(indexes[i]) ) ) <= PI/4 )	
+			if( acos( (n, mesh->normal(indexes[i]) ) ) <= PI/2 )	
 			//if( (n, mesh->normal(indexes[i])) >= 0 )	// zerear los otroso
 			{
 				if(*p > radio)
