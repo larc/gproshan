@@ -35,25 +35,11 @@ struct ray_hit: public RTCRayHit
 		hit.instID[0] = RTC_INVALID_GEOMETRY_ID;
 	}
 
-	void org(const glm::vec3 & origin)
-	{
-		ray.org_x = origin.x;
-		ray.org_y = origin.y;
-		ray.org_z = origin.z;
-	}
-
 	const glm::vec3 org() const
 	{
 		return {ray.org_x, ray.org_y, ray.org_z};
 	}
 	
-	void dir(const glm::vec3 & direction)
-	{
-		ray.dir_x = direction.x;
-		ray.dir_y = direction.y;
-		ray.dir_z = direction.z;
-	}
-
 	const glm::vec3 dir() const
 	{
 		return {ray.dir_x, ray.dir_y, ray.dir_z};
@@ -62,6 +48,11 @@ struct ray_hit: public RTCRayHit
 	const glm::vec3 normal() const
 	{
 		return {hit.Ng_x, hit.Ng_y, hit.Ng_z};
+	}
+
+	const glm::vec3 position() const
+	{
+		return org() + ray.tfar * dir();
 	}
 };
 

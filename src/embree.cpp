@@ -79,7 +79,14 @@ unsigned embree::add_mesh(const che * mesh, const glm::mat4 & model_matrix)
 
 glm::vec4 embree::Li(const ray_hit & r)
 {
-	return glm::vec4(r.ray.tfar);
+	glm::vec3 color(.6f, .8f, 1.f);
+	
+	float dist_light = glm::length(light - r.position());
+	float falloff = 2.f / (dist_light * dist_light);	// intensity multiplier / falloff
+	
+	glm::vec3 wi = normalize(light - r.position());
+
+	return glm::vec4(color * falloff, 1.f);// * std::max(0.f, glm::dot(wi, r.normal())), 1.f);
 }
 
 void embree::raytracing(	glm::vec4 * frame,
@@ -94,8 +101,6 @@ void embree::raytracing(	glm::vec4 * frame,
 	glm::vec3 cam_pos = glm::vec3(glm::inverse(view_mat) * glm::vec4(0.f, 0.f, 0.f, 1.f));
 	glm::mat4 inv_proj_view = glm::inverse(proj_mat * view_mat);
 	
-	float max_color = 5;
-
 	#pragma omp parallel for
 	for(unsigned i = 0; i < windows_size.x; i++)
 	for(unsigned j = 0; j < windows_size.y; j++)
@@ -118,10 +123,6 @@ void embree::raytracing(	glm::vec4 * frame,
 
 		color /= samples;
 	}
-
-	#pragma omp parallel for
-	for(unsigned i = 0; i < windows_size.x * windows_size.y; i++)
-		frame[i] /= max_color;
 }
 
 float * embree::raycaster(	const glm::uvec2 & windows_size,
