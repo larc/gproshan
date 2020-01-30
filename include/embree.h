@@ -47,7 +47,7 @@ struct ray_hit: public RTCRayHit
 	
 	const glm::vec3 normal() const
 	{
-		return {hit.Ng_x, hit.Ng_y, hit.Ng_z};
+		return glm::normalize(glm::vec3(hit.Ng_x, hit.Ng_y, hit.Ng_z));
 	}
 
 	const glm::vec3 position() const
@@ -61,24 +61,25 @@ class embree
 {
 	RTCDevice device;
 	RTCScene scene;
-
-	glm::vec3 light;
+	
+	RTCIntersectContext intersect_context;
 
 	public:
-		embree(const glm::vec3 & p_light = glm::vec3(1.f));
+		embree();
 		~embree();
 
 		void build_bvh();
 		unsigned add_sphere(const glm::vec4 & xyzr);
 		unsigned add_mesh(const che * mesh, const glm::mat4 & model_matrix = glm::mat4(1.f));
 
-		glm::vec4 Li(const ray_hit & r);
+		glm::vec4 Li(const ray_hit & r, const glm::vec3 & light);
 
 		void raytracing(	glm::vec4 * frame,
 							const glm::uvec2 & windows_size,
 							const glm::mat4 & view_mat,
 							const glm::mat4 & proj_mat,
-							const unsigned & samples = 4
+							const glm::vec3 & light,
+							const unsigned & samples = 1
 							);
 
 		float * raycaster(	const glm::uvec2 & windows_size,
@@ -88,6 +89,7 @@ class embree
 							);
 
 		bool intersect(ray_hit & r);
+		bool occluded(ray_hit & r);
 };
 
 #endif // EMBREE_H

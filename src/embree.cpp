@@ -8,12 +8,14 @@ void embree_error(void * ptr, RTCError error, const char * str)
 	fprintf(stderr, "EMBREE ERROR: %s\n", str);
 }
 
-embree::embree(const glm::vec3 & p_light): light(p_light)
+embree::embree()
 {
 	device = rtcNewDevice(NULL);
 	rtcSetDeviceErrorFunction(device, embree_error, NULL);
 
 	scene = rtcNewScene(device);
+	
+	rtcInitIntersectContext(&intersect_context);
 }
 
 embree::~embree()
@@ -77,22 +79,27 @@ unsigned embree::add_mesh(const che * mesh, const glm::mat4 & model_matrix)
 	return geom_id;
 }
 
-glm::vec4 embree::Li(const ray_hit & r)
+glm::vec4 embree::Li(const ray_hit & r, const glm::vec3 & light)
 {
 	glm::vec3 color(.6f, .8f, 1.f);
 	
 	float dist_light = glm::length(light - r.position());
-	float falloff = 2.f / (dist_light * dist_light);	// intensity multiplier / falloff
+	float falloff = 4.f / (dist_light * dist_light);	// intensity multiplier / falloff
 	
 	glm::vec3 wi = normalize(light - r.position());
+	
+	ray_hit ro(r.position() + 1e-5f * wi, wi);
+	if(occluded(ro))
+		return glm::vec4(.2f * color * falloff * std::max(0.f, glm::dot(wi, r.normal())), 1.f);
 
-	return glm::vec4(color * falloff, 1.f);// * std::max(0.f, glm::dot(wi, r.normal())), 1.f);
+	return glm::vec4(color * falloff * std::max(0.f, glm::dot(wi, r.normal())), 1.f);
 }
 
 void embree::raytracing(	glm::vec4 * frame,
 							const glm::uvec2 & windows_size,
 							const glm::mat4 & view_mat,
 							const glm::mat4 & proj_mat,
+							const glm::vec3 & light,
 							const unsigned & samples	)
 {
 	std::default_random_engine gen;
@@ -110,15 +117,17 @@ void embree::raytracing(	glm::vec4 * frame,
 		
 		for(unsigned s = 0; s < samples; s++)
 		{
-			glm::vec2 screen = glm::vec2( (float(i) + randf(gen)) / windows_size.x, 
-											(float(j) + randf(gen)) / windows_size.y );
+			glm::vec2 screen = glm::vec2(	(float(i) + randf(gen)) / windows_size.x, 
+											(float(j) + randf(gen)) / windows_size.y
+											);
+
 			glm::vec4 view = glm::vec4(screen.x * 2.f - 1.f, screen.y * 2.f - 1.f, 1.f, 1.f);
 			glm::vec4 q = inv_proj_view * view;
 			glm::vec3 p = glm::vec3(q * (1.f / q.w));
 
 			ray_hit r(cam_pos, glm::normalize(p - cam_pos));
 		
-			if(intersect(r)) color += Li(r);
+			if(intersect(r)) color += Li(r, light);
 		}
 
 		color /= samples;
@@ -147,8 +156,10 @@ float * embree::raycaster(	const glm::uvec2 & windows_size,
 		
 		for(unsigned s = 0; s < samples; s++)
 		{
-			glm::vec2 screen = glm::vec2( (float(i) + randf(gen)) / windows_size.x, 
-											(float(j) + randf(gen)) / windows_size.y );
+			glm::vec2 screen = glm::vec2(	(float(i) + randf(gen)) / windows_size.x, 
+											(float(j) + randf(gen)) / windows_size.y
+											);
+
 			glm::vec4 view = glm::vec4(screen.x * 2.f - 1.f, screen.y * 2.f - 1.f, 1.f, 1.f);
 			glm::vec4 q = inv_proj_view * view;
 			glm::vec3 p = glm::vec3(q * (1.f / q.w));
@@ -166,10 +177,13 @@ float * embree::raycaster(	const glm::uvec2 & windows_size,
 
 bool embree::intersect(ray_hit & r)
 {
-	RTCIntersectContext context;
-	rtcInitIntersectContext(&context);
-	rtcIntersect1(scene, &context, &r);
+	rtcIntersect1(scene, &intersect_context, &r);
+	return r.hit.geomID != RTC_INVALID_GEOMETRY_ID;
+}
 
+bool embree::occluded(ray_hit & r)
+{
+	rtcIntersect1(scene, &intersect_context, &r);
 	return r.hit.geomID != RTC_INVALID_GEOMETRY_ID;
 }
 

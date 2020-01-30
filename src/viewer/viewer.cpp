@@ -540,7 +540,7 @@ void viewer::render_embree()
 		double time_build_embree;
 		TIC(time_build_embree);
 
-			r_embree = new embree(glm::vec3(light[1], light[2], light[3]));
+			r_embree = new embree;
 			r_embree->add_mesh(mesh());
 			r_embree->build_bvh();
 
@@ -559,7 +559,9 @@ void viewer::render_embree()
 		frame = new glm::vec4[frame_size];
 	}
 	
-	r_embree->raytracing(frame, glm::uvec2(viewport_width, viewport_height), view_mat, proj_mat, 1);	
+	r_embree->raytracing(	frame, glm::uvec2(viewport_width, viewport_height),
+							view_mat, proj_mat, glm::vec3(light[1], light[2], light[3]));
+
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glDrawPixels(viewport_width, viewport_height, GL_RGBA, GL_FLOAT, frame);
 }
