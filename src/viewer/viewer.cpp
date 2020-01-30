@@ -40,7 +40,6 @@ viewer::viewer()
 
 	render_opt = 0;
 	r_embree = nullptr;
-	frame = nullptr;
 
 	render_wireframe = false;
 	render_gradient_field = false;
@@ -51,6 +50,8 @@ viewer::viewer()
 	render_flat = false;
 
 	bgc = 0;
+
+	action = false;
 
 	init_gl();
 	init_imgui();
@@ -71,7 +72,6 @@ viewer::~viewer()
 	glfwTerminate();
 
 	if(r_embree) delete r_embree;
-	if(frame) delete [] frame;
 }
 
 bool viewer::run()
@@ -335,6 +335,7 @@ void viewer::cursor_callback(GLFWwindow * window, double x, double y)
 	{
 		viewer * view = (viewer *) glfwGetWindowUserPointer(window);
 		view->cam.motion(x, y);
+		view->action = true;
 	}
 }
 
@@ -342,8 +343,17 @@ void viewer::scroll_callback(GLFWwindow * window, double xoffset, double yoffset
 {
 	viewer * view = (viewer *) glfwGetWindowUserPointer(window);
 	
-	if(yoffset > 0) view->cam.zoomIn();
-	if(yoffset < 0) view->cam.zoomOut();
+	if(yoffset > 0)
+	{
+		view->cam.zoomIn();
+		view->action = true;
+	}
+
+	if(yoffset < 0)
+	{
+		view->cam.zoomOut();
+		view->action = true;
+	}
 }
 
 void viewer::idle()
@@ -544,26 +554,17 @@ void viewer::render_embree()
 			r_embree->add_mesh(mesh());
 			r_embree->build_bvh();
 
-			frame_size = viewport_width * viewport_height;
-			frame = new glm::vec4[frame_size];
-
 		TOC(time_build_embree);
 		gproshan_log_var(time_build_embree);
 	}
 
-	if(frame_size < viewport_width * viewport_height)
-	{
-		delete [] frame;
-		
-		frame_size = viewport_width * viewport_height;
-		frame = new glm::vec4[frame_size];
-	}
+	r_embree->raytracing(	glm::uvec2(viewport_width, viewport_height),
+							view_mat, proj_mat, glm::vec3(light[1], light[2], light[3]), action);
 	
-	r_embree->raytracing(	frame, glm::uvec2(viewport_width, viewport_height),
-							view_mat, proj_mat, glm::vec3(light[1], light[2], light[3]));
+	action = false;
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glDrawPixels(viewport_width, viewport_height, GL_RGBA, GL_FLOAT, frame);
+	glDrawPixels(viewport_width, viewport_height, GL_RGBA, GL_FLOAT, r_embree->img);
 }
 
 void viewer::render_optix()

@@ -60,9 +60,16 @@ struct ray_hit: public RTCRayHit
 class embree
 {
 	RTCDevice device;
-	RTCScene scene;
-	
+	RTCScene scene;	
 	RTCIntersectContext intersect_context;
+
+	size_t width;
+	size_t height;
+
+	size_t n_samples;
+
+	public:
+		glm::vec4 * img;
 
 	public:
 		embree();
@@ -74,12 +81,12 @@ class embree
 
 		glm::vec4 Li(const ray_hit & r, const glm::vec3 & light);
 
-		void raytracing(	glm::vec4 * frame,
-							const glm::uvec2 & windows_size,
+		bool rt_restart(const size_t & w, const size_t & h);
+		void raytracing(	const glm::uvec2 & windows_size,
 							const glm::mat4 & view_mat,
 							const glm::mat4 & proj_mat,
 							const glm::vec3 & light,
-							const unsigned & samples = 1
+							const bool & restart = false
 							);
 
 		float * raycaster(	const glm::uvec2 & windows_size,
