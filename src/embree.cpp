@@ -8,7 +8,7 @@ void embree_error(void * ptr, RTCError error, const char * str)
 	fprintf(stderr, "EMBREE ERROR: %s\n", str);
 }
 
-embree::embree()
+embree::embree(const glm::vec3 & p_light): light(p_light)
 {
 	device = rtcNewDevice(NULL);
 	rtcSetDeviceErrorFunction(device, embree_error, NULL);
@@ -51,12 +51,14 @@ unsigned embree::add_mesh(const che * mesh, const glm::mat4 & model_matrix)
 	glm::vec3 * vertices = (glm::vec3 *) rtcSetNewGeometryBuffer(geom,
 																RTC_BUFFER_TYPE_VERTEX, 0,
 																RTC_FORMAT_FLOAT3, 3 * sizeof(float),
-																mesh->n_vertices());
+																mesh->n_vertices()
+																);
 
-	glm::uvec3 * tri_idxs = (glm::uvec3 *) rtcSetNewGeometryBuffer(geom,
+	index_t * tri_idxs = (index_t *) rtcSetNewGeometryBuffer(	geom,
 																RTC_BUFFER_TYPE_INDEX, 0,
-																RTC_FORMAT_UINT3, 3 * sizeof(int),
-																mesh->n_faces());
+																RTC_FORMAT_UINT3, 3 * sizeof(index_t),
+																mesh->n_faces()
+																);
 	
 	#pragma omp parallel for
 	for(unsigned i = 0; i < mesh->n_vertices(); i++)
@@ -75,7 +77,12 @@ unsigned embree::add_mesh(const che * mesh, const glm::mat4 & model_matrix)
 	return geom_id;
 }
 
-void embree::raytracing(	float * frame,
+glm::vec4 embree::Li(const ray_hit & r)
+{
+	return glm::vec4(r.ray.tfar);
+}
+
+void embree::raytracing(	glm::vec4 * frame,
 							const glm::uvec2 & windows_size,
 							const glm::mat4 & view_mat,
 							const glm::mat4 & proj_mat,
@@ -87,14 +94,14 @@ void embree::raytracing(	float * frame,
 	glm::vec3 cam_pos = glm::vec3(glm::inverse(view_mat) * glm::vec4(0.f, 0.f, 0.f, 1.f));
 	glm::mat4 inv_proj_view = glm::inverse(proj_mat * view_mat);
 	
-	float max_color = 0;
+	float max_color = 5;
 
 	#pragma omp parallel for
 	for(unsigned i = 0; i < windows_size.x; i++)
 	for(unsigned j = 0; j < windows_size.y; j++)
 	{
 		//row major
-		float & color = frame[j * windows_size.x + i] = 0;
+		glm::vec4 & color = frame[j * windows_size.x + i] = glm::vec4(0);
 		
 		for(unsigned s = 0; s < samples; s++)
 		{
@@ -106,11 +113,10 @@ void embree::raytracing(	float * frame,
 
 			ray_hit r(cam_pos, glm::normalize(p - cam_pos));
 		
-			if(intersect(r)) color += r.ray.tfar;
+			if(intersect(r)) color += Li(r);
 		}
 
 		color /= samples;
-		max_color = std::max(max_color, color);
 	}
 
 	#pragma omp parallel for

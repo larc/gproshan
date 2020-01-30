@@ -100,7 +100,7 @@ class viewer
 
 		index_t render_opt;
 		embree * r_embree;
-		float * frame;
+		glm::vec4 * frame;
 		size_t frame_size;
 
 		bool render_wireframe;
