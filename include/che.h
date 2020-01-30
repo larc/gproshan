@@ -66,7 +66,7 @@ class che
 		area_t area_vertex(const index_t & v);
 		area_t area_surface() const;
 		vertex normal_he(const index_t & he) const;
-		vertex normal(const index_t & v);
+		vertex normal(const index_t & v) const;
 		vertex gradient_he(const index_t & he, const distance_t *const & f) const;
 		vertex gradient(const index_t & v, const distance_t *const & f);
 		vertex barycenter(const index_t & t) const;

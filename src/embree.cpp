@@ -34,7 +34,7 @@ void embree::build_bvh()
 	rtcCommitScene(scene);
 }
 
-unsigned embree::add_sphere(const glm::vec4 & xyzr)
+index_t embree::add_sphere(const glm::vec4 & xyzr)
 {
 	RTCGeometry geom = rtcNewGeometry(device, RTC_GEOMETRY_TYPE_SPHERE_POINT);
 
@@ -45,13 +45,13 @@ unsigned embree::add_sphere(const glm::vec4 & xyzr)
 
 	rtcCommitGeometry(geom);
 	
-	unsigned geom_id = rtcAttachGeometry(scene, geom);
+	index_t geom_id = rtcAttachGeometry(scene, geom);
 	rtcReleaseGeometry(geom);
 	
 	return geom_id;
 }
 
-unsigned embree::add_mesh(const che * mesh, const glm::mat4 & model_matrix)
+index_t embree::add_mesh(const che * mesh, const glm::mat4 & model_matrix)
 {
 	RTCGeometry geom = rtcNewGeometry(device, RTC_GEOMETRY_TYPE_TRIANGLE);
 
@@ -68,7 +68,7 @@ unsigned embree::add_mesh(const che * mesh, const glm::mat4 & model_matrix)
 																);
 	
 	#pragma omp parallel for
-	for(unsigned i = 0; i < mesh->n_vertices(); i++)
+	for(index_t i = 0; i < mesh->n_vertices(); i++)
 	{
 		glm::vec4 v(mesh->gt(i).x, mesh->gt(i).y, mesh->gt(i).z, 1.f);
 		vertices[i] = glm::vec3(model_matrix * v);
@@ -78,9 +78,43 @@ unsigned embree::add_mesh(const che * mesh, const glm::mat4 & model_matrix)
 
 	rtcCommitGeometry(geom);
 	
-	unsigned geom_id = rtcAttachGeometry(scene, geom);
+	index_t geom_id = rtcAttachGeometry(scene, geom);
 	rtcReleaseGeometry(geom);
 	
+	return geom_id;
+}
+
+index_t embree::add_point_cloud(const che * mesh, const glm::mat4 & model_matrix)
+{
+	RTCGeometry geom = rtcNewGeometry(device, RTC_GEOMETRY_TYPE_ORIENTED_DISC_POINT);
+
+	glm::vec4 * pxyzr = (glm::vec4 *) rtcSetNewGeometryBuffer(	geom,
+																RTC_BUFFER_TYPE_VERTEX, 0,
+																RTC_FORMAT_FLOAT4,
+																4 * sizeof(float),
+																mesh->n_vertices()
+																);
+
+	glm::vec3 * normal = (glm::vec3 *) rtcSetNewGeometryBuffer(	geom,
+																RTC_BUFFER_TYPE_NORMAL, 0,
+																RTC_FORMAT_FLOAT3,
+																3 * sizeof(float),
+																mesh->n_vertices()
+																);
+	#pragma omp parallel for
+	for(index_t i = 0; i < mesh->n_vertices(); i++)
+	{
+		pxyzr[i] = glm::vec4(mesh->gt(i).x, mesh->gt(i).y, mesh->gt(i).z, 0.005f);
+		
+		vertex n = mesh->normal(i);
+		normal[i] = glm::vec3(n.x, n.y, n.z);
+	}
+
+	rtcCommitGeometry(geom);
+	
+	index_t geom_id = rtcAttachGeometry(scene, geom);
+	rtcReleaseGeometry(geom);
+
 	return geom_id;
 }
 
@@ -139,8 +173,8 @@ void embree::raytracing(	const glm::uvec2 & windows_size,
 	glm::mat4 inv_proj_view = glm::inverse(proj_mat * view_mat);
 	
 	#pragma omp parallel for
-	for(unsigned i = 0; i < width; i++)
-	for(unsigned j = 0; j < height; j++)
+	for(index_t i = 0; i < width; i++)
+	for(index_t j = 0; j < height; j++)
 	{
 		//row major
 		glm::vec4 & color = img[j * windows_size.x + i];
@@ -168,7 +202,7 @@ void embree::raytracing(	const glm::uvec2 & windows_size,
 float * embree::raycaster(	const glm::uvec2 & windows_size,
 							const glm::mat4 & view_mat,
 							const glm::mat4 & proj_mat,
-							const unsigned & samples	)
+							const index_t & samples	)
 {
 	float * frame = new float[windows_size.x * windows_size.y];
 	
@@ -179,13 +213,13 @@ float * embree::raycaster(	const glm::uvec2 & windows_size,
 	glm::mat4 inv_proj_view = glm::inverse(proj_mat * view_mat);
 
 	#pragma omp parallel for
-	for(unsigned i = 0; i < windows_size.x; i++)
-	for(unsigned j = 0; j < windows_size.y; j++)
+	for(index_t i = 0; i < windows_size.x; i++)
+	for(index_t j = 0; j < windows_size.y; j++)
 	{
 		//row major
 		float & color = frame[(windows_size.y - j - 1) * windows_size.x + i] = 0;
 		
-		for(unsigned s = 0; s < samples; s++)
+		for(index_t s = 0; s < samples; s++)
 		{
 			glm::vec2 screen = glm::vec2(	(float(i) + randf(gen)) / windows_size.x, 
 											(float(j) + randf(gen)) / windows_size.y

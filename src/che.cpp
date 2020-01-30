@@ -249,7 +249,7 @@ vertex che::normal_he(const index_t & he) const
 	return n / *n;
 }
 
-vertex che::normal(const index_t & v)
+vertex che::normal(const index_t & v) const
 {
 	vertex n;
 	area_t area, area_star = 0;
