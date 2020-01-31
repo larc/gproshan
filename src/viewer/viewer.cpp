@@ -50,7 +50,6 @@ viewer::viewer()
 	render_normal_field = false;
 	render_border = false;
 	render_lines = false;
-	render_corr = false;
 	render_flat = false;
 
 	bgc = 0;
@@ -187,8 +186,6 @@ void viewer::init_gl()
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
 		glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-		glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_TRUE);
-		glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 	#endif
 		
 	window = glfwCreateWindow(1600, 900, "gproshan", NULL, NULL);
@@ -204,6 +201,11 @@ void viewer::init_gl()
 	glfwSwapInterval(0);
 
 	glewInit();
+
+
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
 void viewer::init_imgui()
@@ -486,11 +488,6 @@ void viewer::set_render_lines(viewer * view)
 	view->render_lines = !view->render_lines;
 }
 
-void viewer::set_render_corr(viewer * view)
-{
-	view->render_corr = !view->render_corr;
-}
-
 void viewer::set_is_flat(viewer * view)
 {
 	view->render_flat = !view->render_flat;
@@ -544,9 +541,7 @@ void viewer::render_gl()
 	GLint uniform_proj_mat = glGetUniformLocation(shader_program, "proj_mat");
 	glUniformMatrix4fv(uniform_proj_mat, 1, 0, &proj_mat[0][0]);
 
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glEnable(GL_DEPTH_TEST);
-	
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
 	draw_scene();
 	
 	shader_program.disable();
@@ -592,7 +587,6 @@ void viewer::draw_scene()
 	if(render_gradient_field) draw_gradient_field();
 	if(render_normal_field) draw_normal_field();
 	if(render_border) draw_border();
-	if(render_corr) draw_corr();
 
 	draw_isolated_vertices();
 	draw_vectors();
@@ -605,7 +599,7 @@ void viewer::draw_scene()
 
 void viewer::draw_polygons()
 {
-	shader_program.enable();
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	for(index_t i = 0; i < n_meshes; i++)
 	{
@@ -616,14 +610,6 @@ void viewer::draw_polygons()
 
 void viewer::draw_wireframe()
 {
-	shader_program.disable();
-	glPushAttrib(GL_ALL_ATTRIB_BITS);
-
-	glDisable(GL_LIGHTING);
-	glColor4f(0., 0., 0., 0.4);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	
 	for(index_t i = 0; i < n_meshes; i++)
@@ -631,8 +617,6 @@ void viewer::draw_wireframe()
 		glViewport(meshes[i].vx * viewport_width, meshes[i].vy * viewport_height, viewport_width, viewport_height);
 		meshes[i].draw();
 	}
-	
-	glPopAttrib();
 }
 
 void viewer::draw_vectors()
@@ -700,66 +684,6 @@ void viewer::draw_isolated_vertices()
 	glEnd();
 
 	glPopAttrib();*/
-}
-
-void viewer::draw_corr()
-{
-	if(n_meshes < 2) return;
-	if(!corr_mesh[current].is_loaded()) return;
-
-	shader_program.disable();
-
-	glPushAttrib(GL_ALL_ATTRIB_BITS);
-
-	glDisable(GL_LIGHTING);
-	glColor3f(0.8, .0, .0);
-	glLineWidth(2.0);
-
-	vertex corr_v;
-
-	glBegin(GL_LINES);
-	for(index_t & v: select_vertices)
-	{
-		corr_v = meshes[corr_mesh[current].mesh_i]->corr_vertex(corr_mesh[current][v]);
-		glVertex3v(&meshes[current]->gt(v).x);
-		glVertex3v(&corr_v.x);
-	}
-	glEnd();
-
-	glPopAttrib();
-
-	// spheres corr
-	glPushAttrib(GL_ALL_ATTRIB_BITS);
-
-	glEnable(GL_COLOR_MATERIAL);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	glColor3f(0.8, 0.0, 0.0);
-
-	double h = 0.008 * cam.zoom;
-	for(index_t & v: select_vertices)
-	{
-		glPushMatrix();
-		corr_v = meshes[corr_mesh[current].mesh_i]->corr_vertex(corr_mesh[current][v]);
-		glTranslated(corr_v.x, corr_v.y, corr_v.z);
-//		//glutSolidSphere(h, 10, 10);
-		glPopMatrix();
-	}
-
-	glEnd();
-
-	glPopAttrib();
-
-}
-
-void viewer::draw_vertices()
-{
-	for(index_t v = 0; v < mesh()->n_vertices(); v++)
-	{
-		glLoadName(v);
-		glBegin(GL_POINTS);
-		glVertex3v(&mesh()->gt(v).x);
-		glEnd();
-	}
 }
 
 void viewer::draw_border()
@@ -848,7 +772,7 @@ void viewer::pick_vertex(int x, int y)
 
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
-	draw_vertices();
+//	draw_vertices();
 	glPopMatrix();
 
 	glMatrixMode(GL_PROJECTION);
@@ -881,22 +805,6 @@ void viewer::pick_vertex(int x, int y)
 		if(corr_mesh[current].is_loaded())
 			gproshan_error_var(corr_mesh[current][index].alpha);
 	}
-}
-
-void draw_str(const char * str, int x, int y, float color[4], void * font)
-{
-	glPushAttrib(GL_LIGHTING_BIT | GL_CURRENT_BIT);
-	glDisable(GL_LIGHTING);
-	glDisable(GL_TEXTURE_2D);
-
-	glColor4fv(color);
-	glRasterPos2i(x, y);
-
-	//viewport_heightile(*str) //glutBitmapCharacter(font, *str++);
-
-	glEnable(GL_TEXTURE_2D);
-	glEnable(GL_LIGHTING);
-	glPopAttrib();
 }
 
 

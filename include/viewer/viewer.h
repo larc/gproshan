@@ -114,7 +114,6 @@ class viewer
 		bool render_gradient_field;
 		bool render_normal_field;
 		bool render_border;
-		bool render_corr;
 		bool render_lines;
 		bool render_flat;
 		float bgc;
@@ -185,19 +184,16 @@ class viewer
 		static void set_render_normal_field(viewer * view);
 		static void set_render_border(viewer * view);
 		static void set_render_lines(viewer * view);
-		static void set_render_corr(viewer * view);
 		static void set_is_flat(viewer * view);
 		
 		static void raycasting(viewer * view);
 
 		// draw routines
 		void draw_scene();
-		void draw_corr();
 		void draw_polygons();
 		void draw_wireframe();
 		void draw_gradient_field();
 		void draw_normal_field();
-		void draw_vertices();
 		void draw_border();
 		void draw_selected_vertices();
 		void draw_vectors();
@@ -205,8 +201,6 @@ class viewer
 		
 		void pick_vertex(int x, int y);
 };
-
-void draw_str(const char * str, int x, int y, float color[4], void * font);
 
 
 } // namespace gproshan
