@@ -1,5 +1,7 @@
 #include "embree.h"
 
+#ifdef GPROSHAN_EMBREE
+
 #include <iostream>
 #include <random>
 
@@ -251,4 +253,6 @@ bool embree::occluded(ray_hit & r)
 	rtcIntersect1(scene, &intersect_context, &r);
 	return r.hit.geomID != RTC_INVALID_GEOMETRY_ID;
 }
+
+#endif // GPROSHAN_EMBREE
 

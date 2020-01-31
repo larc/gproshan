@@ -40,7 +40,10 @@ viewer::viewer()
 	n_meshes = current = 0;
 
 	render_opt = 0;
-	r_embree = nullptr;
+
+	#ifdef GPROSHAN_EMBREE
+		r_embree = nullptr;
+	#endif // GPROSHAN_EMBREE
 
 	render_wireframe = false;
 	render_gradient_field = false;
@@ -545,6 +548,8 @@ void viewer::render_gl()
 
 void viewer::render_embree()
 {
+#ifdef GPROSHAN_EMBREE
+
 	if(r_embree == nullptr)
 	{
 		double time_build_embree;
@@ -565,6 +570,8 @@ void viewer::render_embree()
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glDrawPixels(viewport_width, viewport_height, GL_RGBA, GL_FLOAT, r_embree->img);
+
+#endif // GPROSHAN_EMBREE
 }
 
 void viewer::render_optix()

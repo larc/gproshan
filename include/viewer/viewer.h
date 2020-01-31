@@ -14,7 +14,9 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 
-#include "embree.h"
+#ifdef GPROSHAN_EMBREE
+	#include "embree.h"
+#endif // GPROSHAN_EMBREE
 
 
 #define N_MESHES 12
@@ -99,7 +101,10 @@ class viewer
 		index_t current; // current mesh
 
 		index_t render_opt;
+
+	#ifdef GPROSHAN_EMBREE
 		embree * r_embree;
+	#endif // GPROSHAN_EMBREE
 
 		bool action;
 

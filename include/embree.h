@@ -1,3 +1,5 @@
+#ifdef GPROSHAN_EMBREE
+
 #ifndef EMBREE_H
 #define EMBREE_H
 
@@ -101,4 +103,6 @@ class embree
 };
 
 #endif // EMBREE_H
+
+#endif // GPROSHAN_EMBREE
 

@@ -15,8 +15,7 @@ addons:
       - libopenblas-dev
       - libsuitesparse-dev
       - libglew-dev
-      - freeglut3-dev
-      - libgles2-mesa-dev
+      - libglfw3-dev
       - cimg-dev
       - libcgal-dev
 script:

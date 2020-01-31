@@ -4,10 +4,25 @@ project(gproshan VERSION 2.0 LANGUAGES CXX)
 
 list(APPEND CMAKE_MODULE_PATH "${gproshan_SOURCE_DIR}/cmake")
 
+if(NOT CMAKE_BUILD_TYPE)
+	set(CMAKE_BUILD_TYPE Release)
+endif()
+
+
 find_package(CUDA 10.1)
 if(CUDA_FOUND)
 	enable_language(CUDA)
+	add_definitions(-DGPROSHAN_CUDA)
+	include_directories(${CUDA_INCLUDE_DIRS})
 endif(CUDA_FOUND)
+
+
+find_package(Embree 3.7)
+if(EMBREE_LIBRARY)
+	add_definitions(-DGPROSHAN_EMBREE)
+	include_directories(${EMBREE_INCLUDE_DIRS})
+endif(EMBREE_LIBRARY)
+
 
 find_package(Threads REQUIRED)
 find_package(OpenMP REQUIRED)
@@ -19,11 +34,7 @@ find_package(Armadillo REQUIRED)
 find_package(CGAL REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(SuiteSparse REQUIRED)
-find_package(Embree 3.6 REQUIRED)
 
-if(NOT CMAKE_BUILD_TYPE)
-	set(CMAKE_BUILD_TYPE Release)
-endif()
 
 set(CMAKE_CXX_FLAGS "-fopenmp -Wall -Wno-unused-result")
 set(CMAKE_CUDA_FLAGS "-Xcompiler -fopenmp")
@@ -34,11 +45,6 @@ add_definitions(${EIGEN3_DEFINITIONS})
 
 # ARMA warning ARMA_ALLOW_FAKE_GCC with g++-9
 add_definitions(-DARMA_ALLOW_FAKE_GCC)
-
-if(CUDA_FOUND)
-	add_definitions(-DGPROSHAN_CUDA)
-	include_directories(${CUDA_INCLUDE_DIRS})
-endif(CUDA_FOUND)
 
 include_directories(${OPENGL_INCLUDE_DIR})
 include_directories(${GLEW_INCLUDE_DIRS})
