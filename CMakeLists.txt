@@ -59,6 +59,7 @@ include_directories(${gproshan_SOURCE_DIR}/include)
 include_directories(${gproshan_SOURCE_DIR}/include/viewer)
 include_directories(${gproshan_SOURCE_DIR}/include/mdict)
 include_directories(${gproshan_SOURCE_DIR}/include/cuda)
+include_directories(${gproshan_SOURCE_DIR}/include/raytracing)
 include_directories(${gproshan_SOURCE_DIR}/imgui)
 
 FILE(GLOB_RECURSE imgui_sources ${gproshan_SOURCE_DIR}/imgui/*.cpp)

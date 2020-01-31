@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <random>
+#include <cstring>
 
 void embree_error(void * ptr, RTCError error, const char * str)
 {
