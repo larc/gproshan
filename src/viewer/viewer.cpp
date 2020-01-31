@@ -18,6 +18,7 @@
 
 #include "CImg.h"
 
+
 using namespace cimg_library;
 using namespace std;
 
@@ -214,32 +215,31 @@ void viewer::init_imgui()
 
 void viewer::init_menus()
 {
-	// init viewer menu
 	sub_menus.push_back("Viewer");
 	add_process(GLFW_KEY_F1, {"F1", "Help", menu_help});
-	add_process(GLFW_KEY_F2, {"F2", "Invert Orientation", invert_orientation});
-	add_process(GLFW_KEY_F3, {"F3", "Render Wireframe", set_render_wireframe});
-	add_process(GLFW_KEY_F4, {"F4", "Gradient Field", set_render_gradient_field});
-	add_process(GLFW_KEY_F5, {"F5", "Normal Field", set_render_normal_field});
-	add_process(GLFW_KEY_F6, {"F6", "Show Borders", set_render_border});
-	add_process(GLFW_KEY_F7, {"F7", "Raycasting", raycasting});
-	add_process(GLFW_KEY_F8, {"F8", "Render GL", set_render_gl});
-	add_process(GLFW_KEY_F9, {"F9", "Render Embree", set_render_embree});
-	add_process(GLFW_KEY_F10, {"F10", "Render OptiX", set_render_optix});
-	add_process(GLFW_KEY_SPACE, {"SPACE", "Level Curves", set_render_lines});
-	add_process(GLFW_KEY_TAB, {"TAB", "Render Flat", set_is_flat});
-//	add_process('+', "Show Corr", set_render_corr);
-
-	// init mesh menu
-	sub_menus.push_back("Mesh");
-	add_process(GLFW_KEY_BACKSPACE, {"BACKSPACE", "Reload/Reset", menu_reset_mesh});
-	add_process(GLFW_KEY_W, {"W", "Save Mesh", menu_save_mesh});
 	add_process(GLFW_KEY_UP, {"UP", "Zoom in", menu_zoom_in});
 	add_process(GLFW_KEY_DOWN, {"DOWN", "Zoom out", menu_zoom_out});
 	add_process(GLFW_KEY_RIGHT, {"RIGHT", "Background color inc", menu_bgc_inc});
 	add_process(GLFW_KEY_LEFT, {"LEFT", "Background color dec", menu_bgc_dec});
 	add_process(GLFW_KEY_1, {"1", "Background color white", menu_bgc_white});
 	add_process(GLFW_KEY_0, {"0", "Background color black", menu_bgc_black});
+
+	sub_menus.push_back("Render");
+	add_process(GLFW_KEY_F6, {"F6", "Render Wireframe", set_render_wireframe});
+	add_process(GLFW_KEY_F7, {"F7", "Render GL", set_render_gl});
+	add_process(GLFW_KEY_F8, {"F8", "Render Embree", set_render_embree});
+	add_process(GLFW_KEY_F9, {"F9", "Render OptiX", set_render_optix});
+	add_process(GLFW_KEY_F10, {"F10", "Raycasting", raycasting});
+	add_process(GLFW_KEY_SPACE, {"SPACE", "Level Curves", set_render_lines});
+
+	sub_menus.push_back("Mesh");
+	add_process(GLFW_KEY_BACKSPACE, {"BACKSPACE", "Reload/Reset", menu_reset_mesh});
+	add_process(GLFW_KEY_TAB, {"TAB", "Render Flat", set_is_flat});
+	add_process(GLFW_KEY_F2, {"F2", "Invert Orientation", invert_orientation});
+	add_process(GLFW_KEY_F3, {"F3", "Gradient Field", set_render_gradient_field});
+	add_process(GLFW_KEY_F4, {"F4", "Normal Field", set_render_normal_field});
+	add_process(GLFW_KEY_F5, {"F5", "Show Borders", set_render_border});
+	add_process(GLFW_KEY_W, {"W", "Save Mesh", menu_save_mesh});
 }
 
 void viewer::init_glsl()

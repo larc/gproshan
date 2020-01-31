@@ -104,7 +104,7 @@ index_t embree::add_point_cloud(const che * mesh, const glm::mat4 & model_matrix
 	#pragma omp parallel for
 	for(index_t i = 0; i < mesh->n_vertices(); i++)
 	{
-		pxyzr[i] = glm::vec4(mesh->gt(i).x, mesh->gt(i).y, mesh->gt(i).z, 0.005f);
+		pxyzr[i] = glm::vec4(mesh->gt(i).x, mesh->gt(i).y, mesh->gt(i).z, 0.001f);
 		
 		vertex n = mesh->normal(i);
 		normal[i] = glm::vec3(n.x, n.y, n.z);
