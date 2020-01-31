@@ -6,6 +6,12 @@
 #include <random>
 #include <cstring>
 
+
+// geometry processing and shape analysis framework
+// raytracing approach
+namespace gproshan::rt {
+
+
 void embree_error(void * ptr, RTCError error, const char * str)
 {
 	fprintf(stderr, "EMBREE ERROR: %s\n", str);
@@ -19,17 +25,12 @@ embree::embree()
 	scene = rtcNewScene(device);
 	
 	rtcInitIntersectContext(&intersect_context);
-
-	width = height = n_samples = 0;
-	img = nullptr;
 }
 
 embree::~embree()
 {
 	rtcReleaseScene(scene);
 	rtcReleaseDevice(device);
-
-	if(img) delete [] img;
 }
 
 void embree::build_bvh()
@@ -121,7 +122,7 @@ index_t embree::add_point_cloud(const che * mesh, const glm::mat4 & model_matrix
 	return geom_id;
 }
 
-glm::vec4 embree::Li(const ray_hit & r, const glm::vec3 & light)
+glm::vec4 embree::li(const ray_hit & r, const glm::vec3 & light)
 {
 	glm::vec3 color(.6f, .8f, 1.f);
 	
@@ -137,112 +138,6 @@ glm::vec4 embree::Li(const ray_hit & r, const glm::vec3 & light)
 	return glm::vec4(color * falloff * std::max(0.f, glm::dot(wi, r.normal())), 1.f);
 }
 
-bool embree::rt_restart(const size_t & w, const size_t & h)
-{
-	if(width * height < w * h)
-	{
-		if(img) delete [] img;
-
-		width = w;
-		height = h;
-		img = new glm::vec4[width * height];
-
-		return true;
-	}
-	
-	if(width != w || height != h)
-	{
-		width = w;
-		height = h;
-
-		return true;
-	}
-
-	return false;
-}
-
-void embree::raytracing(	const glm::uvec2 & windows_size,
-							const glm::mat4 & view_mat,
-							const glm::mat4 & proj_mat,
-							const glm::vec3 & light, const bool & restart )
-{
-	if(rt_restart(windows_size.x, windows_size.y) || restart)
-		n_samples = 0;
-
-	std::default_random_engine gen;
-	std::uniform_real_distribution<float> randf(0.f, 1.f);
-
-	glm::vec3 cam_pos = glm::vec3(glm::inverse(view_mat) * glm::vec4(0.f, 0.f, 0.f, 1.f));
-	glm::mat4 inv_proj_view = glm::inverse(proj_mat * view_mat);
-	
-	#pragma omp parallel for
-	for(index_t i = 0; i < width; i++)
-	for(index_t j = 0; j < height; j++)
-	{
-		//row major
-		glm::vec4 & color = img[j * windows_size.x + i];
-		
-			glm::vec2 screen = glm::vec2(	(float(i) + randf(gen)) / width, 
-											(float(j) + randf(gen)) / height
-											);
-
-			glm::vec4 view = glm::vec4(screen.x * 2.f - 1.f, screen.y * 2.f - 1.f, 1.f, 1.f);
-			glm::vec4 q = inv_proj_view * view;
-			glm::vec3 p = glm::vec3(q * (1.f / q.w));
-
-			ray_hit r(cam_pos, glm::normalize(p - cam_pos));
-		
-			color *= float(n_samples);
-
-			if(intersect(r)) color += Li(r, light);
-
-			color /= float(n_samples + 1);
-	}
-
-	n_samples++;
-}
-
-float * embree::raycaster(	const glm::uvec2 & windows_size,
-							const glm::mat4 & view_mat,
-							const glm::mat4 & proj_mat,
-							const index_t & samples	)
-{
-	float * frame = new float[windows_size.x * windows_size.y];
-	
-	std::default_random_engine gen;
-	std::uniform_real_distribution<float> randf(0.f, 1.f);
-
-	glm::vec3 cam_pos = glm::vec3(glm::inverse(view_mat) * glm::vec4(0.f, 0.f, 0.f, 1.f));
-	glm::mat4 inv_proj_view = glm::inverse(proj_mat * view_mat);
-
-	#pragma omp parallel for
-	for(index_t i = 0; i < windows_size.x; i++)
-	for(index_t j = 0; j < windows_size.y; j++)
-	{
-		//row major
-		float & color = frame[(windows_size.y - j - 1) * windows_size.x + i] = 0;
-		
-		for(index_t s = 0; s < samples; s++)
-		{
-			glm::vec2 screen = glm::vec2(	(float(i) + randf(gen)) / windows_size.x, 
-											(float(j) + randf(gen)) / windows_size.y
-											);
-
-			glm::vec4 view = glm::vec4(screen.x * 2.f - 1.f, screen.y * 2.f - 1.f, 1.f, 1.f);
-			glm::vec4 q = inv_proj_view * view;
-			glm::vec3 p = glm::vec3(q * (1.f / q.w));
-
-			ray_hit r(cam_pos, glm::normalize(p - cam_pos));
-		
-			if(intersect(r)) color += r.ray.tfar;
-		}
-
-		color /= samples;
-	}
-
-	return frame;
-}
-
 bool embree::intersect(ray_hit & r)
 {
 	rtcIntersect1(scene, &intersect_context, &r);
@@ -254,6 +149,22 @@ bool embree::occluded(ray_hit & r)
 	rtcIntersect1(scene, &intersect_context, &r);
 	return r.hit.geomID != RTC_INVALID_GEOMETRY_ID;
 }
+
+
+const glm::vec4 embree::intersect_li(const glm::vec3 & org, const glm::vec3 & dir, const glm::vec3 & light)
+{
+	ray_hit r(org, dir);
+	return intersect(r) ? li(r, light) : glm::vec4(0.f);
+}
+
+const float embree::intersect_depth(const glm::vec3 & org, const glm::vec3 & dir)
+{
+	ray_hit r(org, dir);
+	return intersect(r) ? r.ray.tfar : 0.f;
+}
+
+
+} // namespace gproshan
 
 #endif // GPROSHAN_EMBREE
 

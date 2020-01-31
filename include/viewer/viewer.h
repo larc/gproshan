@@ -105,7 +105,7 @@ class viewer
 		index_t render_opt;
 
 	#ifdef GPROSHAN_EMBREE
-		embree * r_embree;
+		rt::embree * rt_embree;
 	#endif // GPROSHAN_EMBREE
 
 		bool action;

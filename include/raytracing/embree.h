@@ -4,12 +4,16 @@
 #define EMBREE_H
 
 #include "che.h"
+#include "raytracing.h"
 
 #include <embree3/rtcore.h>
 #include <glm/glm.hpp>
 
 
-using namespace gproshan;
+// geometry processing and shape analysis framework
+// raytracing approach
+namespace gproshan::rt {
+
 
 struct ray_hit: public RTCRayHit
 {
@@ -59,19 +63,11 @@ struct ray_hit: public RTCRayHit
 };
 
 
-class embree
+class embree : public raytracing
 {
 	RTCDevice device;
 	RTCScene scene;	
 	RTCIntersectContext intersect_context;
-
-	size_t width;
-	size_t height;
-
-	size_t n_samples;
-
-	public:
-		glm::vec4 * img;
 
 	public:
 		embree();
@@ -82,25 +78,18 @@ class embree
 		index_t add_mesh(const che * mesh, const glm::mat4 & model_matrix = glm::mat4(1.f));
 		index_t add_point_cloud(const che * mesh, const glm::mat4 & model_matrix = glm::mat4(1.f));
 
-		glm::vec4 Li(const ray_hit & r, const glm::vec3 & light);
-
-		bool rt_restart(const size_t & w, const size_t & h);
-		void raytracing(	const glm::uvec2 & windows_size,
-							const glm::mat4 & view_mat,
-							const glm::mat4 & proj_mat,
-							const glm::vec3 & light,
-							const bool & restart = false
-							);
-
-		float * raycaster(	const glm::uvec2 & windows_size,
-							const glm::mat4 & view_mat,
-							const glm::mat4 & proj_mat,
-							const index_t & samples = 4
-							);
-
+		glm::vec4 li(const ray_hit & r, const glm::vec3 & light);
+	
+	private:
 		bool intersect(ray_hit & r);
 		bool occluded(ray_hit & r);
+
+		const glm::vec4 intersect_li(const glm::vec3 & org, const glm::vec3 & dir, const glm::vec3 & light);
+		const float intersect_depth(const glm::vec3 & org, const glm::vec3 & dir);
 };
+
+
+} // namespace gproshan
 
 #endif // EMBREE_H
 

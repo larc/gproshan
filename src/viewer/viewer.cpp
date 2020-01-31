@@ -42,7 +42,7 @@ viewer::viewer()
 	render_opt = 0;
 
 	#ifdef GPROSHAN_EMBREE
-		r_embree = nullptr;
+		rt_embree = nullptr;
 	#endif // GPROSHAN_EMBREE
 
 	render_wireframe = false;
@@ -75,7 +75,7 @@ viewer::~viewer()
 	glfwTerminate();
 
 	#ifdef GPROSHAN_EMBREE
-		if(r_embree) delete r_embree;
+		if(rt_embree) delete rt_embree;
 	#endif // GPROSHAN_EMBREE
 }
 
@@ -499,7 +499,7 @@ void viewer::raycasting(viewer * view)
 
 	gproshan_log(VIEWER);
 
-	embree rc;
+	rt::embree rc;
 	
 	rc.add_mesh(view->mesh());
 	rc.build_bvh();
@@ -551,26 +551,26 @@ void viewer::render_embree()
 {
 #ifdef GPROSHAN_EMBREE
 
-	if(r_embree == nullptr)
+	if(rt_embree == nullptr)
 	{
 		double time_build_embree;
 		TIC(time_build_embree);
 
-			r_embree = new embree;
-			r_embree->add_mesh(mesh());
-			r_embree->build_bvh();
+			rt_embree = new rt::embree;
+			rt_embree->add_mesh(mesh());
+			rt_embree->build_bvh();
 
 		TOC(time_build_embree);
 		gproshan_log_var(time_build_embree);
 	}
 
-	r_embree->raytracing(	glm::uvec2(viewport_width, viewport_height),
+	rt_embree->pathtracing(	glm::uvec2(viewport_width, viewport_height),
 							view_mat, proj_mat, glm::vec3(light[1], light[2], light[3]), action);
 	
 	action = false;
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glDrawPixels(viewport_width, viewport_height, GL_RGBA, GL_FLOAT, r_embree->img);
+	glDrawPixels(viewport_width, viewport_height, GL_RGBA, GL_FLOAT, rt_embree->img);
 
 #endif // GPROSHAN_EMBREE
 }
