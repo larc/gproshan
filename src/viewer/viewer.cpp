@@ -75,7 +75,9 @@ viewer::~viewer()
 	glfwDestroyWindow(window);
 	glfwTerminate();
 
-	if(r_embree) delete r_embree;
+	#ifdef GPROSHAN_EMBREE
+		if(r_embree) delete r_embree;
+	#endif // GPROSHAN_EMBREE
 }
 
 bool viewer::run()
@@ -496,6 +498,8 @@ void viewer::set_is_flat(viewer * view)
 
 void viewer::raycasting(viewer * view)
 {
+#ifdef GPROSHAN_EMBREE
+
 	gproshan_log(VIEWER);
 
 	embree rc;
@@ -514,6 +518,8 @@ void viewer::raycasting(viewer * view)
 	CImg<float>(frame, view->viewport_width, view->viewport_height)).detach();
 
 	delete [] frame;
+
+#endif // GPROSHAN_EMBREE
 }
 
 void viewer::render_gl()

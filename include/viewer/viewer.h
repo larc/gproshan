@@ -4,6 +4,8 @@
 #include <map>
 #include <cstring>
 
+#include <glm/glm.hpp>
+
 #include "camera.h"
 #include "shader.h"
 #include "che_viewer.h"
