@@ -583,7 +583,6 @@ void viewer::draw_scene()
 {
 	draw_polygons();
 
-	if(render_wireframe) draw_wireframe();
 	if(render_gradient_field) draw_gradient_field();
 	if(render_normal_field) draw_normal_field();
 	if(render_border) draw_border();
@@ -599,19 +598,12 @@ void viewer::draw_scene()
 
 void viewer::draw_polygons()
 {
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	if(render_wireframe)
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	else
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-	for(index_t i = 0; i < n_meshes; i++)
-	{
-		glViewport(meshes[i].vx * viewport_width, meshes[i].vy * viewport_height, viewport_width, viewport_height);
-		meshes[i].draw();
-	}
-}
 
-void viewer::draw_wireframe()
-{
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	
 	for(index_t i = 0; i < n_meshes; i++)
 	{
 		glViewport(meshes[i].vx * viewport_width, meshes[i].vy * viewport_height, viewport_width, viewport_height);

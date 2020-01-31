@@ -191,7 +191,6 @@ class viewer
 		// draw routines
 		void draw_scene();
 		void draw_polygons();
-		void draw_wireframe();
 		void draw_gradient_field();
 		void draw_normal_field();
 		void draw_border();
