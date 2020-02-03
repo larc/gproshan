@@ -253,6 +253,10 @@ void viewer::init_glsl()
 {
 	shader_program.load_vertex("../shaders/vertex.glsl");
 	shader_program.load_fragment("../shaders/fragment.glsl");
+	
+	shader_normals.load_vertex("../shaders/vertex_normals.glsl");
+	shader_normals.load_geometry("../shaders/geometry_normals.glsl");
+	shader_normals.load_fragment("../shaders/fragment_normals.glsl");
 }
 
 void viewer::update_vbo()
@@ -521,6 +525,8 @@ void viewer::raycasting(viewer * view)
 
 void viewer::render_gl()
 {
+	glClearDepth(1.f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
 	shader_program.enable();
 
 	GLint uniformEye = glGetUniformLocation(shader_program, "eye");
@@ -541,10 +547,21 @@ void viewer::render_gl()
 	GLint uniform_proj_mat = glGetUniformLocation(shader_program, "proj_mat");
 	glUniformMatrix4fv(uniform_proj_mat, 1, 0, &proj_mat[0][0]);
 
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
 	draw_scene();
+
+
+	if(render_normal_field)
+	{
+		shader_normals.enable();
 	
-	shader_program.disable();
+		uniform_model_view_mat = glGetUniformLocation(shader_normals, "model_view_mat");
+		glUniformMatrix4fv(uniform_model_view_mat, 1, 0, &view_mat[0][0]);
+	
+		uniform_proj_mat = glGetUniformLocation(shader_normals, "proj_mat");
+		glUniformMatrix4fv(uniform_proj_mat, 1, 0, &proj_mat[0][0]);
+
+		draw_scene();
+	}
 }
 
 void viewer::render_embree()
@@ -584,7 +601,6 @@ void viewer::draw_scene()
 	draw_polygons();
 
 	if(render_gradient_field) draw_gradient_field();
-	if(render_normal_field) draw_normal_field();
 	if(render_border) draw_border();
 
 	draw_isolated_vertices();
@@ -710,17 +726,6 @@ void viewer::draw_selected_vertices()
 	glEnd();
 
 	glPopAttrib();
-}
-
-void viewer::draw_normal_field()
-{
-	shader_program.disable();
-	
-	for(index_t i = 0; i < n_meshes; i++)
-	{
-		glViewport(meshes[i].vx * viewport_width, meshes[i].vy * viewport_height, viewport_width, viewport_height);
-		meshes[i].draw_normal_field();
-	}
 }
 
 void viewer::draw_gradient_field()

@@ -182,29 +182,6 @@ void che_viewer::draw()
 	glBindVertexArray(0);
 }
 
-void che_viewer::draw_normal_field()
-{
-	glPushAttrib(GL_ALL_ATTRIB_BITS);
-
-	glDisable(GL_LIGHTING);
-	glColor3f(.8, .8, 1.0);
-	glLineWidth(2.0);
-
-	glBegin(GL_LINES);
-	for(index_t v = 0; v < _n_vertices; v++)
-	{
-		vertex n = factor * normals[v];
-		vertex a = mesh->get_vertex(v);
-		vertex b = a + n;
-
-		glVertex3v(&a[0]);
-		glVertex3v(&b[0]);
-	}
-	glEnd();
-
-	glPopAttrib();
-}
-
 void che_viewer::draw_gradient_field()
 {
 	glPushAttrib(GL_ALL_ATTRIB_BITS);

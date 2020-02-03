@@ -83,6 +83,8 @@ class viewer
 		GLFWwindow * window;
 
 		shader shader_program;
+		shader shader_normals;
+		shader shader_edges;
 		camera cam;
 		
 		int viewport_width;
@@ -192,7 +194,6 @@ class viewer
 		void draw_scene();
 		void draw_polygons();
 		void draw_gradient_field();
-		void draw_normal_field();
 		void draw_border();
 		void draw_selected_vertices();
 		void draw_vectors();
