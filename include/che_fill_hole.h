@@ -36,7 +36,7 @@ struct border_t
 		if(theta < 0) theta += 2 * M_PI;
 	}
 
-	a_vec new_vertex(const std::vector<a_vec> & V, angle_t div, const distance_t & lenght, const std::array<index_t, 2> & neighbors, const bool & o)
+	a_vec new_vertex(const std::vector<a_vec> & V, angle_t div, const distance_t & length, const std::array<index_t, 2> & neighbors, const bool & o)
 	{
 		index_t p_v = neighbors[!o];
 		index_t n_v = neighbors[o];
@@ -48,7 +48,7 @@ struct border_t
 
 		a_vec r = div * a + (1 - div) * b;
 
-		r = lenght * normalise(r) + V[v];
+		r = length * normalise(r) + V[v];
 		r(2) = 0;
 
 		return r;
@@ -79,7 +79,7 @@ struct border_t
 		if(theta < 0) theta += 2 * M_PI;
 	}
 
-	a_vec new_vertex(const std::vector<a_vec> & V, angle_t div, const distance_t & lenght, const std::array<index_t, 2> & neighbors, const bool & o, const a_vec & normal)
+	a_vec new_vertex(const std::vector<a_vec> & V, angle_t div, const distance_t & length, const std::array<index_t, 2> & neighbors, const bool & o, const a_vec & normal)
 	{
 		index_t p_v = neighbors[!o];
 		index_t n_v = neighbors[o];
@@ -103,7 +103,7 @@ struct border_t
 		r[1] = sin(theta * div);
 		r[2] = 0;
 
-		r = lenght * normalise(r);
+		r = length * normalise(r);
 		r = E * r;
 		r += V[v];
 
@@ -123,7 +123,7 @@ che * fill_hole_front_angles_test(che * mesh, std::vector<index_t> & front_verti
 
 che * fill_hole_front_angles_without_projection(che * mesh, std::vector<index_t> & front_vertices);
 
-che * fill_hole_front_angles(std::vector<vertex> & vertices, const real_t & lenght, const vertex & normal, const size_t & max_iter, bool is_grow = false);
+che * fill_hole_front_angles(std::vector<vertex> & vertices, const real_t & length, const vertex & normal, const size_t & max_iter, bool is_grow = false);
 
 che * fill_hole_center_triangle(che * mesh, std::vector<index_t> & select_vertices, index_t index);
 

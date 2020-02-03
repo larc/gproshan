@@ -127,7 +127,7 @@ glm::vec4 embree::li(const ray_hit & r, const glm::vec3 & light)
 	glm::vec3 color(.6f, .8f, 1.f);
 	
 	float dist_light = glm::length(light - r.position());
-	float falloff = 4.f / (dist_light * dist_light);	// intensity multiplier / falloff
+	float falloff = 0.5f / (dist_light * dist_light);	// intensity multiplier / falloff
 	
 	glm::vec3 wi = normalize(light - r.position());
 	

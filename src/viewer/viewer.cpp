@@ -525,15 +525,16 @@ void viewer::raycasting(viewer * view)
 
 void viewer::render_gl()
 {
-	glClearDepth(1.f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
+
+
 	shader_program.enable();
 
-	GLint uniformEye = glGetUniformLocation(shader_program, "eye");
-	glUniform3f(uniformEye, eye[1], eye[2], eye[3]);
+	GLint uniform_eye = glGetUniformLocation(shader_program, "eye");
+	glUniform3f(uniform_eye, eye[1], eye[2], eye[3]);
 
-	GLint uniformLight = glGetUniformLocation(shader_program, "light");
-	glUniform3f(uniformLight, light[1], light[2], light[3]);
+	GLint uniform_light = glGetUniformLocation(shader_program, "light");
+	glUniform3f(uniform_light, light[1], light[2], light[3]);
 
 	GLint uniform_render_flat = glGetUniformLocation(shader_program, "render_flat");
 	glUniform1i(uniform_render_flat, render_flat);
@@ -553,6 +554,9 @@ void viewer::render_gl()
 	if(render_normal_field)
 	{
 		shader_normals.enable();
+		
+		GLfloat uniform_length = glGetUniformLocation(shader_normals, "length");
+		glUniform1f(uniform_length, mesh()->mean_edge());
 	
 		uniform_model_view_mat = glGetUniformLocation(shader_normals, "model_view_mat");
 		glUniformMatrix4fv(uniform_model_view_mat, 1, 0, &view_mat[0][0]);
