@@ -3,6 +3,8 @@
 
 #include "che.h"
 
+#include <vector>
+
 #include <glm/glm.hpp>
 
 
@@ -29,7 +31,7 @@ class raytracing
 		void pathtracing(	const glm::uvec2 & windows_size,
 							const glm::mat4 & view_mat,
 							const glm::mat4 & proj_mat,
-							const glm::vec3 & light,
+							const std::vector<glm::vec3> & light,
 							const bool & restart = false
 							);
 

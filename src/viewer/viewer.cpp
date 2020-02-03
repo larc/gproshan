@@ -582,7 +582,7 @@ void viewer::render_embree()
 	}
 
 	rt_embree->pathtracing(	glm::uvec2(viewport_width, viewport_height),
-							view_mat, proj_mat, glm::vec3(light[1], light[2], light[3]), action);
+							view_mat, proj_mat, {glm::vec3(light[1], light[2], light[3]), glm::vec3(0.f, 0.f, 0.f)}, action);
 	
 	action = false;
 

@@ -48,7 +48,8 @@ bool raytracing::rt_restart(const size_t & w, const size_t & h)
 void raytracing::pathtracing(	const glm::uvec2 & windows_size,
 								const glm::mat4 & view_mat,
 								const glm::mat4 & proj_mat,
-								const glm::vec3 & light, const bool & restart )
+								const std::vector<glm::vec3> & light,
+								const bool & restart )
 {
 	if(rt_restart(windows_size.x, windows_size.y) || restart)
 		n_samples = 0;
@@ -58,25 +59,29 @@ void raytracing::pathtracing(	const glm::uvec2 & windows_size,
 
 	glm::vec3 cam_pos = glm::vec3(glm::inverse(view_mat) * glm::vec4(0.f, 0.f, 0.f, 1.f));
 	glm::mat4 inv_proj_view = glm::inverse(proj_mat * view_mat);
-	
-	#pragma omp parallel for
+
+	glm::vec4 li;
+
+	#pragma omp parallel for private(li)
 	for(index_t i = 0; i < width; i++)
 	for(index_t j = 0; j < height; j++)
 	{
 		//row major
 		glm::vec4 & color = img[j * windows_size.x + i];
 		
-			glm::vec2 screen = glm::vec2(	(float(i) + randf(gen)) / width, 
-											(float(j) + randf(gen)) / height
-											);
+		glm::vec2 screen = glm::vec2(	(float(i) + randf(gen)) / width, 
+										(float(j) + randf(gen)) / height
+										);
 
-			glm::vec4 view = glm::vec4(screen.x * 2.f - 1.f, screen.y * 2.f - 1.f, 1.f, 1.f);
-			glm::vec4 q = inv_proj_view * view;
-			glm::vec3 p = glm::vec3(q * (1.f / q.w));
+		glm::vec4 view = glm::vec4(screen.x * 2.f - 1.f, screen.y * 2.f - 1.f, 1.f, 1.f);
+		glm::vec4 q = inv_proj_view * view;
+		glm::vec3 p = glm::vec3(q * (1.f / q.w));
 
-			color *= float(n_samples);
-			color += intersect_li(cam_pos, glm::normalize(p - cam_pos), light);
-			color /= float(n_samples + 1);
+		li = glm::vec4(0.f);
+		for(auto & l: light)
+			li += intersect_li(cam_pos, glm::normalize(p - cam_pos), l);
+
+		color = (color * float(n_samples) + li / float(light.size())) / float(n_samples + 1);
 	}
 
 	n_samples++;
