@@ -257,6 +257,10 @@ void viewer::init_glsl()
 	shader_normals.load_vertex("../shaders/vertex_normals.glsl");
 	shader_normals.load_geometry("../shaders/geometry_normals.glsl");
 	shader_normals.load_fragment("../shaders/fragment_normals.glsl");
+	
+	shader_gradient.load_vertex("../shaders/vertex_gradient.glsl");
+	shader_gradient.load_geometry("../shaders/geometry_gradient.glsl");
+	shader_gradient.load_fragment("../shaders/fragment_gradient.glsl");
 }
 
 void viewer::update_vbo()
@@ -530,23 +534,12 @@ void viewer::render_gl()
 
 	shader_program.enable();
 
-	GLint uniform_eye = glGetUniformLocation(shader_program, "eye");
-	glUniform3f(uniform_eye, eye[1], eye[2], eye[3]);
-
-	GLint uniform_light = glGetUniformLocation(shader_program, "light");
-	glUniform3f(uniform_light, light[1], light[2], light[3]);
-
-	GLint uniform_render_flat = glGetUniformLocation(shader_program, "render_flat");
-	glUniform1i(uniform_render_flat, render_flat);
-
-	GLint uniform_render_lines = glGetUniformLocation(shader_program, "render_lines");
-	glUniform1i(uniform_render_lines, render_lines);
-
-	GLint uniform_model_view_mat = glGetUniformLocation(shader_program, "model_view_mat");
-	glUniformMatrix4fv(uniform_model_view_mat, 1, 0, &view_mat[0][0]);
-	
-	GLint uniform_proj_mat = glGetUniformLocation(shader_program, "proj_mat");
-	glUniformMatrix4fv(uniform_proj_mat, 1, 0, &proj_mat[0][0]);
+	glUniform3f(glGetUniformLocation(shader_program, "eye"), eye[1], eye[2], eye[3]);
+	glUniform3f(glGetUniformLocation(shader_program, "light"), light[1], light[2], light[3]);
+	glUniform1i(glGetUniformLocation(shader_program, "render_flat"), render_flat);
+	glUniform1i(glGetUniformLocation(shader_program, "render_lines"), render_lines);
+	glUniformMatrix4fv(glGetUniformLocation(shader_program, "model_view_mat"), 1, 0, &view_mat[0][0]);
+	glUniformMatrix4fv(glGetUniformLocation(shader_program, "proj_mat"), 1, 0, &proj_mat[0][0]);
 
 	draw_scene();
 
@@ -555,15 +548,22 @@ void viewer::render_gl()
 	{
 		shader_normals.enable();
 		
-		GLfloat uniform_length = glGetUniformLocation(shader_normals, "length");
-		glUniform1f(uniform_length, mesh()->mean_edge());
-	
-		uniform_model_view_mat = glGetUniformLocation(shader_normals, "model_view_mat");
-		glUniformMatrix4fv(uniform_model_view_mat, 1, 0, &view_mat[0][0]);
-	
-		uniform_proj_mat = glGetUniformLocation(shader_normals, "proj_mat");
-		glUniformMatrix4fv(uniform_proj_mat, 1, 0, &proj_mat[0][0]);
+		glUniform1f(glGetUniformLocation(shader_normals, "length"), mesh().factor);
+		glUniformMatrix4fv(glGetUniformLocation(shader_normals, "model_view_mat"), 1, 0, &view_mat[0][0]);
+		glUniformMatrix4fv(glGetUniformLocation(shader_normals, "proj_mat"), 1, 0, &proj_mat[0][0]);
 
+		draw_scene();
+	}
+	
+	
+	if(render_gradient_field)
+	{
+		shader_gradient.enable();
+		
+		glUniform1f(glGetUniformLocation(shader_gradient, "length"), mesh().factor);
+		glUniformMatrix4fv(glGetUniformLocation(shader_gradient, "model_view_mat"), 1, 0, &view_mat[0][0]);	
+		glUniformMatrix4fv(glGetUniformLocation(shader_gradient, "proj_mat"), 1, 0, &proj_mat[0][0]);
+	
 		draw_scene();
 	}
 }
@@ -586,7 +586,7 @@ void viewer::render_embree()
 	}
 
 	rt_embree->pathtracing(	glm::uvec2(viewport_width, viewport_height),
-							view_mat, proj_mat, {glm::vec3(light[1], light[2], light[3]), glm::vec3(0.f, 0.f, 0.f)}, action);
+							view_mat, proj_mat, {glm::vec3(light[1], light[2], light[3])}, action);
 	
 	action = false;
 
@@ -604,7 +604,6 @@ void viewer::draw_scene()
 {
 	draw_polygons();
 
-	if(render_gradient_field) draw_gradient_field();
 	if(render_border) draw_border();
 
 	draw_isolated_vertices();
@@ -730,17 +729,6 @@ void viewer::draw_selected_vertices()
 	glEnd();
 
 	glPopAttrib();
-}
-
-void viewer::draw_gradient_field()
-{
-	shader_program.disable();
-	
-	for(index_t i = 0; i < n_meshes; i++)
-	{
-		glViewport(meshes[i].vx * viewport_width, meshes[i].vy * viewport_height, viewport_width, viewport_height);
-		meshes[i].draw_gradient_field();
-	}
 }
 
 void viewer::pick_vertex(int x, int y)

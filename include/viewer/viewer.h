@@ -84,6 +84,7 @@ class viewer
 
 		shader shader_program;
 		shader shader_normals;
+		shader shader_gradient;
 		shader shader_edges;
 		camera cam;
 		
@@ -193,7 +194,6 @@ class viewer
 		// draw routines
 		void draw_scene();
 		void draw_polygons();
-		void draw_gradient_field();
 		void draw_border();
 		void draw_selected_vertices();
 		void draw_vectors();
