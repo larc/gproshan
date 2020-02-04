@@ -614,13 +614,7 @@ void viewer::draw_scene()
 
 	if(render_border) draw_border();
 
-	draw_isolated_vertices();
-	draw_vectors();
 	draw_selected_vertices();
-
-//	shader_program.disable();
-//	mesh().draw_mesh_info();
-//	shader_program.enable();
 }
 
 void viewer::draw_polygons()
@@ -636,73 +630,6 @@ void viewer::draw_polygons()
 		glViewport(meshes[i].vx * viewport_width, meshes[i].vy * viewport_height, viewport_width, viewport_height);
 		meshes[i].draw();
 	}
-}
-
-void viewer::draw_vectors()
-{
-	shader_program.disable();
-	glPushAttrib(GL_ALL_ATTRIB_BITS);
-
-	glDisable(GL_LIGHTING);
-	glColor4f(1., 0., 0., 1);
-	glLineWidth(3.0);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-	glBegin(GL_LINES);
-
-	index_t i = 0;
-	for(vertex & v: vectors)
-	{
-		if(i % 8 == 0) glColor4f(1., 0., 0., 1);
-		if(i % 8 == 2) glColor4f(0., 1., 0., 1);
-		if(i % 8 == 4) glColor4f(0., 0., 1., 1);
-		if(i % 8 == 6) glColor4f(1., 1., 0., 1);
-		glVertex3v(&v.x);
-		i++;
-	}
-
-	glEnd();
-	glPopAttrib();
-}
-
-void viewer::draw_isolated_vertices()
-{
-	shader_program.disable();
-	glPushAttrib(GL_ALL_ATTRIB_BITS);
-
-	glEnable(GL_COLOR_MATERIAL);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	glColor3f(0.5, 0., 0.5);
-
-	double h = 0.01 * cam.zoom;
-	for(const vertex & v: other_vertices)
-	{
-		glPushMatrix();
-		glTranslated(v.x, v.y, v.z);
-		////glutSolidSphere(h, 10, 10);
-		glPopMatrix();
-	}
-
-	glEnd();
-
-	glPopAttrib();
-	/*shader_program.disable();
-	glPushAttrib(GL_ALL_ATTRIB_BITS);
-
-	glPointSize(5);
-	glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
-	glEnable(GL_POINT_SMOOTH);
-	glColor3f(1., 0., 0.);
-
-	glBegin(GL_POINTS);
-
-	for(const vertex & v: other_vertices)
-		glVertex3v(&v.x);
-
-	glEnd();
-
-	glPopAttrib();*/
 }
 
 void viewer::draw_border()

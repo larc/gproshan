@@ -198,8 +198,6 @@ class viewer
 		void draw_polygons();
 		void draw_border();
 		void draw_selected_vertices();
-		void draw_vectors();
-		void draw_isolated_vertices();
 		
 		void pick_vertex(int x, int y);
 };
