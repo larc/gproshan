@@ -1,33 +1,38 @@
 #version 460 core
 
+in vec3 gs_position;
+in vec3 gs_normal;
+in float gs_color;
+
+noperspective in vec3 edge_dist;
+
+layout(location = 0) out vec4 FragColor;
+
 uniform vec3 eye;
 uniform vec3 light;
 uniform bool render_flat;
 uniform bool render_lines;
+uniform bool render_wireframe;
 
-in vec3 position;
-in vec3 normal;
-in float color;
-
-layout(location = 0) out vec4 FragColor;
-
-float diffuse( vec3 N, vec3 L )
+float diffuse(vec3 N, vec3 L)
 {
-	return max( 0., dot( N, L ));
+	return max(0, dot(N, L));
 }
 
-float specular( vec3 N, vec3 L, vec3 E )
+float specular(vec3 N, vec3 L, vec3 E)
 {
-	const float shininess = 4.;
-	vec3 R = 2.*dot(L,N)*N - L;
-	return pow( max( 0., dot( R, E )), shininess );
+	const float shininess = 4;
+	vec3 R = 2 * dot(L, N) * N - L;
+
+	return pow(max(0, dot(R, E)), shininess);
 }
 
-float fresnel( vec3 N, vec3 E )
+float fresnel(vec3 N, vec3 E)
 {
-	const float sharpness = 10.;
-	float NE = max( 0., dot( N, E ));
-	return pow( sqrt( 1. - NE*NE ), sharpness );
+	const float sharpness = 10;
+	float NE = max(0, dot(N, E));
+
+	return pow(sqrt( 1. - NE * NE ), sharpness);
 }
 
 //https://github.com/kbinani/colormap-shaders/blob/master/shaders/glsl/IDL_CB-PuBu.frag
@@ -65,48 +70,41 @@ vec3 colormap(float x)
 
 void main()
 {
-	// color
-	/*
-	float d = 1. - color;
-	float r = (1. - d*d) * .8;
-	float g = (1. - (2. * (d - .5)) * (2. * (d - .5))) * .7;
-	float b = (1. - (1. - d) * (1. - d));
-	vec3 vcolor = vec3(r, g, b);
-	*/
-	vec3 vcolor = colormap(color);
-
+	vec3 color = colormap(gs_color);
 
 	// lines
 	if(render_lines)
 	{
-		float h = color;
-		h = h * 40.;
-		h = h - floor( h );
-		h = (1. / (1. + exp(-100.*(h - .55)))) + (1. / (1. + exp(-100.*(-h + .45))));
-		h = 1. - h;
-		vcolor.xyz = vec3(0, 0, 0) + (1. - h) * vcolor.xyz;
+		float h = gs_color;
+		h = h * 40;
+		h = h - floor(h);
+		h = (1 / (1 + exp(-100 * (h - .55)))) + (1 / (1 + exp(-100 * (-h + .45))));
+		h = 1 - h;
+		color = vec3(0) + (1. - h) * color;
 	}
 
  	vec3 N;
 
  	if(render_flat)
-	{
-		vec3 X = dFdx(position);
-		vec3 Y = dFdy(position);
-		vec3 normal_flat = cross(X,Y);
-		N = normalize( normal_flat );
-	}
+		N = normalize(cross(dFdx(gs_position), dFdy(gs_position)));
 	else
-	{
-		N = normalize( normal );
-	}
+		N = normalize(gs_normal);
 	
-	vec3 L = normalize( light - position );
-	vec3 E = normalize( eye - position );
-	vec3 R = 2.*dot(L,N)*N - L;
-	vec3 one = vec3( 1., 1., 1. );
+	vec3 L = normalize(light - gs_position);
+	vec3 E = normalize(eye - gs_position);
+	vec3 R = 2 * dot(L, N) * N - L;
+	vec3 one = vec3(1);
 
-	FragColor.rgb = diffuse(N,L) * vcolor + .1 * specular(N,L,E) * one + .5 * fresnel(N,E) * one;
-	FragColor.a = 1.;
+	FragColor = vec4(diffuse(N, L) * color + .1 * specular(N, L, E) * one + .5 * fresnel(N,E) * one, 1);
+
+	if(render_wireframe)
+	{
+		vec3 delta = fwidth(edge_dist);
+		vec3 tmp = smoothstep(vec3(0), delta, edge_dist);
+
+		float d = min(min(tmp.x, tmp.y), tmp.z);
+
+		FragColor = mix(vec4(.1, .1, .1, 1), FragColor, d);
+	}
 }
 

@@ -46,6 +46,7 @@ viewer::viewer()
 	#endif // GPROSHAN_EMBREE
 
 	render_wireframe = false;
+	render_wireframe_fill = false;
 	render_gradient_field = false;
 	render_normal_field = false;
 	render_border = false;
@@ -232,7 +233,8 @@ void viewer::init_menus()
 	add_process(GLFW_KEY_0, {"0", "Background color black", menu_bgc_black});
 
 	sub_menus.push_back("Render");
-	add_process(GLFW_KEY_F6, {"F6", "Render Wireframe", set_render_wireframe});
+	add_process(GLFW_KEY_F5, {"F5", "Render Wireframe", set_render_wireframe});
+	add_process(GLFW_KEY_F6, {"F6", "Render Wireframe Fill", set_render_wireframe_fill});
 	add_process(GLFW_KEY_F7, {"F7", "Render GL", set_render_gl});
 	add_process(GLFW_KEY_F8, {"F8", "Render Embree", set_render_embree});
 	add_process(GLFW_KEY_F9, {"F9", "Render OptiX", set_render_optix});
@@ -241,17 +243,17 @@ void viewer::init_menus()
 
 	sub_menus.push_back("Mesh");
 	add_process(GLFW_KEY_BACKSPACE, {"BACKSPACE", "Reload/Reset", menu_reset_mesh});
-	add_process(GLFW_KEY_TAB, {"TAB", "Render Flat", set_is_flat});
+	add_process(GLFW_KEY_TAB, {"TAB", "Render Flat", set_render_flat});
 	add_process(GLFW_KEY_F2, {"F2", "Invert Orientation", invert_orientation});
 	add_process(GLFW_KEY_F3, {"F3", "Gradient Field", set_render_gradient_field});
 	add_process(GLFW_KEY_F4, {"F4", "Normal Field", set_render_normal_field});
-	add_process(GLFW_KEY_F5, {"F5", "Show Borders", set_render_border});
 	add_process(GLFW_KEY_W, {"W", "Save Mesh", menu_save_mesh});
 }
 
 void viewer::init_glsl()
 {
 	shader_program.load_vertex("../shaders/vertex.glsl");
+	shader_program.load_geometry("../shaders/geometry.glsl");
 	shader_program.load_fragment("../shaders/fragment.glsl");
 	
 	shader_normals.load_vertex("../shaders/vertex_normals.glsl");
@@ -475,6 +477,11 @@ void viewer::set_render_wireframe(viewer * view)
 	view->render_wireframe = !view->render_wireframe;
 }
 
+void viewer::set_render_wireframe_fill(viewer * view)
+{
+	view->render_wireframe_fill = !view->render_wireframe_fill;
+}
+
 void viewer::set_render_gradient_field(viewer * view)
 {
 	view->render_gradient_field = !view->render_gradient_field;
@@ -496,7 +503,7 @@ void viewer::set_render_lines(viewer * view)
 	view->render_lines = !view->render_lines;
 }
 
-void viewer::set_is_flat(viewer * view)
+void viewer::set_render_flat(viewer * view)
 {
 	view->render_flat = !view->render_flat;
 }
@@ -538,6 +545,7 @@ void viewer::render_gl()
 	glUniform3f(glGetUniformLocation(shader_program, "light"), light[1], light[2], light[3]);
 	glUniform1i(glGetUniformLocation(shader_program, "render_flat"), render_flat);
 	glUniform1i(glGetUniformLocation(shader_program, "render_lines"), render_lines);
+	glUniform1i(glGetUniformLocation(shader_program, "render_wireframe"), render_wireframe_fill);
 	glUniformMatrix4fv(glGetUniformLocation(shader_program, "model_view_mat"), 1, 0, &view_mat[0][0]);
 	glUniformMatrix4fv(glGetUniformLocation(shader_program, "proj_mat"), 1, 0, &proj_mat[0][0]);
 

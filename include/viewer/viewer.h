@@ -114,6 +114,7 @@ class viewer
 		bool action;
 
 		bool render_wireframe;
+		bool render_wireframe_fill;
 		bool render_gradient_field;
 		bool render_normal_field;
 		bool render_border;
@@ -183,11 +184,12 @@ class viewer
 		static void set_render_embree(viewer * view);
 		static void set_render_optix(viewer * view);
 		static void set_render_wireframe(viewer * view);
+		static void set_render_wireframe_fill(viewer * view);
 		static void set_render_gradient_field(viewer * view);
 		static void set_render_normal_field(viewer * view);
 		static void set_render_border(viewer * view);
 		static void set_render_lines(viewer * view);
-		static void set_is_flat(viewer * view);
+		static void set_render_flat(viewer * view);
 		
 		static void raycasting(viewer * view);
 
