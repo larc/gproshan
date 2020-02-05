@@ -33,15 +33,15 @@ void che_obj::read_file(const string & file)
 	vector<vertex> vertices;
 	vector<index_t> faces;
 
-	char line[128];
+	char line[256];
 	string key;
 
 	while(is.getline(line, sizeof(line)))
 	{
 		stringstream ss(line);
 
+		key = "";
 		ss >> key;
-		if(key == "") continue;
 
 		if(key == "v")
 		{
@@ -92,7 +92,7 @@ void che_obj::read_file(const string & file)
 					faces.push_back(face[3] - 1);
 				}
 			}
-		}
+		}	
 	}
 
 	is.close();

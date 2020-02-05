@@ -50,8 +50,10 @@ void che_ply::read_file(const string & file)
 	while(getline(is, str) && str != "end_header")
 	{
 		stringstream ss(str);
-
+		
+		str = "";
 		ss >> str;
+
 		if(str == "element")
 		{
 			ss >> element;
@@ -135,7 +137,6 @@ void che_ply::read_file(const string & file)
 		index_t p, he = 0;
 		while(n_f--)
 		{
-			fn = 0;
 			is.read(vbuffer, fn);
 
 			if(fn == 1) p = *((char *) vbuffer);
