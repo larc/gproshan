@@ -133,11 +133,14 @@ glm::vec4 embree::li(const ray_hit & r, const glm::vec3 & light)
 	
 	float dot_wi_normal = glm::dot(wi, r.normal());
 	if(dot_wi_normal < 0)
-		dot_wi_normal = glm::dot(wi, -r.normal());
+		dot_wi_normal = -dot_wi_normal;
 
 	ray_hit ro(r.position() + 1e-5f * wi, wi);
 
-	return (occluded(ro) ? .3f : 1.f) * glm::vec4(color * falloff * dot_wi_normal, 1.f);
+	if(occluded(ro))
+		return .5f * glm::vec4(color * falloff * dot_wi_normal, 1.f);
+	
+	return glm::vec4(color * falloff * dot_wi_normal, 1.f);
 }
 
 bool embree::intersect(ray_hit & r)

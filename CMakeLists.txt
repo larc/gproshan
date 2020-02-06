@@ -24,6 +24,13 @@ if(EMBREE_LIBRARY)
 endif(EMBREE_LIBRARY)
 
 
+find_package(OptiX 7.0)
+if(OptiX_INCLUDE)
+	add_definitions(-DGPROSHAN_OPTIX)
+	include_directories(${OptiX_INCLUDE})
+endif(OptiX_INCLUDE)
+
+
 find_package(Threads REQUIRED)
 find_package(OpenMP REQUIRED)
 find_package(OpenGL REQUIRED)
