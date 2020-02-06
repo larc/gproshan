@@ -140,7 +140,7 @@ void inpainting::load_mask(const std::vector<index_t> * vertices, const index_t 
 		std::default_random_engine generator;
 		std::uniform_int_distribution<int> distribution(0,n_vertices-1);
 
-		int k = 0;
+		size_t k = 0;
 		size_t rn=0;
 		
 
@@ -224,6 +224,7 @@ void  inpainting::init_radial_patches()
 			
 			//gproshan_debug_var(patches[s].vertices.size());
 			//gproshan_debug_var(sample(it));
+			//gproshan_debug_var(it);
 			s++;
 		}	
 		it++;
@@ -247,7 +248,7 @@ void  inpainting::init_radial_patches()
 	outlv.save(f_points);
 
 	
-	assert(outliers.size()>0);
+	assert(outliers.size()==0);
 	M = s; // updating number of vertices
 
 	gproshan_debug_var(M);
@@ -288,25 +289,22 @@ void  inpainting::init_radial_patches()
 			gproshan_debug_var(patch_max_size);
 		#endif
 	}
-	
+	gproshan_debug(resettt);
 	bool * pmask = mask;
 	for(index_t s = 0; s < M; s++)
 		patches[s].reset_xyz_disjoint(mesh, dist, M,  patches_map, s ,[&pmask](const index_t & i) -> bool { return pmask[i]; } );
 	
 	gproshan_debug(passed);
 	
-	#pragma omp parallel for
+	//#pragma omp parallel for
 	for(index_t s = 0; s < M; s++)
 	{
 		patch & p = patches[s];
-	
 		p.transform();
 		p.scale_xyz(phi_basis->get_radio());
 		p.compute_avg_distance();
 		p.phi.set_size(p.xyz.n_cols, phi_basis->get_dim());
 		phi_basis->discrete(p.phi, p.xyz);
-		
-
 	} 
 	gproshan_log(radial patches are ready);
 	
@@ -337,7 +335,6 @@ void  inpainting::init_radial_curvature_patches()
 	}
 
 	bool covered[mesh->n_vertices()];
-	index_t * toplevel = new index_t[mesh->n_vertices()];
 	#pragma omp for 
 		for(index_t i = 0; i < mesh->n_vertices(); i++)
 		{
@@ -346,7 +343,6 @@ void  inpainting::init_radial_curvature_patches()
 
 	patches_map.resize(mesh->n_vertices());
 
-	index_t  ns;
 	size_t count = 0;
 	while(!Q.empty()) // curvatures from higher to lower
 	{
@@ -430,7 +426,7 @@ void  inpainting::init_radial_curvature_patches()
 	gproshan_debug(passed);
 	
 	#pragma omp parallel for
-	for(index_t s = 0; s < M; s++)
+	for(index_t s = 0; s < M-1; s++)
 	{
 		patch & p = patches[s];
 
@@ -439,6 +435,7 @@ void  inpainting::init_radial_curvature_patches()
 		p.compute_avg_distance();
 		p.phi.set_size(p.xyz.n_cols, phi_basis->get_dim());
 		phi_basis->discrete(p.phi, p.xyz);
+		gproshan_debug_var(s);
 
 	} 
 	gproshan_log(radial patches are ready);

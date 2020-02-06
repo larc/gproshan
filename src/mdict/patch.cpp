@@ -57,8 +57,8 @@ void patch::init_disjoint(che * mesh, const index_t & v, const size_t & n_toplev
 
 void patch::init_radial_disjoint(che * mesh, const distance_t & radio_, const size_t & avg_p, const index_t & v, const size_t & n_toplevels, vector<index_t> & _vertices, index_t * _toplevel)
 {
-	//radio = radio_;
-	radio = -INFINITY;
+	radio = radio_;
+	//radio = -INFINITY;
 	index_t * toplevel = _toplevel ? _toplevel : new index_t[mesh->n_vertices()];
 	
 	gather_vertices(mesh, v, n_toplevels, toplevel);
@@ -80,12 +80,12 @@ void patch::init_radial_disjoint(che * mesh, const distance_t & radio_, const si
 
 		p = p - c ;
 		p = p - ((p,n)*n);
-		
+		if(*p <= radio )
 		//if(*p <= radio && ( n, mesh->normal(indexes[i]) ) >= 0)	
-		if( *p <= 2*radio && acos( (n, mesh->normal(indexes[i]) ) ) <= PI/2 )
+		//if( *p <= 2*radio && acos( (n, mesh->normal(indexes[i]) ) ) <= PI/2 )
 		{
-			if(*p > radio)
-				radio = *p;
+			/*if(*p > radio)
+				radio = *p;*/
 			_vertices.push_back(indexes[i]);
 		}
 		else
@@ -243,7 +243,7 @@ void patch::reset_xyz_disjoint(che * mesh, distance_t * dist, size_t M, vector<v
 		m = 0;
 		for(index_t i = 0; i < vertices.size(); i++)
 			if(mask(i)) { dist[vertices[i] ] = float(p + 1) / M; m++;  } else {dist[vertices[i] ] = INFINITY; };
-		/*gproshan_debug(number vertices considered);
+	/*	gproshan_debug(number vertices considered);
 		gproshan_debug_var(m);
 		gproshan_debug(number vertices masked);
 		gproshan_debug_var(vertices.size() - m);*/
