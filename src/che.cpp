@@ -167,25 +167,6 @@ void che::flip(const index_t & e)
 	if(EVT[vb] == next(ha) || EVT[vb] == hb) EVT[vb] = prev(ha);
 	if(EVT[vc] == prev(ha)) EVT[vc] = next(hb);
 	if(EVT[vd] == prev(hb)) EVT[vd] = next(ha);
-
-	index_t e_pa = EHT[prev(ha)];
-	index_t e_na = EHT[next(ha)];
-	index_t e_pb = EHT[prev(hb)];
-	index_t e_nb = EHT[next(hb)];
-
-	ET[e_pa] = next(hb);
-	ET[e_na] = prev(ha);
-	ET[e_pb] = next(ha);
-	ET[e_nb] = prev(hb);
-
-	EHT[ET[e_pa]] = e_pa;
-	if(OT[ET[e_pa]] != NIL) EHT[OT[ET[e_pa]]] = e_pa;
-	EHT[ET[e_na]] = e_na;
-	if(OT[ET[e_na]] != NIL) EHT[OT[ET[e_na]]] = e_na;
-	EHT[ET[e_pb]] = e_pb;
-	if(OT[ET[e_pb]] != NIL) EHT[OT[ET[e_pb]]] = e_pb;
-	EHT[ET[e_nb]] = e_nb;
-	if(OT[ET[e_nb]] != NIL) EHT[OT[ET[e_nb]]] = e_nb;
 }
 
 // https://www.mathworks.com/help/pde/ug/pdetriq.html
@@ -602,16 +583,29 @@ void che::multiplicate_vertices()
 	size_t nf = 3 * n_faces_;
 	size_t nh = 3 * n_half_edges_;
 	size_t ne = n_edges_ + n_faces_ * 3;
+	
 
-	vertex * aGT = new vertex[nv];
-	index_t * aVT = new index_t[nh];
-	index_t * aOT = new index_t[nh];
-	index_t * aEVT = new index_t[nv];
-	index_t * aET = new index_t[ne];
-	index_t * aEHT = new index_t[nh];
+	vertex * aGT = new vertex[nv + n_edges_];
+	index_t * aVT = new index_t[nh + 6 * n_edges_];
+	index_t * aOT = new index_t[nh + 6 * n_edges_];
+	index_t * aEVT = new index_t[nv + n_edges_];
+	index_t * aET = new index_t[ne + 3 *  n_edges_];
+	index_t * aEHT = new index_t[nh + 6 * n_edges_];
 
 	memcpy(aGT, GT, n_vertices_ * sizeof(vertex));
 
+	#pragma omp parallel for
+	for(index_t he = 0; he < n_half_edges_; he++)
+		aVT[3 * he] = VT[he];
+	
+	#pragma omp parallel for
+	for(index_t he = 0; he < n_half_edges_; he++)
+		aOT[3 * he] = OT[he] * 3;
+	
+	#pragma omp parallel for
+	for(index_t he = 0; he < n_half_edges_; he++)
+		aEHT[3 * he] = EHT[he];
+	
 	#pragma omp parallel for
 	for(index_t e = 0; e < n_edges_; e++)
 		aET[e] = ET[e] * 3;
@@ -620,22 +614,19 @@ void che::multiplicate_vertices()
 	for(index_t v = 0; v < n_vertices_; v++)
 		aEVT[v] = EVT[v] * 3;
 
-	#pragma omp parallel for
+	//#pragma omp parallel for
 	for(index_t f = 0; f < n_faces_; f++)
 	{
-		index_t he = f * P;
 		index_t v = n_vertices_ + f;
+		index_t he = f * P;
+		index_t ahe = f * P * 3;
+
 		aGT[v] = (GT[VT[prev(he)]] + GT[VT[he]] + GT[VT[next(he)]]) / 3;
 
-		index_t ahe = f * P * 3;
-		aVT[ahe] = aVT[ahe + 7] = VT[he];
-		aVT[ahe + 3] = aVT[ahe + 1] = VT[next(he)];
-		aVT[ahe + 6] = aVT[ahe + 4] = VT[prev(he)];
+		aVT[ahe + 7] = VT[he];
+		aVT[ahe + 1] = VT[next(he)];
+		aVT[ahe + 4] = VT[prev(he)];
 		aVT[ahe + 2] = aVT[ahe + 5] = aVT[ahe + 8] = v;
-
-		aOT[ahe] = OT[he] != NIL ? OT[he] * 3 : NIL;
-		aOT[ahe + 3] = OT[he + 1] != NIL ? OT[he + 1] * 3 : NIL;
-		aOT[ahe + 6] = OT[he + 2] != NIL ? OT[he + 2] * 3 : NIL;
 
 		aOT[ahe + 1] = ahe + 5;
 		aOT[ahe + 2] = ahe + 7;
@@ -649,6 +640,10 @@ void che::multiplicate_vertices()
 		aET[n_edges_ + he] = ahe + 2;
 		aET[n_edges_ + he + 1] = ahe + 5;
 		aET[n_edges_ + he + 2] = ahe + 8;
+		
+		aEHT[ahe + 2] = aEHT[ahe + 7] = n_edges_ + he;
+		aEHT[ahe + 5] = aEHT[ahe + 1] = n_edges_ + he + 1;
+		aEHT[ahe + 8] = aEHT[ahe + 4] = n_edges_ + he + 2;
 	}
 
 	delete_me();
@@ -664,12 +659,71 @@ void che::multiplicate_vertices()
 	n_faces_ = nf;
 	n_half_edges_ = nh;
 	n_edges_ = ne;
+	
 
-	update_eht();
-	update_bt();
+	auto split_edge = [&](const index_t & he, const bool & split = true)
+	{
+		VT[n_half_edges_++] = n_vertices_;
+		VT[n_half_edges_++] = VT[next(he)];
+		VT[n_half_edges_++] = VT[prev(he)];
+		
+		OT[n_half_edges_ - 3] = OT[he];
+		OT[n_half_edges_ - 2] = OT[next(he)];
+		OT[n_half_edges_ - 1] = next(he);
 
+		ET[EHT[next(he)]] = n_half_edges_ - 2;
+		OT[OT[next(he)]] = n_half_edges_ - 2;
+
+		VT[next(he)] = n_vertices_;
+		OT[next(he)] = n_half_edges_ - 1;
+
+		EVT[n_vertices_] = n_half_edges_ - 3;
+			
+		ET[n_edges_] = next(he);
+		EHT[next(he)] = n_edges_;
+		EHT[OT[next(he)]] = n_edges_;
+		n_edges_++;
+
+		if(split)
+		{
+			ET[n_edges_] = n_half_edges_ - 3;
+			EHT[n_half_edges_ - 3] = n_edges_;
+			n_edges_++;
+		}
+	};
+
+	size_t cont = 0;
 	for(index_t e = 0; e < n_flips; e++)
-		flip(e);
+	{
+		if(OT[ET[e]] == NIL || (normal_he(ET[e]), normal_he(OT[ET[e]])) < 0.5)		// could be improve by quadric error
+		{
+			cont++;
+			index_t he = ET[e];
+			GT[n_vertices_] = (GT[VT[he]] + GT[VT[next(he)]]) / 2;
+			
+			ET[EHT[he]] = he;
+
+			split_edge(he);
+			if(OT[he] != NIL)
+			{
+				split_edge(OT[he], false);
+			
+				OT[OT[he]] = n_half_edges_ - 6;
+				OT[he] = n_half_edges_ - 3;
+				EHT[n_half_edges_ - 3] = EHT[OT[n_half_edges_ - 3]];
+			}
+			
+			n_vertices_++;
+		}
+		else flip(e);
+	}
+
+	gproshan_debug_var(cont);
+	gproshan_debug_var(n_flips - cont);
+
+	n_faces_ = n_half_edges_ / che::P;
+
+	update_bt();
 }
 
 void che::remove_non_manifold_vertices()
