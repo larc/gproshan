@@ -66,12 +66,12 @@ void che_off::read_file(const string & file)
 			is >> VT[he++];
 
 		// divide face
-		if(v > che::P)
+		if(v == 4)
 		{
-			VT[he] = VT[he - v - 1];	he++;
 			VT[he] = VT[he - v];		he++;
+			VT[he] = VT[he - che::P];	he++;
 
-			i += (v - che::P);
+			i++;
 		}
 	}
 
