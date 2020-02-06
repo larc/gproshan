@@ -221,18 +221,10 @@ void  inpainting::init_radial_patches()
 				{
 					covered[i] = 1;
 				}
-			s++;
-			gproshan_debug(seed);
-			gproshan_debug_var(sample(it));
-			/*for(index_t i = 0; i < mesh->n_vertices(); i++)
-			{
-				if(!covered[i] )
-				{
-					gproshan_debug_var(i);
-				}
-					
-			}*/
 			
+			//gproshan_debug_var(patches[s].vertices.size());
+			//gproshan_debug_var(sample(it));
+			s++;
 		}	
 		it++;
 	}
@@ -255,7 +247,7 @@ void  inpainting::init_radial_patches()
 	outlv.save(f_points);
 
 	
-	//assert(outliers.size()>0);
+	assert(outliers.size()>0);
 	M = s; // updating number of vertices
 
 	gproshan_debug_var(M);
@@ -591,10 +583,10 @@ distance_t inpainting::execute()
 
 	bool *pmask;
 
-	draw_patches(1);
-	draw_patches(3);
-	draw_patches(4);
-//	draw_patches(50);
+	draw_patches(10);
+	draw_patches(200);
+	draw_patches(120);
+	draw_patches(50);
 	//draw_patches(400);
 	//draw_patches(500);
 	//draw_patches(56);
