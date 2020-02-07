@@ -114,6 +114,9 @@ class patch
 		void jet_fit_directions(che * mesh,
 								const index_t & v
 								);
+		void normal_fit_directions(che * mesh,
+								const index_t & v
+								);
 		real_t get_min_z();
 		real_t get_max_z();
 

@@ -60,46 +60,6 @@ void inpainting::load_mask()
 			}
 				
 		}
-		/*
-/////////////////////////
-		V.zeros(mesh->n_vertices());
-		size_t * percentages_size = new size_t[M];
-
-		int k;
-		size_t rn;
-		// create initial desired percentage sizes
-		#pragma omp for 
-		for(index_t s = 0; s < M; s++)
-		{
-			percentages_size[s] = patches[s].vertices.size() - ceil(patches[s].vertices.size() * (percent/ 100.0)) ;
-			//Generate random mask according to a percentage of patches capacity
-			std::default_random_engine generator;
-			std::uniform_int_distribution<int> distribution(0, patches[s].vertices.size());
-			//if some patch has been already masked then it already counts 
-			for(auto i: patches[s].vertices)
-				if(mask[i] && percentages_size[s])
-				{
-					percentages_size[s]--;
-				} 
-
-			
-			k = 0;
-		//	gproshan_debug_var(percentages_size[s]);
-		//	gproshan_debug_var(patches[s].vertices.size());
-			while(k < percentages_size[s] )
-			{
-				//gproshan_debug_var(percentages_size[s]);
-				
-				rn = distribution(generator);
-				mask[patches[s].vertices[rn]] = 1;
-				V(patches[s].vertices[rn]) = 1;
-				k++;
-				
-			}
-		}
-	/*	for(index_t s = 0; s < n_vertices; s++)
-			gproshan_debug_var(mask[s]);
-*/
 		V.save(f_mask);
 	}
 	
@@ -206,6 +166,7 @@ void  inpainting::init_radial_patches()
 	s = 0;
 	size_t it = 0;
 	index_t * toplevel = new index_t[mesh->n_vertices()];
+
 	while(it < M)
 	{
 		
@@ -213,9 +174,9 @@ void  inpainting::init_radial_patches()
 		// Check the points are inside and add them
 		//	while( )
 		// mask at the end
-		if(!covered[sample(it)])
+	//	if(!covered[sample(it)])
 		{
-			patches[s].init_radial_disjoint(mesh, phi_basis->get_radio(), avg_p, sample(s), dictionary::T, vertices[s], toplevel);
+			patches[s].init_radial_disjoint(mesh, phi_basis->get_radio(), avg_p, sample(it), dictionary::T, vertices[it], toplevel);
 			for(auto i:patches[s].vertices)
 				if(!covered[i]) 
 				{
@@ -248,7 +209,7 @@ void  inpainting::init_radial_patches()
 	outlv.save(f_points);
 
 	
-	assert(outliers.size()==0);
+	//assert(outliers.size()==0);
 	M = s; // updating number of vertices
 
 	gproshan_debug_var(M);
@@ -581,9 +542,9 @@ distance_t inpainting::execute()
 	bool *pmask;
 
 	draw_patches(10);
-	draw_patches(200);
+/*	draw_patches(200);
 	draw_patches(120);
-	draw_patches(50);
+	draw_patches(50);*/
 	//draw_patches(400);
 	//draw_patches(500);
 	//draw_patches(56);

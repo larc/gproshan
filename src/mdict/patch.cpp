@@ -64,7 +64,7 @@ void patch::init_radial_disjoint(che * mesh, const distance_t & radio_, const si
 	gather_vertices(mesh, v, n_toplevels, toplevel);
 	jet_fit_directions(mesh, v);
 	
-	geodesics geo(mesh, {v}, geodesics::FM,  NULL, false,  mesh->n_vertices());
+	geodesics geo(mesh, {v}, geodesics::FM,  NULL, false,  mesh->n_vertices()/20);
 	index_t * indexes = new index_t[geo.n_sorted_index()];
 	geo.copy_sorted_index(indexes, geo.n_sorted_index());
 
@@ -420,6 +420,44 @@ void patch::jet_fit_directions(che * mesh, const index_t & v)
 	T(2, 2) = monge_form.normal_direction()[2];
 
 }
+
+void patch::normal_fit_directions(che * mesh, const index_t & v)
+{
+	x.set_size(3);
+	x(0) = mesh->gt(v).x;
+	x(1) = mesh->gt(v).y;
+	x(2) = mesh->gt(v).z;
+
+	
+	vertex nz = mesh->normal(v);
+	vertex nx = mesh->gt_vt_next_evt(v);
+//	GT[VT[next(EVT[v]]]
+	vertex c = mesh->get_vertex(v);
+	vertex ny;
+	nx = nx - c ;
+	nx = nx - ((nx,nz)*nz);
+
+	ny = (nz * nx);
+	nx.unit();
+	ny.unit();
+	nz.unit();
+
+
+	T.set_size(3, 3);
+	T(0, 0) = nx[0];
+	T(1, 0) = nx[1];
+	T(2, 0) = nx[2];
+	T(0, 1) = ny[0];
+	T(1, 1) = ny[1];
+	T(2, 1) = ny[2];
+	T(0, 2) = nz[0];
+	T(1, 2) = nz[1];
+	T(2, 2) = nz[2];
+
+//	T = normalise(T);
+
+}
+
 
 real_t patch::get_min_z()
 {
