@@ -17,8 +17,12 @@
 #include "imgui_impl_opengl3.h"
 
 #ifdef GPROSHAN_EMBREE
-	#include "embree.h"
+	#include "rt_embree.h"
 #endif // GPROSHAN_EMBREE
+
+#ifdef GPROSHAN_OPTIX
+	#include "rt_optix.h"
+#endif // GPROSHAN_OPTIX
 
 
 #define N_MESHES 12
@@ -110,6 +114,10 @@ class viewer
 	#ifdef GPROSHAN_EMBREE
 		rt::embree * rt_embree;
 	#endif // GPROSHAN_EMBREE
+	
+	#ifdef GPROSHAN_OPTIX
+		rt::optix * rt_optix;
+	#endif // GPROSHAN_OPTIX
 
 		bool action;
 

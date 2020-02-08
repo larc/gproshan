@@ -8,7 +8,7 @@
 
 #include "che.h"
 
-#define PTP_TOL 1e-3
+#define PTP_TOL 1e-4
 
 
 // geometry processing and shape analysis framework

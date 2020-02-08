@@ -1,4 +1,4 @@
-#include "embree.h"
+#include "rt_embree.h"
 
 #ifdef GPROSHAN_EMBREE
 

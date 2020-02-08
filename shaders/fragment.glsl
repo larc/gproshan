@@ -95,8 +95,6 @@ void main()
 	vec3 R = 2 * dot(L, N) * N - L;
 	vec3 one = vec3(1);
 
-	FragColor = vec4(diffuse(N, L) * color + .1 * specular(N, L, E) * one + .5 * fresnel(N,E) * one, 1);
-
 	if(render_wireframe)
 	{
 		vec3 delta = fwidth(edge_dist);
@@ -104,7 +102,9 @@ void main()
 
 		float d = min(min(tmp.x, tmp.y), tmp.z);
 
-		FragColor = mix(vec4(.1, .1, .1, 1), FragColor, d);
+		color = mix(vec3(.2), color, d);
 	}
+
+	FragColor = vec4(diffuse(N, L) * color + .1 * specular(N, L, E) * one + .5 * fresnel(N,E) * one, 1);
 }
 

@@ -606,6 +606,30 @@ void viewer::render_embree()
 
 void viewer::render_optix()
 {
+#ifdef GPROSHAN_OPTIX
+
+	if(rt_optix == nullptr)
+	{
+		double time_build_embree;
+		TIC(time_build_embree);
+
+			rt_optix = new rt::optix;
+			rt_optix->add_mesh(mesh());
+			rt_optix->build_bvh();
+
+		TOC(time_build_embree);
+		gproshan_log_var(time_build_embree);
+	}
+
+	rt_optix->pathtracing(	glm::uvec2(viewport_width, viewport_height),
+							view_mat, proj_mat, {glm::vec3(light[1], light[2], light[3])}, action);
+	
+	action = false;
+
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glDrawPixels(viewport_width, viewport_height, GL_RGBA, GL_FLOAT, rt_optix->img);
+
+#endif // GPROSHAN_OPTIX
 }
 
 void viewer::draw_scene()
