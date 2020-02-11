@@ -62,7 +62,7 @@ void patch::init_radial_disjoint(che * mesh, const distance_t & radio_, const si
 	index_t * toplevel = _toplevel ? _toplevel : new index_t[mesh->n_vertices()];
 	
 	gather_vertices(mesh, v, n_toplevels, toplevel);
-	jet_fit_directions(mesh, v);
+	normal_fit_directions(mesh, v);
 	
 	geodesics geo(mesh, {v}, geodesics::FM,  NULL, false,  mesh->n_vertices()/20);
 	index_t * indexes = new index_t[geo.n_sorted_index()];
@@ -454,7 +454,7 @@ void patch::normal_fit_directions(che * mesh, const index_t & v)
 	T(1, 2) = nz[1];
 	T(2, 2) = nz[2];
 
-//	T = normalise(T);
+	T = normalise(T);
 
 }
 

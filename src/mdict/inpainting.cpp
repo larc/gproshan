@@ -542,9 +542,10 @@ distance_t inpainting::execute()
 	bool *pmask;
 
 	draw_patches(10);
+	draw_patches(50);
 /*	draw_patches(200);
 	draw_patches(120);
-	draw_patches(50);*/
+	*/
 	//draw_patches(400);
 	//draw_patches(500);
 	//draw_patches(56);
