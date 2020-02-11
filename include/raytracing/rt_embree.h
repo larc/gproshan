@@ -70,15 +70,8 @@ class embree : public raytracing
 	RTCIntersectContext intersect_context;
 
 	public:
-		embree();
+		embree(const std::vector<che *> & meshes);
 		~embree();
-
-		void build_bvh();
-		index_t add_sphere(const glm::vec4 & xyzr);
-		index_t add_mesh(const che * mesh, const glm::mat4 & model_matrix = glm::mat4(1.f));
-		index_t add_point_cloud(const che * mesh, const glm::mat4 & model_matrix = glm::mat4(1.f));
-
-		glm::vec4 li(const ray_hit & r, const glm::vec3 & light);
 	
 	private:
 		bool intersect(ray_hit & r);
@@ -86,6 +79,13 @@ class embree : public raytracing
 
 		const glm::vec4 intersect_li(const glm::vec3 & org, const glm::vec3 & dir, const glm::vec3 & light);
 		const float intersect_depth(const glm::vec3 & org, const glm::vec3 & dir);
+		
+		void build_bvh();
+		index_t add_sphere(const glm::vec4 & xyzr);
+		index_t add_mesh(const che * mesh, const glm::mat4 & model_matrix = glm::mat4(1.f));
+		index_t add_point_cloud(const che * mesh, const glm::mat4 & model_matrix = glm::mat4(1.f));
+
+		glm::vec4 li(const ray_hit & r, const glm::vec3 & light);
 };
 
 

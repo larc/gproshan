@@ -17,7 +17,7 @@ void embree_error(void * ptr, RTCError error, const char * str)
 	fprintf(stderr, "EMBREE ERROR: %s\n", str);
 }
 
-embree::embree()
+embree::embree(const std::vector<che *> & meshes)
 {
 	device = rtcNewDevice(NULL);
 	rtcSetDeviceErrorFunction(device, embree_error, NULL);
@@ -25,6 +25,11 @@ embree::embree()
 	scene = rtcNewScene(device);
 	
 	rtcInitIntersectContext(&intersect_context);
+
+	for(auto & m: meshes)
+		add_mesh(m);
+
+	build_bvh();
 }
 
 embree::~embree()

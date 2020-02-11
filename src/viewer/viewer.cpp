@@ -518,10 +518,7 @@ void viewer::raycasting(viewer * view)
 
 	gproshan_log(VIEWER);
 
-	rt::embree rc;
-	
-	rc.add_mesh(view->mesh());
-	rc.build_bvh();
+	rt::embree rc({view->mesh()});
 	
 	float * frame = rc.raycaster(	glm::uvec2(view->viewport_width, view->viewport_height),
 									view->view_mat, view->proj_mat	
@@ -589,9 +586,7 @@ void viewer::render_embree()
 		double time_build_embree;
 		TIC(time_build_embree);
 
-			rt_embree = new rt::embree;
-			rt_embree->add_mesh(mesh());
-			rt_embree->build_bvh();
+			rt_embree = new rt::embree({mesh()});
 
 		TOC(time_build_embree);
 		gproshan_log_var(time_build_embree);
@@ -677,7 +672,7 @@ void viewer::draw_selected_vertices()
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glColor3f(0., 0.5, 0.5);
 
-	double h = 0.02 * cam.zoom;
+//	double h = 0.02 * cam.zoom;
 	
 	for(int v: select_vertices)
 	{
