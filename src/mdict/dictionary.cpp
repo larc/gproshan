@@ -9,6 +9,7 @@
 
 #include <cassert>
 #include <CImg.h>
+#include <fstream>
 
 #ifndef CGAL_PATCH_DEFS
 	#define CGAL_PATCH_DEFS
@@ -187,6 +188,30 @@ void dictionary::load_curvatures(a_vec & curvatures)
 	}
 	gproshan_debug(curvatures ready);
 
+}
+
+void dictionary::load_features(vector<index_t> & v_feat)
+{
+	string f_feat = tmp_file_path(mesh->name_size()  + ".int");
+	ifstream inp;
+    inp.open(f_feat.c_str(), ifstream::in);
+    inp.close();
+	index_t tmp;
+
+    if(inp.fail()){
+		inp.clear(ios::failbit);
+		// call the function using system
+		//g++ -O3 *.cpp -lgsl -lCGAL -o harris3d
+		//./harris3d fandisk.off example.prop 
+	}
+	else // recover it
+	{
+		while(!inp.eof())
+		{
+			inp>>tmp;
+			v_feat.push_back(tmp);
+		}
+	}
 }
 
 void dictionary::init_patches(const bool & reset, const fmask_t & mask)

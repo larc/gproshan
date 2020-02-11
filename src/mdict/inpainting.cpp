@@ -280,19 +280,21 @@ void  inpainting::init_radial_curvature_patches()
 	load_curvatures(curvatures);
 	TOC(d_time)
 	gproshan_debug_var(d_time);
-
+/*
 	string f_norm = tmp_file_path(mesh->name_size()  + ".n");
 	
 	a_mat normals;
 	normals.load(f_norm);
 
 	priority_queue< pair<real_t, index_t> > Q;
+	real_t max =  - INFINITY ;
 	for(index_t v = 0; v < mesh->n_vertices(); v++)
 	{
 
 		// -1 * curvatures(v) alta curvatura
 		// curvatures(v) baja curvatura
-		 Q.push ( make_pair( -1 * curvatures(v), v ) );
+		if(abs( curvatures(v)) > max) max = abs( curvatures(v));
+		 Q.push ( make_pair( abs( curvatures(v) ), v ) );
 	}
 
 	bool covered[mesh->n_vertices()];
@@ -327,10 +329,29 @@ void  inpainting::init_radial_curvature_patches()
 		}
 		Q.pop();
 	}
+	
 	M = count;
 	gproshan_debug_var(M);
 	vector<index_t> outliers;
 	string f_points = tmp_file_path(mesh->name_size()  + ".points");
+	size_t i=0;
+	gproshan_debug_var(max);
+	while( i<= mesh->n_vertices()/2) 
+	{
+		index_t s = Q.top().second;
+		real_t c = Q.top().first;
+		outliers.push_back(s);
+		
+		gproshan_debug_var(max/5);
+		if(c < max/5) 
+		{
+			
+			break;
+		}
+		Q.pop();
+		i++;
+	}
+	/*
 	for(index_t i = 0; i < mesh->n_vertices(); i++)
 	{
 		if(!covered[i] )
@@ -344,8 +365,9 @@ void  inpainting::init_radial_curvature_patches()
 	{	
 		outlv(i) = outliers[i];
 	}
-	outlv.save(f_points);
+	outlv.save(f_points);*/
 
+/*
 	//////////////////////////////////////////////////////////////////////////////////
 	load_mask();
 
@@ -398,7 +420,7 @@ void  inpainting::init_radial_curvature_patches()
 		phi_basis->discrete(p.phi, p.xyz);
 		gproshan_debug_var(s);
 
-	} 
+	} */
 	gproshan_log(radial patches are ready);
 
 }
