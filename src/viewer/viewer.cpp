@@ -45,6 +45,10 @@ viewer::viewer()
 		rt_embree = nullptr;
 	#endif // GPROSHAN_EMBREE
 
+	#ifdef GPROSHAN_OPTIX
+		rt_optix = nullptr;
+	#endif // GPROSHAN_OPTIX
+
 	render_wireframe = false;
 	render_wireframe_fill = false;
 	render_gradient_field = false;

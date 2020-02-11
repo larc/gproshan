@@ -1,7 +1,6 @@
 #include "che.h"
 
 #include "include_arma.h"
-#include "viewer/viewer.h"
 
 #include <cstring>
 #include <cmath>
