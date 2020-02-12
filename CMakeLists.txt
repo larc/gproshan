@@ -20,12 +20,14 @@ endif(CUDA_FOUND)
 find_package(Embree 3.7)
 if(EMBREE_LIBRARY)
 	add_definitions(-DGPROSHAN_EMBREE)
+	include_directories(${EMBREE_INCLUDE_DIRS})
 endif(EMBREE_LIBRARY)
 
 
 find_package(OptiX 7.0)
 if(OptiX_INCLUDE)
 	add_definitions(-DGPROSHAN_OPTIX)
+	include_directories(${OptiX_INCLUDE})
 endif(OptiX_INCLUDE)
 
 
@@ -59,8 +61,6 @@ include_directories(${AMADILLO_INCLUDE_DIR})
 include_directories(${EIGEN3_INCLUDE_DIR})
 include_directories(${SuiteSparse_INCLUDE_DIRS})
 include_directories(${CGAL_INCLUDE_DIRS})
-include_directories(${EMBREE_INCLUDE_DIRS})
-include_directories(${OptiX_INCLUDE})
 
 include_directories(${gproshan_SOURCE_DIR}/include)
 include_directories(${gproshan_SOURCE_DIR}/include/viewer)
