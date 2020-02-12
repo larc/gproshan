@@ -82,6 +82,10 @@ viewer::~viewer()
 	#ifdef GPROSHAN_EMBREE
 		if(rt_embree) delete rt_embree;
 	#endif // GPROSHAN_EMBREE
+
+	#ifdef GPROSHAN_OPTIX
+		if(rt_optix) delete rt_optix;
+	#endif // GPROSHAN_OPTIX
 }
 
 bool viewer::run()

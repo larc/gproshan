@@ -92,7 +92,7 @@ if(CUDA_FOUND)
 	add_library(gproshan_cu STATIC ${cu_sources})
 	set_target_properties(gproshan_cu PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 	target_link_libraries(gproshan_cu gproshan_cpp)
-	target_link_libraries(gproshan_cu ${CUDA_LIBRARIES} ${CUDA_cublas_LIBRARY} ${CUDA_cusolver_LIBRARY} ${CUDA_cusparse_LIBRARY})
+	target_link_libraries(gproshan_cu ${CUDA_LIBRARIES} ${CUDA_CUDA_LIBRARY} ${CUDA_cublas_LIBRARY} ${CUDA_cusolver_LIBRARY} ${CUDA_cusparse_LIBRARY})
 endif(CUDA_FOUND)
 
 add_executable(gproshan gproshan.cpp)

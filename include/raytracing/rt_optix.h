@@ -20,6 +20,13 @@ namespace gproshan::rt {
 
 class optix : public raytracing
 {
+	CUcontext cuda_context;
+	CUstream stream;
+	cudaDeviceProp device_prop;
+
+	OptixDeviceContext optix_context;
+
+
 	public:
 		optix(const std::vector<che *> & meshes);
 		~optix();
