@@ -609,15 +609,13 @@ void viewer::render_optix()
 
 	if(rt_optix == nullptr)
 	{
-		double time_build_embree;
-		TIC(time_build_embree);
+		double time_build_optix;
+		TIC(time_build_optix);
 
-			rt_optix = new rt::optix;
-			rt_optix->add_mesh(mesh());
-			rt_optix->build_bvh();
+			rt_optix = new rt::optix({mesh()});
 
-		TOC(time_build_embree);
-		gproshan_log_var(time_build_embree);
+		TOC(time_build_optix);
+		gproshan_log_var(time_build_optix);
 	}
 
 	rt_optix->pathtracing(	glm::uvec2(viewport_width, viewport_height),

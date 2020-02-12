@@ -26,10 +26,7 @@ embree::embree(const std::vector<che *> & meshes)
 	
 	rtcInitIntersectContext(&intersect_context);
 
-	for(auto & m: meshes)
-		add_mesh(m);
-
-	build_bvh();
+	build_bvh(meshes);
 }
 
 embree::~embree()
@@ -38,8 +35,11 @@ embree::~embree()
 	rtcReleaseDevice(device);
 }
 
-void embree::build_bvh()
+void embree::build_bvh(const std::vector<che *> & meshes)
 {
+	for(auto & m: meshes)
+		add_mesh(m);
+
 	rtcCommitScene(scene);
 }
 
@@ -60,7 +60,7 @@ index_t embree::add_sphere(const glm::vec4 & xyzr)
 	return geom_id;
 }
 
-index_t embree::add_mesh(const che * mesh, const glm::mat4 & model_matrix)
+index_t embree::add_mesh(const che * mesh)
 {
 	RTCGeometry geom = rtcNewGeometry(device, RTC_GEOMETRY_TYPE_TRIANGLE);
 
@@ -75,13 +75,13 @@ index_t embree::add_mesh(const che * mesh, const glm::mat4 & model_matrix)
 																RTC_FORMAT_UINT3, 3 * sizeof(index_t),
 																mesh->n_faces()
 																);
-	
+#ifdef SINGLE_P
+	memcpy(vertices, &mesh->gt(0), mesh->n_vertices() * sizeof(vertex));
+#else
 	#pragma omp parallel for
 	for(index_t i = 0; i < mesh->n_vertices(); i++)
-	{
-		glm::vec4 v(mesh->gt(i).x, mesh->gt(i).y, mesh->gt(i).z, 1.f);
-		vertices[i] = glm::vec3(model_matrix * v);
-	}
+		vertices[i] = glm::vec3(mesh->gt(i).x, mesh->gt(i).y, mesh->gt(i).z);
+#endif // SINGLE_P
 	
 	memcpy(tri_idxs, &mesh->vt(0), mesh->n_half_edges() * sizeof(index_t));
 
@@ -93,7 +93,7 @@ index_t embree::add_mesh(const che * mesh, const glm::mat4 & model_matrix)
 	return geom_id;
 }
 
-index_t embree::add_point_cloud(const che * mesh, const glm::mat4 & model_matrix)
+index_t embree::add_point_cloud(const che * mesh)
 {
 	RTCGeometry geom = rtcNewGeometry(device, RTC_GEOMETRY_TYPE_ORIENTED_DISC_POINT);
 

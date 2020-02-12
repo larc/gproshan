@@ -13,7 +13,7 @@
 namespace gproshan::rt {
 
 
-optix::optix()
+optix::optix(const std::vector<che *> & meshes)
 {
 	optixInit();
 }
@@ -22,8 +22,9 @@ optix::~optix()
 {
 }
 
-void optix::build_bvh()
+void optix::build_as(const std::vector<che *> & meshes)
 {
+
 }
 
 index_t optix::add_sphere(const glm::vec4 & xyzr)
