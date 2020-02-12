@@ -28,10 +28,8 @@ class optix : public raytracing
 		const glm::vec4 intersect_li(const glm::vec3 & org, const glm::vec3 & dir, const glm::vec3 & light);
 		const float intersect_depth(const glm::vec3 & org, const glm::vec3 & dir);
 		
-		void build_as(const std::vector<che *> & meshes);
-		index_t add_sphere(const glm::vec4 & xyzr);
-		index_t add_mesh(const che * mesh, const glm::mat4 & model_matrix = glm::mat4(1.f));
-		index_t add_point_cloud(const che * mesh, const glm::mat4 & model_matrix = glm::mat4(1.f));
+		OptixTraversableHandle build_as(const std::vector<che *> & meshes);
+		void add_mesh(OptixBuildInput & optix_mesh, uint32_t & optix_trig_flags, const che * mesh);
 };
 
 
