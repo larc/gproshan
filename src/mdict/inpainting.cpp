@@ -273,14 +273,20 @@ void  inpainting::init_radial_patches()
 
 void  inpainting::init_radial_curvature_patches()
 {
-
+	// compute features
+	vector<index_t> features;
+	TIC(d_time) 
+	load_features(features);
+	TOC(d_time)
+	gproshan_debug_var(d_time);
+	//gproshan_debug_var(features.size());
 	//compute mean curvature 
-	a_vec curvatures;
+/*	a_vec curvatures;
 	TIC(d_time) 
 	load_curvatures(curvatures);
 	TOC(d_time)
 	gproshan_debug_var(d_time);
-/*
+
 	string f_norm = tmp_file_path(mesh->name_size()  + ".n");
 	
 	a_mat normals;
@@ -333,7 +339,7 @@ void  inpainting::init_radial_curvature_patches()
 	M = count;
 	gproshan_debug_var(M);
 	vector<index_t> outliers;
-	string f_points = tmp_file_path(mesh->name_size()  + ".points");
+	
 	size_t i=0;
 	gproshan_debug_var(max);
 	while( i<= mesh->n_vertices()/2) 
@@ -359,13 +365,14 @@ void  inpainting::init_radial_curvature_patches()
 			outliers.push_back(i);
 		}
 			
-	}
-	a_vec outlv(outliers.size());
-	for(index_t i = 0; i < outliers.size(); i++)
+	}*/
+	string f_points = tmp_file_path(mesh->name_size()  + ".points");
+	a_vec outlv(features.size());
+	for(index_t i = 0; i < features.size(); i++)
 	{	
-		outlv(i) = outliers[i];
+		outlv(i) = features[i];
 	}
-	outlv.save(f_points);*/
+	outlv.save(f_points);
 
 /*
 	//////////////////////////////////////////////////////////////////////////////////

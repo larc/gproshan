@@ -192,26 +192,34 @@ void dictionary::load_curvatures(a_vec & curvatures)
 
 void dictionary::load_features(vector<index_t> & v_feat)
 {
-	string f_feat = tmp_file_path(mesh->name_size()  + ".int");
+	string f_feat = tmp_file_path(mesh->name()  + ".int");
 	ifstream inp;
     inp.open(f_feat.c_str(), ifstream::in);
-    inp.close();
+  
 	index_t tmp;
 
+	gproshan_debug_var(f_feat);
     if(inp.fail()){
 		inp.clear(ios::failbit);
 		// call the function using system
 		//g++ -O3 *.cpp -lgsl -lCGAL -o harris3d
-		//./harris3d fandisk.off example.prop 
+		
+		string command = "../../Harris3D-Cpp/harris3d " +   tmp_file_path(mesh->name()) + ".off" +  " ../tmp/example.prop"; 
+		gproshan_debug_var(command);
+		system(command.c_str()); 
+		gproshan_debug(created);
+		inp.close();
+		inp.open(f_feat.c_str(), ifstream::in);
 	}
-	else // recover it
+
+	gproshan_debug(exists);
+	
+	while(!inp.eof())
 	{
-		while(!inp.eof())
-		{
-			inp>>tmp;
-			v_feat.push_back(tmp);
-		}
+		inp>>tmp;
+		v_feat.push_back(tmp);
 	}
+	inp.close();
 }
 
 void dictionary::init_patches(const bool & reset, const fmask_t & mask)

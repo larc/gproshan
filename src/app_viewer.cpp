@@ -541,7 +541,7 @@ void viewer_process_mask()
 	dict.init_radial_curvature_patches();
 	//dict.init_voronoi_patches();
 	delete phi;
-	viewer::mesh().update_colors(&dict[0]);
+	//viewer::mesh().update_colors(&dict[0]);
 	string f_points = tmp_file_path(viewer::mesh()->name_size()  + ".points");
 	a_vec points_out;
 	points_out.load(f_points);
