@@ -538,7 +538,7 @@ void viewer_process_mask()
 	basis * phi = new basis_dct(n);
 	inpainting dict(viewer::mesh(),  phi, m, M, f, learn, avg_p, percentage);
 
-	dict.init_radial_curvature_patches();
+	dict.init_radial_feature_patches();
 	//dict.init_voronoi_patches();
 	delete phi;
 	//viewer::mesh().update_colors(&dict[0]);

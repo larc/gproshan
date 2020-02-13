@@ -55,16 +55,14 @@ void patch::init_disjoint(che * mesh, const index_t & v, const size_t & n_toplev
 	if(!_toplevel) delete [] toplevel; // If it is null
 }
 
-void patch::init_radial_disjoint(che * mesh, const distance_t & radio_, const size_t & avg_p, const index_t & v, const size_t & n_toplevels, vector<index_t> & _vertices, index_t * _toplevel)
+void patch::init_radial_disjoint(che * mesh, const distance_t & radio_, const index_t & v)
 {
 	radio = radio_;
 	//radio = -INFINITY;
-	index_t * toplevel = _toplevel ? _toplevel : new index_t[mesh->n_vertices()];
-	
-	gather_vertices(mesh, v, n_toplevels, toplevel);
+
 	normal_fit_directions(mesh, v);
-	
-	geodesics geo(mesh, {v}, geodesics::FM,  NULL, false,  mesh->n_vertices()/20);
+
+	geodesics geo(mesh, {v}, geodesics::FM,  NULL, false, 0, radio_);
 	index_t * indexes = new index_t[geo.n_sorted_index()];
 	geo.copy_sorted_index(indexes, geo.n_sorted_index());
 
@@ -72,6 +70,8 @@ void patch::init_radial_disjoint(che * mesh, const distance_t & radio_, const si
 	vertex n;
 	n.x = vn(0); n.y = vn(1); n.z = vn(2);
 	vertex p, c;
+	vertices.push_back(v);
+
 	for(int i=1; i<geo.n_sorted_index(); i++)
 	{
 		
@@ -86,7 +86,7 @@ void patch::init_radial_disjoint(che * mesh, const distance_t & radio_, const si
 		{
 			/*if(*p > radio)
 				radio = *p;*/
-			_vertices.push_back(indexes[i]);
+			vertices.push_back(indexes[i]);
 		}
 		else
 		{
@@ -95,9 +95,7 @@ void patch::init_radial_disjoint(che * mesh, const distance_t & radio_, const si
 
 	}
 	
-	vertices = std::move(_vertices);
-
-	if(!_toplevel) delete [] toplevel; // If it is null
+//	vertices = std::move(_vertices);
 }
 
 

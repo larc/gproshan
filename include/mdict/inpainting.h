@@ -26,7 +26,7 @@ class inpainting : public dictionary
 		void load_mask();
 		void init_voronoi_patches();
 		void init_radial_patches();
-		void init_radial_curvature_patches();
+		void init_radial_feature_patches();
 		
 		distance_t execute_tmp();
 	private:
