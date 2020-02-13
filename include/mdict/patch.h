@@ -61,7 +61,8 @@ class patch
 					index_t * _toplevel = nullptr);
 		void init_radial_disjoint(che * mesh,
 					const distance_t & radio_,
-					const index_t & v);
+					const index_t & v,
+					bool * covered);
 		void init_curvature_growing(che * mesh,
 					const index_t & v,
 					a_mat & normals);

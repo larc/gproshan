@@ -55,10 +55,10 @@ void patch::init_disjoint(che * mesh, const index_t & v, const size_t & n_toplev
 	if(!_toplevel) delete [] toplevel; // If it is null
 }
 
-void patch::init_radial_disjoint(che * mesh, const distance_t & radio_, const index_t & v)
+void patch::init_radial_disjoint(che * mesh, const distance_t & radio_, const index_t & v, bool * covered)
 {
-	radio = radio_;
-	//radio = -INFINITY;
+	//radio = radio_;
+	radio = -INFINITY;
 
 	normal_fit_directions(mesh, v);
 
@@ -80,12 +80,11 @@ void patch::init_radial_disjoint(che * mesh, const distance_t & radio_, const in
 
 		p = p - c ;
 		p = p - ((p,n)*n);
-		if(*p <= radio )
-		//if(*p <= radio && ( n, mesh->normal(indexes[i]) ) >= 0)	
-		//if( *p <= 2*radio && acos( (n, mesh->normal(indexes[i]) ) ) <= PI/2 )
+		//if(*p <= radio )
+		if( !covered[indexes[i]] && acos( (n, mesh->normal(indexes[i]) ) ) <= PI/2 )
 		{
-			/*if(*p > radio)
-				radio = *p;*/
+			if(*p > radio)
+				radio = *p;
 			vertices.push_back(indexes[i]);
 		}
 		else
