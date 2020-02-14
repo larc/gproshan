@@ -55,7 +55,7 @@ void patch::init_disjoint(che * mesh, const index_t & v, const size_t & n_toplev
 	if(!_toplevel) delete [] toplevel; // If it is null
 }
 
-void patch::init_radial_disjoint(che * mesh, const distance_t & radio_, const index_t & v, bool * covered)
+void patch::init_radial_disjoint(che * mesh, const distance_t & radio_, const index_t & v, distance_t & euc_radio)
 {
 	//radio = radio_;
 	radio = -INFINITY;
@@ -71,6 +71,7 @@ void patch::init_radial_disjoint(che * mesh, const distance_t & radio_, const in
 	n.x = vn(0); n.y = vn(1); n.z = vn(2);
 	vertex p, c;
 	vertices.push_back(v);
+	euc_radio = -INFINITY;
 
 	for(int i=1; i<geo.n_sorted_index(); i++)
 	{
@@ -81,10 +82,17 @@ void patch::init_radial_disjoint(che * mesh, const distance_t & radio_, const in
 		p = p - c ;
 		p = p - ((p,n)*n);
 		//if(*p <= radio )
-		if( !covered[indexes[i]] && acos( (n, mesh->normal(indexes[i]) ) ) <= PI/2 )
+		if( acos( (n, mesh->normal(indexes[i]) ) ) <= PI/2 )
 		{
 			if(*p > radio)
+			{
 				radio = *p;
+			}
+			//compute euclidean radio
+			p = mesh->get_vertex(indexes[i]);
+			if(*(p - c) > euc_radio)
+				euc_radio = *(p - c);
+			//gproshan_debug_var(euc_radio);
 			vertices.push_back(indexes[i]);
 		}
 		else

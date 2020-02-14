@@ -196,7 +196,7 @@ void dictionary::load_features(vector<index_t> & v_feat)
 	ifstream inp;
     inp.open(f_feat.c_str(), ifstream::in);
   
-	index_t tmp;
+	index_t tam;
 
 	gproshan_debug_var(f_feat);
     if(inp.fail()){
@@ -213,12 +213,15 @@ void dictionary::load_features(vector<index_t> & v_feat)
 	}
 
 	gproshan_debug(exists);
-	
-	while(!inp.eof())
+	inp>>tam;
+	v_feat.resize(tam);
+	for(int i=0; i<tam; i++)
+		inp>>v_feat[i];
+	/*while(!inp.eof())
 	{
 		inp>>tmp;
 		v_feat.push_back(tmp);
-	}
+	}*/
 	inp.close();
 }
 
