@@ -314,7 +314,7 @@ void  inpainting::init_radial_feature_patches()
 				double distY = interestPoints[j].getY() - candidatePoints[i].getY();
 				double distZ = interestPoints[j].getZ() - candidatePoints[i].getZ();*/
 			
-				if( *(v_patch - v_seed) < radios[j] ) // radio of each patch
+				if( *(v_patch - v_seed) < 1.2*radios[j] ) // radio of each patch
 					found = true;
 				j++;
 			}
@@ -322,20 +322,24 @@ void  inpainting::init_radial_feature_patches()
 			{	//it is a new patch 
 				// get_radious
 				patch p;
-				p.init_radial_disjoint(mesh, 2*max_radio, features[i], euc_radio);
+				p.init_radial_disjoint(mesh, 1.5*max_radio, features[i], euc_radio);
 		
 				gproshan_debug_var(p.vertices.size());
-				for(index_t k = 0; k < p.vertices.size(); k++)
+				if(p.vertices.size() >= 7)
 				{
-					covered[ p.vertices[k] ] = 1;
-				}	
-				patches.push_back(p);
-				seeds.push_back(features[i]);
-				radios.push_back( euc_radio );
-				count++;
-			//	gproshan_debug_var(euc_radio);
-			//	gproshan_debug_var(indexes[i]);
-			//	gproshan_debug_var(p.vertices.size());
+					for(index_t k = 0; k < p.vertices.size(); k++)
+					{
+						covered[ p.vertices[k] ] = 1;
+					}	
+					patches.push_back(p);
+					seeds.push_back(features[i]);
+					radios.push_back( euc_radio );
+					count++;
+				//	gproshan_debug_var(euc_radio);
+				//	gproshan_debug_var(indexes[i]);
+				//	gproshan_debug_var(p.vertices.size());
+				}
+		
 			}
 				
 	}
@@ -410,8 +414,8 @@ void  inpainting::init_radial_feature_patches()
 	}
 	a_vec outlv(outliers.size());
 	gproshan_debug_var(outliers.size());
-	for(index_t i = 0; i < outliers.size(); i++)
-		outlv(i) = outliers[i];
+	for(index_t i = 0; i < seeds.size(); i++)
+		outlv(i) = seeds[i];
 
 	/*for(index_t i = 0; i < seeds.size(); i++)
 		outlv(i) = seeds[i];

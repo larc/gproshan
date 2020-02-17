@@ -62,6 +62,10 @@ vec3 colormap(float x)
 	float b = clamp(colormap_blue(x) / 255.0, .0, .9);
 	return vec3(r, g, b);
 }
+//winter
+vec3 colormap2(float x) {
+    return vec3(0.0, clamp(x, 0.0, 1.0), clamp(-0.5 * x + 1.0, 0.0, 1.0));
+}
 
 void main()
 {
