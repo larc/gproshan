@@ -71,7 +71,7 @@ class viewer
 {
 	protected:
 
-		typedef void (*function_t) (viewer *);
+		using function_t = void (*) (viewer *);
 		
 		struct process_t
 		{
@@ -79,6 +79,9 @@ class viewer
 			std::string name;
 			function_t function;
 			index_t sub_menu;
+			
+			process_t() = default;
+			process_t(const std::string & k, const std::string & n, function_t f, const index_t & sm = NIL): key(k), name(n), function(f), sub_menu(sm) {};
 		};
 
 		static const int m_window_size[N_MESHES][2];

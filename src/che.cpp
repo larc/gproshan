@@ -602,7 +602,7 @@ void che::multiplicate_vertices()
 	index_t * aVT = new index_t[nh + 6 * n_edges_];
 	index_t * aOT = new index_t[nh + 6 * n_edges_];
 	index_t * aEVT = new index_t[nv + n_edges_];
-	index_t * aET = new index_t[ne + 3 *  n_edges_];
+	index_t * aET = new index_t[ne + 3 * n_edges_];
 	index_t * aEHT = new index_t[nh + 6 * n_edges_];
 
 	memcpy(aGT, GT, n_vertices_ * sizeof(vertex));

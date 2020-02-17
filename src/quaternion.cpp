@@ -10,13 +10,8 @@ using namespace std;
 namespace gproshan {
 
 
-quaternion :: quaternion(void)
+quaternion :: quaternion()
 : s(0.), v(0., 0., 0.)
-{
-}
-
-quaternion :: quaternion(const quaternion & q)
-: s(q.s), v(q.v)
 {
 }
 

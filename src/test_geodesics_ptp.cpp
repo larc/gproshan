@@ -27,15 +27,14 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 
 	int n_test = nargs == 5 ? atoi(args[4]) : 10;
 
-	FILE * ftable;
-	#ifdef SINGLE_P
-		ftable = fopen("ptp_results.tex", "w");
-	#else
-		ftable = fopen("ptp_results_double.tex", "w");
-	#endif
+#ifdef SINGLE_P
+	FILE * ftable = fopen("ptp_results.tex", "w");
+#else
+	FILE *ftable = fopen("ptp_results_double.tex", "w");
+	const char * ptime = "& %6.3lfs ";
+#endif
 	
 	const char * str[2] = {"", "\\bf"};
-	const char * ptime = "& %6.3lfs ";
 	const char * pspeedup = "& \\bf (%.1lfx) ";
 	const char * pbtime = "& %6s %6.3lfs ";
 	const char * pberror = "& %6s %6.2lf\\%% ";

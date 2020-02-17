@@ -77,8 +77,8 @@ class embree : public raytracing
 		bool intersect(ray_hit & r);
 		bool occluded(ray_hit & r);
 
-		const glm::vec4 intersect_li(const glm::vec3 & org, const glm::vec3 & dir, const glm::vec3 & light);
-		const float intersect_depth(const glm::vec3 & org, const glm::vec3 & dir);
+		glm::vec4 intersect_li(const glm::vec3 & org, const glm::vec3 & dir, const glm::vec3 & light);
+		float intersect_depth(const glm::vec3 & org, const glm::vec3 & dir);
 		
 		void build_bvh(const std::vector<che *> & meshes);
 		index_t add_sphere(const glm::vec4 & xyzr);

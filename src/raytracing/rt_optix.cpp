@@ -22,6 +22,8 @@ optix::optix(const std::vector<che *> & meshes)
 {
 	optixInit();
 	
+	// create context
+
 	cudaStreamCreate(&stream);
 
 	cudaGetDeviceProperties(&device_prop, 0);	// device id = 0
@@ -31,7 +33,50 @@ optix::optix(const std::vector<che *> & meshes)
 	optixDeviceContextCreate(cuda_context, 0, &optix_context);
 	optixDeviceContextSetLogCallback(optix_context, optix_log, nullptr, 4);
 
+	// create module
+
+	OptixModule optix_module;
+	OptixModuleCompileOptions optix_module_compile_opt;
+
+	OptixPipeline optix_pipeline;
+	OptixPipelineCompileOptions optix_pipeline_compile_opt;
+	OptixPipelineLinkOptions optix_pipeline_link_opt;
+
+	optix_module_compile_opt.maxRegisterCount	= 50;
+	optix_module_compile_opt.optLevel			= OPTIX_COMPILE_OPTIMIZATION_DEFAULT;
+	optix_module_compile_opt.debugLevel			= OPTIX_COMPILE_DEBUG_LEVEL_NONE;
+
+	optix_pipeline_compile_opt							= {};
+	optix_pipeline_compile_opt.traversableGraphFlags = OPTIX_TRAVERSABLE_GRAPH_FLAG_ALLOW_SINGLE_GAS;
+	optix_pipeline_compile_opt.usesMotionBlur			= false;
+	optix_pipeline_compile_opt.numPayloadValues			= 2;
+	optix_pipeline_compile_opt.numAttributeValues		= 2;
+	optix_pipeline_compile_opt.exceptionFlags			= OPTIX_EXCEPTION_FLAG_NONE;
+	optix_pipeline_compile_opt.pipelineLaunchParamsVariableName = "optixLaunchParams";
+
+	optix_pipeline_link_opt.overrideUsesMotionBlur	= false;
+	optix_pipeline_link_opt.maxTraceDepth			= 2;
+
+	const std::string ptx_code;;
+
+	optixModuleCreateFromPTX(	optix_context,
+								&optix_module_compile_opt,
+								&optix_pipeline_compile_opt,
+								ptx_code.c_str(),
+								ptx_code.size(),
+								nullptr, nullptr,	// log message
+								&optix_module
+								);
+
+	// create programs
+
+	// build as
+
 	build_as(meshes);
+
+	// create pipeline
+
+	// build sbt
 }
 
 optix::~optix()
@@ -73,7 +118,7 @@ OptixTraversableHandle optix::build_as(const std::vector<che *> & meshes)
 	
 	void * d_output_buffer;
 	cudaMalloc(&d_output_buffer, optix_gas_buffer_size.outputSizeInBytes);
-
+	
 	optixAccelBuild(	optix_context,
 						0,	// stream
 						&optix_accel_opt,
@@ -92,7 +137,7 @@ OptixTraversableHandle optix::build_as(const std::vector<che *> & meshes)
 
 	uint64_t compacted_size;
 	cudaMemcpy(&compacted_size, d_compacted_size, sizeof(uint64_t), cudaMemcpyDeviceToHost);
-
+	gproshan_error_var(compacted_size);
 	void * d_as;
 	cudaMalloc(&d_as, compacted_size);
 
@@ -150,12 +195,12 @@ void optix::add_mesh(OptixBuildInput & optix_mesh, uint32_t & optix_trig_flags, 
 	optix_mesh.triangleArray.sbtIndexOffsetStrideInBytes	= 0; 
 }
 
-const glm::vec4 optix::intersect_li(const glm::vec3 & org, const glm::vec3 & dir, const glm::vec3 & light)
+glm::vec4 optix::intersect_li(const glm::vec3 & org, const glm::vec3 & dir, const glm::vec3 & light)
 {
 	return glm::vec4(0.f);
 }
 
-const float optix::intersect_depth(const glm::vec3 & org, const glm::vec3 & dir)
+float optix::intersect_depth(const glm::vec3 & org, const glm::vec3 & dir)
 {
 	return 0;
 }

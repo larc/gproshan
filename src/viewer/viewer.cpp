@@ -126,35 +126,37 @@ bool viewer::run()
 		ImGui::NewFrame();
 		
 		if(ImGui::BeginMainMenuBar())
-    	{
-        	if(ImGui::BeginMenu("Select"))
+		{
+			if(ImGui::BeginMenu("Select"))
 			{
 				for(index_t i = 0; i < n_meshes; i++)
 					if(ImGui::MenuItem((to_string(i) + ". " + meshes[i]->name()).c_str()))
 						current = i;	
 
-            	ImGui::EndMenu();
+				ImGui::EndMenu();
 			}
 
 			for(index_t i = 0; i < sub_menus.size(); i++)
 			{
-        		if(ImGui::BeginMenu(sub_menus[i].c_str()))
-        		{
+				if(ImGui::BeginMenu(sub_menus[i].c_str()))
+				{
 					for(auto & p: processes)
-            			if(p.second.function != nullptr && p.second.sub_menu == i &&
-							ImGui::MenuItem(p.second.name.c_str(), ('[' + p.second.key + ']').c_str()))
+						if(	p.second.function != nullptr &&
+							p.second.sub_menu == i &&
+							ImGui::MenuItem(p.second.name.c_str(), ('[' + p.second.key + ']').c_str()) )
 							p.second.function(this);
 
-            		ImGui::EndMenu();
+					ImGui::EndMenu();
 				}
-        	}
-        	ImGui::EndMainMenuBar();
+			}
+			
+			ImGui::EndMainMenuBar();
 		}
 
 		// Rendering
 		ImGui::Render();
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-		
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
@@ -226,7 +228,7 @@ void viewer::init_imgui()
 	ImGui::StyleColorsDark();
 
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
-    ImGui_ImplOpenGL3_Init("#version 460");
+	ImGui_ImplOpenGL3_Init("#version 460");
 }
 
 void viewer::init_menus()

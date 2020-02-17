@@ -109,7 +109,7 @@ void che_ply::read_file(const string & file)
 	}
 	else // binary_little_endian
 	{
-		char vbuffer[vbytes];
+		char * vbuffer = new char[vbytes];
 		for(index_t v = 0; v < n_vertices_; v++)
 		{
 			is.read(vbuffer, vbytes);
@@ -151,6 +151,8 @@ void che_ply::read_file(const string & file)
 				if(fbytes == 4) VT[he++] = *((int *) vbuffer);
 			}
 		}
+
+		delete [] vbuffer;
 	}
 
 	is.close();

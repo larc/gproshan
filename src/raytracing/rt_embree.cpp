@@ -161,13 +161,13 @@ bool embree::occluded(ray_hit & r)
 }
 
 
-const glm::vec4 embree::intersect_li(const glm::vec3 & org, const glm::vec3 & dir, const glm::vec3 & light)
+glm::vec4 embree::intersect_li(const glm::vec3 & org, const glm::vec3 & dir, const glm::vec3 & light)
 {
 	ray_hit r(org, dir);
 	return intersect(r) ? li(r, light) : glm::vec4(0.f);
 }
 
-const float embree::intersect_depth(const glm::vec3 & org, const glm::vec3 & dir)
+float embree::intersect_depth(const glm::vec3 & org, const glm::vec3 & dir)
 {
 	ray_hit r(org, dir);
 	return intersect(r) ? r.ray.tfar : 0.f;
