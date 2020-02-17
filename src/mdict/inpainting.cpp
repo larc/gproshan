@@ -298,6 +298,7 @@ void  inpainting::init_radial_feature_patches()
 	}
 	distance_t euc_radio;
 	vector<distance_t> radios;
+
 	for(int i = 0; i < features.size(); i++)
 	{
 			bool found = false;
@@ -321,21 +322,20 @@ void  inpainting::init_radial_feature_patches()
 			{	//it is a new patch 
 				// get_radious
 				patch p;
-				p.init_radial_disjoint(mesh, 2*max_radio, indexes[i], euc_radio);
-
-				//gproshan_debug_var(p.vertices.size());
-				for(index_t i = 0; i < p.vertices.size(); i++)
+				p.init_radial_disjoint(mesh, 2*max_radio, features[i], euc_radio);
+		
+				gproshan_debug_var(p.vertices.size());
+				for(index_t k = 0; k < p.vertices.size(); k++)
 				{
-					covered[ p.vertices[i] ] = 1;
-					//gproshan_debug_var(p.vertices[i] );
+					covered[ p.vertices[k] ] = 1;
 				}	
 				patches.push_back(p);
 				seeds.push_back(features[i]);
 				radios.push_back( euc_radio );
 				count++;
-				gproshan_debug_var(euc_radio);
-				gproshan_debug_var(indexes[i]);
-				gproshan_debug_var(p.vertices.size());
+			//	gproshan_debug_var(euc_radio);
+			//	gproshan_debug_var(indexes[i]);
+			//	gproshan_debug_var(p.vertices.size());
 			}
 				
 	}
@@ -404,11 +404,12 @@ void  inpainting::init_radial_feature_patches()
 	{
 		if(!covered[i] )
 		{
-			outliers.push_back(indexes[i]);
+			outliers.push_back(i);
 			//gproshan_debug_var(geo[indexes[i]] );
 		}
 	}
 	a_vec outlv(outliers.size());
+	gproshan_debug_var(outliers.size());
 	for(index_t i = 0; i < outliers.size(); i++)
 		outlv(i) = outliers[i];
 
@@ -417,7 +418,7 @@ void  inpainting::init_radial_feature_patches()
 	*/
 	outlv.save(f_points);
 	//gproshan_debug_var(features.size());
-/*
+
 	//////////////////////////////////////////////////////////////////////////////////
 	load_mask();
 
@@ -469,7 +470,7 @@ void  inpainting::init_radial_feature_patches()
 		p.phi.set_size(p.xyz.n_cols, phi_basis->get_dim());
 		phi_basis->discrete(p.phi, p.xyz);
 
-	} */
+	} 
 	gproshan_log(radial patches are ready);
 
 }

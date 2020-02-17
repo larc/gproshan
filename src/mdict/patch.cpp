@@ -72,7 +72,7 @@ void patch::init_radial_disjoint(che * mesh, const distance_t & radio_, const in
 	vertex p, c;
 	vertices.push_back(v);
 	euc_radio = -INFINITY;
-
+	//gproshan_debug_var(v);
 	for(int i=1; i<geo.n_sorted_index(); i++)
 	{
 		
@@ -82,6 +82,7 @@ void patch::init_radial_disjoint(che * mesh, const distance_t & radio_, const in
 		p = p - c ;
 		p = p - ((p,n)*n);
 		//if(*p <= radio )
+		//gproshan_debug_var(indexes[i]);
 		if( acos( (n, mesh->normal(indexes[i]) ) ) <= PI/2 )
 		{
 			if(*p > radio)
@@ -94,6 +95,7 @@ void patch::init_radial_disjoint(che * mesh, const distance_t & radio_, const in
 				euc_radio = *(p - c);
 			//gproshan_debug_var(euc_radio);
 			vertices.push_back(indexes[i]);
+			//gproshan_debug_var(geo[indexes[i]]);
 		}
 		else
 		{
@@ -146,7 +148,6 @@ void patch::init_curvature_growing(che * mesh, const index_t & v, a_mat & normal
 	
 	//gproshan_debug_var(vertices.size());
 	size_t d_fitting = 2;
-	size_t d_monge = 2;
 	size_t min_points = (d_fitting + 1) * (d_fitting + 2) / 2;
 	if(vertices.size() <= min_points )
 	{
