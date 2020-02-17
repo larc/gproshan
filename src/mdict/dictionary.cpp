@@ -190,13 +190,14 @@ void dictionary::load_curvatures(a_vec & curvatures)
 
 }
 
-void dictionary::load_features(vector<index_t> & v_feat)
+void dictionary::load_features(vector<index_t> & v_feat, size_t & featsize)
 {
 	string f_feat = tmp_file_path(mesh->name()  + ".int");
 	ifstream inp;
     inp.open(f_feat.c_str(), ifstream::in);
   
-	index_t tam;
+	size_t tam;
+	index_t tmp;
 
 	gproshan_debug_var(f_feat);
     if(inp.fail()){
@@ -213,15 +214,20 @@ void dictionary::load_features(vector<index_t> & v_feat)
 	}
 
 	gproshan_debug(exists);
-	inp>>tam;
-	v_feat.resize(tam);
-	for(int i=0; i<tam; i++)
-		inp>>v_feat[i];
-	/*while(!inp.eof())
+	inp>>featsize;
+	//v_feat.resize(tam);
+	for(int i=0; i<featsize; i++)
 	{
 		inp>>tmp;
 		v_feat.push_back(tmp);
-	}*/
+	}
+	inp>>tam;
+	for(int i=0; i<tam; i++)
+	{
+		inp>>tmp;
+		v_feat.push_back(tmp);
+	}
+
 	inp.close();
 }
 

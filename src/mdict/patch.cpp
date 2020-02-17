@@ -83,7 +83,7 @@ void patch::init_radial_disjoint(che * mesh, const distance_t & radio_, const in
 		p = p - ((p,n)*n);
 		//if(*p <= radio )
 		//gproshan_debug_var(indexes[i]);
-		if( acos( (n, mesh->normal(indexes[i]) ) ) <= PI/2 )
+		if( acos( (n, mesh->normal(indexes[i]) ) ) < PI/2 )
 		{
 			if(*p > radio)
 			{
