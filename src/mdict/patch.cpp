@@ -73,7 +73,7 @@ void patch::init_radial_disjoint(che * mesh, const distance_t & radio_, const in
 	vertices.push_back(v);
 	euc_radio = -INFINITY;
 	//gproshan_debug_var(v);
-	for(int i=1; i<geo.n_sorted_index(); i++)
+	for(size_t i=1; i<geo.n_sorted_index(); i++)
 	{
 		
 		p = mesh->get_vertex(indexes[i]); 
@@ -249,7 +249,7 @@ void patch::reset_xyz_disjoint(che * mesh, distance_t * dist, size_t M, vector<v
 		m = 0;
 		for(index_t i = 0; i < vertices.size(); i++)
 			if(mask(i)) { dist[vertices[i] ] = float(p + 1) / M; m++;  } else {dist[vertices[i] ] = INFINITY; };
-	/*	gproshan_debug(number vertices considered);
+		/*gproshan_debug(number vertices considered);
 		gproshan_debug_var(m);
 		gproshan_debug(number vertices masked);
 		gproshan_debug_var(vertices.size() - m);*/

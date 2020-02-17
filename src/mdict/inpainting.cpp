@@ -411,7 +411,7 @@ void  inpainting::init_radial_feature_patches()
 	gproshan_debug(passed);
 	
 	#pragma omp parallel for
-	for(index_t s = 0; s < M-1; s++)
+	for(index_t s = 0; s < M; s++)
 	{
 		patch & p = patches[s];
 
@@ -545,10 +545,9 @@ distance_t inpainting::execute()
 		patches_map[i].clear();
 	}
 
-	
+
 	for(index_t s = 0; s < M; s++)
 		patches[s].reset_xyz(mesh, patches_map, s, 0);
-
 
 	#pragma omp parallel for
 	for(index_t s = 0; s < M; s++)
@@ -565,7 +564,7 @@ distance_t inpainting::execute()
 	bool *pmask;
 
 	draw_patches(10);
-	draw_patches(50);
+	draw_patches(4);
 /*	draw_patches(200);
 	draw_patches(120);
 	*/
@@ -575,7 +574,6 @@ distance_t inpainting::execute()
 	//phi_basis->plot_basis();
 	//gproshan_debug_var(alpha.col(463));
 	
-
 	TIC(d_time) mesh_reconstruction([&pmask](const index_t & i) -> bool { return pmask[i]; }); TOC(d_time)
 	gproshan_debug_var(d_time);
 }

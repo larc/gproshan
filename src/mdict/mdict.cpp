@@ -140,7 +140,7 @@ arma::uword max_index(const a_vec & V,const arma::uchar_vec & mask)
 
 	arma::uvec indices = arma::sort_index( V , "desscend");
 
-	for(int i=0; i< V.size(); i++)
+	for(size_t i=0; i< V.size(); i++)
 		if(mask[ indices [i]]) return indices[i];
 	
 }
@@ -236,6 +236,7 @@ void KSVD(a_mat & D, const a_mat & X, const size_t & L, size_t k)
 
 a_vec OMP(const patch & p, const a_mat & A, const size_t & L)
 {
+	
 	return OMP(p.xyz.row(2).t(), p.phi * A, L);
 }
 a_vec OMP(const patch & p, basis * phi_basis, const a_mat & A, const size_t & L)
@@ -249,7 +250,6 @@ a_vec OMP(const patch & p, basis * phi_basis, const a_mat & A, const size_t & L)
 		//	gproshan_debug_var(p.avg_dist);
 			 mask(i) = 1;
 		}
-	
 	return OMP(p.xyz.row(2).t(), p.phi * A, L, mask);
 }
 
