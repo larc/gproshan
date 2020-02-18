@@ -317,7 +317,7 @@ void  inpainting::init_radial_feature_patches()
 				double distY = interestPoints[j].getY() - candidatePoints[i].getY();
 				double distZ = interestPoints[j].getZ() - candidatePoints[i].getZ();*/
 			
-				if( *(v_patch - v_seed) < 0.8 *radios[j] ) // radio of each patch
+				if( *(v_patch - v_seed) < 0.7 *radios[j] ) // radio of each patch
 					found = true;
 				j++;
 			}
@@ -325,7 +325,7 @@ void  inpainting::init_radial_feature_patches()
 			{	//it is a new patch 
 				// get_radious
 				patch p;
-				p.init_radial_disjoint(mesh, 1.5*max_radio, all_sorted_features[i], euc_radio);
+				p.init_radial_disjoint(mesh, 1.1*max_radio, all_sorted_features[i], euc_radio);
 		
 				//gproshan_debug_var(p.vertices.size());
 				if(p.vertices.size() >= 7)
@@ -346,6 +346,61 @@ void  inpainting::init_radial_feature_patches()
 			}			
 	}
 
+/*
+	geodesics geo(mesh, features, geodesics::FM,  NULL, false,  mesh->n_vertices());
+	index_t * indexes = new index_t[geo.n_sorted_index()];
+	geo.copy_sorted_index(indexes, geo.n_sorted_index());
+
+	gproshan_debug_var(features.size());
+	size_t old_features_size = features.size();
+	for(index_t i = mesh->n_vertices()-1; i >= old_features_size ; i--)
+	{
+		features.push_back(indexes[i]);
+		//gproshan_debug_var(geo[ indexes[i]]);
+		
+	}
+	// extending the set of seeds
+
+	size_t count = 0;
+	distance_t max_radio = geo[ indexes[mesh->n_vertices()-1] ] ;
+	//radio *= 1.1;
+	gproshan_debug_var(max_radio);
+
+	patches_map.resize(mesh->n_vertices());
+
+	//Coverage of the points 
+	bool covered[mesh->n_vertices()];
+
+	#pragma omp for 
+	for(index_t i = 0; i < mesh->n_vertices(); i++)
+	{
+		covered[i] = 0;
+	}
+	
+
+//for(size_t i = mesh->n_vertices()-1; i >= mesh->n_vertices()-1 +3 ; i--)
+	for(size_t i = 0; i < features.size(); i++)
+	{
+	//	gproshan_debug_var(indexes[i]);
+	//	gproshan_debug_var(geo[ indexes[i]]);
+		// actual seed
+		index_t s = indexes[i];
+
+		if(!covered[s])
+		{		
+			patch p;
+			p.init_radial_disjoint(mesh, max_radio, s, covered);
+			if(p.vertices.size() > 1)
+			{
+				gproshan_debug_var(p.vertices.size());
+				for(index_t i = 0; i < p.vertices.size(); i++)
+					covered[ p.vertices[i] ] = 1;
+				patches.push_back(p);
+				count++;
+			}
+		}
+	//	outlv(count++) = indexes[i];
+	}*/
 	M = count;
 	gproshan_debug_var(M);
 	
@@ -360,7 +415,7 @@ void  inpainting::init_radial_feature_patches()
 		}
 	}
 	a_vec outlv(seeds.size());
-	gproshan_debug_var(outliers.size());
+	gproshan_debug_var(seeds.size());
 	for(index_t i = 0; i < seeds.size(); i++)
 		outlv(i) = seeds[i];
 
@@ -411,7 +466,7 @@ void  inpainting::init_radial_feature_patches()
 	gproshan_debug(passed);
 	
 	#pragma omp parallel for
-	for(index_t s = 0; s < M; s++)
+	for(index_t s = 0; s < M-1; s++)
 	{
 		patch & p = patches[s];
 
@@ -545,9 +600,10 @@ distance_t inpainting::execute()
 		patches_map[i].clear();
 	}
 
-
+	
 	for(index_t s = 0; s < M; s++)
 		patches[s].reset_xyz(mesh, patches_map, s, 0);
+
 
 	#pragma omp parallel for
 	for(index_t s = 0; s < M; s++)
@@ -564,7 +620,7 @@ distance_t inpainting::execute()
 	bool *pmask;
 
 	draw_patches(10);
-	draw_patches(4);
+	draw_patches(50);
 /*	draw_patches(200);
 	draw_patches(120);
 	*/
@@ -574,6 +630,7 @@ distance_t inpainting::execute()
 	//phi_basis->plot_basis();
 	//gproshan_debug_var(alpha.col(463));
 	
+
 	TIC(d_time) mesh_reconstruction([&pmask](const index_t & i) -> bool { return pmask[i]; }); TOC(d_time)
 	gproshan_debug_var(d_time);
 }
