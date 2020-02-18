@@ -108,6 +108,42 @@ void patch::init_radial_disjoint(che * mesh, const distance_t & radio_, const in
 }
 
 
+void patch::update_radial_disjoint(che * mesh, const index_t & v, vector<index_t> & _vertices)
+{
+	a_vec vn = T.col(2);// normal at the center
+	vertex n;
+	n.x = vn(0); n.y = vn(1); n.z = vn(2);
+	vertex p, c;
+	size_t d_fitting = 2;
+	size_t min_points = (d_fitting + 1) * (d_fitting + 2) / 2;
+
+	if(vertices.size() >= 7)
+	{
+		radio = 0;
+		vertices = std::move(_vertices);
+		for(size_t i=1; i < vertices.size(); i++)
+		{
+			p = mesh->get_vertex(vertices[i]); 
+			c = mesh->get_vertex(v); // central vertices
+
+			p = p - c ;
+			p = p - ((p,n)*n);
+			if(*p > radio)
+			{
+				radio = *p;
+			}
+		}
+		jet_fit_directions(mesh, v);
+		
+	}
+	else
+	{
+		gproshan_debug_var(v);
+		gproshan_debug_var(_vertices.size());
+	}
+	
+}
+
 void patch::init_curvature_growing(che * mesh, const index_t & v, a_mat & normals)
 {
 	radio = -INFINITY;

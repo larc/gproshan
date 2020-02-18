@@ -316,8 +316,9 @@ void  inpainting::init_radial_feature_patches()
 			/*	double distX = interestPoints[j].getX() - candidatePoints[i].getX();
 				double distY = interestPoints[j].getY() - candidatePoints[i].getY();
 				double distZ = interestPoints[j].getZ() - candidatePoints[i].getZ();*/
-			
-				if( *(v_patch - v_seed) < 0.7 *radios[j] ) // radio of each patch
+
+				// 0.7 coverage parameter
+				if( *(v_patch - v_seed) < 0.7*radios[j] ) // radio of each patch
 					found = true;
 				j++;
 			}
@@ -325,7 +326,8 @@ void  inpainting::init_radial_feature_patches()
 			{	//it is a new patch 
 				// get_radious
 				patch p;
-				p.init_radial_disjoint(mesh, 1.1*max_radio, all_sorted_features[i], euc_radio);
+				// increasing a bit the radio
+				p.init_radial_disjoint(mesh, 0.7*max_radio, all_sorted_features[i], euc_radio);
 		
 				//gproshan_debug_var(p.vertices.size());
 				if(p.vertices.size() >= 7)
@@ -337,7 +339,7 @@ void  inpainting::init_radial_feature_patches()
 					patches.push_back(p);
 					seeds.push_back(all_sorted_features[i]);
 					radios.push_back( euc_radio );
-					count++;
+					count+=p.vertices.size();
 				//	gproshan_debug_var(euc_radio);
 				//	gproshan_debug_var(indexes[i]);
 				//	gproshan_debug_var(p.vertices.size());
@@ -345,11 +347,58 @@ void  inpainting::init_radial_feature_patches()
 		
 			}			
 	}
+	vector<index_t> outliers;
+	gproshan_debug_var(count);
+	M = seeds.size();
+	//////////////////////////////
+	//Remove extra overlapping using voronoi
+	//update vertices and radio
+/*
+	geodesics voronoi(mesh, seeds , geodesics::FM,  NULL, true,  mesh->n_vertices());
+	//index_t * indexes = new index_t[geo.n_sorted_index()];
 
-	M = count;
+	vector<index_t> vertices[M];
+	
+	gproshan_debug_var(M);
+
+	//saving first vertex aka seed vertices
+	#pragma omp for 
+	for(index_t s = 0; s < M; s++)
+	{
+		vertices[s].push_back(seeds[s]);
+	}
+	
+	for(index_t i = 0; i < mesh->n_vertices(); i++)
+	{
+		voronoi.clusters[i]--; // fixing the index betwween 0 and N
+		//gproshan_debug_var(i);
+		
+		if(seeds [i] != i && voronoi.clusters[i] < mesh->n_vertices()) //if not a seed vertex
+		{
+			vertices[ voronoi.clusters[i] ].push_back(i) ;
+			//gproshan_debug_var(voronoi.clusters[i]);
+		}
+		else
+		{
+			if(seeds [i] != i )
+				outliers.push_back(i);
+		}
+		//	
+	}
+
+	for(index_t s = 0; s < M; s++)
+	{
+		patches[s].update_radial_disjoint(mesh,seeds[s],vertices[s]);
+	}
+*/
+
+
+
+///////////////////////////////////////
+	
 	gproshan_debug_var(M);
 	
-	vector<index_t> outliers;
+	
 
 	for(index_t i = 0; i < mesh->n_vertices(); i++)
 	{
@@ -359,10 +408,10 @@ void  inpainting::init_radial_feature_patches()
 			//gproshan_debug_var(geo[indexes[i]] );
 		}
 	}
-	a_vec outlv(seeds.size());
-	gproshan_debug_var(seeds.size());
-	for(index_t i = 0; i < seeds.size(); i++)
-		outlv(i) = seeds[i];
+	a_vec outlv(outliers.size());
+	gproshan_debug_var(outliers.size());
+	for(index_t i = 0; i < outliers.size(); i++)
+		outlv(i) = outliers[i];
 
 	/*for(index_t i = 0; i < seeds.size(); i++)
 		outlv(i) = seeds[i];
@@ -566,9 +615,9 @@ distance_t inpainting::execute()
 
 	draw_patches(10);
 	draw_patches(50);
-/*	draw_patches(200);
-	draw_patches(120);
-	*/
+	draw_patches(90);
+	draw_patches(20);
+	
 	//draw_patches(400);
 	//draw_patches(500);
 	//draw_patches(56);
