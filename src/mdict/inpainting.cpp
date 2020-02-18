@@ -346,61 +346,6 @@ void  inpainting::init_radial_feature_patches()
 			}			
 	}
 
-/*
-	geodesics geo(mesh, features, geodesics::FM,  NULL, false,  mesh->n_vertices());
-	index_t * indexes = new index_t[geo.n_sorted_index()];
-	geo.copy_sorted_index(indexes, geo.n_sorted_index());
-
-	gproshan_debug_var(features.size());
-	size_t old_features_size = features.size();
-	for(index_t i = mesh->n_vertices()-1; i >= old_features_size ; i--)
-	{
-		features.push_back(indexes[i]);
-		//gproshan_debug_var(geo[ indexes[i]]);
-		
-	}
-	// extending the set of seeds
-
-	size_t count = 0;
-	distance_t max_radio = geo[ indexes[mesh->n_vertices()-1] ] ;
-	//radio *= 1.1;
-	gproshan_debug_var(max_radio);
-
-	patches_map.resize(mesh->n_vertices());
-
-	//Coverage of the points 
-	bool covered[mesh->n_vertices()];
-
-	#pragma omp for 
-	for(index_t i = 0; i < mesh->n_vertices(); i++)
-	{
-		covered[i] = 0;
-	}
-	
-
-//for(size_t i = mesh->n_vertices()-1; i >= mesh->n_vertices()-1 +3 ; i--)
-	for(size_t i = 0; i < features.size(); i++)
-	{
-	//	gproshan_debug_var(indexes[i]);
-	//	gproshan_debug_var(geo[ indexes[i]]);
-		// actual seed
-		index_t s = indexes[i];
-
-		if(!covered[s])
-		{		
-			patch p;
-			p.init_radial_disjoint(mesh, max_radio, s, covered);
-			if(p.vertices.size() > 1)
-			{
-				gproshan_debug_var(p.vertices.size());
-				for(index_t i = 0; i < p.vertices.size(); i++)
-					covered[ p.vertices[i] ] = 1;
-				patches.push_back(p);
-				count++;
-			}
-		}
-	//	outlv(count++) = indexes[i];
-	}*/
 	M = count;
 	gproshan_debug_var(M);
 	
@@ -466,7 +411,7 @@ void  inpainting::init_radial_feature_patches()
 	gproshan_debug(passed);
 	
 	#pragma omp parallel for
-	for(index_t s = 0; s < M-1; s++)
+	for(index_t s = 0; s < M; s++)
 	{
 		patch & p = patches[s];
 
