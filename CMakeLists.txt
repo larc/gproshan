@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.12)
 
-project(gproshan VERSION 2.0 LANGUAGES CXX)
+project(gproshan VERSION 2.0)
 
 list(APPEND CMAKE_MODULE_PATH "${gproshan_SOURCE_DIR}/cmake")
 
@@ -70,8 +70,17 @@ include_directories(${gproshan_SOURCE_DIR}/imgui)
 FILE(GLOB_RECURSE imgui_sources ${gproshan_SOURCE_DIR}/imgui/*.cpp)
 add_library(imgui STATIC ${imgui_sources})
 
+set(ptx_code "")
+if(CUDA_FOUND)
+	cuda_compile_ptx(ptx_files "${gproshan_SOURCE_DIR}/src/raytracing/rt_optix.cu")
+	list(GET ptx_files 0 ptx_file)
+	set(ptx_code ptx_code.c)
+	add_custom_command(	OUTPUT ${ptx_code} 
+						COMMAND bin2c --const --padd 0 --type char --name ptx_code ${ptx_file} > ${ptx_code} DEPENDS ${ptx_file})
+endif(CUDA_FOUND)
+
 FILE(GLOB_RECURSE cpp_sources ${gproshan_SOURCE_DIR}/src/*.cpp)
-add_library(gproshan_cpp STATIC ${cpp_sources})
+add_library(gproshan_cpp STATIC ${cpp_sources} ${ptx_code})
 
 target_compile_options(gproshan_cpp PRIVATE -Wall -Wno-unused-result)
 
@@ -90,6 +99,7 @@ target_link_libraries(gproshan_cpp imgui)
 if(CUDA_FOUND)
 	FILE(GLOB_RECURSE cu_sources ${gproshan_SOURCE_DIR}/src/cuda/*.cu)
 	add_library(gproshan_cu STATIC ${cu_sources})
+	target_compile_options(gproshan_cu PRIVATE -Xcompiler -fopenmp)
 	set_target_properties(gproshan_cu PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 	target_link_libraries(gproshan_cu gproshan_cpp)
 	target_link_libraries(gproshan_cu ${CUDA_LIBRARIES} ${CUDA_CUDA_LIBRARY} ${CUDA_cublas_LIBRARY} ${CUDA_cusolver_LIBRARY} ${CUDA_cusparse_LIBRARY})

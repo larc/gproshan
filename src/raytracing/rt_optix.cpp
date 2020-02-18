@@ -8,6 +8,10 @@
 
 #include <optix_function_table_definition.h>
 
+
+extern "C" char ptx_code[];
+
+
 // geometry processing and shape analysis framework
 // raytracing approach
 namespace gproshan::rt {
@@ -57,13 +61,13 @@ optix::optix(const std::vector<che *> & meshes)
 	optix_pipeline_link_opt.overrideUsesMotionBlur	= false;
 	optix_pipeline_link_opt.maxTraceDepth			= 2;
 
-	const std::string ptx_code;;
+	const std::string str_ptx_code = ptx_code;
 
 	optixModuleCreateFromPTX(	optix_context,
 								&optix_module_compile_opt,
 								&optix_pipeline_compile_opt,
-								ptx_code.c_str(),
-								ptx_code.size(),
+								str_ptx_code.c_str(),
+								str_ptx_code.size(),
 								nullptr, nullptr,	// log message
 								&optix_module
 								);
@@ -162,9 +166,23 @@ void optix::add_mesh(OptixBuildInput & optix_mesh, uint32_t & optix_trig_flags, 
 {
 	void * d_vertex;
 	void * d_index;
-	
+
+
+#ifdef SINGLE_P
 	cudaMalloc(&d_vertex, mesh->n_vertices() * sizeof(vertex));
 	cudaMemcpy(d_vertex, &mesh->gt(0), mesh->n_vertices() * sizeof(vertex), cudaMemcpyHostToDevice);
+#else
+	glm::vec3 * vertices = new glm::vec3[mesh->n_vertices()];
+	cudaMalloc(&d_vertex, mesh->n_vertices() * sizeof(float) * 3);
+	
+	#pragma omp parallel for
+	for(index_t i = 0; i < mesh->n_vertices(); i++)
+		vertices[i] = glm::vec3(mesh->gt(i).x, mesh->gt(i).y, mesh->gt(i).z);
+	
+	cudaMemcpy(d_vertex, vertices, mesh->n_vertices() * sizeof(vertex), cudaMemcpyHostToDevice);
+
+	delete [] vertices;
+#endif // SINGLE_P
 	
 	cudaMalloc(&d_index, mesh->n_half_edges() * sizeof(index_t));
 	cudaMemcpy(d_index, &mesh->vt(0), mesh->n_half_edges() * sizeof(index_t), cudaMemcpyHostToDevice);
@@ -172,11 +190,7 @@ void optix::add_mesh(OptixBuildInput & optix_mesh, uint32_t & optix_trig_flags, 
 	optix_mesh = {};
 	optix_mesh.type = OPTIX_BUILD_INPUT_TYPE_TRIANGLES;
 
-#ifdef SINGLE_P
 	optix_mesh.triangleArray.vertexFormat			= OPTIX_VERTEX_FORMAT_FLOAT3;
-#else
-	optix_mesh.triangleArray.vertexFormat			= OPTIX_VERTEX_FORMAT_DOUBLE3; //ERROR! 
-#endif // SINGLE_P
 	optix_mesh.triangleArray.vertexStrideInBytes	= sizeof(vertex); 
 	optix_mesh.triangleArray.numVertices			= mesh->n_vertices(); 
 	optix_mesh.triangleArray.vertexBuffers			= (CUdeviceptr *) &d_vertex;
