@@ -318,7 +318,7 @@ void  inpainting::init_radial_feature_patches()
 				double distZ = interestPoints[j].getZ() - candidatePoints[i].getZ();*/
 
 				// 0.7 coverage parameter
-				if( *(v_patch - v_seed) < 0.7*radios[j] ) // radio of each patch
+				if( *(v_patch - v_seed) < 0.5*radios[j] ) // radio of each patch
 					found = true;
 				j++;
 			}
@@ -327,7 +327,7 @@ void  inpainting::init_radial_feature_patches()
 				// get_radious
 				patch p;
 				// increasing a bit the radio
-				p.init_radial_disjoint(mesh, 0.7*max_radio, all_sorted_features[i], euc_radio);
+				p.init_radial_disjoint(mesh, 0.5*max_radio, all_sorted_features[i], euc_radio);
 		
 				//gproshan_debug_var(p.vertices.size());
 				if(p.vertices.size() >= 7)
