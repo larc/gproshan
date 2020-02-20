@@ -577,6 +577,15 @@ void patch::compute_avg_distance()
 	}	
 			//avg_dist = avg_dist + norm(xyz.col(i)- xyz.col(j));
 }
+
+bool patch::is_covered( bool * covered)
+{
+	for(index_t i = 0; i < vertices.size(); i++)
+		if(!covered[i]) return false;
+	
+	return true;
+}
+
 	//avg_dist = avg_dist/vertices.size();
 } // namespace gproshan::mdict
 

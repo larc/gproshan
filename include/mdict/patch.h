@@ -87,6 +87,7 @@ class patch
 						const fmask_t & mask = nullptr
 						);
 		const a_vec normal();
+		bool is_covered( bool * covered);
 
 		void save(const real_t & radio, const size_t & imsize, CImgList<real_t> & imlist);
 		void update_heights(real_t & min, real_t & max, bool flag);

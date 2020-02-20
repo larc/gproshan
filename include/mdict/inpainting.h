@@ -27,6 +27,8 @@ class inpainting : public dictionary
 		void init_voronoi_patches();
 		void init_radial_patches();
 		void init_radial_feature_patches();
+		vector<index_t> sort_indexes(const vector<distance_t> &v);
+
 		
 		distance_t execute_tmp();
 	private:

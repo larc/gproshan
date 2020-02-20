@@ -1,6 +1,8 @@
 #include "inpainting.h"
 #include <cassert>
 #include <fstream>
+#include <algorithm>
+#include <numeric>
 #include <queue>
 
 
@@ -46,7 +48,7 @@ void inpainting::load_mask()
 		std::uniform_int_distribution<int> distribution(0, mesh->n_vertices()-1);
 		size_t percentage = mesh->n_vertices() - ceil(mesh->n_vertices() * (percent/ 100.0)) ;
 
-		int k = 0;
+		size_t k = 0;
 		size_t rn = 0;
 		while (k < percentage)
 		{
@@ -145,7 +147,7 @@ void  inpainting::init_radial_patches()
 	gproshan_debug_var(d_time);
 
 	//sampling
-	size_t count = 0, s;
+	size_t s;
 	patches.resize(M);
 	patches_map.resize(n_vertices);
 	
@@ -159,7 +161,6 @@ void  inpainting::init_radial_patches()
 
 	s = 0;
 	size_t it = 0;
-	index_t * toplevel = new index_t[mesh->n_vertices()];
 	distance_t radio;
 	while(it < M)
 	{
@@ -265,6 +266,22 @@ void  inpainting::init_radial_patches()
 	
 }
 
+vector<index_t> inpainting::sort_indexes(const vector<distance_t> &v) {
+
+  // initialize original index locations
+  vector<index_t> idx(v.size());
+  iota(idx.begin(), idx.end(), 0);
+
+  // sort indexes based on comparing values in v
+  // using std::stable_sort instead of std::sort
+  // to avoid unnecessary index re-orderings
+  // when v contains elements of equal values 
+  stable_sort(idx.begin(), idx.end(),
+       [&v](index_t i1, index_t i2) {return v[i1] < v[i2];});
+
+  return idx;
+}
+
 void  inpainting::init_radial_feature_patches()
 {
 	// compute features will be seeds
@@ -301,21 +318,19 @@ void  inpainting::init_radial_feature_patches()
 	}
 	distance_t euc_radio;
 	vector<distance_t> radios;
+	size_t count_cov = 0;
 
-	for(int i = 0; i < all_sorted_features.size(); i++)
+	for(size_t i = 0; i < all_sorted_features.size(); i++)
 	{
 			bool found = false;
-			int j = 0;
-		
+			size_t j = 0;
+
 			//select the next one
-			while(j < seeds.size() && !found){
+			while(j < seeds.size() && !found )
+			{
 				//calculate distance between the actual patch p seed i and other features
 				const vertex & v_patch = mesh->gt(all_sorted_features[i]);
 				const vertex & v_seed = mesh->gt(seeds[j]);
-
-			/*	double distX = interestPoints[j].getX() - candidatePoints[i].getX();
-				double distY = interestPoints[j].getY() - candidatePoints[i].getY();
-				double distZ = interestPoints[j].getZ() - candidatePoints[i].getZ();*/
 
 				// 0.7 coverage parameter
 				if( *(v_patch - v_seed) < 0.5*radios[j] ) // radio of each patch
@@ -334,6 +349,7 @@ void  inpainting::init_radial_feature_patches()
 				{
 					for(index_t k = 0; k < p.vertices.size(); k++)
 					{
+						if(!covered[ p.vertices[k] ]) count_cov++;
 						covered[ p.vertices[k] ] = 1;
 					}	
 					patches.push_back(p);
@@ -345,61 +361,71 @@ void  inpainting::init_radial_feature_patches()
 				//	gproshan_debug_var(p.vertices.size());
 				}
 		
-			}			
+			}						
 	}
+	
 	vector<index_t> outliers;
 	gproshan_debug_var(count);
+	gproshan_debug_var(count_cov);
+	gproshan_debug_var(seeds.size());
 	M = seeds.size();
-	//////////////////////////////
-	//Remove extra overlapping using voronoi
-	//update vertices and radio
-/*
-	geodesics voronoi(mesh, seeds , geodesics::FM,  NULL, true,  mesh->n_vertices());
-	//index_t * indexes = new index_t[geo.n_sorted_index()];
 
-	vector<index_t> vertices[M];
-	
-	gproshan_debug_var(M);
+//////////////////////////////////////
 
-	//saving first vertex aka seed vertices
+	//new order bigger to smaller
+	vector<distance_t> geo_radios;
+	geo_radios.resize(seeds.size());
+	for(index_t i = 0; i < seeds.size(); i++)
+		geo_radios[i] = patches[i].radio;
+	vector<index_t> sorted_patches_size = sort_indexes(geo_radios);
+
+	//Coverage of the points 
+	bool covered_p[mesh->n_vertices()];
+	size_t ncount = 0;
+	seeds.clear();
+
 	#pragma omp for 
-	for(index_t s = 0; s < M; s++)
-	{
-		vertices[s].push_back(seeds[s]);
-	}
-	
 	for(index_t i = 0; i < mesh->n_vertices(); i++)
 	{
-		voronoi.clusters[i]--; // fixing the index betwween 0 and N
-		//gproshan_debug_var(i);
+		covered_p[i] = 0;
+	}
+	size_t count_valid = 0;
+
+	vector<patch> valid_patches;
+ 
+	for(index_t i = 0; i < sorted_patches_size.size(); i++)
+	{ 
+		patch * p = &patches[sorted_patches_size[i]];
+		if(!p->is_covered(covered_p)) // if not all vertices in the patch are covered
+		{	
+			seeds.push_back(sorted_patches_size[i]);
+
+			valid_patches.push_back(patches[sorted_patches_size[i]]);
+			count_valid++; // we take this one
+			for(index_t k = 0; k < p->vertices.size(); k++)
+			{
+				if(!covered_p[ p->vertices[k] ]) ncount++;
+				covered_p[ p->vertices[k] ] = 1;
+			}	
+
+		}
 		
-		if(seeds [i] != i && voronoi.clusters[i] < mesh->n_vertices()) //if not a seed vertex
-		{
-			vertices[ voronoi.clusters[i] ].push_back(i) ;
-			//gproshan_debug_var(voronoi.clusters[i]);
-		}
-		else
-		{
-			if(seeds [i] != i )
-				outliers.push_back(i);
-		}
-		//	
+		//gproshan_debug_var(sorted_patches_size[i]);
+		//gproshan_debug_var(geo_radios[sorted_patches_size[i]]);
 	}
-
-	for(index_t s = 0; s < M; s++)
-	{
-		patches[s].update_radial_disjoint(mesh,seeds[s],vertices[s]);
-	}
-*/
-
-
+	gproshan_debug_var(count_valid);
+	gproshan_debug_var(ncount);
+	
+	// discard patches which are not needed
+	patches.clear();
+	patches = valid_patches;
+	gproshan_debug_var(patches.size());
+	M  = patches.size();
 
 ///////////////////////////////////////
 	
 	gproshan_debug_var(M);
 	
-	
-
 	for(index_t i = 0; i < mesh->n_vertices(); i++)
 	{
 		if(!covered[i] )
@@ -408,10 +434,10 @@ void  inpainting::init_radial_feature_patches()
 			//gproshan_debug_var(geo[indexes[i]] );
 		}
 	}
-	a_vec outlv(outliers.size());
-	gproshan_debug_var(outliers.size());
-	for(index_t i = 0; i < outliers.size(); i++)
-		outlv(i) = outliers[i];
+	a_vec outlv(seeds.size());
+	gproshan_debug_var(seeds.size());
+	for(index_t i = 0; i < seeds.size(); i++)
+		outlv(i) = seeds[i];
 
 	/*for(index_t i = 0; i < seeds.size(); i++)
 		outlv(i) = seeds[i];
