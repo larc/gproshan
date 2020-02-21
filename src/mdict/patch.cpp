@@ -72,6 +72,8 @@ void patch::init_radial_disjoint(che * mesh, const distance_t & radio_, const in
 	vertex p, c;
 	vertices.push_back(v);
 	euc_radio = -INFINITY;
+	double angle;
+	double sum_angle = 0;
 	//gproshan_debug_var(v);
 	for(size_t i=1; i<geo.n_sorted_index(); i++)
 	{
@@ -83,8 +85,10 @@ void patch::init_radial_disjoint(che * mesh, const distance_t & radio_, const in
 		p = p - ((p,n)*n);
 		//if(*p <= radio )
 		//gproshan_debug_var(indexes[i]);
-		if( acos( (n, mesh->normal(indexes[i]) ) ) < PI/2.5 )
+		angle = acos( (n, mesh->normal(indexes[i]) ) ) ;
+		if( angle < PI/2.5 && (sum_angle/vertices.size()) <= PI/( vertices.size() ))
 		{
+			
 			if(*p > radio)
 			{
 				radio = *p;
@@ -96,13 +100,63 @@ void patch::init_radial_disjoint(che * mesh, const distance_t & radio_, const in
 			//gproshan_debug_var(euc_radio);
 			vertices.push_back(indexes[i]);
 			//gproshan_debug_var(geo[indexes[i]]);
+			sum_angle += angle;
+			
 		}
 		else
 		{
 			break;
 		}
-
+		//gproshan_debug_var(sum_angle);
 	}
+	delete indexes;
+
+	/*if(vertices.size() == geo.n_sorted_index() )
+	{
+		gproshan_debug_var(vertices.size());
+		geodesics geo2(mesh, {v}, geodesics::FM,  NULL, false, 0, 2*radio_);
+		indexes = new index_t[geo2.n_sorted_index()];
+		geo2.copy_sorted_index(indexes, geo2.n_sorted_index());
+
+		for(size_t i=geo.n_sorted_index(); i<geo2.n_sorted_index(); i++)
+		{
+			
+			p = mesh->get_vertex(indexes[i]); 
+			c = mesh->get_vertex(v); // central vertices
+
+			p = p - c ;
+			p = p - ((p,n)*n);
+			//if(*p <= radio )
+			//gproshan_debug_var(indexes[i]);
+			angle = acos( (n, mesh->normal(indexes[i]) ) ) ;
+			if( angle < PI/2.5 && (sum_angle/vertices.size()) <= PI/( vertices.size() ))
+			{
+				
+				if(*p > radio)
+				{
+					radio = *p;
+				}
+				//compute euclidean radio
+				p = mesh->get_vertex(indexes[i]);
+				if(*(p - c) > euc_radio)
+					euc_radio = *(p - c);
+				//gproshan_debug_var(euc_radio);
+				vertices.push_back(indexes[i]);
+				//gproshan_debug_var(geo[indexes[i]]);
+				sum_angle += angle;
+				
+			}
+			else
+			{
+				break;
+			}
+			//gproshan_debug_var(sum_angle);
+		}
+		delete indexes;
+	}*/
+
+	//gproshan_debug_var(sum_angle/vertices.size());
+	//gproshan_debug_var(PI/10);
 	
 //	vertices = std::move(_vertices);
 }
@@ -155,7 +209,7 @@ void patch::init_curvature_growing(che * mesh, const index_t & v, a_mat & normal
 
 	vertices.push_back(v);
 
-	for(int i=1; i<geo.n_sorted_index(); i++)
+	for(size_t i=1; i<geo.n_sorted_index(); i++)
 	{
 	//	gproshan_debug_var(geo[indexes[i]]);
 		// normal at the center

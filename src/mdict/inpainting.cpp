@@ -319,6 +319,8 @@ void  inpainting::init_radial_feature_patches()
 	distance_t euc_radio;
 	vector<distance_t> radios;
 	size_t count_cov = 0;
+	size_t count_cov_patch = 0;
+	distance_t over_factor = 2;
 
 	for(size_t i = 0; i < all_sorted_features.size(); i++)
 	{
@@ -333,7 +335,7 @@ void  inpainting::init_radial_feature_patches()
 				const vertex & v_seed = mesh->gt(seeds[j]);
 
 				// 0.7 coverage parameter
-				if( *(v_patch - v_seed) < 0.5*radios[j] ) // radio of each patch
+				if( *(v_patch - v_seed) < 0.5 * radios[j] ) // radio of each patch
 					found = true;
 				j++;
 			}
@@ -342,20 +344,31 @@ void  inpainting::init_radial_feature_patches()
 				// get_radious
 				patch p;
 				// increasing a bit the radio
-				p.init_radial_disjoint(mesh, 0.5*max_radio, all_sorted_features[i], euc_radio);
+				p.init_radial_disjoint(mesh, 1*max_radio, all_sorted_features[i], euc_radio);
 		
 				//gproshan_debug_var(p.vertices.size());
-				if(p.vertices.size() >= 7)
+				count_cov_patch = 0;
+				if(p.vertices.size() >= 7 )
 				{
 					for(index_t k = 0; k < p.vertices.size(); k++)
 					{
-						if(!covered[ p.vertices[k] ]) count_cov++;
-						covered[ p.vertices[k] ] = 1;
-					}	
-					patches.push_back(p);
-					seeds.push_back(all_sorted_features[i]);
-					radios.push_back( euc_radio );
-					count+=p.vertices.size();
+						if(!covered[ p.vertices[k] ]) count_cov_patch++;
+						//covered[ p.vertices[k] ] = 1;
+					}
+
+					count_cov += count_cov_patch;
+					if(count_cov_patch > 0)
+					{
+						patches.push_back(p);
+						seeds.push_back(all_sorted_features[i]);
+						radios.push_back( euc_radio );
+						count+=p.vertices.size();
+
+						for(index_t k = 0; k < p.vertices.size(); k++)
+							covered[ p.vertices[k] ] = 1;
+					
+					}
+					
 				//	gproshan_debug_var(euc_radio);
 				//	gproshan_debug_var(indexes[i]);
 				//	gproshan_debug_var(p.vertices.size());
@@ -371,7 +384,7 @@ void  inpainting::init_radial_feature_patches()
 	M = seeds.size();
 
 //////////////////////////////////////
-
+/*
 	//new order bigger to smaller
 	vector<distance_t> geo_radios;
 	geo_radios.resize(seeds.size());
@@ -421,7 +434,7 @@ void  inpainting::init_radial_feature_patches()
 	patches = valid_patches;
 	gproshan_debug_var(patches.size());
 	M  = patches.size();
-
+*/
 ///////////////////////////////////////
 	
 	gproshan_debug_var(M);
@@ -435,7 +448,7 @@ void  inpainting::init_radial_feature_patches()
 		}
 	}
 	a_vec outlv(seeds.size());
-	gproshan_debug_var(seeds.size());
+	gproshan_debug_var(outliers.size());
 	for(index_t i = 0; i < seeds.size(); i++)
 		outlv(i) = seeds[i];
 
