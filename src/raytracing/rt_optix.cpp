@@ -27,10 +27,9 @@ optix::optix(const std::vector<che *> & meshes)
 	optixInit();
 	
 	// create context
+	cudaSetDevice(0);
 
 	cudaStreamCreate(&stream);
-
-	cudaGetDeviceProperties(&device_prop, 0);	// device id = 0
 
 	cuCtxGetCurrent(&cuda_context);
 
@@ -51,18 +50,18 @@ optix::optix(const std::vector<che *> & meshes)
 	optix_module_compile_opt.debugLevel			= OPTIX_COMPILE_DEBUG_LEVEL_NONE;
 
 	optix_pipeline_compile_opt							= {};
-	optix_pipeline_compile_opt.traversableGraphFlags = OPTIX_TRAVERSABLE_GRAPH_FLAG_ALLOW_SINGLE_GAS;
+	optix_pipeline_compile_opt.traversableGraphFlags	= OPTIX_TRAVERSABLE_GRAPH_FLAG_ALLOW_SINGLE_GAS;
 	optix_pipeline_compile_opt.usesMotionBlur			= false;
 	optix_pipeline_compile_opt.numPayloadValues			= 2;
 	optix_pipeline_compile_opt.numAttributeValues		= 2;
 	optix_pipeline_compile_opt.exceptionFlags			= OPTIX_EXCEPTION_FLAG_NONE;
-	optix_pipeline_compile_opt.pipelineLaunchParamsVariableName = "optixLaunchParams";
+	optix_pipeline_compile_opt.pipelineLaunchParamsVariableName = "optix_launch_params";
 
 	optix_pipeline_link_opt.overrideUsesMotionBlur	= false;
 	optix_pipeline_link_opt.maxTraceDepth			= 2;
 
 	const std::string str_ptx_code = ptx_code;
-
+	
 	optixModuleCreateFromPTX(	optix_context,
 								&optix_module_compile_opt,
 								&optix_pipeline_compile_opt,
@@ -139,9 +138,14 @@ OptixTraversableHandle optix::build_as(const std::vector<che *> & meshes)
 	
 	cudaDeviceSynchronize();
 
+gproshan_error_var(optix_gas_buffer_size.tempSizeInBytes);
+gproshan_error_var(optix_gas_buffer_size.outputSizeInBytes);
+
 	uint64_t compacted_size;
 	cudaMemcpy(&compacted_size, d_compacted_size, sizeof(uint64_t), cudaMemcpyDeviceToHost);
-	gproshan_error_var(compacted_size);
+
+gproshan_error_var(compacted_size);
+
 	void * d_as;
 	cudaMalloc(&d_as, compacted_size);
 
@@ -154,6 +158,7 @@ OptixTraversableHandle optix::build_as(const std::vector<che *> & meshes)
 						);
 
 	cudaDeviceSynchronize();
+gproshan_error_var(compacted_size);
 
 	cudaFree(d_output_buffer);
 	cudaFree(d_temp_buffer);
@@ -191,7 +196,7 @@ void optix::add_mesh(OptixBuildInput & optix_mesh, uint32_t & optix_trig_flags, 
 	optix_mesh.type = OPTIX_BUILD_INPUT_TYPE_TRIANGLES;
 
 	optix_mesh.triangleArray.vertexFormat			= OPTIX_VERTEX_FORMAT_FLOAT3;
-	optix_mesh.triangleArray.vertexStrideInBytes	= sizeof(vertex); 
+	optix_mesh.triangleArray.vertexStrideInBytes	= 3 * sizeof(float); 
 	optix_mesh.triangleArray.numVertices			= mesh->n_vertices(); 
 	optix_mesh.triangleArray.vertexBuffers			= (CUdeviceptr *) &d_vertex;
 

@@ -22,7 +22,6 @@ class optix : public raytracing
 {
 	CUcontext cuda_context;
 	CUstream stream;
-	cudaDeviceProp device_prop;
 
 	OptixDeviceContext optix_context;
 

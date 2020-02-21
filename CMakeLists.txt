@@ -76,7 +76,9 @@ if(CUDA_FOUND)
 	list(GET ptx_files 0 ptx_file)
 	set(ptx_code ptx_code.c)
 	add_custom_command(	OUTPUT ${ptx_code} 
-						COMMAND bin2c --const --padd 0 --type char --name ptx_code ${ptx_file} > ${ptx_code} DEPENDS ${ptx_file})
+						COMMAND bin2c --const --padd 0 --type char --name ptx_code ${ptx_file} > ${ptx_code}
+						DEPENDS ${ptx_file} 
+						)
 endif(CUDA_FOUND)
 
 FILE(GLOB_RECURSE cpp_sources ${gproshan_SOURCE_DIR}/src/*.cpp)
@@ -102,7 +104,11 @@ if(CUDA_FOUND)
 	target_compile_options(gproshan_cu PRIVATE -Xcompiler -fopenmp)
 	set_target_properties(gproshan_cu PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 	target_link_libraries(gproshan_cu gproshan_cpp)
-	target_link_libraries(gproshan_cu ${CUDA_LIBRARIES} ${CUDA_CUDA_LIBRARY} ${CUDA_cublas_LIBRARY} ${CUDA_cusolver_LIBRARY} ${CUDA_cusparse_LIBRARY})
+	target_link_libraries(gproshan_cu ${CUDA_LIBRARIES})
+	target_link_libraries(gproshan_cu ${CUDA_CUDA_LIBRARY})
+	target_link_libraries(gproshan_cu ${CUDA_cublas_LIBRARY})
+	target_link_libraries(gproshan_cu ${CUDA_cusolver_LIBRARY})
+	target_link_libraries(gproshan_cu ${CUDA_cusparse_LIBRARY})
 endif(CUDA_FOUND)
 
 add_executable(gproshan gproshan.cpp)
