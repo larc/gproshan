@@ -3,7 +3,6 @@
 
 #include "config.h"
 
-#include <map>
 #include <iomanip>
 #include <string>
 

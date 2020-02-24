@@ -1,4 +1,4 @@
-#version 460 core
+#version 410 core
 
 in vec3 gs_position;
 in vec3 gs_normal;

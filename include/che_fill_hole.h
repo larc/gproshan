@@ -4,6 +4,8 @@
 #include "che.h"
 #include "include_arma.h"
 
+#include <array>
+
 
 // geometry processing and shape analysis framework
 namespace gproshan {

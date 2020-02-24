@@ -368,7 +368,7 @@ void che::normalize()
 
 	real_t max_norm = 0;
 
-	#pragma omp parallel for reduction(std::max : max_norm)
+	#pragma omp parallel for reduction(max : max_norm)
 	for(index_t v = 0; v < n_vertices_; v++)
 	{
 		GT[v] -= center;
