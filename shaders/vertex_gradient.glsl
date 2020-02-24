@@ -1,4 +1,4 @@
-#version 460 core
+#version 410 core
 
 layout (location=0) in vec3 in_position;
 layout (location=2) in float in_color;

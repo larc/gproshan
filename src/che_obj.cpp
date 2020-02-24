@@ -1,6 +1,7 @@
 #include "che_obj.h"
 
 #include <fstream>
+#include <sstream>
 #include <vector>
 #include <cstring>
 #include <cassert>
