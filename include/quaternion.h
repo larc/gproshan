@@ -17,8 +17,7 @@ class quaternion
 		vertex v;
 
 	public:
-		quaternion(void);
-		quaternion(const quaternion & q);
+		quaternion();
 		quaternion(real_t s, real_t vi, real_t vj, real_t vk);
 		quaternion(real_t s, const vertex & v);
 		quaternion(real_t s);

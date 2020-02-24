@@ -5,7 +5,7 @@
 
 #include "include_opengl.h"
 
-#define COLOR 0.5
+#define COLOR 0.4
 
 #ifdef SINGLE_P
 	#define glVertex3v(x) glVertex3fv(x)
@@ -28,7 +28,6 @@ class che_viewer
 		che * mesh;
 		size_t _n_vertices; // current number of vertices
 		bool _invert_orientation;
-		real_t factor;
 		vertex v_translate;
 
 		vertex * normals;
@@ -39,6 +38,8 @@ class che_viewer
 	
 	public:
 		int vx, vy;					///< viewport positions.
+		real_t factor;
+		std::vector<index_t> selected;
 
 	public:
 		che_viewer();
@@ -52,9 +53,6 @@ class che_viewer
 		void update_normals();
 		void update_colors(const color_t *const c = nullptr);
 		void draw();
-		void draw_normal_field();
-		void draw_gradient_field();
-		void draw_mesh_info();
 
 		const size_t & n_vertices() const;
 		color_t & color(const index_t & v);

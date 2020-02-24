@@ -21,9 +21,9 @@ struct locval_t
 {
 	arma::uword i, j;
 	real_t val;
-
-	bool operator < (const locval_t & lc);
 };
+
+bool operator < (const locval_t & a, const locval_t & b);
 
 void OMP(vector<locval_t> & alpha, const a_vec & x, const index_t & i, const a_mat & D, const size_t & L);
 

@@ -1,7 +1,6 @@
 #include "che.h"
 
 #include "include_arma.h"
-#include "viewer/viewer.h"
 
 #include <cstring>
 #include <cmath>
@@ -245,7 +244,7 @@ vertex che::normal_he(const index_t & he) const
 	return n / *n;
 }
 
-vertex che::normal(const index_t & v)
+vertex che::normal(const index_t & v) const
 {
 	vertex n;
 	area_t area, area_star = 0;
@@ -383,7 +382,7 @@ void che::normalize()
 
 	real_t max_norm = 0;
 
-	#pragma omp parallel for reduction(std::max : max_norm)
+	#pragma omp parallel for reduction(max : max_norm)
 	for(index_t v = 0; v < n_vertices_; v++)
 	{
 		GT[v] -= center;
@@ -617,7 +616,7 @@ void che::multiplicate_vertices()
 	index_t * aVT = new index_t[nh + 6 * n_edges_];
 	index_t * aOT = new index_t[nh + 6 * n_edges_];
 	index_t * aEVT = new index_t[nv + n_edges_];
-	index_t * aET = new index_t[ne + 3 *  n_edges_];
+	index_t * aET = new index_t[ne + 3 * n_edges_];
 	index_t * aEHT = new index_t[nh + 6 * n_edges_];
 
 	memcpy(aGT, GT, n_vertices_ * sizeof(vertex));

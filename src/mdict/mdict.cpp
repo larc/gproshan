@@ -17,10 +17,9 @@ const real_t sigma = 0.01;
 
 // SPARSE
 
-bool locval_t::operator < (const locval_t & lc)
+bool operator < (const locval_t & a, const locval_t & b)
 {
-	if(i == lc.i) return j < lc.j;
-	return i < lc.i;
+	return (a.i == b.i) ? a.j < b.j : a.i < b.i;
 }
 
 std::ostream & operator << (std::ostream & os, const locval_t & lc)

@@ -2,7 +2,6 @@
 
 #include "che_off.h"
 #include "laplacian.h"
-#include "viewer/viewer.h"
 
 #include <queue>
 
@@ -56,7 +55,6 @@ che * mesh_simple_fill_hole(che * mesh, const vector<index_t> & border_vertices,
 
 		ve = E.t() * ve;
 		vertices.push_back(*((vertex *) ve.memptr()));
-		viewer::other_vertices.push_back(vertices.back());
 	}
 
 	return fill_hole_front_angles(vertices, mesh->mean_edge(), normal, max_iter);
@@ -254,7 +252,6 @@ void split_border(vector<pair<index_t, index_t> > & split_indices, che * mesh, c
 			{
 				cerr << b << " " << i << endl;
 				a = b;
-//				viewer::select_vertices.push_back(border_vertices[i]);
 			}
 		}
 	}
@@ -300,7 +297,7 @@ tuple<vector<index_t> *, che **> fill_all_holes_meshes(che * mesh, const size_t 
 //		holes[b] = mesh_fill_hole(mesh, border_vertices[b], max_iter, { {77, 106}, {67, 106}, {38, 11} });
 		holes[b] = mesh_fill_hole(mesh, border_vertices[b], max_iter);
 	gproshan_debug(inpainting);
-		//holes[b]->write_file(tmp_file_path("fill_holes_" + to_string(b) + "_" + mesh->name() + ".off"));
+		if(holes[b]) che_off::write_file(holes[b], tmp_file_path("fill_holes_" + to_string(b) + "_" + mesh->name() + ".off"));
 	gproshan_debug(inpainting);
 	}
 
@@ -323,7 +320,7 @@ che * fill_hole_front_angles_test(che * mesh, vector<index_t> & front_vertices, 
 	gproshan_debug(filling holes);
 	distance_t perimeter = 0.0, init_perimeter = 0.0;
 
-	real_t lenght = mesh->mean_edge();
+	real_t length = mesh->mean_edge();
 	priority_queue<border_t> front;
 
 	vector<vertex> vertices;
@@ -358,7 +355,7 @@ che * fill_hole_front_angles_test(che * mesh, vector<index_t> & front_vertices, 
 	init_perimeter += *(vertices.back() - vertices.front());
 	perimeter = init_perimeter;
 
-//	lenght = perimeter / vertices.size();
+//	length = perimeter / vertices.size();
 
 	bool o = is_grow;
 
@@ -376,9 +373,6 @@ che * fill_hole_front_angles_test(che * mesh, vector<index_t> & front_vertices, 
 		neighbors[v][o] = n_v;
 
 		front.push(border_t(tmp_vertices, v, neighbors[v], o, tmp_normals[v]));
-	//	viewer::vectors.push_back(vertex(tmp_vertices[v](0), tmp_vertices[v](1), tmp_vertices[v](2)));
-	//	a_vec normal = tmp_vertices[v] + lenght * 3 * normalise(tmp_normals[v]);
-	//	viewer::vectors.push_back(vertex(normal(0), normal(1), normal(2)));
 	}
 
 	border_t top;
@@ -413,9 +407,9 @@ che * fill_hole_front_angles_test(che * mesh, vector<index_t> & front_vertices, 
 		border_t b_n(tmp_vertices, n_v, neighbors[n_v], o, tmp_normals[n_v]);
 
 		bool close_vertex = false;
-		if(b_p.theta < M_PI && norm(tmp_vertices[n_v] - tmp_vertices[neighbors[p_v][!o]]) < 1.5 * lenght)
+		if(b_p.theta < M_PI && norm(tmp_vertices[n_v] - tmp_vertices[neighbors[p_v][!o]]) < 1.5 * length)
 			close_vertex = true;
-		if(b_n.theta < M_PI && norm(tmp_vertices[p_v] - tmp_vertices[neighbors[n_v][o]]) < 1.5 * lenght)
+		if(b_n.theta < M_PI && norm(tmp_vertices[p_v] - tmp_vertices[neighbors[n_v][o]]) < 1.5 * length)
 			close_vertex = true;
 
 		if( top.theta <= M_PI )
@@ -425,7 +419,7 @@ che * fill_hole_front_angles_test(che * mesh, vector<index_t> & front_vertices, 
 			perimeter -= norm(tmp_vertices[n_v] - tmp_vertices[v]);
 		}
 
-		lenght = ( norm(tmp_vertices[v] - tmp_vertices[p_v]) + norm(tmp_vertices[n_v] - tmp_vertices[v]) ) / 2;
+		length = ( norm(tmp_vertices[v] - tmp_vertices[p_v]) + norm(tmp_vertices[n_v] - tmp_vertices[v]) ) / 2;
 		m_normal = ( tmp_normals[v] + tmp_normals[p_v] + tmp_normals[n_v] ) / 3;
 		//m_normal = normalise(m_normal);
 
@@ -452,7 +446,7 @@ che * fill_hole_front_angles_test(che * mesh, vector<index_t> & front_vertices, 
 		{
 			index_t m_v = tmp_vertices.size();
 
-			m_vec = top.new_vertex(tmp_vertices, 0.5, lenght, neighbors[v], o, tmp_normals[v]);
+			m_vec = top.new_vertex(tmp_vertices, 0.5, length, neighbors[v], o, tmp_normals[v]);
 			tmp_vertices.push_back(m_vec);
 
 			faces.push_back(m_v);
@@ -490,9 +484,9 @@ che * fill_hole_front_angles_test(che * mesh, vector<index_t> & front_vertices, 
 		{
 			index_t m_v = tmp_vertices.size();
 
-			m_vec = top.new_vertex(tmp_vertices, 1./3, lenght, neighbors[v], o, tmp_normals[v]);
+			m_vec = top.new_vertex(tmp_vertices, 1./3, length, neighbors[v], o, tmp_normals[v]);
 			tmp_vertices.push_back(m_vec);
-			m_vec = top.new_vertex(tmp_vertices, 2./3, lenght, neighbors[v], o, tmp_normals[v]);
+			m_vec = top.new_vertex(tmp_vertices, 2./3, length, neighbors[v], o, tmp_normals[v]);
 			tmp_vertices.push_back(m_vec);
 
 			faces.push_back(m_v);
@@ -552,11 +546,7 @@ che * fill_hole_front_angles_test(che * mesh, vector<index_t> & front_vertices, 
 		vertices.push_back(vertex(r[0], r[1], r[2]));
 
 	for(index_t v = 0; false && v < tmp_vertices.size(); v++)
-	{
-	//	viewer::vectors.push_back(vertex(tmp_vertices[v](0), tmp_vertices[v](1), tmp_vertices[v](2)));
-		a_vec normal = tmp_vertices[v] + lenght * 3 * normalise(tmp_normals[v]);
-	//	viewer::vectors.push_back(vertex(normal(0), normal(1), normal(2)));
-	}
+		a_vec normal = tmp_vertices[v] + length * 3 * normalise(tmp_normals[v]);
 
 	gproshan_debug_var(perimeter);
 //	gproshan_debug(filling holes);
@@ -565,7 +555,7 @@ che * fill_hole_front_angles_test(che * mesh, vector<index_t> & front_vertices, 
 	return faces.size() == 0 ? nullptr : new che(vertices.data(), vertices.size(), faces.data(), faces.size() / 3);
 }
 
-che * fill_hole_front_angles(vector<vertex> & vertices, const real_t & lenght, const vertex & normal, const size_t & max_iter, bool is_grow)
+che * fill_hole_front_angles(vector<vertex> & vertices, const real_t & length, const vertex & normal, const size_t & max_iter, bool is_grow)
 {
 	size_t p_iter = max_iter;
 	distance_t perimeter = 0.0;
@@ -682,9 +672,9 @@ che * fill_hole_front_angles(vector<vertex> & vertices, const real_t & lenght, c
 		border_t b_n(tmp_vertices, n_v, neighbors[n_v], o);
 
 		bool close_vertex = false;
-		if(b_p.theta <= M_PI && norm(tmp_vertices[n_v] - tmp_vertices[neighbors[p_v][!o]]) < 1.5 * lenght)
+		if(b_p.theta <= M_PI && norm(tmp_vertices[n_v] - tmp_vertices[neighbors[p_v][!o]]) < 1.5 * length)
 			close_vertex = true;
-		if(b_n.theta <= M_PI && norm(tmp_vertices[p_v] - tmp_vertices[neighbors[n_v][o]]) < 1.5 * lenght)
+		if(b_n.theta <= M_PI && norm(tmp_vertices[p_v] - tmp_vertices[neighbors[n_v][o]]) < 1.5 * length)
 			close_vertex = true;
 
 		if( top.theta <= M_PI )
@@ -724,7 +714,7 @@ che * fill_hole_front_angles(vector<vertex> & vertices, const real_t & lenght, c
 		{
 			index_t m_v = tmp_vertices.size();
 
-			m_vec = top.new_vertex(tmp_vertices, 0.5, lenght, neighbors[v], o);
+			m_vec = top.new_vertex(tmp_vertices, 0.5, length, neighbors[v], o);
 			tmp_vertices.push_back(m_vec);
 
 			faces.push_back(m_v);
@@ -760,9 +750,9 @@ che * fill_hole_front_angles(vector<vertex> & vertices, const real_t & lenght, c
 		{
 			index_t m_v = tmp_vertices.size();
 
-			m_vec = top.new_vertex(tmp_vertices, 1./3, lenght, neighbors[v], o);
+			m_vec = top.new_vertex(tmp_vertices, 1./3, length, neighbors[v], o);
 			tmp_vertices.push_back(m_vec);
-			m_vec = top.new_vertex(tmp_vertices, 2./3, lenght, neighbors[v], o);
+			m_vec = top.new_vertex(tmp_vertices, 2./3, length, neighbors[v], o);
 			tmp_vertices.push_back(m_vec);
 
 			faces.push_back(m_v);
@@ -809,24 +799,10 @@ che * fill_hole_front_angles(vector<vertex> & vertices, const real_t & lenght, c
 	if(init_perimeter < perimeter)
 	{
 		if(!is_grow)
-			return fill_hole_front_angles(vertices, lenght, -normal, max_iter, !is_grow);
+			return fill_hole_front_angles(vertices, length, -normal, max_iter, !is_grow);
 		else return nullptr;
 	}
-/*
-	a_vec axis;
-	axis = avg + E.col(0) * lenght * 3;
-	viewer::vectors.push_back(vertex(avg(0), avg(1), avg(2)));
-	viewer::vectors.push_back(vertex(axis(0), axis(1), axis(2)));
-	axis = avg + E.col(1) * lenght * 3;
-	viewer::vectors.push_back(vertex(avg(0), avg(1), avg(2)));
-	viewer::vectors.push_back(vertex(axis(0), axis(1), axis(2)));
-	axis = avg + E.col(2) * lenght * 3;
-	viewer::vectors.push_back(vertex(avg(0), avg(1), avg(2)));
-	viewer::vectors.push_back(vertex(axis(0), axis(1), axis(2)));
-	axis = avg + normalise(orientation) * lenght * 3;
-	viewer::vectors.push_back(vertex(avg(0), avg(1), avg(2)));
-	viewer::vectors.push_back(vertex(axis(0), axis(1), axis(2)));
-*/
+	
 	vertices.clear();
 	vertices.reserve(tmp_vertices.size());
 

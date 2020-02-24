@@ -53,34 +53,14 @@ quaternion camera::currentRotation() const
 	return (pDrag * pClick.conj()) * rLast;
 }
 
-void camera::setView() const
-{
-	quaternion r = (pDrag * pClick.conj()) * rLast;
-
-	double w = r[0];
-	double x = r[1];
-	double y = r[2];
-	double z = r[3];
-
-	GLdouble M[16] = {
-		1.-2.*y*y-2.*z*z, 2.*x*y+2.*w*z, 2.*x*z-2.*w*y, 0.,
-		2.*x*y-2.*w*z, 1.-2.*x*x-2.*z*z, 2.*y*z+2.*w*x, 0.,
-		2.*x*z+2.*w*y, 2.*y*z-2.*w*x, 1.-2.*x*x-2.*y*y, 0.,
-		0., 0., 0., 1.
-	};
-
-	glMatrixMode(GL_MODELVIEW);
-	glMultMatrixd(M);
-}
-
 void camera::mouse(int , int state, int x, int y)
 {
-	if(state == GLUT_DOWN)
+	if(state == GLFW_PRESS)
 	{
 		pClick = pDrag = pLast = clickToSphere(x, y);
 		momentum = 1.;
 	}
-	if(state == GLUT_UP)
+	if(state == GLFW_RELEASE)
 	{
 		double timeSinceDrag = (clock() - tLast) / (double) CLOCKS_PER_SEC;
 
@@ -124,12 +104,12 @@ void camera::idle()
 
 void camera::zoomIn()
 {
-	vZoom -= 0.2;
+	zoom -= 0.01;
 }
 
 void camera::zoomOut()
 {
-	vZoom += 0.2;
+	zoom += 0.01;
 }
 
 

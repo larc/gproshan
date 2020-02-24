@@ -1,6 +1,7 @@
 #include "che_obj.h"
 
 #include <fstream>
+#include <sstream>
 #include <vector>
 #include <cstring>
 #include <cassert>
@@ -28,20 +29,20 @@ void che_obj::read_file(const string & file)
 	assert(is.good());
 	
 	real_t x, y, z;
-	index_t face[8], i;
+	int face[8], i;
 
 	vector<vertex> vertices;
 	vector<index_t> faces;
 
-	char line[128];
+	char line[256];
 	string key;
 
 	while(is.getline(line, sizeof(line)))
 	{
 		stringstream ss(line);
 
+		key = "";
 		ss >> key;
-		if(key == "") continue;
 
 		if(key == "v")
 		{
@@ -56,21 +57,43 @@ void che_obj::read_file(const string & file)
 			
 			if(i == che::P) // che::P = 3, triangular mesh
 			{
-				faces.push_back(face[0] - 1);	
-				faces.push_back(face[1] - 1);	
-				faces.push_back(face[2] - 1);	
+				if(face[0] < 0)
+				{
+					faces.push_back(vertices.size() + face[0]);	
+					faces.push_back(vertices.size() + face[1]);	
+					faces.push_back(vertices.size() + face[2]);	
+				}
+				else
+				{
+					faces.push_back(face[0] - 1);	
+					faces.push_back(face[1] - 1);	
+					faces.push_back(face[2] - 1);
+				}
 			}
 			else if(i == 4) // quadrangular mesh, split two triangles
 			{
-				faces.push_back(face[0] - 1);	
-				faces.push_back(face[1] - 1);	
-				faces.push_back(face[3] - 1);
+				if(face[0] < 0)
+				{
+					faces.push_back(vertices.size() + face[0]);	
+					faces.push_back(vertices.size() + face[1]);	
+					faces.push_back(vertices.size() + face[3]);
 
-				faces.push_back(face[1] - 1);	
-				faces.push_back(face[2] - 1);	
-				faces.push_back(face[3] - 1);
+					faces.push_back(vertices.size() + face[1]);	
+					faces.push_back(vertices.size() + face[2]);	
+					faces.push_back(vertices.size() + face[3]);
+				}
+				else
+				{
+					faces.push_back(face[0] - 1);	
+					faces.push_back(face[1] - 1);	
+					faces.push_back(face[3] - 1);
+
+					faces.push_back(face[1] - 1);	
+					faces.push_back(face[2] - 1);	
+					faces.push_back(face[3] - 1);
+				}
 			}
-		}
+		}	
 	}
 
 	is.close();

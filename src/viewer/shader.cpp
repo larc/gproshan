@@ -28,11 +28,7 @@ void shader::load_fragment(const char * filename)
 
 void shader::load_geometry(const char * filename)
 {
-	#ifdef GL_GEOMETRY_SHADER_EXT
-		load(GL_GEOMETRY_SHADER_EXT, filename);
-	#else
-		cerr << "Error: geometry shaders not supported!" << endl;
-	#endif
+	load(GL_GEOMETRY_SHADER_EXT, filename);
 }
 
 void shader::enable()
