@@ -100,7 +100,7 @@ void dijkstra::run(che * shape)
 		if(min_i != NIL) visited[min_i] = true;
 	}
 
-	delete visited;
+	delete [] visited;
 }
 
 
