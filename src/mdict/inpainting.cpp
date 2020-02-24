@@ -335,7 +335,7 @@ void  inpainting::init_radial_feature_patches()
 				const vertex & v_seed = mesh->gt(seeds[j]);
 
 				// 0.7 coverage parameter
-				if( *(v_patch - v_seed) < 0.5 * radios[j] ) // radio of each patch
+				if( *(v_patch - v_seed) < 0.7 * radios[j] ) // radio of each patch
 					found = true;
 				j++;
 			}

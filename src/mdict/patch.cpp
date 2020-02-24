@@ -86,7 +86,8 @@ void patch::init_radial_disjoint(che * mesh, const distance_t & radio_, const in
 		//if(*p <= radio )
 		//gproshan_debug_var(indexes[i]);
 		angle = acos( (n, mesh->normal(indexes[i]) ) ) ;
-		if( angle < PI/2.5 && (sum_angle/vertices.size()) <= PI/( vertices.size() ))
+		//if( angle < PI/2.5 && (sum_angle/vertices.size()) + angle <= PI/2.2)
+		if( angle < PI/2.5 && (sum_angle) <= 1.2* PI)
 		{
 			
 			if(*p > radio)
@@ -110,11 +111,11 @@ void patch::init_radial_disjoint(che * mesh, const distance_t & radio_, const in
 		//gproshan_debug_var(sum_angle);
 	}
 	delete indexes;
-
-	/*if(vertices.size() == geo.n_sorted_index() )
+/*
+	if(vertices.size() == geo.n_sorted_index() )
 	{
-		gproshan_debug_var(vertices.size());
-		geodesics geo2(mesh, {v}, geodesics::FM,  NULL, false, 0, 2*radio_);
+		//gproshan_debug_var(vertices.size());
+		geodesics geo2(mesh, {v}, geodesics::FM,  NULL, false, 0, 3*radio_);
 		indexes = new index_t[geo2.n_sorted_index()];
 		geo2.copy_sorted_index(indexes, geo2.n_sorted_index());
 
@@ -129,7 +130,7 @@ void patch::init_radial_disjoint(che * mesh, const distance_t & radio_, const in
 			//if(*p <= radio )
 			//gproshan_debug_var(indexes[i]);
 			angle = acos( (n, mesh->normal(indexes[i]) ) ) ;
-			if( angle < PI/2.5 && (sum_angle/vertices.size()) <= PI/( vertices.size() ))
+			if( angle < PI/2.5 && (sum_angle/vertices.size()) <= 1.5*PI/( vertices.size() ))
 			{
 				
 				if(*p > radio)
