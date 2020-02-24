@@ -531,7 +531,7 @@ void app_viewer::process_super_resolution(viewer * p_view)
 	cin >> n >> m >> M >> f >> learn;
 
 	basis * phi = new basis_dct(n);
-	super_resolution dict(mesh, phi, m, M, f);
+	super_resolution dict(mesh, phi, m, M, f, learn);
 	dict.execute();
 
 	delete phi;
@@ -555,17 +555,19 @@ void app_viewer::process_inpaiting(viewer * p_view)
 	cin >> n >> m >> M >> f >> learn >> avg_p >> percentage;
 
 	basis * phi = new basis_dct(n);
-	inpainting dict(viewer::mesh(), phi, m, M, f, learn, avg_p, percentage);
+	inpainting dict(mesh, phi, m, M, f, learn, avg_p, percentage);
 	dict.execute();
 	delete phi;
-	viewer::mesh().update_colors(&dict[0]);
+	mesh.update_colors(&dict[0]);
 	
-	viewer::mesh().update_normals();
+	mesh.update_normals();
 }
 
-void viewer_process_mask()
+void viewer_process_mask(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
+	app_viewer * view = (app_viewer *) p_view;
+	che_viewer & mesh = view->mesh();
 
 	size_t avg_p = 20; 
 	size_t percentage;
@@ -580,26 +582,28 @@ void viewer_process_mask()
 	//cin >> avg_p >> percentage >> f;
 	cin>> avg_p >> percentage;
 	basis * phi = new basis_dct(n);
-	inpainting dict(viewer::mesh(),  phi, m, M, f, learn, avg_p, percentage);
+	inpainting dict(mesh,  phi, m, M, f, learn, avg_p, percentage);
 
 	dict.init_radial_feature_patches();
 	//dict.init_voronoi_patches();
 	delete phi;
-	viewer::mesh().update_colors(&dict[0]);
-	string f_points = tmp_file_path(viewer::mesh()->name_size()  + ".points");
+	mesh.update_colors(&dict[0]);
+	string f_points = tmp_file_path(mesh->name_size()  + ".points");
 	a_vec points_out;
 	points_out.load(f_points);
 	for(int i = 0; i< points_out.size(); i++)
-		viewer::select_vertices.push_back(points_out(i));
+		view->select_vertices.push_back(points_out(i));
 	
-	viewer::mesh().update_normals();
+	mesh.update_normals();
 }
 
 
 
-void viewer_process_synthesis()
+void viewer_process_synthesis(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
+	app_viewer * view = (app_viewer *) p_view;
+	che_viewer & mesh = view->mesh();
 
 	size_t n; // dct
 	size_t m, M;
@@ -916,8 +920,8 @@ void app_viewer::process_gaussian_curvature(viewer * p_view)
 			b = mesh->gt_vt(prev(he)) - mesh->gt(v);
 			g += acos((a,b) / (*a * *b));
 		}
-		//gv(v) = (2 * M_PI - g) / viewer::mesh()->area_vertex(v);
-		gv(v) = viewer::mesh()->mean_curvature(v);
+		//gv(v) = (2 * M_PI - g) / mesh->area_vertex(v);
+		gv(v) = mesh->mean_curvature(v);
 		
 		g_max = max(g_max, gv(v));
 		g_min = min(g_min, gv(v));
@@ -929,7 +933,7 @@ void app_viewer::process_gaussian_curvature(viewer * p_view)
 	gproshan_log_var(g_max);
 
 	#pragma omp parallel for
-	for(index_t v = 0; v < viewer::mesh().n_vertices(); v++)
+	for(index_t v = 0; v < mesh.n_vertices(); v++)
 		gv(v) = (gv(v) + g_min) / g;
 
 	real_t gm = mean(gv);
