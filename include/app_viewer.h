@@ -68,6 +68,8 @@ class app_viewer : public viewer
 		static void process_super_resolution(viewer * p_view);
 		static void process_inpaiting(viewer * p_view);
 		static void process_iterative_inpaiting(viewer * p_view);
+		static void process_mask(viewer * p_view);
+		static void process_synthesis(viewer * p_view);
 
 		static void process_functional_maps(viewer * p_view);
 		static void process_gps(viewer * p_view);
