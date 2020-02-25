@@ -335,7 +335,7 @@ void  inpainting::init_radial_feature_patches()
 				const vertex & v_seed = mesh->gt(seeds[j]);
 
 				// 0.7 coverage parameter
-				if( *(v_patch - v_seed) < 0.7 * radios[j] ) // radio of each patch
+				if( *(v_patch - v_seed) < 0.5 * radios[j] ) // radio of each patch
 					found = true;
 				j++;
 			}
@@ -508,6 +508,7 @@ void  inpainting::init_radial_feature_patches()
 		p.compute_avg_distance();
 		p.phi.set_size(p.xyz.n_cols, phi_basis->get_dim());
 		phi_basis->discrete(p.phi, p.xyz);
+		if(s == 90) gproshan_debug_var(p.vertices[0]);
 
 	} 
 	gproshan_log(radial patches are ready);
