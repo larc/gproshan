@@ -159,6 +159,7 @@ bool viewer::run()
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
+		//glfwWaitEvents();
 	}
 
 	return true;
@@ -209,7 +210,7 @@ void viewer::init_gl()
 	glfwSetScrollCallback(window, scroll_callback);
 
 	glfwMakeContextCurrent(window);
-	glfwSwapInterval(0);
+	glfwSwapInterval(1);
 
 	glewInit();
 

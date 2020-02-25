@@ -50,13 +50,14 @@ int app_viewer::main(int nargs, const char ** args)
 	vector<che *> meshes;
 	for(int i = 1; i < nargs; i++)
 		meshes.push_back(load_mesh(args[i]));
-
+	
+	meshes.push_back(new che_sphere);
 	TOC(time)
 
 	gproshan_log_var(sizeof(real_t));
 	gproshan_log_var(time);
 	
-	//init mesher
+	//init meshes
 	add_mesh(meshes);
 
 	sub_menus.push_back("Fairing");
