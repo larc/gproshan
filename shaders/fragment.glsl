@@ -6,7 +6,7 @@ in float gs_color;
 
 noperspective in vec3 edge_dist;
 
-layout(location = 0) out vec4 FragColor;
+layout(location = 0) out vec4 frag_color;
 
 uniform vec3 eye;
 uniform vec3 light;
@@ -107,6 +107,6 @@ void main()
 	}
 
 	color = diffuse(N, L) * color + 0.1 * specular(N, L, E) * one + 0.25 * fresnel(N,E) * one;
-	FragColor = vec4(color, 1);
+	frag_color = vec4(color, 1);
 }
 

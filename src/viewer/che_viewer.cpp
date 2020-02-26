@@ -11,10 +11,10 @@ using namespace std;
 namespace gproshan {
 
 
-che_viewer::che_viewer()
+che_viewer::che_viewer(const size_t & n): n_instances(n)
 {
 	mesh = nullptr;
-	_n_vertices = 0;
+	n_vertices = 0;
 
 	normals = nullptr;
 	colors = nullptr;
@@ -24,9 +24,9 @@ che_viewer::che_viewer()
 
 che_viewer::~che_viewer()
 {
-	if(_n_vertices) return;
+	if(n_vertices) return;
 
-	glDeleteBuffers(4, vbo);
+	glDeleteBuffers(5, vbo);
 	glDeleteVertexArrays(1, &vao);
 
 	if(normals) delete [] normals;
@@ -43,23 +43,25 @@ che_viewer::operator che *& ()
 	return mesh;
 }
 
-void che_viewer::init(che * _mesh)
+void che_viewer::init(che * _mesh, const bool & normalize)
 {
-	_n_vertices = 0;
+	n_vertices = 0;
 	mesh = _mesh;
-	mesh->normalize();
+	
+	if(normalize)
+		mesh->normalize();
 
-	_invert_orientation = false;
+	invert_normals = false;
 
 	glGenVertexArrays(1, &vao);
-	glGenBuffers(4, vbo);
+	glGenBuffers(5, vbo);
 
 	update();
 }
 
 void che_viewer::reload()
 {
-	_n_vertices = 0;
+	n_vertices = 0;
 	mesh->reload();
 	mesh->normalize();
 	update();
@@ -72,14 +74,14 @@ void che_viewer::update()
 {
 	assert(mesh != nullptr);
 
-	if(_n_vertices != mesh->n_vertices())
+	if(n_vertices != mesh->n_vertices())
 	{
 		if(normals) delete [] normals;
 		if(colors) delete [] colors;
 
-		_n_vertices = mesh->n_vertices();
-		normals = new vertex[_n_vertices];
-		colors = new color_t[_n_vertices];
+		n_vertices = mesh->n_vertices();
+		normals = new vertex[n_vertices];
+		colors = new color_t[n_vertices];
 
 		update_normals();
 		update_colors();
@@ -96,26 +98,26 @@ void che_viewer::update_vbo()
 
 	// 0 VERTEX
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
-	glBufferData(GL_ARRAY_BUFFER, _n_vertices * sizeof(vertex), &mesh->gt(0), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, n_vertices * sizeof(vertex), &mesh->gt(0), GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_VERTEX_T, GL_FALSE, 0, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	// 1 NORMAL
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
-	glBufferData(GL_ARRAY_BUFFER, _n_vertices * sizeof(vertex), normals, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, n_vertices * sizeof(vertex), normals, GL_STATIC_DRAW);
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 3, GL_VERTEX_T, GL_FALSE, 0, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	// 2 COLOR
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[2]);
-	glBufferData(GL_ARRAY_BUFFER, _n_vertices * sizeof(real_t), colors, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, n_vertices * sizeof(real_t), colors, GL_STATIC_DRAW);
 	glEnableVertexAttribArray(2);
 	glVertexAttribPointer(2, 1, GL_VERTEX_T, GL_FALSE, 0, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	// INDEXES
+	// 3 INDEXES
 	if(mesh->n_faces())
 	{
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[3]);
@@ -124,21 +126,23 @@ void che_viewer::update_vbo()
 	}
 	else
 	{
-		index_t * indices = new index_t[_n_vertices];
-		iota(indices, indices + _n_vertices, 0);
+		index_t * indices = new index_t[n_vertices];
+		iota(indices, indices + n_vertices, 0);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[3]);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, _n_vertices * sizeof(index_t), indices, GL_STATIC_DRAW);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, n_vertices * sizeof(index_t), indices, GL_STATIC_DRAW);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 		delete [] indices;
 	}
+	
+	glBindVertexArray(0);
 }
 
 void che_viewer::update_normals()
 {
 	#pragma omp parallel for
-	for(index_t v = 0; v < _n_vertices; v++)
-		if(_invert_orientation)
+	for(index_t v = 0; v < n_vertices; v++)
+		if(invert_normals)
 			normals[v] = -mesh->normal(v);
 		else
 			normals[v] = mesh->normal(v);
@@ -149,7 +153,7 @@ void che_viewer::update_colors(const color_t *const c)
 	if(!c)
 	{
 		#pragma omp parallel for
-		for(index_t v = 0; v < _n_vertices; v++)
+		for(index_t v = 0; v < n_vertices; v++)
 			colors[v] = COLOR;
 
 		return;
@@ -158,20 +162,42 @@ void che_viewer::update_colors(const color_t *const c)
 	distance_t max_c = 0;
 	
 	#pragma omp parallel for reduction(max: max_c)
-	for(index_t v = 0; v < _n_vertices; v++)
+	for(index_t v = 0; v < n_vertices; v++)
 		if(c[v] < INFINITY)
 			max_c = max(c[v], max_c);
 
 	#pragma omp parallel for
-	for(index_t v = 0; v < _n_vertices; v++)
+	for(index_t v = 0; v < n_vertices; v++)
 		colors[v] = c[v] / max_c;
+}
+
+void che_viewer::update_instances_translations(const vector<vertex> & translations)
+{	
+	n_instances = translations.size();
+	if(!n_instances) return;
+
+	glBindVertexArray(vao);
+
+	// 4 INSTANCES (translations)
+	glBindBuffer(GL_ARRAY_BUFFER, vbo[4]);
+	glBufferData(GL_ARRAY_BUFFER, n_instances * sizeof(vertex), translations.data(), GL_STATIC_DRAW);
+	glEnableVertexAttribArray(3);
+	glVertexAttribPointer(3, 3, GL_VERTEX_T, GL_FALSE, 0, 0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	glVertexAttribDivisor(3, 1);
+
+	glBindVertexArray(0);
 }
 
 void che_viewer::draw()
 {
 	glBindVertexArray(vao);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[3]);
-	
+
+	if(n_instances)
+		glDrawElementsInstanced(GL_TRIANGLES, mesh->n_half_edges(), GL_UNSIGNED_INT, 0, n_instances);
+
 	if(mesh->n_faces())
 		glDrawElements(GL_TRIANGLES, mesh->n_half_edges(), GL_UNSIGNED_INT, 0);
 	else
@@ -179,11 +205,6 @@ void che_viewer::draw()
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
-}
-
-const size_t & che_viewer::n_vertices() const
-{
-	return _n_vertices;
 }
 
 color_t & che_viewer::color(const index_t & v)
@@ -212,7 +233,7 @@ void che_viewer::translate(const vertex & p)
 
 void che_viewer::invert_orientation()
 {
-	_invert_orientation = !_invert_orientation;
+	invert_normals = !invert_normals;
 }
 
 void che_viewer::log_info()

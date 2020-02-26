@@ -10,9 +10,6 @@ namespace gproshan {
 
 class che_sphere : public che
 {
-	private:
-		real_t radio;
-
 	public:
 		che_sphere(const real_t & r = 1, const size_t & n = 10);
 		che_sphere(const che_sphere & mesh);

@@ -134,6 +134,10 @@ class viewer
 		float bgc;
 
 		std::map<int, process_t> processes;
+
+		che_viewer sphere;
+		std::vector<vertex> sphere_translations;
+		shader shader_sphere;
 	
 	public:
 
