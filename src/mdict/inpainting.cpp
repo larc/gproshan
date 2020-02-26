@@ -508,8 +508,6 @@ void  inpainting::init_radial_feature_patches()
 		p.compute_avg_distance();
 		p.phi.set_size(p.xyz.n_cols, phi_basis->get_dim());
 		phi_basis->discrete(p.phi, p.xyz);
-		if(s == 90) gproshan_debug_var(p.vertices[0]);
-
 	} 
 	gproshan_log(radial patches are ready);
 

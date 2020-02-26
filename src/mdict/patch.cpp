@@ -104,8 +104,8 @@ void patch::init_radial_disjoint(che * mesh, const distance_t & radio_, const in
 			vertices.push_back(indexes[i]);
 			//gproshan_debug_var(geo[indexes[i]]);
 			sum_angle += angle;
-			delta += 0.001;
-			
+			delta += 0.01;
+			// sharp meshes 0.001
 			//if(i%7 == 0)  sum_angle = 0;
 		}
 		else
