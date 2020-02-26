@@ -576,23 +576,24 @@ void viewer::render_gl()
 
 	if(render_normal_field)
 	{
+		shader_normals.enable();
+		
 		glUniform1f(glGetUniformLocation(shader_normals, "length"), mesh().factor);
 		glUniformMatrix4fv(glGetUniformLocation(shader_normals, "model_view_mat"), 1, 0, &view_mat[0][0]);
 		glUniformMatrix4fv(glGetUniformLocation(shader_normals, "proj_mat"), 1, 0, &proj_mat[0][0]);
 
-		shader_normals.enable();
 		draw_scene();
 	}
 	
 	
 	if(render_gradient_field)
 	{
+		shader_gradient.enable();
 		
 		glUniform1f(glGetUniformLocation(shader_gradient, "length"), mesh().factor);
 		glUniformMatrix4fv(glGetUniformLocation(shader_gradient, "model_view_mat"), 1, 0, &view_mat[0][0]);	
 		glUniformMatrix4fv(glGetUniformLocation(shader_gradient, "proj_mat"), 1, 0, &proj_mat[0][0]);
 	
-		shader_gradient.enable();
 		draw_scene();
 	}
 }
