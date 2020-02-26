@@ -246,20 +246,21 @@ void viewer::init_menus()
 	add_process(GLFW_KEY_0, {"0", "Background color black", menu_bgc_black});
 
 	sub_menus.push_back("Render");
-	add_process(GLFW_KEY_F5, {"F5", "Render Wireframe", set_render_wireframe});
-	add_process(GLFW_KEY_F6, {"F6", "Render Wireframe Fill", set_render_wireframe_fill});
-	add_process(GLFW_KEY_F7, {"F7", "Render GL", set_render_gl});
-	add_process(GLFW_KEY_F8, {"F8", "Render Embree", set_render_embree});
-	add_process(GLFW_KEY_F9, {"F9", "Render OptiX", set_render_optix});
-	add_process(GLFW_KEY_F10, {"F10", "Raycasting", raycasting});
-	add_process(GLFW_KEY_SPACE, {"SPACE", "Level Curves", set_render_lines});
+	add_process(GLFW_KEY_F6, {"F6", "Render Wireframe", set_render_wireframe});
+	add_process(GLFW_KEY_F7, {"F7", "Render Wireframe Fill", set_render_wireframe_fill});
+	add_process(GLFW_KEY_F8, {"F8", "Render GL", set_render_gl});
+	add_process(GLFW_KEY_F9, {"F9", "Render Embree", set_render_embree});
+	add_process(GLFW_KEY_F10, {"F10", "Render OptiX", set_render_optix});
+	add_process(GLFW_KEY_ENTER, {"ENTER", "Raycasting", raycasting});
 
 	sub_menus.push_back("Mesh");
 	add_process(GLFW_KEY_BACKSPACE, {"BACKSPACE", "Reload/Reset", menu_reset_mesh});
 	add_process(GLFW_KEY_TAB, {"TAB", "Render Flat", set_render_flat});
+	add_process(GLFW_KEY_SPACE, {"SPACE", "Level Curves", set_render_lines});
 	add_process(GLFW_KEY_F2, {"F2", "Invert Orientation", invert_orientation});
 	add_process(GLFW_KEY_F3, {"F3", "Gradient Field", set_render_gradient_field});
 	add_process(GLFW_KEY_F4, {"F4", "Normal Field", set_render_normal_field});
+	add_process(GLFW_KEY_F5, {"F5", "Select Border Vertices", set_render_border});
 	add_process(GLFW_KEY_W, {"W", "Save Mesh", menu_save_mesh});
 }
 
