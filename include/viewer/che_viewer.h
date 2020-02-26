@@ -26,15 +26,17 @@ class che_viewer
 {
 	protected:
 		che * mesh;
-		size_t _n_vertices; // current number of vertices
-		bool _invert_orientation;
+
+		size_t n_instances;
+		size_t n_vertices; // current number of vertices
+		bool invert_normals;
 		vertex v_translate;
 
 		vertex * normals;
 		color_t * colors;
 
 		GLuint vao;
-		GLuint vbo[4];
+		GLuint vbo[5];
 	
 	public:
 		int vx, vy;					///< viewport positions.
@@ -42,19 +44,19 @@ class che_viewer
 		std::vector<index_t> selected;
 
 	public:
-		che_viewer();
+		che_viewer(const size_t & n = 0);
 		virtual ~che_viewer();
 		che *& operator -> ();
 		operator che *& ();
-		void init(che * _mesh);
+		void init(che * _mesh, const bool & normalize = true);
 		void reload();
 		void update();
 		void update_vbo();
 		void update_normals();
 		void update_colors(const color_t *const c = nullptr);
+		void update_instances_translations(const std::vector<vertex> & translations);
 		void draw();
 
-		const size_t & n_vertices() const;
 		color_t & color(const index_t & v);
 		vertex & normal(const index_t & v);
 		vertex *& normals_ptr();

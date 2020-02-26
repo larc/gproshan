@@ -50,13 +50,13 @@ int app_viewer::main(int nargs, const char ** args)
 	vector<che *> meshes;
 	for(int i = 1; i < nargs; i++)
 		meshes.push_back(load_mesh(args[i]));
-
+	
 	TOC(time)
 
 	gproshan_log_var(sizeof(real_t));
 	gproshan_log_var(time);
 	
-	//init mesher
+	//init meshes
 	add_mesh(meshes);
 
 	sub_menus.push_back("Fairing");
@@ -828,7 +828,7 @@ void app_viewer::process_geodesics_ptp_gpu(viewer * p_view)
 	if(!view->select_vertices.size())
 		view->select_vertices.push_back(0);
 	
-	if(view->dist && view->n_dist != mesh.n_vertices())
+	if(view->dist && view->n_dist != mesh->n_vertices())
 	{
 		delete [] view->dist;
 		view->n_dist = 0;
@@ -837,7 +837,7 @@ void app_viewer::process_geodesics_ptp_gpu(viewer * p_view)
 
 	if(!view->dist)
 	{
-		view->n_dist = mesh.n_vertices();
+		view->n_dist = mesh->n_vertices();
 		view->dist = new distance_t[view->n_dist];
 	}
 
@@ -875,7 +875,7 @@ void app_viewer::process_fill_holes_biharmonic_splines(viewer * p_view)
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->mesh();
 
-	size_t old_n_vertices, n_vertices = mesh.n_vertices();
+	size_t old_n_vertices, n_vertices = mesh->n_vertices();
 	size_t n_holes = mesh->n_borders();
 
 	vector<index_t> * border_vertices;
@@ -907,10 +907,10 @@ void app_viewer::process_gaussian_curvature(viewer * p_view)
 	real_t g, g_max = -INFINITY, g_min = INFINITY;
 	vertex a, b;
 
-	a_vec gv(mesh.n_vertices());
+	a_vec gv(mesh->n_vertices());
 
 	#pragma omp parallel for private(g, a, b) reduction(max: g_max) reduction(min: g_min)
-	for(index_t v = 0; v < mesh.n_vertices(); v++)
+	for(index_t v = 0; v < mesh->n_vertices(); v++)
 	{
 		g = 0;
 		for_star(he, mesh, v)
@@ -932,7 +932,7 @@ void app_viewer::process_gaussian_curvature(viewer * p_view)
 	gproshan_log_var(g_max);
 
 	#pragma omp parallel for
-	for(index_t v = 0; v < mesh.n_vertices(); v++)
+	for(index_t v = 0; v < mesh->n_vertices(); v++)
 		gv(v) = (gv(v) + g_min) / g;
 
 	real_t gm = mean(gv);

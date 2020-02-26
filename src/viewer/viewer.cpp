@@ -15,6 +15,7 @@
 #include "che_off.h"
 #include "che_obj.h"
 #include "che_ply.h"
+#include "che_sphere.h"
 
 #include "CImg.h"
 
@@ -62,12 +63,13 @@ viewer::viewer()
 	action = false;
 
 	init_gl();
-	init_imgui();
-	init_menus();
-	
 	init_glsl();
+	init_imgui();
+	init_menus();	
 	
 	info_gl();
+	
+	sphere.init(new che_sphere(0.01), false);
 }
 
 viewer::~viewer()
@@ -159,6 +161,7 @@ bool viewer::run()
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
+		//glfwWaitEvents();
 	}
 
 	return true;
@@ -209,7 +212,7 @@ void viewer::init_gl()
 	glfwSetScrollCallback(window, scroll_callback);
 
 	glfwMakeContextCurrent(window);
-	glfwSwapInterval(0);
+	glfwSwapInterval(1);
 
 	glewInit();
 
@@ -262,6 +265,9 @@ void viewer::init_menus()
 
 void viewer::init_glsl()
 {
+	shader_sphere.load_vertex("../shaders/vertex_sphere.glsl");
+	shader_sphere.load_fragment("../shaders/fragment_sphere.glsl");
+
 	shader_program.load_vertex("../shaders/vertex.glsl");
 	shader_program.load_geometry("../shaders/geometry.glsl");
 	shader_program.load_fragment("../shaders/fragment.glsl");
@@ -546,6 +552,14 @@ void viewer::render_gl()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
 
 
+	shader_sphere.enable();
+
+	glUniform3f(glGetUniformLocation(shader_sphere, "eye"), eye[1], eye[2], eye[3]);
+	glUniform3f(glGetUniformLocation(shader_sphere, "light"), light[1], light[2], light[3]);
+	glUniformMatrix4fv(glGetUniformLocation(shader_sphere, "model_view_mat"), 1, 0, &view_mat[0][0]);
+	glUniformMatrix4fv(glGetUniformLocation(shader_sphere, "proj_mat"), 1, 0, &proj_mat[0][0]);
+	
+
 	shader_program.enable();
 
 	glUniform3f(glGetUniformLocation(shader_program, "eye"), eye[1], eye[2], eye[3]);
@@ -555,30 +569,29 @@ void viewer::render_gl()
 	glUniform1i(glGetUniformLocation(shader_program, "render_wireframe"), render_wireframe_fill);
 	glUniformMatrix4fv(glGetUniformLocation(shader_program, "model_view_mat"), 1, 0, &view_mat[0][0]);
 	glUniformMatrix4fv(glGetUniformLocation(shader_program, "proj_mat"), 1, 0, &proj_mat[0][0]);
-
+	
 	draw_scene();
 
 
 	if(render_normal_field)
 	{
-		shader_normals.enable();
-		
 		glUniform1f(glGetUniformLocation(shader_normals, "length"), mesh().factor);
 		glUniformMatrix4fv(glGetUniformLocation(shader_normals, "model_view_mat"), 1, 0, &view_mat[0][0]);
 		glUniformMatrix4fv(glGetUniformLocation(shader_normals, "proj_mat"), 1, 0, &proj_mat[0][0]);
 
+		shader_normals.enable();
 		draw_scene();
 	}
 	
 	
 	if(render_gradient_field)
 	{
-		shader_gradient.enable();
 		
 		glUniform1f(glGetUniformLocation(shader_gradient, "length"), mesh().factor);
 		glUniformMatrix4fv(glGetUniformLocation(shader_gradient, "model_view_mat"), 1, 0, &view_mat[0][0]);	
 		glUniformMatrix4fv(glGetUniformLocation(shader_gradient, "proj_mat"), 1, 0, &proj_mat[0][0]);
 	
+		shader_gradient.enable();
 		draw_scene();
 	}
 }
@@ -639,7 +652,8 @@ void viewer::draw_scene()
 {
 	draw_polygons();
 
-	if(render_border) draw_border();
+	if(render_border)
+		draw_border();
 
 	draw_selected_vertices();
 }
@@ -669,28 +683,20 @@ void viewer::draw_border()
 
 void viewer::draw_selected_vertices()
 {
-	shader_program.disable();
-	glPushAttrib(GL_ALL_ATTRIB_BITS);
-
-	glEnable(GL_COLOR_MATERIAL);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	glColor3f(0., 0.5, 0.5);
-
-//	double h = 0.02 * cam.zoom;
-	
-	for(int v: select_vertices)
+	if(sphere_translations.size() != select_vertices.size())
 	{
-		glViewport(mesh().vx * viewport_width, mesh().vy * viewport_height, viewport_width, viewport_height);
-		
-		glPushMatrix();
-		glTranslated(mesh()->gt(v).x, mesh()->gt(v).y, mesh()->gt(v).z);
-	//	//glutSolidSphere(h, 10, 10);
-		glPopMatrix();
+		sphere_translations.resize(select_vertices.size());
+
+		for(index_t i = 0; i < select_vertices.size(); i++)
+			sphere_translations[i] = mesh()->gt(select_vertices[i]);
+
+		sphere.update_instances_translations(sphere_translations);
 	}
-
-	glEnd();
-
-	glPopAttrib();
+	
+	shader_sphere.enable();
+	if(sphere_translations.size())
+		sphere.draw();
+	shader_sphere.disable();
 }
 
 void viewer::pick_vertex(int x, int y)
