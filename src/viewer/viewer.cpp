@@ -69,7 +69,7 @@ viewer::viewer()
 	
 	info_gl();
 	
-	sphere.init(new che_sphere(0.1), false);
+	sphere.init(new che_sphere(0.01), false);
 }
 
 viewer::~viewer()
@@ -552,6 +552,14 @@ void viewer::render_gl()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
 
 
+	shader_sphere.enable();
+
+	glUniform3f(glGetUniformLocation(shader_sphere, "eye"), eye[1], eye[2], eye[3]);
+	glUniform3f(glGetUniformLocation(shader_sphere, "light"), light[1], light[2], light[3]);
+	glUniformMatrix4fv(glGetUniformLocation(shader_sphere, "model_view_mat"), 1, 0, &view_mat[0][0]);
+	glUniformMatrix4fv(glGetUniformLocation(shader_sphere, "proj_mat"), 1, 0, &proj_mat[0][0]);
+	
+
 	shader_program.enable();
 
 	glUniform3f(glGetUniformLocation(shader_program, "eye"), eye[1], eye[2], eye[3]);
@@ -561,30 +569,29 @@ void viewer::render_gl()
 	glUniform1i(glGetUniformLocation(shader_program, "render_wireframe"), render_wireframe_fill);
 	glUniformMatrix4fv(glGetUniformLocation(shader_program, "model_view_mat"), 1, 0, &view_mat[0][0]);
 	glUniformMatrix4fv(glGetUniformLocation(shader_program, "proj_mat"), 1, 0, &proj_mat[0][0]);
-
+	
 	draw_scene();
 
 
 	if(render_normal_field)
 	{
-		shader_normals.enable();
-		
 		glUniform1f(glGetUniformLocation(shader_normals, "length"), mesh().factor);
 		glUniformMatrix4fv(glGetUniformLocation(shader_normals, "model_view_mat"), 1, 0, &view_mat[0][0]);
 		glUniformMatrix4fv(glGetUniformLocation(shader_normals, "proj_mat"), 1, 0, &proj_mat[0][0]);
 
+		shader_normals.enable();
 		draw_scene();
 	}
 	
 	
 	if(render_gradient_field)
 	{
-		shader_gradient.enable();
 		
 		glUniform1f(glGetUniformLocation(shader_gradient, "length"), mesh().factor);
 		glUniformMatrix4fv(glGetUniformLocation(shader_gradient, "model_view_mat"), 1, 0, &view_mat[0][0]);	
 		glUniformMatrix4fv(glGetUniformLocation(shader_gradient, "proj_mat"), 1, 0, &proj_mat[0][0]);
 	
+		shader_gradient.enable();
 		draw_scene();
 	}
 }
@@ -645,7 +652,8 @@ void viewer::draw_scene()
 {
 	draw_polygons();
 
-	if(render_border) draw_border();
+	if(render_border)
+		draw_border();
 
 	draw_selected_vertices();
 }

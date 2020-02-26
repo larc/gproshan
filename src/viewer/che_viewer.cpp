@@ -197,8 +197,7 @@ void che_viewer::draw()
 
 	if(n_instances)
 		glDrawElementsInstanced(GL_TRIANGLES, mesh->n_half_edges(), GL_UNSIGNED_INT, 0, n_instances);
-
-	if(mesh->n_faces())
+	else if(mesh->n_faces())
 		glDrawElements(GL_TRIANGLES, mesh->n_half_edges(), GL_UNSIGNED_INT, 0);
 	else
 		glDrawElements(GL_POINTS, mesh->n_vertices(), GL_UNSIGNED_INT, 0);

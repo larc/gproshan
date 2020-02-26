@@ -31,7 +31,7 @@ float fresnel(vec3 N, vec3 E)
 
 void main()
 {
-	vec3 color = vec3(0, 1, 0);
+	vec3 color = vec3(1, 0, 0);
 
 	vec3 N = normalize(vs_normal);
 	vec3 L = normalize(light - vs_position);
