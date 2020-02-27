@@ -65,8 +65,8 @@ void frame::display(const int & width, const int & height, void * buffer)
 
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-    
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);    
 	glBindTexture(GL_TEXTURE_2D, 0);
 	glBindVertexArray(0);
 	
