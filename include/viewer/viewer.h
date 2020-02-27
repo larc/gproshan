@@ -8,6 +8,7 @@
 
 #include "camera.h"
 #include "shader.h"
+#include "frame.h"
 #include "che_viewer.h"
 
 #include "include_opengl.h"
@@ -15,6 +16,7 @@
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
+
 
 #ifdef GPROSHAN_EMBREE
 	#include "rt_embree.h"
@@ -88,15 +90,15 @@ class viewer
 
 
 		GLFWwindow * window;
+		int viewport_width;
+		int viewport_height;
 
 		shader shader_program;
 		shader shader_normals;
 		shader shader_gradient;
-		shader shader_edges;
-		camera cam;
+		shader shader_frame;
 		
-		int viewport_width;
-		int viewport_height;
+		camera cam;
 		
 		quaternion eye;
 		quaternion center;
@@ -113,6 +115,8 @@ class viewer
 		index_t current; // current mesh
 
 		index_t render_opt;
+
+		frame * render_frame;
 
 	#ifdef GPROSHAN_EMBREE
 		rt::embree * rt_embree;

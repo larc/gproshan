@@ -17,7 +17,7 @@
 #include "che_ply.h"
 #include "che_sphere.h"
 
-#include "CImg.h"
+#include <CImg.h>
 
 
 using namespace cimg_library;
@@ -41,6 +41,7 @@ viewer::viewer()
 	n_meshes = current = 0;
 
 	render_opt = 0;
+	render_frame = nullptr;
 
 	#ifdef GPROSHAN_EMBREE
 		rt_embree = nullptr;
@@ -116,6 +117,7 @@ bool viewer::run()
 								);
 
 		// RENDER 
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
 		switch(render_opt)
 		{
 			case 1: render_embree(); break;
@@ -550,9 +552,6 @@ void viewer::raycasting(viewer * view)
 
 void viewer::render_gl()
 {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
-
-
 	shader_sphere.enable();
 
 	glUniform3f(glGetUniformLocation(shader_sphere, "eye"), eye[1], eye[2], eye[3]);
@@ -602,7 +601,7 @@ void viewer::render_embree()
 {
 #ifdef GPROSHAN_EMBREE
 
-	if(rt_embree == nullptr)
+	if(!rt_embree)
 	{
 		double time_build_embree;
 		TIC(time_build_embree);
@@ -618,8 +617,11 @@ void viewer::render_embree()
 	
 	action = false;
 
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glDrawPixels(viewport_width, viewport_height, GL_RGBA, GL_FLOAT, rt_embree->img);
+
+	if(!render_frame) render_frame = new frame;
+	
+	render_frame->display(rt_embree->img);
 
 #endif // GPROSHAN_EMBREE
 }
@@ -628,7 +630,7 @@ void viewer::render_optix()
 {
 #ifdef GPROSHAN_OPTIX
 
-	if(rt_optix == nullptr)
+	if(!rt_optix)
 	{
 		double time_build_optix;
 		TIC(time_build_optix);
@@ -643,15 +645,14 @@ void viewer::render_optix()
 							view_mat, proj_mat, {glm::vec3(light[1], light[2], light[3])}, action);
 	
 	action = false;
-
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	
 	glDrawPixels(viewport_width, viewport_height, GL_RGBA, GL_FLOAT, rt_optix->img);
 
 #endif // GPROSHAN_OPTIX
 }
 
 void viewer::draw_scene()
-{
+{	
 	draw_polygons();
 
 	if(render_border)
