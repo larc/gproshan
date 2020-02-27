@@ -613,11 +613,8 @@ void viewer::render_embree()
 	
 	action = false;
 
-	glDrawPixels(viewport_width, viewport_height, GL_RGBA, GL_FLOAT, rt_embree->img);
-
-	if(!render_frame) render_frame = new frame;
-	
-	render_frame->display(rt_embree->img);
+	if(!render_frame) render_frame = new frame;	
+	render_frame->display(viewport_width, viewport_height, rt_embree->img);
 
 #endif // GPROSHAN_EMBREE
 }
@@ -642,7 +639,8 @@ void viewer::render_optix()
 	
 	action = false;
 	
-	glDrawPixels(viewport_width, viewport_height, GL_RGBA, GL_FLOAT, rt_optix->img);
+	if(!render_frame) render_frame = new frame;	
+	render_frame->display(viewport_width, viewport_height, rt_embree->img);
 
 #endif // GPROSHAN_OPTIX
 }
@@ -701,66 +699,6 @@ void viewer::draw_selected_vertices()
 void viewer::pick_vertex(int x, int y)
 {
 	gproshan_log(VIEWER);
-
-	int width, height;
-	glfwGetFramebufferSize(window, &width, &height);
-
-	if(x < 0 || x >= width || y < 0 || y >= height) return;
-
-	int bufSize = mesh()->n_vertices();
-	GLuint * buf = new GLuint[bufSize];
-	glSelectBuffer(bufSize, buf);
-
-	GLint viewport[4];
-	GLdouble projection[16];
-	glGetIntegerv(GL_VIEWPORT, viewport);
-	glGetDoublev(GL_PROJECTION_MATRIX, projection);
-
-	glRenderMode(GL_SELECT);
-	glInitNames();
-	glPushName(0);
-
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	glLoadIdentity();
-	//gluPickMatrix(x, viewport[3] - y, 10, 10, viewport);
-	glMultMatrixd(projection);
-
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-//	draw_vertices();
-	glPopMatrix();
-
-	glMatrixMode(GL_PROJECTION);
-	glPopMatrix();
-
-	glMatrixMode(GL_MODELVIEW);
-	long hits = glRenderMode(GL_RENDER);
-
-	index_t index = -1;
-	double min_z = 1.0e100;
-	for(long i = 0; i < hits; ++i)
-	{
-		double distance = buf[4*i + 1];
-		if(distance < min_z)
-		{
-			index = buf[4*i + 3];
-			min_z = distance;
-		}
-	}
-	delete[] buf;
-
-	if(index != NIL && index < mesh()->n_vertices())
-	{
-		select_vertices.push_back(index);
-		
-		gproshan_log_var(index);
-		gproshan_debug_var(mesh().color(index));
-		gproshan_debug_var(mesh()->evt(index));
-
-		if(corr_mesh[current].is_loaded())
-			gproshan_error_var(corr_mesh[current][index].alpha);
-	}
 }
 
 

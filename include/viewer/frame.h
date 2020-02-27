@@ -15,7 +15,7 @@ class frame
 {
 	private:
 		GLuint render_tex;
-		GLuint vao, vbo;
+		GLuint vao, vbo, pbo;
 		
 		shader program;
 
@@ -23,7 +23,7 @@ class frame
 		frame();
 		~frame();
 
-		void display(void * buffer);
+		void display(const int & width, const int & height, void * buffer);
 };
 
 
