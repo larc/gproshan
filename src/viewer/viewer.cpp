@@ -89,6 +89,8 @@ viewer::~viewer()
 	#ifdef GPROSHAN_OPTIX
 		if(rt_optix) delete rt_optix;
 	#endif // GPROSHAN_OPTIX
+
+	if(render_frame) delete render_frame;
 }
 
 bool viewer::run()

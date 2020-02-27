@@ -26,7 +26,6 @@ frame::frame()
 	glGenTextures(1, &render_tex);
 	glGenVertexArrays(1, &vao);
 	glGenBuffers(1, &vbo);
-	glGenBuffers(1, &pbo);
 	
 
 	glBindVertexArray(vao);
@@ -49,7 +48,6 @@ frame::frame()
 
 frame::~frame()
 {
-	glDeleteBuffers(1, &pbo);
 	glDeleteBuffers(1, &vbo);
 	glDeleteVertexArrays(1, &vao);
 	glDeleteTextures(1, &render_tex);
@@ -57,24 +55,19 @@ frame::~frame()
 
 void frame::display(const int & width, const int & height, void * buffer)
 {
-	glBindBuffer(GL_ARRAY_BUFFER, pbo);
-	glBufferData(GL_ARRAY_BUFFER, width * height * sizeof(float) * 4, buffer, GL_STREAM_DRAW);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-
 	program.enable();
+	
+	glBindVertexArray(vao);
 
 	glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, render_tex);
-    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, 0);
-    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
-	glUniform1i(program("render_tex"), 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_FLOAT, buffer);
 
-	glBindVertexArray(vao);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
+    
+	glBindTexture(GL_TEXTURE_2D, 0);
 	glBindVertexArray(0);
 	
 	program.disable();
