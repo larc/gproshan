@@ -552,47 +552,43 @@ void viewer::raycasting(viewer * view)
 
 void viewer::render_gl()
 {
-	shader_sphere.enable();
+	glProgramUniform3f(shader_sphere, shader_sphere("eye"), eye[1], eye[2], eye[3]);
+	glProgramUniform3f(shader_sphere, shader_sphere("light"), light[1], light[2], light[3]);
+	glProgramUniformMatrix4fv(shader_sphere, shader_sphere("model_view_mat"), 1, 0, &view_mat[0][0]);
+	glProgramUniformMatrix4fv(shader_sphere, shader_sphere("proj_mat"), 1, 0, &proj_mat[0][0]);
 
-	glUniform3f(glGetUniformLocation(shader_sphere, "eye"), eye[1], eye[2], eye[3]);
-	glUniform3f(glGetUniformLocation(shader_sphere, "light"), light[1], light[2], light[3]);
-	glUniformMatrix4fv(glGetUniformLocation(shader_sphere, "model_view_mat"), 1, 0, &view_mat[0][0]);
-	glUniformMatrix4fv(glGetUniformLocation(shader_sphere, "proj_mat"), 1, 0, &proj_mat[0][0]);
+
+	glProgramUniform3f(shader_program, shader_program("eye"), eye[1], eye[2], eye[3]);
+	glProgramUniform3f(shader_program, shader_program("light"), light[1], light[2], light[3]);
+	glProgramUniform1i(shader_program, shader_program("render_flat"), render_flat);
+	glProgramUniform1i(shader_program, shader_program("render_lines"), render_lines);
+	glProgramUniform1i(shader_program, shader_program("render_wireframe"), render_wireframe_fill);
+	glProgramUniformMatrix4fv(shader_program, shader_program("model_view_mat"), 1, 0, &view_mat[0][0]);
+	glProgramUniformMatrix4fv(shader_program, shader_program("proj_mat"), 1, 0, &proj_mat[0][0]);
+
 	
-
 	shader_program.enable();
-
-	glUniform3f(glGetUniformLocation(shader_program, "eye"), eye[1], eye[2], eye[3]);
-	glUniform3f(glGetUniformLocation(shader_program, "light"), light[1], light[2], light[3]);
-	glUniform1i(glGetUniformLocation(shader_program, "render_flat"), render_flat);
-	glUniform1i(glGetUniformLocation(shader_program, "render_lines"), render_lines);
-	glUniform1i(glGetUniformLocation(shader_program, "render_wireframe"), render_wireframe_fill);
-	glUniformMatrix4fv(glGetUniformLocation(shader_program, "model_view_mat"), 1, 0, &view_mat[0][0]);
-	glUniformMatrix4fv(glGetUniformLocation(shader_program, "proj_mat"), 1, 0, &proj_mat[0][0]);
-	
 	draw_scene();
 
 
 	if(render_normal_field)
 	{
-		shader_normals.enable();
+		glProgramUniform1f(shader_normals, shader_normals("length"), mesh().factor);
+		glProgramUniformMatrix4fv(shader_normals, shader_normals("model_view_mat"), 1, 0, &view_mat[0][0]);
+		glProgramUniformMatrix4fv(shader_normals, shader_normals("proj_mat"), 1, 0, &proj_mat[0][0]);
 		
-		glUniform1f(glGetUniformLocation(shader_normals, "length"), mesh().factor);
-		glUniformMatrix4fv(glGetUniformLocation(shader_normals, "model_view_mat"), 1, 0, &view_mat[0][0]);
-		glUniformMatrix4fv(glGetUniformLocation(shader_normals, "proj_mat"), 1, 0, &proj_mat[0][0]);
-
+		shader_normals.enable();
 		draw_scene();
 	}
 	
 	
 	if(render_gradient_field)
 	{
-		shader_gradient.enable();
+		glProgramUniform1f(shader_gradient, shader_gradient("length"), mesh().factor);
+		glProgramUniformMatrix4fv(shader_gradient, shader_gradient("model_view_mat"), 1, 0, &view_mat[0][0]);	
+		glProgramUniformMatrix4fv(shader_gradient, shader_gradient("proj_mat"), 1, 0, &proj_mat[0][0]);
 		
-		glUniform1f(glGetUniformLocation(shader_gradient, "length"), mesh().factor);
-		glUniformMatrix4fv(glGetUniformLocation(shader_gradient, "model_view_mat"), 1, 0, &view_mat[0][0]);	
-		glUniformMatrix4fv(glGetUniformLocation(shader_gradient, "proj_mat"), 1, 0, &proj_mat[0][0]);
-	
+		shader_gradient.enable();
 		draw_scene();
 	}
 }

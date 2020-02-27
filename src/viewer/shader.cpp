@@ -16,6 +16,19 @@ shader::~shader()
 	if(program) glDeleteProgram(program);
 }
 
+const GLint & shader::operator () (const string & name)
+{
+	if(uniform.find(name) != uniform.end())
+		uniform[name] = glGetUniformLocation(program, name.c_str());
+	
+	return uniform[name];
+}
+
+shader::operator GLuint() const
+{
+	return program;
+}
+
 void shader::load_vertex(const char * filename)
 {
 	load(GL_VERTEX_SHADER, filename);
@@ -45,11 +58,6 @@ void shader::enable()
 void shader::disable() const
 {
 	glUseProgram(0);
-}
-
-shader::operator GLuint() const
-{
-	return program;
 }
 
 bool shader::load(GLenum shader_type, const char * filename)
