@@ -949,7 +949,7 @@ void app_viewer::process_gaussian_curvature(viewer * p_view)
 	};
 
 	#pragma omp parallel for
-	for(index_t v = 0; v < mesh.n_vertices(); v++)
+	for(index_t v = 0; v < mesh->n_vertices(); v++)
 		mesh.color(v) = 2 * atan(gv(v) * 10) / M_PI;
 }
 
