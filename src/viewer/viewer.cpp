@@ -558,6 +558,7 @@ void viewer::render_gl()
 	glProgramUniform3f(shader_sphere, shader_sphere("light"), light[1], light[2], light[3]);
 	glProgramUniformMatrix4fv(shader_sphere, shader_sphere("model_view_mat"), 1, 0, &view_mat[0][0]);
 	glProgramUniformMatrix4fv(shader_sphere, shader_sphere("proj_mat"), 1, 0, &proj_mat[0][0]);
+	glProgramUniform1f(shader_sphere, shader_sphere("scale"), cam.zoom);
 
 
 	glProgramUniform3f(shader_program, shader_program("eye"), eye[1], eye[2], eye[3]);

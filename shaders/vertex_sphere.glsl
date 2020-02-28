@@ -9,10 +9,11 @@ out vec3 vs_normal;
 
 uniform mat4 model_view_mat;
 uniform mat4 proj_mat;
+uniform float scale;
 
 void main()
 {
-	vs_position = in_position + in_translation;
+	vs_position = scale * in_position + in_translation;
 	vs_normal = in_normal;
 	
 	gl_Position = proj_mat * model_view_mat * vec4(vs_position, 1);

@@ -19,6 +19,7 @@ if(CUDA_FOUND)
 	
 	find_package(OptiX 7.0)
 	if(OptiX_INCLUDE)
+		set(CUDA_HOST_COMPILER ${CMAKE_CUDA_HOST_COMPILER})
 		add_definitions(-DGPROSHAN_OPTIX)
 		include_directories(${OptiX_INCLUDE})
 	endif(OptiX_INCLUDE)
