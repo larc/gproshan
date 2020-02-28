@@ -693,6 +693,8 @@ void viewer::draw_selected_vertices()
 		sphere.update_instances_translations(sphere_translations);
 	}
 	
+	glViewport(mesh().vx * viewport_width, mesh().vy * viewport_height, viewport_width, viewport_height);
+	
 	shader_sphere.enable();
 	if(sphere_translations.size())
 		sphere.draw();
