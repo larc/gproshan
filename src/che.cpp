@@ -639,7 +639,7 @@ void che::multiplicate_vertices()
 
 	#pragma omp parallel for
 	for(index_t v = 0; v < n_vertices_; v++)
-		aEVT[v] = EVT[v] * 3;
+		aEVT[v] = EVT[v] != NIL ? EVT[v] * 3 : NIL;
 
 	#pragma omp parallel for
 	for(index_t f = 0; f < n_faces_; f++)
