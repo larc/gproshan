@@ -17,7 +17,7 @@
 #include "che_ply.h"
 #include "che_sphere.h"
 
-#include "CImg.h"
+#include <CImg.h>
 
 
 using namespace cimg_library;
@@ -41,6 +41,7 @@ viewer::viewer()
 	n_meshes = current = 0;
 
 	render_opt = 0;
+	render_frame = nullptr;
 
 	#ifdef GPROSHAN_EMBREE
 		rt_embree = nullptr;
@@ -88,6 +89,8 @@ viewer::~viewer()
 	#ifdef GPROSHAN_OPTIX
 		if(rt_optix) delete rt_optix;
 	#endif // GPROSHAN_OPTIX
+
+	if(render_frame) delete render_frame;
 }
 
 bool viewer::run()
@@ -116,6 +119,7 @@ bool viewer::run()
 								);
 
 		// RENDER 
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
 		switch(render_opt)
 		{
 			case 1: render_embree(); break;
@@ -550,50 +554,44 @@ void viewer::raycasting(viewer * view)
 
 void viewer::render_gl()
 {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
+	glProgramUniform3f(shader_sphere, shader_sphere("eye"), eye[1], eye[2], eye[3]);
+	glProgramUniform3f(shader_sphere, shader_sphere("light"), light[1], light[2], light[3]);
+	glProgramUniformMatrix4fv(shader_sphere, shader_sphere("model_view_mat"), 1, 0, &view_mat[0][0]);
+	glProgramUniformMatrix4fv(shader_sphere, shader_sphere("proj_mat"), 1, 0, &proj_mat[0][0]);
+	glProgramUniform1f(shader_sphere, shader_sphere("scale"), cam.zoom);
 
 
-	shader_sphere.enable();
+	glProgramUniform3f(shader_program, shader_program("eye"), eye[1], eye[2], eye[3]);
+	glProgramUniform3f(shader_program, shader_program("light"), light[1], light[2], light[3]);
+	glProgramUniform1i(shader_program, shader_program("render_flat"), render_flat);
+	glProgramUniform1i(shader_program, shader_program("render_lines"), render_lines);
+	glProgramUniform1i(shader_program, shader_program("render_wireframe"), render_wireframe_fill);
+	glProgramUniformMatrix4fv(shader_program, shader_program("model_view_mat"), 1, 0, &view_mat[0][0]);
+	glProgramUniformMatrix4fv(shader_program, shader_program("proj_mat"), 1, 0, &proj_mat[0][0]);
 
-	glUniform3f(glGetUniformLocation(shader_sphere, "eye"), eye[1], eye[2], eye[3]);
-	glUniform3f(glGetUniformLocation(shader_sphere, "light"), light[1], light[2], light[3]);
-	glUniformMatrix4fv(glGetUniformLocation(shader_sphere, "model_view_mat"), 1, 0, &view_mat[0][0]);
-	glUniformMatrix4fv(glGetUniformLocation(shader_sphere, "proj_mat"), 1, 0, &proj_mat[0][0]);
 	
-
 	shader_program.enable();
-
-	glUniform3f(glGetUniformLocation(shader_program, "eye"), eye[1], eye[2], eye[3]);
-	glUniform3f(glGetUniformLocation(shader_program, "light"), light[1], light[2], light[3]);
-	glUniform1i(glGetUniformLocation(shader_program, "render_flat"), render_flat);
-	glUniform1i(glGetUniformLocation(shader_program, "render_lines"), render_lines);
-	glUniform1i(glGetUniformLocation(shader_program, "render_wireframe"), render_wireframe_fill);
-	glUniformMatrix4fv(glGetUniformLocation(shader_program, "model_view_mat"), 1, 0, &view_mat[0][0]);
-	glUniformMatrix4fv(glGetUniformLocation(shader_program, "proj_mat"), 1, 0, &proj_mat[0][0]);
-	
 	draw_scene();
 
 
 	if(render_normal_field)
 	{
-		shader_normals.enable();
+		glProgramUniform1f(shader_normals, shader_normals("length"), mesh().factor);
+		glProgramUniformMatrix4fv(shader_normals, shader_normals("model_view_mat"), 1, 0, &view_mat[0][0]);
+		glProgramUniformMatrix4fv(shader_normals, shader_normals("proj_mat"), 1, 0, &proj_mat[0][0]);
 		
-		glUniform1f(glGetUniformLocation(shader_normals, "length"), mesh().factor);
-		glUniformMatrix4fv(glGetUniformLocation(shader_normals, "model_view_mat"), 1, 0, &view_mat[0][0]);
-		glUniformMatrix4fv(glGetUniformLocation(shader_normals, "proj_mat"), 1, 0, &proj_mat[0][0]);
-
+		shader_normals.enable();
 		draw_scene();
 	}
 	
 	
 	if(render_gradient_field)
 	{
-		shader_gradient.enable();
+		glProgramUniform1f(shader_gradient, shader_gradient("length"), mesh().factor);
+		glProgramUniformMatrix4fv(shader_gradient, shader_gradient("model_view_mat"), 1, 0, &view_mat[0][0]);	
+		glProgramUniformMatrix4fv(shader_gradient, shader_gradient("proj_mat"), 1, 0, &proj_mat[0][0]);
 		
-		glUniform1f(glGetUniformLocation(shader_gradient, "length"), mesh().factor);
-		glUniformMatrix4fv(glGetUniformLocation(shader_gradient, "model_view_mat"), 1, 0, &view_mat[0][0]);	
-		glUniformMatrix4fv(glGetUniformLocation(shader_gradient, "proj_mat"), 1, 0, &proj_mat[0][0]);
-	
+		shader_gradient.enable();
 		draw_scene();
 	}
 }
@@ -602,7 +600,7 @@ void viewer::render_embree()
 {
 #ifdef GPROSHAN_EMBREE
 
-	if(rt_embree == nullptr)
+	if(!rt_embree)
 	{
 		double time_build_embree;
 		TIC(time_build_embree);
@@ -618,8 +616,8 @@ void viewer::render_embree()
 	
 	action = false;
 
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glDrawPixels(viewport_width, viewport_height, GL_RGBA, GL_FLOAT, rt_embree->img);
+	if(!render_frame) render_frame = new frame;	
+	render_frame->display(viewport_width, viewport_height, rt_embree->img);
 
 #endif // GPROSHAN_EMBREE
 }
@@ -628,7 +626,7 @@ void viewer::render_optix()
 {
 #ifdef GPROSHAN_OPTIX
 
-	if(rt_optix == nullptr)
+	if(!rt_optix)
 	{
 		double time_build_optix;
 		TIC(time_build_optix);
@@ -643,15 +641,15 @@ void viewer::render_optix()
 							view_mat, proj_mat, {glm::vec3(light[1], light[2], light[3])}, action);
 	
 	action = false;
-
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glDrawPixels(viewport_width, viewport_height, GL_RGBA, GL_FLOAT, rt_optix->img);
+	
+	if(!render_frame) render_frame = new frame;	
+	render_frame->display(viewport_width, viewport_height, rt_embree->img);
 
 #endif // GPROSHAN_OPTIX
 }
 
 void viewer::draw_scene()
-{
+{	
 	draw_polygons();
 
 	if(render_border)
@@ -704,66 +702,6 @@ void viewer::draw_selected_vertices()
 void viewer::pick_vertex(int x, int y)
 {
 	gproshan_log(VIEWER);
-
-	int width, height;
-	glfwGetFramebufferSize(window, &width, &height);
-
-	if(x < 0 || x >= width || y < 0 || y >= height) return;
-
-	int bufSize = mesh()->n_vertices();
-	GLuint * buf = new GLuint[bufSize];
-	glSelectBuffer(bufSize, buf);
-
-	GLint viewport[4];
-	GLdouble projection[16];
-	glGetIntegerv(GL_VIEWPORT, viewport);
-	glGetDoublev(GL_PROJECTION_MATRIX, projection);
-
-	glRenderMode(GL_SELECT);
-	glInitNames();
-	glPushName(0);
-
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	glLoadIdentity();
-	//gluPickMatrix(x, viewport[3] - y, 10, 10, viewport);
-	glMultMatrixd(projection);
-
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-//	draw_vertices();
-	glPopMatrix();
-
-	glMatrixMode(GL_PROJECTION);
-	glPopMatrix();
-
-	glMatrixMode(GL_MODELVIEW);
-	long hits = glRenderMode(GL_RENDER);
-
-	index_t index = -1;
-	double min_z = 1.0e100;
-	for(long i = 0; i < hits; ++i)
-	{
-		double distance = buf[4*i + 1];
-		if(distance < min_z)
-		{
-			index = buf[4*i + 3];
-			min_z = distance;
-		}
-	}
-	delete[] buf;
-
-	if(index != NIL && index < mesh()->n_vertices())
-	{
-		select_vertices.push_back(index);
-		
-		gproshan_log_var(index);
-		gproshan_debug_var(mesh().color(index));
-		gproshan_debug_var(mesh()->evt(index));
-
-		if(corr_mesh[current].is_loaded())
-			gproshan_error_var(corr_mesh[current][index].alpha);
-	}
 }
 
 

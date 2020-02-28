@@ -2,6 +2,7 @@
 #define VIEWER_SHADER_H
 
 #include <string>
+#include <map>
 
 #include "include_opengl.h"
 
@@ -13,17 +14,19 @@ class shader
 {
 	protected:
 		GLuint program {0};
+		std::map<std::string, GLint> uniform;
 		bool linked;
 
 	public:
 		shader() = default;
 		~shader();
+		const GLint & operator () (const std::string & name);
+		operator GLuint () const;
 		void load_vertex(const char * filename);
 		void load_fragment(const char * filename);
 		void load_geometry(const char * filename);
 		void enable();
 		void disable() const;
-		operator GLuint () const;
 
 	protected:
 		bool load(GLenum shader_type, const char * filename);

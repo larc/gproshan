@@ -11,10 +11,11 @@ using namespace std;
 namespace gproshan {
 
 
-che_viewer::che_viewer(const size_t & n): n_instances(n)
+che_viewer::che_viewer()
 {
 	mesh = nullptr;
 	n_vertices = 0;
+	n_instances = 0;
 
 	normals = nullptr;
 	colors = nullptr;
