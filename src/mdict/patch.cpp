@@ -55,6 +55,24 @@ void patch::init_disjoint(che * mesh, const index_t & v, const size_t & n_toplev
 	if(!_toplevel) delete [] toplevel; // If it is null
 }
 
+vertex patch::normal_trim(che * mesh, const index_t & v, index_t * indexes)
+{
+	vertex n;
+	area_t area, area_star = 0;
+
+	for_star(he, mesh, v)
+	{
+		//mesh->vt(next(he)) //index of the next vertex 
+		area = mesh->area_trig(trig(he));
+		area_star += area;
+		n += area * mesh->normal_he(he);
+	}
+
+	n /= area_star;
+	return n / *n;
+}
+
+
 void patch::init_radial_disjoint(che * mesh, const distance_t & radio_, const index_t & v, distance_t & euc_radio)
 {
 	//radio = radio_;
@@ -75,6 +93,7 @@ void patch::init_radial_disjoint(che * mesh, const distance_t & radio_, const in
 	double angle;
 	double sum_angle = 0;
 	double delta = 1;
+	//0.1 toomuch
 	//gproshan_debug_var(v);
 	for(size_t i=1; i<geo.n_sorted_index(); i++)
 	{
@@ -86,10 +105,11 @@ void patch::init_radial_disjoint(che * mesh, const distance_t & radio_, const in
 		p = p - ((p,n)*n);
 		//if(*p <= radio )
 		//gproshan_debug_var(indexes[i]);
+		sum_angle = acos( (n, mesh->normal(indexes[i]) ) );
 		angle = acos( (n, mesh->normal(indexes[i]) ) ) ;
-		//if( angle < PI/2.5 && (sum_angle/vertices.size()) + angle <= PI/2.2)
 		//if( angle < PI/2.5 && (sum_angle) <= delta * PI)
-		if( angle < PI/2.5 && (sum_angle) <= delta * PI)
+
+		if( angle < PI/2.5 && acos( (mesh->normal(indexes[i-1]), mesh->normal(indexes[i]) ) ) <= PI/8)
 		{
 			
 			if(*p > radio)
@@ -103,16 +123,16 @@ void patch::init_radial_disjoint(che * mesh, const distance_t & radio_, const in
 			//gproshan_debug_var(euc_radio);
 			vertices.push_back(indexes[i]);
 			//gproshan_debug_var(geo[indexes[i]]);
-			sum_angle += angle;
-			delta += 0.01;
+			//sum_angle += angle;
+			//delta += 0.03	;
 			// sharp meshes 0.001
-			//if(i%7 == 0)  sum_angle = 0;
+			// smooth meshes 0.035 at max
 		}
 		else
 		{
 			break;
 		}
-		//gproshan_debug_var(sum_angle);
+	//	gproshan_debug_var(acos( (mesh->normal(indexes[i-1]), mesh->normal(indexes[i]) ) ));
 	}
 /*	gproshan_debug_var(PI/2.5);
 	gproshan_debug_var(sum_angle);

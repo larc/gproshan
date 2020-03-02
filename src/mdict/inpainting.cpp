@@ -447,10 +447,10 @@ void  inpainting::init_radial_feature_patches()
 			//gproshan_debug_var(geo[indexes[i]] );
 		}
 	}
-	a_vec outlv(seeds.size());
+	a_vec outlv(outliers.size());
 	gproshan_debug_var(outliers.size());
-	for(index_t i = 0; i < seeds.size(); i++)
-		outlv(i) = seeds[i];
+	for(index_t i = 0; i < outliers.size(); i++)
+		outlv(i) = outliers[i];
 
 	/*for(index_t i = 0; i < seeds.size(); i++)
 		outlv(i) = seeds[i];

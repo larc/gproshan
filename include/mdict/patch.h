@@ -94,6 +94,7 @@ class patch
 		void compute_avg_distance();
 		void scale_xyz(const real_t & radio_f);
 		void iscale_xyz(const real_t & radio_f);
+		vertex normal_trim(che * mesh, const index_t & v, index_t * indexes);
 		
 
 	private:
