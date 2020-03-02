@@ -47,9 +47,9 @@ int app_viewer::main(int nargs, const char ** args)
 
 	TIC(time)
 
-	vector<che *> meshes;
+	vector<che *> vm;
 	for(int i = 1; i < nargs; i++)
-		meshes.push_back(load_mesh(args[i]));
+		vm.push_back(load_mesh(args[i]));
 	
 	TOC(time)
 
@@ -57,7 +57,7 @@ int app_viewer::main(int nargs, const char ** args)
 	gproshan_log_var(time);
 	
 	//init meshes
-	add_mesh(meshes);
+	add_mesh(vm);
 
 	sub_menus.push_back("Fairing");
 	add_process(GLFW_KEY_T, {"T", "Fairing Taubin", process_fairing_taubin});

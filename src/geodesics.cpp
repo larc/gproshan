@@ -18,6 +18,7 @@ geodesics::geodesics(che * mesh, const vector<index_t> & sources, const option_t
 	assert(n_vertices > 0);
 
 	free_dist = e_dist == nullptr;
+
 	dist = free_dist ? new distance_t[n_vertices] : e_dist;
 	clusters = cluster ? new index_t[n_vertices] : nullptr;
 	sorted_index = new index_t[n_vertices];
@@ -34,9 +35,9 @@ geodesics::geodesics(che * mesh, const vector<index_t> & sources, const option_t
 
 geodesics::~geodesics()
 {
-	if(free_dist)		delete [] dist;
-	if(sorted_index)	delete [] sorted_index;
-	if(clusters)		delete [] clusters;
+	delete [] dist;
+	delete [] sorted_index;
+	delete [] clusters;
 }
 
 const distance_t & geodesics::operator[](const index_t & i) const
