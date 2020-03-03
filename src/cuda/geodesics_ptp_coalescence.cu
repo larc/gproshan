@@ -18,10 +18,10 @@ using namespace std;
 namespace gproshan {
 
 
-double parallel_toplesets_propagation_coalescence_gpu(const ptp_out_t & ptp_out, che * mesh, const vector<index_t> & sources, const toplesets_t & toplesets, const bool & set_inf)
+double parallel_toplesets_propagation_coalescence_gpu(const ptp_out_t & ptp_out, const che * mesh, const vector<index_t> & sources, const toplesets_t & toplesets, const bool & set_inf)
 {
 	index_t * inv = nullptr;
-	mesh = ptp_coalescence(inv, mesh, toplesets);
+	che * coalescence_mesh = ptp_coalescence(inv, mesh, toplesets);
 
 	// ------------------------------------------------------
 	
@@ -35,7 +35,7 @@ double parallel_toplesets_propagation_coalescence_gpu(const ptp_out_t & ptp_out,
 
 	// BEGIN PTP
 
-	CHE * h_mesh = new CHE(mesh);
+	CHE * h_mesh = new CHE(coalescence_mesh);
 	CHE * dd_mesh, * d_mesh;
 	cuda_create_CHE(h_mesh, dd_mesh, d_mesh);
 
@@ -78,7 +78,7 @@ double parallel_toplesets_propagation_coalescence_gpu(const ptp_out_t & ptp_out,
 	cudaFree(d_dist[1]);
 	cuda_free_CHE(dd_mesh, d_mesh);
 
-	delete mesh;
+	delete coalescence_mesh;
 	delete [] inv;
 
 	#pragma omp parallel for

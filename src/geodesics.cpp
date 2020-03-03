@@ -35,7 +35,8 @@ geodesics::geodesics(che * mesh, const vector<index_t> & sources, const option_t
 
 geodesics::~geodesics()
 {
-	delete [] dist;
+	if(free_dist) delete [] dist;
+
 	delete [] sorted_index;
 	delete [] clusters;
 }

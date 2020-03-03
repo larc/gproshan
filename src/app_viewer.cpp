@@ -31,7 +31,7 @@ app_viewer::app_viewer()
 
 app_viewer::~app_viewer()
 {
-	if(dist) delete [] dist;
+	delete [] dist;
 
 	for(che * mesh: meshes)
 		delete mesh;
@@ -65,7 +65,7 @@ int app_viewer::main(int nargs, const char ** args)
 
 	sub_menus.push_back("Geodesics");
 	add_process(GLFW_KEY_F, {"F", "Fast Marching", process_geodesics_fm});
-	add_process(GLFW_KEY_U, {"C", "Parallel Toplesets Propagation CPU", process_geodesics_ptp_cpu});
+	add_process(GLFW_KEY_C, {"C", "Parallel Toplesets Propagation CPU", process_geodesics_ptp_cpu});
 #ifndef SINGLE_P
 	add_process(GLFW_KEY_L, {"L", "Heat Method", process_geodesics_heat_flow});
 #endif
@@ -763,15 +763,10 @@ void app_viewer::process_geodesics_ptp_gpu(viewer * p_view)
 	if(!view->select_vertices.size())
 		view->select_vertices.push_back(0);
 	
-	if(view->dist && view->n_dist != mesh->n_vertices())
+	if(view->n_dist != mesh->n_vertices())
 	{
 		delete [] view->dist;
-		view->n_dist = 0;
-		view->dist = nullptr;
-	}
-
-	if(!view->dist)
-	{
+	
 		view->n_dist = mesh->n_vertices();
 		view->dist = new distance_t[view->n_dist];
 	}

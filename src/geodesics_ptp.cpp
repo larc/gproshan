@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include <cstring>
+#include <cassert>
 
 using namespace std;
 
@@ -12,11 +13,11 @@ namespace gproshan {
 
 ptp_out_t::ptp_out_t(distance_t *const & d, index_t *const & c): dist(d), clusters(c) {}
 
-che * ptp_coalescence(index_t * & inv, che * mesh, const toplesets_t & toplesets)
+che * ptp_coalescence(index_t * & inv, const che * mesh, const toplesets_t & toplesets)
 {
 	// sort data by levels, must be improve the coalescence
 	
-	vector<vertex> V(mesh->n_vertices());
+	vector<vertex> V(toplesets.limits.back());
 	vector<index_t> F;
 	F.reserve(mesh->n_half_edges());
 	
