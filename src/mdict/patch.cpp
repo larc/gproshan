@@ -55,21 +55,55 @@ void patch::init_disjoint(che * mesh, const index_t & v, const size_t & n_toplev
 	if(!_toplevel) delete [] toplevel; // If it is null
 }
 
-vertex patch::normal_trim(che * mesh, const index_t & v, index_t * indexes)
+bool  patch::exists(index_t idx)
 {
-	vertex n;
-	area_t area, area_star = 0;
+	for(size_t i=1; i < vertices.size(); i++)
+	{
+		if(vertices[i] == idx)
+			return true;
+	}
+	return false;
+}
+bool patch::add_vertex_by_faces(vertex * N, double thr_angle, index_t i, const geodesics & geo, che * mesh, const index_t & v, bool * taken)
+{
+
+	index_t a, b;
+	index_t min_he;
+	double angle = PI;
+	double tmp_angle;
+	bool added = false;
 
 	for_star(he, mesh, v)
 	{
-		//mesh->vt(next(he)) //index of the next vertex 
-		area = mesh->area_trig(trig(he));
-		area_star += area;
-		n += area * mesh->normal_he(he);
-	}
+	
+		a = mesh->vt(next(he)); //index of the next vertex index_t
+		b = mesh->vt(prev(he)); 
+		/*gproshan_debug_var(geo[b]);
+		gproshan_debug_var(geo[a]);angle
+		gproshan_debug_var(geo[v ]);*/
 
-	n /= area_star;
-	return n / *n;
+		// If is an adjacent face
+		if( geo[a] < geo[v] || geo[b] < geo[v] )
+		{
+			tmp_angle = acos( (mesh->normal_he(he), N[i-1]) );
+			//gproshan_debug_var(tmp_angle);
+			//gproshan_debug_var(N[i-1]);
+			//gproshan_debug_var(mesh->normal_he(he));
+
+			if ( angle >  tmp_angle  && tmp_angle < thr_angle  ) // Fullfill conditions
+			{
+				angle = tmp_angle;
+				min_he = he; 
+				//if( !exists(a) ) vertices.push_back(a);
+				//if( !exists(b) ) vertices.push_back(b);
+				if( !exists(v) ) vertices.push_back(v);
+				added = true;
+			}
+		}
+	
+	}
+	N[i] = mesh->normal_he(min_he);
+	return added;
 }
 
 
@@ -90,12 +124,18 @@ void patch::init_radial_disjoint(che * mesh, const distance_t & radio_, const in
 	vertex p, c;
 	vertices.push_back(v);
 	euc_radio = -INFINITY;
-	double angle;
-	double sum_angle = 0;
-	double delta = 1;
-	//0.1 toomuch
+	
+	vertex N[geo.n_sorted_index()];
+	N[0] = n;
+	//double angle;
+	//double sum_angle = 0;
+//	double delta = 1;
+	//vertex prev_n, curr_n;
+	bool taken[geo.n_sorted_index()] = {};
+
 	//gproshan_debug_var(v);
-	for(size_t i=1; i<geo.n_sorted_index(); i++)
+	
+	for(index_t i=1; i<geo.n_sorted_index(); i++)
 	{
 		
 		p = mesh->get_vertex(indexes[i]); 
@@ -105,12 +145,18 @@ void patch::init_radial_disjoint(che * mesh, const distance_t & radio_, const in
 		p = p - ((p,n)*n);
 		//if(*p <= radio )
 		//gproshan_debug_var(indexes[i]);
-		sum_angle = acos( (n, mesh->normal(indexes[i]) ) );
-		angle = acos( (n, mesh->normal(indexes[i]) ) ) ;
+	//	sum_angle = acos( (n, mesh->normal(indexes[i]) ) );
+		//angle = acos( (n, mesh->normal(indexes[i]) ) ) ;
+		
+		//prev_n = curr_n;
+		//curr_n = normal_trim(geo, mesh, indexes[i]);
+		//gproshan_debug_var(acos( (prev_n, curr_n) ));
 		//if( angle < PI/2.5 && (sum_angle) <= delta * PI)
-
-		if( angle < PI/2.5 && acos( (mesh->normal(indexes[i-1]), mesh->normal(indexes[i]) ) ) <= PI/8)
+		//if( angle < PI/2.5 && acos( (mesh->normal(indexes[i-1]), mesh->normal(indexes[i]) ) ) <= PI/8) // find borders
+		if(add_vertex_by_faces(N,  PI/8, i, geo, mesh, indexes[i], taken))
+		//if( angle < PI/2.5 && acos( (prev_n, curr_n) ) <= PI/7) // find borders
 		{
+			//gproshan_debug_var(vertices.size());
 			
 			if(*p > radio)
 			{
@@ -121,7 +167,7 @@ void patch::init_radial_disjoint(che * mesh, const distance_t & radio_, const in
 			if(*(p - c) > euc_radio)
 				euc_radio = *(p - c);
 			//gproshan_debug_var(euc_radio);
-			vertices.push_back(indexes[i]);
+			//vertices.push_back(indexes[i]);
 			//gproshan_debug_var(geo[indexes[i]]);
 			//sum_angle += angle;
 			//delta += 0.03	;

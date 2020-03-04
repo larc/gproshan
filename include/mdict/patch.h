@@ -6,6 +6,7 @@
 
 #include <vector>
 #include "include_arma.h"
+#include "geodesics.h"
 
 #include <CImg.h>
 
@@ -94,7 +95,7 @@ class patch
 		void compute_avg_distance();
 		void scale_xyz(const real_t & radio_f);
 		void iscale_xyz(const real_t & radio_f);
-		vertex normal_trim(che * mesh, const index_t & v, index_t * indexes);
+		bool add_vertex_by_faces(vertex * N, double thr_angle, index_t i, const geodesics & geo, che * mesh, const index_t & v, bool * taken);
 		
 
 	private:
@@ -111,6 +112,7 @@ class patch
 								const distance_t & radio,
 								index_t * toplevel
 								);
+		bool exists(index_t idx);
 		
 		/// Initialize transformation matrix T and translation vector x, using CGAL jet_fitting.
 		void jet_fit_directions(che * mesh,
