@@ -96,7 +96,7 @@ class viewer
 		shader shader_program;
 		shader shader_normals;
 		shader shader_gradient;
-		shader shader_frame;
+		shader shader_pointcloud;
 		
 		camera cam;
 		
@@ -213,11 +213,10 @@ class viewer
 		static void raycasting(viewer * view);
 
 		// draw routines
-		void draw_scene();
-		void draw_polygons();
-		void draw_border();
-		void draw_selected_vertices();
+		void draw_meshes(shader & program);
+		void draw_selected_vertices(shader & program);
 		
+		void select_border_vertices();
 		void pick_vertex(int x, int y);
 };
 
