@@ -129,7 +129,7 @@ void patch::init_radial_disjoint(che * mesh, const distance_t & radio_, const in
 	N[0] = n;
 	//double angle;
 	//double sum_angle = 0;
-//	double delta = 1;
+	double delta = 0;
 	//vertex prev_n, curr_n;
 	bool taken[geo.n_sorted_index()] = {};
 
@@ -152,8 +152,9 @@ void patch::init_radial_disjoint(che * mesh, const distance_t & radio_, const in
 		//curr_n = normal_trim(geo, mesh, indexes[i]);
 		//gproshan_debug_var(acos( (prev_n, curr_n) ));
 		//if( angle < PI/2.5 && (sum_angle) <= delta * PI)
+		//penalize gowing, I want them to grow only if they do not vary so much
 		//if( angle < PI/2.5 && acos( (mesh->normal(indexes[i-1]), mesh->normal(indexes[i]) ) ) <= PI/8) // find borders
-		if(add_vertex_by_faces(N,  PI/8, i, geo, mesh, indexes[i], taken))
+		if(add_vertex_by_faces(N,  PI/(8+delta), i, geo, mesh, indexes[i], taken))
 		//if( angle < PI/2.5 && acos( (prev_n, curr_n) ) <= PI/7) // find borders
 		{
 			//gproshan_debug_var(vertices.size());
@@ -170,7 +171,7 @@ void patch::init_radial_disjoint(che * mesh, const distance_t & radio_, const in
 			//vertices.push_back(indexes[i]);
 			//gproshan_debug_var(geo[indexes[i]]);
 			//sum_angle += angle;
-			//delta += 0.03	;
+			delta += 0.001	;
 			// sharp meshes 0.001
 			// smooth meshes 0.035 at max
 		}

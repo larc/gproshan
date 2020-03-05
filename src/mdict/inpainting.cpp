@@ -383,58 +383,6 @@ void  inpainting::init_radial_feature_patches()
 	gproshan_debug_var(seeds.size());
 	M = seeds.size();
 
-//////////////////////////////////////
-/*
-	//new order bigger to smaller
-	vector<distance_t> geo_radios;
-	geo_radios.resize(seeds.size());
-	for(index_t i = 0; i < seeds.size(); i++)
-		geo_radios[i] = patches[i].radio;
-	vector<index_t> sorted_patches_size = sort_indexes(geo_radios);
-
-	//Coverage of the points 
-	bool covered_p[mesh->n_vertices()];
-	size_t ncount = 0;
-	seeds.clear();
-
-	#pragma omp for 
-	for(index_t i = 0; i < mesh->n_vertices(); i++)
-	{
-		covered_p[i] = 0;
-	}
-	size_t count_valid = 0;
-
-	vector<patch> valid_patches;
- 
-	for(index_t i = 0; i < sorted_patches_size.size(); i++)
-	{ 
-		patch * p = &patches[sorted_patches_size[i]];
-		if(!p->is_covered(covered_p)) // if not all vertices in the patch are covered
-		{	
-			seeds.push_back(sorted_patches_size[i]);
-
-			valid_patches.push_back(patches[sorted_patches_size[i]]);
-			count_valid++; // we take this one
-			for(index_t k = 0; k < p->vertices.size(); k++)
-			{
-				if(!covered_p[ p->vertices[k] ]) ncount++;
-				covered_p[ p->vertices[k] ] = 1;
-			}	
-
-		}
-		
-		//gproshan_debug_var(sorted_patches_size[i]);
-		//gproshan_debug_var(geo_radios[sorted_patches_size[i]]);
-	}
-	gproshan_debug_var(count_valid);
-	gproshan_debug_var(ncount);
-	
-	// discard patches which are not needed
-	patches.clear();
-	patches = valid_patches;
-	gproshan_debug_var(patches.size());
-	M  = patches.size();
-*/
 ///////////////////////////////////////
 	
 	gproshan_debug_var(M);
