@@ -95,7 +95,7 @@ class patch
 		void compute_avg_distance();
 		void scale_xyz(const real_t & radio_f);
 		void iscale_xyz(const real_t & radio_f);
-		bool add_vertex_by_faces(vertex * N, double thr_angle, index_t i, const geodesics & geo, che * mesh, const index_t & v, bool * taken);
+		bool add_vertex_by_faces(vector<vertex> & N, index_t * indexes, size_t nc, double thr_angle, const geodesics & geo, che * mesh, const index_t & v);
 		
 
 	private:
@@ -125,6 +125,7 @@ class patch
 		real_t get_max_z();
 
 		void save_z(ostream & os);
+		index_t find(index_t * indexes, size_t nc, index_t idx_global);
 		
 
 	friend class dictionary;
