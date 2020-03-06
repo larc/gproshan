@@ -2,6 +2,7 @@
 #define CHE_VIEWER_H
 
 #include "che.h"
+#include "shader.h"
 
 #include "include_opengl.h"
 
@@ -55,7 +56,8 @@ class che_viewer
 		void update_normals();
 		void update_colors(const color_t *const c = nullptr);
 		void update_instances_translations(const std::vector<vertex> & translations);
-		void draw();
+		void draw(shader & program);
+		void draw_point_cloud(shader & program);
 
 		color_t & color(const index_t & v);
 		vertex & normal(const index_t & v);

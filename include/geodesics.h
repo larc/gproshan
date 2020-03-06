@@ -33,9 +33,10 @@ class geodesics
 	private:
 		distance_t * dist;			///< Results of computation geodesic distances.
 		index_t * sorted_index;		///< Sort vertices by topological level or geodesic distance.
-		const size_t & n_vertices;	///< Number of vertices.
 		size_t n_sorted;			///< Number of vertices sorted by their geodesics distance.
 		bool free_dist;
+		
+		const size_t & n_vertices;	///< Number of vertices, constance reference
 
 	public:
 		geodesics(che * mesh,							///< input mesh must be a triangular mesh.

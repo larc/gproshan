@@ -125,16 +125,6 @@ void che_viewer::update_vbo()
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh->n_half_edges() * sizeof(index_t), &mesh->vt(0), GL_STATIC_DRAW);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	}
-	else
-	{
-		index_t * indices = new index_t[n_vertices];
-		iota(indices, indices + n_vertices, 0);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[3]);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, n_vertices * sizeof(index_t), indices, GL_STATIC_DRAW);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
-		delete [] indices;
-	}
 	
 	glBindVertexArray(0);
 }
@@ -191,20 +181,37 @@ void che_viewer::update_instances_translations(const vector<vertex> & translatio
 	glBindVertexArray(0);
 }
 
-void che_viewer::draw()
+void che_viewer::draw(shader & program)
 {
+	program.enable();
+
 	glBindVertexArray(vao);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[3]);
 
 	if(n_instances)
 		glDrawElementsInstanced(GL_TRIANGLES, mesh->n_half_edges(), GL_UNSIGNED_INT, 0, n_instances);
-	else if(mesh->n_faces())
-		glDrawElements(GL_TRIANGLES, mesh->n_half_edges(), GL_UNSIGNED_INT, 0);
 	else
-		glDrawElements(GL_POINTS, mesh->n_vertices(), GL_UNSIGNED_INT, 0);
-
+		glDrawElements(GL_TRIANGLES, mesh->n_half_edges(), GL_UNSIGNED_INT, 0);
+	
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
+
+	program.disable();
+}
+
+void che_viewer::draw_point_cloud(shader & program)
+{
+	program.enable();
+
+	glBindVertexArray(vao);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
+	
+	glDrawArrays(GL_POINTS, 0, mesh->n_vertices());
+	
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+
+	program.disable();
 }
 
 color_t & che_viewer::color(const index_t & v)
