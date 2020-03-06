@@ -1289,14 +1289,9 @@ void che::init(const size_t & n_v, const size_t & n_f)
 {
 	n_vertices_ = n_v;
 	n_faces_ = n_f;
-	n_half_edges_ = n_edges_ = n_borders_ = 0;
-
-	GT = nullptr;
-	VT = OT = EVT = ET = BT = nullptr;
-	manifold = true;
-
 	n_half_edges_ = che::P * n_faces_;
-	n_edges_ = 0; //n_half_edges_ / 2;	/**/
+	
+	n_edges_ = n_borders_ = 0;
 	
 	if(n_vertices_)		GT = new vertex[n_vertices_];
 	if(n_half_edges_)	VT = new index_t[n_half_edges_];
@@ -1416,13 +1411,13 @@ void che::update_bt()
 
 void che::delete_me()
 {
-	if(GT)	delete [] GT;
-	if(VT)	delete [] VT;
-	if(OT)	delete [] OT;
-	if(EVT)	delete [] EVT;
-	if(ET)	delete [] ET;
-	if(EHT)	delete [] EHT;
-	if(BT)	delete [] BT;
+	delete [] GT;
+	delete [] VT;
+	delete [] OT;
+	delete [] EVT;
+	delete [] ET;
+	delete [] EHT;
+	delete [] BT;
 }
 
 void che::read_file(const string & )

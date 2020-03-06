@@ -111,6 +111,7 @@ bool viewer::run()
 
 		eye = r.conj() * eye * r;
 		light = r.conj() * light * r;
+		up = r.conj() * up * r;
 		
 		proj_mat = glm::perspective(45.f, float(viewport_width) / float(viewport_height), .01f, 1000.f);
 		view_mat = glm::lookAt(	glm::vec3(eye[1], eye[2], eye[3]), 
@@ -284,6 +285,9 @@ void viewer::init_glsl()
 	shader_gradient.load_vertex("../shaders/vertex_gradient.glsl");
 	shader_gradient.load_geometry("../shaders/geometry_gradient.glsl");
 	shader_gradient.load_fragment("../shaders/fragment_gradient.glsl");
+	
+	shader_pointcloud.load_vertex("../shaders/vertex_pointcloud.glsl");
+	shader_pointcloud.load_fragment("../shaders/fragment_pointcloud.glsl");
 }
 
 void viewer::update_vbo()
@@ -570,8 +574,13 @@ void viewer::render_gl()
 	glProgramUniformMatrix4fv(shader_program, shader_program("proj_mat"), 1, 0, &proj_mat[0][0]);
 
 	
-	shader_program.enable();
-	draw_scene();
+	glProgramUniform3f(shader_pointcloud, shader_pointcloud("eye"), eye[1], eye[2], eye[3]);
+	glProgramUniform3f(shader_pointcloud, shader_pointcloud("light"), light[1], light[2], light[3]);
+	glProgramUniformMatrix4fv(shader_pointcloud, shader_pointcloud("model_view_mat"), 1, 0, &view_mat[0][0]);
+	glProgramUniformMatrix4fv(shader_pointcloud, shader_pointcloud("proj_mat"), 1, 0, &proj_mat[0][0]);
+
+
+	draw_meshes(shader_program);
 
 
 	if(render_normal_field)
@@ -580,8 +589,7 @@ void viewer::render_gl()
 		glProgramUniformMatrix4fv(shader_normals, shader_normals("model_view_mat"), 1, 0, &view_mat[0][0]);
 		glProgramUniformMatrix4fv(shader_normals, shader_normals("proj_mat"), 1, 0, &proj_mat[0][0]);
 		
-		shader_normals.enable();
-		draw_scene();
+		draw_meshes(shader_normals);
 	}
 	
 	
@@ -591,9 +599,13 @@ void viewer::render_gl()
 		glProgramUniformMatrix4fv(shader_gradient, shader_gradient("model_view_mat"), 1, 0, &view_mat[0][0]);	
 		glProgramUniformMatrix4fv(shader_gradient, shader_gradient("proj_mat"), 1, 0, &proj_mat[0][0]);
 		
-		shader_gradient.enable();
-		draw_scene();
+		draw_meshes(shader_gradient);
 	}
+	
+	
+	if(render_border) select_border_vertices();
+
+	draw_selected_vertices(shader_sphere);
 }
 
 void viewer::render_embree()
@@ -648,17 +660,7 @@ void viewer::render_optix()
 #endif // GPROSHAN_OPTIX
 }
 
-void viewer::draw_scene()
-{	
-	draw_polygons();
-
-	if(render_border)
-		draw_border();
-
-	draw_selected_vertices();
-}
-
-void viewer::draw_polygons()
+void viewer::draw_meshes(shader & program)
 {
 	if(render_wireframe)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -669,19 +671,15 @@ void viewer::draw_polygons()
 	for(index_t i = 0; i < n_meshes; i++)
 	{
 		glViewport(meshes[i].vx * viewport_width, meshes[i].vy * viewport_height, viewport_width, viewport_height);
-		meshes[i].draw();
+
+		if(!meshes[i]->n_faces())
+			meshes[i].draw_point_cloud(shader_pointcloud);
+		else
+			meshes[i].draw(program);
 	}
 }
 
-void viewer::draw_border()
-{
-	select_vertices.clear();
-	for(index_t b = 0; b < mesh()->n_borders(); b++)
-		for_border(he, mesh(), mesh()->bt(b))
-			select_vertices.push_back(mesh()->vt(he));
-}
-
-void viewer::draw_selected_vertices()
+void viewer::draw_selected_vertices(shader & program)
 {
 	if(sphere_translations.size() != select_vertices.size())
 	{
@@ -693,12 +691,20 @@ void viewer::draw_selected_vertices()
 		sphere.update_instances_translations(sphere_translations);
 	}
 	
-	glViewport(mesh().vx * viewport_width, mesh().vy * viewport_height, viewport_width, viewport_height);
 	
-	shader_sphere.enable();
 	if(sphere_translations.size())
-		sphere.draw();
-	shader_sphere.disable();
+	{
+		glViewport(mesh().vx * viewport_width, mesh().vy * viewport_height, viewport_width, viewport_height);
+		sphere.draw(program);
+	}
+}
+
+void viewer::select_border_vertices()
+{
+	select_vertices.clear();
+	for(index_t b = 0; b < mesh()->n_borders(); b++)
+		for_border(he, mesh(), mesh()->bt(b))
+			select_vertices.push_back(mesh()->vt(he));
 }
 
 void viewer::pick_vertex(int x, int y)

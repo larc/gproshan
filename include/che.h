@@ -27,26 +27,26 @@ struct corr_t;
 class che
 {
 	public:
-		static const size_t P = 3;
+		static const size_t P = 3; ///< default polygon size 3, triangular meshes
 
 	protected:
 		std::string filename_;
 
-		size_t n_vertices_;
-		size_t n_faces_;
-		size_t n_half_edges_;
-		size_t n_edges_;
-		size_t n_borders_;
+		size_t n_vertices_		= 0;
+		size_t n_faces_			= 0;
+		size_t n_half_edges_	= 0;
+		size_t n_edges_			= 0;
+		size_t n_borders_		= 0;
 
-		vertex * GT;	///< geometry table			: v		-> vertex
-		index_t * VT;	///< vertex table (faces)	: he	-> v
-		index_t * OT;	///< opposite table			: he	-> he
-		index_t * EVT;	///< extra vertex table		: v		-> he
-		index_t * ET;	///< edge table				: e		-> he
-		index_t * EHT;	///< extra half edge table	: he	-> e
-		index_t * BT;	///< boundary table			: b 	-> v
+		vertex * GT		= nullptr;	///< geometry table			: v		-> vertex
+		index_t * VT	= nullptr;	///< vertex table (faces)	: he	-> v
+		index_t * OT	= nullptr;	///< opposite table			: he	-> he
+		index_t * EVT	= nullptr;	///< extra vertex table		: v		-> he
+		index_t * ET	= nullptr;	///< edge table				: e		-> he
+		index_t * EHT	= nullptr;	///< extra half edge table	: he	-> e
+		index_t * BT	= nullptr;	///< boundary table			: b 	-> v
 
-		bool manifold;
+		bool manifold = true;
 
 	public:
 		che(const size_t & n_v = 0, const size_t & n_f = 0);
