@@ -111,6 +111,7 @@ bool viewer::run()
 
 		eye = r.conj() * eye * r;
 		light = r.conj() * light * r;
+		up = r.conj() * up * r;
 		
 		proj_mat = glm::perspective(45.f, float(viewport_width) / float(viewport_height), .01f, 1000.f);
 		view_mat = glm::lookAt(	glm::vec3(eye[1], eye[2], eye[3]), 
