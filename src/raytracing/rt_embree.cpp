@@ -38,8 +38,8 @@ embree::~embree()
 void embree::build_bvh(const std::vector<che *> & meshes)
 {
 	for(auto & m: meshes)
-		if(m->n_faces()) add_mesh(m);
-		else add_point_cloud(m);
+		if(m->n_faces()) geomID_mesh[add_mesh(m)] = m;
+		else geomID_mesh[add_point_cloud(m)] = m;
 
 	rtcCommitScene(scene);
 }
@@ -138,7 +138,8 @@ glm::vec4 embree::li(const ray_hit & r, const glm::vec3 & light)
 	
 	glm::vec3 wi = normalize(light - r.position());
 	
-	float dot_wi_normal = glm::dot(wi, r.normal());
+	//float dot_wi_normal = glm::dot(wi, r.normal());
+	float dot_wi_normal = glm::dot(wi, r.shading_normal(geomID_mesh[r.hit.geomID]));
 	if(dot_wi_normal < 0)
 		dot_wi_normal = -dot_wi_normal;
 

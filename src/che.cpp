@@ -238,6 +238,13 @@ area_t che::area_surface() const
 	return area;
 }
 
+vertex che::shading_normal(const index_t & f, const float & u, const float & v, const float & w) const
+{
+	index_t he = f * che::P;
+
+	return {u * VN[VT[he]] + v * VN[VT[he + 1]] + w * VN[VT[he + 2]]};
+}
+
 vertex che::normal_he(const index_t & he) const
 {
 	vertex n = (GT[VT[next(he)]] - GT[VT[he]]) * (GT[VT[prev(he)]] - GT[VT[he]]);

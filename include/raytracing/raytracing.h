@@ -4,6 +4,7 @@
 #include "che.h"
 
 #include <vector>
+#include <map>
 
 #include <glm/glm.hpp>
 
@@ -16,6 +17,8 @@ namespace gproshan::rt {
 class raytracing
 {
 	protected:
+		std::map<index_t, const che *> geomID_mesh;
+
 		size_t width;
 		size_t height;
 		size_t n_samples;

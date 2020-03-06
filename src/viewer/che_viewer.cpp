@@ -131,6 +131,8 @@ void che_viewer::update_vbo()
 
 void che_viewer::update_normals()
 {
+	mesh->VN = normals;
+
 	#pragma omp parallel for
 	for(index_t v = 0; v < n_vertices; v++)
 		if(invert_normals)
