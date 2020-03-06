@@ -77,7 +77,7 @@ bool patch::add_vertex_by_faces(vector<vertex> & N, index_t * indexes, size_t nc
 {
 
 	index_t a, b, i = 0;
-	index_t min_he;
+	vertex min_he;
 	double angle = PI;
 	double tmp_angle;
 	bool added = false;
@@ -87,40 +87,48 @@ bool patch::add_vertex_by_faces(vector<vertex> & N, index_t * indexes, size_t nc
 	
 		a = mesh->vt(next(he)); //index of the next vertex index_t
 		b = mesh->vt(prev(he)); 
-		gproshan_debug_var(geo[b]);
+		/*gproshan_debug_var(geo[b]);
 		gproshan_debug_var(geo[a]);
 		gproshan_debug_var(geo[v ]);
-
+*/
 		// If is an adjacent face
 		if( geo[a] < geo[v] || geo[b] < geo[v] )
 		{
 			if(geo[a] < geo[v])
 			{
-				i = find(indexes, nc,a); 
+				i = find(indexes, nc,a);
+				//gproshan_debug_var(a);
+				//gproshan_debug_var(i); 
 			}
 			else
 			{
 				i = find(indexes, nc, b); 
-				gproshan_debug_var(b);
-				gproshan_debug_var(i);
+				//gproshan_debug_var(b);
+				//gproshan_debug_var(i);
 			}
 			tmp_angle = acos( (mesh->normal_he(he), N[i]) );
-			gproshan_debug_var(tmp_angle);
-			gproshan_debug_var(N[i]);
+		/*	gproshan_debug_var(tmp_angle);
+			gproshan_debug_var(angle);
+			gproshan_debug_var(thr_angle);
+			gproshan_debug_var(N[i]);*/
 			//gproshan_debug_var(mesh->normal_he(he));
 
 			if ( angle >  tmp_angle  && tmp_angle < thr_angle  ) // Fullfill conditions
 			{
 				angle = tmp_angle;
-				min_he = he; 
+				//gproshan_debug_var(he);
+				min_he = mesh->normal_he(he); 
 				if( !exists(v) ) vertices.push_back(v);
 				added = true;
 			}
+				
 		}
+		//gproshan_debug_var(N[i]);
 	
 	}
+	//gproshan_debug_var(min_he);
 
-	N.push_back(mesh->normal_he(min_he));
+	N.push_back(min_he);
 	return added;
 }
 
@@ -173,7 +181,7 @@ void patch::init_radial_disjoint(che * mesh, const distance_t & radio_, const in
 		//if( angle < PI/2.5 && (sum_angle) <= delta * PI)
 		//penalize gowing, I want them to grow only if they do not vary so much
 		//if( angle < PI/2.5 && acos( (mesh->normal(indexes[i-1]), mesh->normal(indexes[i]) ) ) <= PI/8) // find borders
-		if( add_vertex_by_faces(N, indexes, geo.n_sorted_index(), PI/8, geo, mesh, indexes[i]) )
+		if( add_vertex_by_faces(N, indexes, geo.n_sorted_index(), PI/12, geo, mesh, indexes[i]) )
 		//if( angle < PI/2.5 && acos( (prev_n, curr_n) ) <= PI/7) // find borders
 		{
 			//gproshan_debug_var(vertices.size());
