@@ -95,7 +95,7 @@ class patch
 		void compute_avg_distance();
 		void scale_xyz(const real_t & radio_f);
 		void iscale_xyz(const real_t & radio_f);
-		bool add_vertex_by_faces(vector<vertex> & N, index_t * indexes, size_t nc, double thr_angle, const geodesics & geo, che * mesh, const index_t & v);
+		bool add_vertex_by_faces(vector<vertex> & N, index_t * indexes, size_t nc, double thr_angle, const geodesics & geo, che * mesh, const index_t & v, double &sum, double deviation);
 		
 
 	private:

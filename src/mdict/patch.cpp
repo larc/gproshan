@@ -73,7 +73,7 @@ index_t patch::find(index_t * indexes, size_t nc, index_t idx_global)
 		if(indexes[i] == idx_global) return i;
 	return -1;
 }
-bool patch::add_vertex_by_faces(vector<vertex> & N, index_t * indexes, size_t nc, double thr_angle, const geodesics & geo, che * mesh, const index_t & v)
+bool patch::add_vertex_by_faces(vector<vertex> & N, index_t * indexes, size_t nc, double thr_angle, const geodesics & geo, che * mesh, const index_t & v, double &sum, double deviation)
 {
 
 	index_t a, b, i = 0;
@@ -113,10 +113,10 @@ bool patch::add_vertex_by_faces(vector<vertex> & N, index_t * indexes, size_t nc
 			gproshan_debug_var(N[i]);*/
 			//gproshan_debug_var(mesh->normal_he(he));
 
-			if ( angle >  tmp_angle  && tmp_angle < thr_angle  ) // Fullfill conditions
+			if ( angle >  tmp_angle  && tmp_angle < thr_angle &&  acos( (mesh->normal_he(he), N[0]) ) < deviation ) // Fullfill conditions
 			{
 				angle = tmp_angle;
-				//gproshan_debug_var(he);
+				
 				min_he = mesh->normal_he(he); 
 				if( !exists(v) ) vertices.push_back(v);
 				added = true;
@@ -127,6 +127,7 @@ bool patch::add_vertex_by_faces(vector<vertex> & N, index_t * indexes, size_t nc
 	
 	}
 	//gproshan_debug_var(min_he);
+	sum +=  acos( (min_he, N[i]) );
 
 	N.push_back(min_he);
 	return added;
@@ -135,6 +136,7 @@ bool patch::add_vertex_by_faces(vector<vertex> & N, index_t * indexes, size_t nc
 
 void patch::init_radial_disjoint(che * mesh, const distance_t & radio_, const index_t & v, distance_t & euc_radio)
 {
+
 	//radio = radio_;
 	radio = -INFINITY;
 	//che_sphere my_sphere(1,12);
@@ -157,11 +159,12 @@ void patch::init_radial_disjoint(che * mesh, const distance_t & radio_, const in
 	vector<vertex> N;
 	N.push_back(n);
 	//double angle;
-	//double sum_angle = 0;
+	double sum_angle = 0;
 	double delta = 0;
+
 	//vertex prev_n, curr_n;
 	//gproshan_debug_var(geo.n_sorted_index());
-	
+
 	for(index_t i=1; i<geo.n_sorted_index(); i++)
 	{
 		
@@ -181,7 +184,10 @@ void patch::init_radial_disjoint(che * mesh, const distance_t & radio_, const in
 		//if( angle < PI/2.5 && (sum_angle) <= delta * PI)
 		//penalize gowing, I want them to grow only if they do not vary so much
 		//if( angle < PI/2.5 && acos( (mesh->normal(indexes[i-1]), mesh->normal(indexes[i]) ) ) <= PI/8) // find borders
-		if( add_vertex_by_faces(N, indexes, geo.n_sorted_index(), PI/12, geo, mesh, indexes[i]) )
+	
+		// add one new candidate vertex //first regulates variation, // second regulates size of the patch
+		if( add_vertex_by_faces(N, indexes, geo.n_sorted_index(), PI/6, geo, mesh, indexes[i], sum_angle, PI/2.5 ) && sum_angle < PI  )
+		// pi is too much
 		//if( angle < PI/2.5 && acos( (prev_n, curr_n) ) <= PI/7) // find borders
 		{
 			//gproshan_debug_var(vertices.size());
@@ -208,6 +214,34 @@ void patch::init_radial_disjoint(che * mesh, const distance_t & radio_, const in
 		}
 	//	gproshan_debug_var(acos( (mesh->normal(indexes[i-1]), mesh->normal(indexes[i]) ) ));
 	}
+	// Refit the points and update the radius
+	size_t d_fitting = 2;
+	size_t min_points = (d_fitting + 1) * (d_fitting + 2) / 2;
+	if(vertices.size() > min_points)
+	{
+		jet_fit_directions(mesh, v);
+		n.x  = T(0, 2); n.y  = T(1, 2); n.z  = T(2, 2);
+		radio = -INFINITY;
+
+		for(index_t i=1; i < vertices.size(); i++)
+		{
+			p = mesh->get_vertex(indexes[i]); 
+			c = mesh->get_vertex(v); // central vertices
+
+			p = p - c ;
+			p = p - ((p,n)*n);
+
+			if(*p > radio)
+			{
+				radio = *p;
+			}
+
+		}
+
+	}
+
+	 
+	//gproshan_debug_var(sum_angle);
 /*	gproshan_debug_var(PI/2.5);
 	gproshan_debug_var(sum_angle);
 	gproshan_debug_var(PI/(delta+0.05)*(vertices.size()-1));*/
