@@ -145,7 +145,6 @@ class viewer
 	
 	public:
 
-		std::vector<index_t> select_vertices;
 		std::vector<vertex> other_vertices;
 		std::vector<vertex> vectors;
 		std::vector<std::string> sub_menus;
@@ -169,7 +168,6 @@ class viewer
 		void init_imgui();
 		void init_menus();
 		void init_glsl();
-		void update_vbo();
 
 		void render_gl();
 		void render_embree();

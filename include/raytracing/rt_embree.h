@@ -60,6 +60,8 @@ class embree : public raytracing
 
 		const glm::vec3 shading_normal(const che * mesh) const
 		{
+//			if(hit.primID == RTC_INVALID_GEOMETRY_ID) return normal();
+
 			vertex n = mesh->shading_normal(hit.primID, 1.0 - hit.u - hit.v, hit.u, hit.v);
 
 			return glm::normalize(glm::vec3(n.x, n.y, n.z));

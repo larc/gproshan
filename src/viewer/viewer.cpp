@@ -290,12 +290,6 @@ void viewer::init_glsl()
 	shader_pointcloud.load_fragment("../shaders/fragment_pointcloud.glsl");
 }
 
-void viewer::update_vbo()
-{
-	for(index_t i = 0; i < n_meshes; i++)
-		meshes[i].update();
-}
-
 void viewer::menu_process(int value)
 {
 	menu_process(processes[value].function);
@@ -354,7 +348,6 @@ void viewer::keyboard_callback(GLFWwindow * window, int key, int scancode, int a
 void viewer::menu_meshes(int value)
 {
 	current = value;
-	select_vertices.clear();
 	glfwSetWindowTitle(window, mesh()->filename().c_str());
 }
 
@@ -408,7 +401,7 @@ void viewer::menu_process(function_t pro)
 {
 	if(pro) pro(this);
 
-	update_vbo();
+	mesh().update_vbo();
 }
 
 void viewer::menu_help(viewer * view)
@@ -420,13 +413,12 @@ void viewer::menu_help(viewer * view)
 
 void viewer::menu_reset_mesh(viewer * view)
 {
-	view->select_vertices.clear();
+	view->mesh().selected.clear();
 	view->other_vertices.clear();
 	view->vectors.clear();
 
 	view->mesh().reload();
-
-	view->update_vbo();
+	view->mesh().update_vbo();
 }
 
 void viewer::menu_save_mesh(viewer * view)
@@ -479,7 +471,7 @@ void viewer::invert_orientation(viewer * view)
 {
 	view->mesh().invert_orientation();
 	view->mesh().update_normals();
-	view->update_vbo();
+	view->mesh().update_vbo();
 }
 
 void viewer::set_render_gl(viewer * view)
@@ -520,7 +512,7 @@ void viewer::set_render_normal_field(viewer * view)
 void viewer::set_render_border(viewer * view)
 {
 	view->render_border = !view->render_border;
-	if(!view->render_border) view->select_vertices.clear();
+	if(!view->render_border) view->mesh().selected.clear();
 }
 
 void viewer::set_render_lines(viewer * view)
@@ -681,12 +673,12 @@ void viewer::draw_meshes(shader & program)
 
 void viewer::draw_selected_vertices(shader & program)
 {
-	if(sphere_translations.size() != select_vertices.size())
+	if(sphere_translations.size() != mesh().selected.size())
 	{
-		sphere_translations.resize(select_vertices.size());
+		sphere_translations.resize(mesh().selected.size());
 
-		for(index_t i = 0; i < select_vertices.size(); i++)
-			sphere_translations[i] = mesh()->gt(select_vertices[i]);
+		for(index_t i = 0; i < mesh().selected.size(); i++)
+			sphere_translations[i] = mesh()->gt(mesh().selected[i]);
 
 		sphere.update_instances_translations(sphere_translations);
 	}
@@ -701,10 +693,10 @@ void viewer::draw_selected_vertices(shader & program)
 
 void viewer::select_border_vertices()
 {
-	select_vertices.clear();
+	mesh().selected.clear();
 	for(index_t b = 0; b < mesh()->n_borders(); b++)
 		for_border(he, mesh(), mesh()->bt(b))
-			select_vertices.push_back(mesh()->vt(he));
+			mesh().selected.push_back(mesh()->vt(he));
 }
 
 void viewer::pick_vertex(int x, int y)
