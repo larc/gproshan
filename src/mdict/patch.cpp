@@ -87,31 +87,19 @@ bool patch::add_vertex_by_faces(vector<vertex> & N, index_t * indexes, size_t nc
 	
 		a = mesh->vt(next(he)); //index of the next vertex index_t
 		b = mesh->vt(prev(he)); 
-		/*gproshan_debug_var(geo[b]);
-		gproshan_debug_var(geo[a]);
-		gproshan_debug_var(geo[v ]);
-*/
 		// If is an adjacent face
 		if( geo[a] < geo[v] || geo[b] < geo[v] )
 		{
 			if(geo[a] < geo[v])
 			{
 				i = find(indexes, nc,a);
-				//gproshan_debug_var(a);
-				//gproshan_debug_var(i); 
 			}
 			else
 			{
 				i = find(indexes, nc, b); 
-				//gproshan_debug_var(b);
-				//gproshan_debug_var(i);
+
 			}
 			tmp_angle = acos( (mesh->normal_he(he), N[i]) );
-		/*	gproshan_debug_var(tmp_angle);
-			gproshan_debug_var(angle);
-			gproshan_debug_var(thr_angle);
-			gproshan_debug_var(N[i]);*/
-			//gproshan_debug_var(mesh->normal_he(he));
 
 			if ( angle >  tmp_angle  && tmp_angle < thr_angle &&  acos( (mesh->normal_he(he), N[0]) ) < deviation ) // Fullfill conditions
 			{
@@ -123,10 +111,9 @@ bool patch::add_vertex_by_faces(vector<vertex> & N, index_t * indexes, size_t nc
 			}
 				
 		}
-		//gproshan_debug_var(N[i]);
 	
 	}
-	//gproshan_debug_var(min_he);
+
 	sum +=  acos( (min_he, N[i]) );
 
 	N.push_back(min_he);
@@ -134,14 +121,10 @@ bool patch::add_vertex_by_faces(vector<vertex> & N, index_t * indexes, size_t nc
 }
 
 
-void patch::init_radial_disjoint(che * mesh, const distance_t & radio_, const index_t & v, distance_t & euc_radio)
+void patch::init_radial_disjoint(che * mesh, const distance_t & radio_, const index_t & v, distance_t & euc_radio, double delta, double sum_thres)
 {
 
-	//radio = radio_;
 	radio = -INFINITY;
-	//che_sphere my_sphere(1,12);
-	//string sphere_file = tmp_file_path("sphere");
-	//che_off::write_file(&my_sphere, sphere_file);
 
 	normal_fit_directions(mesh, v);
 
@@ -160,10 +143,6 @@ void patch::init_radial_disjoint(che * mesh, const distance_t & radio_, const in
 	N.push_back(n);
 	//double angle;
 	double sum_angle = 0;
-	double delta = 0;
-
-	//vertex prev_n, curr_n;
-	//gproshan_debug_var(geo.n_sorted_index());
 
 	for(index_t i=1; i<geo.n_sorted_index(); i++)
 	{
@@ -173,25 +152,14 @@ void patch::init_radial_disjoint(che * mesh, const distance_t & radio_, const in
 
 		p = p - c ;
 		p = p - ((p,n)*n);
-		//if(*p <= radio )
-		//gproshan_debug_var(indexes[i]);
-	//	sum_angle = acos( (n, mesh->normal(indexes[i]) ) );
-		//angle = acos( (n, mesh->normal(indexes[i]) ) ) ;
-		
-		//prev_n = curr_n;
-		//curr_n = normal_trim(geo, mesh, indexes[i]);
-		//gproshan_debug_var(acos( (prev_n, curr_n) ));
+
+
 		//if( angle < PI/2.5 && (sum_angle) <= delta * PI)
-		//penalize gowing, I want them to grow only if they do not vary so much
-		//if( angle < PI/2.5 && acos( (mesh->normal(indexes[i-1]), mesh->normal(indexes[i]) ) ) <= PI/8) // find borders
-	
+
 		// add one new candidate vertex //first regulates variation, // second regulates size of the patch
-		if( add_vertex_by_faces(N, indexes, geo.n_sorted_index(), PI/6, geo, mesh, indexes[i], sum_angle, PI/2.5 ) && sum_angle < PI  )
-		// pi is too much
-		//if( angle < PI/2.5 && acos( (prev_n, curr_n) ) <= PI/7) // find borders
+		if( add_vertex_by_faces(N, indexes, geo.n_sorted_index(), delta, geo, mesh, indexes[i], sum_angle, PI/2.5 ) && sum_angle < sum_thres  )
 		{
-			//gproshan_debug_var(vertices.size());
-			
+
 			if(*p > radio)
 			{
 				radio = *p;
@@ -200,13 +168,6 @@ void patch::init_radial_disjoint(che * mesh, const distance_t & radio_, const in
 			p = mesh->get_vertex(indexes[i]);
 			if(*(p - c) > euc_radio)
 				euc_radio = *(p - c);
-			//gproshan_debug_var(euc_radio);
-			//vertices.push_back(indexes[i]);
-			//gproshan_debug_var(geo[indexes[i]]);
-			//sum_angle += angle;
-		//	delta += 0.001	;
-			// sharp meshes 0.001
-			// smooth meshes 0.035 at max
 		}
 		else
 		{
@@ -240,14 +201,7 @@ void patch::init_radial_disjoint(che * mesh, const distance_t & radio_, const in
 
 	}
 
-	 
-	//gproshan_debug_var(sum_angle);
-/*	gproshan_debug_var(PI/2.5);
-	gproshan_debug_var(sum_angle);
-	gproshan_debug_var(PI/(delta+0.05)*(vertices.size()-1));*/
 	delete indexes;
-	//gproshan_debug_var(v);
-
 }
 
 

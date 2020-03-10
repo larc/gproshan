@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <numeric>
 #include <queue>
+#define PI 3.14159265
 
 
 // geometry processing and shape analysis framework
@@ -138,6 +139,8 @@ void inpainting::load_mask(const std::vector<index_t> * vertices, const index_t 
 
 void  inpainting::init_radial_patches()
 	{
+	double delta = PI/6;
+	double sum_thres = PI;
 	// ensure that M is large enough using the radio
 	gproshan_log(Init radial patches);
 	gproshan_log_var(M);
@@ -171,7 +174,7 @@ void  inpainting::init_radial_patches()
 		// mask at the end
 	//	if(!covered[sample(it)])
 		{
-			patches[s].init_radial_disjoint(mesh, phi_basis->get_radio(), sample(it), radio);
+			patches[s].init_radial_disjoint(mesh, phi_basis->get_radio(), sample(it), radio, delta, sum_thres);
 			for(auto i:patches[s].vertices)
 				if(!covered[i]) 
 				{
@@ -284,6 +287,14 @@ vector<index_t> inpainting::sort_indexes(const vector<distance_t> &v) {
 
 void  inpainting::init_radial_feature_patches()
 {
+	// saving sampling
+	double delta = PI/6;
+	double sum_thres = PI;
+	string f_sampl = tmp_file_path(mesh->name_size() +  '_' + to_string(delta)  +  '_' + to_string(sum_thres)  + ".rsampl");
+
+	gproshan_debug_var(f_sampl);
+	arma::uvec S;
+	//if(S.load(f_sampl))
 	// compute features will be seeds
 	vector<index_t> all_sorted_features;
 	vector<index_t> seeds;
@@ -334,17 +345,16 @@ void  inpainting::init_radial_feature_patches()
 				const vertex & v_patch = mesh->gt(all_sorted_features[i]);
 				const vertex & v_seed = mesh->gt(seeds[j]);
 
-				// 0.7 coverage parameter
+				// 0.5 coverage parameter
 				if( *(v_patch - v_seed) < 0.5* radios[j] ) // radio of each patch
 					found = true;
 				j++;
 			}
 			if(!found)
-			{	//it is a new patch 
-				// get_radious
+			{	
 				patch p;
 				// increasing a bit the radio
-				p.init_radial_disjoint(mesh, 1*max_radio, all_sorted_features[i], euc_radio);
+				p.init_radial_disjoint(mesh, 1*max_radio, all_sorted_features[i], euc_radio, delta, sum_thres);
 		
 				//gproshan_debug_var(p.vertices.size());
 				count_cov_patch = 0;
@@ -353,7 +363,6 @@ void  inpainting::init_radial_feature_patches()
 					for(index_t k = 0; k < p.vertices.size(); k++)
 					{
 						if(!covered[ p.vertices[k] ]) count_cov_patch++;
-						//covered[ p.vertices[k] ] = 1;
 					}
 
 					count_cov += count_cov_patch;
@@ -368,10 +377,6 @@ void  inpainting::init_radial_feature_patches()
 							covered[ p.vertices[k] ] = 1;
 					
 					}
-					
-				//	gproshan_debug_var(euc_radio);
-				//	gproshan_debug_var(indexes[i]);
-				//	gproshan_debug_var(p.vertices.size());
 				}
 		
 			}						
@@ -400,11 +405,7 @@ void  inpainting::init_radial_feature_patches()
 	for(index_t i = 0; i < seeds.size(); i++)
 		outlv(i) = seeds[i];
 
-	/*for(index_t i = 0; i < seeds.size(); i++)
-		outlv(i) = seeds[i];
-	*/
 	outlv.save(f_points);
-	//gproshan_debug_var(features.size());
 
 	//////////////////////////////////////////////////////////////////////////////////
 	load_mask();
