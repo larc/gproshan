@@ -292,10 +292,8 @@ void  inpainting::init_radial_feature_patches()
 	double sum_thres = PI;
 	string f_sampl = tmp_file_path(mesh->name_size() +  '_' + to_string(delta)  +  '_' + to_string(sum_thres)  + ".rsampl");
 
-	gproshan_debug_var(f_sampl);
-	arma::uvec S;
-	//if(S.load(f_sampl))
-	// compute features will be seeds
+	arma::mat S;
+
 	vector<index_t> all_sorted_features;
 	vector<index_t> seeds;
 	size_t featsize;
@@ -317,95 +315,123 @@ void  inpainting::init_radial_feature_patches()
 	//radio *= 1.1;
 	gproshan_debug_var(max_radio);
 
-	patches_map.resize(mesh->n_vertices());
-
-	//Coverage of the points 
-	bool covered[mesh->n_vertices()];
-
-	#pragma omp for 
-	for(index_t i = 0; i < mesh->n_vertices(); i++)
+	if(!S.load(f_sampl))
 	{
-		covered[i] = 0;
-	}
-	distance_t euc_radio;
-	vector<distance_t> radios;
-	size_t count_cov = 0;
-	size_t count_cov_patch = 0;
-	distance_t over_factor = 2;
-
-	for(size_t i = 0; i < all_sorted_features.size(); i++)
-	{
-			bool found = false;
-			size_t j = 0;
-
-			//select the next one
-			while(j < seeds.size() && !found )
-			{
-				//calculate distance between the actual patch p seed i and other features
-				const vertex & v_patch = mesh->gt(all_sorted_features[i]);
-				const vertex & v_seed = mesh->gt(seeds[j]);
-
-				// 0.5 coverage parameter
-				if( *(v_patch - v_seed) < 0.5* radios[j] ) // radio of each patch
-					found = true;
-				j++;
-			}
-			if(!found)
-			{	
-				patch p;
-				// increasing a bit the radio
-				p.init_radial_disjoint(mesh, 1*max_radio, all_sorted_features[i], euc_radio, delta, sum_thres);
 		
-				//gproshan_debug_var(p.vertices.size());
-				count_cov_patch = 0;
-				if(p.vertices.size() >= 7 )
-				{
-					for(index_t k = 0; k < p.vertices.size(); k++)
-					{
-						if(!covered[ p.vertices[k] ]) count_cov_patch++;
-					}
+		// compute features will be seeds
 
-					count_cov += count_cov_patch;
-					if(count_cov_patch > 0)
-					{
-						patches.push_back(p);
-						seeds.push_back(all_sorted_features[i]);
-						radios.push_back( euc_radio );
-						count+=p.vertices.size();
+		patches_map.resize(mesh->n_vertices());
 
-						for(index_t k = 0; k < p.vertices.size(); k++)
-							covered[ p.vertices[k] ] = 1;
-					
-					}
-				}
-		
-			}						
-	}
-	
-	vector<index_t> outliers;
-	gproshan_debug_var(count);
-	gproshan_debug_var(count_cov);
-	gproshan_debug_var(seeds.size());
-	M = seeds.size();
+		//Coverage of the points 
+		bool covered[mesh->n_vertices()];
 
-///////////////////////////////////////
-	
-	gproshan_debug_var(M);
-	
-	for(index_t i = 0; i < mesh->n_vertices(); i++)
-	{
-		if(!covered[i] )
+		#pragma omp for 
+		for(index_t i = 0; i < mesh->n_vertices(); i++)
 		{
-			outliers.push_back(i);
-			//gproshan_debug_var(geo[indexes[i]] );
+			covered[i] = 0;
 		}
-	}
-	a_vec outlv(seeds.size());
-	gproshan_debug_var(outliers.size());
-	for(index_t i = 0; i < seeds.size(); i++)
-		outlv(i) = seeds[i];
+		distance_t euc_radio;
+		vector<distance_t> radios;
+		size_t count_cov = 0;
+		size_t count_cov_patch = 0;
+		distance_t over_factor = 2;
 
-	outlv.save(f_points);
+		for(size_t i = 0; i < all_sorted_features.size(); i++)
+		{
+				bool found = false;
+				size_t j = 0;
+
+				//select the next one
+				while(j < seeds.size() && !found )
+				{
+					//calculate distance between the actual patch p seed i and other features
+					const vertex & v_patch = mesh->gt(all_sorted_features[i]);
+					const vertex & v_seed = mesh->gt(seeds[j]);
+
+					// 0.5 coverage parameter
+					if( *(v_patch - v_seed) < 0.5* radios[j] ) // radio of each patch
+						found = true;
+					j++;
+				}
+				if(!found)
+				{	
+					patch p;
+					// increasing a bit the radio
+					p.init_radial_disjoint(mesh, 1*max_radio, all_sorted_features[i], euc_radio, delta, sum_thres);
+			
+					//gproshan_debug_var(p.vertices.size());
+					count_cov_patch = 0;
+					if(p.vertices.size() >= 7 )
+					{
+						for(index_t k = 0; k < p.vertices.size(); k++)
+						{
+							if(!covered[ p.vertices[k] ]) count_cov_patch++;
+						}
+
+						count_cov += count_cov_patch;
+						if(count_cov_patch > 0)
+						{
+							patches.push_back(p);
+							seeds.push_back(all_sorted_features[i]);
+							radios.push_back( euc_radio );
+							count+=p.vertices.size();
+
+							for(index_t k = 0; k < p.vertices.size(); k++)
+								covered[ p.vertices[k] ] = 1;
+						
+						}
+					}
+			
+				}						
+		}
+		
+		vector<index_t> outliers;
+		gproshan_debug_var(count);
+		gproshan_debug_var(count_cov);
+		gproshan_debug_var(seeds.size());
+		M = seeds.size();
+
+	///////////////////////////////////////
+		
+		gproshan_debug_var(M);
+		
+		for(index_t i = 0; i < mesh->n_vertices(); i++)
+		{
+			if(!covered[i] )
+			{
+				outliers.push_back(i);
+				//gproshan_debug_var(geo[indexes[i]] );
+			}
+		}
+		a_vec outlv(seeds.size());
+		gproshan_debug_var(outliers.size());
+		for(index_t i = 0; i < seeds.size(); i++)
+			outlv(i) = seeds[i];
+
+		outlv.save(f_points);
+		S.resize(seeds.size(),2);
+		for(index_t i = 0; i < seeds.size(); i++)
+		{
+			S(i,0) = seeds[i];
+			S(i,1) = radios[i];
+		}
+		S.save(f_sampl);
+	}
+	else
+	{
+		size_t n_seeds = S.n_rows;
+		for(index_t i = 0; i < n_seeds; i++)
+		{
+			patch p;
+			p.init_radial_disjoint(mesh, max_radio, S(i,0), S(i,1), delta, sum_thres);
+			patches.push_back(p);
+		}
+		M = n_seeds;
+		gproshan_debug_var(n_seeds);
+
+
+	}
+	
 
 	//////////////////////////////////////////////////////////////////////////////////
 	load_mask();
