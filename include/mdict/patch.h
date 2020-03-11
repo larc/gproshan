@@ -64,8 +64,12 @@ class patch
 					const distance_t & radio_,
 					const index_t & v,
 					distance_t & euc_radio,
-					double delta,
+					distance_t & geo_radio,
+					double delta,		
 					double sum_thres);
+		void recover_radial_disjoint(che * mesh,
+					const distance_t & radio_,
+					const index_t & v);
 
 		void update_radial_disjoint(che * mesh,
 					const index_t & v,

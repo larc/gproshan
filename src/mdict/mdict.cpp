@@ -293,6 +293,7 @@ void KSVD(a_mat & A, const vector<patch> & patches, const size_t & L, size_t k)
 		#pragma omp parallel for private(omega, a, aj, D, e, sum, sum_error)
 		for(index_t j = 0; j < A.n_cols; j++)
 		{
+			//Taking all alphas that uses atom j
 			arma::uvec omega = find(abs(alpha.row(j)) > 0);
 
 			sum.zeros(K, K);
@@ -303,8 +304,8 @@ void KSVD(a_mat & A, const vector<patch> & patches, const size_t & L, size_t k)
 				a = alpha.col(i);
 				a(j) = 0;
 
-				D = patches[i].phi * A;
-				e = patches[i].xyz.row(2).t() - D * a;
+				D = patches[i].phi * A; // fetch the discrete dictionary for the patch i
+				e = patches[i].xyz.row(2).t() - D * a; // getting the rec error for the patch i 
 				aj = as_scalar(e.t() * D.col(j) / (D.col(j).t() * D.col(j)));
 
 				sum += aj * aj * patches[i].phi.t() * patches[i].phi;

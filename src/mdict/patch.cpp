@@ -120,8 +120,50 @@ bool patch::add_vertex_by_faces(vector<vertex> & N, index_t * indexes, size_t nc
 	return added;
 }
 
+void patch::recover_radial_disjoint(che * mesh, const distance_t & radio_, const index_t & v)
+{
+	geodesics geo(mesh, {v}, geodesics::FM,  NULL, false, 0, radio_ );
+	index_t * indexes = new index_t[geo.n_sorted_index()];
+	geo.copy_sorted_index(indexes, geo.n_sorted_index());
 
-void patch::init_radial_disjoint(che * mesh, const distance_t & radio_, const index_t & v, distance_t & euc_radio, double delta, double sum_thres)
+	vertices.push_back(v);
+
+	for(index_t i=1; i<geo.n_sorted_index(); i++)
+	{
+		vertices.push_back(indexes[i]);
+	}
+
+	size_t d_fitting = 2;
+	vertex p, c, n;
+	size_t min_points = (d_fitting + 1) * (d_fitting + 2) / 2;
+	if(vertices.size() > min_points)
+	{
+		jet_fit_directions(mesh, v);
+		n.x  = T(0, 2); n.y  = T(1, 2); n.z  = T(2, 2);
+		radio = -INFINITY;
+
+		for(index_t i=1; i < vertices.size(); i++)
+		{
+			p = mesh->get_vertex(indexes[i]); 
+			c = mesh->get_vertex(v); // central vertices
+
+			p = p - c ;
+			p = p - ((p,n)*n);
+
+			if(*p > radio)
+			{
+				radio = *p;
+			}
+		}
+	}
+	else
+	{
+		gproshan_debug_var(vertices.size());
+	}
+
+}
+
+void patch::init_radial_disjoint(che * mesh, const distance_t & radio_, const index_t & v, distance_t & euc_radio, distance_t & geo_radio, double delta, double sum_thres)
 {
 
 	radio = -INFINITY;
@@ -175,6 +217,7 @@ void patch::init_radial_disjoint(che * mesh, const distance_t & radio_, const in
 		}
 	//	gproshan_debug_var(acos( (mesh->normal(indexes[i-1]), mesh->normal(indexes[i]) ) ));
 	}
+	
 	// Refit the points and update the radius
 	size_t d_fitting = 2;
 	size_t min_points = (d_fitting + 1) * (d_fitting + 2) / 2;
@@ -200,6 +243,7 @@ void patch::init_radial_disjoint(che * mesh, const distance_t & radio_, const in
 		}
 
 	}
+	geo_radio = geo[indexes [vertices.size()-1]];
 
 	delete indexes;
 }
