@@ -181,7 +181,6 @@ class viewer
 		static void scroll_callback(GLFWwindow * window, double xoffset, double yoffset);
 
 		// menu functions
-		void menu_meshes(int value);
 		void menu_process(int value);
 		void menu_process(function_t pro);
 

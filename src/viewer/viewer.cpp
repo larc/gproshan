@@ -138,7 +138,11 @@ bool viewer::run()
 			{
 				for(index_t i = 0; i < n_meshes; i++)
 					if(ImGui::MenuItem((to_string(i) + ". " + meshes[i]->name()).c_str()))
+					{
 						current = i;	
+						sphere_translations.clear();
+						glfwSetWindowTitle(window, mesh()->filename().c_str());
+					}
 
 				ImGui::EndMenu();
 			}
@@ -310,8 +314,9 @@ void viewer::add_mesh(const vector<che *> & _meshes)
 	for(che * _mesh: _meshes)
 	{
 		assert(n_meshes < N_MESHES);
-		meshes[n_meshes++].init(_mesh);
-		meshes[n_meshes - 1].log_info();
+		meshes[n_meshes].init(_mesh);
+		meshes[n_meshes].log_info();
+		n_meshes++;
 	}
 	
 	if(!n_meshes) return;
@@ -343,12 +348,6 @@ void viewer::keyboard_callback(GLFWwindow * window, int key, int scancode, int a
 	viewer * view = (viewer *) glfwGetWindowUserPointer(window);
 	view->menu_process(view->processes[key].function);
 	glClearColor(view->bgc, view->bgc, view->bgc, 1.);
-}
-
-void viewer::menu_meshes(int value)
-{
-	current = value;
-	glfwSetWindowTitle(window, mesh()->filename().c_str());
 }
 
 void viewer::mouse_callback(GLFWwindow* window, int button, int action, int mods)
