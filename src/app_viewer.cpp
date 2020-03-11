@@ -284,6 +284,8 @@ void app_viewer::process_functional_maps(viewer * p_view)
 		#pragma omp parallel for
 		for(index_t v = 0; v < mesh->n_vertices(); v++)
 			view->mesh().color(v) = eigvec(v, k);
+
+		view->mesh().update_vbo();
 	}
 	
 	view->current = 0;
