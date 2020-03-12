@@ -122,7 +122,7 @@ bool patch::add_vertex_by_faces(vector<vertex> & N, index_t * indexes, size_t nc
 
 void patch::recover_radial_disjoint(che * mesh, const distance_t & radio_, const index_t & v)
 {
-	geodesics geo(mesh, {v}, geodesics::FM,  NULL, false, 0, radio_ );
+	geodesics geo(mesh, {v}, geodesics::FM,  NULL, false, 0, radio_ + 2.e-5);
 	index_t * indexes = new index_t[geo.n_sorted_index()];
 	geo.copy_sorted_index(indexes, geo.n_sorted_index());
 

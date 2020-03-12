@@ -571,8 +571,8 @@ void app_viewer::process_mask(viewer * p_view)
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->mesh();
 
-	size_t avg_p = 20; 
-	size_t percentage;
+	size_t avg_p = 36; 
+	size_t percentage = 0;
 
 	size_t n=12; // dct
 	size_t m = 144, M = 0;
@@ -582,7 +582,7 @@ void app_viewer::process_mask(viewer * p_view)
 
 	gproshan_input(avg_p percentage f );
 	//cin >> avg_p >> percentage >> f;
-	cin>> avg_p >> percentage;
+	//cin>> avg_p >> percentage;
 	basis * phi = new basis_dct(n);
 	inpainting dict(mesh, phi, m, M, f, learn, avg_p, percentage);
 
