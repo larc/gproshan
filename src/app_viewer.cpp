@@ -695,9 +695,10 @@ void app_viewer::process_voronoi(viewer * p_view)
 
 void app_viewer::process_farthest_point_sampling_radio(viewer * p_view)
 {
+	
 	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
-
+	che_viewer & mesh = view->mesh();
 	gproshan_input(radio);
 	distance_t radio; cin >> radio;
 
