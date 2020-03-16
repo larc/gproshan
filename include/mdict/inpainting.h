@@ -27,6 +27,7 @@ class inpainting : public dictionary
 		void load_mask();
 		void init_voronoi_patches();
 		void init_radial_feature_patches();
+		void load_sampling(bool save_all);
 		void point_cloud_reconstruction();
 		vector<index_t> sort_indexes(const vector<distance_t> &v);
 

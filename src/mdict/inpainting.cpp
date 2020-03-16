@@ -138,8 +138,7 @@ void inpainting::load_mask(const std::vector<index_t> * vertices, const index_t 
 	
 }
 
-
-void  inpainting::init_radial_feature_patches()
+void inpainting::load_sampling(bool save_all)
 {
 	// saving sampling
 	//double delta = PI/6;
@@ -290,9 +289,13 @@ void  inpainting::init_radial_feature_patches()
 
 
 	}
-	
+}
 
-	//////////////////////////////////////////////////////////////////////////////////
+void  inpainting::init_radial_feature_patches()
+{
+	
+	load_sampling(true);
+
 	load_mask();
 
 	//Initializing patches
@@ -504,7 +507,7 @@ distance_t inpainting::execute()
 
 void inpainting::point_cloud_reconstruction()
 {
-
+	
 }
 
 
