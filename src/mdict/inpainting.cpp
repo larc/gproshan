@@ -274,6 +274,8 @@ void inpainting::load_sampling(bool save_all)
 			S(i,1) = geo_radios[i];
 		}
 		S.save(f_sampl);
+
+		
 	}
 	else
 	{
@@ -294,7 +296,7 @@ void inpainting::load_sampling(bool save_all)
 void  inpainting::init_radial_feature_patches()
 {
 	
-	load_sampling(true);
+	load_sampling(false);
 
 	load_mask();
 
@@ -346,6 +348,31 @@ void  inpainting::init_radial_feature_patches()
 		p.phi.set_size(p.xyz.n_cols, phi_basis->get_dim());
 		phi_basis->discrete(p.phi, p.xyz);
 	} 
+
+	bool save_all = true;
+	if(save_all)
+	{
+		arma::mat AS;
+		AS.resize(M,11);
+		for(index_t i = 0; i < M; i++)
+		{
+			patch & p = patches[i];
+			AS(i,0) = p.vertices[0];
+			AS(i,1) = p.radio;
+			AS(i,2) = p.T(0,0);
+			AS(i,3) = p.T(1,0);
+			AS(i,4) = p.T(2,0);
+			AS(i,5) = p.T(0,1);
+			AS(i,6) = p.T(1,1);
+			AS(i,7) = p.T(2,1);
+			AS(i,8) = p.T(0,2);
+			AS(i,9) = p.T(1,2);
+			AS(i,10) = p.T(2,2);
+
+		}
+		string f_samplall = tmp_file_path(mesh->name_size() +  '_' + to_string(delta)  +  '_' + to_string(sum_thres)  + ".allsmp");
+		AS.save(f_samplall);
+	}
 	gproshan_log(radial patches are ready);
 
 }
