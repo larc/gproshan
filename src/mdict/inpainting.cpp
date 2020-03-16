@@ -12,8 +12,11 @@
 namespace gproshan::mdict {
 
 
-inpainting::inpainting(che *const & _mesh, basis *const & _phi_basis, const size_t & _m, const size_t & _M, const distance_t & _f, const bool & _learn, size_t _avg_p, size_t _perc, const bool & _plot): dictionary(_mesh, _phi_basis, _m, _M, _f, _learn, _plot)
+inpainting::inpainting(che *const & _mesh, basis *const & _phi_basis, const size_t & _m, const size_t & _M, const distance_t & _f,
+ const bool & _learn, size_t _avg_p, size_t _perc, double _delta, double _sum_thres, const bool & _plot): dictionary(_mesh, _phi_basis, _m, _M, _f, _learn, _plot)
 {
+	delta = _delta;
+	sum_thres = _sum_thres;
 	avg_p = _avg_p;	//size avg of number of vertices per patch
 	percent = _perc; // mask percentage
 	M = mesh->n_vertices()/avg_p;
@@ -139,8 +142,8 @@ void inpainting::load_mask(const std::vector<index_t> * vertices, const index_t 
 void  inpainting::init_radial_feature_patches()
 {
 	// saving sampling
-	double delta = PI/6;
-	double sum_thres = 0.0005; // best arma 0.0001 the worst with 0.001, now with 0.0005 lets see tomorrow
+	//double delta = PI/6;
+	//double sum_thres = 0.008; // best arma 0.0001 the worst with 0.001, now with 0.0005 lets see tomorrow
 	//double sum_thres = PI;
 	string f_sampl = tmp_file_path(mesh->name_size() +  '_' + to_string(delta)  +  '_' + to_string(sum_thres)  + ".rsampl");
 
@@ -189,7 +192,6 @@ void  inpainting::init_radial_feature_patches()
 		vector<distance_t> geo_radios;
 		size_t count_cov = 0;
 		size_t count_cov_patch = 0;
-		distance_t over_factor = 2;
 
 		for(size_t i = 0; i < all_sorted_features.size(); i++)
 		{
@@ -242,6 +244,7 @@ void  inpainting::init_radial_feature_patches()
 		}
 		
 		vector<index_t> outliers;
+		gproshan_debug_var(sum_thres);
 		gproshan_debug_var(count);
 		gproshan_debug_var(count_cov);
 		gproshan_debug_var(seeds.size());
@@ -455,7 +458,8 @@ distance_t inpainting::execute()
 	// sparse coding and reconstruction with all patches
 	TIC(d_time) sparse_coding(); TOC(d_time)
 	gproshan_debug_var(d_time);
-
+	string f_alpha = tmp_file_path(mesh->name_size() +  '_' + to_string(delta)  +  '_' + to_string(sum_thres)  + ".alpha");
+	save_alpha(f_alpha);
 
 	//patches_map.resize(n_vertices);
 	for(index_t  i = 0; i < n_vertices; i++)
@@ -496,6 +500,11 @@ distance_t inpainting::execute()
 
 	TIC(d_time) mesh_reconstruction([&pmask](const index_t & i) -> bool { return pmask[i]; }); TOC(d_time)
 	gproshan_debug_var(d_time);
+}
+
+void inpainting::point_cloud_reconstruction()
+{
+
 }
 
 

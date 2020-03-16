@@ -73,6 +73,7 @@ class dictionary
 
 		distance_t mesh_reconstruction(const fmask_t & mask = nullptr);
 		void update_alphas(a_mat & alpha, size_t threshold);
+		void save_alpha(string file);
 
 		index_t sample(const index_t & s);
 		

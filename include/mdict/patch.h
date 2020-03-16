@@ -71,13 +71,6 @@ class patch
 					const distance_t & radio_,
 					const index_t & v);
 
-		void update_radial_disjoint(che * mesh,
-					const index_t & v,
-					vector<index_t> & _vertices);
-		void init_curvature_growing(che * mesh,
-					const index_t & v,
-					a_mat & normals);
-
 		void transform();
 		
 		void itransform();

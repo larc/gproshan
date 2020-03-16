@@ -389,6 +389,10 @@ void dictionary::draw_patches(index_t i)
 	phi_basis->plot_patch(A*alpha.col(i),patches[i].xyz, i);
 }
 
+void dictionary::save_alpha(string file)
+{
+	alpha.save(file);
+}
 
 } // namespace gproshan::mdict
 

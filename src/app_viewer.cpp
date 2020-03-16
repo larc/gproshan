@@ -1,6 +1,7 @@
 #include "app_viewer.h"
 
 #include <random>
+#define PI 3.14159265
 
 using namespace std;
 using namespace gproshan::mdict;
@@ -550,14 +551,16 @@ void app_viewer::process_inpaiting(viewer * p_view)
 	size_t m, M;
 	distance_t f;
 	bool learn;
-	size_t avg_p; 
-	size_t percentage;
+	size_t avg_p = 36; 
+	size_t percentage = 0;
+	double delta = PI/6;
+	double sum_thres;
 
-	gproshan_input(n m M f learn avg_p percentage);
-	cin >> n >> m >> M >> f >> learn >> avg_p >> percentage;
+	gproshan_input(n m M f learn sum_thres);
+	cin >> n >> m >> M >> f >> learn >> sum_thres;
 
 	basis * phi = new basis_dct(n);
-	inpainting dict(mesh, phi, m, M, f, learn, avg_p, percentage);
+	inpainting dict(mesh, phi, m, M, f, learn, avg_p,  percentage, delta, sum_thres);
 	dict.execute();
 	delete phi;
 	mesh.update_colors(&dict[0]);
@@ -571,21 +574,21 @@ void app_viewer::process_mask(viewer * p_view)
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->mesh();
 
-	size_t avg_p = 36; 
-	size_t percentage = 0;
-
-	size_t n=12; // dct
+		size_t n = 12; // dct
 	size_t m = 144, M = 0;
 	distance_t f = 1;
 	bool learn = 0;
+	size_t avg_p = 36; 
+	size_t percentage = 0;
+	double delta = PI/6;
+	double sum_thres;
 
+	gproshan_input(sum_thres );
+	cin >> sum_thres;
 
-	gproshan_input(avg_p percentage f );
-	//cin >> avg_p >> percentage >> f;
-	//cin>> avg_p >> percentage;
 	basis * phi = new basis_dct(n);
-	inpainting dict(mesh, phi, m, M, f, learn, avg_p, percentage);
-
+	inpainting dict(mesh, phi, m, M, f, learn, avg_p,  percentage, delta, sum_thres);
+	
 	dict.init_radial_feature_patches();
 	//dict.init_voronoi_patches();
 	delete phi;
@@ -694,7 +697,6 @@ void app_viewer::process_farthest_point_sampling_radio(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
-	che_viewer & mesh = view->mesh();
 
 	gproshan_input(radio);
 	distance_t radio; cin >> radio;

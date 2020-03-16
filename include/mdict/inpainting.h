@@ -8,7 +8,7 @@
 #include "geodesics.h"
 #include "geodesics_ptp.h"
 #include <random>
-
+#define PI 3.14159265
 
 // geometry processing and shape analysis framework
 // mesh dictionary learning and sparse coding namespace
@@ -18,7 +18,8 @@ namespace gproshan::mdict {
 class inpainting : public dictionary
 {
 	public:
-		inpainting(che *const & _mesh, basis *const & _phi_basis, const size_t & _m, const size_t & _M, const distance_t & _f, const bool & _learn, size_t _avg_p = 36, size_t _perc = 50, const bool & _plot = false);
+		inpainting(che *const & _mesh, basis *const & _phi_basis, const size_t & _m, const size_t & _M,
+		 const distance_t & _f, const bool & _learn, size_t _avg_p = 36, size_t _perc = 50,  double _delta=PI/6, double _sum_thres = 0.001 , const bool & _plot = false);
 		virtual ~inpainting() = default;
 
 		distance_t execute();
@@ -26,6 +27,7 @@ class inpainting : public dictionary
 		void load_mask();
 		void init_voronoi_patches();
 		void init_radial_feature_patches();
+		void point_cloud_reconstruction();
 		vector<index_t> sort_indexes(const vector<distance_t> &v);
 
 		
@@ -33,6 +35,8 @@ class inpainting : public dictionary
 	private:
 		size_t avg_p;
 		size_t percent;
+		double delta;
+		double sum_thres;
 		bool * mask;
 	
 };
