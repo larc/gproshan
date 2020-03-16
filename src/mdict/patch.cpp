@@ -78,6 +78,7 @@ bool patch::add_vertex_by_faces(vector<vertex> & N, index_t * indexes, size_t nc
 
 	index_t a, b, i = 0;
 	vertex min_he;
+	double area_face = 0;
 	double angle = PI;
 	double tmp_angle;
 	bool added = false;
@@ -104,7 +105,8 @@ bool patch::add_vertex_by_faces(vector<vertex> & N, index_t * indexes, size_t nc
 			if ( angle >  tmp_angle  && tmp_angle < thr_angle &&  acos( (mesh->normal_he(he), N[0]) ) < deviation ) // Fullfill conditions
 			{
 				angle = tmp_angle;
-				
+				//gproshan_debug_var(he);
+				area_face = mesh->area_trig(he/3); 
 				min_he = mesh->normal_he(he); 
 				if( !exists(v) ) vertices.push_back(v);
 				added = true;
@@ -114,7 +116,8 @@ bool patch::add_vertex_by_faces(vector<vertex> & N, index_t * indexes, size_t nc
 	
 	}
 
-	sum +=  acos( (min_he, N[i]) );
+	sum += area_face;
+	//sum +=  acos( (min_he, N[i]) );
 
 	N.push_back(min_he);
 	return added;
@@ -185,6 +188,7 @@ void patch::init_radial_disjoint(che * mesh, const distance_t & radio_, const in
 	N.push_back(n);
 	//double angle;
 	double sum_angle = 0;
+	double area_mesh = mesh->area_surface();
 
 	for(index_t i=1; i<geo.n_sorted_index(); i++)
 	{
@@ -199,7 +203,10 @@ void patch::init_radial_disjoint(che * mesh, const distance_t & radio_, const in
 		//if( angle < PI/2.5 && (sum_angle) <= delta * PI)
 
 		// add one new candidate vertex //first regulates variation, // second regulates size of the patch
-		if( add_vertex_by_faces(N, indexes, geo.n_sorted_index(), delta, geo, mesh, indexes[i], sum_angle, PI/2.5 ) && sum_angle < sum_thres  )
+
+		//gproshan_debug_var(sum_angle/area_mesh);
+	
+		if( add_vertex_by_faces(N, indexes, geo.n_sorted_index(), delta, geo, mesh, indexes[i], sum_angle, PI/2.5 ) && sum_angle/area_mesh < sum_thres  )
 		{
 
 			if(*p > radio)
