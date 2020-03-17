@@ -53,15 +53,13 @@ class embree : public raytracing
 			return {ray.dir_x, ray.dir_y, ray.dir_z};
 		}
 		
-		const glm::vec3 normal() const
+		const glm::vec3 geometry_normal() const
 		{
 			return glm::normalize(glm::vec3(hit.Ng_x, hit.Ng_y, hit.Ng_z));
 		}
 
 		const glm::vec3 shading_normal(const che * mesh) const
 		{
-//			if(hit.primID == RTC_INVALID_GEOMETRY_ID) return normal();
-
 			vertex n = mesh->shading_normal(hit.primID, 1.0 - hit.u - hit.v, hit.u, hit.v);
 
 			return glm::normalize(glm::vec3(n.x, n.y, n.z));
@@ -86,7 +84,7 @@ class embree : public raytracing
 		bool intersect(ray_hit & r);
 		bool occluded(ray_hit & r);
 
-		glm::vec4 intersect_li(const glm::vec3 & org, const glm::vec3 & dir, const glm::vec3 & light);
+		glm::vec4 intersect_li(const glm::vec3 & org, const glm::vec3 & dir, const glm::vec3 & light, const bool & flat);
 		float intersect_depth(const glm::vec3 & org, const glm::vec3 & dir);
 		
 		void build_bvh(const std::vector<che *> & meshes);
@@ -94,7 +92,7 @@ class embree : public raytracing
 		index_t add_mesh(const che * mesh);
 		index_t add_point_cloud(const che * mesh);
 
-		glm::vec4 li(const ray_hit & r, const glm::vec3 & light);
+		glm::vec4 li(const ray_hit & r, const glm::vec3 & light, const bool & flat);
 };
 
 

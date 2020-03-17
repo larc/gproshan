@@ -129,7 +129,7 @@ index_t embree::add_point_cloud(const che * mesh)
 	return geom_id;
 }
 
-glm::vec4 embree::li(const ray_hit & r, const glm::vec3 & light)
+glm::vec4 embree::li(const ray_hit & r, const glm::vec3 & light, const bool & flat)
 {
 	glm::vec3 color(.6f, .8f, 1.f);
 	
@@ -138,8 +138,9 @@ glm::vec4 embree::li(const ray_hit & r, const glm::vec3 & light)
 	
 	glm::vec3 wi = normalize(light - r.position());
 	
-	//float dot_wi_normal = glm::dot(wi, r.normal());
-	float dot_wi_normal = glm::dot(wi, r.shading_normal(geomID_mesh[r.hit.geomID]));
+	float dot_wi_normal = flat ? glm::dot(wi, r.geometry_normal())
+								: glm::dot(wi, r.shading_normal(geomID_mesh[r.hit.geomID]));
+
 	if(dot_wi_normal < 0)
 		dot_wi_normal = -dot_wi_normal;
 
@@ -164,10 +165,10 @@ bool embree::occluded(ray_hit & r)
 }
 
 
-glm::vec4 embree::intersect_li(const glm::vec3 & org, const glm::vec3 & dir, const glm::vec3 & light)
+glm::vec4 embree::intersect_li(const glm::vec3 & org, const glm::vec3 & dir, const glm::vec3 & light,const bool & flat)
 {
 	ray_hit r(org, dir);
-	return intersect(r) ? li(r, light) : glm::vec4(0.f);
+	return intersect(r) ? li(r, light, flat) : glm::vec4(0.f);
 }
 
 float embree::intersect_depth(const glm::vec3 & org, const glm::vec3 & dir)

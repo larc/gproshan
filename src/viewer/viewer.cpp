@@ -169,8 +169,8 @@ bool viewer::run()
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
 		glfwSwapBuffers(window);
-		glfwPollEvents();
-		//glfwWaitEvents();
+		glfwWaitEvents();
+		//glfwPollEvents();
 	}
 
 	return true;
@@ -522,6 +522,7 @@ void viewer::set_render_lines(viewer * view)
 void viewer::set_render_flat(viewer * view)
 {
 	view->render_flat = !view->render_flat;
+	view->action = true;
 }
 
 void viewer::raycasting(viewer * view)
@@ -615,7 +616,8 @@ void viewer::render_embree()
 	}
 
 	rt_embree->pathtracing(	glm::uvec2(viewport_width, viewport_height),
-							view_mat, proj_mat, {glm::vec3(light[1], light[2], light[3])}, action);
+							view_mat, proj_mat, {glm::vec3(light[1], light[2], light[3])}, 
+							render_flat, action );
 	
 	action = false;
 
