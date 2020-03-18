@@ -16,6 +16,7 @@
 #include <CGAL/Monge_via_jet_fitting.h>
 #define PI 3.14159265
 #include <queue>
+#include <random>
 
 // geometry processing and shape analysis framework
 // mesh dictionary learning and sparse coding namespace
@@ -122,10 +123,36 @@ bool patch::add_vertex_by_faces(vector<vertex> & N, index_t * indexes, size_t nc
 	N.push_back(min_he);
 	return added;
 }
+void patch::init_random(vertex c, arma::mat T, distance_t radio)
+{
+	this->T = T;
+	x.resize(3);
+	x(0) = c.x;
+	x(1) = c.y;
+	x(2) = c.z;
+	this->radio = radio;
+	
 
+	std::random_device rd;  //Will be used to obtain a seed for the random number engine
+    std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
+    std::uniform_real_distribution<> dis(0, 1);
+
+	double a = dis(gen) * 2 * PI;
+	double r = radio * sqrt(dis(gen));
+
+	// If you need it in Cartesian coordinates
+	double x = r * cos(a);
+	double y = r * sin(a);
+	gproshan_debug_var(radio);
+	//gproshan_debug_var(x);
+	//gproshan_debug_var(y);
+
+}
 void patch::recover_radial_disjoint(che * mesh, const distance_t & radio_, const index_t & v)
 {
-	geodesics geo(mesh, {v}, geodesics::FM,  NULL, false, 0, radio_ + 2.e-5);
+	// for small meshes 6000 0.e-5
+	// for others 2.e-5
+	geodesics geo(mesh, {v}, geodesics::FM,  NULL, false, 0, radio_ + 1.e-5);
 	index_t * indexes = new index_t[geo.n_sorted_index()];
 	geo.copy_sorted_index(indexes, geo.n_sorted_index());
 

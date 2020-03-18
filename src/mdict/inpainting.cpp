@@ -353,24 +353,27 @@ void  inpainting::init_radial_feature_patches()
 	if(save_all)
 	{
 		arma::mat AS;
-		AS.resize(M,11);
+		AS.resize(M,13);
 		for(index_t i = 0; i < M; i++)
 		{
 			patch & p = patches[i];
-			AS(i,0) = p.vertices[0];
-			AS(i,1) = p.radio;
-			AS(i,2) = p.T(0,0);
-			AS(i,3) = p.T(1,0);
-			AS(i,4) = p.T(2,0);
-			AS(i,5) = p.T(0,1);
-			AS(i,6) = p.T(1,1);
-			AS(i,7) = p.T(2,1);
-			AS(i,8) = p.T(0,2);
-			AS(i,9) = p.T(1,2);
-			AS(i,10) = p.T(2,2);
+			
+			AS(i,0) = p.x(0);
+			AS(i,1) = p.x(1);
+			AS(i,2) = p.x(2);
+			AS(i,3) = p.radio;
+			AS(i,4) = p.T(0,0);
+			AS(i,5) = p.T(1,0);
+			AS(i,6) = p.T(2,0);
+			AS(i,7) = p.T(0,1);
+			AS(i,8) = p.T(1,1);
+			AS(i,9) = p.T(2,1);
+			AS(i,10) = p.T(0,2);
+			AS(i,11) = p.T(1,2);
+			AS(i,12) = p.T(2,2);
 
 		}
-		string f_samplall = tmp_file_path(mesh->name_size() +  '_' + to_string(delta)  +  '_' + to_string(sum_thres)  + ".allsmp");
+		string f_samplall = tmp_file_path(mesh->name_size() +  '_' + to_string(delta)  +  '_' + to_string(sum_thres)  + ".smp");
 		AS.save(f_samplall);
 	}
 	gproshan_log(radial patches are ready);
@@ -534,32 +537,49 @@ distance_t inpainting::execute()
 
 void inpainting::point_cloud_reconstruction()
 {
-	arma::mat AS;
+	arma::mat S;
+	arma::mat T(3,3);
+	arma::mat alpha;
 
-	string f_samplall = tmp_file_path(mesh->name_size() +  '_' + to_string(delta)  +  '_' + to_string(sum_thres)  + ".allsmp");
-	AS.load(f_samplall);
+
+	string f_smp = tmp_file_path(mesh->name_size() +  '_' + to_string(delta)  +  '_' + to_string(sum_thres)  + ".smp");
+	string f_alpha = tmp_file_path(mesh->name_size() +  '_' + to_string(delta)  +  '_' + to_string(sum_thres)  + ".alpha");
+
+	S.load(f_smp);
+	alpha.load(f_alpha);
+	gproshan_debug_var(S.n_rows);
+	M = S.n_rows;
+	distance_t radio;
+	patches.resize(M);
+	vertex c;
+	for(index_t i = 0; i < M; i++)
+	{
+		c.x = S(i,0);
+		c.y = S(i,1);
+		c.z = S(i,2);
+		radio = S(i,3);
+		T(0,0) = S(i,4);
+		T(1,0) = S(i,5);
+		T(2,0) = S(i,6);
+		T(0,1) = S(i,7);
+		T(1,1) = S(i,8);
+		T(2,1) = S(i,9);
+		T(0,2) = S(i,10);
+		T(1,2) = S(i,11);
+		T(2,2) = S(i,12);
+
+		patches[i].init_random(c, T, radio);
+	}
+/*
+	a_vec x = rp.phi * A * alpha.col(p);
+			rp.xyz.row(2) = x.t();
+			rp.iscale_xyz(radio);
+			rp.itransform();
+*/
 	//create patches
 	// recover points
 	// save points
 	// show and put seeds on it 
-	/*
-	AS.resize(M,11);
-	for(index_t i = 0; i < M; i++)
-	{
-		patch & p = patches[i];
-		AS(i,0) = p.vertices[0];
-		AS(i,1) = p.radio;
-		AS(i,2) = p.T(0,0);
-		AS(i,3) = p.T(1,0);
-		AS(i,4) = p.T(2,0);
-		AS(i,5) = p.T(0,1);
-		AS(i,6) = p.T(1,1);
-		AS(i,7) = p.T(2,1);
-		AS(i,8) = p.T(0,2);
-		AS(i,9) = p.T(1,2);
-		AS(i,10) = p.T(2,2);
-
-	}*/
 
 }
 

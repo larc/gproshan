@@ -87,6 +87,7 @@ int app_viewer::main(int nargs, const char ** args)
 	add_process(GLFW_KEY_A, {"A", "MDICT Super Resolution", process_super_resolution});
 	add_process(GLFW_KEY_I, {"I", "MDICT Inpaiting", process_inpaiting});
 	add_process(GLFW_KEY_F13, {"F13", "MDICT Mask", process_mask});
+	add_process(GLFW_KEY_NUM_LOCK , {"Numlock", "PC reconstruction", process_pc_reconstruction});
 	add_process(GLFW_KEY_F14, {"F14", "MDICT Synthesis", process_synthesis});
 //	add_process('A', "IT Inpainting", process_iterative_inpaiting);
 
@@ -590,6 +591,40 @@ void app_viewer::process_mask(viewer * p_view)
 	inpainting dict(mesh, phi, m, M, f, learn, avg_p,  percentage, delta, sum_thres);
 	
 	dict.init_radial_feature_patches();
+	//dict.init_voronoi_patches();
+	delete phi;
+	mesh.update_colors(&dict[0]);
+	string f_points = tmp_file_path(mesh->name_size() + ".points");
+	a_vec points_out;
+	points_out.load(f_points);
+	for(int i = 0; i< points_out.size(); i++)
+		view->select_vertices.push_back(points_out(i));
+	
+	mesh.update_normals();
+}
+
+void app_viewer::process_pc_reconstruction(viewer * p_view)
+{
+	gproshan_log(APP_VIEWER);
+	app_viewer * view = (app_viewer *) p_view;
+	che_viewer & mesh = view->mesh();
+
+		size_t n = 12; // dct
+	size_t m = 144, M = 0;
+	distance_t f = 1;
+	bool learn = 0;
+	size_t avg_p = 36; 
+	size_t percentage = 0;
+	double delta = PI/6;
+	double sum_thres;
+
+	gproshan_input(sum_thres );
+	cin >> sum_thres;
+
+	basis * phi = new basis_dct(n);
+	inpainting dict(mesh, phi, m, M, f, learn, avg_p,  percentage, delta, sum_thres);
+	
+	dict.point_cloud_reconstruction();
 	//dict.init_voronoi_patches();
 	delete phi;
 	mesh.update_colors(&dict[0]);
