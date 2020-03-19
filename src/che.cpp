@@ -238,6 +238,29 @@ area_t che::area_surface() const
 	return area;
 }
 
+void che::update_normals()
+{
+	if(!VN) VN = new vertex[n_vertices_];
+	
+	#pragma omp parallel for
+	for(index_t v = 0; v < n_vertices_; v++)
+	{
+		vertex & n = VN[v];
+		
+		n = 0;
+		for_star(he, this, v)
+			n += area_trig(trig(he)) * normal_he(he);
+		
+		n /= *n;
+	}
+}
+
+const vertex & che::normal(const index_t & v) const
+{
+	assert(VN && v < n_vertices_);
+	return VN[v];
+}
+
 vertex che::shading_normal(const index_t & f, const float & u, const float & v, const float & w) const
 {
 	index_t he = f * che::P;
@@ -245,25 +268,14 @@ vertex che::shading_normal(const index_t & f, const float & u, const float & v, 
 	return {u * VN[VT[he]] + v * VN[VT[he + 1]] + w * VN[VT[he + 2]]};
 }
 
+vertex che::normal_trig(const index_t & f) const
+{
+	return normal_he(f * che::P);
+}
+
 vertex che::normal_he(const index_t & he) const
 {
 	vertex n = (GT[VT[next(he)]] - GT[VT[he]]) * (GT[VT[prev(he)]] - GT[VT[he]]);
-	return n / *n;
-}
-
-vertex che::normal(const index_t & v) const
-{
-	vertex n;
-	area_t area, area_star = 0;
-
-	for_star(he, this, v)
-	{
-		area = area_trig(trig(he));
-		area_star += area;
-		n += area * normal_he(he);
-	}
-
-	n /= area_star;
 	return n / *n;
 }
 
@@ -1404,13 +1416,14 @@ void che::update_bt()
 
 void che::delete_me()
 {
-	delete [] GT;
-	delete [] VT;
-	delete [] OT;
-	delete [] EVT;
-	delete [] ET;
-	delete [] EHT;
-	delete [] BT;
+	delete [] GT;	GT = nullptr;
+	delete [] VT;	VT = nullptr;
+	delete [] OT;	OT = nullptr;
+	delete [] EVT;	EVT = nullptr;
+	delete [] ET;	ET = nullptr;
+	delete [] EHT;	EHT = nullptr;
+	delete [] BT;	BT = nullptr;
+	delete [] VN;	VN = nullptr;
 }
 
 void che::read_file(const string & )

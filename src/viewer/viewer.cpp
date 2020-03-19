@@ -36,33 +36,6 @@ const int viewer::m_window_size[N_MESHES][2] = {{1, 1}, {1, 2}, {1, 3},
 
 viewer::viewer()
 {
-	window = nullptr;
-	
-	n_meshes = current = 0;
-
-	render_opt = 0;
-	render_frame = nullptr;
-
-	#ifdef GPROSHAN_EMBREE
-		rt_embree = nullptr;
-	#endif // GPROSHAN_EMBREE
-
-	#ifdef GPROSHAN_OPTIX
-		rt_optix = nullptr;
-	#endif // GPROSHAN_OPTIX
-
-	render_wireframe = false;
-	render_wireframe_fill = false;
-	render_gradient_field = false;
-	render_normal_field = false;
-	render_border = false;
-	render_lines = false;
-	render_flat = false;
-
-	bgc = 0;
-
-	action = false;
-
 	init_gl();
 	init_glsl();
 	init_imgui();
@@ -113,25 +86,33 @@ bool viewer::run()
 		light = r.conj() * light * r;
 		up = r.conj() * up * r;
 		
+
 		proj_mat = glm::perspective(45.f, float(viewport_width) / float(viewport_height), .01f, 1000.f);
 		view_mat = glm::lookAt(	glm::vec3(eye[1], eye[2], eye[3]), 
 								glm::vec3(center[1], center[2], center[3]), 
 								glm::vec3(up[1], up[2], up[3])
 								);
+		
+		double render_time = glfwGetTime();
 
 		// RENDER 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
 		switch(render_opt)
 		{
+			case 0: render_gl(); break;
 			case 1: render_embree(); break;
 			case 2: render_optix(); break;
-			default: render_gl();
 		}
+		
+		render_time = glfwGetTime() - render_time;
 		
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 		
+		ImGui::Text("Frame Time: %.2lfms", render_time * 1000.0);
+		ImGui::Text("Frame Rate: %.2lffps", 1.0 / render_time);
+
 		if(ImGui::BeginMainMenuBar())
 		{
 			if(ImGui::BeginMenu("Select"))
@@ -169,8 +150,7 @@ bool viewer::run()
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
 		glfwSwapBuffers(window);
-		glfwWaitEvents();
-		//glfwPollEvents();
+		glfwPollEvents();
 	}
 
 	return true;
@@ -294,11 +274,6 @@ void viewer::init_glsl()
 	shader_pointcloud.load_fragment("../shaders/fragment_pointcloud.glsl");
 }
 
-void viewer::menu_process(int value)
-{
-	menu_process(processes[value].function);
-}
-
 void viewer::add_process(const int & key, const process_t & process)
 {
 	if(processes.find(key) == processes.end())
@@ -398,7 +373,9 @@ void viewer::idle()
 
 void viewer::menu_process(function_t pro)
 {
-	if(pro) pro(this);
+	if(!pro) return;
+	
+	pro(this);
 
 	mesh().update_vbo();
 }
@@ -469,7 +446,7 @@ void viewer::menu_bgc_black(viewer * view)
 void viewer::invert_orientation(viewer * view)
 {
 	view->mesh().invert_orientation();
-	view->mesh().update_normals();
+	view->mesh()->update_normals();
 	view->mesh().update_vbo();
 }
 

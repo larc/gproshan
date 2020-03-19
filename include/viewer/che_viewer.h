@@ -26,15 +26,13 @@ typedef real_t color_t;
 class che_viewer
 {
 	protected:
-		che * mesh;
+		che * mesh = nullptr;
+		color_t * colors = nullptr;
 
-		size_t n_instances;
-		size_t n_vertices; // current number of vertices
-		bool invert_normals;
+		size_t n_instances = 0;
+		bool invert_normals = false;
+		bool normalize = false;
 		vertex v_translate;
-
-		vertex * normals;
-		color_t * colors;
 
 		GLuint vao;
 		GLuint vbo[5];
@@ -49,19 +47,16 @@ class che_viewer
 		virtual ~che_viewer();
 		che *& operator -> ();
 		operator che *& ();
-		void init(che * _mesh, const bool & normalize = true);
+		void init(che * mesh, const bool & normalize = true);
 		void reload();
 		void update();
 		void update_vbo();
-		void update_normals();
 		void update_colors(const color_t *const c = nullptr);
 		void update_instances_translations(const std::vector<vertex> & translations);
 		void draw(shader & program);
 		void draw_point_cloud(shader & program);
 
 		color_t & color(const index_t & v);
-		vertex & normal(const index_t & v);
-		vertex *& normals_ptr();
 		void translate(const vertex & p);
 		void invert_orientation();
 

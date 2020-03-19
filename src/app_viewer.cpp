@@ -218,7 +218,7 @@ void app_viewer::process_noise(viewer * p_view)
 		mesh->get_vertex(v) += (!d_mod_5(generator)) * r * mesh->normal(v);
 	}
 
-	mesh.update_normals();
+	mesh->update_normals();
 }
 
 void app_viewer::process_black_noise(viewer * p_view)
@@ -238,7 +238,7 @@ void app_viewer::process_black_noise(viewer * p_view)
 		mesh->get_vertex(v) += (!d_mod_5(generator)) * r * mesh->normal(v);
 	}
 
-	mesh.update_normals();
+	mesh->update_normals();
 }
 
 void app_viewer::process_threshold(viewer * p_view)
@@ -510,7 +510,7 @@ void app_viewer::process_denoising(viewer * p_view)
 	dict.execute();
 
 	delete phi;
-	mesh.update_normals();
+	mesh->update_normals();
 }
 
 void app_viewer::process_super_resolution(viewer * p_view)
@@ -532,7 +532,7 @@ void app_viewer::process_super_resolution(viewer * p_view)
 	dict.execute();
 
 	delete phi;
-	mesh.update_normals();
+	mesh->update_normals();
 }
 
 void app_viewer::process_inpaiting(viewer * p_view)
@@ -554,7 +554,7 @@ void app_viewer::process_inpaiting(viewer * p_view)
 	dict.execute();
 
 	delete phi;
-	mesh.update_normals();
+	mesh->update_normals();
 }
 
 
@@ -681,7 +681,7 @@ void app_viewer::process_fairing_spectral(viewer * p_view)
 	mesh->set_vertices(fair->get_postions());
 	delete fair;
 
-	mesh.update_normals();
+	mesh->update_normals();
 }
 
 void app_viewer::process_fairing_taubin(viewer * p_view)
@@ -699,7 +699,7 @@ void app_viewer::process_fairing_taubin(viewer * p_view)
 	mesh->set_vertices(fair->get_postions());
 	delete fair;
 
-	mesh.update_normals();
+	mesh->update_normals();
 }
 
 void app_viewer::process_geodesics_fm(viewer * p_view)
@@ -889,7 +889,7 @@ void app_viewer::process_edge_collapse(viewer * p_view)
 	index_t levels;
 	cin >> levels;
 
-	TIC(view->time) decimation sampling(mesh, mesh.normals_ptr(), levels); TOC(view->time)
+	TIC(view->time) decimation sampling(mesh, &mesh->normal(0), levels); TOC(view->time)
 	gproshan_debug_var(view->time);
 
 	if(view->n_meshes < 2)

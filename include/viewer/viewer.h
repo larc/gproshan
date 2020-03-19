@@ -89,7 +89,7 @@ class viewer
 		static const int m_window_size[N_MESHES][2];
 
 
-		GLFWwindow * window;
+		GLFWwindow * window = nullptr;
 		int viewport_width;
 		int viewport_height;
 
@@ -111,31 +111,31 @@ class viewer
 
 		che_viewer meshes[N_MESHES];
 		vcorr_t corr_mesh[N_MESHES];
-		size_t n_meshes;
-		index_t current; // current mesh
+		size_t n_meshes	= 0;
+		index_t current = 0; // current mesh
 
-		index_t render_opt;
-
-		frame * render_frame;
+		index_t render_opt = 0;
+		
+		frame * render_frame = nullptr;
 
 	#ifdef GPROSHAN_EMBREE
-		rt::embree * rt_embree;
+		rt::embree * rt_embree = nullptr;
 	#endif // GPROSHAN_EMBREE
 	
 	#ifdef GPROSHAN_OPTIX
-		rt::optix * rt_optix;
+		rt::optix * rt_optix = nullptr;
 	#endif // GPROSHAN_OPTIX
 
-		bool action;
+		bool action = false;
 
-		bool render_wireframe;
-		bool render_wireframe_fill;
-		bool render_gradient_field;
-		bool render_normal_field;
-		bool render_border;
-		bool render_lines;
-		bool render_flat;
-		float bgc;
+		bool render_wireframe = false;
+		bool render_wireframe_fill = false;
+		bool render_gradient_field = false;
+		bool render_normal_field = false;
+		bool render_border = false;
+		bool render_lines = false;
+		bool render_flat = false;
+		float bgc = 0;
 
 		std::map<int, process_t> processes;
 
@@ -181,7 +181,6 @@ class viewer
 		static void scroll_callback(GLFWwindow * window, double xoffset, double yoffset);
 
 		// menu functions
-		void menu_process(int value);
 		void menu_process(function_t pro);
 
 		static void menu_help(viewer * view);

@@ -45,11 +45,10 @@ class che
 		index_t * ET	= nullptr;	///< edge table				: e		-> he
 		index_t * EHT	= nullptr;	///< extra half edge table	: he	-> e
 		index_t * BT	= nullptr;	///< boundary table			: b 	-> v
+		
+		vertex * VN		= nullptr;	///< vertex normals			: v		-> normal(v)
 
 		bool manifold = true;
-
-	public:
-		vertex * VN		= nullptr;	///< vertex normals			: v		-> normal(v)
 
 	public:
 		che(const size_t & n_v = 0, const size_t & n_f = 0);
@@ -68,9 +67,11 @@ class che
 		area_t area_trig(const index_t & t) const;
 		area_t area_vertex(const index_t & v);
 		area_t area_surface() const;
+		void update_normals();
+		const vertex & normal(const index_t & v) const;
 		vertex shading_normal(const index_t & f, const float & u, const float & v, const float & w) const;
+		vertex normal_trig(const index_t & f) const;
 		vertex normal_he(const index_t & he) const;
-		vertex normal(const index_t & v) const;
 		vertex gradient_he(const index_t & he, const distance_t *const & f) const;
 		vertex gradient(const index_t & v, const distance_t *const & f);
 		vertex barycenter(const index_t & t) const;
