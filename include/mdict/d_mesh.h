@@ -99,7 +99,7 @@ struct patch_t
 
 a_vec gaussian(a_mat & xy, real_t sigma, real_t cx, real_t cy);
 
-a_vec cossine(a_mat & xy, distance_t radio, size_t K);
+a_vec cossine(a_mat & xy, real_t radio, size_t K);
 
 void phi_gaussian(a_mat & phi, a_mat & xy, void ** params);
 
@@ -113,15 +113,15 @@ void partial_mesh_reconstruction(size_t old_n_vertices, che * mesh, size_t M, st
 
 void mesh_reconstruction(che * mesh, size_t M, std::vector<patch> & patches, std::vector<vpatches_t> & patches_map, a_mat & A, a_mat & alpha, const index_t & v_i = 0);
 
-a_vec non_local_means_vertex(a_mat & alpha, const index_t & v, std::vector<patch> & patches, std::vector<vpatches_t> & patches_map, const distance_t & h);
+a_vec non_local_means_vertex(a_mat & alpha, const index_t & v, std::vector<patch> & patches, std::vector<vpatches_t> & patches_map, const real_t & h);
 
 /// DEPRECATED
 void mesh_reconstruction(che * mesh, size_t M, std::vector<patch_t> & patches, std::vector<patches_map_t> & patches_map, a_mat & A, a_mat & alpha, const index_t & v_i = 0);
 
 /// DEPRECATED
-a_vec non_local_means_vertex(a_mat & alpha, const index_t & v, std::vector<patch_t> & patches, std::vector<patches_map_t> & patches_map, const distance_t & h);
+a_vec non_local_means_vertex(a_mat & alpha, const index_t & v, std::vector<patch_t> & patches, std::vector<patches_map_t> & patches_map, const real_t & h);
 
-a_vec simple_means_vertex(a_mat & alpha, const index_t & v, std::vector<patch_t> & patches, std::vector<patches_map_t> & patches_map, const distance_t & h);
+a_vec simple_means_vertex(a_mat & alpha, const index_t & v, std::vector<patch_t> & patches, std::vector<patches_map_t> & patches_map, const real_t & h);
 
 
 } // namespace gproshan::mdict

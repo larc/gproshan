@@ -39,7 +39,7 @@ a_vec gaussian(a_mat & xy, real_t sigma, real_t cx, real_t cy)
 	return exp( - ( x + y ) / ( 2 * sigma * sigma ) );
 }
 
-a_vec cossine(a_mat & xy, distance_t radio, size_t K)
+a_vec cossine(a_mat & xy, real_t radio, size_t K)
 {
 	a_vec x = xy.row(0).t() + 0.5;
 	a_vec y = xy.row(1).t() + 0.5;
@@ -219,7 +219,7 @@ void partial_mesh_reconstruction(size_t old_n_vertices, che * mesh, size_t M, ve
 		}
 	}
 
-	distance_t h = 2;
+	real_t h = 2;
 
 	a_vec V(3);
 
@@ -258,7 +258,7 @@ void mesh_reconstruction(che * mesh, size_t M, vector<patch> & patches, vector<v
 		}
 	}
 
-	distance_t h = 0.2;
+	real_t h = 0.2;
 
 	#pragma omp parallel for
 	for(index_t v = v_i; v < mesh->n_vertices(); v++)
@@ -276,7 +276,7 @@ void mesh_reconstruction(che * mesh, size_t M, vector<patch> & patches, vector<v
 
 	vertex * new_vertices = (vertex *) V.memptr();
 
-	distance_t error = 0;
+	real_t error = 0;
 	#pragma omp parallel for reduction(+: error)
 	for(index_t v = v_i; v < mesh->n_vertices(); v++)
 		error += *(new_vertices[v] - mesh->get_vertex(v));
@@ -289,15 +289,15 @@ void mesh_reconstruction(che * mesh, size_t M, vector<patch> & patches, vector<v
 	mesh->set_vertices(new_vertices + v_i, mesh->n_vertices() - v_i, v_i);
 }
 
-a_vec non_local_means_vertex(a_mat & alpha, const index_t & v, vector<patch> & patches, vector<vpatches_t> & patches_map, const distance_t & h)
+a_vec non_local_means_vertex(a_mat & alpha, const index_t & v, vector<patch> & patches, vector<vpatches_t> & patches_map, const real_t & h)
 {
 	a_vec n_a_vec(3, arma::fill::zeros);
-	area_t sum = 0;
+	real_t sum = 0;
 
-	distance_t * w = new distance_t[patches_map[v].size()];
+	real_t * w = new real_t[patches_map[v].size()];
 
 	index_t i = 0;
-	distance_t d = 0;
+	real_t d = 0;
 
 	for(auto p: patches_map[v])
 	{
@@ -343,7 +343,7 @@ void mesh_reconstruction(che * mesh, size_t M, vector<patch_t> & patches, vector
 		}
 	}
 
-	distance_t h = 0.2;
+	real_t h = 0.2;
 
 	#pragma omp parallel for
 	for(index_t v = v_i; v < mesh->n_vertices(); v++)
@@ -361,7 +361,7 @@ void mesh_reconstruction(che * mesh, size_t M, vector<patch_t> & patches, vector
 
 	vertex * new_vertices = (vertex *) V.memptr();
 
-	distance_t error = 0;
+	real_t error = 0;
 	#pragma omp parallel for reduction(+: error)
 	for(index_t v = v_i; v < mesh->n_vertices(); v++)
 		error += *(new_vertices[v] - mesh->get_vertex(v));
@@ -375,15 +375,15 @@ void mesh_reconstruction(che * mesh, size_t M, vector<patch_t> & patches, vector
 }
 
 [[deprecated]]
-a_vec non_local_means_vertex(a_mat & alpha, const index_t & v, vector<patch_t> & patches, vector<patches_map_t> & patches_map, const distance_t & h)
+a_vec non_local_means_vertex(a_mat & alpha, const index_t & v, vector<patch_t> & patches, vector<patches_map_t> & patches_map, const real_t & h)
 {
 	a_vec n_a_vec(3, arma::fill::zeros);
-	area_t sum = 0;
+	real_t sum = 0;
 
-	distance_t * w = new distance_t[patches_map[v].size()];
+	real_t * w = new real_t[patches_map[v].size()];
 
 	index_t i = 0;
-	distance_t d = 0;
+	real_t d = 0;
 
 	for(auto p: patches_map[v])
 	{
@@ -410,7 +410,7 @@ a_vec non_local_means_vertex(a_mat & alpha, const index_t & v, vector<patch_t> &
 	return n_a_vec;
 }
 
-a_vec simple_means_vertex(a_mat & alpha, const index_t & v, vector<patch_t> & patches, vector<patches_map_t> & patches_map, const distance_t & h)
+a_vec simple_means_vertex(a_mat & alpha, const index_t & v, vector<patch_t> & patches, vector<patches_map_t> & patches_map, const real_t & h)
 {
 	a_vec n_a_vec(3, arma::fill::zeros);
 

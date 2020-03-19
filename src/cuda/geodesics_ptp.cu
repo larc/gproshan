@@ -33,17 +33,17 @@ double parallel_toplesets_propagation_gpu(const ptp_out_t & ptp_out, che * mesh,
 	CHE * dd_mesh, * d_mesh;
 	cuda_create_CHE(h_mesh, dd_mesh, d_mesh);
 
-	distance_t * h_dist = ptp_out.dist;
+	real_t * h_dist = ptp_out.dist;
 
-	distance_t * d_dist[2];
-	cudaMalloc(&d_dist[0], sizeof(distance_t) * h_mesh->n_vertices);
-	cudaMalloc(&d_dist[1], sizeof(distance_t) * h_mesh->n_vertices);
+	real_t * d_dist[2];
+	cudaMalloc(&d_dist[0], sizeof(real_t) * h_mesh->n_vertices);
+	cudaMalloc(&d_dist[1], sizeof(real_t) * h_mesh->n_vertices);
 
 	index_t * d_sorted;
 	cudaMalloc(&d_sorted, sizeof(index_t) * h_mesh->n_vertices);
 
-	distance_t * d_error;
-	cudaMalloc(&d_error, sizeof(distance_t) * h_mesh->n_vertices);
+	real_t * d_error;
+	cudaMalloc(&d_error, sizeof(real_t) * h_mesh->n_vertices);
 	
 	index_t d;
 	if(ptp_out.clusters)
@@ -64,7 +64,7 @@ double parallel_toplesets_propagation_gpu(const ptp_out_t & ptp_out, che * mesh,
 		d = run_ptp_gpu(d_mesh, h_mesh->n_vertices, h_dist, d_dist, sources, toplesets.limits, toplesets.index, d_sorted, d_error);
 	}
 
-	cudaMemcpy(h_dist, d_dist[d], sizeof(distance_t) * h_mesh->n_vertices, cudaMemcpyDeviceToHost);
+	cudaMemcpy(h_dist, d_dist[d], sizeof(real_t) * h_mesh->n_vertices, cudaMemcpyDeviceToHost);
 	
 	cudaFree(d_error);
 	cudaFree(d_dist[0]);
@@ -84,7 +84,7 @@ double parallel_toplesets_propagation_gpu(const ptp_out_t & ptp_out, che * mesh,
 	return time / 1000;
 }
 
-distance_t farthest_point_sampling_ptp_gpu(che * mesh, vector<index_t> & samples, double & time_fps, size_t n, distance_t radio)
+real_t farthest_point_sampling_ptp_gpu(che * mesh, vector<index_t> & samples, double & time_fps, size_t n, real_t radio)
 {
 	cudaDeviceReset();
 
@@ -100,14 +100,14 @@ distance_t farthest_point_sampling_ptp_gpu(che * mesh, vector<index_t> & samples
 	CHE * dd_mesh, * d_mesh;
 	cuda_create_CHE(h_mesh, dd_mesh, d_mesh);
 
-	distance_t * h_dist = new distance_t[h_mesh->n_vertices];
+	real_t * h_dist = new real_t[h_mesh->n_vertices];
 
-	distance_t * d_dist[2];
-	cudaMalloc(&d_dist[0], sizeof(distance_t) * h_mesh->n_vertices);
-	cudaMalloc(&d_dist[1], sizeof(distance_t) * h_mesh->n_vertices);
+	real_t * d_dist[2];
+	cudaMalloc(&d_dist[0], sizeof(real_t) * h_mesh->n_vertices);
+	cudaMalloc(&d_dist[1], sizeof(real_t) * h_mesh->n_vertices);
 
-	distance_t * d_error;
-	cudaMalloc(&d_error, sizeof(distance_t) * h_mesh->n_vertices);
+	real_t * d_error;
+	cudaMalloc(&d_error, sizeof(real_t) * h_mesh->n_vertices);
 
 	index_t * d_sorted;
 	cudaMalloc(&d_sorted, sizeof(index_t) * h_mesh->n_vertices);
@@ -126,7 +126,7 @@ distance_t farthest_point_sampling_ptp_gpu(che * mesh, vector<index_t> & samples
 
 	index_t d;
 	int f;
-	distance_t max_dist = INFINITY;
+	real_t max_dist = INFINITY;
 	while(n-- && max_dist > radio)
 	{
 		limits.clear();
@@ -142,7 +142,7 @@ distance_t farthest_point_sampling_ptp_gpu(che * mesh, vector<index_t> & samples
 		#endif
 
 		if(radio > 0 || !n)
-			cudaMemcpy(&max_dist, d_dist[d] + f - 1, sizeof(distance_t), cudaMemcpyDeviceToHost);
+			cudaMemcpy(&max_dist, d_dist[d] + f - 1, sizeof(real_t), cudaMemcpyDeviceToHost);
 
 		samples.push_back(f - 1);
 	}
@@ -171,7 +171,7 @@ distance_t farthest_point_sampling_ptp_gpu(che * mesh, vector<index_t> & samples
 	return max_dist;
 }
 
-index_t run_ptp_gpu(CHE * d_mesh, const index_t & n_vertices, distance_t * h_dist, distance_t ** d_dist, const vector<index_t> & sources, const vector<index_t> & limits, const index_t * h_sorted, index_t * d_sorted, distance_t * d_error, index_t * h_clusters, index_t ** d_clusters)
+index_t run_ptp_gpu(CHE * d_mesh, const index_t & n_vertices, real_t * h_dist, real_t ** d_dist, const vector<index_t> & sources, const vector<index_t> & limits, const index_t * h_sorted, index_t * d_sorted, real_t * d_error, index_t * h_clusters, index_t ** d_clusters)
 {
 	#pragma omp parallel for
 	for(index_t v = 0; v < n_vertices; v++)
@@ -180,8 +180,8 @@ index_t run_ptp_gpu(CHE * d_mesh, const index_t & n_vertices, distance_t * h_dis
 	for(index_t i = 0; i < sources.size(); i++)
 		h_dist[sources[i]] = 0;
 
-	cudaMemcpy(d_dist[0], h_dist, sizeof(distance_t) * n_vertices, cudaMemcpyHostToDevice);
-	cudaMemcpy(d_dist[1], h_dist, sizeof(distance_t) * n_vertices, cudaMemcpyHostToDevice);
+	cudaMemcpy(d_dist[0], h_dist, sizeof(real_t) * n_vertices, cudaMemcpyHostToDevice);
+	cudaMemcpy(d_dist[1], h_dist, sizeof(real_t) * n_vertices, cudaMemcpyHostToDevice);
 	cudaMemcpy(d_sorted, h_sorted, sizeof(index_t) * n_vertices, cudaMemcpyHostToDevice);
 
 	if(h_clusters)
@@ -232,7 +232,7 @@ index_t run_ptp_gpu(CHE * d_mesh, const index_t & n_vertices, distance_t * h_dis
 }
 
 __global__
-void relax_ptp(CHE * mesh, distance_t * new_dist, distance_t * old_dist, index_t * sorted, index_t end, index_t start)
+void relax_ptp(CHE * mesh, real_t * new_dist, real_t * old_dist, index_t * sorted, index_t end, index_t start)
 {
 	index_t v = blockDim.x * blockIdx.x + threadIdx.x + start;
 
@@ -243,7 +243,7 @@ void relax_ptp(CHE * mesh, distance_t * new_dist, distance_t * old_dist, index_t
 		{
 			new_dist[v] = old_dist[v];
 
-			distance_t d;
+			real_t d;
 			cu_for_star(he, mesh, v)
 			{
 				d = cu_update_step(mesh, old_dist, he);
@@ -255,7 +255,7 @@ void relax_ptp(CHE * mesh, distance_t * new_dist, distance_t * old_dist, index_t
 
 
 __global__
-void relax_ptp(CHE * mesh, distance_t * new_dist, distance_t * old_dist, index_t * new_clusters, index_t * old_clusters, index_t * sorted, index_t end, index_t start)
+void relax_ptp(CHE * mesh, real_t * new_dist, real_t * old_dist, index_t * new_clusters, index_t * old_clusters, index_t * sorted, index_t end, index_t start)
 {
 	index_t v = blockDim.x * blockIdx.x + threadIdx.x + start;
 
@@ -267,7 +267,7 @@ void relax_ptp(CHE * mesh, distance_t * new_dist, distance_t * old_dist, index_t
 			new_dist[v] = old_dist[v];
 			new_clusters[v] = old_clusters[v];
 
-			distance_t d;
+			real_t d;
 			cu_for_star(he, mesh, v)
 			{
 				d = cu_update_step(mesh, old_dist, he);
@@ -282,7 +282,7 @@ void relax_ptp(CHE * mesh, distance_t * new_dist, distance_t * old_dist, index_t
 }
 
 __global__
-void relative_error(distance_t * error, const distance_t * new_dist, const distance_t * old_dist, const index_t start, const index_t end, const index_t * sorted)
+void relative_error(real_t * error, const real_t * new_dist, const real_t * old_dist, const index_t start, const index_t end, const index_t * sorted)
 {
 	index_t i = blockDim.x * blockIdx.x + threadIdx.x + start;
 
@@ -299,7 +299,7 @@ void relative_error(distance_t * error, const distance_t * new_dist, const dista
 }
 
 __forceinline__ __device__
-distance_t cu_update_step(CHE * mesh, const distance_t * dist, const index_t & he)
+real_t cu_update_step(CHE * mesh, const real_t * dist, const index_t & he)
 {
 	index_t x[3];
 	x[0] = mesh->VT[cu_next(he)];
@@ -310,37 +310,37 @@ distance_t cu_update_step(CHE * mesh, const distance_t * dist, const index_t & h
 	X[0] = mesh->GT[x[0]] - mesh->GT[x[2]];
 	X[1] = mesh->GT[x[1]] - mesh->GT[x[2]];
 
-	distance_t t[2];
+	real_t t[2];
 	t[0] = dist[x[0]];
 	t[1] = dist[x[1]];
 
-	distance_t q[2][2];
+	real_t q[2][2];
 	q[0][0] = (X[0], X[0]);
 	q[0][1] = (X[0], X[1]);
 	q[1][0] = (X[1], X[0]);
 	q[1][1] = (X[1], X[1]);
 
-	distance_t det = q[0][0] * q[1][1] - q[0][1] * q[1][0];
-	distance_t Q[2][2];
+	real_t det = q[0][0] * q[1][1] - q[0][1] * q[1][0];
+	real_t Q[2][2];
 	Q[0][0] = q[1][1] / det;
 	Q[0][1] = -q[0][1] / det;
 	Q[1][0] = -q[1][0] / det;
 	Q[1][1] = q[0][0] / det;
 
-	distance_t delta = t[0] * (Q[0][0] + Q[1][0]) + t[1] * (Q[0][1] + Q[1][1]);
-	distance_t dis = delta * delta -
+	real_t delta = t[0] * (Q[0][0] + Q[1][0]) + t[1] * (Q[0][1] + Q[1][1]);
+	real_t dis = delta * delta -
 					(Q[0][0] + Q[0][1] + Q[1][0] + Q[1][1]) *
 					(t[0] * t[0] * Q[0][0] + t[0] * t[1] * (Q[1][0] + Q[0][1]) + t[1] * t[1] * Q[1][1] - 1);
 
 #ifdef SINGLE_P
-	distance_t p = delta + sqrtf(dis);
+	real_t p = delta + sqrtf(dis);
 #else
-	distance_t p = delta + sqrt(dis);
+	real_t p = delta + sqrt(dis);
 #endif
 
 	p /= Q[0][0] + Q[0][1] + Q[1][0] + Q[1][1];
 
-	distance_t tp[2];
+	real_t tp[2];
 	tp[0] = t[0] - p;
 	tp[1] = t[1] - p;
 
@@ -348,17 +348,17 @@ distance_t cu_update_step(CHE * mesh, const distance_t * dist, const index_t & h
 			 tp[0] * (X[0][1]*Q[0][0] + X[1][1]*Q[1][0]) + tp[1] * (X[0][1]*Q[0][1] + X[1][1]*Q[1][1]),
 			 tp[0] * (X[0][2]*Q[0][0] + X[1][2]*Q[1][0]) + tp[1] * (X[0][2]*Q[0][1] + X[1][2]*Q[1][1]) );
 
-	distance_t cond[2];
+	real_t cond[2];
 	cond[0] = (X[0] , n);
 	cond[1] = (X[1] , n);
 
-	distance_t c[2];
+	real_t c[2];
 	c[0] = cond[0] * Q[0][0] + cond[1] * Q[0][1];
 	c[1] = cond[0] * Q[1][0] + cond[1] * Q[1][1];
 
 	if(t[0] == INFINITY || t[1] == INFINITY || dis < 0 || c[0] >= 0 || c[1] >= 0)
 	{
-		distance_t dp[2];
+		real_t dp[2];
 		dp[0] = dist[x[0]] + *X[0];
 		dp[1] = dist[x[1]] + *X[1];
 
@@ -369,7 +369,7 @@ distance_t cu_update_step(CHE * mesh, const distance_t * dist, const index_t & h
 }
 
 __host__ __device__
-bool is_ok::operator()(const distance_t & val) const
+bool is_ok::operator()(const real_t & val) const
 {
 	return val < PTP_TOL;
 }

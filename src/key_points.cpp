@@ -56,7 +56,7 @@ void key_points::compute_kps(che * mesh)
 	#pragma omp parallel for
 	for(index_t t = 0; t < n_faces; t++)
 	{
-		face_areas[t].first = mesh->area_trig(t);
+		face_areas[t].first = mesh->real_trig(t);
 		face_areas[t].second = t;
 	}
 

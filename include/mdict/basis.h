@@ -19,7 +19,7 @@ class dictionary;
 class basis
 {
 	protected:
-		distance_t radio;
+		real_t radio;
 		size_t dim;
 
 	public:

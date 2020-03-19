@@ -35,7 +35,7 @@ class app_viewer : public viewer
 {
 	private:
 		double time;
-		distance_t * dist;
+		real_t * dist;
 		size_t n_dist;
 
 	public:

@@ -6,7 +6,6 @@
 
 #include "include_opengl.h"
 
-#define COLOR 0.4
 
 #ifdef SINGLE_P
 	#define glVertex3v(x) glVertex3fv(x)
@@ -21,13 +20,10 @@
 namespace gproshan {
 
 
-typedef real_t color_t;
-
 class che_viewer
 {
 	protected:
 		che * mesh = nullptr;
-		color_t * colors = nullptr;
 
 		size_t n_instances = 0;
 		bool normalize = false;
@@ -50,12 +46,10 @@ class che_viewer
 		void reload();
 		void update();
 		void update_vbo();
-		void update_colors(const color_t *const c = nullptr);
 		void update_instances_translations(const std::vector<vertex> & translations);
 		void draw(shader & program);
 		void draw_point_cloud(shader & program);
 
-		color_t & color(const index_t & v);
 		void translate(const vertex & p);
 		void invert_orientation();
 

@@ -15,7 +15,7 @@ class basis_dct: public basis
 		real_t n; // frequency
 
 	public:
-		basis_dct(const size_t & _n, const distance_t & _radio = 0);
+		basis_dct(const size_t & _n, const real_t & _radio = 0);
 		void discrete(a_mat & phi, const a_mat & xy);
 
 	private:

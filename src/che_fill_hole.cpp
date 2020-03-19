@@ -74,7 +74,7 @@ che * mesh_fill_hole(che * mesh, const vector<index_t> & border_vertices, const 
 	index_t * vmap_border = new index_t[size];
 
 	index_t c = 1;
-	distance_t mean_edge = mesh->mean_edge();
+	real_t mean_edge = mesh->mean_edge();
 
 	auto gen_vertices = [&mean_edge](vector<index_t> & merge_vertices, vector<vertex> & vertices, const vertex & va, const vertex & vb, const index_t & delta_v = 0)
 	{
@@ -237,7 +237,7 @@ void split_border(vector<pair<index_t, index_t> > & split_indices, che * mesh, c
 		a = NIL; b = NIL; // review this
 		for(index_t i = 0; i < n; i++)
 		{
-			distance_t d, d_min = INFINITY;
+			real_t d, d_min = INFINITY;
 			for(index_t c = 0; c < k; c++)
 			{
 				d = norm(data.col(i) - means.col(c));
@@ -318,7 +318,7 @@ tuple<vector<index_t> *, che **> fill_all_holes_meshes(che * mesh, const size_t 
 che * fill_hole_front_angles_test(che * mesh, vector<index_t> & front_vertices, size_t p_iter, bool & is_grow)
 {
 	gproshan_debug(filling holes);
-	distance_t perimeter = 0.0, init_perimeter = 0.0;
+	real_t perimeter = 0.0, init_perimeter = 0.0;
 
 	real_t length = mesh->mean_edge();
 	priority_queue<border_t> front;
@@ -377,8 +377,8 @@ che * fill_hole_front_angles_test(che * mesh, vector<index_t> & front_vertices, 
 
 	border_t top;
 
-	angle_t a75 = 75.0 * M_PI / 180;
-	angle_t a135 = 135.0 * M_PI / 180;
+	real_t a75 = 75.0 * M_PI / 180;
+	real_t a135 = 135.0 * M_PI / 180;
 
 	a_vec m_vec;
 	a_vec m_normal;
@@ -558,8 +558,8 @@ che * fill_hole_front_angles_test(che * mesh, vector<index_t> & front_vertices, 
 che * fill_hole_front_angles(vector<vertex> & vertices, const real_t & length, const vertex & normal, const size_t & max_iter, bool is_grow)
 {
 	size_t p_iter = max_iter;
-	distance_t perimeter = 0.0;
-	distance_t init_perimeter = 0.0;
+	real_t perimeter = 0.0;
+	real_t init_perimeter = 0.0;
 
 	priority_queue<border_t> front;
 	vector<index_t> faces;
@@ -644,8 +644,8 @@ che * fill_hole_front_angles(vector<vertex> & vertices, const real_t & length, c
 
 	border_t top;
 
-	angle_t a75 = 75.0 * M_PI / 180;
-	angle_t a135 = 135.0 * M_PI / 180;
+	real_t a75 = 75.0 * M_PI / 180;
+	real_t a135 = 135.0 * M_PI / 180;
 
 	a_vec m_vec;
 	while(!front.empty() && p_iter-- && p_iter < 2000)
@@ -851,11 +851,11 @@ void get_real_tri(che * mesh, vector<index_t> & select_vertices, vector<vertex> 
 		}
 	}
 
-	distance_t weight = 1.8;
+	real_t weight = 1.8;
 
-	distance_t wp = weight / select_vertices.size();
-	distance_t aux = wp * tri_sizes[0];
-	distance_t wo = (1 - aux) / ( tri_sizes[1] + tri_sizes[2] );
+	real_t wp = weight / select_vertices.size();
+	real_t aux = wp * tri_sizes[0];
+	real_t wo = (1 - aux) / ( tri_sizes[1] + tri_sizes[2] );
 
 	triangle.push_back( (wp * tri[0]) + wo * (tri[1] + tri[2]) );
 

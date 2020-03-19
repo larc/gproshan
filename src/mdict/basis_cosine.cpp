@@ -8,7 +8,7 @@
 namespace gproshan::mdict {
 
 
-basis_cosine::basis_cosine(const size_t & _r, const size_t & _n, const distance_t & _radio)
+basis_cosine::basis_cosine(const size_t & _r, const size_t & _n, const real_t & _radio)
 {
 	radio = _radio;
 	r = _r;

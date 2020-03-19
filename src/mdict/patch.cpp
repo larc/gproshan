@@ -29,7 +29,7 @@ typedef My_Monge_via_jet_fitting::Monge_form My_Monge_form;
 
 size_t patch::expected_nv = 3 * dictionary::T * (dictionary::T + 1);
 
-void patch::init(che * mesh, const index_t & v, const size_t & n_toplevels, const distance_t & radio, index_t * _toplevel)
+void patch::init(che * mesh, const index_t & v, const size_t & n_toplevels, const real_t & radio, index_t * _toplevel)
 {
 	index_t * toplevel = _toplevel ? _toplevel : new index_t[mesh->n_vertices()];
 	
@@ -109,7 +109,7 @@ void patch::gather_vertices(che * mesh, const index_t & v, const size_t & n_topl
 	}	
 }
 
-void patch::gather_vertices(che * mesh, const index_t & v, const distance_t & radio, index_t * toplevel)
+void patch::gather_vertices(che * mesh, const index_t & v, const real_t & radio, index_t * toplevel)
 {
 	assert(x.n_elem == 3 && T.n_rows == 3 && T.n_cols == 3);
 	if(vertices.size()) vertices.clear();

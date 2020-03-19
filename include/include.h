@@ -23,10 +23,6 @@ typedef unsigned int index_t;
 	typedef double real_t;
 #endif
 
-typedef real_t distance_t;
-typedef real_t area_t;
-typedef real_t angle_t;
-
 
 #define TMP_DIR	"../tmp/"
 #define tmp_file_path(file) (std::string(TMP_DIR) + file)

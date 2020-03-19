@@ -131,7 +131,7 @@ void paint_holes_vertices(viewer * p_view)
 
 	#pragma omp parallel for
 	for(index_t v = 0; v < mesh->n_vertices(); v++)
-		if(v >= nv) mesh.color(v) = .25;
+		if(v >= nv) mesh->color(v) = .25;
 }
 
 void app_viewer::process_delete_non_manifold_vertices(viewer * p_view)
@@ -214,7 +214,7 @@ void app_viewer::process_noise(viewer * p_view)
 	#pragma omp parallel for
 	for(index_t v = 0; v < mesh->n_vertices(); v++)
 	{
-		distance_t r = distance_t(d_mod_1000(generator)) / 200000;
+		real_t r = real_t(d_mod_1000(generator)) / 200000;
 		mesh->get_vertex(v) += (!d_mod_5(generator)) * r * mesh->normal(v);
 	}
 
@@ -234,7 +234,7 @@ void app_viewer::process_black_noise(viewer * p_view)
 	#pragma omp parallel for
 	for(index_t v = 0; v < mesh->n_vertices(); v++)
 	{
-		distance_t r = distance_t(d_mod_1000(generator)) / 200000;
+		real_t r = real_t(d_mod_1000(generator)) / 200000;
 		mesh->get_vertex(v) += (!d_mod_5(generator)) * r * mesh->normal(v);
 	}
 
@@ -248,7 +248,7 @@ void app_viewer::process_threshold(viewer * p_view)
 	che_viewer & mesh = view->mesh();
 
 	for(index_t v = 0; v < mesh->n_vertices(); v++)
-		mesh.color(v) = mesh.color(v) > 0.5 ? 1 : 0.5;
+		mesh->color(v) = mesh->color(v) > 0.5 ? 1 : 0.5;
 }
 
 void app_viewer::process_functional_maps(viewer * p_view)
@@ -283,7 +283,7 @@ void app_viewer::process_functional_maps(viewer * p_view)
 	
 		#pragma omp parallel for
 		for(index_t v = 0; v < mesh->n_vertices(); v++)
-			view->mesh().color(v) = eigvec(v, k);
+			view->mesh()->color(v) = eigvec(v, k);
 
 		view->mesh().update_vbo();
 	}
@@ -310,7 +310,7 @@ void app_viewer::process_wks(viewer * p_view)
 	TIC(view->time) K = eigs_laplacian(eigval, eigvec, mesh, L, A, K); TOC(view->time)
 	gproshan_log_var(view->time);
 
-	distance_t max_s = 0;
+	real_t max_s = 0;
 	#pragma omp parallel for reduction(max: max_s)
 	for(index_t v = 0; v < mesh->n_vertices(); v++)
 	{
@@ -319,13 +319,13 @@ void app_viewer::process_wks(viewer * p_view)
 		for(index_t k = 1; k < K; k++)
 			s(t) += exp(-eigval(k) * t) * eigvec(v, k) * eigvec(v, k);
 
-		mesh.color(v) = norm(s);
-		max_s = max(max_s, mesh.color(v));
+		mesh->color(v) = norm(s);
+		max_s = max(max_s, mesh->color(v));
 	}
 
 	#pragma omp parallel for
 	for(index_t v = 0; v < mesh->n_vertices(); v++)
-		mesh.color(v) /= max_s;
+		mesh->color(v) /= max_s;
 }
 
 void app_viewer::process_hks(viewer * p_view)
@@ -350,7 +350,7 @@ void app_viewer::process_hks(viewer * p_view)
 
 	if(!K) return;
 
-	distance_t max_s = 0;
+	real_t max_s = 0;
 	#pragma omp parallel for reduction(max: max_s)
 	for(index_t v = 0; v < mesh->n_vertices(); v++)
 	{
@@ -359,14 +359,14 @@ void app_viewer::process_hks(viewer * p_view)
 		for(index_t k = 1; k < K; k++)
 			s(t) += exp(-abs(eigval(k)) * t) * eigvec(v, k) * eigvec(v, k);
 
-		mesh.color(v) = norm(abs(arma::fft(s, 128)));
-		//mesh.color(v) = norm(s);
-		max_s = max(max_s, mesh.color(v));
+		mesh->color(v) = norm(abs(arma::fft(s, 128)));
+		//mesh->color(v) = norm(s);
+		max_s = max(max_s, mesh->color(v));
 	}
 
 	#pragma omp parallel for
 	for(index_t v = 0; v < mesh->n_vertices(); v++)
-		mesh.color(v) /= max_s;
+		mesh->color(v) /= max_s;
 }
 
 void app_viewer::process_gps(viewer * p_view)
@@ -396,17 +396,17 @@ void app_viewer::process_gps(viewer * p_view)
 	a_mat data = eigvec.t();
 	a_mat means;
 
-	distance_t max_s = 0;
+	real_t max_s = 0;
 	#pragma omp parallel for reduction(max: max_s)
 	for(index_t v = 0; v < mesh->n_vertices(); v++)
 	{
-		mesh.color(v) = norm(eigvec.row(v));
-			max_s = max(max_s, mesh.color(v));
+		mesh->color(v) = norm(eigvec.row(v));
+			max_s = max(max_s, mesh->color(v));
 	}
 
 	#pragma omp parallel for
 	for(index_t v = 0; v < mesh->n_vertices(); v++)
-		mesh.color(v) /= max_s;
+		mesh->color(v) /= max_s;
 }
 
 void app_viewer::process_key_points(viewer * p_view)
@@ -437,7 +437,7 @@ void app_viewer::process_key_components(viewer * p_view)
 	
 	#pragma omp parallel for
 	for(index_t v = 0; v < mesh->n_vertices(); v++)
-		mesh.color(v) = (real_t) kcs(v) / kcs;
+		mesh->color(v) = (real_t) kcs(v) / kcs;
 }
 
 void app_viewer::process_mdict_patch(viewer * p_view)
@@ -452,12 +452,12 @@ void app_viewer::process_mdict_patch(viewer * p_view)
 
 	vertex vdir;
 	patch p;
-	distance_t mean_edge = mesh->mean_edge();
+	real_t mean_edge = mesh->mean_edge();
 	for(auto & v: view->mesh().selected)
 	{
 		p.init(mesh, v, dictionary::T, dictionary::T * mean_edge, toplevel);
 		for(auto & u: p.vertices)
-			mesh.color(u) = 1;
+			mesh->color(u) = 1;
 
 		vdir.x = p.T(0, 0);
 		vdir.y = p.T(0, 1);
@@ -499,7 +499,7 @@ void app_viewer::process_denoising(viewer * p_view)
 
 	size_t n; // dct
 	size_t m, M;
-	distance_t f;
+	real_t f;
 	bool learn;
 
 	gproshan_input(n m M f learn);
@@ -521,7 +521,7 @@ void app_viewer::process_super_resolution(viewer * p_view)
 
 	size_t n; // dct
 	size_t m, M;
-	distance_t f;
+	real_t f;
 	bool learn;
 
 	gproshan_log(parameters: (n, m, M, f, learn));
@@ -543,7 +543,7 @@ void app_viewer::process_inpaiting(viewer * p_view)
 
 	size_t n; // dct
 	size_t m, M;
-	distance_t f;
+	real_t f;
 	bool learn;
 
 	gproshan_log(parameters: (n, m, M, f, learn));
@@ -595,7 +595,7 @@ void app_viewer::compute_toplesets(viewer * p_view)
 	for(index_t v = 0; v < mesh->n_vertices(); v++)
 	{
 		if(toplesets[v] < n_toplesets) 
-			mesh.color(v) = distance_t(toplesets[v]) / (n_toplesets);
+			mesh->color(v) = real_t(toplesets[v]) / (n_toplesets);
 	}
 
 	gproshan_debug_var(n_toplesets);
@@ -622,8 +622,8 @@ void app_viewer::process_voronoi(viewer * p_view)
 	#pragma omp parallel for
 	for(index_t i = 0; i < mesh->n_vertices(); i++)
 	{
-		mesh.color(i) = ptp.clusters[i];
-		mesh.color(i) /= view->mesh().selected.size() + 1;
+		mesh->color(i) = ptp.clusters[i];
+		mesh->color(i) /= view->mesh().selected.size() + 1;
 	}
 }
 
@@ -634,7 +634,7 @@ void app_viewer::process_farthest_point_sampling_radio(viewer * p_view)
 	che_viewer & mesh = view->mesh();
 
 	gproshan_input(radio);
-	distance_t radio; cin >> radio;
+	real_t radio; cin >> radio;
 
 #ifdef GPROSHAN_CUDA	// IMPLEMENT/REVIEW
 	double time_fps;
@@ -659,7 +659,7 @@ void app_viewer::process_farthest_point_sampling(viewer * p_view)
 	gproshan_input(samples_number);
 	index_t n; cin >> n;
 
-	distance_t radio;
+	real_t radio;
 	TIC(view->time)
 	load_sampling(view->mesh().selected, radio, mesh, n);
 	TOC(view->time)
@@ -716,7 +716,7 @@ void app_viewer::process_geodesics_fm(viewer * p_view)
 	TOC(view->time)
 	gproshan_log_var(view->time);
 
-	mesh.update_colors(&fm[0]);
+	mesh->update_colors(&fm[0]);
 }
 
 void app_viewer::process_geodesics_ptp_cpu(viewer * p_view)
@@ -733,7 +733,7 @@ void app_viewer::process_geodesics_ptp_cpu(viewer * p_view)
 	TOC(view->time)
 	gproshan_log_var(view->time);
 
-	mesh.update_colors(&ptp[0]);
+	mesh->update_colors(&ptp[0]);
 }
 
 void app_viewer::process_geodesics_heat_flow(viewer * p_view)
@@ -750,7 +750,7 @@ void app_viewer::process_geodesics_heat_flow(viewer * p_view)
 	TOC(view->time)
 	gproshan_log_var(view->time);
 
-	mesh.update_colors(&heat_flow[0]);
+	mesh->update_colors(&heat_flow[0]);
 }
 
 
@@ -770,7 +770,7 @@ void app_viewer::process_geodesics_ptp_gpu(viewer * p_view)
 		delete [] view->dist;
 	
 		view->n_dist = mesh->n_vertices();
-		view->dist = new distance_t[view->n_dist];
+		view->dist = new real_t[view->n_dist];
 	}
 
 	TIC(view->time)
@@ -778,7 +778,7 @@ void app_viewer::process_geodesics_ptp_gpu(viewer * p_view)
 	TOC(view->time)
 	gproshan_log_var(view->time);
 	
-	mesh.update_colors(&ptp[0]);
+	mesh->update_colors(&ptp[0]);
 }
 
 void app_viewer::process_geodesics_heat_flow_gpu(viewer * p_view)
@@ -795,7 +795,7 @@ void app_viewer::process_geodesics_heat_flow_gpu(viewer * p_view)
 	TOC(view->time)
 	gproshan_log_var(view->time);
 
-	mesh.update_colors(&heat_flow[0]);
+	mesh->update_colors(&heat_flow[0]);
 }
 
 #endif // GPROSHAN_CUDA
@@ -877,7 +877,7 @@ void app_viewer::process_gaussian_curvature(viewer * p_view)
 
 	#pragma omp parallel for
 	for(index_t v = 0; v < mesh->n_vertices(); v++)
-		mesh.color(v) = f(gv(v));
+		mesh->color(v) = f(gv(v));
 }
 
 void app_viewer::process_edge_collapse(viewer * p_view)

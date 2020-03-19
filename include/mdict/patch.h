@@ -40,7 +40,7 @@ class patch
 		void init(	che * mesh,						///< input mesh.
 					const index_t & v,				///< center vertex of the patch.
 					const size_t & n_toplevels,		///< number of toplevels to jet fitting.
-					const distance_t & radio,		///< euclidean radio in XY of the patch.
+					const real_t & radio,		///< euclidean radio in XY of the patch.
 					index_t * _toplevel = nullptr		///< aux memory to gather toplevel vertices.
 					);
 
@@ -65,7 +65,7 @@ class patch
 		/// Gather the vertices filter by radio in the local coordinates require initialize T and x.
 		void gather_vertices(	che * mesh,
 								const index_t & v,
-								const distance_t & radio,
+								const real_t & radio,
 								index_t * toplevel
 								);
 		

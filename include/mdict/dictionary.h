@@ -28,8 +28,8 @@ class dictionary
 		a_mat A;									///< dictionary continuous matrix.
 		a_mat alpha;								///< sparse coding matrix.
 		
-		distance_t f;
-		distance_t s_radio;						///< sampling geodesic radio.
+		real_t f;
+		real_t s_radio;						///< sampling geodesic radio.
 		std::vector<index_t> sampling;				///< samples, center of patches if sampling.
 		std::vector<patch> patches;				///< vector of patches.
 		std::vector<vpatches_t> patches_map;		///< invert index vertex to patches.
@@ -46,7 +46,7 @@ class dictionary
 					basis *const &_phi_basis,	///< pointer to continuous basis.
 					const size_t & _m,			///< number of dictionary atoms.
 					const size_t & _M,			///< number of patches.
-					const distance_t & _f,		///< deprecated
+					const real_t & _f,		///< deprecated
 					const bool & _plot			///< flag to plot basis and atoms with gnuplot.
 					);
 
