@@ -13,12 +13,6 @@ namespace gproshan {
 
 che_viewer::~che_viewer()
 {
-	glGenVertexArrays(1, &vao);
-	glGenBuffers(5, vbo);
-}
-
-che_viewer::~che_viewer()
-{
 	glDeleteBuffers(5, vbo);
 	glDeleteVertexArrays(1, &vao);
 
@@ -37,7 +31,10 @@ che_viewer::operator che *& ()
 
 void che_viewer::init(che * mesh, const bool & normalize)
 {
-	this->mesh = m;
+	glGenVertexArrays(1, &vao);
+	glGenBuffers(5, vbo);
+	
+	this->mesh = mesh;
 	this->normalize = normalize;
 
 	update();
@@ -60,7 +57,6 @@ void che_viewer::update()
 	delete [] colors;
 	colors = new color_t[mesh->n_vertices()];
 	update_colors();
-
 
 	update_vbo();
 }

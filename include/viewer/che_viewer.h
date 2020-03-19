@@ -43,7 +43,7 @@ class che_viewer
 		std::vector<index_t> selected;
 
 	public:
-		che_viewer();
+		che_viewer() = default;
 		virtual ~che_viewer();
 		che *& operator -> ();
 		operator che *& ();
