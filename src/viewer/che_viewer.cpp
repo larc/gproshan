@@ -54,8 +54,6 @@ void che_viewer::update()
 	
 	mesh->update_normals();
 
-	delete [] colors;
-	colors = new color_t[mesh->n_vertices()];
 	update_colors();
 
 	update_vbo();
@@ -99,6 +97,9 @@ void che_viewer::update_vbo()
 
 void che_viewer::update_colors(const color_t *const c)
 {
+	delete [] colors;
+	colors = new color_t[mesh->n_vertices()];
+
 	if(!c)
 	{
 		#pragma omp parallel for

@@ -93,8 +93,6 @@ bool viewer::run()
 								glm::vec3(up[1], up[2], up[3])
 								);
 		
-		double render_time = glfwGetTime();
-
 		// RENDER 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
 		switch(render_opt)
@@ -104,15 +102,10 @@ bool viewer::run()
 			case 2: render_optix(); break;
 		}
 		
-		render_time = glfwGetTime() - render_time;
-		
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 		
-		ImGui::Text("Frame Time: %.2lfms", render_time * 1000.0);
-		ImGui::Text("Frame Rate: %.2lffps", 1.0 / render_time);
-
 		if(ImGui::BeginMainMenuBar())
 		{
 			if(ImGui::BeginMenu("Select"))
