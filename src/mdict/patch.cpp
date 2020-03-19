@@ -123,7 +123,7 @@ bool patch::add_vertex_by_faces(vector<vertex> & N, index_t * indexes, size_t nc
 	N.push_back(min_he);
 	return added;
 }
-void patch::init_random(vertex c, arma::mat T, distance_t radio)
+void patch::init_random(vertex c, arma::mat T, distance_t radio, distance_t max_radio)
 {
 	this->T = T;
 	x.resize(3);
@@ -137,15 +137,29 @@ void patch::init_random(vertex c, arma::mat T, distance_t radio)
     std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
     std::uniform_real_distribution<> dis(0, 1);
 
-	double a = dis(gen) * 2 * PI;
-	double r = radio * sqrt(dis(gen));
 
-	// If you need it in Cartesian coordinates
-	double x = r * cos(a);
-	double y = r * sin(a);
-	gproshan_debug_var(radio);
-	//gproshan_debug_var(x);
-	//gproshan_debug_var(y);
+	size_t n_points = (radio/max_radio) * 100;
+	gproshan_debug_var(n_points);
+
+	vertices.resize(n_points);
+	xyz.resize(3,n_points);
+
+	for(size_t i=0 ;i<n_points; i++)
+	{
+		double a = dis(gen) * 2 * PI;
+		double r = radio * sqrt(dis(gen));
+
+		// If you need it in Cartesian coordinates
+		double x = r * cos(a);
+		double y = r * sin(a);
+		/*gproshan_debug_var(radio);
+		gproshan_debug_var(x);
+		gproshan_debug_var(y);*/
+		xyz(0, i) = x;
+		xyz(1, i) = y;
+		xyz(2, i) = 0;
+	}
+
 
 }
 void patch::recover_radial_disjoint(che * mesh, const distance_t & radio_, const index_t & v)

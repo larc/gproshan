@@ -67,7 +67,7 @@ class patch
 					distance_t & geo_radio,
 					double delta,		
 					double sum_thres);
-		void init_random(vertex c, arma::mat T, distance_t radio);
+		void init_random(vertex c, arma::mat T, distance_t radio, distance_t max_radio);
 		void recover_radial_disjoint(che * mesh,
 					const distance_t & radio_,
 					const index_t & v);

@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <numeric>
 #include <queue>
+#include "che_off.h"
 #define PI 3.14159265
 
 
@@ -549,9 +550,15 @@ void inpainting::point_cloud_reconstruction()
 	alpha.load(f_alpha);
 	gproshan_debug_var(S.n_rows);
 	M = S.n_rows;
-	distance_t radio;
+	distance_t radio, max_radio = -1;
 	patches.resize(M);
 	vertex c;
+
+	for(index_t i = 0; i < M; i++)
+		if( S(i,3) > max_radio) max_radio = S(i,3); 
+
+	size_t total_points = 0;
+
 	for(index_t i = 0; i < M; i++)
 	{
 		c.x = S(i,0);
@@ -568,18 +575,45 @@ void inpainting::point_cloud_reconstruction()
 		T(1,2) = S(i,11);
 		T(2,2) = S(i,12);
 
-		patches[i].init_random(c, T, radio);
+		patches[i].init_random(c, T, radio, max_radio);
+		total_points += patches[i].vertices.size();
+		patches[i].phi.set_size(patches[i].vertices.size(), phi_basis->get_dim());
+		phi_basis->discrete(patches[i].phi, patches[i].xyz);
+
+	//	a_vec x = patches[i].phi * A * alpha.col(i);
+	//	patches[i].xyz.row(2) = x.t();
 	}
-/*
-	a_vec x = rp.phi * A * alpha.col(p);
-			rp.xyz.row(2) = x.t();
-			rp.iscale_xyz(radio);
-			rp.itransform();
-*/
-	//create patches
-	// recover points
-	// save points
-	// show and put seeds on it 
+
+
+
+//	a_vec x = rp.phi * A * alpha.col(i);
+//	rp.xyz.row(2) = x.t();
+
+
+	for(index_t i = 0; i < M; i++)
+	{
+
+		patches[i].iscale_xyz(patches[i].radio);
+		patches[i].itransform();
+	}
+
+	vertex point_cloud[total_points];
+	for(index_t i = 0, k=0; i < M; i++)
+	{
+		for(index_t j = 0; j < patches[i].vertices.size(); j++)
+		{
+			point_cloud[k].x = patches[i].xyz(0,j);
+			point_cloud[k].y = patches[i].xyz(1,j);
+			point_cloud[k].z = patches[i].xyz(2,j);
+			k++;
+		}
+	}
+
+	che nmesh(point_cloud, total_points, nullptr, 0);
+	string f_pc = tmp_file_path(mesh->name_size() +  '_' + to_string(delta)  +  '_' + to_string(sum_thres)  +  "_pc");
+
+	che_off::write_file(&nmesh,f_pc);
+	gproshan_debug(Done!);
 
 }
 
