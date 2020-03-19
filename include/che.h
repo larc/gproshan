@@ -47,6 +47,7 @@ class che
 		index_t * BT	= nullptr;	///< boundary table			: b 	-> v
 		
 		vertex * VN		= nullptr;	///< vertex normals			: v		-> normal(v)
+		vertex * VC		= nullptr;	///< vertex color			: v		-> color(v)
 
 		bool manifold = true;
 
@@ -69,6 +70,7 @@ class che
 		area_t area_surface() const;
 		void update_normals();
 		const vertex & normal(const index_t & v) const;
+		vertex & normal(const index_t & v);
 		vertex shading_normal(const index_t & f, const float & u, const float & v, const float & w) const;
 		vertex normal_trig(const index_t & f) const;
 		vertex normal_he(const index_t & he) const;

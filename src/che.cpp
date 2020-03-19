@@ -261,6 +261,12 @@ const vertex & che::normal(const index_t & v) const
 	return VN[v];
 }
 
+vertex & che::normal(const index_t & v)
+{
+	assert(VN && v < n_vertices_);
+	return VN[v];
+}
+
 vertex che::shading_normal(const index_t & f, const float & u, const float & v, const float & w) const
 {
 	index_t he = f * che::P;

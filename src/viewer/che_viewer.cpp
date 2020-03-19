@@ -189,7 +189,9 @@ void che_viewer::translate(const vertex & p)
 
 void che_viewer::invert_orientation()
 {
-	invert_normals = !invert_normals;
+	#pragma omp parallel for
+	for(index_t v = 0; v < mesh->n_vertices(); v++)
+		mesh->normal(v) = -mesh->normal(v);
 }
 
 void che_viewer::log_info()

@@ -439,8 +439,6 @@ void viewer::menu_bgc_black(viewer * view)
 void viewer::invert_orientation(viewer * view)
 {
 	view->mesh().invert_orientation();
-	view->mesh()->update_normals();
-	view->mesh().update_vbo();
 }
 
 void viewer::set_render_gl(viewer * view)

@@ -30,7 +30,6 @@ class che_viewer
 		color_t * colors = nullptr;
 
 		size_t n_instances = 0;
-		bool invert_normals = false;
 		bool normalize = false;
 		vertex v_translate;
 
