@@ -120,7 +120,7 @@ int app_viewer::main(int nargs, const char ** args)
 	return 0;
 }
 
-void paint_holes_vertices(viewer * p_view)
+bool paint_holes_vertices(viewer * p_view)
 {
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->mesh();
@@ -132,9 +132,11 @@ void paint_holes_vertices(viewer * p_view)
 	#pragma omp parallel for
 	for(index_t v = 0; v < mesh->n_vertices(); v++)
 		if(v >= nv) mesh->color(v) = .25;
+
+	return false;
 }
 
-void app_viewer::process_delete_non_manifold_vertices(viewer * p_view)
+bool app_viewer::process_delete_non_manifold_vertices(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
@@ -143,22 +145,27 @@ void app_viewer::process_delete_non_manifold_vertices(viewer * p_view)
 	gproshan_debug(removing vertex);
 	mesh->remove_non_manifold_vertices();
 	gproshan_debug(removing vertex);
+
+	return false;
 }
 
-void app_viewer::process_delete_vertices(viewer * p_view)
+bool app_viewer::process_delete_vertices(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->mesh();
 
-	if(!view->mesh().selected.size()) return;
+	if(!view->mesh().selected.size()) return true;
+
 	gproshan_debug(removing vertex);
 	mesh->remove_vertices(view->mesh().selected);
 	view->mesh().selected.clear();
 	gproshan_debug(removing vertex);
+
+	return false;
 }
 
-void app_viewer::process_poisson(viewer * p_view, const index_t & k)
+bool app_viewer::process_poisson(viewer * p_view, const index_t & k)
 {
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->mesh();
@@ -170,27 +177,29 @@ void app_viewer::process_poisson(viewer * p_view, const index_t & k)
 	gproshan_log_var(view->time);
 
 //	paint_holes_vertices();
+
+	return false;
 }
 
-void app_viewer::process_poisson_laplacian_1(viewer * p_view)
+bool app_viewer::process_poisson_laplacian_1(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
-	process_poisson(p_view, 1);
+	return process_poisson(p_view, 1);
 }
 
-void app_viewer::process_poisson_laplacian_2(viewer * p_view)
+bool app_viewer::process_poisson_laplacian_2(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
-	process_poisson(p_view, 2);
+	return process_poisson(p_view, 2);
 }
 
-void app_viewer::process_poisson_laplacian_3(viewer * p_view)
+bool app_viewer::process_poisson_laplacian_3(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
-	process_poisson(p_view, 3);
+	return process_poisson(p_view, 3);
 }
 
-void app_viewer::process_fill_holes(viewer * p_view)
+bool app_viewer::process_fill_holes(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
@@ -199,9 +208,11 @@ void app_viewer::process_fill_holes(viewer * p_view)
 	fill_all_holes(mesh);
 
 	paint_holes_vertices(p_view);
+	
+	return false;
 }
 
-void app_viewer::process_noise(viewer * p_view)
+bool app_viewer::process_noise(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
@@ -219,9 +230,11 @@ void app_viewer::process_noise(viewer * p_view)
 	}
 
 	mesh->update_normals();
+	
+	return false;
 }
 
-void app_viewer::process_black_noise(viewer * p_view)
+bool app_viewer::process_black_noise(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
@@ -239,9 +252,11 @@ void app_viewer::process_black_noise(viewer * p_view)
 	}
 
 	mesh->update_normals();
+	
+	return false;
 }
 
-void app_viewer::process_threshold(viewer * p_view)
+bool app_viewer::process_threshold(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
@@ -249,9 +264,11 @@ void app_viewer::process_threshold(viewer * p_view)
 
 	for(index_t v = 0; v < mesh->n_vertices(); v++)
 		mesh->color(v) = mesh->color(v) > 0.5 ? 1 : 0.5;
+	
+	return false;
 }
 
-void app_viewer::process_functional_maps(viewer * p_view)
+bool app_viewer::process_functional_maps(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
@@ -289,9 +306,11 @@ void app_viewer::process_functional_maps(viewer * p_view)
 	}
 	
 	view->current = 0;
+	
+	return false;
 }
 
-void app_viewer::process_wks(viewer * p_view)
+bool app_viewer::process_wks(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
@@ -326,9 +345,11 @@ void app_viewer::process_wks(viewer * p_view)
 	#pragma omp parallel for
 	for(index_t v = 0; v < mesh->n_vertices(); v++)
 		mesh->color(v) /= max_s;
+	
+	return false;
 }
 
-void app_viewer::process_hks(viewer * p_view)
+bool app_viewer::process_hks(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
@@ -348,7 +369,7 @@ void app_viewer::process_hks(viewer * p_view)
 	TIC(view->time) K = eigs_laplacian(eigval, eigvec, mesh, L, A, K); TOC(view->time)
 	gproshan_log_var(view->time);
 
-	if(!K) return;
+	if(!K) return true;
 
 	real_t max_s = 0;
 	#pragma omp parallel for reduction(max: max_s)
@@ -367,9 +388,11 @@ void app_viewer::process_hks(viewer * p_view)
 	#pragma omp parallel for
 	for(index_t v = 0; v < mesh->n_vertices(); v++)
 		mesh->color(v) /= max_s;
+	
+	return false;
 }
 
-void app_viewer::process_gps(viewer * p_view)
+bool app_viewer::process_gps(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
@@ -407,9 +430,11 @@ void app_viewer::process_gps(viewer * p_view)
 	#pragma omp parallel for
 	for(index_t v = 0; v < mesh->n_vertices(); v++)
 		mesh->color(v) /= max_s;
+	
+	return false;
 }
 
-void app_viewer::process_key_points(viewer * p_view)
+bool app_viewer::process_key_points(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
@@ -422,9 +447,11 @@ void app_viewer::process_key_points(viewer * p_view)
 
 	for(index_t i = 0; i < kps.size(); i++)
 		view->mesh().selected.push_back(kps[i]);
+	
+	return false;
 }
 
-void app_viewer::process_key_components(viewer * p_view)
+bool app_viewer::process_key_components(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
@@ -438,9 +465,11 @@ void app_viewer::process_key_components(viewer * p_view)
 	#pragma omp parallel for
 	for(index_t v = 0; v < mesh->n_vertices(); v++)
 		mesh->color(v) = (real_t) kcs(v) / kcs;
+	
+	return false;
 }
 
-void app_viewer::process_mdict_patch(viewer * p_view)
+bool app_viewer::process_mdict_patch(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
@@ -489,9 +518,11 @@ void app_viewer::process_mdict_patch(viewer * p_view)
 	delete [] toplevel;
 	TOC(view->time)
 	gproshan_debug_var(view->time);
+	
+	return false;
 }
 
-void app_viewer::process_denoising(viewer * p_view)
+bool app_viewer::process_denoising(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
@@ -511,9 +542,11 @@ void app_viewer::process_denoising(viewer * p_view)
 
 	delete phi;
 	mesh->update_normals();
+	
+	return false;
 }
 
-void app_viewer::process_super_resolution(viewer * p_view)
+bool app_viewer::process_super_resolution(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
@@ -533,9 +566,11 @@ void app_viewer::process_super_resolution(viewer * p_view)
 
 	delete phi;
 	mesh->update_normals();
+	
+	return false;
 }
 
-void app_viewer::process_inpaiting(viewer * p_view)
+bool app_viewer::process_inpaiting(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
@@ -555,17 +590,21 @@ void app_viewer::process_inpaiting(viewer * p_view)
 
 	delete phi;
 	mesh->update_normals();
+	
+	return false;
 }
 
 
-void app_viewer::process_iterative_inpaiting(viewer * p_view)
+bool app_viewer::process_iterative_inpaiting(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
 
 //	mesh_iterative_inpaiting(mesh, view->mesh().selected, freq, rt, m, M, f, learn);
+	
+	return false;
 }
 
-void app_viewer::process_multiplicate_vertices(viewer * p_view)
+bool app_viewer::process_multiplicate_vertices(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
@@ -573,9 +612,11 @@ void app_viewer::process_multiplicate_vertices(viewer * p_view)
 
 	mesh->multiplicate_vertices();
 	mesh.log_info();
+	
+	return false;
 }
 
-void app_viewer::compute_toplesets(viewer * p_view)
+bool app_viewer::compute_toplesets(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
@@ -602,9 +643,11 @@ void app_viewer::compute_toplesets(viewer * p_view)
 
 	delete [] toplesets;
 	delete [] sorted;
+	
+	return false;
 }
 
-void app_viewer::process_voronoi(viewer * p_view)
+bool app_viewer::process_voronoi(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
@@ -625,9 +668,11 @@ void app_viewer::process_voronoi(viewer * p_view)
 		mesh->color(i) = ptp.clusters[i];
 		mesh->color(i) /= view->mesh().selected.size() + 1;
 	}
+	
+	return false;
 }
 
-void app_viewer::process_farthest_point_sampling_radio(viewer * p_view)
+bool app_viewer::process_farthest_point_sampling_radio(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
@@ -648,9 +693,11 @@ void app_viewer::process_farthest_point_sampling_radio(viewer * p_view)
 	gproshan_log_var(radio);
 	gproshan_log_var(view->mesh().selected.size());
 	gproshan_log_var(view->time);
+	
+	return false;
 }
 
-void app_viewer::process_farthest_point_sampling(viewer * p_view)
+bool app_viewer::process_farthest_point_sampling(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
@@ -664,9 +711,11 @@ void app_viewer::process_farthest_point_sampling(viewer * p_view)
 	load_sampling(view->mesh().selected, radio, mesh, n);
 	TOC(view->time)
 	gproshan_log_var(view->time);
+	
+	return false;
 }
 
-void app_viewer::process_fairing_spectral(viewer * p_view)
+bool app_viewer::process_fairing_spectral(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
@@ -682,9 +731,11 @@ void app_viewer::process_fairing_spectral(viewer * p_view)
 	delete fair;
 
 	mesh->update_normals();
+	
+	return false;
 }
 
-void app_viewer::process_fairing_taubin(viewer * p_view)
+bool app_viewer::process_fairing_taubin(viewer * p_view)
 {
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->mesh();
@@ -700,9 +751,11 @@ void app_viewer::process_fairing_taubin(viewer * p_view)
 		mesh->set_vertices(fair.get_postions());
 		mesh->update_normals();
 	}
+
+	return true;
 }
 
-void app_viewer::process_geodesics_fm(viewer * p_view)
+bool app_viewer::process_geodesics_fm(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
@@ -717,9 +770,11 @@ void app_viewer::process_geodesics_fm(viewer * p_view)
 	gproshan_log_var(view->time);
 
 	mesh->update_colors(&fm[0]);
+	
+	return false;
 }
 
-void app_viewer::process_geodesics_ptp_cpu(viewer * p_view)
+bool app_viewer::process_geodesics_ptp_cpu(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
@@ -734,9 +789,11 @@ void app_viewer::process_geodesics_ptp_cpu(viewer * p_view)
 	gproshan_log_var(view->time);
 
 	mesh->update_colors(&ptp[0]);
+	
+	return false;
 }
 
-void app_viewer::process_geodesics_heat_flow(viewer * p_view)
+bool app_viewer::process_geodesics_heat_flow(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
@@ -751,12 +808,14 @@ void app_viewer::process_geodesics_heat_flow(viewer * p_view)
 	gproshan_log_var(view->time);
 
 	mesh->update_colors(&heat_flow[0]);
+	
+	return false;
 }
 
 
 #ifdef GPROSHAN_CUDA
 
-void app_viewer::process_geodesics_ptp_gpu(viewer * p_view)
+bool app_viewer::process_geodesics_ptp_gpu(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
@@ -779,9 +838,11 @@ void app_viewer::process_geodesics_ptp_gpu(viewer * p_view)
 	gproshan_log_var(view->time);
 	
 	mesh->update_colors(&ptp[0]);
+	
+	return false;
 }
 
-void app_viewer::process_geodesics_heat_flow_gpu(viewer * p_view)
+bool app_viewer::process_geodesics_heat_flow_gpu(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
@@ -796,12 +857,14 @@ void app_viewer::process_geodesics_heat_flow_gpu(viewer * p_view)
 	gproshan_log_var(view->time);
 
 	mesh->update_colors(&heat_flow[0]);
+	
+	return false;
 }
 
 #endif // GPROSHAN_CUDA
 
 
-void app_viewer::process_fill_holes_biharmonic_splines(viewer * p_view)
+bool app_viewer::process_fill_holes_biharmonic_splines(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
@@ -813,7 +876,7 @@ void app_viewer::process_fill_holes_biharmonic_splines(viewer * p_view)
 	vector<index_t> * border_vertices;
 	che ** holes;
 	tie(border_vertices, holes) = fill_all_holes_meshes(mesh);
-	if(!holes) return;
+	if(!holes) return true;
 
 	index_t k = 2;
 
@@ -828,9 +891,11 @@ void app_viewer::process_fill_holes_biharmonic_splines(viewer * p_view)
 	delete [] holes;
 	delete [] border_vertices;
 	paint_holes_vertices(p_view);
+	
+	return false;
 }
 
-void app_viewer::process_gaussian_curvature(viewer * p_view)
+bool app_viewer::process_gaussian_curvature(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
@@ -878,9 +943,11 @@ void app_viewer::process_gaussian_curvature(viewer * p_view)
 	#pragma omp parallel for
 	for(index_t v = 0; v < mesh->n_vertices(); v++)
 		mesh->color(v) = f(gv(v));
+	
+	return false;
 }
 
-void app_viewer::process_edge_collapse(viewer * p_view)
+bool app_viewer::process_edge_collapse(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
@@ -897,9 +964,11 @@ void app_viewer::process_edge_collapse(viewer * p_view)
 
 	view->corr_mesh[1].init(view->meshes[1]->n_vertices(), view->current, sampling);
 	view->current = 1;
+	
+	return false;
 }
 
-void app_viewer::select_multiple(viewer * p_view)
+bool app_viewer::select_multiple(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
@@ -912,6 +981,8 @@ void app_viewer::select_multiple(viewer * p_view)
 		while(ss >> v)
 			view->mesh().selected.push_back(v);
 	}
+	
+	return false;
 }
 
 

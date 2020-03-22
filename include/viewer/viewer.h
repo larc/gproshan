@@ -73,7 +73,7 @@ class viewer
 {
 	protected:
 
-		using function_t = void (*) (viewer *);
+		using function_t = bool (*) (viewer *);
 		
 		struct process_t
 		{
@@ -184,30 +184,30 @@ class viewer
 		// menu functions
 		void menu_process(function_t pro);
 
-		static void menu_help(viewer * view);
-		static void menu_reset_mesh(viewer * view);
-		static void menu_save_mesh(viewer * view);
-		static void menu_zoom_in(viewer * view);
-		static void menu_zoom_out(viewer * view);
-		static void menu_bgc_inc(viewer * view);
-		static void menu_bgc_dec(viewer * view);
-		static void menu_bgc_white(viewer * view);
-		static void menu_bgc_black(viewer * view);
+		static bool menu_help(viewer * view);
+		static bool menu_reset_mesh(viewer * view);
+		static bool menu_save_mesh(viewer * view);
+		static bool menu_zoom_in(viewer * view);
+		static bool menu_zoom_out(viewer * view);
+		static bool menu_bgc_inc(viewer * view);
+		static bool menu_bgc_dec(viewer * view);
+		static bool menu_bgc_white(viewer * view);
+		static bool menu_bgc_black(viewer * view);
 
 		// render options
-		static void invert_orientation(viewer * view);
-		static void set_render_gl(viewer * view);
-		static void set_render_embree(viewer * view);
-		static void set_render_optix(viewer * view);
-		static void set_render_wireframe(viewer * view);
-		static void set_render_wireframe_fill(viewer * view);
-		static void set_render_gradient_field(viewer * view);
-		static void set_render_normal_field(viewer * view);
-		static void set_render_border(viewer * view);
-		static void set_render_lines(viewer * view);
-		static void set_render_flat(viewer * view);
+		static bool invert_orientation(viewer * view);
+		static bool set_render_gl(viewer * view);
+		static bool set_render_embree(viewer * view);
+		static bool set_render_optix(viewer * view);
+		static bool set_render_wireframe(viewer * view);
+		static bool set_render_wireframe_fill(viewer * view);
+		static bool set_render_gradient_field(viewer * view);
+		static bool set_render_normal_field(viewer * view);
+		static bool set_render_border(viewer * view);
+		static bool set_render_lines(viewer * view);
+		static bool set_render_flat(viewer * view);
 		
-		static void raycasting(viewer * view);
+		static bool raycasting(viewer * view);
 
 		// draw routines
 		void draw_meshes(shader & program);

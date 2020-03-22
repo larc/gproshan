@@ -143,12 +143,13 @@ bool viewer::run()
 		for(auto & p: processes)
 		{
 			process_t & pro = p.second;
-
 			if(pro.selected)
 			{
 				ImGui::Begin(pro.name.c_str());
-					p.second.function(this);
-					mesh().update_vbo();
+				
+				pro.selected = p.second.function(this);
+				mesh().update_vbo();
+				
 				ImGui::End();
 			}
 		}
@@ -331,8 +332,6 @@ void viewer::keyboard_callback(GLFWwindow * window, int key, int scancode, int a
 
 	if(view->processes[key].function)
 		view->processes[key].selected = !view->processes[key].selected;
-
-	//glClearColor(view->bgc, view->bgc, view->bgc, 1.);
 }
 
 void viewer::mouse_callback(GLFWwindow* window, int button, int action, int mods)
@@ -381,14 +380,16 @@ void viewer::idle()
 	////glutPostRedisplay();
 }
 
-void viewer::menu_help(viewer * view)
+bool viewer::menu_help(viewer * view)
 {
 	for(auto & p: view->processes)
 		if(p.second.function != nullptr)
 			fprintf(stderr, "%16s: %s\n", ('[' + p.second.key + ']').c_str(), p.second.name.c_str());
+	
+	return false;
 }
 
-void viewer::menu_reset_mesh(viewer * view)
+bool viewer::menu_reset_mesh(viewer * view)
 {
 	view->mesh().selected.clear();
 	view->other_vertices.clear();
@@ -396,9 +397,11 @@ void viewer::menu_reset_mesh(viewer * view)
 
 	view->mesh().reload();
 	view->mesh().update_vbo();
+
+	return false;
 }
 
-void viewer::menu_save_mesh(viewer * view)
+bool viewer::menu_save_mesh(viewer * view)
 {
 	gproshan_log(APP_VIEWER);
 	
@@ -412,96 +415,140 @@ void viewer::menu_save_mesh(viewer * view)
 	if(format == "ply") che_ply::write_file(view->mesh(), file);
 
 	cerr << "saved: " << file + "." + format << endl;
+
+	return false;
 }
 
-void viewer::menu_zoom_in(viewer * view)
+bool viewer::menu_zoom_in(viewer * view)
 {
 	view->cam.zoomIn();
+
+	return false;
 }
 
-void viewer::menu_zoom_out(viewer * view)
+bool viewer::menu_zoom_out(viewer * view)
 {
 	view->cam.zoomOut();
+	
+	return false;
 }
 
-void viewer::menu_bgc_inc(viewer * view)
+bool viewer::menu_bgc_inc(viewer * view)
 {
 	if(view->bgc < 1) view->bgc += 0.05;
+	else view->bgc = 1;
+
+	glClearColor(view->bgc, view->bgc, view->bgc, 1.);
+
+	return false;
 }
 
-void viewer::menu_bgc_dec(viewer * view)
+bool viewer::menu_bgc_dec(viewer * view)
 {
 	if(view->bgc > 0) view->bgc -= 0.05;
+	else view->bgc = 0;
+
+	glClearColor(view->bgc, view->bgc, view->bgc, 1.);
+
+	return false;
 }
 
-void viewer::menu_bgc_white(viewer * view)
+bool viewer::menu_bgc_white(viewer * view)
 {
 	view->bgc = 1;
+	glClearColor(view->bgc, view->bgc, view->bgc, 1.);
+
+	return false;
 }
 
-void viewer::menu_bgc_black(viewer * view)
+bool viewer::menu_bgc_black(viewer * view)
 {
 	view->bgc = 0;
+	glClearColor(view->bgc, view->bgc, view->bgc, 1.);
+
+	return false;
 }
 
-void viewer::invert_orientation(viewer * view)
+bool viewer::invert_orientation(viewer * view)
 {
 	view->mesh().invert_orientation();
+
+	return false;
 }
 
-void viewer::set_render_gl(viewer * view)
+bool viewer::set_render_gl(viewer * view)
 {
 	view->render_opt = 0;
+
+	return false;
 }
 
-void viewer::set_render_embree(viewer * view)
+bool viewer::set_render_embree(viewer * view)
 {
 	view->render_opt = 1;
+	
+	return false;
 }
 
-void viewer::set_render_optix(viewer * view)
+bool viewer::set_render_optix(viewer * view)
 {
 	view->render_opt = 2;
+	
+	return false;
 }
 
-void viewer::set_render_wireframe(viewer * view)
+bool viewer::set_render_wireframe(viewer * view)
 {
 	view->render_wireframe = !view->render_wireframe;
+	
+	return false;
 }
 
-void viewer::set_render_wireframe_fill(viewer * view)
+bool viewer::set_render_wireframe_fill(viewer * view)
 {
 	view->render_wireframe_fill = !view->render_wireframe_fill;
+	
+	return false;
 }
 
-void viewer::set_render_gradient_field(viewer * view)
+bool viewer::set_render_gradient_field(viewer * view)
 {
 	view->render_gradient_field = !view->render_gradient_field;
+	
+	return false;
 }
 
-void viewer::set_render_normal_field(viewer * view)
+bool viewer::set_render_normal_field(viewer * view)
 {
 	view->render_normal_field = !view->render_normal_field;
+	
+	return false;
 }
 
-void viewer::set_render_border(viewer * view)
+bool viewer::set_render_border(viewer * view)
 {
 	view->render_border = !view->render_border;
 	if(!view->render_border) view->mesh().selected.clear();
+	
+	return false;
 }
 
-void viewer::set_render_lines(viewer * view)
+bool viewer::set_render_lines(viewer * view)
 {
 	view->render_lines = !view->render_lines;
+	
+	return false;
 }
 
-void viewer::set_render_flat(viewer * view)
+bool viewer::set_render_flat(viewer * view)
 {
 	view->render_flat = !view->render_flat;
 	view->action = true;
+	
+	return false;
 }
 
-void viewer::raycasting(viewer * view)
+bool viewer::raycasting(viewer * view)
 {
 #ifdef GPROSHAN_EMBREE
 
@@ -522,6 +569,8 @@ void viewer::raycasting(viewer * view)
 	delete [] frame;
 
 #endif // GPROSHAN_EMBREE
+	
+	return false;
 }
 
 void viewer::render_gl()
