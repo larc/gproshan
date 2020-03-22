@@ -126,16 +126,31 @@ bool viewer::run()
 				if(ImGui::BeginMenu(sub_menus[i].c_str()))
 				{
 					for(auto & p: processes)
-						if(	p.second.function != nullptr &&
-							p.second.sub_menu == i &&
-							ImGui::MenuItem(p.second.name.c_str(), ('[' + p.second.key + ']').c_str()) )
-							p.second.function(this);
+					{
+						process_t & pro = p.second;
+
+						if(pro.function != nullptr && pro.sub_menu == i)
+							ImGui::MenuItem(pro.name.c_str(), ('[' + pro.key + ']').c_str(), &pro.selected);
+					}
 
 					ImGui::EndMenu();
 				}
 			}
 			
 			ImGui::EndMainMenuBar();
+		}
+		
+		for(auto & p: processes)
+		{
+			process_t & pro = p.second;
+
+			if(pro.selected)
+			{
+				ImGui::Begin(pro.name.c_str());
+					p.second.function(this);
+					mesh().update_vbo();
+				ImGui::End();
+			}
 		}
 
 		// Rendering
@@ -197,7 +212,6 @@ void viewer::init_gl()
 	glfwSwapInterval(1);
 
 	glewInit();
-
 
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
@@ -314,8 +328,11 @@ void viewer::keyboard_callback(GLFWwindow * window, int key, int scancode, int a
 	}
 	
 	viewer * view = (viewer *) glfwGetWindowUserPointer(window);
-	view->menu_process(view->processes[key].function);
-	glClearColor(view->bgc, view->bgc, view->bgc, 1.);
+
+	if(view->processes[key].function)
+		view->processes[key].selected = !view->processes[key].selected;
+
+	//glClearColor(view->bgc, view->bgc, view->bgc, 1.);
 }
 
 void viewer::mouse_callback(GLFWwindow* window, int button, int action, int mods)
@@ -362,15 +379,6 @@ void viewer::idle()
 {
 	//cam.idle();
 	////glutPostRedisplay();
-}
-
-void viewer::menu_process(function_t pro)
-{
-	if(!pro) return;
-	
-	pro(this);
-
-	mesh().update_vbo();
 }
 
 void viewer::menu_help(viewer * view)

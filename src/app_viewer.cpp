@@ -686,20 +686,20 @@ void app_viewer::process_fairing_spectral(viewer * p_view)
 
 void app_viewer::process_fairing_taubin(viewer * p_view)
 {
-	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->mesh();
 
-	gproshan_input(step);
-	real_t step; cin >> step;
+	static real_t step = 0.001; //cin >> step;
+	ImGui::InputFloat("step", &step, 0.001, 1, "%.3f");
 	
-	fairing * fair = new fairing_taubin(step);
-	fair->run(mesh);
-
-	mesh->set_vertices(fair->get_postions());
-	delete fair;
-
-	mesh->update_normals();
+	if(ImGui::Button("Run"))
+	{
+		fairing_taubin fair(step);
+		fair.run(mesh);
+	
+		mesh->set_vertices(fair.get_postions());
+		mesh->update_normals();
+	}
 }
 
 void app_viewer::process_geodesics_fm(viewer * p_view)

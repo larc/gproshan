@@ -27,8 +27,6 @@ optix::optix(const std::vector<che *> & meshes)
 	optixInit();
 	
 	// create context
-	cudaSetDevice(0);
-
 	cudaStreamCreate(&stream);
 
 	cuCtxGetCurrent(&cuda_context);

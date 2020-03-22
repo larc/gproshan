@@ -115,7 +115,7 @@ index_t embree::add_point_cloud(const che * mesh)
 	#pragma omp parallel for
 	for(index_t i = 0; i < mesh->n_vertices(); i++)
 	{
-		pxyzr[i] = glm::vec4(mesh->gt(i).x, mesh->gt(i).y, mesh->gt(i).z, 0.001f);
+		pxyzr[i] = glm::vec4(mesh->gt(i).x, mesh->gt(i).y, mesh->gt(i).z, 0.001);
 		
 		vertex n = mesh->normal(i);
 	//	normal[i] = glm::vec3(n.x, n.y, n.z);
@@ -131,7 +131,7 @@ index_t embree::add_point_cloud(const che * mesh)
 
 glm::vec4 embree::li(const ray_hit & r, const glm::vec3 & light, const bool & flat)
 {
-	glm::vec3 color(.6f, .8f, 1.f);
+	glm::vec3 color(0.6, 0.8, 1.0);
 	
 	float dist_light = glm::length(light - r.position());
 	float falloff = 4.f / (dist_light * dist_light);	// intensity multiplier / falloff
@@ -147,9 +147,9 @@ glm::vec4 embree::li(const ray_hit & r, const glm::vec3 & light, const bool & fl
 	ray_hit ro(r.position() + 1e-5f * wi, wi);
 
 	if(occluded(ro))
-		return .5f * glm::vec4(color * falloff * dot_wi_normal, 1.f);
+		return .5f * glm::vec4(color * falloff * dot_wi_normal, 1);
 	
-	return glm::vec4(color * falloff * dot_wi_normal, 1.f);
+	return glm::vec4(color * falloff * dot_wi_normal, 1);
 }
 
 bool embree::intersect(ray_hit & r)
