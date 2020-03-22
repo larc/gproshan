@@ -128,6 +128,7 @@ class viewer
 	#endif // GPROSHAN_OPTIX
 
 		bool action = false;
+		bool imgui_focus = false;
 
 		bool render_wireframe = false;
 		bool render_wireframe_fill = false;
@@ -182,8 +183,6 @@ class viewer
 		static void scroll_callback(GLFWwindow * window, double xoffset, double yoffset);
 
 		// menu functions
-		void menu_process(function_t pro);
-
 		static bool menu_help(viewer * view);
 		static bool menu_reset_mesh(viewer * view);
 		static bool menu_save_mesh(viewer * view);

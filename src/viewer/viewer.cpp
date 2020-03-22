@@ -140,14 +140,16 @@ bool viewer::run()
 			ImGui::EndMainMenuBar();
 		}
 		
+		imgui_focus = false;
 		for(auto & p: processes)
 		{
 			process_t & pro = p.second;
 			if(pro.selected)
 			{
-				ImGui::Begin(pro.name.c_str());
+				ImGui::Begin(("[" + pro.key + "] " + pro.name).c_str(), &pro.selected);
 				
-				pro.selected = p.second.function(this);
+				imgui_focus = imgui_focus || ImGui::IsWindowFocused();
+				pro.selected = pro.selected && p.second.function(this);
 				mesh().update_vbo();
 				
 				ImGui::End();
@@ -329,6 +331,7 @@ void viewer::keyboard_callback(GLFWwindow * window, int key, int scancode, int a
 	}
 	
 	viewer * view = (viewer *) glfwGetWindowUserPointer(window);
+	if(view->imgui_focus) return;
 
 	if(view->processes[key].function)
 		view->processes[key].selected = !view->processes[key].selected;
@@ -352,6 +355,8 @@ void viewer::cursor_callback(GLFWwindow * window, double x, double y)
 	if(state == GLFW_PRESS)
 	{
 		viewer * view = (viewer *) glfwGetWindowUserPointer(window);
+		if(view->imgui_focus) return;
+		
 		view->cam.motion(x, y);
 		view->action = true;
 	}
@@ -360,6 +365,7 @@ void viewer::cursor_callback(GLFWwindow * window, double x, double y)
 void viewer::scroll_callback(GLFWwindow * window, double xoffset, double yoffset)
 {
 	viewer * view = (viewer *) glfwGetWindowUserPointer(window);
+	if(view->imgui_focus) return;
 	
 	if(yoffset > 0)
 	{

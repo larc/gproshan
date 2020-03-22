@@ -270,168 +270,186 @@ bool app_viewer::process_threshold(viewer * p_view)
 
 bool app_viewer::process_functional_maps(viewer * p_view)
 {
-	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->mesh();
 
-	size_t K = 100;
+	static int K = 20;
+	
+	ImGui::InputInt("eigenvectors", &K);
 
-	a_sp_mat L, A;
-
-	TIC(view->time) laplacian(mesh, L, A); TOC(view->time)
-	gproshan_log_var(view->time);
-
-	a_vec eigval;
-	a_mat eigvec;
-
-	TIC(view->time) K = eigs_laplacian(eigval, eigvec, mesh, L, A, K); TOC(view->time)
-	gproshan_log_var(view->time);
-
-	gproshan_log_var(K);
-
-	K = K < N_MESHES ? K : N_MESHES;
-	for(index_t k = 0; k < N_MESHES; k++)
+	if(ImGui::Button("Run"))
 	{
-		if(k) view->add_mesh({new che(*mesh)});
-		view->current = k;
+		a_sp_mat L, A;
 
-		eigvec.col(k) -= eigvec.col(k).min();
-		eigvec.col(k) /= eigvec.col(k).max();
-	
-		#pragma omp parallel for
-		for(index_t v = 0; v < mesh->n_vertices(); v++)
-			view->mesh()->color(v) = eigvec(v, k);
+		TIC(view->time) laplacian(mesh, L, A); TOC(view->time)
+		gproshan_log_var(view->time);
 
-		view->mesh().update_vbo();
+		a_vec eigval;
+		a_mat eigvec;
+
+		TIC(view->time) K = eigs_laplacian(eigval, eigvec, mesh, L, A, K); TOC(view->time)
+		gproshan_log_var(view->time);
+
+		gproshan_log_var(K);
+
+		K = K < N_MESHES ? K : N_MESHES;
+		for(index_t k = 0; k < N_MESHES; k++)
+		{
+			if(k) view->add_mesh({new che(*mesh)});
+			view->current = k;
+
+			eigvec.col(k) -= eigvec.col(k).min();
+			eigvec.col(k) /= eigvec.col(k).max();
+		
+			#pragma omp parallel for
+			for(index_t v = 0; v < mesh->n_vertices(); v++)
+				view->mesh()->color(v) = eigvec(v, k);
+
+			view->mesh().update_vbo();
+		}
+		
+		view->current = 0;
 	}
-	
-	view->current = 0;
-	
-	return false;
+
+	return true;
 }
 
 bool app_viewer::process_wks(viewer * p_view)
 {
-	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->mesh();
 
-	size_t K = 50, T = 100;
+	static int K = 100;
+	static int T = 100;
 
-	a_sp_mat L, A;
+	ImGui::InputInt("eigenvectors", &K);
+	ImGui::InputInt("times", &T);
 
-	TIC(view->time) laplacian(mesh, L, A); TOC(view->time)
-	gproshan_log_var(view->time);
-
-	a_vec eigval;
-	a_mat eigvec;
-
-	TIC(view->time) K = eigs_laplacian(eigval, eigvec, mesh, L, A, K); TOC(view->time)
-	gproshan_log_var(view->time);
-
-	real_t max_s = 0;
-	#pragma omp parallel for reduction(max: max_s)
-	for(index_t v = 0; v < mesh->n_vertices(); v++)
+	if(ImGui::Button("Run"))
 	{
-		a_vec s(T, arma::fill::zeros);
-		for(index_t t = 0; t < T; t++)
-		for(index_t k = 1; k < K; k++)
-			s(t) += exp(-eigval(k) * t) * eigvec(v, k) * eigvec(v, k);
+		a_sp_mat L, A;
 
-		mesh->color(v) = norm(s);
-		max_s = max(max_s, mesh->color(v));
+		TIC(view->time) laplacian(mesh, L, A); TOC(view->time)
+		gproshan_log_var(view->time);
+
+		a_vec eigval;
+		a_mat eigvec;
+
+		TIC(view->time) K = eigs_laplacian(eigval, eigvec, mesh, L, A, K); TOC(view->time)
+		gproshan_log_var(view->time);
+
+		real_t max_s = 0;
+		#pragma omp parallel for reduction(max: max_s)
+		for(index_t v = 0; v < mesh->n_vertices(); v++)
+		{
+			a_vec s(T, arma::fill::zeros);
+			for(int t = 0; t < T; t++)
+			for(int k = 1; k < K; k++)
+				s(t) += exp(-eigval(k) * t) * eigvec(v, k) * eigvec(v, k);
+
+			mesh->color(v) = norm(s);
+			max_s = max(max_s, mesh->color(v));
+		}
+
+		#pragma omp parallel for
+		for(index_t v = 0; v < mesh->n_vertices(); v++)
+			mesh->color(v) /= max_s;
 	}
 
-	#pragma omp parallel for
-	for(index_t v = 0; v < mesh->n_vertices(); v++)
-		mesh->color(v) /= max_s;
-	
-	return false;
+	return true;
 }
 
 bool app_viewer::process_hks(viewer * p_view)
 {
-	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->mesh();
 
-	size_t K = 100;
-	size_t T = 100;
+	static int K = 100;
+	static int T = 100;
 
-	a_sp_mat L, A;
+	ImGui::InputInt("eigenvectors", &K);
+	ImGui::InputInt("times", &T);
 
-	TIC(view->time) laplacian(mesh, L, A); TOC(view->time)
-	gproshan_log_var(view->time);
-
-	a_vec eigval;
-	a_mat eigvec;
-
-	TIC(view->time) K = eigs_laplacian(eigval, eigvec, mesh, L, A, K); TOC(view->time)
-	gproshan_log_var(view->time);
-
-	if(!K) return true;
-
-	real_t max_s = 0;
-	#pragma omp parallel for reduction(max: max_s)
-	for(index_t v = 0; v < mesh->n_vertices(); v++)
+	if(ImGui::Button("Run"))
 	{
-		a_vec s(T, arma::fill::zeros);
-		for(index_t t = 0; t < T; t++)
-		for(index_t k = 1; k < K; k++)
-			s(t) += exp(-abs(eigval(k)) * t) * eigvec(v, k) * eigvec(v, k);
+		a_sp_mat L, A;
 
-		mesh->color(v) = norm(abs(arma::fft(s, 128)));
-		//mesh->color(v) = norm(s);
-		max_s = max(max_s, mesh->color(v));
+		TIC(view->time) laplacian(mesh, L, A); TOC(view->time)
+		gproshan_log_var(view->time);
+
+		a_vec eigval;
+		a_mat eigvec;
+
+		TIC(view->time) K = eigs_laplacian(eigval, eigvec, mesh, L, A, K); TOC(view->time)
+		gproshan_log_var(view->time);
+
+		if(!K) return true;
+
+		real_t max_s = 0;
+		#pragma omp parallel for reduction(max: max_s)
+		for(index_t v = 0; v < mesh->n_vertices(); v++)
+		{
+			a_vec s(T, arma::fill::zeros);
+			for(int t = 0; t < T; t++)
+			for(int k = 1; k < K; k++)
+				s(t) += exp(-abs(eigval(k)) * t) * eigvec(v, k) * eigvec(v, k);
+
+			mesh->color(v) = norm(abs(arma::fft(s, 128)));
+			//mesh->color(v) = norm(s);
+			max_s = max(max_s, mesh->color(v));
+		}
+
+		#pragma omp parallel for
+		for(index_t v = 0; v < mesh->n_vertices(); v++)
+			mesh->color(v) /= max_s;
 	}
 
-	#pragma omp parallel for
-	for(index_t v = 0; v < mesh->n_vertices(); v++)
-		mesh->color(v) /= max_s;
-	
-	return false;
+	return true;
 }
 
 bool app_viewer::process_gps(viewer * p_view)
 {
-	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->mesh();
 
-	size_t K = 50;
+	static int K = 50;
+	ImGui::InputInt("eigenvectors", &K);
 
-	a_sp_mat L, A;
-
-	TIC(view->time) laplacian(mesh, L, A); TOC(view->time)
-	gproshan_log_var(view->time);
-
-	a_vec eigval;
-	a_mat eigvec;
-
-	TIC(view->time) K = eigs_laplacian(eigval, eigvec, mesh, L, A, K); TOC(view->time)
-	gproshan_log_var(view->time);
-
-	eigvec = abs(eigvec);
-	eigvec.col(0).zeros();
-	for(index_t i = 1; i < K; i++)
-		eigvec.col(i) /= sqrt(abs(eigval(i)));
-
-	a_mat data = eigvec.t();
-	a_mat means;
-
-	real_t max_s = 0;
-	#pragma omp parallel for reduction(max: max_s)
-	for(index_t v = 0; v < mesh->n_vertices(); v++)
+	if(ImGui::Button("Run"))
 	{
-		mesh->color(v) = norm(eigvec.row(v));
-			max_s = max(max_s, mesh->color(v));
+		a_sp_mat L, A;
+
+		TIC(view->time) laplacian(mesh, L, A); TOC(view->time)
+		gproshan_log_var(view->time);
+
+		a_vec eigval;
+		a_mat eigvec;
+
+		TIC(view->time) K = eigs_laplacian(eigval, eigvec, mesh, L, A, K); TOC(view->time)
+		gproshan_log_var(view->time);
+
+		eigvec = abs(eigvec);
+		eigvec.col(0).zeros();
+		for(int i = 1; i < K; i++)
+			eigvec.col(i) /= sqrt(abs(eigval(i)));
+
+		a_mat data = eigvec.t();
+		a_mat means;
+
+		real_t max_s = 0;
+		#pragma omp parallel for reduction(max: max_s)
+		for(index_t v = 0; v < mesh->n_vertices(); v++)
+		{
+			mesh->color(v) = norm(eigvec.row(v));
+				max_s = max(max_s, mesh->color(v));
+		}
+
+		#pragma omp parallel for
+		for(index_t v = 0; v < mesh->n_vertices(); v++)
+			mesh->color(v) /= max_s;
 	}
 
-	#pragma omp parallel for
-	for(index_t v = 0; v < mesh->n_vertices(); v++)
-		mesh->color(v) /= max_s;
-	
-	return false;
+	return true;
 }
 
 bool app_viewer::process_key_points(viewer * p_view)
@@ -699,20 +717,24 @@ bool app_viewer::process_farthest_point_sampling_radio(viewer * p_view)
 
 bool app_viewer::process_farthest_point_sampling(viewer * p_view)
 {
-	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->mesh();
 
-	gproshan_input(samples_number);
-	index_t n; cin >> n;
+	static int n = 10;
+	static real_t radio;
 
-	real_t radio;
-	TIC(view->time)
-	load_sampling(view->mesh().selected, radio, mesh, n);
-	TOC(view->time)
-	gproshan_log_var(view->time);
+	ImGui::InputInt("samples", &n, 1, mesh->n_vertices() / 6);
+	ImGui::Text("radio: %.3f", radio);
 	
-	return false;
+	if(ImGui::Button("Run"))
+	{
+		TIC(view->time)
+		load_sampling(view->mesh().selected, radio, mesh, n);
+		TOC(view->time)
+		gproshan_log_var(view->time);
+	}
+	
+	return true;
 }
 
 bool app_viewer::process_fairing_spectral(viewer * p_view)
