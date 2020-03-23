@@ -139,8 +139,6 @@ void patch::init_random(vertex c, arma::mat T, real_t radio, real_t max_radio)
 
 
 	size_t n_points = (radio/max_radio) * 100;
-	gproshan_debug_var(n_points);
-
 	vertices.resize(n_points);
 	xyz.resize(3,n_points);
 

@@ -600,103 +600,120 @@ bool app_viewer::process_super_resolution(viewer * p_view)
 
 bool app_viewer::process_inpaiting(viewer * p_view)
 {
-	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->mesh();
 
-	size_t n; // dct
-	size_t m, M;
-	real_t f;
-	bool learn;
-	size_t avg_p = 36; 
-	size_t percentage = 0;
-	double delta = PI/6;
-	double sum_thres;
+	static int n = 12; // dct
+	static int m = 144;
+	static int M = 0;
+	static float f = 1;
+	static bool learn = 0;
+	static int avg_p = 36; 
+	static int percentage = 0;
+	static float delta = PI/6;
+	static float sum_thres = 0.001;
 
-	gproshan_input(n m M f learn sum_thres);
-	cin >> n >> m >> M >> f >> learn >> sum_thres;
 
-	basis * phi = new basis_dct(n);
-	inpainting dict(mesh, phi, m, M, f, learn, avg_p,  percentage, delta, sum_thres);
-	dict.execute();
-	delete phi;
-	mesh->update_colors(&dict[0]);
-	
-	mesh->update_normals();
+	ImGui::InputInt("basis", &n);
+	ImGui::InputInt("atoms", &m);
+	ImGui::InputFloat("delta", &delta, 0.001, 0.1, 3);	
+	ImGui::InputFloat("sum_thres", &sum_thres, 0.001, 0.1, 3);
+	ImGui::Checkbox("learn", &learn);
 
-	return false;
+	if(ImGui::Button("Run"))
+	{
+		basis * phi = new basis_dct(n);
+		inpainting dict(mesh, phi, m, M, f, learn, avg_p,  percentage, delta, sum_thres);
+		dict.execute();
+		delete phi;
+		mesh->update_colors(&dict[0]);
+		
+		mesh->update_normals();
+	}
+	return true;
 }
 
 bool app_viewer::process_mask(viewer * p_view)
 {
-	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->mesh();
 
-	size_t n = 12; // dct
-	size_t m = 144, M = 0;
-	real_t f = 1;
-	bool learn = 0;
-	size_t avg_p = 36; 
-	size_t percentage = 0;
-	double delta = PI/6;
-	double sum_thres;
+	static int n = 12; // dct
+	static int m = 144;
+	static int M = 0;
+	static float f = 1;
+	static bool learn = 0;
+	static int avg_p = 36; 
+	static int percentage = 0;
+	static float delta = PI/6;
+	static float sum_thres = 0.001;
 
-	gproshan_input(sum_thres );
-	cin >> sum_thres;
+	ImGui::InputInt("basis", &n);
+	ImGui::InputInt("atoms", &m);
+	ImGui::InputFloat("delta", &delta, 0.001, 0.1, 3);	
+	ImGui::InputFloat("sum_thres", &sum_thres, 0.001, 0.1, 3);
+	ImGui::Checkbox("learn", &learn);
 
-	basis * phi = new basis_dct(n);
-	inpainting dict(mesh, phi, m, M, f, learn, avg_p,  percentage, delta, sum_thres);
-	
-	dict.init_radial_feature_patches();
-	//dict.init_voronoi_patches();
-	delete phi;
-	mesh->update_colors(&dict[0]);
-	string f_points = tmp_file_path(mesh->name_size() + ".points");
-	a_vec points_out;
-	points_out.load(f_points);
-	for(int i = 0; i< points_out.size(); i++)
-		mesh.selected.push_back(points_out(i));
-	
-	mesh->update_normals();
-
-	return false;
+	if(ImGui::Button("Run"))
+	{
+		basis * phi = new basis_dct(n);
+		inpainting dict(mesh, phi, m, M, f, learn, avg_p,  percentage, delta, sum_thres);
+		
+		dict.init_radial_feature_patches();
+		//dict.init_voronoi_patches();
+		delete phi;
+		mesh->update_colors(&dict[0]);
+		string f_points = tmp_file_path(mesh->name_size() + ".points");
+		a_vec points_out;
+		points_out.load(f_points);
+		for(int i = 0; i< points_out.size(); i++)
+			mesh.selected.push_back(points_out(i));
+		
+		mesh->update_normals();
+	}
+	return true;
 }
 
 bool app_viewer::process_pc_reconstruction(viewer * p_view)
 {
-	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->mesh();
 
-	size_t n = 12; // dct
-	size_t m = 144, M = 0;
-	real_t f = 1;
-	bool learn = 0;
-	size_t avg_p = 36; 
-	size_t percentage = 0;
-	double delta = PI/6;
-	double sum_thres;
+	static int n = 12; // dct
+	static int m = 144;
+	static int M = 0;
+	static float f = 1;
+	static bool learn = 0;
+	static int avg_p = 36; 
+	static int percentage = 0;
+	static float delta = PI/6;
+	static float sum_thres = 0.001;	
 
-	gproshan_input(sum_thres );
-	cin >> sum_thres;
+	ImGui::InputInt("basis", &n);
+	ImGui::InputInt("atoms", &m);
+	ImGui::InputFloat("delta", &delta, 0.001, 0.1, 3);	
+	ImGui::InputFloat("sum_thres", &sum_thres, 0.001, 0.1, 3);
+	ImGui::Checkbox("learn", &learn);
 
-	basis * phi = new basis_dct(n);
-	inpainting dict(mesh, phi, m, M, f, learn, avg_p,  percentage, delta, sum_thres);
+	if(ImGui::Button("Run"))
+	{
+		basis * phi = new basis_dct(n);
+		inpainting dict(mesh, phi, m, M, f, learn, avg_p,  percentage, delta, sum_thres);
+		
+		dict.point_cloud_reconstruction();
+		//dict.init_voronoi_patches();
+		delete phi;
+		mesh->update_colors(&dict[0]);
+		string f_points = tmp_file_path(mesh->name_size() + ".points");
+		a_vec points_out;
+		points_out.load(f_points);
+		for(int i = 0; i< points_out.size(); i++)
+			mesh.selected.push_back(points_out(i));
+		
+		mesh->update_normals();
+	}
 	
-	dict.point_cloud_reconstruction();
-	//dict.init_voronoi_patches();
-	delete phi;
-	mesh->update_colors(&dict[0]);
-	string f_points = tmp_file_path(mesh->name_size() + ".points");
-	a_vec points_out;
-	points_out.load(f_points);
-	for(int i = 0; i< points_out.size(); i++)
-		mesh.selected.push_back(points_out(i));
-	
-	mesh->update_normals();
-
-	return false;
+	return true;
 }
 
 bool app_viewer::process_synthesis(viewer * p_view)

@@ -558,6 +558,8 @@ void inpainting::point_cloud_reconstruction()
 		if( S(i,3) > max_radio) max_radio = S(i,3); 
 
 	size_t total_points = 0;
+	A.eye(phi_basis->get_dim(), m);
+	
 
 	for(index_t i = 0; i < M; i++)
 	{
@@ -579,16 +581,13 @@ void inpainting::point_cloud_reconstruction()
 		total_points += patches[i].vertices.size();
 		patches[i].phi.set_size(patches[i].vertices.size(), phi_basis->get_dim());
 		phi_basis->discrete(patches[i].phi, patches[i].xyz);
+		
 
-	//	a_vec x = patches[i].phi * A * alpha.col(i);
-	//	patches[i].xyz.row(2) = x.t();
+		a_vec x = patches[i].phi * A * alpha.col(i);
+		patches[i].xyz.row(2) = x.t();
 	}
 
-
-
-//	a_vec x = rp.phi * A * alpha.col(i);
-//	rp.xyz.row(2) = x.t();
-
+	gproshan_debug_var(total_points);
 
 	for(index_t i = 0; i < M; i++)
 	{
