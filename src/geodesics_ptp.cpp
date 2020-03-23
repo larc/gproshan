@@ -11,7 +11,7 @@ using namespace std;
 namespace gproshan {
 
 
-ptp_out_t::ptp_out_t(distance_t *const & d, index_t *const & c): dist(d), clusters(c) {}
+ptp_out_t::ptp_out_t(real_t *const & d, index_t *const & c): dist(d), clusters(c) {}
 
 che * ptp_coalescence(index_t * & inv, const che * mesh, const toplesets_t & toplesets)
 {
@@ -46,8 +46,8 @@ void parallel_toplesets_propagation_coalescence_cpu(const ptp_out_t & ptp_out, c
 	mesh = ptp_coalescence(inv, mesh, toplesets);
 
 	// ------------------------------------------------------
-	distance_t * pdist[2] = {new distance_t[mesh->n_vertices()], new distance_t[mesh->n_vertices()]};
-	distance_t * error = new distance_t[mesh->n_vertices()];
+	real_t * pdist[2] = {new real_t[mesh->n_vertices()], new real_t[mesh->n_vertices()]};
+	real_t * error = new real_t[mesh->n_vertices()];
 
 	#pragma omp parallel for
 	for(index_t v = 0; v < mesh->n_vertices(); v++)
@@ -80,7 +80,7 @@ void parallel_toplesets_propagation_coalescence_cpu(const ptp_out_t & ptp_out, c
 		{
 			pdist[!d][v] = pdist[d][v];
 
-			distance_t p;
+			real_t p;
 			for_star(he, mesh, v)
 			{
 				p = update_step(mesh, pdist[d], he);
@@ -122,8 +122,8 @@ void parallel_toplesets_propagation_coalescence_cpu(const ptp_out_t & ptp_out, c
 
 void parallel_toplesets_propagation_cpu(const ptp_out_t & ptp_out, che * mesh, const vector<index_t> & sources, const toplesets_t & toplesets)
 {
-	distance_t * pdist[2] = {ptp_out.dist, new distance_t[mesh->n_vertices()]};
-	distance_t * error = new distance_t[mesh->n_vertices()];
+	real_t * pdist[2] = {ptp_out.dist, new real_t[mesh->n_vertices()]};
+	real_t * error = new real_t[mesh->n_vertices()];
 
 	#pragma omp parallel for
 	for(index_t v = 0; v < mesh->n_vertices(); v++)
@@ -157,7 +157,7 @@ void parallel_toplesets_propagation_cpu(const ptp_out_t & ptp_out, che * mesh, c
 			const index_t & v = toplesets.index[vi];
 			pdist[!d][v] = pdist[d][v];
 
-			distance_t p;
+			real_t p;
 			for_star(he, mesh, v)
 			{
 				p = update_step(mesh, pdist[d], he);
@@ -193,13 +193,13 @@ void parallel_toplesets_propagation_cpu(const ptp_out_t & ptp_out, che * mesh, c
 	
 	if(ptp_out.dist != pdist[!d])
 	{
-		memcpy(ptp_out.dist, pdist[!d], mesh->n_vertices() * sizeof(distance_t));
+		memcpy(ptp_out.dist, pdist[!d], mesh->n_vertices() * sizeof(real_t));
 		delete [] pdist[!d];
 	}
 	else delete [] pdist[d];
 }
 
-distance_t update_step(che * mesh, const distance_t * dist, const index_t & he)
+real_t update_step(che * mesh, const real_t * dist, const index_t & he)
 {
 	index_t x[3];
 	x[0] = mesh->vt(next(he));
@@ -210,31 +210,31 @@ distance_t update_step(che * mesh, const distance_t * dist, const index_t & he)
 	X[0] = mesh->gt(x[0]) - mesh->gt(x[2]);
 	X[1] = mesh->gt(x[1]) - mesh->gt(x[2]);
 
-	distance_t t[2];
+	real_t t[2];
 	t[0] = dist[x[0]];
 	t[1] = dist[x[1]];
 
-	distance_t q[2][2];
+	real_t q[2][2];
 	q[0][0] = (X[0], X[0]);
 	q[0][1] = (X[0], X[1]);
 	q[1][0] = (X[1], X[0]);
 	q[1][1] = (X[1], X[1]);
 
-	distance_t det = q[0][0] * q[1][1] - q[0][1] * q[1][0];
-	distance_t Q[2][2];
+	real_t det = q[0][0] * q[1][1] - q[0][1] * q[1][0];
+	real_t Q[2][2];
 	Q[0][0] = q[1][1] / det;
 	Q[0][1] = -q[0][1] / det;
 	Q[1][0] = -q[1][0] / det;
 	Q[1][1] = q[0][0] / det;
 
-	distance_t delta = t[0] * (Q[0][0] + Q[1][0]) + t[1] * (Q[0][1] + Q[1][1]);
-	distance_t dis = delta * delta -
+	real_t delta = t[0] * (Q[0][0] + Q[1][0]) + t[1] * (Q[0][1] + Q[1][1]);
+	real_t dis = delta * delta -
 					(Q[0][0] + Q[0][1] + Q[1][0] + Q[1][1]) * 
 					(t[0] * t[0] * Q[0][0] + t[0] * t[1] * (Q[1][0] + Q[0][1]) + t[1] * t[1] * Q[1][1] - 1);
 
-	distance_t p = (delta + sqrt(dis)) / (Q[0][0] + Q[0][1] + Q[1][0] + Q[1][1]);
+	real_t p = (delta + sqrt(dis)) / (Q[0][0] + Q[0][1] + Q[1][0] + Q[1][1]);
 
-	distance_t tp[2];
+	real_t tp[2];
 	tp[0] = t[0] - p;
 	tp[1] = t[1] - p;
 
@@ -242,17 +242,17 @@ distance_t update_step(che * mesh, const distance_t * dist, const index_t & he)
 			 tp[0] * (X[0][1]*Q[0][0] + X[1][1]*Q[1][0]) + tp[1] * (X[0][1]*Q[0][1] + X[1][1]*Q[1][1]),
 			 tp[0] * (X[0][2]*Q[0][0] + X[1][2]*Q[1][0]) + tp[1] * (X[0][2]*Q[0][1] + X[1][2]*Q[1][1]) );
 
-	distance_t cond[2];
+	real_t cond[2];
 	cond[0] = (X[0] , n);
 	cond[1] = (X[1] , n);
 
-	distance_t c[2];
+	real_t c[2];
 	c[0] = cond[0] * Q[0][0] + cond[1] * Q[0][1];
 	c[1] = cond[0] * Q[1][0] + cond[1] * Q[1][1];
 
 	if(t[0] == INFINITY || t[1] == INFINITY || dis < 0 || c[0] >= 0 || c[1] >= 0)
 	{
-		distance_t dp[2];
+		real_t dp[2];
 		dp[0] = dist[x[0]] + *X[0];
 		dp[1] = dist[x[1]] + *X[1];
 
@@ -262,9 +262,9 @@ distance_t update_step(che * mesh, const distance_t * dist, const index_t & he)
 	return p;
 }
 
-void normalize_ptp(distance_t * dist, const size_t & n)
+void normalize_ptp(real_t * dist, const size_t & n)
 {
-	distance_t max_d = 0;
+	real_t max_d = 0;
 
 	#pragma omp parallel for reduction(max: max_d)
 	for(index_t v = 0; v < n; v++)

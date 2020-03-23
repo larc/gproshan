@@ -13,7 +13,7 @@
 namespace gproshan::mdict {
 
 
-inpainting::inpainting(che *const & _mesh, basis *const & _phi_basis, const size_t & _m, const size_t & _M, const distance_t & _f,
+inpainting::inpainting(che *const & _mesh, basis *const & _phi_basis, const size_t & _m, const size_t & _M, const real_t & _f,
  const bool & _learn, size_t _avg_p, size_t _perc, double _delta, double _sum_thres, const bool & _plot): dictionary(_mesh, _phi_basis, _m, _M, _f, _learn, _plot)
 {
 	delta = _delta;
@@ -166,7 +166,7 @@ void inpainting::load_sampling(bool save_all)
 	index_t * indexes = new index_t[geo.n_sorted_index()];
 	geo.copy_sorted_index(indexes, geo.n_sorted_index());
 	size_t count = 0;
-	distance_t max_radio = geo[ indexes[mesh->n_vertices()-1] ] ;
+	real_t max_radio = geo[ indexes[mesh->n_vertices()-1] ] ;
 	
 	//radio *= 1.1;
 	gproshan_debug_var(max_radio);
@@ -186,10 +186,10 @@ void inpainting::load_sampling(bool save_all)
 		{
 			covered[i] = 0;
 		}
-		distance_t euc_radio;
-		distance_t geo_radio;
-		vector<distance_t> radios;
-		vector<distance_t> geo_radios;
+		real_t euc_radio;
+		real_t geo_radio;
+		vector<real_t> radios;
+		vector<real_t> geo_radios;
 		size_t count_cov = 0;
 		size_t count_cov_patch = 0;
 
@@ -479,7 +479,7 @@ void inpainting::init_voronoi_patches()
 	gproshan_log(our patches are ready);
 }
 
-distance_t inpainting::execute()
+real_t inpainting::execute()
 {
 
 	TIC(d_time) init_radial_feature_patches(); TOC(d_time)
@@ -550,7 +550,7 @@ void inpainting::point_cloud_reconstruction()
 	alpha.load(f_alpha);
 	gproshan_debug_var(S.n_rows);
 	M = S.n_rows;
-	distance_t radio, max_radio = -1;
+	real_t radio, max_radio = -1;
 	patches.resize(M);
 	vertex c;
 
@@ -618,7 +618,7 @@ void inpainting::point_cloud_reconstruction()
 }
 
 
-distance_t inpainting::execute_tmp()
+real_t inpainting::execute_tmp()
 {
 	// fill holes
 	size_t threshold = mesh->n_vertices();

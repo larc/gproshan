@@ -43,11 +43,11 @@ size_t dictionary::L = 12;
 size_t dictionary::K = 10;
 size_t dictionary::T = 5;
 
-dictionary::dictionary(che *const & _mesh, basis *const & _phi_basis, const size_t & _m, const size_t & _M, const distance_t & _f, const bool & _learn, const bool & _d_plot):
+dictionary::dictionary(che *const & _mesh, basis *const & _phi_basis, const size_t & _m, const size_t & _M, const real_t & _f, const bool & _learn, const bool & _d_plot):
 					mesh(_mesh), phi_basis(_phi_basis), m(_m), M(_M), f(_f), learn(_learn), d_plot(_d_plot)
 {
 	A.eye(phi_basis->dim, m);
-	dist = new distance_t[mesh->n_vertices()]; 
+	dist = new real_t[mesh->n_vertices()]; 
 }
 
 dictionary::~dictionary()
@@ -321,7 +321,7 @@ void dictionary::init_patches(const bool & reset, const fmask_t & mask)
 	*/
 }
 
-distance_t dictionary::mesh_reconstruction(const fmask_t & mask)
+real_t dictionary::mesh_reconstruction(const fmask_t & mask)
 {
 	gproshan_log(MDICT);
 
@@ -378,7 +378,7 @@ index_t dictionary::sample(const index_t & s)
 	return s;
 }
 
-const distance_t & dictionary::operator[](const index_t & i) const
+const real_t & dictionary::operator[](const index_t & i) const
 {
 	assert(i < mesh->n_vertices());
 	return dist[i];

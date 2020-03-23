@@ -36,33 +36,6 @@ const int viewer::m_window_size[N_MESHES][2] = {{1, 1}, {1, 2}, {1, 3},
 
 viewer::viewer()
 {
-	window = nullptr;
-	
-	n_meshes = current = 0;
-
-	render_opt = 0;
-	render_frame = nullptr;
-
-	#ifdef GPROSHAN_EMBREE
-		rt_embree = nullptr;
-	#endif // GPROSHAN_EMBREE
-
-	#ifdef GPROSHAN_OPTIX
-		rt_optix = nullptr;
-	#endif // GPROSHAN_OPTIX
-
-	render_wireframe = false;
-	render_wireframe_fill = false;
-	render_gradient_field = false;
-	render_normal_field = false;
-	render_border = false;
-	render_lines = false;
-	render_flat = false;
-
-	bgc = 0;
-
-	action = false;
-
 	init_gl();
 	init_glsl();
 	init_imgui();
@@ -113,19 +86,20 @@ bool viewer::run()
 		light = r.conj() * light * r;
 		up = r.conj() * up * r;
 		
+
 		proj_mat = glm::perspective(45.f, float(viewport_width) / float(viewport_height), .01f, 1000.f);
 		view_mat = glm::lookAt(	glm::vec3(eye[1], eye[2], eye[3]), 
 								glm::vec3(center[1], center[2], center[3]), 
 								glm::vec3(up[1], up[2], up[3])
 								);
-
+		
 		// RENDER 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
 		switch(render_opt)
 		{
+			case 0: render_gl(); break;
 			case 1: render_embree(); break;
 			case 2: render_optix(); break;
-			default: render_gl();
 		}
 		
 		ImGui_ImplOpenGL3_NewFrame();
@@ -138,7 +112,11 @@ bool viewer::run()
 			{
 				for(index_t i = 0; i < n_meshes; i++)
 					if(ImGui::MenuItem((to_string(i) + ". " + meshes[i]->name()).c_str()))
+					{
 						current = i;	
+						sphere_translations.clear();
+						glfwSetWindowTitle(window, mesh()->filename().c_str());
+					}
 
 				ImGui::EndMenu();
 			}
@@ -148,16 +126,34 @@ bool viewer::run()
 				if(ImGui::BeginMenu(sub_menus[i].c_str()))
 				{
 					for(auto & p: processes)
-						if(	p.second.function != nullptr &&
-							p.second.sub_menu == i &&
-							ImGui::MenuItem(p.second.name.c_str(), ('[' + p.second.key + ']').c_str()) )
-							p.second.function(this);
+					{
+						process_t & pro = p.second;
+
+						if(pro.function != nullptr && pro.sub_menu == i)
+							ImGui::MenuItem(pro.name.c_str(), ('[' + pro.key + ']').c_str(), &pro.selected);
+					}
 
 					ImGui::EndMenu();
 				}
 			}
 			
 			ImGui::EndMainMenuBar();
+		}
+		
+		imgui_focus = false;
+		for(auto & p: processes)
+		{
+			process_t & pro = p.second;
+			if(pro.selected)
+			{
+				ImGui::Begin(("[" + pro.key + "] " + pro.name).c_str(), &pro.selected);
+				
+				imgui_focus = imgui_focus || ImGui::IsWindowFocused();
+				pro.selected = pro.selected && p.second.function(this);
+				mesh().update_vbo();
+				
+				ImGui::End();
+			}
 		}
 
 		// Rendering
@@ -166,7 +162,6 @@ bool viewer::run()
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
-		//glfwWaitEvents();
 	}
 
 	return true;
@@ -220,7 +215,6 @@ void viewer::init_gl()
 	glfwSwapInterval(1);
 
 	glewInit();
-
 
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
@@ -290,17 +284,6 @@ void viewer::init_glsl()
 	shader_pointcloud.load_fragment("../shaders/fragment_pointcloud.glsl");
 }
 
-void viewer::update_vbo()
-{
-	for(index_t i = 0; i < n_meshes; i++)
-		meshes[i].update();
-}
-
-void viewer::menu_process(int value)
-{
-	menu_process(processes[value].function);
-}
-
 void viewer::add_process(const int & key, const process_t & process)
 {
 	if(processes.find(key) == processes.end())
@@ -316,8 +299,9 @@ void viewer::add_mesh(const vector<che *> & _meshes)
 	for(che * _mesh: _meshes)
 	{
 		assert(n_meshes < N_MESHES);
-		meshes[n_meshes++].init(_mesh);
-		meshes[n_meshes - 1].log_info();
+		meshes[n_meshes].init(_mesh);
+		meshes[n_meshes].log_info();
+		n_meshes++;
 	}
 	
 	if(!n_meshes) return;
@@ -347,15 +331,10 @@ void viewer::keyboard_callback(GLFWwindow * window, int key, int scancode, int a
 	}
 	
 	viewer * view = (viewer *) glfwGetWindowUserPointer(window);
-	view->menu_process(view->processes[key].function);
-	glClearColor(view->bgc, view->bgc, view->bgc, 1.);
-}
+	if(view->imgui_focus) return;
 
-void viewer::menu_meshes(int value)
-{
-	current = value;
-	select_vertices.clear();
-	glfwSetWindowTitle(window, mesh()->filename().c_str());
+	if(view->processes[key].function)
+		view->processes[key].selected = !view->processes[key].selected;
 }
 
 void viewer::mouse_callback(GLFWwindow* window, int button, int action, int mods)
@@ -376,6 +355,8 @@ void viewer::cursor_callback(GLFWwindow * window, double x, double y)
 	if(state == GLFW_PRESS)
 	{
 		viewer * view = (viewer *) glfwGetWindowUserPointer(window);
+		if(view->imgui_focus) return;
+		
 		view->cam.motion(x, y);
 		view->action = true;
 	}
@@ -384,6 +365,7 @@ void viewer::cursor_callback(GLFWwindow * window, double x, double y)
 void viewer::scroll_callback(GLFWwindow * window, double xoffset, double yoffset)
 {
 	viewer * view = (viewer *) glfwGetWindowUserPointer(window);
+	if(view->imgui_focus) return;
 	
 	if(yoffset > 0)
 	{
@@ -404,32 +386,28 @@ void viewer::idle()
 	////glutPostRedisplay();
 }
 
-void viewer::menu_process(function_t pro)
-{
-	if(pro) pro(this);
-
-	update_vbo();
-}
-
-void viewer::menu_help(viewer * view)
+bool viewer::menu_help(viewer * view)
 {
 	for(auto & p: view->processes)
 		if(p.second.function != nullptr)
 			fprintf(stderr, "%16s: %s\n", ('[' + p.second.key + ']').c_str(), p.second.name.c_str());
+	
+	return false;
 }
 
-void viewer::menu_reset_mesh(viewer * view)
+bool viewer::menu_reset_mesh(viewer * view)
 {
-	view->select_vertices.clear();
+	view->mesh().selected.clear();
 	view->other_vertices.clear();
 	view->vectors.clear();
 
 	view->mesh().reload();
+	view->mesh().update_vbo();
 
-	view->update_vbo();
+	return false;
 }
 
-void viewer::menu_save_mesh(viewer * view)
+bool viewer::menu_save_mesh(viewer * view)
 {
 	gproshan_log(APP_VIEWER);
 	
@@ -443,97 +421,140 @@ void viewer::menu_save_mesh(viewer * view)
 	if(format == "ply") che_ply::write_file(view->mesh(), file);
 
 	cerr << "saved: " << file + "." + format << endl;
+
+	return false;
 }
 
-void viewer::menu_zoom_in(viewer * view)
+bool viewer::menu_zoom_in(viewer * view)
 {
 	view->cam.zoomIn();
+
+	return false;
 }
 
-void viewer::menu_zoom_out(viewer * view)
+bool viewer::menu_zoom_out(viewer * view)
 {
 	view->cam.zoomOut();
+	
+	return false;
 }
 
-void viewer::menu_bgc_inc(viewer * view)
+bool viewer::menu_bgc_inc(viewer * view)
 {
 	if(view->bgc < 1) view->bgc += 0.05;
+	else view->bgc = 1;
+
+	glClearColor(view->bgc, view->bgc, view->bgc, 1.);
+
+	return false;
 }
 
-void viewer::menu_bgc_dec(viewer * view)
+bool viewer::menu_bgc_dec(viewer * view)
 {
 	if(view->bgc > 0) view->bgc -= 0.05;
+	else view->bgc = 0;
+
+	glClearColor(view->bgc, view->bgc, view->bgc, 1.);
+
+	return false;
 }
 
-void viewer::menu_bgc_white(viewer * view)
+bool viewer::menu_bgc_white(viewer * view)
 {
 	view->bgc = 1;
+	glClearColor(view->bgc, view->bgc, view->bgc, 1.);
+
+	return false;
 }
 
-void viewer::menu_bgc_black(viewer * view)
+bool viewer::menu_bgc_black(viewer * view)
 {
 	view->bgc = 0;
+	glClearColor(view->bgc, view->bgc, view->bgc, 1.);
+
+	return false;
 }
 
-void viewer::invert_orientation(viewer * view)
+bool viewer::invert_orientation(viewer * view)
 {
 	view->mesh().invert_orientation();
-	view->mesh().update_normals();
-	view->update_vbo();
+
+	return false;
 }
 
-void viewer::set_render_gl(viewer * view)
+bool viewer::set_render_gl(viewer * view)
 {
 	view->render_opt = 0;
+
+	return false;
 }
 
-void viewer::set_render_embree(viewer * view)
+bool viewer::set_render_embree(viewer * view)
 {
 	view->render_opt = 1;
+	
+	return false;
 }
 
-void viewer::set_render_optix(viewer * view)
+bool viewer::set_render_optix(viewer * view)
 {
 	view->render_opt = 2;
+	
+	return false;
 }
 
-void viewer::set_render_wireframe(viewer * view)
+bool viewer::set_render_wireframe(viewer * view)
 {
 	view->render_wireframe = !view->render_wireframe;
+	
+	return false;
 }
 
-void viewer::set_render_wireframe_fill(viewer * view)
+bool viewer::set_render_wireframe_fill(viewer * view)
 {
 	view->render_wireframe_fill = !view->render_wireframe_fill;
+	
+	return false;
 }
 
-void viewer::set_render_gradient_field(viewer * view)
+bool viewer::set_render_gradient_field(viewer * view)
 {
 	view->render_gradient_field = !view->render_gradient_field;
+	
+	return false;
 }
 
-void viewer::set_render_normal_field(viewer * view)
+bool viewer::set_render_normal_field(viewer * view)
 {
 	view->render_normal_field = !view->render_normal_field;
+	
+	return false;
 }
 
-void viewer::set_render_border(viewer * view)
+bool viewer::set_render_border(viewer * view)
 {
 	view->render_border = !view->render_border;
-	if(!view->render_border) view->select_vertices.clear();
+	if(!view->render_border) view->mesh().selected.clear();
+	
+	return false;
 }
 
-void viewer::set_render_lines(viewer * view)
+bool viewer::set_render_lines(viewer * view)
 {
 	view->render_lines = !view->render_lines;
+	
+	return false;
 }
 
-void viewer::set_render_flat(viewer * view)
+bool viewer::set_render_flat(viewer * view)
 {
 	view->render_flat = !view->render_flat;
+	view->action = true;
+	
+	return false;
 }
 
-void viewer::raycasting(viewer * view)
+bool viewer::raycasting(viewer * view)
 {
 #ifdef GPROSHAN_EMBREE
 
@@ -554,6 +575,8 @@ void viewer::raycasting(viewer * view)
 	delete [] frame;
 
 #endif // GPROSHAN_EMBREE
+	
+	return false;
 }
 
 void viewer::render_gl()
@@ -624,7 +647,8 @@ void viewer::render_embree()
 	}
 
 	rt_embree->pathtracing(	glm::uvec2(viewport_width, viewport_height),
-							view_mat, proj_mat, {glm::vec3(light[1], light[2], light[3])}, action);
+							view_mat, proj_mat, {glm::vec3(light[1], light[2], light[3])}, 
+							render_flat, action );
 	
 	action = false;
 
@@ -681,12 +705,12 @@ void viewer::draw_meshes(shader & program)
 
 void viewer::draw_selected_vertices(shader & program)
 {
-	if(sphere_translations.size() != select_vertices.size())
+	if(sphere_translations.size() != mesh().selected.size())
 	{
-		sphere_translations.resize(select_vertices.size());
+		sphere_translations.resize(mesh().selected.size());
 
-		for(index_t i = 0; i < select_vertices.size(); i++)
-			sphere_translations[i] = mesh()->gt(select_vertices[i]);
+		for(index_t i = 0; i < mesh().selected.size(); i++)
+			sphere_translations[i] = mesh()->gt(mesh().selected[i]);
 
 		sphere.update_instances_translations(sphere_translations);
 	}
@@ -701,10 +725,10 @@ void viewer::draw_selected_vertices(shader & program)
 
 void viewer::select_border_vertices()
 {
-	select_vertices.clear();
+	mesh().selected.clear();
 	for(index_t b = 0; b < mesh()->n_borders(); b++)
 		for_border(he, mesh(), mesh()->bt(b))
-			select_vertices.push_back(mesh()->vt(he));
+			mesh().selected.push_back(mesh()->vt(he));
 }
 
 void viewer::pick_vertex(int x, int y)

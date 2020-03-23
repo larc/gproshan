@@ -49,6 +49,7 @@ void raytracing::pathtracing(	const glm::uvec2 & windows_size,
 								const glm::mat4 & view_mat,
 								const glm::mat4 & proj_mat,
 								const std::vector<glm::vec3> & light,
+								const bool & flat,
 								const bool & restart )
 {
 	if(rt_restart(windows_size.x, windows_size.y) || restart)
@@ -79,7 +80,7 @@ void raytracing::pathtracing(	const glm::uvec2 & windows_size,
 
 		li = glm::vec4(0.f);
 		for(auto & l: light)
-			li += intersect_li(cam_pos, glm::normalize(p - cam_pos), l);
+			li += intersect_li(cam_pos, glm::normalize(p - cam_pos), l, flat);
 
 		color = (color * float(n_samples) + li / float(light.size())) / float(n_samples + 1);
 	}

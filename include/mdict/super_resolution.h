@@ -12,10 +12,10 @@ namespace gproshan::mdict {
 class super_resolution : public dictionary
 {
 	public:
-		super_resolution(che *const & _mesh, basis *const & _phi_basis, const size_t & _m, const size_t & _M, const distance_t & _f, const bool &_learn, const bool & _plot = true);
+		super_resolution(che *const & _mesh, basis *const & _phi_basis, const size_t & _m, const size_t & _M, const real_t & _f, const bool &_learn, const bool & _plot = true);
 		virtual ~super_resolution() = default;
 
-		distance_t execute();
+		real_t execute();
 };
 
 

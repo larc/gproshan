@@ -11,7 +11,7 @@ using namespace std;
 namespace gproshan {
 
 
-distance_t * heat_flow(che * mesh, const vector<index_t> & sources, double & solve_time)
+real_t * heat_flow(che * mesh, const vector<index_t> & sources, double & solve_time)
 {
 	if(!sources.size()) return 0;
 	
@@ -42,7 +42,7 @@ distance_t * heat_flow(che * mesh, const vector<index_t> & sources, double & sol
 	//assert(spsolve(u, A, u0));	// arma
 
 	// extract geodesics
-	distance_t * dist = new distance_t[mesh->n_vertices()];
+	real_t * dist = new real_t[mesh->n_vertices()];
 	
 	a_mat div(mesh->n_vertices(), 1);
 	compute_divergence(mesh, u, div);
@@ -63,7 +63,7 @@ distance_t * heat_flow(che * mesh, const vector<index_t> & sources, double & sol
 
 #ifdef GPROSHAN_CUDA
 
-distance_t * heat_flow_gpu(che * mesh, const vector<index_t> & sources, double & solve_time)
+real_t * heat_flow_gpu(che * mesh, const vector<index_t> & sources, double & solve_time)
 {
 	if(!sources.size()) return 0;
 	
@@ -90,7 +90,7 @@ distance_t * heat_flow_gpu(che * mesh, const vector<index_t> & sources, double &
 	solve_time += solve_positive_definite_gpu(u, A, u0);		// cusorlver (cusparse)
 
 	// extract geodesics
-	distance_t * dist = new distance_t[mesh->n_vertices()];
+	real_t * dist = new real_t[mesh->n_vertices()];
 	
 	a_mat div(mesh->n_vertices(), 1);
 	compute_divergence(mesh, u, div);

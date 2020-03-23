@@ -28,8 +28,8 @@ class dictionary
 		a_mat A;								///< dictionary continuous matrix.
 		a_mat alpha;							///< sparse coding matrix.
 		
-		distance_t f;
-		distance_t s_radio;						///< sampling geodesic radio.
+		real_t f;
+		real_t s_radio;						///< sampling geodesic radio.
 		std::vector<index_t> sampling;			///< samples, center of patches if sampling.
 		std::vector<patch> patches;				///< vector of patches.
 		std::vector<vpatches_t> patches_map;	///< invert index vertex to patches.
@@ -37,7 +37,7 @@ class dictionary
 		double d_time;							///< time of operations.
 		bool learn;
 		bool d_plot;							///< plot atoms and basis with gnuplot.
-		distance_t * dist;
+		real_t * dist;
 	
 	public:
 		static size_t K;						///< number of iterations KSVD.
@@ -45,7 +45,7 @@ class dictionary
 		static size_t T;						///< factor of patches' size, default 5 toplesets.
 	
 	public:
-		const distance_t & operator[](const index_t & i) const;
+		const real_t & operator[](const index_t & i) const;
 		void draw_patches(index_t i);
 
 	protected:
@@ -53,14 +53,14 @@ class dictionary
 					basis *const &_phi_basis,	///< pointer to continuous basis.
 					const size_t & _m,			///< number of dictionary atoms.
 					const size_t & _M,			///< number of patches.
-					const distance_t & _f,		///< deprecated
+					const real_t & _f,		///< deprecated
 					const bool & _learn,		
 					const bool & _plot			///< flag to plot basis and atoms with gnuplot.
 					);
 
 		virtual ~dictionary();
 
-		virtual distance_t execute() = 0;
+		virtual real_t execute() = 0;
 
 		void learning();
 		void sparse_coding();
@@ -71,7 +71,7 @@ class dictionary
 							const fmask_t & mask = nullptr
 							);
 
-		distance_t mesh_reconstruction(const fmask_t & mask = nullptr);
+		real_t mesh_reconstruction(const fmask_t & mask = nullptr);
 		void update_alphas(a_mat & alpha, size_t threshold);
 		void save_alpha(string file);
 

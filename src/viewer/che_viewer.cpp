@@ -11,27 +11,10 @@ using namespace std;
 namespace gproshan {
 
 
-che_viewer::che_viewer()
-{
-	mesh = nullptr;
-	n_vertices = 0;
-	n_instances = 0;
-
-	normals = nullptr;
-	colors = nullptr;
-	
-	vx = vy = 0;
-}
-
 che_viewer::~che_viewer()
 {
-	if(n_vertices) return;
-
 	glDeleteBuffers(5, vbo);
 	glDeleteVertexArrays(1, &vao);
-
-	if(normals) delete [] normals;
-	if(colors) delete [] colors;
 }
 
 che *& che_viewer::operator -> ()
@@ -44,51 +27,31 @@ che_viewer::operator che *& ()
 	return mesh;
 }
 
-void che_viewer::init(che * _mesh, const bool & normalize)
+void che_viewer::init(che * mesh, const bool & normalize)
 {
-	n_vertices = 0;
-	mesh = _mesh;
-	
-	if(normalize)
-		mesh->normalize();
-
-	invert_normals = false;
-
 	glGenVertexArrays(1, &vao);
 	glGenBuffers(5, vbo);
+	
+	this->mesh = mesh;
+	this->normalize = normalize;
 
 	update();
 }
 
 void che_viewer::reload()
 {
-	n_vertices = 0;
 	mesh->reload();
-	mesh->normalize();
-	update();
-
-	translate(v_translate);
 	update();
 }
 
 void che_viewer::update()
 {
-	assert(mesh != nullptr);
-
-	if(n_vertices != mesh->n_vertices())
-	{
-		if(normals) delete [] normals;
-		if(colors) delete [] colors;
-
-		n_vertices = mesh->n_vertices();
-		normals = new vertex[n_vertices];
-		colors = new color_t[n_vertices];
-
-		update_normals();
-		update_colors();
-	}
-
+	if(normalize) mesh->normalize();	
+	
 	factor = mesh->mean_edge();
+	
+	mesh->update_normals();
+	mesh->update_colors();
 
 	update_vbo();
 }
@@ -99,21 +62,21 @@ void che_viewer::update_vbo()
 
 	// 0 VERTEX
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
-	glBufferData(GL_ARRAY_BUFFER, n_vertices * sizeof(vertex), &mesh->gt(0), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, mesh->n_vertices() * sizeof(vertex), &mesh->gt(0), GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_VERTEX_T, GL_FALSE, 0, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	// 1 NORMAL
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
-	glBufferData(GL_ARRAY_BUFFER, n_vertices * sizeof(vertex), normals, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, mesh->n_vertices() * sizeof(vertex), &mesh->normal(0), GL_STATIC_DRAW);
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 3, GL_VERTEX_T, GL_FALSE, 0, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	// 2 COLOR
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[2]);
-	glBufferData(GL_ARRAY_BUFFER, n_vertices * sizeof(real_t), colors, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, mesh->n_vertices() * sizeof(real_t), &mesh->color(0), GL_STATIC_DRAW);
 	glEnableVertexAttribArray(2);
 	glVertexAttribPointer(2, 1, GL_VERTEX_T, GL_FALSE, 0, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -127,39 +90,6 @@ void che_viewer::update_vbo()
 	}
 	
 	glBindVertexArray(0);
-}
-
-void che_viewer::update_normals()
-{
-	#pragma omp parallel for
-	for(index_t v = 0; v < n_vertices; v++)
-		if(invert_normals)
-			normals[v] = -mesh->normal(v);
-		else
-			normals[v] = mesh->normal(v);
-}
-
-void che_viewer::update_colors(const color_t *const c)
-{
-	if(!c)
-	{
-		#pragma omp parallel for
-		for(index_t v = 0; v < n_vertices; v++)
-			colors[v] = COLOR;
-
-		return;
-	}
-
-	distance_t max_c = 0;
-	
-	#pragma omp parallel for reduction(max: max_c)
-	for(index_t v = 0; v < n_vertices; v++)
-		if(c[v] < INFINITY)
-			max_c = max(c[v], max_c);
-
-	#pragma omp parallel for
-	for(index_t v = 0; v < n_vertices; v++)
-		colors[v] = c[v] / max_c;
 }
 
 void che_viewer::update_instances_translations(const vector<vertex> & translations)
@@ -214,21 +144,6 @@ void che_viewer::draw_point_cloud(shader & program)
 	program.disable();
 }
 
-color_t & che_viewer::color(const index_t & v)
-{
-	return colors[v];
-}
-
-vertex & che_viewer::normal(const index_t & v)
-{
-	return normals[v];
-}
-
-vertex *& che_viewer::normals_ptr()
-{
-	return normals;
-}
-
 void che_viewer::translate(const vertex & p)
 {
 	v_translate = p;
@@ -240,7 +155,9 @@ void che_viewer::translate(const vertex & p)
 
 void che_viewer::invert_orientation()
 {
-	invert_normals = !invert_normals;
+	#pragma omp parallel for
+	for(index_t v = 0; v < mesh->n_vertices(); v++)
+		mesh->normal(v) = -mesh->normal(v);
 }
 
 void che_viewer::log_info()

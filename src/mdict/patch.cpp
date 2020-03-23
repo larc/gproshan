@@ -33,7 +33,7 @@ typedef My_Monge_via_jet_fitting::Monge_form My_Monge_form;
 
 size_t patch::expected_nv = 3 * dictionary::T * (dictionary::T + 1);
 
-void patch::init(che * mesh, const index_t & v, const size_t & n_toplevels, const distance_t & radio_, index_t * _toplevel)
+void patch::init(che * mesh, const index_t & v, const size_t & n_toplevels, const real_t & radio_, index_t * _toplevel)
 {
 	radio = radio_;
 	index_t * toplevel = _toplevel ? _toplevel : new index_t[mesh->n_vertices()];
@@ -107,7 +107,7 @@ bool patch::add_vertex_by_faces(vector<vertex> & N, index_t * indexes, size_t nc
 			{
 				angle = tmp_angle;
 				//gproshan_debug_var(he);
-				area_face = mesh->area_trig(he/3); 
+				area_face = mesh->real_trig(he/3); 
 				min_he = mesh->normal_he(he); 
 				if( !exists(v) ) vertices.push_back(v);
 				added = true;
@@ -123,7 +123,7 @@ bool patch::add_vertex_by_faces(vector<vertex> & N, index_t * indexes, size_t nc
 	N.push_back(min_he);
 	return added;
 }
-void patch::init_random(vertex c, arma::mat T, distance_t radio, distance_t max_radio)
+void patch::init_random(vertex c, arma::mat T, real_t radio, real_t max_radio)
 {
 	this->T = T;
 	x.resize(3);
@@ -162,7 +162,7 @@ void patch::init_random(vertex c, arma::mat T, distance_t radio, distance_t max_
 
 
 }
-void patch::recover_radial_disjoint(che * mesh, const distance_t & radio_, const index_t & v)
+void patch::recover_radial_disjoint(che * mesh, const real_t & radio_, const index_t & v)
 {
 	// for small meshes 6000 0.e-5
 	// for others 2.e-5
@@ -207,7 +207,7 @@ void patch::recover_radial_disjoint(che * mesh, const distance_t & radio_, const
 
 }
 
-void patch::init_radial_disjoint(che * mesh, const distance_t & radio_, const index_t & v, distance_t & euc_radio, distance_t & geo_radio, double delta, double sum_thres)
+void patch::init_radial_disjoint(che * mesh, const real_t & radio_, const index_t & v, real_t & euc_radio, real_t & geo_radio, double delta, double sum_thres)
 {
 
 	radio = -INFINITY;
@@ -341,7 +341,7 @@ void patch::reset_xyz(che * mesh, vector<vpatches_t> & vpatches, const index_t &
 }
 		
 
-void patch::reset_xyz_disjoint(che * mesh, distance_t * dist, size_t M, vector<vpatches_t> & vpatches, const index_t & p,  const fmask_t & mask)
+void patch::reset_xyz_disjoint(che * mesh, real_t * dist, size_t M, vector<vpatches_t> & vpatches, const index_t & p,  const fmask_t & mask)
 {
 	size_t m = vertices.size();
 	if(mask)
@@ -441,14 +441,14 @@ void patch::gather_vertices(che * mesh, const index_t & v, const size_t & n_topl
 	}	
 }
 
-void patch::gather_vertices(che * mesh, const index_t & v, const distance_t & radio, index_t * toplevel)
+void patch::gather_vertices(che * mesh, const index_t & v, const real_t & radio, index_t * toplevel)
 {
 	assert(x.n_elem == 3 && T.n_rows == 3 && T.n_cols == 3);
 	
 	if(vertices.size()) vertices.clear();
 	vertices.reserve(expected_nv);
 	
-	priority_queue<pair<distance_t, index_t> > qvertices;
+	priority_queue<pair<real_t, index_t> > qvertices;
 
 	memset(toplevel, -1, sizeof(index_t) * mesh->n_vertices());
 	

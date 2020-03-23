@@ -20,10 +20,10 @@
 namespace gproshan {
 
 
-distance_t * heat_flow(che * mesh, const std::vector<index_t> & sources, double & solve_time);
+real_t * heat_flow(che * mesh, const std::vector<index_t> & sources, double & solve_time);
 
 #ifdef GPROSHAN_CUDA
-distance_t * heat_flow_gpu(che * mesh, const std::vector<index_t> & sources, double & solve_time);
+real_t * heat_flow_gpu(che * mesh, const std::vector<index_t> & sources, double & solve_time);
 #endif // GPROSHAN_CUDA
 
 void compute_divergence(che * mesh, const a_mat & u, a_mat & div);

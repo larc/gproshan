@@ -27,8 +27,6 @@ optix::optix(const std::vector<che *> & meshes)
 	optixInit();
 	
 	// create context
-	cudaSetDevice(0);
-
 	cudaStreamCreate(&stream);
 
 	cuCtxGetCurrent(&cuda_context);
@@ -214,7 +212,7 @@ void optix::add_mesh(OptixBuildInput & optix_mesh, uint32_t & optix_trig_flags, 
 	optix_mesh.triangleArray.sbtIndexOffsetStrideInBytes	= 0; 
 }
 
-glm::vec4 optix::intersect_li(const glm::vec3 & org, const glm::vec3 & dir, const glm::vec3 & light)
+glm::vec4 optix::intersect_li(const glm::vec3 & org, const glm::vec3 & dir, const glm::vec3 & light, const bool & flat)
 {
 	return glm::vec4(0.f);
 }

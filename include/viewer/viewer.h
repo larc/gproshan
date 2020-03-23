@@ -73,7 +73,7 @@ class viewer
 {
 	protected:
 
-		using function_t = void (*) (viewer *);
+		using function_t = bool (*) (viewer *);
 		
 		struct process_t
 		{
@@ -81,6 +81,7 @@ class viewer
 			std::string name;
 			function_t function;
 			index_t sub_menu;
+			bool selected = false;
 			
 			process_t() = default;
 			process_t(const std::string & k, const std::string & n, function_t f, const index_t & sm = NIL): key(k), name(n), function(f), sub_menu(sm) {};
@@ -89,7 +90,7 @@ class viewer
 		static const int m_window_size[N_MESHES][2];
 
 
-		GLFWwindow * window;
+		GLFWwindow * window = nullptr;
 		int viewport_width;
 		int viewport_height;
 
@@ -111,31 +112,32 @@ class viewer
 
 		che_viewer meshes[N_MESHES];
 		vcorr_t corr_mesh[N_MESHES];
-		size_t n_meshes;
-		index_t current; // current mesh
+		size_t n_meshes	= 0;
+		index_t current = 0; // current mesh
 
-		index_t render_opt;
-
-		frame * render_frame;
+		index_t render_opt = 0;
+		
+		frame * render_frame = nullptr;
 
 	#ifdef GPROSHAN_EMBREE
-		rt::embree * rt_embree;
+		rt::embree * rt_embree = nullptr;
 	#endif // GPROSHAN_EMBREE
 	
 	#ifdef GPROSHAN_OPTIX
-		rt::optix * rt_optix;
+		rt::optix * rt_optix = nullptr;
 	#endif // GPROSHAN_OPTIX
 
-		bool action;
+		bool action = false;
+		bool imgui_focus = false;
 
-		bool render_wireframe;
-		bool render_wireframe_fill;
-		bool render_gradient_field;
-		bool render_normal_field;
-		bool render_border;
-		bool render_lines;
-		bool render_flat;
-		float bgc;
+		bool render_wireframe = false;
+		bool render_wireframe_fill = false;
+		bool render_gradient_field = false;
+		bool render_normal_field = false;
+		bool render_border = false;
+		bool render_lines = false;
+		bool render_flat = false;
+		float bgc = 0;
 
 		std::map<int, process_t> processes;
 
@@ -145,7 +147,6 @@ class viewer
 	
 	public:
 
-		std::vector<index_t> select_vertices;
 		std::vector<vertex> other_vertices;
 		std::vector<vertex> vectors;
 		std::vector<std::string> sub_menus;
@@ -169,7 +170,6 @@ class viewer
 		void init_imgui();
 		void init_menus();
 		void init_glsl();
-		void update_vbo();
 
 		void render_gl();
 		void render_embree();
@@ -183,34 +183,30 @@ class viewer
 		static void scroll_callback(GLFWwindow * window, double xoffset, double yoffset);
 
 		// menu functions
-		void menu_meshes(int value);
-		void menu_process(int value);
-		void menu_process(function_t pro);
-
-		static void menu_help(viewer * view);
-		static void menu_reset_mesh(viewer * view);
-		static void menu_save_mesh(viewer * view);
-		static void menu_zoom_in(viewer * view);
-		static void menu_zoom_out(viewer * view);
-		static void menu_bgc_inc(viewer * view);
-		static void menu_bgc_dec(viewer * view);
-		static void menu_bgc_white(viewer * view);
-		static void menu_bgc_black(viewer * view);
+		static bool menu_help(viewer * view);
+		static bool menu_reset_mesh(viewer * view);
+		static bool menu_save_mesh(viewer * view);
+		static bool menu_zoom_in(viewer * view);
+		static bool menu_zoom_out(viewer * view);
+		static bool menu_bgc_inc(viewer * view);
+		static bool menu_bgc_dec(viewer * view);
+		static bool menu_bgc_white(viewer * view);
+		static bool menu_bgc_black(viewer * view);
 
 		// render options
-		static void invert_orientation(viewer * view);
-		static void set_render_gl(viewer * view);
-		static void set_render_embree(viewer * view);
-		static void set_render_optix(viewer * view);
-		static void set_render_wireframe(viewer * view);
-		static void set_render_wireframe_fill(viewer * view);
-		static void set_render_gradient_field(viewer * view);
-		static void set_render_normal_field(viewer * view);
-		static void set_render_border(viewer * view);
-		static void set_render_lines(viewer * view);
-		static void set_render_flat(viewer * view);
+		static bool invert_orientation(viewer * view);
+		static bool set_render_gl(viewer * view);
+		static bool set_render_embree(viewer * view);
+		static bool set_render_optix(viewer * view);
+		static bool set_render_wireframe(viewer * view);
+		static bool set_render_wireframe_fill(viewer * view);
+		static bool set_render_gradient_field(viewer * view);
+		static bool set_render_normal_field(viewer * view);
+		static bool set_render_border(viewer * view);
+		static bool set_render_lines(viewer * view);
+		static bool set_render_flat(viewer * view);
 		
-		static void raycasting(viewer * view);
+		static bool raycasting(viewer * view);
 
 		// draw routines
 		void draw_meshes(shader & program);

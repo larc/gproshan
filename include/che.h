@@ -45,6 +45,9 @@ class che
 		index_t * ET	= nullptr;	///< edge table				: e		-> he
 		index_t * EHT	= nullptr;	///< extra half edge table	: he	-> e
 		index_t * BT	= nullptr;	///< boundary table			: b 	-> v
+		
+		vertex * VN		= nullptr;	///< vertex normals			: v		-> normal(v)
+		real_t * VC	= nullptr;	///< vertex color			: v		-> color(v)
 
 		bool manifold = true;
 
@@ -62,13 +65,20 @@ class che
 		void flip(const index_t & e);
 		real_t pdetriq(const index_t & t) const;
 		real_t quality();
-		area_t area_trig(const index_t & t) const;
-		area_t area_vertex(const index_t & v);
-		area_t area_surface() const;
+		real_t real_trig(const index_t & t) const;
+		real_t area_vertex(const index_t & v);
+		real_t area_surface() const;
+		void update_colors(const real_t * vcolor = nullptr);
+		const real_t & color(const index_t & v) const;
+		real_t & color(const index_t & v);
+		void update_normals();
+		const vertex & normal(const index_t & v) const;
+		vertex & normal(const index_t & v);
+		vertex shading_normal(const index_t & f, const float & u, const float & v, const float & w) const;
+		vertex normal_trig(const index_t & f) const;
 		vertex normal_he(const index_t & he) const;
-		vertex normal(const index_t & v) const;
-		vertex gradient_he(const index_t & he, const distance_t *const & f) const;
-		vertex gradient(const index_t & v, const distance_t *const & f);
+		vertex gradient_he(const index_t & he, const real_t *const & f) const;
+		vertex gradient(const index_t & v, const real_t *const & f);
 		vertex barycenter(const index_t & t) const;
 		vertex corr_vertex(corr_t & corr) const;
 		real_t cotan(const index_t & he) const;

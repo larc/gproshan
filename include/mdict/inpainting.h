@@ -19,20 +19,20 @@ class inpainting : public dictionary
 {
 	public:
 		inpainting(che *const & _mesh, basis *const & _phi_basis, const size_t & _m, const size_t & _M,
-		 const distance_t & _f, const bool & _learn, size_t _avg_p = 36, size_t _perc = 50,  double _delta=PI/6, double _sum_thres = 0.001 , const bool & _plot = false);
+		 const real_t & _f, const bool & _learn, size_t _avg_p = 36, size_t _perc = 50,  double _delta=PI/6, double _sum_thres = 0.001 , const bool & _plot = false);
 		virtual ~inpainting() = default;
 
-		distance_t execute();
+		real_t execute();
 		void load_mask(const std::vector<index_t> * vertices, const index_t * clusters);
 		void load_mask();
 		void init_voronoi_patches();
 		void init_radial_feature_patches();
 		void load_sampling(bool save_all);
 		void point_cloud_reconstruction();
-		vector<index_t> sort_indexes(const vector<distance_t> &v);
+		vector<index_t> sort_indexes(const vector<real_t> &v);
 
 		
-		distance_t execute_tmp();
+		real_t execute_tmp();
 	private:
 		size_t avg_p;
 		size_t percent;

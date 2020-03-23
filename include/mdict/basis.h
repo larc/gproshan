@@ -19,7 +19,7 @@ class dictionary;
 class basis
 {
 	protected:
-		distance_t radio;
+		real_t radio;
 		size_t dim;
 
 
@@ -30,7 +30,7 @@ class basis
 		void plot_atoms(const a_mat & A);
 		void plot_patch(const a_mat & A, const a_mat & xyz, index_t i);
 		size_t get_dim();
-		distance_t get_radio();
+		real_t get_radio();
 		virtual double get_frequency(size_t idx) = 0;
 
 	private:

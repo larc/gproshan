@@ -4,6 +4,7 @@
 #include "che.h"
 
 #include <vector>
+#include <map>
 
 #include <glm/glm.hpp>
 
@@ -16,6 +17,8 @@ namespace gproshan::rt {
 class raytracing
 {
 	protected:
+		std::map<index_t, const che *> geomID_mesh;
+
 		size_t width;
 		size_t height;
 		size_t n_samples;
@@ -32,6 +35,7 @@ class raytracing
 							const glm::mat4 & view_mat,
 							const glm::mat4 & proj_mat,
 							const std::vector<glm::vec3> & light,
+							const bool & flat,
 							const bool & restart = false
 							);
 
@@ -45,7 +49,8 @@ class raytracing
 	protected:
 		virtual glm::vec4 intersect_li(	const glm::vec3 & org,
 										const glm::vec3 & dir,
-										const glm::vec3 & light ) = 0;
+										const glm::vec3 & light,
+										const bool & flat ) = 0;
 		
 		virtual float intersect_depth(	const glm::vec3 & org,
 										const glm::vec3 & dir ) = 0;

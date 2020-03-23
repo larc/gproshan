@@ -72,7 +72,7 @@ size_t basis::get_dim()
 	return dim;
 }
 
-distance_t basis::get_radio()
+real_t basis::get_radio()
 {
 	return radio;
 }

@@ -13,7 +13,7 @@ namespace gproshan {
 
 struct border_t
 {
-	angle_t theta;
+	real_t theta;
 	index_t v;
 
 	border_t() = default;
@@ -38,7 +38,7 @@ struct border_t
 		if(theta < 0) theta += 2 * M_PI;
 	}
 
-	a_vec new_vertex(const std::vector<a_vec> & V, angle_t div, const distance_t & length, const std::array<index_t, 2> & neighbors, const bool & o)
+	a_vec new_vertex(const std::vector<a_vec> & V, real_t div, const real_t & length, const std::array<index_t, 2> & neighbors, const bool & o)
 	{
 		index_t p_v = neighbors[!o];
 		index_t n_v = neighbors[o];
@@ -81,7 +81,7 @@ struct border_t
 		if(theta < 0) theta += 2 * M_PI;
 	}
 
-	a_vec new_vertex(const std::vector<a_vec> & V, angle_t div, const distance_t & length, const std::array<index_t, 2> & neighbors, const bool & o, const a_vec & normal)
+	a_vec new_vertex(const std::vector<a_vec> & V, real_t div, const real_t & length, const std::array<index_t, 2> & neighbors, const bool & o, const a_vec & normal)
 	{
 		index_t p_v = neighbors[!o];
 		index_t n_v = neighbors[o];

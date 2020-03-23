@@ -20,14 +20,14 @@ using namespace std;
 namespace gproshan {
 
 
-vector<pair<index_t, distance_t> > iter_error_parallel_toplesets_propagation_coalescence_gpu(che * mesh, const vector<index_t> & sources, const vector<index_t> & limits, const index_t * sorted_index, const distance_t * exact_dist, double & time_ptp)
+vector<pair<index_t, real_t> > iter_error_parallel_toplesets_propagation_coalescence_gpu(che * mesh, const vector<index_t> & sources, const vector<index_t> & limits, const index_t * sorted_index, const real_t * exact_dist, double & time_ptp)
 {
 	// sort data by levels, must be improve the coalescence
 
 	vertex * V = new vertex[mesh->n_vertices()];
 	index_t * F = new index_t[mesh->n_faces() * che::P];
 	index_t * inv = new index_t[mesh->n_vertices()];
-	distance_t * exact_dist_sorted = new distance_t[mesh->n_vertices()];
+	real_t * exact_dist_sorted = new real_t[mesh->n_vertices()];
 	
 	#pragma omp parallel for
 	for(index_t i = 0; i < mesh->n_vertices(); i++)
@@ -62,16 +62,16 @@ vector<pair<index_t, distance_t> > iter_error_parallel_toplesets_propagation_coa
 	CHE * dd_mesh, * d_mesh;
 	cuda_create_CHE(h_mesh, dd_mesh, d_mesh);
 
-	distance_t * h_dist = new distance_t[h_mesh->n_vertices];
+	real_t * h_dist = new real_t[h_mesh->n_vertices];
 
-	distance_t * d_dist[2];
-	cudaMalloc(&d_dist[0], sizeof(distance_t) * h_mesh->n_vertices);
-	cudaMalloc(&d_dist[1], sizeof(distance_t) * h_mesh->n_vertices);
+	real_t * d_dist[2];
+	cudaMalloc(&d_dist[0], sizeof(real_t) * h_mesh->n_vertices);
+	cudaMalloc(&d_dist[1], sizeof(real_t) * h_mesh->n_vertices);
 
-	distance_t * d_error;
-	cudaMalloc(&d_error, sizeof(distance_t) * h_mesh->n_vertices);
+	real_t * d_error;
+	cudaMalloc(&d_error, sizeof(real_t) * h_mesh->n_vertices);
 
-	vector<pair<index_t, distance_t> > iter_error = iter_error_run_ptp_coalescence_gpu(d_mesh, h_mesh->n_vertices, h_dist, d_dist, sources, limits, inv, exact_dist_sorted, d_error);
+	vector<pair<index_t, real_t> > iter_error = iter_error_run_ptp_coalescence_gpu(d_mesh, h_mesh->n_vertices, h_dist, d_dist, sources, limits, inv, exact_dist_sorted, d_error);
 	
 	delete [] h_dist;
 	cudaFree(d_error);
@@ -96,7 +96,7 @@ vector<pair<index_t, distance_t> > iter_error_parallel_toplesets_propagation_coa
 }
 
 /// Return an array of time in seconds.
-double * times_farthest_point_sampling_ptp_coalescence_gpu(che * mesh, vector<index_t> & samples, size_t n, distance_t radio)
+double * times_farthest_point_sampling_ptp_coalescence_gpu(che * mesh, vector<index_t> & samples, size_t n, real_t radio)
 {
 	cudaDeviceReset();
 
@@ -111,14 +111,14 @@ double * times_farthest_point_sampling_ptp_coalescence_gpu(che * mesh, vector<in
 	index_t * inv = new index_t[mesh->n_vertices()];
 
 
-	distance_t * h_dist = new distance_t[mesh->n_vertices()];
+	real_t * h_dist = new real_t[mesh->n_vertices()];
 
-	distance_t * d_dist[2];
-	cudaMalloc(&d_dist[0], sizeof(distance_t) * mesh->n_vertices());
-	cudaMalloc(&d_dist[1], sizeof(distance_t) * mesh->n_vertices());
+	real_t * d_dist[2];
+	cudaMalloc(&d_dist[0], sizeof(real_t) * mesh->n_vertices());
+	cudaMalloc(&d_dist[1], sizeof(real_t) * mesh->n_vertices());
 
-	distance_t * d_error;
-	cudaMalloc(&d_error, sizeof(distance_t) * mesh->n_vertices());
+	real_t * d_error;
+	cudaMalloc(&d_error, sizeof(real_t) * mesh->n_vertices());
 
 	vector<index_t> limits;
 	index_t * toplesets = new index_t[mesh->n_vertices()];
@@ -137,7 +137,7 @@ double * times_farthest_point_sampling_ptp_coalescence_gpu(che * mesh, vector<in
 	float time_fps;
 	index_t d;
 	int f;
-	distance_t max_dist = INFINITY;
+	real_t max_dist = INFINITY;
 	while(n-- && max_dist > radio)
 	{
 		cudaEventRecord(start, 0);
@@ -185,7 +185,7 @@ double * times_farthest_point_sampling_ptp_coalescence_gpu(che * mesh, vector<in
 		times[samples.size()] = time_fps / 1000;
 
 		if(radio > 0 || !n)
-			cudaMemcpy(&max_dist, d_dist[d] + f - 1, sizeof(distance_t), cudaMemcpyDeviceToHost);
+			cudaMemcpy(&max_dist, d_dist[d] + f - 1, sizeof(real_t), cudaMemcpyDeviceToHost);
 		
 		samples.push_back(sorted_index[f - 1]);
 	}
@@ -211,7 +211,7 @@ double * times_farthest_point_sampling_ptp_coalescence_gpu(che * mesh, vector<in
 	return times;
 }
 
-vector<pair<index_t, distance_t> > iter_error_run_ptp_coalescence_gpu(CHE * d_mesh, const index_t & n_vertices, distance_t * h_dist, distance_t ** d_dist, const vector<index_t> & sources, const vector<index_t> & limits, const index_t * inv, const distance_t * exact_dist, distance_t * d_error)
+vector<pair<index_t, real_t> > iter_error_run_ptp_coalescence_gpu(CHE * d_mesh, const index_t & n_vertices, real_t * h_dist, real_t ** d_dist, const vector<index_t> & sources, const vector<index_t> & limits, const index_t * inv, const real_t * exact_dist, real_t * d_error)
 {
 	#pragma omp parallel for
 	for(index_t v = 0; v < n_vertices; v++)
@@ -220,10 +220,10 @@ vector<pair<index_t, distance_t> > iter_error_run_ptp_coalescence_gpu(CHE * d_me
 	for(index_t i = 0; i < sources.size(); i++)
 		h_dist[inv[sources[i]]] = 0;
 
-	cudaMemcpy(d_dist[0], h_dist, sizeof(distance_t) * n_vertices, cudaMemcpyHostToDevice);
-	cudaMemcpy(d_dist[1], h_dist, sizeof(distance_t) * n_vertices, cudaMemcpyHostToDevice);
+	cudaMemcpy(d_dist[0], h_dist, sizeof(real_t) * n_vertices, cudaMemcpyHostToDevice);
+	cudaMemcpy(d_dist[1], h_dist, sizeof(real_t) * n_vertices, cudaMemcpyHostToDevice);
 
-	vector<pair<index_t, distance_t> > iter_error;
+	vector<pair<index_t, real_t> > iter_error;
 	iter_error.reserve(limits.size());
 
 	ofstream os("band");
@@ -245,7 +245,7 @@ vector<pair<index_t, distance_t> > iter_error_run_ptp_coalescence_gpu(CHE * d_me
 		os << n_iter << " " << i << " " << j << " " << end - start << endl;
 
 		// begin calculating iteration error
-		cudaMemcpy(h_dist, d_dist[!d], sizeof(distance_t) * n_vertices, cudaMemcpyDeviceToHost);
+		cudaMemcpy(h_dist, d_dist[!d], sizeof(real_t) * n_vertices, cudaMemcpyDeviceToHost);
 		if(j == limits.size() - 1)
 			iter_error.push_back(make_pair(n_iter, compute_error(h_dist, exact_dist, n_vertices, sources.size())));
 		// end

@@ -58,9 +58,9 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 		// PERFORMANCE & ACCURACY ___________________________________________________________________
 
 		double Time[7];			// FM, PTP GPU, HEAT cholmod, HEAT cusparse
-		distance_t Error[5];	// FM, PTP GPU, HEAT cholmod, HEAT cusparse
+		real_t Error[5];	// FM, PTP GPU, HEAT cholmod, HEAT cusparse
 
-		distance_t * exact = load_exact_geodesics(exact_dist_path + filename + ".exact", n_vertices);
+		real_t * exact = load_exact_geodesics(exact_dist_path + filename + ".exact", n_vertices);
 		if(!exact) fprintf(stderr, "no exact geodesics for: %s.\n", filename.c_str());
 
 		Time[0] = test_fast_marching(Error[0], exact, mesh, source, n_test);
@@ -98,7 +98,7 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 			if(Time[t_min] > Time[i]) t_min = i;
 		
 		index_t e_min = 0;
-		for(index_t i = 1; i < sizeof(Error) / sizeof(distance_t); i++)
+		for(index_t i = 1; i < sizeof(Error) / sizeof(real_t); i++)
 			if(Error[e_min] > Error[i]) e_min = i;
 		
 		fprintf(ftable, "%20s ", ("\\verb|" + filename + '|').c_str());
@@ -195,7 +195,7 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 #ifdef GPROSHAN_CUDA	// IMPLEMENT: iter_error_parallel_toplesets_propagation_coalescence_cpu
 
 		double time;
-		vector<pair<index_t, distance_t> > iter_error = iter_error_parallel_toplesets_propagation_coalescence_gpu(mesh, source, limits, sorted_index, exact, time);
+		vector<pair<index_t, real_t> > iter_error = iter_error_parallel_toplesets_propagation_coalescence_gpu(mesh, source, limits, sorted_index, exact, time);
 
 		system(("mv band " + (test_path + filename + ".band")).c_str());
 
@@ -239,7 +239,7 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 	fclose(ftable);
 }
 
-double test_fast_marching(distance_t & error, const distance_t * exact, che * mesh, const vector<index_t> & source, const int & n_test)
+double test_fast_marching(real_t & error, const real_t * exact, che * mesh, const vector<index_t> & source, const int & n_test)
 {
 	double t, seconds = INFINITY;
 
@@ -256,11 +256,11 @@ double test_fast_marching(distance_t & error, const distance_t * exact, che * me
 	return seconds;
 }
 
-double test_ptp_cpu(distance_t & error, const distance_t * exact, che * mesh, const vector<index_t> & source, const toplesets_t & toplesets, const int & n_test)
+double test_ptp_cpu(real_t & error, const real_t * exact, che * mesh, const vector<index_t> & source, const toplesets_t & toplesets, const int & n_test)
 {
 	double t, seconds = INFINITY;
 	
-	distance_t * dist = new distance_t[mesh->n_vertices()];
+	real_t * dist = new real_t[mesh->n_vertices()];
 	for(int i = 0; i < n_test; i++)
 	{
 		TIC(t) parallel_toplesets_propagation_cpu(dist, mesh, source, toplesets); TOC(t)
@@ -274,12 +274,12 @@ double test_ptp_cpu(distance_t & error, const distance_t * exact, che * mesh, co
 	return seconds;
 }
 
-double test_heat_method_cholmod(distance_t & error, double & stime, const distance_t * exact, che * mesh, const vector<index_t> & source, const int & n_test)
+double test_heat_method_cholmod(real_t & error, double & stime, const real_t * exact, che * mesh, const vector<index_t> & source, const int & n_test)
 {
 	double t, st, ptime;
 	ptime = stime = INFINITY;
 	
-	distance_t * dist = nullptr;
+	real_t * dist = nullptr;
 	for(int i = 0; i < n_test; i++)
 	{
 		if(dist) delete [] dist;
@@ -299,11 +299,11 @@ double test_heat_method_cholmod(distance_t & error, double & stime, const distan
 
 #ifdef GPROSHAN_CUDA
 
-double test_ptp_gpu(distance_t & error, const distance_t * exact, che * mesh, const vector<index_t> & source, const toplesets_t & toplesets, const int & n_test)
+double test_ptp_gpu(real_t & error, const real_t * exact, che * mesh, const vector<index_t> & source, const toplesets_t & toplesets, const int & n_test)
 {
 	double t, seconds = INFINITY;
 	
-	distance_t * dist = new distance_t[mesh->n_vertices()];
+	real_t * dist = new real_t[mesh->n_vertices()];
 	for(int i = 0; i < n_test; i++)
 	{
 		t = parallel_toplesets_propagation_coalescence_gpu(dist, mesh, source, toplesets);
@@ -317,12 +317,12 @@ double test_ptp_gpu(distance_t & error, const distance_t * exact, che * mesh, co
 	return seconds;
 }
 
-double test_heat_method_gpu(distance_t & error, double & stime, const distance_t * exact, che * mesh, const vector<index_t> & source, const int & n_test)
+double test_heat_method_gpu(real_t & error, double & stime, const real_t * exact, che * mesh, const vector<index_t> & source, const int & n_test)
 {
 	double t, st, ptime;
 	ptime = stime = INFINITY;
 	
-	distance_t * dist = nullptr;
+	real_t * dist = nullptr;
 	for(int i = 0; i < n_test; i++)
 	{
 		if(dist) delete [] dist;
@@ -343,13 +343,13 @@ double test_heat_method_gpu(distance_t & error, double & stime, const distance_t
 #endif // GPROSHAN_CUDA
 
 
-distance_t * load_exact_geodesics(const string & file, const size_t & n)
+real_t * load_exact_geodesics(const string & file, const size_t & n)
 {
 	ifstream is(file);
 
 	if(!is.good()) return nullptr;
 
-	distance_t * exact = new distance_t[n];
+	real_t * exact = new real_t[n];
 
 	for(index_t i = 0; i < n; i++)
 		is >> exact[i];
@@ -358,9 +358,9 @@ distance_t * load_exact_geodesics(const string & file, const size_t & n)
 	return exact;
 }
 
-distance_t compute_error(const distance_t * dist, const distance_t * exact, const size_t & n, const size_t & s)
+real_t compute_error(const real_t * dist, const real_t * exact, const size_t & n, const size_t & s)
 {
-	distance_t error = 0;
+	real_t error = 0;
 
 	#pragma omp parallel for reduction(+: error)
 	for(index_t v = 0; v < n; v++)

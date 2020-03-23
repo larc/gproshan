@@ -124,7 +124,7 @@ int app_viewer::main(int nargs, const char ** args)
 	return 0;
 }
 
-void paint_holes_vertices(viewer * p_view)
+bool paint_holes_vertices(viewer * p_view)
 {
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->mesh();
@@ -135,10 +135,12 @@ void paint_holes_vertices(viewer * p_view)
 
 	#pragma omp parallel for
 	for(index_t v = 0; v < mesh->n_vertices(); v++)
-		if(v >= nv) mesh.color(v) = .25;
+		if(v >= nv) mesh->color(v) = .25;
+
+	return false;
 }
 
-void app_viewer::process_delete_non_manifold_vertices(viewer * p_view)
+bool app_viewer::process_delete_non_manifold_vertices(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
@@ -147,22 +149,27 @@ void app_viewer::process_delete_non_manifold_vertices(viewer * p_view)
 	gproshan_debug(removing vertex);
 	mesh->remove_non_manifold_vertices();
 	gproshan_debug(removing vertex);
+
+	return false;
 }
 
-void app_viewer::process_delete_vertices(viewer * p_view)
+bool app_viewer::process_delete_vertices(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->mesh();
 
-	if(!view->select_vertices.size()) return;
+	if(!view->mesh().selected.size()) return true;
+
 	gproshan_debug(removing vertex);
-	mesh->remove_vertices(view->select_vertices);
-	view->select_vertices.clear();
+	mesh->remove_vertices(view->mesh().selected);
+	view->mesh().selected.clear();
 	gproshan_debug(removing vertex);
+
+	return false;
 }
 
-void app_viewer::process_poisson(viewer * p_view, const index_t & k)
+bool app_viewer::process_poisson(viewer * p_view, const index_t & k)
 {
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->mesh();
@@ -174,27 +181,29 @@ void app_viewer::process_poisson(viewer * p_view, const index_t & k)
 	gproshan_log_var(view->time);
 
 //	paint_holes_vertices();
+
+	return false;
 }
 
-void app_viewer::process_poisson_laplacian_1(viewer * p_view)
+bool app_viewer::process_poisson_laplacian_1(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
-	process_poisson(p_view, 1);
+	return process_poisson(p_view, 1);
 }
 
-void app_viewer::process_poisson_laplacian_2(viewer * p_view)
+bool app_viewer::process_poisson_laplacian_2(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
-	process_poisson(p_view, 2);
+	return process_poisson(p_view, 2);
 }
 
-void app_viewer::process_poisson_laplacian_3(viewer * p_view)
+bool app_viewer::process_poisson_laplacian_3(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
-	process_poisson(p_view, 3);
+	return process_poisson(p_view, 3);
 }
 
-void app_viewer::process_fill_holes(viewer * p_view)
+bool app_viewer::process_fill_holes(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
@@ -203,215 +212,251 @@ void app_viewer::process_fill_holes(viewer * p_view)
 	fill_all_holes(mesh);
 
 	paint_holes_vertices(p_view);
-}
-
-void app_viewer::process_noise(viewer * p_view)
-{
-	gproshan_log(APP_VIEWER);
-	app_viewer * view = (app_viewer *) p_view;
-	che_viewer & mesh = view->mesh();
-
-	std::default_random_engine generator;
-	std::uniform_int_distribution<int> d_mod_5(0, 4);
-	std::uniform_int_distribution<int> d_mod_1000(0, 999);
-
-	#pragma omp parallel for
-	for(index_t v = 0; v < mesh->n_vertices(); v++)
-	{
-		distance_t r = distance_t(d_mod_1000(generator)) / 200000;
-		mesh->get_vertex(v) += (!d_mod_5(generator)) * r * mesh->normal(v);
-	}
-
-	mesh.update_normals();
-}
-
-void app_viewer::process_black_noise(viewer * p_view)
-{
-	gproshan_log(APP_VIEWER);
-	app_viewer * view = (app_viewer *) p_view;
-	che_viewer & mesh = view->mesh();
-
-	std::default_random_engine generator;
-	std::uniform_int_distribution<int> d_mod_5(0, 4);
-	std::uniform_int_distribution<int> d_mod_1000(0, 999);
-
-	#pragma omp parallel for
-	for(index_t v = 0; v < mesh->n_vertices(); v++)
-	{
-		distance_t r = distance_t(d_mod_1000(generator)) / 200000;
-		mesh->get_vertex(v) += (!d_mod_5(generator)) * r * mesh->normal(v);
-	}
-
-	mesh.update_normals();
-}
-
-void app_viewer::process_threshold(viewer * p_view)
-{
-	gproshan_log(APP_VIEWER);
-	app_viewer * view = (app_viewer *) p_view;
-	che_viewer & mesh = view->mesh();
-
-	for(index_t v = 0; v < mesh->n_vertices(); v++)
-		mesh.color(v) = mesh.color(v) > 0.5 ? 1 : 0.5;
-}
-
-void app_viewer::process_functional_maps(viewer * p_view)
-{
-	gproshan_log(APP_VIEWER);
-	app_viewer * view = (app_viewer *) p_view;
-	che_viewer & mesh = view->mesh();
-
-	size_t K = 100;
-
-	a_sp_mat L, A;
-
-	TIC(view->time) laplacian(mesh, L, A); TOC(view->time)
-	gproshan_log_var(view->time);
-
-	a_vec eigval;
-	a_mat eigvec;
-
-	TIC(view->time) K = eigs_laplacian(eigval, eigvec, mesh, L, A, K); TOC(view->time)
-	gproshan_log_var(view->time);
-
-	gproshan_log_var(K);
-
-	K = K < N_MESHES ? K : N_MESHES;
-	for(index_t k = 0; k < N_MESHES; k++)
-	{
-		if(k) view->add_mesh({new che(*mesh)});
-		view->current = k;
-
-		eigvec.col(k) -= eigvec.col(k).min();
-		eigvec.col(k) /= eigvec.col(k).max();
 	
+	return false;
+}
+
+bool app_viewer::process_noise(viewer * p_view)
+{
+	gproshan_log(APP_VIEWER);
+	app_viewer * view = (app_viewer *) p_view;
+	che_viewer & mesh = view->mesh();
+
+	std::default_random_engine generator;
+	std::uniform_int_distribution<int> d_mod_5(0, 4);
+	std::uniform_int_distribution<int> d_mod_1000(0, 999);
+
+	#pragma omp parallel for
+	for(index_t v = 0; v < mesh->n_vertices(); v++)
+	{
+		real_t r = real_t(d_mod_1000(generator)) / 200000;
+		mesh->get_vertex(v) += (!d_mod_5(generator)) * r * mesh->normal(v);
+	}
+
+	mesh->update_normals();
+	
+	return false;
+}
+
+bool app_viewer::process_black_noise(viewer * p_view)
+{
+	gproshan_log(APP_VIEWER);
+	app_viewer * view = (app_viewer *) p_view;
+	che_viewer & mesh = view->mesh();
+
+	std::default_random_engine generator;
+	std::uniform_int_distribution<int> d_mod_5(0, 4);
+	std::uniform_int_distribution<int> d_mod_1000(0, 999);
+
+	#pragma omp parallel for
+	for(index_t v = 0; v < mesh->n_vertices(); v++)
+	{
+		real_t r = real_t(d_mod_1000(generator)) / 200000;
+		mesh->get_vertex(v) += (!d_mod_5(generator)) * r * mesh->normal(v);
+	}
+
+	mesh->update_normals();
+	
+	return false;
+}
+
+bool app_viewer::process_threshold(viewer * p_view)
+{
+	gproshan_log(APP_VIEWER);
+	app_viewer * view = (app_viewer *) p_view;
+	che_viewer & mesh = view->mesh();
+
+	for(index_t v = 0; v < mesh->n_vertices(); v++)
+		mesh->color(v) = mesh->color(v) > 0.5 ? 1 : 0.5;
+	
+	return false;
+}
+
+bool app_viewer::process_functional_maps(viewer * p_view)
+{
+	app_viewer * view = (app_viewer *) p_view;
+	che_viewer & mesh = view->mesh();
+
+	static int K = 20;
+	
+	ImGui::InputInt("eigenvectors", &K);
+
+	if(ImGui::Button("Run"))
+	{
+		a_sp_mat L, A;
+
+		TIC(view->time) laplacian(mesh, L, A); TOC(view->time)
+		gproshan_log_var(view->time);
+
+		a_vec eigval;
+		a_mat eigvec;
+
+		TIC(view->time) K = eigs_laplacian(eigval, eigvec, mesh, L, A, K); TOC(view->time)
+		gproshan_log_var(view->time);
+
+		gproshan_log_var(K);
+
+		K = K < N_MESHES ? K : N_MESHES;
+		for(index_t k = 0; k < N_MESHES; k++)
+		{
+			if(k) view->add_mesh({new che(*mesh)});
+			view->current = k;
+
+			eigvec.col(k) -= eigvec.col(k).min();
+			eigvec.col(k) /= eigvec.col(k).max();
+		
+			#pragma omp parallel for
+			for(index_t v = 0; v < mesh->n_vertices(); v++)
+				view->mesh()->color(v) = eigvec(v, k);
+
+			view->mesh().update_vbo();
+		}
+		
+		view->current = 0;
+	}
+
+	return true;
+}
+
+bool app_viewer::process_wks(viewer * p_view)
+{
+	app_viewer * view = (app_viewer *) p_view;
+	che_viewer & mesh = view->mesh();
+
+	static int K = 100;
+	static int T = 100;
+
+	ImGui::InputInt("eigenvectors", &K);
+	ImGui::InputInt("times", &T);
+
+	if(ImGui::Button("Run"))
+	{
+		a_sp_mat L, A;
+
+		TIC(view->time) laplacian(mesh, L, A); TOC(view->time)
+		gproshan_log_var(view->time);
+
+		a_vec eigval;
+		a_mat eigvec;
+
+		TIC(view->time) K = eigs_laplacian(eigval, eigvec, mesh, L, A, K); TOC(view->time)
+		gproshan_log_var(view->time);
+
+		real_t max_s = 0;
+		#pragma omp parallel for reduction(max: max_s)
+		for(index_t v = 0; v < mesh->n_vertices(); v++)
+		{
+			a_vec s(T, arma::fill::zeros);
+			for(int t = 0; t < T; t++)
+			for(int k = 1; k < K; k++)
+				s(t) += exp(-eigval(k) * t) * eigvec(v, k) * eigvec(v, k);
+
+			mesh->color(v) = norm(s);
+			max_s = max(max_s, mesh->color(v));
+		}
+
 		#pragma omp parallel for
 		for(index_t v = 0; v < mesh->n_vertices(); v++)
-			view->mesh().color(v) = eigvec(v, k);
+			mesh->color(v) /= max_s;
 	}
-	
-	view->current = 0;
+
+	return true;
 }
 
-void app_viewer::process_wks(viewer * p_view)
+bool app_viewer::process_hks(viewer * p_view)
 {
-	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->mesh();
 
-	size_t K = 50, T = 100;
+	static int K = 100;
+	static int T = 100;
 
-	a_sp_mat L, A;
+	ImGui::InputInt("eigenvectors", &K);
+	ImGui::InputInt("times", &T);
 
-	TIC(view->time) laplacian(mesh, L, A); TOC(view->time)
-	gproshan_log_var(view->time);
-
-	a_vec eigval;
-	a_mat eigvec;
-
-	TIC(view->time) K = eigs_laplacian(eigval, eigvec, mesh, L, A, K); TOC(view->time)
-	gproshan_log_var(view->time);
-
-	distance_t max_s = 0;
-	#pragma omp parallel for reduction(max: max_s)
-	for(index_t v = 0; v < mesh->n_vertices(); v++)
+	if(ImGui::Button("Run"))
 	{
-		a_vec s(T, arma::fill::zeros);
-		for(index_t t = 0; t < T; t++)
-		for(index_t k = 1; k < K; k++)
-			s(t) += exp(-eigval(k) * t) * eigvec(v, k) * eigvec(v, k);
+		a_sp_mat L, A;
 
-		mesh.color(v) = norm(s);
-		max_s = max(max_s, mesh.color(v));
+		TIC(view->time) laplacian(mesh, L, A); TOC(view->time)
+		gproshan_log_var(view->time);
+
+		a_vec eigval;
+		a_mat eigvec;
+
+		TIC(view->time) K = eigs_laplacian(eigval, eigvec, mesh, L, A, K); TOC(view->time)
+		gproshan_log_var(view->time);
+
+		if(!K) return true;
+
+		real_t max_s = 0;
+		#pragma omp parallel for reduction(max: max_s)
+		for(index_t v = 0; v < mesh->n_vertices(); v++)
+		{
+			a_vec s(T, arma::fill::zeros);
+			for(int t = 0; t < T; t++)
+			for(int k = 1; k < K; k++)
+				s(t) += exp(-abs(eigval(k)) * t) * eigvec(v, k) * eigvec(v, k);
+
+			mesh->color(v) = norm(abs(arma::fft(s, 128)));
+			//mesh->color(v) = norm(s);
+			max_s = max(max_s, mesh->color(v));
+		}
+
+		#pragma omp parallel for
+		for(index_t v = 0; v < mesh->n_vertices(); v++)
+			mesh->color(v) /= max_s;
 	}
 
-	#pragma omp parallel for
-	for(index_t v = 0; v < mesh->n_vertices(); v++)
-		mesh.color(v) /= max_s;
+	return true;
 }
 
-void app_viewer::process_hks(viewer * p_view)
+bool app_viewer::process_gps(viewer * p_view)
 {
-	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->mesh();
 
-	size_t K = 100;
-	size_t T = 100;
+	static int K = 50;
+	ImGui::InputInt("eigenvectors", &K);
 
-	a_sp_mat L, A;
-
-	TIC(view->time) laplacian(mesh, L, A); TOC(view->time)
-	gproshan_log_var(view->time);
-
-	a_vec eigval;
-	a_mat eigvec;
-
-	TIC(view->time) K = eigs_laplacian(eigval, eigvec, mesh, L, A, K); TOC(view->time)
-	gproshan_log_var(view->time);
-
-	if(!K) return;
-
-	distance_t max_s = 0;
-	#pragma omp parallel for reduction(max: max_s)
-	for(index_t v = 0; v < mesh->n_vertices(); v++)
+	if(ImGui::Button("Run"))
 	{
-		a_vec s(T, arma::fill::zeros);
-		for(index_t t = 0; t < T; t++)
-		for(index_t k = 1; k < K; k++)
-			s(t) += exp(-abs(eigval(k)) * t) * eigvec(v, k) * eigvec(v, k);
+		a_sp_mat L, A;
 
-		mesh.color(v) = norm(abs(arma::fft(s, 128)));
-		//mesh.color(v) = norm(s);
-		max_s = max(max_s, mesh.color(v));
+		TIC(view->time) laplacian(mesh, L, A); TOC(view->time)
+		gproshan_log_var(view->time);
+
+		a_vec eigval;
+		a_mat eigvec;
+
+		TIC(view->time) K = eigs_laplacian(eigval, eigvec, mesh, L, A, K); TOC(view->time)
+		gproshan_log_var(view->time);
+
+		eigvec = abs(eigvec);
+		eigvec.col(0).zeros();
+		for(int i = 1; i < K; i++)
+			eigvec.col(i) /= sqrt(abs(eigval(i)));
+
+		a_mat data = eigvec.t();
+		a_mat means;
+
+		real_t max_s = 0;
+		#pragma omp parallel for reduction(max: max_s)
+		for(index_t v = 0; v < mesh->n_vertices(); v++)
+		{
+			mesh->color(v) = norm(eigvec.row(v));
+				max_s = max(max_s, mesh->color(v));
+		}
+
+		#pragma omp parallel for
+		for(index_t v = 0; v < mesh->n_vertices(); v++)
+			mesh->color(v) /= max_s;
 	}
 
-	#pragma omp parallel for
-	for(index_t v = 0; v < mesh->n_vertices(); v++)
-		mesh.color(v) /= max_s;
+	return true;
 }
 
-void app_viewer::process_gps(viewer * p_view)
-{
-	gproshan_log(APP_VIEWER);
-	app_viewer * view = (app_viewer *) p_view;
-	che_viewer & mesh = view->mesh();
-
-	size_t K = 50;
-
-	a_sp_mat L, A;
-
-	TIC(view->time) laplacian(mesh, L, A); TOC(view->time)
-	gproshan_log_var(view->time);
-
-	a_vec eigval;
-	a_mat eigvec;
-
-	TIC(view->time) K = eigs_laplacian(eigval, eigvec, mesh, L, A, K); TOC(view->time)
-	gproshan_log_var(view->time);
-
-	eigvec = abs(eigvec);
-	eigvec.col(0).zeros();
-	for(index_t i = 1; i < K; i++)
-		eigvec.col(i) /= sqrt(abs(eigval(i)));
-
-	a_mat data = eigvec.t();
-	a_mat means;
-
-	distance_t max_s = 0;
-	#pragma omp parallel for reduction(max: max_s)
-	for(index_t v = 0; v < mesh->n_vertices(); v++)
-	{
-		mesh.color(v) = norm(eigvec.row(v));
-			max_s = max(max_s, mesh.color(v));
-	}
-
-	#pragma omp parallel for
-	for(index_t v = 0; v < mesh->n_vertices(); v++)
-		mesh.color(v) /= max_s;
-}
-
-void app_viewer::process_key_points(viewer * p_view)
+bool app_viewer::process_key_points(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
@@ -419,14 +464,16 @@ void app_viewer::process_key_points(viewer * p_view)
 	
 	key_points kps(mesh);
 
-	view->select_vertices.clear();
-	view->select_vertices.reserve(kps.size());
+	view->mesh().selected.clear();
+	view->mesh().selected.reserve(kps.size());
 
 	for(index_t i = 0; i < kps.size(); i++)
-		view->select_vertices.push_back(kps[i]);
+		view->mesh().selected.push_back(kps[i]);
+	
+	return false;
 }
 
-void app_viewer::process_key_components(viewer * p_view)
+bool app_viewer::process_key_components(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
@@ -439,10 +486,12 @@ void app_viewer::process_key_components(viewer * p_view)
 	
 	#pragma omp parallel for
 	for(index_t v = 0; v < mesh->n_vertices(); v++)
-		mesh.color(v) = (real_t) kcs(v) / kcs;
+		mesh->color(v) = (real_t) kcs(v) / kcs;
+	
+	return false;
 }
 
-void app_viewer::process_mdict_patch(viewer * p_view)
+bool app_viewer::process_mdict_patch(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
@@ -454,12 +503,12 @@ void app_viewer::process_mdict_patch(viewer * p_view)
 
 	vertex vdir;
 	patch p;
-	distance_t mean_edge = mesh->mean_edge();
-	for(auto & v: view->select_vertices)
+	real_t mean_edge = mesh->mean_edge();
+	for(auto & v: view->mesh().selected)
 	{
 		p.init(mesh, v, dictionary::T, dictionary::T * mean_edge, toplevel);
 		for(auto & u: p.vertices)
-			mesh.color(u) = 1;
+			mesh->color(u) = 1;
 
 		vdir.x = p.T(0, 0);
 		vdir.y = p.T(0, 1);
@@ -485,15 +534,17 @@ void app_viewer::process_mdict_patch(viewer * p_view)
 		avg_nvp += p.vertices.size();
 	}
 
-	avg_nvp /= view->select_vertices.size();
+	avg_nvp /= view->mesh().selected.size();
 	gproshan_debug_var(avg_nvp);
 	
 	delete [] toplevel;
 	TOC(view->time)
 	gproshan_debug_var(view->time);
+	
+	return false;
 }
 
-void app_viewer::process_denoising(viewer * p_view)
+bool app_viewer::process_denoising(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
@@ -501,7 +552,7 @@ void app_viewer::process_denoising(viewer * p_view)
 
 	size_t n; // dct
 	size_t m, M;
-	distance_t f;
+	real_t f;
 	bool learn;
 
 	gproshan_input(n m M f learn);
@@ -512,15 +563,18 @@ void app_viewer::process_denoising(viewer * p_view)
 	dict.execute();
 	
 	delete phi;
-	mesh.update_colors(&dict[0]);
+	mesh->update_colors(&dict[0]);
 	
 	#pragma omp parallel for
 	for(index_t v = 0; v < mesh->n_vertices(); v++)
-		mesh.color(v) = 2 * atan(mesh.color(v) * 10) / M_PI;
-	mesh.update_normals();
+		mesh->color(v) = 2 * atan(mesh->color(v) * 10) / M_PI;
+	
+	mesh->update_normals();
+
+	return false;
 }
 
-void app_viewer::process_super_resolution(viewer * p_view)
+bool app_viewer::process_super_resolution(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
@@ -528,7 +582,7 @@ void app_viewer::process_super_resolution(viewer * p_view)
 
 	size_t n; // dct
 	size_t m, M;
-	distance_t f;
+	real_t f;
 	bool learn;
 
 	gproshan_log(parameters: (n, m, M, f, learn));
@@ -539,10 +593,12 @@ void app_viewer::process_super_resolution(viewer * p_view)
 	dict.execute();
 
 	delete phi;
-	mesh.update_normals();
+	mesh->update_normals();
+	
+	return false;
 }
 
-void app_viewer::process_inpaiting(viewer * p_view)
+bool app_viewer::process_inpaiting(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
@@ -550,7 +606,7 @@ void app_viewer::process_inpaiting(viewer * p_view)
 
 	size_t n; // dct
 	size_t m, M;
-	distance_t f;
+	real_t f;
 	bool learn;
 	size_t avg_p = 36; 
 	size_t percentage = 0;
@@ -564,20 +620,22 @@ void app_viewer::process_inpaiting(viewer * p_view)
 	inpainting dict(mesh, phi, m, M, f, learn, avg_p,  percentage, delta, sum_thres);
 	dict.execute();
 	delete phi;
-	mesh.update_colors(&dict[0]);
+	mesh->update_colors(&dict[0]);
 	
-	mesh.update_normals();
+	mesh->update_normals();
+
+	return false;
 }
 
-void app_viewer::process_mask(viewer * p_view)
+bool app_viewer::process_mask(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->mesh();
 
-		size_t n = 12; // dct
+	size_t n = 12; // dct
 	size_t m = 144, M = 0;
-	distance_t f = 1;
+	real_t f = 1;
 	bool learn = 0;
 	size_t avg_p = 36; 
 	size_t percentage = 0;
@@ -593,25 +651,27 @@ void app_viewer::process_mask(viewer * p_view)
 	dict.init_radial_feature_patches();
 	//dict.init_voronoi_patches();
 	delete phi;
-	mesh.update_colors(&dict[0]);
+	mesh->update_colors(&dict[0]);
 	string f_points = tmp_file_path(mesh->name_size() + ".points");
 	a_vec points_out;
 	points_out.load(f_points);
 	for(int i = 0; i< points_out.size(); i++)
-		view->select_vertices.push_back(points_out(i));
+		mesh.selected.push_back(points_out(i));
 	
-	mesh.update_normals();
+	mesh->update_normals();
+
+	return false;
 }
 
-void app_viewer::process_pc_reconstruction(viewer * p_view)
+bool app_viewer::process_pc_reconstruction(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->mesh();
 
-		size_t n = 12; // dct
+	size_t n = 12; // dct
 	size_t m = 144, M = 0;
-	distance_t f = 1;
+	real_t f = 1;
 	bool learn = 0;
 	size_t avg_p = 36; 
 	size_t percentage = 0;
@@ -627,17 +687,19 @@ void app_viewer::process_pc_reconstruction(viewer * p_view)
 	dict.point_cloud_reconstruction();
 	//dict.init_voronoi_patches();
 	delete phi;
-	mesh.update_colors(&dict[0]);
+	mesh->update_colors(&dict[0]);
 	string f_points = tmp_file_path(mesh->name_size() + ".points");
 	a_vec points_out;
 	points_out.load(f_points);
 	for(int i = 0; i< points_out.size(); i++)
-		view->select_vertices.push_back(points_out(i));
+		mesh.selected.push_back(points_out(i));
 	
-	mesh.update_normals();
+	mesh->update_normals();
+
+	return false;
 }
 
-void app_viewer::process_synthesis(viewer * p_view)
+bool app_viewer::process_synthesis(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
@@ -645,7 +707,7 @@ void app_viewer::process_synthesis(viewer * p_view)
 
 	size_t n; // dct
 	size_t m, M;
-	distance_t f;
+	real_t f;
 	bool learn;
 
 	gproshan_log(parameters: (n, m, M, f, learn));
@@ -656,17 +718,21 @@ void app_viewer::process_synthesis(viewer * p_view)
 	dict.execute();
 
 	delete phi;
-	mesh.update_normals();
+	mesh->update_normals();
+	
+	return false;
 }
 
-void app_viewer::process_iterative_inpaiting(viewer * p_view)
+bool app_viewer::process_iterative_inpaiting(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
 
-//	mesh_iterative_inpaiting(mesh, view->select_vertices, freq, rt, m, M, f, learn);
+//	mesh_iterative_inpaiting(mesh, view->mesh().selected, freq, rt, m, M, f, learn);
+	
+	return false;
 }
 
-void app_viewer::process_multiplicate_vertices(viewer * p_view)
+bool app_viewer::process_multiplicate_vertices(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
@@ -674,21 +740,23 @@ void app_viewer::process_multiplicate_vertices(viewer * p_view)
 
 	mesh->multiplicate_vertices();
 	mesh.log_info();
+	
+	return false;
 }
 
-void app_viewer::compute_toplesets(viewer * p_view)
+bool app_viewer::compute_toplesets(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->mesh();
 	
-	if(!view->select_vertices.size())
-		view->select_vertices.push_back(0);
+	if(!view->mesh().selected.size())
+		view->mesh().selected.push_back(0);
 
 	index_t * toplesets = new index_t[mesh->n_vertices()];
 	index_t * sorted = new index_t[mesh->n_vertices()];
 	vector<index_t> limites;
-	mesh->compute_toplesets(toplesets, sorted, limites, view->select_vertices);
+	mesh->compute_toplesets(toplesets, sorted, limites, view->mesh().selected);
 
 	size_t n_toplesets = limites.size() - 1;
 
@@ -696,16 +764,18 @@ void app_viewer::compute_toplesets(viewer * p_view)
 	for(index_t v = 0; v < mesh->n_vertices(); v++)
 	{
 		if(toplesets[v] < n_toplesets) 
-			mesh.color(v) = distance_t(toplesets[v]) / (n_toplesets);
+			mesh->color(v) = real_t(toplesets[v]) / (n_toplesets);
 	}
 
 	gproshan_debug_var(n_toplesets);
 
 	delete [] toplesets;
 	delete [] sorted;
+	
+	return false;
 }
 
-void app_viewer::process_voronoi(viewer * p_view)
+bool app_viewer::process_voronoi(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
@@ -713,9 +783,9 @@ void app_viewer::process_voronoi(viewer * p_view)
 
 	TIC(view->time)
 #ifdef GPROSHAN_CUDA
-	geodesics ptp(mesh, view->select_vertices, geodesics::PTP_GPU, nullptr, 1);
+	geodesics ptp(mesh, view->mesh().selected, geodesics::PTP_GPU, nullptr, 1);
 #else
-	geodesics ptp(mesh, view->select_vertices, geodesics::FM, nullptr, 1);
+	geodesics ptp(mesh, view->mesh().selected, geodesics::FM, nullptr, 1);
 #endif
 	TOC(view->time)
 	gproshan_log_var(view->time);
@@ -723,51 +793,61 @@ void app_viewer::process_voronoi(viewer * p_view)
 	#pragma omp parallel for
 	for(index_t i = 0; i < mesh->n_vertices(); i++)
 	{
-		mesh.color(i) = ptp.clusters[i];
-		mesh.color(i) /= view->select_vertices.size() + 1;
+		mesh->color(i) = ptp.clusters[i];
+		mesh->color(i) /= view->mesh().selected.size() + 1;
 	}
+	
+	return false;
 }
 
-void app_viewer::process_farthest_point_sampling_radio(viewer * p_view)
+bool app_viewer::process_farthest_point_sampling_radio(viewer * p_view)
 {
 	
 	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->mesh();
 	gproshan_input(radio);
-	distance_t radio; cin >> radio;
+	real_t radio; cin >> radio;
 
 #ifdef GPROSHAN_CUDA	// IMPLEMENT/REVIEW
 	double time_fps;
 
 	TIC(view->time)
-	radio = farthest_point_sampling_ptp_gpu(mesh, view->select_vertices, time_fps, NIL, radio);
+	radio = farthest_point_sampling_ptp_gpu(mesh, view->mesh().selected, time_fps, NIL, radio);
 	TOC(view->time)
 	gproshan_log_var(time_fps);
 #endif // GPROSHAN_CUDA
 
 	gproshan_log_var(radio);
-	gproshan_log_var(view->select_vertices.size());
+	gproshan_log_var(view->mesh().selected.size());
 	gproshan_log_var(view->time);
+	
+	return false;
 }
 
-void app_viewer::process_farthest_point_sampling(viewer * p_view)
+bool app_viewer::process_farthest_point_sampling(viewer * p_view)
 {
-	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->mesh();
 
-	gproshan_input(samples_number);
-	index_t n; cin >> n;
+	static int n = 10;
+	static real_t radio;
 
-	distance_t radio;
-	TIC(view->time)
-	load_sampling(view->select_vertices, radio, mesh, n);
-	TOC(view->time)
-	gproshan_log_var(view->time);
+	ImGui::InputInt("samples", &n, 1, mesh->n_vertices() / 6);
+	ImGui::Text("radio: %.3f", radio);
+	
+	if(ImGui::Button("Run"))
+	{
+		TIC(view->time)
+		load_sampling(view->mesh().selected, radio, mesh, n);
+		TOC(view->time)
+		gproshan_log_var(view->time);
+	}
+	
+	return true;
 }
 
-void app_viewer::process_fairing_spectral(viewer * p_view)
+bool app_viewer::process_fairing_spectral(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
@@ -782,127 +862,141 @@ void app_viewer::process_fairing_spectral(viewer * p_view)
 	mesh->set_vertices(fair->get_postions());
 	delete fair;
 
-	mesh.update_normals();
-}
-
-void app_viewer::process_fairing_taubin(viewer * p_view)
-{
-	gproshan_log(APP_VIEWER);
-	app_viewer * view = (app_viewer *) p_view;
-	che_viewer & mesh = view->mesh();
-
-	gproshan_input(step);
-	real_t step; cin >> step;
+	mesh->update_normals();
 	
-	fairing * fair = new fairing_taubin(step);
-	fair->run(mesh);
-
-	mesh->set_vertices(fair->get_postions());
-	delete fair;
-
-	mesh.update_normals();
+	return false;
 }
 
-void app_viewer::process_geodesics_fm(viewer * p_view)
+bool app_viewer::process_fairing_taubin(viewer * p_view)
+{
+	app_viewer * view = (app_viewer *) p_view;
+	che_viewer & mesh = view->mesh();
+
+	static real_t step = 0.001; //cin >> step;
+	//ImGui::InputFloat("step", &step, 0.001, 1, "%.3f");
+	
+	if(ImGui::Button("Run"))
+	{
+		fairing_taubin fair(step);
+		fair.run(mesh);
+	
+		mesh->set_vertices(fair.get_postions());
+		mesh->update_normals();
+	}
+
+	return true;
+}
+
+bool app_viewer::process_geodesics_fm(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->mesh();
 
-	if(!view->select_vertices.size())
-		view->select_vertices.push_back(0);
+	if(!view->mesh().selected.size())
+		view->mesh().selected.push_back(0);
 
 	TIC(view->time)
-	geodesics fm(mesh, view->select_vertices);
+	geodesics fm(mesh, view->mesh().selected);
 	TOC(view->time)
 	gproshan_log_var(view->time);
 
-	mesh.update_colors(&fm[0]);
+	mesh->update_colors(&fm[0]);
+	
+	return false;
 }
 
-void app_viewer::process_geodesics_ptp_cpu(viewer * p_view)
+bool app_viewer::process_geodesics_ptp_cpu(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->mesh();
 
-	if(!view->select_vertices.size())
-		view->select_vertices.push_back(0);
+	if(!view->mesh().selected.size())
+		view->mesh().selected.push_back(0);
 	
 	TIC(view->time)
-	geodesics ptp(mesh, view->select_vertices, geodesics::PTP_CPU);
+	geodesics ptp(mesh, view->mesh().selected, geodesics::PTP_CPU);
 	TOC(view->time)
 	gproshan_log_var(view->time);
 
-	mesh.update_colors(&ptp[0]);
+	mesh->update_colors(&ptp[0]);
+	
+	return false;
 }
 
-void app_viewer::process_geodesics_heat_flow(viewer * p_view)
+bool app_viewer::process_geodesics_heat_flow(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->mesh();
 
-	if(!view->select_vertices.size())
-		view->select_vertices.push_back(0);
+	if(!view->mesh().selected.size())
+		view->mesh().selected.push_back(0);
 	
 	TIC(view->time)
-	geodesics heat_flow(mesh, view->select_vertices, geodesics::HEAT_FLOW);
+	geodesics heat_flow(mesh, view->mesh().selected, geodesics::HEAT_FLOW);
 	TOC(view->time)
 	gproshan_log_var(view->time);
 
-	mesh.update_colors(&heat_flow[0]);
+	mesh->update_colors(&heat_flow[0]);
+	
+	return false;
 }
 
 
 #ifdef GPROSHAN_CUDA
 
-void app_viewer::process_geodesics_ptp_gpu(viewer * p_view)
+bool app_viewer::process_geodesics_ptp_gpu(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->mesh();
 
-	if(!view->select_vertices.size())
-		view->select_vertices.push_back(0);
+	if(!view->mesh().selected.size())
+		view->mesh().selected.push_back(0);
 	
 	if(view->n_dist != mesh->n_vertices())
 	{
 		delete [] view->dist;
 	
 		view->n_dist = mesh->n_vertices();
-		view->dist = new distance_t[view->n_dist];
+		view->dist = new real_t[view->n_dist];
 	}
 
 	TIC(view->time)
-	geodesics ptp(mesh, view->select_vertices, geodesics::PTP_GPU, view->dist);
+	geodesics ptp(mesh, view->mesh().selected, geodesics::PTP_GPU, view->dist);
 	TOC(view->time)
 	gproshan_log_var(view->time);
 	
-	mesh.update_colors(&ptp[0]);
+	mesh->update_colors(&ptp[0]);
+	
+	return false;
 }
 
-void app_viewer::process_geodesics_heat_flow_gpu(viewer * p_view)
+bool app_viewer::process_geodesics_heat_flow_gpu(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->mesh();
 
-	if(!view->select_vertices.size())
-		view->select_vertices.push_back(0);
+	if(!view->mesh().selected.size())
+		view->mesh().selected.push_back(0);
 	
 	TIC(view->time)
-	geodesics heat_flow(mesh, view->select_vertices, geodesics::HEAT_FLOW_GPU);
+	geodesics heat_flow(mesh, view->mesh().selected, geodesics::HEAT_FLOW_GPU);
 	TOC(view->time)
 	gproshan_log_var(view->time);
 
-	mesh.update_colors(&heat_flow[0]);
+	mesh->update_colors(&heat_flow[0]);
+	
+	return false;
 }
 
 #endif // GPROSHAN_CUDA
 
 
-void app_viewer::process_fill_holes_biharmonic_splines(viewer * p_view)
+bool app_viewer::process_fill_holes_biharmonic_splines(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
@@ -914,7 +1008,7 @@ void app_viewer::process_fill_holes_biharmonic_splines(viewer * p_view)
 	vector<index_t> * border_vertices;
 	che ** holes;
 	tie(border_vertices, holes) = fill_all_holes_meshes(mesh);
-	if(!holes) return;
+	if(!holes) return true;
 
 	index_t k = 2;
 
@@ -929,9 +1023,11 @@ void app_viewer::process_fill_holes_biharmonic_splines(viewer * p_view)
 	delete [] holes;
 	delete [] border_vertices;
 	paint_holes_vertices(p_view);
+	
+	return false;
 }
 
-void app_viewer::process_gaussian_curvature(viewer * p_view)
+bool app_viewer::process_gaussian_curvature(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
@@ -983,10 +1079,12 @@ void app_viewer::process_gaussian_curvature(viewer * p_view)
 
 	#pragma omp parallel for
 	for(index_t v = 0; v < mesh->n_vertices(); v++)
-		mesh.color(v) = 2 * atan(gv(v) * 10) / M_PI;
+		mesh->color(v) = 2 * atan(gv(v) * 10) / M_PI;
+	
+	return false;
 }
 
-void app_viewer::process_edge_collapse(viewer * p_view)
+bool app_viewer::process_edge_collapse(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
@@ -995,7 +1093,7 @@ void app_viewer::process_edge_collapse(viewer * p_view)
 	index_t levels;
 	cin >> levels;
 
-	TIC(view->time) decimation sampling(mesh, mesh.normals_ptr(), levels); TOC(view->time)
+	TIC(view->time) decimation sampling(mesh, &mesh->normal(0), levels); TOC(view->time)
 	gproshan_debug_var(view->time);
 
 	if(view->n_meshes < 2)
@@ -1003,9 +1101,11 @@ void app_viewer::process_edge_collapse(viewer * p_view)
 
 	view->corr_mesh[1].init(view->meshes[1]->n_vertices(), view->current, sampling);
 	view->current = 1;
+	
+	return false;
 }
 
-void app_viewer::select_multiple(viewer * p_view)
+bool app_viewer::select_multiple(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
@@ -1016,8 +1116,10 @@ void app_viewer::select_multiple(viewer * p_view)
 		stringstream ss(line);
 		index_t v;
 		while(ss >> v)
-			view->select_vertices.push_back(v);
+			view->mesh().selected.push_back(v);
 	}
+	
+	return false;
 }
 
 

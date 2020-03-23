@@ -15,10 +15,10 @@ dijkstra::dijkstra(che * shape, index_t src)
 	n_vertices = shape->n_vertices();
 	source = src;
 
-	weights = new distance_t[n_vertices];
+	weights = new real_t[n_vertices];
 	predecessors = new index_t[n_vertices];
 
-	memset(predecessors, 255, sizeof(distance_t)*n_vertices);
+	memset(predecessors, 255, sizeof(real_t)*n_vertices);
 
 	for(index_t i = 0; i < n_vertices; i++)
 		weights[i] = INFINITY;
@@ -32,7 +32,7 @@ dijkstra::~dijkstra()
 	if(predecessors) delete predecessors;
 }
 
-distance_t & dijkstra::operator()(index_t i)
+real_t & dijkstra::operator()(index_t i)
 {
 	return weights[i];
 }
@@ -56,7 +56,7 @@ void dijkstra::run(che * shape)
 	visited[source] = true;
 	weights[source] = 0;
 
-	distance_t min;
+	real_t min;
 	index_t min_i;
 
 	for(index_t i = 0; i < n_vertices; i++)
@@ -67,7 +67,7 @@ void dijkstra::run(che * shape)
 		#pragma	omp parallel for num_threads(8)
 		for(index_t v = 0; v < n_vertices; v++)
 		{
-			distance_t w;
+			real_t w;
 			index_t nv;
 
 			if(!visited[v])

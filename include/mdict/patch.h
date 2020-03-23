@@ -40,7 +40,7 @@ class patch
 		a_mat xyz;						///< Matrix of points.
 		a_mat phi;
 		double avg_dist; // Average distance betweenn points in a patch
-		distance_t radio; // radio of a patch
+		real_t radio; // radio of a patch
 	
 	public:
 		static size_t expected_nv;		///< Expected number of patch vertices.
@@ -52,7 +52,7 @@ class patch
 		void init(	che * mesh,						///< input mesh.
 					const index_t & v,				///< center vertex of the patch.
 					const size_t & n_toplevels,		///< number of toplevels to jet fitting.
-					const distance_t & radio_,		///< euclidean radio in XY of the patch.
+					const real_t & radio_,		///< euclidean radio in XY of the patch.
 					index_t * _toplevel = nullptr		///< aux memory to gather toplevel vertices.
 					);
 		void init_disjoint(che * mesh,
@@ -61,15 +61,15 @@ class patch
 					vector<index_t> & _vertices, 
 					index_t * _toplevel = nullptr);
 		void init_radial_disjoint(che * mesh,
-					const distance_t & radio_,
+					const real_t & radio_,
 					const index_t & v,
-					distance_t & euc_radio,
-					distance_t & geo_radio,
+					real_t & euc_radio,
+					real_t & geo_radio,
 					double delta,		
 					double sum_thres);
-		void init_random(vertex c, arma::mat T, distance_t radio, distance_t max_radio);
+		void init_random(vertex c, arma::mat T, real_t radio, real_t max_radio);
 		void recover_radial_disjoint(che * mesh,
-					const distance_t & radio_,
+					const real_t & radio_,
 					const index_t & v);
 
 		void transform();
@@ -82,7 +82,7 @@ class patch
 						const fmask_t & mask = nullptr
 						);
 		void reset_xyz_disjoint(	che * mesh,
-						distance_t * dist,
+						real_t * dist,
 						size_t M,
 						std::vector<vpatches_t> & vpatches,
 						const index_t & p,
@@ -110,7 +110,7 @@ class patch
 		/// Gather the vertices filter by radio in the local coordinates require initialize T and x.
 		void gather_vertices(	che * mesh,
 								const index_t & v,
-								const distance_t & radio,
+								const real_t & radio,
 								index_t * toplevel
 								);
 		bool exists(index_t idx);

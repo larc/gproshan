@@ -31,7 +31,7 @@ class optix : public raytracing
 		~optix();
 
 	private:
-		glm::vec4 intersect_li(const glm::vec3 & org, const glm::vec3 & dir, const glm::vec3 & light);
+		glm::vec4 intersect_li(const glm::vec3 & org, const glm::vec3 & dir, const glm::vec3 & light, const bool & flat);
 		float intersect_depth(const glm::vec3 & org, const glm::vec3 & dir);
 		
 		OptixTraversableHandle build_as(const std::vector<che *> & meshes);

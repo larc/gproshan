@@ -8,7 +8,7 @@
 namespace gproshan::mdict {
 
 
-basis_dct::basis_dct(const size_t & _n, const distance_t & _radio)
+basis_dct::basis_dct(const size_t & _n, const real_t & _radio)
 {
 	radio = _radio;
 	n = _n;

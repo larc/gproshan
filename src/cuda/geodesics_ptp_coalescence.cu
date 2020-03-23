@@ -39,14 +39,14 @@ double parallel_toplesets_propagation_coalescence_gpu(const ptp_out_t & ptp_out,
 	CHE * dd_mesh, * d_mesh;
 	cuda_create_CHE(h_mesh, dd_mesh, d_mesh);
 
-	distance_t * h_dist = new distance_t[h_mesh->n_vertices];
+	real_t * h_dist = new real_t[h_mesh->n_vertices];
 
-	distance_t * d_dist[2];
-	cudaMalloc(&d_dist[0], sizeof(distance_t) * h_mesh->n_vertices);
-	cudaMalloc(&d_dist[1], sizeof(distance_t) * h_mesh->n_vertices);
+	real_t * d_dist[2];
+	cudaMalloc(&d_dist[0], sizeof(real_t) * h_mesh->n_vertices);
+	cudaMalloc(&d_dist[1], sizeof(real_t) * h_mesh->n_vertices);
 
-	distance_t * d_error;
-	cudaMalloc(&d_error, sizeof(distance_t) * h_mesh->n_vertices);
+	real_t * d_error;
+	cudaMalloc(&d_error, sizeof(real_t) * h_mesh->n_vertices);
 
 	index_t d;
 	if(ptp_out.clusters)
@@ -71,7 +71,7 @@ double parallel_toplesets_propagation_coalescence_gpu(const ptp_out_t & ptp_out,
 	}
 	else d = run_ptp_coalescence_gpu(d_mesh, h_mesh->n_vertices, h_dist, d_dist, sources, {toplesets.limits, inv}, d_error);
 
-	cudaMemcpy(h_dist, d_dist[d], sizeof(distance_t) * h_mesh->n_vertices, cudaMemcpyDeviceToHost);
+	cudaMemcpy(h_dist, d_dist[d], sizeof(real_t) * h_mesh->n_vertices, cudaMemcpyDeviceToHost);
 
 	cudaFree(d_error);
 	cudaFree(d_dist[0]);
@@ -99,7 +99,7 @@ double parallel_toplesets_propagation_coalescence_gpu(const ptp_out_t & ptp_out,
 	return time / 1000;
 }
 
-index_t run_ptp_coalescence_gpu(CHE * d_mesh, const index_t & n_vertices, distance_t * h_dist, distance_t ** d_dist, const vector<index_t> & sources, const toplesets_t & inv, distance_t * d_error, index_t * h_clusters, index_t ** d_clusters)
+index_t run_ptp_coalescence_gpu(CHE * d_mesh, const index_t & n_vertices, real_t * h_dist, real_t ** d_dist, const vector<index_t> & sources, const toplesets_t & inv, real_t * d_error, index_t * h_clusters, index_t ** d_clusters)
 {
 	#pragma omp parallel for
 	for(index_t v = 0; v < n_vertices; v++)
@@ -108,8 +108,8 @@ index_t run_ptp_coalescence_gpu(CHE * d_mesh, const index_t & n_vertices, distan
 	for(index_t i = 0; i < sources.size(); i++)
 		h_dist[inv.index[sources[i]]] = 0;
 
-	cudaMemcpy(d_dist[0], h_dist, sizeof(distance_t) * n_vertices, cudaMemcpyHostToDevice);
-	cudaMemcpy(d_dist[1], h_dist, sizeof(distance_t) * n_vertices, cudaMemcpyHostToDevice);
+	cudaMemcpy(d_dist[0], h_dist, sizeof(real_t) * n_vertices, cudaMemcpyHostToDevice);
+	cudaMemcpy(d_dist[1], h_dist, sizeof(real_t) * n_vertices, cudaMemcpyHostToDevice);
 
 	if(h_clusters)
 	{
@@ -160,7 +160,7 @@ index_t run_ptp_coalescence_gpu(CHE * d_mesh, const index_t & n_vertices, distan
 }
 
 __global__
-void relax_ptp_coalescence(CHE * mesh, distance_t * new_dist, distance_t * old_dist, index_t end, index_t start)
+void relax_ptp_coalescence(CHE * mesh, real_t * new_dist, real_t * old_dist, index_t end, index_t start)
 {
 	index_t v = blockDim.x * blockIdx.x + threadIdx.x + start;
 
@@ -170,7 +170,7 @@ void relax_ptp_coalescence(CHE * mesh, distance_t * new_dist, distance_t * old_d
 		{
 			new_dist[v] = old_dist[v];
 
-			distance_t d;
+			real_t d;
 			cu_for_star(he, mesh, v)
 			{
 				d = cu_update_step(mesh, old_dist, he);
@@ -182,7 +182,7 @@ void relax_ptp_coalescence(CHE * mesh, distance_t * new_dist, distance_t * old_d
 
 
 __global__
-void relax_ptp_coalescence(CHE * mesh, distance_t * new_dist, distance_t * old_dist, index_t * new_clusters, index_t * old_clusters, index_t end, index_t start)
+void relax_ptp_coalescence(CHE * mesh, real_t * new_dist, real_t * old_dist, index_t * new_clusters, index_t * old_clusters, index_t end, index_t start)
 {
 	index_t v = blockDim.x * blockIdx.x + threadIdx.x + start;
 
@@ -193,7 +193,7 @@ void relax_ptp_coalescence(CHE * mesh, distance_t * new_dist, distance_t * old_d
 			new_dist[v] = old_dist[v];
 			new_clusters[v] = old_clusters[v];
 
-			distance_t d;
+			real_t d;
 			cu_for_star(he, mesh, v)
 			{
 				d = cu_update_step(mesh, old_dist, he);
@@ -208,7 +208,7 @@ void relax_ptp_coalescence(CHE * mesh, distance_t * new_dist, distance_t * old_d
 }
 
 __forceinline__ __device__
-distance_t cu_update_step(CHE * mesh, const distance_t * dist, const index_t & he)
+real_t cu_update_step(CHE * mesh, const real_t * dist, const index_t & he)
 {
 	index_t x[3];
 	x[0] = mesh->VT[cu_next(he)];
@@ -219,27 +219,27 @@ distance_t cu_update_step(CHE * mesh, const distance_t * dist, const index_t & h
 	X[0] = mesh->GT[x[0]] - mesh->GT[x[2]];
 	X[1] = mesh->GT[x[1]] - mesh->GT[x[2]];
 
-	distance_t t[2];
+	real_t t[2];
 	t[0] = dist[x[0]];
 	t[1] = dist[x[1]];
 
-	distance_t q[2][2];
+	real_t q[2][2];
 	q[0][0] = (X[0], X[0]);
 	q[0][1] = (X[0], X[1]);
 	q[1][0] = (X[1], X[0]);
 	q[1][1] = (X[1], X[1]);
 
-	distance_t det = q[0][0] * q[1][1] - q[0][1] * q[1][0];
-	distance_t Q[2][2];
+	real_t det = q[0][0] * q[1][1] - q[0][1] * q[1][0];
+	real_t Q[2][2];
 	Q[0][0] = q[1][1] / det;
 	Q[0][1] = -q[0][1] / det;
 	Q[1][0] = -q[1][0] / det;
 	Q[1][1] = q[0][0] / det;
 
-	distance_t delta = t[0] * (Q[0][0] + Q[1][0]) + t[1] * (Q[0][1] + Q[1][1]);
-	distance_t dis = delta * delta - (Q[0][0] + Q[0][1] + Q[1][0] + Q[1][1]) * (t[0]*t[0]*Q[0][0] + t[0]*t[1]*(Q[1][0] + Q[0][1]) + t[1]*t[1]*Q[1][1] - 1);
+	real_t delta = t[0] * (Q[0][0] + Q[1][0]) + t[1] * (Q[0][1] + Q[1][1]);
+	real_t dis = delta * delta - (Q[0][0] + Q[0][1] + Q[1][0] + Q[1][1]) * (t[0]*t[0]*Q[0][0] + t[0]*t[1]*(Q[1][0] + Q[0][1]) + t[1]*t[1]*Q[1][1] - 1);
 
-	distance_t p;
+	real_t p;
 
 	if(dis >= 0)
 	{
@@ -251,7 +251,7 @@ distance_t cu_update_step(CHE * mesh, const distance_t * dist, const index_t & h
 		p /= Q[0][0] + Q[0][1] + Q[1][0] + Q[1][1];
 	}
 
-	distance_t tp[2];
+	real_t tp[2];
 	tp[0] = t[0] - p;
 	tp[1] = t[1] - p;
 
@@ -259,17 +259,17 @@ distance_t cu_update_step(CHE * mesh, const distance_t * dist, const index_t & h
 			 tp[0] * (X[0][1]*Q[0][0] + X[1][1]*Q[1][0]) + tp[1] * (X[0][1]*Q[0][1] + X[1][1]*Q[1][1]),
 			 tp[0] * (X[0][2]*Q[0][0] + X[1][2]*Q[1][0]) + tp[1] * (X[0][2]*Q[0][1] + X[1][2]*Q[1][1]) );
 
-	distance_t cond[2];
+	real_t cond[2];
 	cond[0] = (X[0] , n);
 	cond[1] = (X[1] , n);
 
-	distance_t c[2];
+	real_t c[2];
 	c[0] = cond[0] * Q[0][0] + cond[1] * Q[0][1];
 	c[1] = cond[0] * Q[1][0] + cond[1] * Q[1][1];
 
 	if(t[0] == INFINITY || t[1] == INFINITY || dis < 0 || c[0] >= 0 || c[1] >= 0)
 	{
-		distance_t dp[2];
+		real_t dp[2];
 		dp[0] = dist[x[0]] + *X[0];
 		dp[1] = dist[x[1]] + *X[1];
 

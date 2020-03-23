@@ -38,8 +38,8 @@ embree::~embree()
 void embree::build_bvh(const std::vector<che *> & meshes)
 {
 	for(auto & m: meshes)
-		if(m->n_faces()) add_mesh(m);
-		else add_point_cloud(m);
+		if(m->n_faces()) geomID_mesh[add_mesh(m)] = m;
+		else geomID_mesh[add_point_cloud(m)] = m;
 
 	rtcCommitScene(scene);
 }
@@ -115,7 +115,7 @@ index_t embree::add_point_cloud(const che * mesh)
 	#pragma omp parallel for
 	for(index_t i = 0; i < mesh->n_vertices(); i++)
 	{
-		pxyzr[i] = glm::vec4(mesh->gt(i).x, mesh->gt(i).y, mesh->gt(i).z, 0.001f);
+		pxyzr[i] = glm::vec4(mesh->gt(i).x, mesh->gt(i).y, mesh->gt(i).z, 0.001);
 		
 		vertex n = mesh->normal(i);
 	//	normal[i] = glm::vec3(n.x, n.y, n.z);
@@ -129,25 +129,27 @@ index_t embree::add_point_cloud(const che * mesh)
 	return geom_id;
 }
 
-glm::vec4 embree::li(const ray_hit & r, const glm::vec3 & light)
+glm::vec4 embree::li(const ray_hit & r, const glm::vec3 & light, const bool & flat)
 {
-	glm::vec3 color(.6f, .8f, 1.f);
+	glm::vec3 color(0.6, 0.8, 1.0);
 	
 	float dist_light = glm::length(light - r.position());
 	float falloff = 4.f / (dist_light * dist_light);	// intensity multiplier / falloff
 	
 	glm::vec3 wi = normalize(light - r.position());
 	
-	float dot_wi_normal = glm::dot(wi, r.normal());
+	float dot_wi_normal = flat ? glm::dot(wi, r.geometry_normal())
+								: glm::dot(wi, r.shading_normal(geomID_mesh[r.hit.geomID]));
+
 	if(dot_wi_normal < 0)
 		dot_wi_normal = -dot_wi_normal;
 
 	ray_hit ro(r.position() + 1e-5f * wi, wi);
 
 	if(occluded(ro))
-		return .5f * glm::vec4(color * falloff * dot_wi_normal, 1.f);
+		return .5f * glm::vec4(color * falloff * dot_wi_normal, 1);
 	
-	return glm::vec4(color * falloff * dot_wi_normal, 1.f);
+	return glm::vec4(color * falloff * dot_wi_normal, 1);
 }
 
 bool embree::intersect(ray_hit & r)
@@ -163,10 +165,10 @@ bool embree::occluded(ray_hit & r)
 }
 
 
-glm::vec4 embree::intersect_li(const glm::vec3 & org, const glm::vec3 & dir, const glm::vec3 & light)
+glm::vec4 embree::intersect_li(const glm::vec3 & org, const glm::vec3 & dir, const glm::vec3 & light,const bool & flat)
 {
 	ray_hit r(org, dir);
-	return intersect(r) ? li(r, light) : glm::vec4(0.f);
+	return intersect(r) ? li(r, light, flat) : glm::vec4(0.f);
 }
 
 float embree::intersect_depth(const glm::vec3 & org, const glm::vec3 & dir)

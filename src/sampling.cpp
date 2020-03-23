@@ -12,7 +12,7 @@ using namespace std;
 namespace gproshan {
 
 
-index_t ** sampling_shape(vector<index_t> & points, size_t *& sizes, vertex *& normals, che * shape, size_t n_points, distance_t radio)
+index_t ** sampling_shape(vector<index_t> & points, size_t *& sizes, vertex *& normals, che * shape, size_t n_points, real_t radio)
 {
 	normals = new vertex[n_points];
 	sizes = new size_t[n_points];
@@ -37,7 +37,7 @@ index_t ** sampling_shape(vector<index_t> & points, size_t *& sizes, vertex *& n
 	return indexes;
 }
 
-bool load_sampling(vector<index_t> & points, distance_t & radio, che * mesh, size_t n)
+bool load_sampling(vector<index_t> & points, real_t & radio, che * mesh, size_t n)
 {
 	const string & filename = mesh->filename();
 
