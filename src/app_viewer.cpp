@@ -723,7 +723,7 @@ bool app_viewer::process_farthest_point_sampling(viewer * p_view)
 	static int n = 10;
 	static real_t radio;
 
-	ImGui::InputInt("samples", &n, 1, mesh->n_vertices() / 6);
+	ImGui::SliderInt("samples", &n, 1, mesh->n_vertices() / 6);
 	ImGui::Text("radio: %.3f", radio);
 	
 	if(ImGui::Button("Run"))
@@ -739,22 +739,22 @@ bool app_viewer::process_farthest_point_sampling(viewer * p_view)
 
 bool app_viewer::process_fairing_spectral(viewer * p_view)
 {
-	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->mesh();
 	
-	gproshan_input(k (eigenvectors number));
-	size_t k; cin >> k;
+	static int k = 100;
+	ImGui::SliderInt("eigenvectors", &k, 1, mesh->n_vertices() / 6);
 	
-	fairing * fair = new fairing_spectral(k);
-	fair->run(mesh);
+	if(ImGui::Button("Run"))
+	{
+		fairing_spectral fair(k);
+		fair.run(mesh);
 
-	mesh->set_vertices(fair->get_postions());
-	delete fair;
+		mesh->set_vertices(fair.get_postions());
+		mesh->update_normals();
+	}
 
-	mesh->update_normals();
-	
-	return false;
+	return true;
 }
 
 bool app_viewer::process_fairing_taubin(viewer * p_view)
@@ -762,7 +762,7 @@ bool app_viewer::process_fairing_taubin(viewer * p_view)
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->mesh();
 
-	static real_t step = 0.001; //cin >> step;
+	static float step = 0.001; //cin >> step;
 	ImGui::InputFloat("step", &step, 0.001, 1, "%.3f");
 	
 	if(ImGui::Button("Run"))

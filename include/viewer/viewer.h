@@ -128,7 +128,6 @@ class viewer
 	#endif // GPROSHAN_OPTIX
 
 		bool action = false;
-		bool imgui_focus = false;
 
 		bool render_wireframe = false;
 		bool render_wireframe_fill = false;

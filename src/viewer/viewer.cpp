@@ -111,7 +111,7 @@ bool viewer::run()
 			if(ImGui::BeginMenu("Select"))
 			{
 				for(index_t i = 0; i < n_meshes; i++)
-					if(ImGui::MenuItem((to_string(i) + ". " + meshes[i]->name()).c_str()))
+					if(ImGui::MenuItem((to_string(i) + ". " + meshes[i]->name()).c_str(), nullptr, i == current, i != current))
 					{
 						current = i;	
 						sphere_translations.clear();
@@ -140,15 +140,14 @@ bool viewer::run()
 			ImGui::EndMainMenuBar();
 		}
 		
-		imgui_focus = false;
 		for(auto & p: processes)
 		{
 			process_t & pro = p.second;
 			if(pro.selected)
 			{
+				ImGui::SetNextWindowSize(ImVec2(256, -1));
 				ImGui::Begin(("[" + pro.key + "] " + pro.name).c_str(), &pro.selected);
 				
-				imgui_focus = imgui_focus || ImGui::IsWindowFocused();
 				pro.selected = pro.selected && p.second.function(this);
 				mesh().update_vbo();
 				
@@ -331,7 +330,7 @@ void viewer::keyboard_callback(GLFWwindow * window, int key, int scancode, int a
 	}
 	
 	viewer * view = (viewer *) glfwGetWindowUserPointer(window);
-	if(view->imgui_focus) return;
+	if(ImGui::GetIO().WantCaptureKeyboard) return;
 
 	if(view->processes[key].function)
 		view->processes[key].selected = !view->processes[key].selected;
@@ -355,7 +354,7 @@ void viewer::cursor_callback(GLFWwindow * window, double x, double y)
 	if(state == GLFW_PRESS)
 	{
 		viewer * view = (viewer *) glfwGetWindowUserPointer(window);
-		if(view->imgui_focus) return;
+		if(ImGui::GetIO().WantCaptureMouse) return;
 		
 		view->cam.motion(x, y);
 		view->action = true;
@@ -365,7 +364,7 @@ void viewer::cursor_callback(GLFWwindow * window, double x, double y)
 void viewer::scroll_callback(GLFWwindow * window, double xoffset, double yoffset)
 {
 	viewer * view = (viewer *) glfwGetWindowUserPointer(window);
-	if(view->imgui_focus) return;
+	if(ImGui::GetIO().WantCaptureMouse) return;
 	
 	if(yoffset > 0)
 	{
