@@ -74,21 +74,25 @@ index_t patch::find(index_t * indexes, size_t nc, index_t idx_global)
 		if(indexes[i] == idx_global) return i;
 	return -1;
 }
-bool patch::add_vertex_by_faces(vector<vertex> & N, index_t * indexes, size_t nc, double thr_angle, const geodesics & geo, che * mesh, const index_t & v, double &sum, double deviation)
+bool patch::add_vertex_by_faces(vertex & n, vector<vertex> & N, index_t * indexes, size_t nc, double thr_angle, const geodesics & geo, che * mesh, const index_t & v, double & area, double & proj_area, double deviation)
 {
 
 	index_t a, b, i = 0;
 	vertex min_he;
-	double area_face = 0;
+	double area_face = 0, proj_area_face = 0;
 	double angle = PI;
 	double tmp_angle;
 	bool added = false;
+	vertex pav, pbv, va, vb,vv;
 
 	for_star(he, mesh, v)
 	{
 	
 		a = mesh->vt(next(he)); //index of the next vertex index_t
 		b = mesh->vt(prev(he)); 
+		va = mesh->gt(a);
+		vb = mesh->gt(b);
+		vv = mesh->gt(v);
 		// If is an adjacent face
 		if( geo[a] < geo[v] || geo[b] < geo[v] )
 		{
@@ -107,7 +111,12 @@ bool patch::add_vertex_by_faces(vector<vertex> & N, index_t * indexes, size_t nc
 			{
 				angle = tmp_angle;
 				//gproshan_debug_var(he);
-				area_face = mesh->real_trig(he/3); 
+				area_face = mesh->area_trig(he/3); 
+				// compute projected area
+				pav = va - vv + (  (n,vv) - (n,va) ) * n;
+				pbv = vb - vv + (  (n,vv) - (n,vb) ) * n;
+				proj_area_face = *(pav * pbv) / 2;
+
 				min_he = mesh->normal_he(he); 
 				if( !exists(v) ) vertices.push_back(v);
 				added = true;
@@ -116,8 +125,10 @@ bool patch::add_vertex_by_faces(vector<vertex> & N, index_t * indexes, size_t nc
 		}
 	
 	}
+	area += area_face;
+	proj_area += proj_area_face;
 
-	sum += area_face;
+//	sum += (proj_area_face/area_face);
 	//sum +=  acos( (min_he, N[i]) );
 
 	N.push_back(min_he);
@@ -135,17 +146,19 @@ void patch::init_random(vertex c, arma::mat T, real_t radio, real_t max_radio)
 
 	std::random_device rd;  //Will be used to obtain a seed for the random number engine
     std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
-    std::uniform_real_distribution<> dis(0, 1);
+   // std::uniform_real_distribution<> dis(0, 1);
+	std::normal_distribution<double> dis(0,1);
 
-
-	size_t n_points = (radio/max_radio) * 100;
+	// free the parameters to the interface
+	// fix the point cloud viewer
+	size_t n_points = (radio/max_radio) * 50; // change this using a sigmoid function
 	vertices.resize(n_points);
 	xyz.resize(3,n_points);
 
 	for(size_t i=0 ;i<n_points; i++)
 	{
-		double a = dis(gen) * 2 * PI;
-		double r = radio * sqrt(dis(gen));
+		double a = abs(dis(gen)) * 2 * PI;
+		double r = 0.5 *radio * sqrt(abs(dis(gen)));
 
 		// If you need it in Cartesian coordinates
 		double x = r * cos(a);
@@ -226,8 +239,10 @@ void patch::init_radial_disjoint(che * mesh, const real_t & radio_, const index_
 	vector<vertex> N;
 	N.push_back(n);
 	//double angle;
-	double sum_angle = 0;
+	double area = 0;
+	double proj_area = 0;
 	double area_mesh = mesh->area_surface();
+	double ratio;
 
 	for(index_t i=1; i<geo.n_sorted_index(); i++)
 	{
@@ -243,10 +258,15 @@ void patch::init_radial_disjoint(che * mesh, const real_t & radio_, const index_
 
 		// add one new candidate vertex //first regulates variation, // second regulates size of the patch
 
-		//gproshan_debug_var(sum_angle/area_mesh);
-	
-		if( add_vertex_by_faces(N, indexes, geo.n_sorted_index(), delta, geo, mesh, indexes[i], sum_angle, PI/2.5 ) && sum_angle/area_mesh < sum_thres  )
+		//if( add_vertex_by_faces(n, N, indexes, geo.n_sorted_index(), delta, geo, mesh, indexes[i], sum_angle, PI/2.5 ) && sum_angle/area_mesh < sum_thres  )
+		ratio = (i==1)? 0:(area/proj_area);
+		gproshan_debug_var(proj_area);
+		gproshan_debug_var(area);
+		gproshan_debug_var(ratio);
+
+		if( add_vertex_by_faces(n, N, indexes, geo.n_sorted_index(), delta, geo, mesh, indexes[i], area, proj_area, PI/2.5 ) && ratio < sum_thres  )
 		{
+			
 
 			if(*p > radio)
 			{
@@ -263,6 +283,7 @@ void patch::init_radial_disjoint(che * mesh, const real_t & radio_, const index_
 		}
 	//	gproshan_debug_var(acos( (mesh->normal(indexes[i-1]), mesh->normal(indexes[i]) ) ));
 	}
+	gproshan_debug_var(vertices.size());
 	
 	// Refit the points and update the radius
 	size_t d_fitting = 2;

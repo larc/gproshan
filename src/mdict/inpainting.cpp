@@ -609,6 +609,7 @@ void inpainting::point_cloud_reconstruction()
 	}
 
 	che nmesh(point_cloud, total_points, nullptr, 0);
+	gproshan_debug_var(sum_thres);
 	string f_pc = tmp_file_path(mesh->name_size() +  '_' + to_string(delta)  +  '_' + to_string(sum_thres)  +  "_pc");
 
 	che_off::write_file(&nmesh,f_pc);
