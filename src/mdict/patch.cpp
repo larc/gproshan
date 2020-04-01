@@ -74,10 +74,14 @@ index_t patch::find(index_t * indexes, size_t nc, index_t idx_global)
 		if(indexes[i] == idx_global) return i;
 	return -1;
 }
-bool patch::add_vertex_by_faces(vertex & n, vector<vertex> & N, index_t * indexes, size_t nc, double thr_angle, const geodesics & geo, che * mesh, const index_t & v, double & area, double & proj_area, double deviation)
+bool patch::add_vertex_by_faces(vertex & p, const vertex & c, vertex & n, vector<vertex> & N, index_t * indexes, size_t nc, double thr_angle, const geodesics & geo,
+								 che * mesh, const index_t & v, double & area, double & proj_area, double deviation)
 {
-
-	index_t a, b, i = 0;
+	// it needs to return both vertices
+	// it needs to filter repeated indexes.
+	// p should be the maximun 
+	
+	index_t a, b, i = 0, ma, mb;
 	vertex min_he;
 	double area_face = 0, proj_area_face = 0;
 	double angle = PI;
@@ -119,12 +123,47 @@ bool patch::add_vertex_by_faces(vertex & n, vector<vertex> & N, index_t * indexe
 
 				min_he = mesh->normal_he(he); 
 				if( !exists(v) ) vertices.push_back(v);
+				ma = a;
+				mb = b;
 				added = true;
 			}
 				
 		}
 	
 	}
+	//p = mesh->get_vertex(indexes[i]); 
+	//p = p - c ;
+	//p = p - ((p,n)*n);
+	
+	if(added)
+	{
+		//gproshan_debug_var(ma);
+		//gproshan_debug_var(mb);
+		
+		if( !exists(ma) ) vertices.push_back(ma);
+		if( !exists(mb) ) vertices.push_back(mb);
+
+		vertex pa, pb, mab;
+		pa = mesh->get_vertex(ma);
+		pb = mesh->get_vertex(mb);
+
+		pa = pa - c;
+		pb = pb - c;
+
+		pa = pa - ((pa,n)*n);
+		pb = pb - ((pb,n)*n);
+		if( *pa > *pb)	mab = mesh->get_vertex(ma);
+		else
+			mab = mesh->get_vertex(mb);
+		
+		p = mesh->get_vertex(v); 
+		p = p - c ;
+		p = p - ((p,n)*n);
+
+		if(*mab > *p) p = mab;
+
+		// get the one who has the greatest distance
+	}	
 	area += area_face;
 	proj_area += proj_area_face;
 
@@ -225,7 +264,7 @@ void patch::init_radial_disjoint(che * mesh, const real_t & radio_, const index_
 
 	normal_fit_directions(mesh, v);
 
-	geodesics geo(mesh, {v}, geodesics::FM,  NULL, false, 0, radio_);
+	geodesics geo(mesh, {v}, geodesics::FM,  NULL, false, 0, 1.2 * radio_);
 	index_t * indexes = new index_t[geo.n_sorted_index()];
 	geo.copy_sorted_index(indexes, geo.n_sorted_index());
 
@@ -246,13 +285,15 @@ void patch::init_radial_disjoint(che * mesh, const real_t & radio_, const index_
 
 	for(index_t i=1; i<geo.n_sorted_index(); i++)
 	{
+		if (geo[indexes [i]] > radio_) break;
 		
-		p = mesh->get_vertex(indexes[i]); 
+		
 		c = mesh->get_vertex(v); // central vertices
 
+		/*p = mesh->get_vertex(indexes[i]); 
 		p = p - c ;
 		p = p - ((p,n)*n);
-
+		*/
 
 		//if( angle < PI/2.5 && (sum_angle) <= delta * PI)
 
@@ -260,22 +301,24 @@ void patch::init_radial_disjoint(che * mesh, const real_t & radio_, const index_
 
 		//if( add_vertex_by_faces(n, N, indexes, geo.n_sorted_index(), delta, geo, mesh, indexes[i], sum_angle, PI/2.5 ) && sum_angle/area_mesh < sum_thres  )
 		ratio = (i==1)? 0:(area/proj_area);
-		gproshan_debug_var(proj_area);
+		/*gproshan_debug_var(proj_area);
 		gproshan_debug_var(area);
-		gproshan_debug_var(ratio);
+		gproshan_debug_var(ratio);*/
+		// p es el vertice de la malla el maximo 
 
-		if( add_vertex_by_faces(n, N, indexes, geo.n_sorted_index(), delta, geo, mesh, indexes[i], area, proj_area, PI/2.5 ) && ratio < sum_thres  )
-		{
+		if( add_vertex_by_faces(p,c, n, N, indexes, geo.n_sorted_index(), delta, geo, mesh, indexes[i], area, proj_area, PI/2.5 ) && ratio < sum_thres  )
+		{	
+			//compute euclidean radio
+			//p = mesh->get_vertex(indexes[i]);
+			if(*(p - c) > euc_radio)
+				euc_radio = *(p - c);
 			
-
+		/*	p = p - c ;
+			p = p - ((p,n)*n);
 			if(*p > radio)
 			{
 				radio = *p;
-			}
-			//compute euclidean radio
-			p = mesh->get_vertex(indexes[i]);
-			if(*(p - c) > euc_radio)
-				euc_radio = *(p - c);
+			}*/
 		}
 		else
 		{
@@ -283,7 +326,7 @@ void patch::init_radial_disjoint(che * mesh, const real_t & radio_, const index_
 		}
 	//	gproshan_debug_var(acos( (mesh->normal(indexes[i-1]), mesh->normal(indexes[i]) ) ));
 	}
-	gproshan_debug_var(vertices.size());
+	//gproshan_debug_var(vertices.size());
 	
 	// Refit the points and update the radius
 	size_t d_fitting = 2;
@@ -296,7 +339,7 @@ void patch::init_radial_disjoint(che * mesh, const real_t & radio_, const index_
 
 		for(index_t i=1; i < vertices.size(); i++)
 		{
-			p = mesh->get_vertex(indexes[i]); 
+			p = mesh->get_vertex(vertices[i]); 
 			c = mesh->get_vertex(v); // central vertices
 
 			p = p - c ;
@@ -310,6 +353,9 @@ void patch::init_radial_disjoint(che * mesh, const real_t & radio_, const index_
 		}
 
 	}
+	//gproshan_debug_var(vertices.size());
+	//gproshan_debug_var(geo.n_sorted_index());
+
 	geo_radio = geo[indexes [vertices.size()-1]];
 
 	delete indexes;

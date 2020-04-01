@@ -264,8 +264,8 @@ void inpainting::load_sampling(bool save_all)
 		}
 		a_vec outlv(seeds.size());
 		gproshan_debug_var(outliers.size());
-		for(index_t i = 0; i < seeds.size(); i++)
-			outlv(i) = seeds[i];
+		for(index_t i = 0; i < outliers.size(); i++)
+			outlv(i) = outliers[i];
 
 		outlv.save(f_points);
 		S.resize(seeds.size(),2);
