@@ -663,9 +663,11 @@ bool app_viewer::process_mask(viewer * p_view)
 		//dict.init_voronoi_patches();
 		delete phi;
 		mesh->update_colors(&dict[0]);
-		string f_points = tmp_file_path(mesh->name_size() + ".points");
+		string f_points = tmp_file_path(mesh->name_size() + "_" + to_string(sum_thres) + ".points");
 		a_vec points_out;
+		gproshan_debug_var(f_points);
 		points_out.load(f_points);
+		gproshan_debug_var(points_out.size());
 		for(int i = 0; i< points_out.size(); i++)
 			mesh.selected.push_back(points_out(i));
 		

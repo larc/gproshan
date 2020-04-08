@@ -158,7 +158,7 @@ void inpainting::load_sampling(bool save_all)
 	gproshan_debug_var(d_time);
 
 	gproshan_debug_var(all_sorted_features.size());
-	string f_points = tmp_file_path(mesh->name_size()  + ".points");
+	string f_points = tmp_file_path(mesh->name_size()  + '_' + to_string(sum_thres) + ".points");
 
 	vector<index_t> features(all_sorted_features.begin(), all_sorted_features.begin() + featsize );
 	gproshan_debug_var(features.size());
@@ -262,7 +262,7 @@ void inpainting::load_sampling(bool save_all)
 				//gproshan_debug_var(geo[indexes[i]] );
 			}
 		}
-		a_vec outlv(seeds.size());
+		a_vec outlv(outliers.size());
 		gproshan_debug_var(outliers.size());
 		for(index_t i = 0; i < outliers.size(); i++)
 			outlv(i) = outliers[i];
