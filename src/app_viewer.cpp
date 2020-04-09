@@ -5,6 +5,7 @@
 using namespace std;
 using namespace gproshan::mdict;
 
+
 // geometry processing and shape analysis framework
 namespace gproshan {
 
@@ -629,6 +630,8 @@ bool app_viewer::process_multiplicate_vertices(viewer * p_view)
 	che_viewer & mesh = view->mesh();
 
 	mesh->multiplicate_vertices();
+	mesh.update();
+
 	mesh.log_info();
 	
 	return false;

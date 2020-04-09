@@ -71,6 +71,8 @@ optix::optix(const std::vector<che *> & meshes)
 
 	// create programs
 
+
+
 	// build as
 
 	build_as(meshes);
