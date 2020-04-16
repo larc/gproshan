@@ -995,11 +995,13 @@ bool app_viewer::process_edge_collapse(viewer * p_view)
 
 bool app_viewer::select_multiple(viewer * p_view)
 {
-	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 
-	char line[128];
-	if(fgets(line, 128, stdin))
+	static char line[128] = "";
+	
+	ImGui::InputText("select", line, sizeof(line));
+
+	if(ImGui::Button("Add"))
 	{
 		stringstream ss(line);
 		index_t v;
@@ -1007,7 +1009,7 @@ bool app_viewer::select_multiple(viewer * p_view)
 			view->mesh().selected.push_back(v);
 	}
 	
-	return false;
+	return true;
 }
 
 
