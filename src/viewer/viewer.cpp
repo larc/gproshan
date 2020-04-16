@@ -145,7 +145,8 @@ bool viewer::run()
 			process_t & pro = p.second;
 			if(pro.selected)
 			{
-				ImGui::SetNextWindowSize(ImVec2(256, -1));
+				ImGui::SetNextWindowSize(ImVec2(300, -1));
+				ImGui::SetNextWindowPos(ImVec2(0, 20), ImGuiCond_Once);
 				ImGui::Begin(("[" + pro.key + "] " + pro.name).c_str(), &pro.selected);
 				
 				pro.selected = pro.selected && p.second.function(this);
@@ -154,7 +155,7 @@ bool viewer::run()
 				ImGui::End();
 			}
 		}
-
+				
 		// Rendering
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

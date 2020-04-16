@@ -6,6 +6,7 @@
 using namespace std;
 using namespace gproshan::mdict;
 
+
 // geometry processing and shape analysis framework
 namespace gproshan {
 
@@ -758,6 +759,8 @@ bool app_viewer::process_multiplicate_vertices(viewer * p_view)
 	che_viewer & mesh = view->mesh();
 
 	mesh->multiplicate_vertices();
+	mesh.update();
+
 	mesh.log_info();
 	
 	return false;
@@ -1126,11 +1129,13 @@ bool app_viewer::process_edge_collapse(viewer * p_view)
 
 bool app_viewer::select_multiple(viewer * p_view)
 {
-	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 
-	char line[128];
-	if(fgets(line, 128, stdin))
+	static char line[128] = "";
+	
+	ImGui::InputText("select", line, sizeof(line));
+
+	if(ImGui::Button("Add"))
 	{
 		stringstream ss(line);
 		index_t v;
@@ -1138,7 +1143,7 @@ bool app_viewer::select_multiple(viewer * p_view)
 			view->mesh().selected.push_back(v);
 	}
 	
-	return false;
+	return true;
 }
 
 
