@@ -386,7 +386,8 @@ const real_t & dictionary::operator[](const index_t & i) const
 
 void dictionary::draw_patches(index_t i)
 {
-	phi_basis->plot_patch(A*alpha.col(i),patches[i].xyz, i);
+	gproshan_debug_var(patches[i].vertices[0]);
+	phi_basis->plot_patch(A*alpha.col(i),patches[i].xyz, patches[i].vertices[0]);
 }
 
 void dictionary::save_alpha(string file)

@@ -60,7 +60,7 @@ class patch
 					const size_t & n_toplevels,
 					vector<index_t> & _vertices, 
 					index_t * _toplevel = nullptr);
-		void init_radial_disjoint(che * mesh,
+		void init_radial_disjoint(vector<index_t> & idxs_he, che * mesh,
 					const real_t & radio_,
 					const index_t & v,
 					real_t & euc_radio,
@@ -81,7 +81,7 @@ class patch
 						const index_t & p,
 						const fmask_t & mask = nullptr
 						);
-		void reset_xyz_disjoint(	che * mesh,
+		void reset_xyz_disjoint(che * mesh,
 						real_t * dist,
 						size_t M,
 						std::vector<vpatches_t> & vpatches,
@@ -96,7 +96,7 @@ class patch
 		void compute_avg_distance();
 		void scale_xyz(const real_t & radio_f);
 		void iscale_xyz(const real_t & radio_f);
-		bool add_vertex_by_faces(vertex & p, const vertex & c, vertex & n, vector<vertex> & N, index_t * indexes, size_t nc, double thr_angle,
+		bool add_vertex_by_faces(index_t & idx_he, vertex & p, const vertex & c, vertex & n, vector<vertex> & N, index_t * indexes, size_t nc, double thr_angle,
 								 const geodesics & geo, che * mesh, const index_t & v, double & area, double & proj_area, double deviation);
 		
 

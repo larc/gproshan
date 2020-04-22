@@ -193,6 +193,9 @@ void inpainting::load_sampling(bool save_all)
 		size_t count_cov = 0;
 		size_t count_cov_patch = 0;
 
+		bool faces[mesh->n_faces()] = {};
+		vector<index_t>  idxs_he;
+
 		for(size_t i = 0; i < all_sorted_features.size(); i++)
 		{
 				bool found = false;
@@ -206,15 +209,22 @@ void inpainting::load_sampling(bool save_all)
 					const vertex & v_seed = mesh->gt(seeds[j]);
 
 					// 0.5 coverage parameter
-					if( *(v_patch - v_seed) < 0.5* radios[j] ) // radio of each patch
+					if( *(v_patch - v_seed) < 0.2* radios[j] )
+					{
+						 // radio of each patch	
 						found = true;
+					}
 					j++;
+
 				}
+
 				if(!found)
 				{	
+
 					patch p;
 					// increasing a bit the radio
-					p.init_radial_disjoint(mesh, 1*max_radio, all_sorted_features[i], euc_radio, geo_radio, delta, sum_thres);
+					idxs_he.clear();
+					p.init_radial_disjoint(idxs_he, mesh, 1*max_radio, all_sorted_features[i], euc_radio, geo_radio, delta, sum_thres);
 			
 					//gproshan_debug_var(p.vertices.size());
 					count_cov_patch = 0;
@@ -228,6 +238,7 @@ void inpainting::load_sampling(bool save_all)
 						count_cov += count_cov_patch;
 						if(count_cov_patch > 0)
 						{
+							//gproshan_debug_var(p.vertices.size());
 							patches.push_back(p);
 							seeds.push_back(all_sorted_features[i]);
 							radios.push_back( euc_radio );
@@ -236,9 +247,26 @@ void inpainting::load_sampling(bool save_all)
 
 							for(index_t k = 0; k < p.vertices.size(); k++)
 								covered[ p.vertices[k] ] = 1;
+
+							for(auto i:idxs_he)
+								faces[i] = true;
+							
 						
 						}
 					}
+					/*if(all_sorted_features[i] == 10594 || all_sorted_features[i] == 3923 || all_sorted_features[i] == 9149 || all_sorted_features[i] == 5678 ||
+					 all_sorted_features[i] == 3067 || all_sorted_features[i] == 6203 || all_sorted_features[i] == 3238 || all_sorted_features[i] == 2870 ||
+					all_sorted_features[i] == 699 || all_sorted_features[i] == 11532 || all_sorted_features[i] == 10749 || all_sorted_features[i] == 3989 ||
+					 all_sorted_features[i] == 1563 || all_sorted_features[i] == 7471 || all_sorted_features[i] == 2874 || all_sorted_features[i] == 8981 || 
+					all_sorted_features[i] == 8678 || all_sorted_features[i] == 3008 || all_sorted_features[i] == 2689 ||all_sorted_features[i] == 5118 ||
+					 all_sorted_features[i] == 6368 || all_sorted_features[i] == 11880 || all_sorted_features[i] == 9617 || all_sorted_features[i] == 11882 ||
+					all_sorted_features[i] == 1479 || all_sorted_features[i] == 8848 || all_sorted_features[i] == 8592 || all_sorted_features[i] == 2688 )
+					{
+						gproshan_debug_var(all_sorted_features[i]);
+						gproshan_debug_var(count_cov_patch);
+						gproshan_debug_var(p.vertices.size());
+					}*/
+					
 			
 				}						
 		}
@@ -253,19 +281,54 @@ void inpainting::load_sampling(bool save_all)
 	///////////////////////////////////////
 		
 		gproshan_debug_var(M);
+		index_t tmp;
+		bool remark[mesh->n_vertices()] = {};
 		
-		for(index_t i = 0; i < mesh->n_vertices(); i++)
+		//outliers by triangles.
+		for(index_t i = 0; i < mesh->n_faces(); i++)
+		{
+			if(!faces[i])
+			{
+				tmp = mesh->vt(next(i*3));
+				if(!covered[ tmp] && !remark[tmp])
+				{
+					outliers.push_back(tmp);
+					remark[tmp] = true;
+				} 
+				
+				tmp = mesh->vt(prev(i*3));
+
+				if(!covered[ tmp] && !remark[tmp])
+				{
+					outliers.push_back(tmp);
+					remark[tmp] = true;
+				} 
+
+				tmp = mesh->vt(i*3);
+				if(!covered[ tmp] && !remark[tmp])
+				{
+					outliers.push_back(tmp);
+					remark[tmp] = true;
+				} 
+			}
+			
+		}
+		gproshan_debug_var(outliers.size());
+		/*for(index_t i = 0; i < mesh->n_vertices(); i++)
 		{
 			if(!covered[i] )
 			{
 				outliers.push_back(i);
-				//gproshan_debug_var(geo[indexes[i]] );
 			}
+		}*/
+		a_vec outlv(seeds.size() );
+		gproshan_debug_var(seeds.size());
+		for(index_t i = 0; i < seeds.size(); i++)
+		{
+			outlv(i) = seeds[i];
+			//gproshan_debug_var(seeds[i]);
 		}
-		a_vec outlv(outliers.size());
-		gproshan_debug_var(outliers.size());
-		for(index_t i = 0; i < outliers.size(); i++)
-			outlv(i) = outliers[i];
+			
 
 		outlv.save(f_points);
 		S.resize(seeds.size(),2);
@@ -281,10 +344,13 @@ void inpainting::load_sampling(bool save_all)
 	else
 	{
 		size_t n_seeds = S.n_rows;
+		vector<index_t> idxs_he;
+		real_t euc_radio, geo_radio;
 		for(index_t i = 0; i < n_seeds; i++)
 		{
 			patch p;
-			p.recover_radial_disjoint( mesh, S(i,1), S(i,0) );
+			//p.recover_radial_disjoint( mesh, S(i,1), S(i,0) );
+			p.init_radial_disjoint(idxs_he, mesh, S(i,1), S(i,0), euc_radio, geo_radio, delta, sum_thres);
 			patches.push_back(p); 
 		}
 		M = n_seeds;

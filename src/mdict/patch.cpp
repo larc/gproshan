@@ -74,7 +74,7 @@ index_t patch::find(index_t * indexes, size_t nc, index_t idx_global)
 		if(indexes[i] == idx_global) return i;
 	return -1;
 }
-bool patch::add_vertex_by_faces(vertex & p, const vertex & c, vertex & n, vector<vertex> & N, index_t * indexes, size_t nc, double thr_angle, const geodesics & geo,
+bool patch::add_vertex_by_faces( index_t & idx_he, vertex & p, const vertex & c, vertex & n, vector<vertex> & N, index_t * indexes, size_t nc, double thr_angle, const geodesics & geo,
 								 che * mesh, const index_t & v, double & area, double & proj_area, double deviation)
 {
 	// it needs to return both vertices
@@ -113,9 +113,16 @@ bool patch::add_vertex_by_faces(vertex & p, const vertex & c, vertex & n, vector
 
 			if ( angle >  tmp_angle  && tmp_angle < thr_angle &&  acos( (mesh->normal_he(he), N[0]) ) < deviation ) // Fullfill conditions
 			{
+				/*if(vertices[0] == 6016 || vertices[0] == 3925 || vertices[0] == 5108 || vertices[0] == 5428  )
+				{
+					gproshan_debug_var(vertices[0]);
+					gproshan_debug_var(tmp_angle);
+				}*/
+				
 				angle = tmp_angle;
 				//gproshan_debug_var(he);
-				area_face = mesh->area_trig(he/3); 
+				area_face = mesh->area_trig(he/3);
+				idx_he =  he/3;
 				// compute projected area
 				pav = va - vv + (  (n,vv) - (n,va) ) * n;
 				pbv = vb - vv + (  (n,vv) - (n,vb) ) * n;
@@ -257,7 +264,7 @@ void patch::recover_radial_disjoint(che * mesh, const real_t & radio_, const ind
 
 }
 
-void patch::init_radial_disjoint(che * mesh, const real_t & radio_, const index_t & v, real_t & euc_radio, real_t & geo_radio, double delta, double sum_thres)
+void patch::init_radial_disjoint(vector<index_t> & idxs_he, che * mesh, const real_t & radio_, const index_t & v, real_t & euc_radio, real_t & geo_radio, double delta, double sum_thres)
 {
 
 	radio = -INFINITY;
@@ -282,6 +289,7 @@ void patch::init_radial_disjoint(che * mesh, const real_t & radio_, const index_
 	double proj_area = 0;
 	double area_mesh = mesh->area_surface();
 	double ratio;
+	index_t idx_he;
 
 	for(index_t i=1; i<geo.n_sorted_index(); i++)
 	{
@@ -305,13 +313,14 @@ void patch::init_radial_disjoint(che * mesh, const real_t & radio_, const index_
 		gproshan_debug_var(area);
 		gproshan_debug_var(ratio);*/
 		// p es el vertice de la malla el maximo 
-
-		if( add_vertex_by_faces(p,c, n, N, indexes, geo.n_sorted_index(), delta, geo, mesh, indexes[i], area, proj_area, PI/2.5 ) && ratio < sum_thres  )
+		//(area/area_mesh) < 0.001
+		if( add_vertex_by_faces(idx_he, p, c, n, N, indexes, geo.n_sorted_index(), delta, geo, mesh, indexes[i], area, proj_area, PI/2.5 ) && (ratio < sum_thres || (area/area_mesh) < 0.000 ) )
 		{	
 			//compute euclidean radio
 			//p = mesh->get_vertex(indexes[i]);
 			if(*(p - c) > euc_radio)
 				euc_radio = *(p - c);
+			idxs_he.push_back(idx_he);
 			
 		/*	p = p - c ;
 			p = p - ((p,n)*n);
@@ -334,22 +343,24 @@ void patch::init_radial_disjoint(che * mesh, const real_t & radio_, const index_
 	if(vertices.size() > min_points)
 	{
 		jet_fit_directions(mesh, v);
-		n.x  = T(0, 2); n.y  = T(1, 2); n.z  = T(2, 2);
-		radio = -INFINITY;
+	}
+	else
+		normal_fit_directions(mesh,v);
 
-		for(index_t i=1; i < vertices.size(); i++)
+	n.x  = T(0, 2); n.y  = T(1, 2); n.z  = T(2, 2);
+	radio = -INFINITY;
+
+	for(index_t i=1; i < vertices.size(); i++)
+	{
+		p = mesh->get_vertex(vertices[i]); 
+		c = mesh->get_vertex(v); // central vertices
+
+		p = p - c ;
+		p = p - ((p,n)*n);
+
+		if(*p > radio)
 		{
-			p = mesh->get_vertex(vertices[i]); 
-			c = mesh->get_vertex(v); // central vertices
-
-			p = p - c ;
-			p = p - ((p,n)*n);
-
-			if(*p > radio)
-			{
-				radio = *p;
-			}
-
+			radio = *p;
 		}
 
 	}
