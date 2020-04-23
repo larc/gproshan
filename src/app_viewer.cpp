@@ -655,7 +655,7 @@ bool app_viewer::process_mask(viewer * p_view)
 	ImGui::InputInt("basis", &n);
 	ImGui::InputInt("atoms", &m);
 	ImGui::InputFloat("delta", &delta, 0.001, 0.1, 3);	
-	ImGui::InputFloat("sum_thres", &sum_thres, 1.001, 0.1, 6);
+	ImGui::InputFloat("proj_thres", &sum_thres, 1.001, 0.1, 6);
 	ImGui::InputFloat("area_thres", &area_thres, 0.001, 0.1, 6);
 	ImGui::Checkbox("learn", &learn);
 

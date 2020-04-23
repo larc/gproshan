@@ -225,7 +225,7 @@ void inpainting::load_sampling(bool save_all)
 					patch p;
 					// increasing a bit the radio
 					idxs_he.clear();
-					p.init_radial_disjoint(idxs_he, mesh, 1*max_radio, all_sorted_features[i], euc_radio, geo_radio, delta, sum_thres);
+					p.init_radial_disjoint(idxs_he, mesh, 1*max_radio, all_sorted_features[i], euc_radio, geo_radio, delta, sum_thres, area_thres);
 			
 					//gproshan_debug_var(p.vertices.size());
 					count_cov_patch = 0;
@@ -315,18 +315,19 @@ void inpainting::load_sampling(bool save_all)
 			
 		}
 		gproshan_debug_var(outliers.size());
-		/*for(index_t i = 0; i < mesh->n_vertices(); i++)
+		for(index_t i = 0; i < mesh->n_vertices(); i++)
 		{
 			if(!covered[i] )
 			{
 				outliers.push_back(i);
 			}
-		}*/
-		a_vec outlv(seeds.size() );
-		gproshan_debug_var(seeds.size());
-		for(index_t i = 0; i < seeds.size(); i++)
+		}
+		a_vec outlv(outliers.size() );
+		//gproshan_debug_var(seeds.size());
+		for(index_t i = 0; i < outliers.size(); i++)
 		{
-			outlv(i) = seeds[i];
+			//outlv(i) = seeds[i];
+			outlv(i) = outliers[i];
 			//gproshan_debug_var(seeds[i]);
 		}
 			
@@ -351,7 +352,7 @@ void inpainting::load_sampling(bool save_all)
 		{
 			patch p;
 			//p.recover_radial_disjoint( mesh, S(i,1), S(i,0) );
-			p.init_radial_disjoint(idxs_he, mesh, S(i,1), S(i,0), euc_radio, geo_radio, delta, sum_thres);
+			p.init_radial_disjoint(idxs_he, mesh, S(i,1), S(i,0), euc_radio, geo_radio, delta, sum_thres, area_thres);
 			patches.push_back(p); 
 		}
 		M = n_seeds;

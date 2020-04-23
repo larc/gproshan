@@ -264,7 +264,7 @@ void patch::recover_radial_disjoint(che * mesh, const real_t & radio_, const ind
 
 }
 
-void patch::init_radial_disjoint(vector<index_t> & idxs_he, che * mesh, const real_t & radio_, const index_t & v, real_t & euc_radio, real_t & geo_radio, double delta, double sum_thres)
+void patch::init_radial_disjoint(vector<index_t> & idxs_he, che * mesh, const real_t & radio_, const index_t & v, real_t & euc_radio, real_t & geo_radio, double delta, double sum_thres, double area_thres)
 {
 
 	radio = -INFINITY;
@@ -314,7 +314,7 @@ void patch::init_radial_disjoint(vector<index_t> & idxs_he, che * mesh, const re
 		gproshan_debug_var(ratio);*/
 		// p es el vertice de la malla el maximo 
 		//(area/area_mesh) < 0.001
-		if( add_vertex_by_faces(idx_he, p, c, n, N, indexes, geo.n_sorted_index(), delta, geo, mesh, indexes[i], area, proj_area, PI/2.5 ) && (ratio < sum_thres || (area/area_mesh) < 0.000 ) )
+		if( add_vertex_by_faces(idx_he, p, c, n, N, indexes, geo.n_sorted_index(), delta, geo, mesh, indexes[i], area, proj_area, PI/2.5 ) && (ratio < sum_thres || (area/area_mesh) < area_thres ) )
 		{	
 			//compute euclidean radio
 			//p = mesh->get_vertex(indexes[i]);
