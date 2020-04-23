@@ -14,12 +14,13 @@ namespace gproshan::mdict {
 
 
 inpainting::inpainting(che *const & _mesh, basis *const & _phi_basis, const size_t & _m, const size_t & _M, const real_t & _f,
- const bool & _learn, size_t _avg_p, size_t _perc, double _delta, double _sum_thres, const bool & _plot): dictionary(_mesh, _phi_basis, _m, _M, _f, _learn, _plot)
+ const bool & _learn, size_t _avg_p, size_t _perc, double _delta, double _sum_thres, double _area_thres, const bool & _plot): dictionary(_mesh, _phi_basis, _m, _M, _f, _learn, _plot)
 {
 	delta = _delta;
 	sum_thres = _sum_thres;
 	avg_p = _avg_p;	//size avg of number of vertices per patch
 	percent = _perc; // mask percentage
+	area_thres = _area_thres;
 	M = mesh->n_vertices()/avg_p;
 	mask = new bool[mesh->n_vertices()];
 	#pragma omp for 
@@ -145,7 +146,7 @@ void inpainting::load_sampling(bool save_all)
 	//double delta = PI/6;
 	//double sum_thres = 0.008; // best arma 0.0001 the worst with 0.001, now with 0.0005 lets see tomorrow
 	//double sum_thres = PI;
-	string f_sampl = tmp_file_path(mesh->name_size() +  '_' + to_string(delta)  +  '_' + to_string(sum_thres)  + ".rsampl");
+	string f_sampl = tmp_file_path(mesh->name_size() +  '_' + to_string(delta)  +  '_' + to_string(sum_thres) +  '_' + to_string(area_thres)  + ".rsampl");
 
 	arma::mat S;
 
@@ -158,7 +159,7 @@ void inpainting::load_sampling(bool save_all)
 	gproshan_debug_var(d_time);
 
 	gproshan_debug_var(all_sorted_features.size());
-	string f_points = tmp_file_path(mesh->name_size()  + '_' + to_string(sum_thres) + ".points");
+	string f_points = tmp_file_path(mesh->name_size()  + '_' + to_string(sum_thres)  +  '_' + to_string(area_thres)  + ".points");
 
 	vector<index_t> features(all_sorted_features.begin(), all_sorted_features.begin() + featsize );
 	gproshan_debug_var(features.size());
@@ -209,7 +210,7 @@ void inpainting::load_sampling(bool save_all)
 					const vertex & v_seed = mesh->gt(seeds[j]);
 
 					// 0.5 coverage parameter
-					if( *(v_patch - v_seed) < 0.2* radios[j] )
+					if( *(v_patch - v_seed) < 0.4* radios[j] )
 					{
 						 // radio of each patch	
 						found = true;
@@ -329,7 +330,7 @@ void inpainting::load_sampling(bool save_all)
 			//gproshan_debug_var(seeds[i]);
 		}
 			
-
+		gproshan_debug_var(f_points);
 		outlv.save(f_points);
 		S.resize(seeds.size(),2);
 		for(index_t i = 0; i < seeds.size(); i++)
@@ -440,7 +441,7 @@ void  inpainting::init_radial_feature_patches()
 			AS(i,12) = p.T(2,2);
 
 		}
-		string f_samplall = tmp_file_path(mesh->name_size() +  '_' + to_string(delta)  +  '_' + to_string(sum_thres)  + ".smp");
+		string f_samplall = tmp_file_path(mesh->name_size() +  '_' + to_string(delta)  +  '_' + to_string(sum_thres)  +  '_' + to_string(area_thres)  + ".smp");
 		AS.save(f_samplall);
 	}
 	gproshan_log(radial patches are ready);
@@ -558,7 +559,7 @@ real_t inpainting::execute()
 	// sparse coding and reconstruction with all patches
 	TIC(d_time) sparse_coding(); TOC(d_time)
 	gproshan_debug_var(d_time);
-	string f_alpha = tmp_file_path(mesh->name_size() +  '_' + to_string(delta)  +  '_' + to_string(sum_thres)  + ".alpha");
+	string f_alpha = tmp_file_path(mesh->name_size() +  '_' + to_string(delta)  +  '_' + to_string(sum_thres)  +  '_' + to_string(area_thres)  +  ".alpha");
 	save_alpha(f_alpha);
 
 	//patches_map.resize(n_vertices);
@@ -609,8 +610,8 @@ void inpainting::point_cloud_reconstruction()
 	arma::mat alpha;
 
 
-	string f_smp = tmp_file_path(mesh->name_size() +  '_' + to_string(delta)  +  '_' + to_string(sum_thres)  + ".smp");
-	string f_alpha = tmp_file_path(mesh->name_size() +  '_' + to_string(delta)  +  '_' + to_string(sum_thres)  + ".alpha");
+	string f_smp = tmp_file_path(mesh->name_size() +  '_' + to_string(delta)  +  '_' + to_string(sum_thres)  + '_' + to_string(area_thres)  +  ".smp");
+	string f_alpha = tmp_file_path(mesh->name_size() +  '_' + to_string(delta)  +  '_' + to_string(sum_thres)  +'_' + to_string(area_thres)  +  ".alpha");
 
 	S.load(f_smp);
 	alpha.load(f_alpha);
@@ -676,7 +677,7 @@ void inpainting::point_cloud_reconstruction()
 
 	che nmesh(point_cloud, total_points, nullptr, 0);
 	gproshan_debug_var(sum_thres);
-	string f_pc = tmp_file_path(mesh->name_size() +  '_' + to_string(delta)  +  '_' + to_string(sum_thres)  +  "_pc");
+	string f_pc = tmp_file_path(mesh->name_size() +  '_' + to_string(delta)  +  '_' + to_string(sum_thres)+ '_' + to_string(area_thres)  +   "_pc");
 
 	che_off::write_file(&nmesh,f_pc);
 	gproshan_debug(Done!);
