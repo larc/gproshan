@@ -694,24 +694,26 @@ bool app_viewer::process_pc_reconstruction(viewer * p_view)
 	static int avg_p = 36; 
 	static int percentage = 0;
 	static float delta = PI/6;
-	static float sum_thres = 0.001;	
+	static float sum_thres = 1.001;
+	static float area_thres = 0.001;	
 
 	ImGui::InputInt("basis", &n);
 	ImGui::InputInt("atoms", &m);
 	ImGui::InputFloat("delta", &delta, 0.001, 0.1, 3);	
-	ImGui::InputFloat("sum_thres", &sum_thres, 0.001, 0.1, 6);
+	ImGui::InputFloat("proj_thres", &sum_thres, 1.001, 0.1, 6);
+	ImGui::InputFloat("area_thres", &area_thres, 0.001, 0.1, 6);
 	ImGui::Checkbox("learn", &learn);
 
 	if(ImGui::Button("Run"))
 	{
 		basis * phi = new basis_dct(n);
-		inpainting dict(mesh, phi, m, M, f, learn, avg_p,  percentage, delta, sum_thres);
+		inpainting dict(mesh, phi, m, M, f, learn, avg_p,  percentage, delta, sum_thres,area_thres);
 		
 		dict.point_cloud_reconstruction();
 		//dict.init_voronoi_patches();
 		delete phi;
 		mesh->update_colors(&dict[0]);
-		string f_points = tmp_file_path(mesh->name_size() + ".points");
+		string f_points = tmp_file_path(mesh->name_size() + "_" + to_string(sum_thres) +"_" + to_string(area_thres)  + ".points");
 		a_vec points_out;
 		points_out.load(f_points);
 		for(int i = 0; i< points_out.size(); i++)

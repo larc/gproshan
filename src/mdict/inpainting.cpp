@@ -345,19 +345,30 @@ void inpainting::load_sampling(bool save_all)
 	}
 	else
 	{
+		gproshan_debug(already done);
 		size_t n_seeds = S.n_rows;
 		vector<index_t> idxs_he;
 		real_t euc_radio, geo_radio;
 		for(index_t i = 0; i < n_seeds; i++)
 		{
 			patch p;
+			
 			//p.recover_radial_disjoint( mesh, S(i,1), S(i,0) );
 			p.init_radial_disjoint(idxs_he, mesh, S(i,1), S(i,0), euc_radio, geo_radio, delta, sum_thres, area_thres);
 			patches.push_back(p); 
 		}
+		
 		M = n_seeds;
+		string f_points = tmp_file_path(mesh->name_size()  + '_' + to_string(sum_thres)  +  '_' + to_string(area_thres)  + ".points");
 		gproshan_debug_var(n_seeds);
-
+		a_vec outlv(n_seeds);
+		gproshan_debug(restored);
+		for(index_t i = 0; i < n_seeds; i++)
+		{
+			outlv(i) = S(i,0);
+		}
+		outlv.save(f_points);
+		gproshan_debug(restored);
 
 	}
 }

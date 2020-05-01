@@ -197,14 +197,14 @@ void patch::init_random(vertex c, arma::mat T, real_t radio, real_t max_radio)
 
 	// free the parameters to the interface
 	// fix the point cloud viewer
-	size_t n_points = (radio/max_radio) * 50; // change this using a sigmoid function
+	size_t n_points = (radio/max_radio) * 100; // change this using a sigmoid function
 	vertices.resize(n_points);
 	xyz.resize(3,n_points);
 
 	for(size_t i=0 ;i<n_points; i++)
 	{
 		double a = abs(dis(gen)) * 2 * PI;
-		double r = 0.5 *radio * sqrt(abs(dis(gen)));
+		double r = 1 *radio * sqrt(abs(dis(gen)));
 
 		// If you need it in Cartesian coordinates
 		double x = r * cos(a);
