@@ -180,7 +180,7 @@ bool patch::add_vertex_by_faces( index_t & idx_he, vertex & p, const vertex & c,
 	N.push_back(min_he);
 	return added;
 }
-void patch::init_random(vertex c, arma::mat T, real_t radio, real_t max_radio)
+void patch::init_random(vertex c, arma::mat T, real_t radio, real_t max_radio, real_t per, real_t fr)
 {
 	this->T = T;
 	x.resize(3);
@@ -192,19 +192,23 @@ void patch::init_random(vertex c, arma::mat T, real_t radio, real_t max_radio)
 
 	std::random_device rd;  //Will be used to obtain a seed for the random number engine
     std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
-   // std::uniform_real_distribution<> dis(0, 1);
-	std::normal_distribution<double> dis(0,1);
+    std::uniform_real_distribution<> dis(0, 1);
+	//std::normal_distribution<double> dis(0,0.5);
 
 	// free the parameters to the interface
 	// fix the point cloud viewer
-	size_t n_points = (radio/max_radio) * 100; // change this using a sigmoid function
+	size_t n_points = (radio/max_radio) * per; // change this using a sigmoid function
 	vertices.resize(n_points);
 	xyz.resize(3,n_points);
 
-	for(size_t i=0 ;i<n_points; i++)
+	xyz(0, 0) = 0;
+	xyz(1, 0) = 0;
+	xyz(2, 0) = 0;
+
+	for(size_t i=1 ;i<n_points; i++)
 	{
 		double a = abs(dis(gen)) * 2 * PI;
-		double r = 1 *radio * sqrt(abs(dis(gen)));
+		double r = fr *radio * abs(dis(gen));
 
 		// If you need it in Cartesian coordinates
 		double x = r * cos(a);

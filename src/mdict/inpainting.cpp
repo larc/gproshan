@@ -615,7 +615,7 @@ real_t inpainting::execute()
 	gproshan_debug_var(d_time);
 }
 
-void inpainting::point_cloud_reconstruction()
+void inpainting::point_cloud_reconstruction(real_t per, real_t fr)
 {
 	arma::mat S;
 	arma::mat T(3,3);
@@ -656,7 +656,7 @@ void inpainting::point_cloud_reconstruction()
 		T(1,2) = S(i,11);
 		T(2,2) = S(i,12);
 
-		patches[i].init_random(c, T, radio, max_radio);
+		patches[i].init_random(c, T, radio, max_radio, per, fr);
 		total_points += patches[i].vertices.size();
 		patches[i].phi.set_size(patches[i].vertices.size(), phi_basis->get_dim());
 		phi_basis->discrete(patches[i].phi, patches[i].xyz);
@@ -689,7 +689,8 @@ void inpainting::point_cloud_reconstruction()
 
 	che nmesh(point_cloud, total_points, nullptr, 0);
 	gproshan_debug_var(sum_thres);
-	string f_pc = tmp_file_path(mesh->name_size() +  '_' + to_string(delta)  +  '_' + to_string(sum_thres)+ '_' + to_string(area_thres)  +   "_pc");
+	string f_pc = tmp_file_path(mesh->name_size() +  '_' + to_string(delta)  +  '_' + to_string(sum_thres)+ '_' + to_string(area_thres) 
+	+ '_' + to_string(per) + '_' + to_string(fr)   +   "_pc");
 
 	che_off::write_file(&nmesh,f_pc);
 	gproshan_debug(Done!);

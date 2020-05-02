@@ -695,13 +695,17 @@ bool app_viewer::process_pc_reconstruction(viewer * p_view)
 	static int percentage = 0;
 	static float delta = PI/6;
 	static float sum_thres = 1.001;
-	static float area_thres = 0.001;	
+	static float area_thres = 0.001;
+	static float percentage_size = 100;
+	static float radio_factor = 1;	
 
 	ImGui::InputInt("basis", &n);
 	ImGui::InputInt("atoms", &m);
 	ImGui::InputFloat("delta", &delta, 0.001, 0.1, 3);	
 	ImGui::InputFloat("proj_thres", &sum_thres, 1.001, 0.1, 6);
 	ImGui::InputFloat("area_thres", &area_thres, 0.001, 0.1, 6);
+	ImGui::InputFloat("percentage_size", &percentage_size, 100, 10, 6);
+	ImGui::InputFloat("radio_factor", &radio_factor, 1, 0.1, 6);
 	ImGui::Checkbox("learn", &learn);
 
 	if(ImGui::Button("Run"))
@@ -709,7 +713,7 @@ bool app_viewer::process_pc_reconstruction(viewer * p_view)
 		basis * phi = new basis_dct(n);
 		inpainting dict(mesh, phi, m, M, f, learn, avg_p,  percentage, delta, sum_thres,area_thres);
 		
-		dict.point_cloud_reconstruction();
+		dict.point_cloud_reconstruction(percentage_size,radio_factor);
 		//dict.init_voronoi_patches();
 		delete phi;
 		mesh->update_colors(&dict[0]);
