@@ -679,7 +679,7 @@ void viewer::render_optix()
 	action = false;
 	
 	if(!render_frame) render_frame = new frame;	
-	render_frame->display(viewport_width, viewport_height, rt_embree->img);
+	render_frame->display(viewport_width, viewport_height, rt_optix->img);
 
 #endif // GPROSHAN_OPTIX
 }

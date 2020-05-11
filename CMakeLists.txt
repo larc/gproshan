@@ -26,11 +26,10 @@ if(CUDA_FOUND)
 endif(CUDA_FOUND)
 
 
-find_package(Embree 3.7)
-if(EMBREE_LIBRARY)
+find_package(embree 3)
+if(embree_FOUND)
 	add_definitions(-DGPROSHAN_EMBREE)
-	include_directories(${EMBREE_INCLUDE_DIRS})
-endif(EMBREE_LIBRARY)
+endif(embree_FOUND)
 
 
 find_package(Threads REQUIRED)
@@ -96,7 +95,7 @@ target_link_libraries(gproshan_cpp ${X11_X11_LIB})
 target_link_libraries(gproshan_cpp ${ARMADILLO_LIBRARIES})
 target_link_libraries(gproshan_cpp ${SuiteSparse_LIBRARIES})
 target_link_libraries(gproshan_cpp CGAL::CGAL)
-target_link_libraries(gproshan_cpp ${EMBREE_LIBRARY})
+target_link_libraries(gproshan_cpp embree)
 target_link_libraries(gproshan_cpp ${OptiX_LIBRARY})
 target_link_libraries(gproshan_cpp imgui)
 
