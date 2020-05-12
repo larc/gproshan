@@ -29,6 +29,7 @@ endif(CUDA_FOUND)
 find_package(embree 3)
 if(embree_FOUND)
 	add_definitions(-DGPROSHAN_EMBREE)
+	set(embree_LIBRARY embree)
 endif(embree_FOUND)
 
 
@@ -95,7 +96,7 @@ target_link_libraries(gproshan_cpp ${X11_X11_LIB})
 target_link_libraries(gproshan_cpp ${ARMADILLO_LIBRARIES})
 target_link_libraries(gproshan_cpp ${SuiteSparse_LIBRARIES})
 target_link_libraries(gproshan_cpp CGAL::CGAL)
-target_link_libraries(gproshan_cpp embree)
+target_link_libraries(gproshan_cpp ${embree_LIBRARY})
 target_link_libraries(gproshan_cpp ${OptiX_LIBRARY})
 target_link_libraries(gproshan_cpp imgui)
 
