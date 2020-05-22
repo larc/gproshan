@@ -310,6 +310,9 @@ void KSVD(a_mat & A, const vector<patch> & patches, const size_t & L, size_t k)
 
 				sum += aj * aj * patches[i].phi.t() * patches[i].phi;
 				sum_error += aj * patches[i].phi.t() * e;
+				//concat e patches[i].phi.t() * e;
+				//apply svd to update the atom
+				
 			}
 
 			if(omega.size())

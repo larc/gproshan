@@ -67,12 +67,25 @@ void dictionary::learning()
 
 		if(!A.load(f_dict))
 		{
-			A.eye(phi_basis->dim, m);
+			//A.eye(phi_basis->dim, m);
+			//initialize with some alpha
+			//random
+			//arma::uvec r_ind = arma::randi<arma::uvec>(m, arma::distr_param(0, M));
+			//A = alpha.cols(r_ind);
+			a_mat R, E, U, V;
+			a_vec s;
+			svd(U, s, V, alpha);
+			gproshan_debug(svd done!);	
+			A =  U.cols(0,m);
+			gproshan_debug(svd done!);	
 			A = normalise(A);
 			gproshan_debug_var(phi_basis->radio);
 			gproshan_debug_var(m);
+			//
+			
 			phi_basis->plot_atoms(A);
 			KSVD(A, patches, L, K);
+			phi_basis->plot_atoms(A);
 			A.save(f_dict);
 		}
 	}

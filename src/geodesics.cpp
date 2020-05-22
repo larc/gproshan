@@ -43,6 +43,7 @@ geodesics::~geodesics()
 
 const real_t & geodesics::operator[](const index_t & i) const
 {
+	
 	assert(i < n_vertices);
 	return dist[i];
 }

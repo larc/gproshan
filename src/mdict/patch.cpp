@@ -98,6 +98,10 @@ bool patch::add_vertex_by_faces( index_t & idx_he, vertex & p, const vertex & c,
 		vb = mesh->gt(b);
 		vv = mesh->gt(v);
 		// If is an adjacent face
+		assert(a < mesh->n_vertices());
+		assert(b < mesh->n_vertices());
+		assert(v < mesh->n_vertices());
+
 		if( geo[a] < geo[v] || geo[b] < geo[v] )
 		{
 			if(geo[a] < geo[v])
@@ -294,10 +298,11 @@ void patch::init_radial_disjoint(vector<index_t> & idxs_he, che * mesh, const re
 	double area_mesh = mesh->area_surface();
 	double ratio;
 	index_t idx_he;
+	
 
 	for(index_t i=1; i<geo.n_sorted_index(); i++)
 	{
-		if (geo[indexes [i]] > radio_) break;
+		if (indexes[i] >= mesh->n_vertices() || geo[indexes [i]] > radio_) break;
 		
 		
 		c = mesh->get_vertex(v); // central vertices

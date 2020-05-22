@@ -23,11 +23,7 @@ inpainting::inpainting(che *const & _mesh, basis *const & _phi_basis, const size
 	area_thres = _area_thres;
 	M = mesh->n_vertices()/avg_p;
 	mask = new bool[mesh->n_vertices()];
-	#pragma omp for 
-		for(index_t i = 0; i < mesh->n_vertices(); i++)
-		{
-			mask[i] = 0;
-		}
+	memset(mask,0,sizeof(bool)*mesh->n_vertices());
 }
 
 
@@ -281,6 +277,7 @@ void inpainting::load_sampling(bool save_all)
 
 	///////////////////////////////////////
 		
+		#ifndef NDEBUG
 		gproshan_debug_var(M);
 		index_t tmp;
 		bool remark[mesh->n_vertices()] = {};
@@ -330,6 +327,7 @@ void inpainting::load_sampling(bool save_all)
 			outlv(i) = outliers[i];
 			//gproshan_debug_var(seeds[i]);
 		}
+		#endif // NDEBUG
 			
 		gproshan_debug_var(f_points);
 		outlv.save(f_points);
@@ -352,7 +350,7 @@ void inpainting::load_sampling(bool save_all)
 		for(index_t i = 0; i < n_seeds; i++)
 		{
 			patch p;
-			
+		//	gproshan_debug_var(i);
 			//p.recover_radial_disjoint( mesh, S(i,1), S(i,0) );
 			p.init_radial_disjoint(idxs_he, mesh, S(i,1), S(i,0), euc_radio, geo_radio, delta, sum_thres, area_thres);
 			patches.push_back(p); 
@@ -564,6 +562,10 @@ real_t inpainting::execute()
 	TIC(d_time) init_radial_feature_patches(); TOC(d_time)
 	gproshan_debug_var(d_time);
 //	L = 15;
+
+	// sparse coding and reconstruction with all patches
+	TIC(d_time) sparse_coding(); TOC(d_time)
+	gproshan_debug_var(d_time);
 
 	TIC(d_time) learning(); TOC(d_time)
 	gproshan_debug_var(d_time);
