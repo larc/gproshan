@@ -74,14 +74,14 @@ index_t patch::find(index_t * indexes, size_t nc, index_t idx_global)
 		if(indexes[i] == idx_global) return i;
 	return -1;
 }
-bool patch::add_vertex_by_faces( index_t & idx_he, vertex & p, const vertex & c, vertex & n, vector<vertex> & N, index_t * indexes, size_t nc, double thr_angle, const geodesics & geo,
+bool patch::add_vertex_by_faces(const vertex & c, vertex & n, vector<vertex> & N, index_t * indexes, size_t nc, double thr_angle, const geodesics & geo,
 								 che * mesh, const index_t & v, double & area, double & proj_area, double deviation)
 {
 	// it needs to return both vertices
 	// it needs to filter repeated indexes.
 	// p should be the maximun 
 	
-	index_t a, b, i = 0, ma, mb;
+	index_t a, b, i = 0;
 	vertex min_he;
 	double area_face = 0, proj_area_face = 0;
 	double angle = PI;
@@ -117,16 +117,10 @@ bool patch::add_vertex_by_faces( index_t & idx_he, vertex & p, const vertex & c,
 
 			if ( angle >  tmp_angle  && tmp_angle < thr_angle &&  acos( (mesh->normal_he(he), N[0]) ) < deviation ) // Fullfill conditions
 			{
-				/*if(vertices[0] == 6016 || vertices[0] == 3925 || vertices[0] == 5108 || vertices[0] == 5428  )
-				{
-					gproshan_debug_var(vertices[0]);
-					gproshan_debug_var(tmp_angle);
-				}*/
 				
 				angle = tmp_angle;
 				//gproshan_debug_var(he);
 				area_face = mesh->area_trig(he/3);
-				idx_he =  he/3;
 				// compute projected area
 				pav = va - vv + (  (n,vv) - (n,va) ) * n;
 				pbv = vb - vv + (  (n,vv) - (n,vb) ) * n;
@@ -134,8 +128,6 @@ bool patch::add_vertex_by_faces( index_t & idx_he, vertex & p, const vertex & c,
 
 				min_he = mesh->normal_he(he); 
 				if( !exists(v) ) vertices.push_back(v);
-				ma = a;
-				mb = b;
 				added = true;
 			}
 				
@@ -146,40 +138,9 @@ bool patch::add_vertex_by_faces( index_t & idx_he, vertex & p, const vertex & c,
 	//p = p - c ;
 	//p = p - ((p,n)*n);
 	
-	if(added)
-	{
-		//gproshan_debug_var(ma);
-		//gproshan_debug_var(mb);
-		
-		if( !exists(ma) ) vertices.push_back(ma);
-		if( !exists(mb) ) vertices.push_back(mb);
-
-		vertex pa, pb, mab;
-		pa = mesh->get_vertex(ma);
-		pb = mesh->get_vertex(mb);
-
-		pa = pa - c;
-		pb = pb - c;
-
-		pa = pa - ((pa,n)*n);
-		pb = pb - ((pb,n)*n);
-		if( *pa > *pb)	mab = mesh->get_vertex(ma);
-		else
-			mab = mesh->get_vertex(mb);
-		
-		p = mesh->get_vertex(v); 
-		p = p - c ;
-		p = p - ((p,n)*n);
-
-		if(*mab > *p) p = mab;
-
-		// get the one who has the greatest distance
-	}	
 	area += area_face;
 	proj_area += proj_area_face;
 
-//	sum += (proj_area_face/area_face);
-	//sum +=  acos( (min_he, N[i]) );
 
 	N.push_back(min_he);
 	return added;
@@ -306,37 +267,15 @@ void patch::init_radial_disjoint(vector<index_t> & idxs_he, che * mesh, const re
 		
 		
 		c = mesh->get_vertex(v); // central vertices
-
-		/*p = mesh->get_vertex(indexes[i]); 
-		p = p - c ;
-		p = p - ((p,n)*n);
-		*/
-
-		//if( angle < PI/2.5 && (sum_angle) <= delta * PI)
-
-		// add one new candidate vertex //first regulates variation, // second regulates size of the patch
-
-		//if( add_vertex_by_faces(n, N, indexes, geo.n_sorted_index(), delta, geo, mesh, indexes[i], sum_angle, PI/2.5 ) && sum_angle/area_mesh < sum_thres  )
 		ratio = (i==1)? 0:(area/proj_area);
-		/*gproshan_debug_var(proj_area);
-		gproshan_debug_var(area);
-		gproshan_debug_var(ratio);*/
-		// p es el vertice de la malla el maximo 
-		//(area/area_mesh) < 0.001
-		if( add_vertex_by_faces(idx_he, p, c, n, N, indexes, geo.n_sorted_index(), delta, geo, mesh, indexes[i], area, proj_area, PI/2.5 ) && (ratio < sum_thres || (area/area_mesh) < area_thres ) )
+		if( add_vertex_by_faces(c, n, N, indexes, geo.n_sorted_index(), delta, geo, mesh, indexes[i], area, proj_area, PI/2.5 ) && (ratio < sum_thres || (area/area_mesh) < area_thres ) )
 		{	
 			//compute euclidean radio
-			//p = mesh->get_vertex(indexes[i]);
+			p = mesh->get_vertex(indexes[i]);
 			if(*(p - c) > euc_radio)
 				euc_radio = *(p - c);
 			idxs_he.push_back(idx_he);
 			
-		/*	p = p - c ;
-			p = p - ((p,n)*n);
-			if(*p > radio)
-			{
-				radio = *p;
-			}*/
 		}
 		else
 		{

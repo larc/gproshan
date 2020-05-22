@@ -251,20 +251,7 @@ void inpainting::load_sampling(bool save_all)
 						
 						}
 					}
-					/*if(all_sorted_features[i] == 10594 || all_sorted_features[i] == 3923 || all_sorted_features[i] == 9149 || all_sorted_features[i] == 5678 ||
-					 all_sorted_features[i] == 3067 || all_sorted_features[i] == 6203 || all_sorted_features[i] == 3238 || all_sorted_features[i] == 2870 ||
-					all_sorted_features[i] == 699 || all_sorted_features[i] == 11532 || all_sorted_features[i] == 10749 || all_sorted_features[i] == 3989 ||
-					 all_sorted_features[i] == 1563 || all_sorted_features[i] == 7471 || all_sorted_features[i] == 2874 || all_sorted_features[i] == 8981 || 
-					all_sorted_features[i] == 8678 || all_sorted_features[i] == 3008 || all_sorted_features[i] == 2689 ||all_sorted_features[i] == 5118 ||
-					 all_sorted_features[i] == 6368 || all_sorted_features[i] == 11880 || all_sorted_features[i] == 9617 || all_sorted_features[i] == 11882 ||
-					all_sorted_features[i] == 1479 || all_sorted_features[i] == 8848 || all_sorted_features[i] == 8592 || all_sorted_features[i] == 2688 )
-					{
-						gproshan_debug_var(all_sorted_features[i]);
-						gproshan_debug_var(count_cov_patch);
-						gproshan_debug_var(p.vertices.size());
-					}*/
-					
-			
+							
 				}						
 		}
 		
