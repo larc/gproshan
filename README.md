@@ -5,7 +5,7 @@
 
 
 ## Description
-This framework includes some algorithms of Geometry Processing and Shape Analysis as part of our graduate research.
+This framework integrates some algorithms and contributions focus on the areas of computer graphics, geometry processing and computational geometry.
 
 
 ## Build and Run
@@ -46,14 +46,14 @@ approach is competitive with the current methods and is simple to implement. Ple
 
 ```bibtex
 @Article{ROMEROCALLA2019,
-  author   = {{Romero Calla}, Luciano A. and {Fuentes Perez}, Lizeth J. and Montenegro, Anselmo A.},
-  title    = {A minimalistic approach for fast computation of geodesic distances on triangular meshes},
-  journal  = {Computers \& Graphics},
-  year     = {2019},
-  issn     = {0097-8493},
-  doi      = {https://doi.org/10.1016/j.cag.2019.08.014},
-  keywords = {Geodesic distance, Fast marching, Triangular meshes, Parallel programming, Breadth-first search},
-  url      = {http://www.sciencedirect.com/science/article/pii/S0097849319301426}
+  author   = { {Romero Calla}, Luciano A. and {Fuentes Perez}, Lizeth J. and Montenegro, Anselmo A. },
+  title    = { A minimalistic approach for fast computation of geodesic distances on triangular meshes },
+  journal  = { Computers \& Graphics },
+  year     = { 2019 },
+  issn     = { 0097-8493 },
+  doi      = { https://doi.org/10.1016/j.cag.2019.08.014 },
+  keywords = { Geodesic distance, Fast marching, Triangular meshes, Parallel programming, Breadth-first search },
+  url      = { http://www.sciencedirect.com/science/article/pii/S0097849319301426 }
 }
 ```
 
