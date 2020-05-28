@@ -12,6 +12,11 @@
 namespace gproshan::rt {
 
 
+void compute_normals(glm::vec3 * normals, const glm::vec3 * vertices, const size_t & n_vertices)
+{
+
+}
+
 void embree_error(void * ptr, RTCError error, const char * str)
 {
 	fprintf(stderr, "EMBREE ERROR: %s\n", str);
