@@ -1,10 +1,8 @@
-# gproshan
-### geometry processing and shape analysis framework
+## [gproshan](https://github.com/larc/gproshan): a geometry processing and shape analysis framework 
 
 ![](https://raw.githubusercontent.com/larc/gproshan/master/gproshan.png) 
 
 
-## Description
 This framework integrates some algorithms and contributions focus on the areas of computer graphics, geometry processing and computational geometry.
 
 
