@@ -1,7 +1,7 @@
 # gproshan
 ### geometry processing and shape analysis framework
 
-![](gproshan.png) 
+![](https://raw.githubusercontent.com/larc/gproshan/master/gproshan.png) 
 
 
 ## Description
