@@ -76,7 +76,7 @@ void dictionary::learning()
 			a_vec s;
 			svd(U, s, V, alpha);
 			gproshan_debug(svd done!);	
-			A =  U.cols(0,m);
+			A = U.cols(0,m);
 			gproshan_debug(svd done!);	
 			A = normalise(A);
 			gproshan_debug_var(phi_basis->radio);
@@ -136,8 +136,8 @@ void dictionary::init_sampling()
 
 void dictionary::load_curvatures(a_vec & curvatures)
 {
-	string f_curv = tmp_file_path(mesh->name_size()  + ".curv");
-	string f_norm = tmp_file_path(mesh->name_size()  + ".n");
+	string f_curv = tmp_file_path(mesh->name_size() + ".curv");
+	string f_norm = tmp_file_path(mesh->name_size() + ".n");
 
 	if(! curvatures.load(f_curv))
 	{
@@ -205,15 +205,15 @@ void dictionary::load_curvatures(a_vec & curvatures)
 
 void dictionary::load_features(vector<index_t> & v_feat, size_t & featsize)
 {
-	string f_feat = tmp_file_path(mesh->name()  + ".int");
+	string f_feat = tmp_file_path(mesh->name() + ".int");
 	ifstream inp;
-    inp.open(f_feat.c_str(), ifstream::in);
-  
+	inp.open(f_feat.c_str(), ifstream::in);
+	
 	size_t tam;
 	index_t tmp;
 
 	gproshan_debug_var(f_feat);
-    if(inp.fail()){
+	if(inp.fail()){
 		inp.clear(ios::failbit);
 		// call the function using system
 		//g++ -O3 *.cpp -lgsl -lCGAL -o harris3d

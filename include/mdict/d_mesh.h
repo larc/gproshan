@@ -111,7 +111,7 @@ void save_patches(std::vector<patch_t> patches, size_t M);
 
 void partial_mesh_reconstruction(size_t old_n_vertices, che * mesh, size_t M, std::vector<patch_t> & patches, std::vector<patches_map_t> & patches_map, a_mat & A, a_mat & alpha);
 
-real_t mesh_reconstruction(che * mesh, size_t M, const real_t & radio, std::vector<patch> & patches, std::vector<vpatches_t> & patches_map, a_mat & A, a_mat & alpha, real_t * dist,  const fmask_t & mask = nullptr, const index_t & v_i = 0);
+real_t mesh_reconstruction(che * mesh, size_t M, const real_t & radio, std::vector<patch> & patches, std::vector<vpatches_t> & patches_map, a_mat & A, a_mat & alpha, real_t * dist, const fmask_t & mask = nullptr, const index_t & v_i = 0);
 
 a_vec non_local_means_vertex(a_mat & alpha, const index_t & v, std::vector<patch> & patches, std::vector<vpatches_t> & patches_map, const real_t & h);
 

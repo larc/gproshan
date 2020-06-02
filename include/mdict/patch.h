@@ -11,7 +11,7 @@
 #include <CImg.h>
 
 #ifdef Success
- #undef Success
+	#undef Success
 #endif
 
 using namespace cimg_library;

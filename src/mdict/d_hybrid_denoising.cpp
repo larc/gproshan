@@ -82,7 +82,7 @@ void test_hybrid_denoising(const string & file)
 		if(rp.phi.n_rows)
 		{
 			a_vec x = rp.phi * A * alpha.col(p);
-			gproshan_debug_var(alpha.col(p));          
+			gproshan_debug_var(alpha.col(p)); 
 			rp.xyz.row(2) = x.t();
 		//	rp.itransform();
 		}

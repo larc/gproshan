@@ -58,7 +58,7 @@ void patch::init_disjoint(che * mesh, const index_t & v, const size_t & n_toplev
 	if(!_toplevel) delete [] toplevel; // If it is null
 }
 
-bool  patch::exists(index_t idx)
+bool patch::exists(index_t idx)
 {
 	for(size_t i=1; i < vertices.size(); i++)
 	{
@@ -115,15 +115,15 @@ bool patch::add_vertex_by_faces(const vertex & c, vertex & n, vector<vertex> & N
 			}
 			tmp_angle = acos( (mesh->normal_he(he), N[i]) );
 
-			if ( angle >  tmp_angle  && tmp_angle < thr_angle &&  acos( (mesh->normal_he(he), N[0]) ) < deviation ) // Fullfill conditions
+			if ( angle > tmp_angle && tmp_angle < thr_angle && acos( (mesh->normal_he(he), N[0]) ) < deviation ) // Fullfill conditions
 			{
 				
 				angle = tmp_angle;
 				//gproshan_debug_var(he);
 				area_face = mesh->area_trig(he/3);
 				// compute projected area
-				pav = va - vv + (  (n,vv) - (n,va) ) * n;
-				pbv = vb - vv + (  (n,vv) - (n,vb) ) * n;
+				pav = va - vv + ( (n,vv) - (n,va) ) * n;
+				pbv = vb - vv + ( (n,vv) - (n,vb) ) * n;
 				proj_area_face = *(pav * pbv) / 2;
 
 				min_he = mesh->normal_he(he); 
@@ -155,9 +155,9 @@ void patch::init_random(vertex c, arma::mat T, real_t radio, real_t max_radio, r
 	this->radio = radio;
 	
 
-	std::random_device rd;  //Will be used to obtain a seed for the random number engine
-    std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
-    std::uniform_real_distribution<> dis(0, 1);
+	std::random_device rd; //Will be used to obtain a seed for the random number engine
+	std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
+	std::uniform_real_distribution<> dis(0, 1);
 	//std::normal_distribution<double> dis(0,0.5);
 
 	// free the parameters to the interface
@@ -192,7 +192,7 @@ void patch::recover_radial_disjoint(che * mesh, const real_t & radio_, const ind
 {
 	// for small meshes 6000 0.e-5
 	// for others 2.e-5
-	geodesics geo(mesh, {v}, geodesics::FM,  NULL, false, 0, radio_ + 1.e-5);
+	geodesics geo(mesh, {v}, geodesics::FM, NULL, false, 0, radio_ + 1.e-5);
 	index_t * indexes = new index_t[geo.n_sorted_index()];
 	geo.copy_sorted_index(indexes, geo.n_sorted_index());
 
@@ -209,7 +209,7 @@ void patch::recover_radial_disjoint(che * mesh, const real_t & radio_, const ind
 	if(vertices.size() > min_points)
 	{
 		jet_fit_directions(mesh, v);
-		n.x  = T(0, 2); n.y  = T(1, 2); n.z  = T(2, 2);
+		n.x = T(0, 2); n.y = T(1, 2); n.z = T(2, 2);
 		radio = -INFINITY;
 
 		for(index_t i=1; i < vertices.size(); i++)
@@ -240,7 +240,7 @@ void patch::init_radial_disjoint(vector<index_t> & idxs_he, che * mesh, const re
 
 	normal_fit_directions(mesh, v);
 
-	geodesics geo(mesh, {v}, geodesics::FM,  NULL, false, 0, 1.2 * radio_);
+	geodesics geo(mesh, {v}, geodesics::FM, NULL, false, 0, 1.2 * radio_);
 	index_t * indexes = new index_t[geo.n_sorted_index()];
 	geo.copy_sorted_index(indexes, geo.n_sorted_index());
 
@@ -295,7 +295,7 @@ void patch::init_radial_disjoint(vector<index_t> & idxs_he, che * mesh, const re
 	else
 		normal_fit_directions(mesh,v);
 
-	n.x  = T(0, 2); n.y  = T(1, 2); n.z  = T(2, 2);
+	n.x = T(0, 2); n.y = T(1, 2); n.z = T(2, 2);
 	radio = -INFINITY;
 
 	for(index_t i=1; i < vertices.size(); i++)
@@ -365,14 +365,14 @@ void patch::reset_xyz(che * mesh, vector<vpatches_t> & vpatches, const index_t &
 }
 		
 
-void patch::reset_xyz_disjoint(che * mesh, real_t * dist, size_t M, vector<vpatches_t> & vpatches, const index_t & p,  const fmask_t & mask)
+void patch::reset_xyz_disjoint(che * mesh, real_t * dist, size_t M, vector<vpatches_t> & vpatches, const index_t & p, const fmask_t & mask)
 {
 	size_t m = vertices.size();
 	if(mask)
 	{
 		m = 0;
 		for(index_t i = 0; i < vertices.size(); i++)
-			if(mask(i)) { dist[vertices[i] ] = float(p + 1) / M; m++;  } else {dist[vertices[i] ] = INFINITY; };
+			if(mask(i)) { dist[vertices[i] ] = float(p + 1) / M; m++; } else {dist[vertices[i] ] = INFINITY; };
 		/*gproshan_debug(number vertices considered);
 		gproshan_debug_var(m);
 		gproshan_debug(number vertices masked);
@@ -380,7 +380,7 @@ void patch::reset_xyz_disjoint(che * mesh, real_t * dist, size_t M, vector<vpatc
 	}
 
 	xyz.set_size(3, m);
-	for(index_t  j = 0, i = 0; i < vertices.size(); i++)
+	for(index_t j = 0, i = 0; i < vertices.size(); i++)
 	{
 		if(!mask || mask(i))
 		{ 
@@ -403,7 +403,7 @@ void patch::scale_xyz(const real_t & radio_f)
 void patch::iscale_xyz(const real_t & radio_f)
 {
 	real_t factor = radio_f/radio;
-	xyz =  xyz / factor;
+	xyz = xyz / factor;
 }
 
 const a_vec patch::normal()
