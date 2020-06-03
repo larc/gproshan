@@ -18,6 +18,6 @@ void main()
 	vs_color = in_color;
 
 	gl_Position = proj_mat * model_view_mat * vec4(in_position, 1);
-	gl_PointSize = 2;
+	gl_PointSize = 1;
 }
 

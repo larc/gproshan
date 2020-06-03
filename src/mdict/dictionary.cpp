@@ -213,13 +213,14 @@ void dictionary::load_features(vector<index_t> & v_feat, size_t & featsize)
 	index_t tmp;
 
 	gproshan_debug_var(f_feat);
-	if(inp.fail()){
+	if(inp.fail())
+	{
 		inp.clear(ios::failbit);
 		// call the function using system
 		//g++ -O3 *.cpp -lgsl -lCGAL -o harris3d
 		//cmake -DCMAKE_BUILD_TYPE=Debug ..
 		
-		string command = "../../Harris3D-Cpp/harris3d " + mesh->filename() + " " + tmp_file_path("example.prop"); 
+		string command = "../../harris3d/harris3d " + mesh->filename() + " " + f_feat + " " + tmp_file_path("example.prop"); 
 		gproshan_debug_var(command);
 		system(command.c_str()); 
 		gproshan_debug(created);

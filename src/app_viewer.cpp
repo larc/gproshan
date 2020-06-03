@@ -710,20 +710,10 @@ bool app_viewer::process_pc_reconstruction(viewer * p_view)
 
 	if(ImGui::Button("Run"))
 	{
-		basis * phi = new basis_dct(n);
-		inpainting dict(mesh, phi, m, M, f, learn, avg_p, percentage, delta, sum_thres,area_thres);
+		basis_dct phi(n);
+		inpainting dict(mesh, &phi, m, M, f, learn, avg_p, percentage, delta, sum_thres,area_thres);
 		
-		dict.point_cloud_reconstruction(percentage_size,radio_factor);
-		//dict.init_voronoi_patches();
-		delete phi;
-		mesh->update_colors(&dict[0]);
-		string f_points = tmp_file_path(mesh->name_size() + "_" + to_string(sum_thres) +"_" + to_string(area_thres) + ".points");
-		a_vec points_out;
-		points_out.load(f_points);
-		for(int i = 0; i< points_out.size(); i++)
-			mesh.selected.push_back(points_out(i));
-		
-		mesh->update_normals();
+		view->add_mesh({dict.point_cloud_reconstruction(percentage_size,radio_factor)});
 	}
 	
 	return true;
