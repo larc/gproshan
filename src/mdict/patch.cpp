@@ -145,6 +145,7 @@ bool patch::add_vertex_by_faces(const vertex & c, vertex & n, vector<vertex> & N
 	N.push_back(min_he);
 	return added;
 }
+
 void patch::init_random(vertex c, arma::mat T, real_t radio, real_t max_radio, real_t per, real_t fr)
 {
 	this->T = T;
@@ -170,24 +171,17 @@ void patch::init_random(vertex c, arma::mat T, real_t radio, real_t max_radio, r
 	xyz(1, 0) = 0;
 	xyz(2, 0) = 0;
 
-	for(size_t i=1 ;i<n_points; i++)
+	for(size_t i = 1; i < n_points; i++)
 	{
 		double a = abs(dis(gen)) * 2 * PI;
-		double r = fr *radio * abs(dis(gen));
-
-		// If you need it in Cartesian coordinates
-		double x = r * cos(a);
-		double y = r * sin(a);
-		/*gproshan_debug_var(radio);
-		gproshan_debug_var(x);
-		gproshan_debug_var(y);*/
-		xyz(0, i) = x;
-		xyz(1, i) = y;
+		double r = fr * radio * abs(dis(gen));
+		
+		xyz(0, i) = r * cos(a);
+		xyz(1, i) = r * sin(a);
 		xyz(2, i) = 0;
 	}
-
-
 }
+
 void patch::recover_radial_disjoint(che * mesh, const real_t & radio_, const index_t & v)
 {
 	// for small meshes 6000 0.e-5

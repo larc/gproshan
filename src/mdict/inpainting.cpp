@@ -664,19 +664,18 @@ che * inpainting::point_cloud_reconstruction(real_t per, real_t fr)
 		patches[i].itransform();
 	}
 
-	vertex point_cloud[total_points];
-	for(index_t i = 0, k=0; i < M; i++)
-	{
-		for(index_t j = 0; j < patches[i].vertices.size(); j++)
-		{
-			point_cloud[k].x = patches[i].xyz(0,j);
-			point_cloud[k].y = patches[i].xyz(1,j);
-			point_cloud[k].z = patches[i].xyz(2,j);
-			k++;
-		}
-	}
+	vector<vertex> point_cloud;
+	point_cloud.reserve(total_points);
 
-	che * nmesh = new che(point_cloud, total_points, nullptr, 0);
+	for(index_t i = 0; i < M; i++)
+	for(index_t j = 0; j < patches[i].vertices.size(); j++)
+		point_cloud.push_back({	patches[i].xyz(0, j), 
+								patches[i].xyz(1, j),
+								patches[i].xyz(2, j)
+								});
+
+	che * nmesh = new che(point_cloud.data(), point_cloud.size(), nullptr, 0);
+
 	gproshan_debug_var(sum_thres);
 	string f_pc = tmp_file_path(mesh->name_size() + '_' + to_string(delta) + '_' + to_string(sum_thres)+ '_' + to_string(area_thres) 
 	+ '_' + to_string(per) + '_' + to_string(fr) + "_pc");
