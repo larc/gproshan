@@ -174,7 +174,7 @@ void patch::init_random(vertex c, arma::mat T, real_t radio, real_t max_radio, r
 	for(size_t i = 1; i < n_points; i++)
 	{
 		double a = abs(dis(gen)) * 2 * PI;
-		double r = fr * radio * abs(dis(gen));
+		double r = fr * abs(dis(gen));
 		
 		xyz(0, i) = r * cos(a);
 		xyz(1, i) = r * sin(a);

@@ -588,8 +588,8 @@ real_t inpainting::execute()
 
 	bool *pmask;
 
-	draw_patches(10);
-	draw_patches(50);
+	draw_patches(295);
+	draw_patches(384);
 	draw_patches(90);
 	draw_patches(20);
 	
@@ -653,6 +653,12 @@ che * inpainting::point_cloud_reconstruction(real_t per, real_t fr)
 
 		a_vec x = patches[i].phi * A * alpha.col(i);
 		patches[i].xyz.row(2) = x.t();
+
+		for(index_t j = 0; j < patches[i].vertices.size(); j++)
+			if (patches[i].xyz(2, j) > 2)
+				gproshan_debug_var( i);
+		
+
 	}
 
 	gproshan_debug_var(total_points);
@@ -660,7 +666,7 @@ che * inpainting::point_cloud_reconstruction(real_t per, real_t fr)
 	for(index_t i = 0; i < M; i++)
 	{
 
-		patches[i].iscale_xyz(patches[i].radio);
+		patches[i].iscale_xyz(phi_basis->get_radio());
 		patches[i].itransform();
 	}
 
