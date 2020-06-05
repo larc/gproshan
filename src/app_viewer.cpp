@@ -984,12 +984,9 @@ bool app_viewer::process_edge_collapse(viewer * p_view)
 	TIC(view->time) decimation sampling(mesh, &mesh->normal(0), levels); TOC(view->time)
 	gproshan_debug_var(view->time);
 
-	if(view->n_meshes < 2)
-		view->add_mesh({new che(*mesh)});
+	//if(view->n_meshes < 2)
+	//	view->add_mesh({new che(*mesh)});
 
-	view->corr_mesh[1].init(view->meshes[1]->n_vertices(), view->current, sampling);
-	view->current = 1;
-	
 	return false;
 }
 

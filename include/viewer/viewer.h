@@ -37,38 +37,6 @@ namespace gproshan {
 class viewer;
 
 
-struct vcorr_t
-{
-	index_t mesh_i;
-	corr_t * corr;
-
-	vcorr_t()
-	{
-		mesh_i = NIL;
-		corr = nullptr;
-	}
-
-	void init(const size_t & n, const index_t & _mesh_i, const corr_t * _corr)
-	{
-		if(corr) delete [] corr;
-		corr = new corr_t[n];
-
-		mesh_i = _mesh_i;
-		memcpy(corr, _corr, n * sizeof(corr_t));
-	}
-
-	operator corr_t *& ()
-	{
-		return corr;
-	}
-
-	bool is_loaded()
-	{
-		return mesh_i != NIL && corr != nullptr;
-	}
-};
-
-
 class viewer
 {
 	protected:
@@ -111,7 +79,6 @@ class viewer
 		glm::mat4 proj_mat;
 
 		che_viewer meshes[N_MESHES];
-		vcorr_t corr_mesh[N_MESHES];
 		size_t n_meshes	= 0;
 		index_t current = 0; // current mesh
 
