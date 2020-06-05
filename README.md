@@ -7,6 +7,9 @@ This framework integrates some algorithms and contributions focus on the areas o
 
 
 ## Build and Run
+
+| `Ubuntu 18.04` | [![Build Status](https://travis-ci.com/larc/gproshan.svg?branch=raytracing)](https://travis-ci.com/larc/gproshan) |
+
 Install all dependencies and run:
 
 	mkdir build
@@ -25,10 +28,6 @@ In Ubuntu (>= 18.04) you can install them with:
 
 	sudo apt install cmake libarmadillo-dev libeigen3-dev libcgal-dev libsuitesparse-dev libopenblas-dev libglew-dev libglfw3-dev libglm-dev cimg-dev gnuplot
 
-#### Build Status
-
-##### Ubuntu 18.04 (Bionic)
-[![Build Status](https://travis-ci.com/larc/gproshan.svg?branch=master)](https://travis-ci.com/larc/gproshan)
 
 ## Contributions
 
