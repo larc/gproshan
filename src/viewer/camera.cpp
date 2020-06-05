@@ -30,7 +30,7 @@ quaternion camera::clickToSphere(int x, int y)
 	x %= w;
 	y %= h;
 
-	quaternion p(0.,
+	quaternion p(	0.,
 					2. * (double) x / (double) w - 1.,
 					2. * (double) y / (double) h - 1.,
 					0.);
@@ -48,7 +48,7 @@ quaternion camera::clickToSphere(int x, int y)
 	return p;
 }
 
-quaternion camera::currentRotation() const
+quaternion camera::current_rotation() const
 {
 	return (pDrag * pClick.conj()) * rLast;
 }
@@ -102,12 +102,12 @@ void camera::idle()
 	t0 = t1;
 }
 
-void camera::zoomIn()
+void camera::zoom_in()
 {
 	zoom -= 0.01;
 }
 
-void camera::zoomOut()
+void camera::zoom_out()
 {
 	zoom += 0.01;
 }

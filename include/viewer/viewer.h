@@ -55,7 +55,7 @@ class viewer
 			process_t(const std::string & k, const std::string & n, function_t f, const index_t & sm = NIL): key(k), name(n), function(f), sub_menu(sm) {};
 		};
 
-		static const int m_window_size[N_MESHES][2];
+		static const int m_window_size[N_MESHES + 1][2];
 
 
 		GLFWwindow * window = nullptr;
@@ -80,7 +80,7 @@ class viewer
 
 		che_viewer meshes[N_MESHES];
 		size_t n_meshes	= 0;
-		index_t current = 0; // current mesh
+		index_t idx_active_mesh = 0; // idx_active_mesh mesh
 
 		index_t render_opt = 0;
 		
@@ -124,7 +124,7 @@ class viewer
 		
 		bool run();
 		
-		che_viewer & mesh();
+		che_viewer & active_mesh();
 		void add_process(const int & key, const process_t & process);
 		void add_mesh(che * p_mesh);
 		

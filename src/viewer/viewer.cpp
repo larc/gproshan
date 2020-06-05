@@ -28,10 +28,12 @@ using namespace std;
 namespace gproshan {
 
 
-const int viewer::m_window_size[N_MESHES][2] = {{1, 1}, {1, 2}, {1, 3}, 
-												{2, 2}, {2, 3}, {2, 3},
-												{2, 4}, {2, 4}, {2, 5},
-												{2, 5}, {3, 4}, {3, 4}};
+const int viewer::m_window_size[N_MESHES + 1][2] = {{1, 1},
+													{1, 1}, {1, 2}, {1, 3}, 
+													{2, 2}, {2, 3}, {2, 3},
+													{2, 4}, {2, 4}, {2, 5},
+													{2, 5}, {3, 4}, {3, 4}
+													};
 
 
 viewer::viewer()
@@ -71,8 +73,8 @@ bool viewer::run()
 	while(!glfwWindowShouldClose(window))
 	{
 		glfwGetFramebufferSize(window, &viewport_width, &viewport_height);
-		viewport_width /= m_window_size[n_meshes - 1][1];
-		viewport_height /= m_window_size[n_meshes - 1][0];
+		viewport_width /= m_window_size[n_meshes][1];
+		viewport_height /= m_window_size[n_meshes][0];
 
 		eye		= vertex(0., 0., -2. * cam.zoom);
 		center	= vertex(0., 0., 0.);
@@ -80,7 +82,7 @@ bool viewer::run()
 		
 		light = vertex(-1., 1., -2.);
 
-		quaternion r = cam.currentRotation();
+		quaternion r = cam.current_rotation();
 
 		eye = r.conj() * eye * r;
 		light = r.conj() * light * r;
@@ -111,11 +113,11 @@ bool viewer::run()
 			if(ImGui::BeginMenu("Select"))
 			{
 				for(index_t i = 0; i < n_meshes; i++)
-					if(ImGui::MenuItem((to_string(i) + ". " + meshes[i]->name()).c_str(), nullptr, i == current, i != current))
+					if(ImGui::MenuItem((to_string(i) + ". " + meshes[i]->name()).c_str(), nullptr, i == idx_active_mesh, i != idx_active_mesh))
 					{
-						current = i;	
+						idx_active_mesh = i;	
 						sphere_translations.clear();
-						glfwSetWindowTitle(window, mesh()->filename().c_str());
+						glfwSetWindowTitle(window, active_mesh()->filename().c_str());
 					}
 
 				ImGui::EndMenu();
@@ -150,7 +152,7 @@ bool viewer::run()
 				ImGui::Begin(("[" + pro.key + "] " + pro.name).c_str(), &pro.selected);
 				
 				pro.selected = pro.selected && p.second.function(this);
-				mesh().update_vbo();
+				active_mesh().update_vbo();
 				
 				ImGui::End();
 			}
@@ -167,9 +169,9 @@ bool viewer::run()
 	return true;
 }
 
-che_viewer & viewer::mesh()
+che_viewer & viewer::active_mesh()
 {
-	return meshes[current];
+	return meshes[idx_active_mesh];
 }
 
 void viewer::info_gl()
@@ -307,18 +309,15 @@ void viewer::add_mesh(che * p_mesh)
 	meshes[n_meshes].log_info();
 	n_meshes++;
 	
-	current = n_meshes - 1;
-	glfwSetWindowTitle(window, mesh()->filename().c_str());
+	idx_active_mesh = n_meshes - 1;
+	glfwSetWindowTitle(window, active_mesh()->filename().c_str());
 	
-	const int * mw = m_window_size[n_meshes - 1];
-
-	index_t m = n_meshes - 1;
-	for(int i = mw[1] - 1; i >= 0; i--)
-	for(int j = 0; j < mw[0]; j++)
+	const int & rows = m_window_size[n_meshes][0];
+	const int & cols = m_window_size[n_meshes][1];
+	for(int m = 0; m < n_meshes; m++)
 	{
-		meshes[m].vx = i;
-		meshes[m].vy = j;
-		if(!m--) return;
+		meshes[m].vx = m % cols;
+		meshes[m].vy = rows - (m / cols) - 1;
 	}
 }
 
@@ -371,13 +370,13 @@ void viewer::scroll_callback(GLFWwindow * window, double xoffset, double yoffset
 	
 	if(yoffset > 0)
 	{
-		view->cam.zoomIn();
+		view->cam.zoom_in();
 		view->action = true;
 	}
 
 	if(yoffset < 0)
 	{
-		view->cam.zoomOut();
+		view->cam.zoom_out();
 		view->action = true;
 	}
 }
@@ -399,12 +398,12 @@ bool viewer::menu_help(viewer * view)
 
 bool viewer::menu_reset_mesh(viewer * view)
 {
-	view->mesh().selected.clear();
+	view->active_mesh().selected.clear();
 	view->other_vertices.clear();
 	view->vectors.clear();
 
-	view->mesh().reload();
-	view->mesh().update_vbo();
+	view->active_mesh().reload();
+	view->active_mesh().update_vbo();
 
 	return false;
 }
@@ -416,11 +415,11 @@ bool viewer::menu_save_mesh(viewer * view)
 	gproshan_log(format: [off obj ply]);
 	
 	string format; cin >> format;
-	string file = view->mesh()->filename() + "_new";
+	string file = view->active_mesh()->filename() + "_new";
 	
-	if(format == "off") che_off::write_file(view->mesh(), file);
-	if(format == "obj") che_obj::write_file(view->mesh(), file);
-	if(format == "ply") che_ply::write_file(view->mesh(), file);
+	if(format == "off") che_off::write_file(view->active_mesh(), file);
+	if(format == "obj") che_obj::write_file(view->active_mesh(), file);
+	if(format == "ply") che_ply::write_file(view->active_mesh(), file);
 
 	cerr << "saved: " << file + "." + format << endl;
 
@@ -429,14 +428,14 @@ bool viewer::menu_save_mesh(viewer * view)
 
 bool viewer::menu_zoom_in(viewer * view)
 {
-	view->cam.zoomIn();
+	view->cam.zoom_in();
 
 	return false;
 }
 
 bool viewer::menu_zoom_out(viewer * view)
 {
-	view->cam.zoomOut();
+	view->cam.zoom_out();
 	
 	return false;
 }
@@ -479,7 +478,7 @@ bool viewer::menu_bgc_black(viewer * view)
 
 bool viewer::invert_orientation(viewer * view)
 {
-	view->mesh().invert_orientation();
+	view->active_mesh().invert_orientation();
 
 	return false;
 }
@@ -536,7 +535,7 @@ bool viewer::set_render_normal_field(viewer * view)
 bool viewer::set_render_border(viewer * view)
 {
 	view->render_border = !view->render_border;
-	if(!view->render_border) view->mesh().selected.clear();
+	if(!view->render_border) view->active_mesh().selected.clear();
 	
 	return false;
 }
@@ -562,7 +561,7 @@ bool viewer::raycasting(viewer * view)
 
 	gproshan_log(VIEWER);
 
-	rt::embree rc({view->mesh()});
+	rt::embree rc({view->active_mesh()});
 	
 	float * frame = rc.raycaster(	glm::uvec2(view->viewport_width, view->viewport_height),
 									view->view_mat, view->proj_mat	
@@ -610,7 +609,7 @@ void viewer::render_gl()
 
 	if(render_normal_field)
 	{
-		glProgramUniform1f(shader_normals, shader_normals("length"), mesh().factor);
+		glProgramUniform1f(shader_normals, shader_normals("length"), active_mesh().factor);
 		glProgramUniformMatrix4fv(shader_normals, shader_normals("model_view_mat"), 1, 0, &view_mat[0][0]);
 		glProgramUniformMatrix4fv(shader_normals, shader_normals("proj_mat"), 1, 0, &proj_mat[0][0]);
 		
@@ -620,7 +619,7 @@ void viewer::render_gl()
 	
 	if(render_gradient_field)
 	{
-		glProgramUniform1f(shader_gradient, shader_gradient("length"), mesh().factor);
+		glProgramUniform1f(shader_gradient, shader_gradient("length"), active_mesh().factor);
 		glProgramUniformMatrix4fv(shader_gradient, shader_gradient("model_view_mat"), 1, 0, &view_mat[0][0]);	
 		glProgramUniformMatrix4fv(shader_gradient, shader_gradient("proj_mat"), 1, 0, &proj_mat[0][0]);
 		
@@ -642,7 +641,7 @@ void viewer::render_embree()
 		double time_build_embree;
 		TIC(time_build_embree);
 
-			rt_embree = new rt::embree({mesh()});
+			rt_embree = new rt::embree({active_mesh()});
 
 		TOC(time_build_embree);
 		gproshan_log_var(time_build_embree);
@@ -669,7 +668,7 @@ void viewer::render_optix()
 		double time_build_optix;
 		TIC(time_build_optix);
 
-			rt_optix = new rt::optix({mesh()});
+			rt_optix = new rt::optix({active_mesh()});
 
 		TOC(time_build_optix);
 		gproshan_log_var(time_build_optix);
@@ -707,12 +706,12 @@ void viewer::draw_meshes(shader & program)
 
 void viewer::draw_selected_vertices(shader & program)
 {
-	if(sphere_translations.size() != mesh().selected.size())
+	if(sphere_translations.size() != active_mesh().selected.size())
 	{
-		sphere_translations.resize(mesh().selected.size());
+		sphere_translations.resize(active_mesh().selected.size());
 
-		for(index_t i = 0; i < mesh().selected.size(); i++)
-			sphere_translations[i] = mesh()->gt(mesh().selected[i]);
+		for(index_t i = 0; i < active_mesh().selected.size(); i++)
+			sphere_translations[i] = active_mesh()->gt(active_mesh().selected[i]);
 
 		sphere.update_instances_translations(sphere_translations);
 	}
@@ -720,17 +719,17 @@ void viewer::draw_selected_vertices(shader & program)
 	
 	if(sphere_translations.size())
 	{
-		glViewport(mesh().vx * viewport_width, mesh().vy * viewport_height, viewport_width, viewport_height);
+		glViewport(active_mesh().vx * viewport_width, active_mesh().vy * viewport_height, viewport_width, viewport_height);
 		sphere.draw(program);
 	}
 }
 
 void viewer::select_border_vertices()
 {
-	mesh().selected.clear();
-	for(index_t b = 0; b < mesh()->n_borders(); b++)
-		for_border(he, mesh(), mesh()->bt(b))
-			mesh().selected.push_back(mesh()->vt(he));
+	active_mesh().selected.clear();
+	for(index_t b = 0; b < active_mesh()->n_borders(); b++)
+		for_border(he, active_mesh(), active_mesh()->bt(b))
+			active_mesh().selected.push_back(active_mesh()->vt(he));
 }
 
 void viewer::pick_vertex(int x, int y)
