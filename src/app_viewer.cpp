@@ -48,18 +48,14 @@ int app_viewer::main(int nargs, const char ** args)
 
 	TIC(time)
 
-	vector<che *> vm;
 	for(int i = 1; i < nargs; i++)
-		vm.push_back(load_mesh(args[i]));
+		add_mesh(load_mesh(args[i]));
 	
 	TOC(time)
 
 	gproshan_log_var(sizeof(real_t));
 	gproshan_log_var(time);
 	
-	//init meshes
-	add_mesh(vm);
-
 	sub_menus.push_back("Fairing");
 	add_process(GLFW_KEY_T, {"T", "Fairing Taubin", process_fairing_taubin});
 	add_process(GLFW_KEY_E, {"E", "Fairing Spectral", process_fairing_spectral});
@@ -178,6 +174,7 @@ bool app_viewer::process_poisson(viewer * p_view, const index_t & k)
 	gproshan_log_var(view->time);
 
 //	paint_holes_vertices();
+	mesh.update();
 
 	return false;
 }

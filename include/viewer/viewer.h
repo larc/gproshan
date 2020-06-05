@@ -126,7 +126,7 @@ class viewer
 		
 		che_viewer & mesh();
 		void add_process(const int & key, const process_t & process);
-		void add_mesh(const std::vector<che *> & _meshes);
+		void add_mesh(che * p_mesh);
 		
 	private:
 

@@ -294,20 +294,22 @@ void viewer::add_process(const int & key, const process_t & process)
 	else cerr << "Repeat key: " << key << endl;
 }
 
-void viewer::add_mesh(const vector<che *> & _meshes)
+void viewer::add_mesh(che * p_mesh)
 {
-	for(che * _mesh: _meshes)
+	if(n_meshes == N_MESHES)
 	{
-		assert(n_meshes < N_MESHES);
-		meshes[n_meshes].init(_mesh);
-		meshes[n_meshes].log_info();
-		n_meshes++;
+		gproshan_log_var(n_meshes == N_MESHES);
+		gproshan_log_var(n_meshes);
+		return;
 	}
+
+	meshes[n_meshes].init(p_mesh);
+	meshes[n_meshes].log_info();
+	n_meshes++;
 	
-	if(!n_meshes) return;
-
+	current = n_meshes - 1;
 	glfwSetWindowTitle(window, mesh()->filename().c_str());
-
+	
 	const int * mw = m_window_size[n_meshes - 1];
 
 	index_t m = n_meshes - 1;
