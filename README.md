@@ -19,11 +19,11 @@ finally execute:
 	./gproshan [mesh_paths.(off,obj,ply)]
 
 ### Dependencies (Linux)
-g++ >= 8.3, cuda >= 10.1, libarmadillo, libeigen, libsuitesparse, libopenblas, opengl, glew, gnuplot, libcgal, libgles2-mesa, cimg
+g++ >= 8.3, cuda >= 10.1, cmake >= 3.12, armadillo, eigen, cgal, suitesparse, openblas, glew, glfw3, glm, cimg, gnuplot
 
 In Ubuntu (>= 18.04) you can install them with:
 
-	sudo apt install libarmadillo-dev libeigen3-dev libopenblas-dev libsuitesparse-dev libglew-dev freeglut3-dev libgles2-mesa-dev cimg-dev libcgal-dev
+	sudo apt install cmake libarmadillo-dev libeigen3-dev libcgal-dev libsuitesparse-dev libopenblas-dev libglew-dev libglfw3-dev libglm-dev cimg-dev gnuplot
 
 #### Build Status
 
@@ -140,7 +140,7 @@ The viewer was initially based in the viewer of [https://github.com/dgpdec/cours
 
 MIT License
 
-## Authors
-- [Lizeth Joseline Fuentes Pérez](https://github.com/lishh)
+## Authors/Contributors
 - [Luciano Arnaldo Romero Calla](https://github.com/larc)
+- [Lizeth Joseline Fuentes Pérez](https://github.com/lishh)
 

@@ -12,13 +12,13 @@ addons:
       - cmake
       - libarmadillo-dev
       - libeigen3-dev
-      - libopenblas-dev
+      - libcgal-dev
       - libsuitesparse-dev
+      - libopenblas-dev
       - libglew-dev
       - libglfw3-dev
       - libglm-dev
       - cimg-dev
-      - libcgal-dev
 script:
   - export CC=/usr/bin/gcc-8
   - export CXX=/usr/bin/g++-8
