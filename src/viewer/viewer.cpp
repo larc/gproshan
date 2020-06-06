@@ -314,7 +314,7 @@ void viewer::add_mesh(che * p_mesh)
 	
 	const int & rows = m_window_size[n_meshes][0];
 	const int & cols = m_window_size[n_meshes][1];
-	for(int m = 0; m < n_meshes; m++)
+	for(index_t m = 0; m < n_meshes; m++)
 	{
 		meshes[m].vx = m % cols;
 		meshes[m].vy = rows - (m / cols) - 1;
