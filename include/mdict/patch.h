@@ -95,7 +95,7 @@ class patch
 
 		void save(const real_t & radio, const size_t & imsize, CImgList<real_t> & imlist);
 		void update_heights(real_t & min, real_t & max, bool flag);
-		void compute_avg_distance();
+		void compute_avg_distance(che * mesh, vector<vpatches_t> & vpatches, const index_t & p);
 		void scale_xyz(const real_t & radio_f);
 		void iscale_xyz(const real_t & radio_f);
 		bool add_vertex_by_faces(const vertex & c,

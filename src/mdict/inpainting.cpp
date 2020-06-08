@@ -409,7 +409,7 @@ void inpainting::init_radial_feature_patches()
 
 		p.transform();
 		p.scale_xyz(phi_basis->get_radio());
-		p.compute_avg_distance();
+		p.compute_avg_distance(mesh, patches_map, s);
 		p.phi.set_size(p.xyz.n_cols, phi_basis->get_dim());
 		phi_basis->discrete(p.phi, p.xyz);
 	} 
@@ -559,7 +559,7 @@ void inpainting::init_voronoi_patches()
 		p.transform();
 		p.phi.set_size(p.xyz.n_cols, phi_basis->get_dim());
 		phi_basis->discrete(p.phi, p.xyz);
-		p.compute_avg_distance();
+		p.compute_avg_distance(mesh, patches_map, s);
 
 	} 
 
@@ -613,8 +613,8 @@ real_t inpainting::execute()
 
 	draw_patches(295);
 	draw_patches(384);
-	draw_patches(1379);
-	draw_patches(1486);
+	draw_patches(100);
+	//draw_patches(1486);
 	
 	//draw_patches(400);
 	//draw_patches(500);

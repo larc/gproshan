@@ -625,12 +625,37 @@ void patch::save_z(ostream & os)
 	os<<xyz.col(i)[2]<<"\n";
 }
 
-void patch::compute_avg_distance()
+void patch::compute_avg_distance(che * mesh, vector<vpatches_t> & vpatches, const index_t & p)
 {
 	avg_dist = INFINITY;
 	vector<double> distances;
+	link_t link;
+
 	for(size_t i = 0; i < vertices.size(); i++)
-		for(size_t j = i+1; j < vertices.size(); j++)
+	{
+		const index_t & v = vertices[i];
+		mesh->link(link, v);
+		for(const index_t & he: link)
+		{
+			const index_t & u = mesh->vt(he);
+			
+			for (auto itp:vpatches[u])
+			{
+				if( itp.first == p)
+				{
+					a_vec a = xyz.col(i);
+					a_vec b = xyz.col(itp.second);
+					a(2) = 0;
+					b(2) = 0;
+					distances.push_back(norm(a - b));
+					break;
+				}
+			}			
+		}
+
+	}
+	/*
+		for(size_t j = i+1; j < vertices.size(); j++) // replace for 1 ring
 		{
 			a_vec a = xyz.col(i);
 			a_vec b = xyz.col(j);
@@ -638,6 +663,7 @@ void patch::compute_avg_distance()
 			b(2) = 0;
 			distances.push_back(norm(a - b));
 		}
+	*/
 	sort(distances.begin(), distances.end());
 	size_t n_elem = distances.size();
 	if(distances.size()%2 ==0)
