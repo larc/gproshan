@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.12)
 
-project(gproshan VERSION 2.0)
+project(gproshan VERSION 3.0)
 
 list(APPEND CMAKE_MODULE_PATH "${gproshan_SOURCE_DIR}/cmake")
 
@@ -8,10 +8,10 @@ if(NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE Release)
 endif()
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(CUDA 10.1)
+find_package(CUDA 11)
 if(CUDA_FOUND)
 	enable_language(CUDA)
 	add_definitions(-DGPROSHAN_CUDA)
