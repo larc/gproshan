@@ -140,8 +140,6 @@ bool patch::add_vertex_by_faces(const vertex & c, vertex & n, vector<vertex> & N
 	
 	area += area_face;
 	proj_area += proj_area_face;
-
-
 	N.push_back(min_he);
 	return added;
 }
@@ -353,15 +351,20 @@ void patch::reset_xyz(che * mesh, vector<vpatches_t> & vpatches, const index_t &
 			//j: local index 
 			//i: global index
 			//if(vpatches[vertices[i]].size() == 0)
-			vpatches[vertices[i]].push_back({p, j++});
+			//vpatches[vertices[i]].push_back({p, j++});
+			vpatches[vertices[i]][p] = j++;
 		}
 	}
+
+
+
 }
 		
 
 void patch::reset_xyz_disjoint(che * mesh, real_t * dist, size_t M, vector<vpatches_t> & vpatches, const index_t & p, const fmask_t & mask)
 {
-	size_t m = vertices.size();
+	size_t extra = 36 > vertices.size() ? 36 - vertices.size() : 0;
+	size_t m = vertices.size() + extra;
 	if(mask)
 	{
 		m = 0;
@@ -374,7 +377,8 @@ void patch::reset_xyz_disjoint(che * mesh, real_t * dist, size_t M, vector<vpatc
 	}
 
 	xyz.set_size(3, m);
-	for(index_t j = 0, i = 0; i < vertices.size(); i++)
+	index_t j = 0;
+	for(index_t  i = 0; i < vertices.size(); i++)
 	{
 		if(!mask || mask(i))
 		{ 
@@ -382,7 +386,81 @@ void patch::reset_xyz_disjoint(che * mesh, real_t * dist, size_t M, vector<vpatc
 			xyz(0, j) = v.x;
 			xyz(1, j) = v.y;
 			xyz(2, j) = v.z;
-			vpatches[vertices[i]].push_back({p, j++});
+			//vpatches[vertices[i]].push_back({p, j++});
+			vpatches[vertices[i]][p] = j++;
+		}
+	}
+
+	std::random_device rd; //Will be used to obtain a seed for the random number engine
+	std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
+	std::uniform_real_distribution<> dis(0, 1);
+	while(extra)
+	{
+		gproshan_debug_var(extra);
+		// add new vertices
+		// create a random point
+		double a = abs(dis(gen)) * 2 * PI;
+		double r = abs(dis(gen));
+		a_vec np;
+		np(0)= r * cos(a);
+		np(1) = r * sin(a);
+		np(2) = 0;
+		// find the closest point 
+		index_t min_v;
+		double min_d = INFINITY;
+		for(index_t v: vertices)
+		{
+			a_vec aux = xyz.col(vpatches[v][p]);
+			//vertex aux(v.x, v.y, 0);
+			if( norm(np-aux) < min_d)
+			{
+				min_d =norm(np-aux);
+				min_v = v;
+			}
+		}
+		            
+		// forstar to find closest trinagle
+		index_t ia,ib;
+		a_vec pnorm;
+		a_mat abc(3,3);
+		for_star(he, mesh, min_v)
+		{
+			//discard triangles outside the patch
+			ia = vpatches[mesh->vt(next(he))][p];
+			ib = vpatches[mesh->vt(prev(he))][p];
+			if(vpatches[ia].find(p)!= vpatches[ia].end() || vpatches[ib].find(p)!= vpatches[ib].end() )
+			{
+				arma::uvec xi = {	vpatches[min_v][p], 
+								vpatches[ia][p],
+								vpatches[ib][p] 
+								}; 
+			
+				abc = xyz.cols(xi);
+			
+			// find the normal n = (A,B,C) with x product 
+				pnorm = arma::cross(abc.col(1) - abc.col(0), abc.col(2) - abc.col(0) );
+			// z = (-Ax -By + < n, po> ) / C
+				double z = (-pnorm(0)*np(0) -pnorm(1)*np(1) + arma::dot(pnorm,np) )/ pnorm(2);
+				double al, be, ga;
+				// project the vectors
+				al = arma::dot(abc.col(1) - abc.col(0), np - abc.col(0) );
+				be = arma::dot(abc.col(2) - abc.col(0), np - abc.col(0) );
+				ga = 1 - al - ga;
+			
+				// verify if lies inside this trinagle
+				if((al + be + ga) == 1 && al < 1 && al >= 0 && be < 1 && be >= 0 && ga < 1 && ga >= 0 )
+				{
+					np(2) = z;
+					xyz(0, j) = np(0);
+					xyz(1, j) = np(1);
+					xyz(2, j) = np(2);
+					extra --;
+					j++;
+					break;
+				} 
+
+			}
+			
 		}
 	}
 }

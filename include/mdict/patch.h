@@ -3,11 +3,11 @@
 
 #include "include.h"
 #include "che.h"
-
-#include <vector>
 #include "include_arma.h"
 #include "geodesics.h"
 
+#include <vector>
+#include <map>
 #include <CImg.h>
 
 #ifdef Success
@@ -28,7 +28,7 @@ class dictionary;
 
 typedef function<bool(const index_t &)> fmask_t;
 typedef function<bool(const index_t &, size_t tam)> fmask_local_t;
-typedef std::vector<std::pair<index_t, index_t> > vpatches_t;
+typedef std::map<index_t, index_t> vpatches_t;
 
 /// 
 class patch

@@ -413,29 +413,6 @@ void inpainting::init_radial_feature_patches()
 		p.phi.set_size(p.xyz.n_cols, phi_basis->get_dim());
 		phi_basis->discrete(p.phi, p.xyz);
 	} 
-/*
-	// Adding border points at zero z level
-	size_t n_extra_vert = 8;
-	double angle = 360/n_extra_vert;
-	for(index_t s = 0; s < M; s++)
-	{
-		patch & p = patches[s];
-		p.xyz.resize(3, p.vertices.size() + n_extra_vert);
-
-		for(index_t j = p.vertices.size(), i = 0; i < n_extra_vert; i++, j++)
-		{
-			p.xyz(0, j) = cos(angle);
-			p.xyz(1, j) = sin(angle);
-			p.xyz(2, j) = 0;
-			angle += angle;
-		}
-
-		p.phi.set_size(p.xyz.n_cols, phi_basis->get_dim());
-		phi_basis->discrete(p.phi, p.xyz);
-	}
-*/
-
-
 
 	bool save_all = true;
 	if(save_all)
