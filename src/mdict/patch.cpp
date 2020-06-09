@@ -394,14 +394,14 @@ void patch::reset_xyz_disjoint(che * mesh, real_t * dist, size_t M, vector<vpatc
 	std::random_device rd; //Will be used to obtain a seed for the random number engine
 	std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
 	std::uniform_real_distribution<> dis(0, 1);
-	while(extra)
+	while(extra--)
 	{
 		gproshan_debug_var(extra);
 		// add new vertices
 		// create a random point
 		double a = abs(dis(gen)) * 2 * PI;
 		double r = abs(dis(gen));
-		a_vec np;
+		a_vec np(3);
 		np(0)= r * cos(a);
 		np(1) = r * sin(a);
 		np(2) = 0;
@@ -418,23 +418,21 @@ void patch::reset_xyz_disjoint(che * mesh, real_t * dist, size_t M, vector<vpatc
 				min_v = v;
 			}
 		}
-		            
+		           
 		// forstar to find closest trinagle
 		index_t ia,ib;
 		a_vec pnorm;
 		a_mat abc(3,3);
+		//gproshan_debug_var(min_v);
 		for_star(he, mesh, min_v)
 		{
 			//discard triangles outside the patch
-			ia = vpatches[mesh->vt(next(he))][p];
-			ib = vpatches[mesh->vt(prev(he))][p];
-			if(vpatches[ia].find(p)!= vpatches[ia].end() || vpatches[ib].find(p)!= vpatches[ib].end() )
+			vpatches_t & ma = vpatches[mesh->vt(next(he))];
+			vpatches_t & mb = vpatches[mesh->vt(prev(he))];
+
+			if(ma.find(p) != ma.end() && mb.find(p) != mb.end())
 			{
-				arma::uvec xi = {	vpatches[min_v][p], 
-								vpatches[ia][p],
-								vpatches[ib][p] 
-								}; 
-			
+				arma::uvec xi = {vpatches[min_v][p], ma[p], mb[p]};
 				abc = xyz.cols(xi);
 			
 			// find the normal n = (A,B,C) with x product 
@@ -450,6 +448,7 @@ void patch::reset_xyz_disjoint(che * mesh, real_t * dist, size_t M, vector<vpatc
 				// verify if lies inside this trinagle
 				if((al + be + ga) == 1 && al < 1 && al >= 0 && be < 1 && be >= 0 && ga < 1 && ga >= 0 )
 				{
+					gproshan_debug_var(z);
 					np(2) = z;
 					xyz(0, j) = np(0);
 					xyz(1, j) = np(1);
@@ -461,7 +460,7 @@ void patch::reset_xyz_disjoint(che * mesh, real_t * dist, size_t M, vector<vpatc
 
 			}
 			
-		}
+		}	
 	}
 }
 
