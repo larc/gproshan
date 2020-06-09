@@ -255,6 +255,11 @@ real_t mesh_reconstruction(che * mesh, size_t M, const real_t & radio, vector<pa
 		{
 			a_vec x = rp.phi * A * alpha.col(p);
 			rp.xyz.row(2) = x.t();
+
+			arma::uvec outlier = find(abs(x) > 2);
+			if(outlier.n_elem)
+				gproshan_debug_var(p);
+
 			rp.iscale_xyz(radio);
 			rp.itransform();
 		}

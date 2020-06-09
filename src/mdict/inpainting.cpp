@@ -597,6 +597,7 @@ real_t inpainting::execute()
 		patches[s].reset_xyz(mesh, patches_map, s, 0);
 
 
+
 	#pragma omp parallel for
 	for(index_t s = 0; s < M; s++)
 	{
@@ -611,9 +612,12 @@ real_t inpainting::execute()
 
 	bool *pmask;
 
+
 	draw_patches(295);
 	draw_patches(384);
-	draw_patches(100);
+	draw_patches(319);
+	draw_patches(312);
+	draw_patches(50);
 	//draw_patches(1486);
 	
 	//draw_patches(400);
@@ -625,6 +629,7 @@ real_t inpainting::execute()
 
 	TIC(d_time) mesh_reconstruction([&pmask](const index_t & i) -> bool { return pmask[i]; }); TOC(d_time)
 	gproshan_debug_var(d_time);
+
 }
 
 che * inpainting::point_cloud_reconstruction(real_t per, real_t fr)
