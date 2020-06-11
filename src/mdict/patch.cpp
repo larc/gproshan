@@ -329,7 +329,6 @@ void patch::itransform()
 void patch::reset_xyz(che * mesh, vector<vpatches_t> & vpatches, const index_t & p, const fmask_t & mask)
 {
 	size_t m = vertices.size();
-
 	
 	if(mask)
 	{
@@ -359,12 +358,104 @@ void patch::reset_xyz(che * mesh, vector<vpatches_t> & vpatches, const index_t &
 
 
 }
-		
 
+double area_tri(double x1, double y1, double x2, double y2, double x3, double y3) 
+{ 
+   return abs((x1*(y2-y3) + x2*(y3-y1)+ x3*(y1-y2))/2.0); 
+}
+void patch::add_extra_xyz_disjoint(che * mesh, vector<vpatches_t> & vpatches, const index_t & p)
+{
+	size_t n_min_vert = 23;
+	size_t m = std::max (vertices.size(), n_min_vert);
+
+	size_t j = vertices.size();
+	std::random_device rd; //Will be used to obtain a seed for the random number engine
+	std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
+	std::uniform_real_distribution<> dis(0, 1);
+
+	while(j < m && vertices.size() < 13)
+	{
+		
+		// add new vertices
+		// create a random point
+		double a = abs(dis(gen)) * 2 * PI;
+		double r = abs(dis(gen));
+		a_vec np(3);
+		np(0)= r * cos(a);
+		np(1) = r * sin(a);
+		np(2) = 0;
+		//gproshan_debug_var(np);
+		// find the closest point 
+		index_t min_v;
+		double min_d = INFINITY;
+		for(index_t v: vertices)
+		{
+			a_vec aux = xyz.col(vpatches[v][p]);
+			aux(2) = 0;
+			//vertex aux(v.x, v.y, 0);
+			if( norm(np-aux) < min_d)
+			{
+				min_d =norm(np-aux);
+				//gproshan_debug_var(min_d);
+				min_v = v;
+			}
+		}
+		           
+		// forstar to find closest trinagle
+		a_vec pnorm;
+		a_mat abc(3,3);
+		//gproshan_debug_var(min_v);
+		for_star(he, mesh, min_v)
+		{
+			//discard triangles outside the patch
+			vpatches_t & ma = vpatches[mesh->vt(next(he))];
+			vpatches_t & mb = vpatches[mesh->vt(prev(he))];
+	
+			//gproshan_debug_var(mesh->vt(prev(he)));
+			//gproshan_debug_var(mesh->vt(next(he)));
+			//gproshan_debug_var(mesh->vt(he));
+
+
+			if(ma.find(p) != ma.end() && mb.find(p) != mb.end())
+			{
+				arma::uvec xi = {vpatches[min_v][p], ma[p], mb[p]};
+				abc = xyz.cols(xi);
+				
+				//gproshan_debug_var(abc);
+				//gproshan_debug_var(np);
+				// verify if this is inside a triangle
+
+				double A = area_tri(abc(0,0), abc(0,1), abc(1,0), abc(1,1), abc(2,0), abc(2,1) );
+				double A1 = area_tri(np(0), np(1), abc(1,0), abc(1,1), abc(2,0), abc(2,1) );
+				double A2 = area_tri(abc(0,0), abc(0,1), np(0), np(1), abc(2,0), abc(2,1) );
+				double A3 = area_tri(abc(0,0), abc(0,1), abc(1,0), abc(1,1), np(0), np(1) );
+
+				if( abs(A - (A1 + A2 + A3)) < 0.00001)
+				{
+
+					pnorm = arma::cross(abc.col(1) - abc.col(0), abc.col(2) - abc.col(0) );
+					// z = (-Ax -By + < n, po> ) / C
+
+					double z = (-pnorm(0)*np(0) -pnorm(1)*np(1) + arma::dot(pnorm,np) )/ pnorm(2);
+					//z = 0;
+					if(!isnan(z)) //z = 0;
+					{
+						xyz(0, j) = np(0);
+						xyz(1, j) = np(1);
+						xyz(2, j) = z;
+						j++;
+						break;
+					}
+
+				}
+			}
+			
+		}	
+	}
+}
 void patch::reset_xyz_disjoint(che * mesh, real_t * dist, size_t M, vector<vpatches_t> & vpatches, const index_t & p, const fmask_t & mask)
 {
-	size_t extra = 36 > vertices.size() ? 36 - vertices.size() : 0;
-	size_t m = vertices.size() + extra;
+	size_t m = vertices.size();
 	if(mask)
 	{
 		m = 0;
@@ -375,6 +466,8 @@ void patch::reset_xyz_disjoint(che * mesh, real_t * dist, size_t M, vector<vpatc
 		gproshan_debug(number vertices masked);
 		gproshan_debug_var(vertices.size() - m);*/
 	}
+	size_t n_min_vert = 23;
+	m = std::max (vertices.size(), n_min_vert);
 
 	xyz.set_size(3, m);
 	index_t j = 0;
@@ -391,77 +484,6 @@ void patch::reset_xyz_disjoint(che * mesh, real_t * dist, size_t M, vector<vpatc
 		}
 	}
 
-	std::random_device rd; //Will be used to obtain a seed for the random number engine
-	std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
-	std::uniform_real_distribution<> dis(0, 1);
-	while(extra--)
-	{
-		gproshan_debug_var(extra);
-		// add new vertices
-		// create a random point
-		double a = abs(dis(gen)) * 2 * PI;
-		double r = abs(dis(gen));
-		a_vec np(3);
-		np(0)= r * cos(a);
-		np(1) = r * sin(a);
-		np(2) = 0;
-		// find the closest point 
-		index_t min_v;
-		double min_d = INFINITY;
-		for(index_t v: vertices)
-		{
-			a_vec aux = xyz.col(vpatches[v][p]);
-			//vertex aux(v.x, v.y, 0);
-			if( norm(np-aux) < min_d)
-			{
-				min_d =norm(np-aux);
-				min_v = v;
-			}
-		}
-		           
-		// forstar to find closest trinagle
-		index_t ia,ib;
-		a_vec pnorm;
-		a_mat abc(3,3);
-		//gproshan_debug_var(min_v);
-		for_star(he, mesh, min_v)
-		{
-			//discard triangles outside the patch
-			vpatches_t & ma = vpatches[mesh->vt(next(he))];
-			vpatches_t & mb = vpatches[mesh->vt(prev(he))];
-
-			if(ma.find(p) != ma.end() && mb.find(p) != mb.end())
-			{
-				arma::uvec xi = {vpatches[min_v][p], ma[p], mb[p]};
-				abc = xyz.cols(xi);
-			
-			// find the normal n = (A,B,C) with x product 
-				pnorm = arma::cross(abc.col(1) - abc.col(0), abc.col(2) - abc.col(0) );
-			// z = (-Ax -By + < n, po> ) / C
-				double z = (-pnorm(0)*np(0) -pnorm(1)*np(1) + arma::dot(pnorm,np) )/ pnorm(2);
-				double al, be, ga;
-				// project the vectors
-				al = arma::dot(abc.col(1) - abc.col(0), np - abc.col(0) );
-				be = arma::dot(abc.col(2) - abc.col(0), np - abc.col(0) );
-				ga = 1 - al - ga;
-			
-				// verify if lies inside this trinagle
-				if((al + be + ga) == 1 && al < 1 && al >= 0 && be < 1 && be >= 0 && ga < 1 && ga >= 0 )
-				{
-					gproshan_debug_var(z);
-					np(2) = z;
-					xyz(0, j) = np(0);
-					xyz(1, j) = np(1);
-					xyz(2, j) = np(2);
-					extra --;
-					j++;
-					break;
-				} 
-
-			}
-			
-		}	
-	}
 }
 
 void patch::scale_xyz(const real_t & radio_f)

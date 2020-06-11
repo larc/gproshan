@@ -409,6 +409,8 @@ void inpainting::init_radial_feature_patches()
 
 		p.transform();
 		p.scale_xyz(phi_basis->get_radio());
+		// adding add extra function
+		p.add_extra_xyz_disjoint(mesh,patches_map, s);
 		p.compute_avg_distance(mesh, patches_map, s);
 		p.phi.set_size(p.xyz.n_cols, phi_basis->get_dim());
 		phi_basis->discrete(p.phi, p.xyz);
