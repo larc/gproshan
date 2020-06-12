@@ -420,6 +420,7 @@ void patch::add_extra_xyz_disjoint(che * mesh, vector<vpatches_t> & vpatches, co
 			{
 				arma::uvec xi = {vpatches[min_v][p], ma[p], mb[p]};
 				abc = xyz.cols(xi);
+				abc.row(2).zeros();
 				
 				//gproshan_debug_var(abc);
 				//gproshan_debug_var(np);
@@ -433,19 +434,24 @@ void patch::add_extra_xyz_disjoint(che * mesh, vector<vpatches_t> & vpatches, co
 				if( abs(A - (A1 + A2 + A3)) < 0.00001)
 				{
 
-					pnorm = arma::cross(abc.col(1) - abc.col(0), abc.col(2) - abc.col(0) );
+					//pnorm = arma::cross(abc.col(1) - abc.col(0), abc.col(2) - abc.col(0) );
 					// z = (-Ax -By + < n, po> ) / C
 
-					double z = (-pnorm(0)*np(0) -pnorm(1)*np(1) + arma::dot(pnorm,np) )/ pnorm(2);
+					//double z = (-pnorm(0)*np(0) -pnorm(1)*np(1) + arma::dot(pnorm,np) )/ pnorm(2);
 					//z = 0;
-					if(!isnan(z)) //z = 0;
+					// alpha, beta = inv (ab) x
+					// x = a,b * (alpha, beta)
+					a_mat proj_ab = abc.submat(0,1,1,2) - abc.submat(0,0,1,0);
+					a_vec coeff = arma::inv( proj_ab ) * np.head(2);
+					/*if(!isnan(z)) //z = 0;
 					{
+						xyz.col(j) = 
 						xyz(0, j) = np(0);
 						xyz(1, j) = np(1);
 						xyz(2, j) = z;
 						j++;
 						break;
-					}
+					}*/
 
 				}
 			}
