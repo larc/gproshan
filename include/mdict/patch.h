@@ -42,6 +42,7 @@ class patch
 		a_mat phi;
 		double avg_dist; // Average distance betweenn points in a patch
 		real_t radio; // radio of a patch
+		size_t min_nv;
 	
 	public:
 		static size_t expected_nv;		///< Expected number of patch vertices.

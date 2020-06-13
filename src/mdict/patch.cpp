@@ -229,6 +229,7 @@ void patch::init_radial_disjoint(vector<index_t> & idxs_he, che * mesh, const re
 {
 
 	radio = -INFINITY;
+	min_nv = 23;
 
 	normal_fit_directions(mesh, v);
 
@@ -365,15 +366,15 @@ double area_tri(double x1, double y1, double x2, double y2, double x3, double y3
 }
 void patch::add_extra_xyz_disjoint(che * mesh, vector<vpatches_t> & vpatches, const index_t & p)
 {
-	size_t n_min_vert = 23;
-	size_t m = std::max (vertices.size(), n_min_vert);
+	
+	size_t m = std::max (vertices.size(), min_nv);
 
 	size_t j = vertices.size();
 	std::random_device rd; //Will be used to obtain a seed for the random number engine
 	std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
 	std::uniform_real_distribution<> dis(0, 1);
 
-	while(j < m && vertices.size() < 13)
+	while(j < m )
 	{
 		
 		// add new vertices
@@ -433,25 +434,19 @@ void patch::add_extra_xyz_disjoint(che * mesh, vector<vpatches_t> & vpatches, co
 
 				if( abs(A - (A1 + A2 + A3)) < 0.00001)
 				{
+					a_mat proj_abc = abc.tail_cols(2).each_col() - abc.col(0);
+					np -= abc.col(0);
+		
+					a_vec coef = arma::inv(proj_abc.head_rows(2)) * np.head(2);
+					np = proj_abc * coef + abc.col(0);
+					
+					xyz(0, j) = np(0);
+					xyz(1, j) = np(1);
+					xyz(2, j) = np(2);
+					j++;
+					break;
 
-					//pnorm = arma::cross(abc.col(1) - abc.col(0), abc.col(2) - abc.col(0) );
-					// z = (-Ax -By + < n, po> ) / C
-
-					//double z = (-pnorm(0)*np(0) -pnorm(1)*np(1) + arma::dot(pnorm,np) )/ pnorm(2);
-					//z = 0;
-					// alpha, beta = inv (ab) x
-					// x = a,b * (alpha, beta)
-					a_mat proj_ab = abc.submat(0,1,1,2) - abc.submat(0,0,1,0);
-					a_vec coeff = arma::inv( proj_ab ) * np.head(2);
-					/*if(!isnan(z)) //z = 0;
-					{
-						xyz.col(j) = 
-						xyz(0, j) = np(0);
-						xyz(1, j) = np(1);
-						xyz(2, j) = z;
-						j++;
-						break;
-					}*/
+					/*if(!isnan(z)) //z = 0;*/
 
 				}
 			}
@@ -472,8 +467,8 @@ void patch::reset_xyz_disjoint(che * mesh, real_t * dist, size_t M, vector<vpatc
 		gproshan_debug(number vertices masked);
 		gproshan_debug_var(vertices.size() - m);*/
 	}
-	size_t n_min_vert = 23;
-	m = std::max (vertices.size(), n_min_vert);
+	
+	m = std::max (vertices.size(), min_nv);
 
 	xyz.set_size(3, m);
 	index_t j = 0;
