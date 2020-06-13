@@ -229,7 +229,7 @@ void patch::init_radial_disjoint(vector<index_t> & idxs_he, che * mesh, const re
 {
 
 	radio = -INFINITY;
-	min_nv = 23;
+	min_nv = 128;
 
 	normal_fit_directions(mesh, v);
 
@@ -368,11 +368,16 @@ void patch::add_extra_xyz_disjoint(che * mesh, vector<vpatches_t> & vpatches, co
 {
 	
 	size_t m = std::max (vertices.size(), min_nv);
+	gproshan_debug_var(min_nv);
+	gproshan_debug_var(vertices.size());
+	gproshan_debug_var(m);
 
 	size_t j = vertices.size();
 	std::random_device rd; //Will be used to obtain a seed for the random number engine
 	std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
 	std::uniform_real_distribution<> dis(0, 1);
+
+	//if(p == 76)	gproshan_debug_var(xyz);
 
 	while(j < m )
 	{
@@ -421,7 +426,7 @@ void patch::add_extra_xyz_disjoint(che * mesh, vector<vpatches_t> & vpatches, co
 			{
 				arma::uvec xi = {vpatches[min_v][p], ma[p], mb[p]};
 				abc = xyz.cols(xi);
-				abc.row(2).zeros();
+				//abc.row(2).zeros();
 				
 				//gproshan_debug_var(abc);
 				//gproshan_debug_var(np);
@@ -434,18 +439,27 @@ void patch::add_extra_xyz_disjoint(che * mesh, vector<vpatches_t> & vpatches, co
 
 				if( abs(A - (A1 + A2 + A3)) < 0.00001)
 				{
+					
 					a_mat proj_abc = abc.tail_cols(2).each_col() - abc.col(0);
 					np -= abc.col(0);
 		
 					a_vec coef = arma::inv(proj_abc.head_rows(2)) * np.head(2);
 					np = proj_abc * coef + abc.col(0);
 					
-					xyz(0, j) = np(0);
-					xyz(1, j) = np(1);
-					xyz(2, j) = np(2);
-					j++;
-					break;
-
+					if(!isnan(np(2)))
+					{
+						xyz(0, j) = np(0);
+						xyz(1, j) = np(1);
+						xyz(2, j) = np(2);
+						j++;
+						/*if(p == 76)
+						{
+							gproshan_debug_var(np);
+							gproshan_debug_var(abc);
+							gproshan_debug_var(coef);
+						}*/
+						break;
+					}
 					/*if(!isnan(z)) //z = 0;*/
 
 				}

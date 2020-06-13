@@ -564,7 +564,7 @@ real_t inpainting::execute()
 	gproshan_debug_var(d_time);
 	string f_alpha = tmp_file_path(mesh->name_size() + '_' + to_string(delta) + '_' + to_string(sum_thres) + '_' + to_string(area_thres) + ".alpha");
 	save_alpha(f_alpha);
-
+	draw_patches(76);
 	//patches_map.resize(n_vertices);
 	for(index_t i = 0; i < n_vertices; i++)
 	{
@@ -592,11 +592,11 @@ real_t inpainting::execute()
 	bool *pmask;
 
 
-	draw_patches(295);
+	/*draw_patches(295);
 	draw_patches(384);
 	draw_patches(319);
-	draw_patches(312);
-	draw_patches(50);
+	draw_patches(312);*/
+	//draw_patches(76);
 	//draw_patches(1486);
 	
 	//draw_patches(400);
