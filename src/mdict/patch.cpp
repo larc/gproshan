@@ -229,7 +229,7 @@ void patch::init_radial_disjoint(vector<index_t> & idxs_he, che * mesh, const re
 {
 
 	radio = -INFINITY;
-	min_nv = 128;
+	min_nv = 256;
 
 	normal_fit_directions(mesh, v);
 
@@ -368,9 +368,7 @@ void patch::add_extra_xyz_disjoint(che * mesh, vector<vpatches_t> & vpatches, co
 {
 	
 	size_t m = std::max (vertices.size(), min_nv);
-	gproshan_debug_var(min_nv);
-	gproshan_debug_var(vertices.size());
-	gproshan_debug_var(m);
+
 
 	size_t j = vertices.size();
 	std::random_device rd; //Will be used to obtain a seed for the random number engine
@@ -384,12 +382,10 @@ void patch::add_extra_xyz_disjoint(che * mesh, vector<vpatches_t> & vpatches, co
 		
 		// add new vertices
 		// create a random point
-		double a = abs(dis(gen)) * 2 * PI;
-		double r = abs(dis(gen));
-		a_vec np(3);
-		np(0)= r * cos(a);
-		np(1) = r * sin(a);
-		np(2) = 0;
+		real_t a = abs(dis(gen)) * 2 * PI;
+		real_t r = abs(dis(gen));
+		a_vec np = { r * cos(a), r * sin(a), 0 };
+
 		//gproshan_debug_var(np);
 		// find the closest point 
 		index_t min_v;
@@ -398,48 +394,48 @@ void patch::add_extra_xyz_disjoint(che * mesh, vector<vpatches_t> & vpatches, co
 		{
 			a_vec aux = xyz.col(vpatches[v][p]);
 			aux(2) = 0;
-			//vertex aux(v.x, v.y, 0);
-			if( norm(np-aux) < min_d)
+			
+			if(norm(np - aux) < min_d)
 			{
-				min_d =norm(np-aux);
-				//gproshan_debug_var(min_d);
+				min_d = norm(np - aux);
 				min_v = v;
 			}
 		}
 		           
 		// forstar to find closest trinagle
-		a_vec pnorm;
 		a_mat abc(3,3);
-		//gproshan_debug_var(min_v);
 		for_star(he, mesh, min_v)
 		{
 			//discard triangles outside the patch
 			vpatches_t & ma = vpatches[mesh->vt(next(he))];
 			vpatches_t & mb = vpatches[mesh->vt(prev(he))];
 	
-			//gproshan_debug_var(mesh->vt(prev(he)));
-			//gproshan_debug_var(mesh->vt(next(he)));
-			//gproshan_debug_var(mesh->vt(he));
-
-
 			if(ma.find(p) != ma.end() && mb.find(p) != mb.end())
 			{
-				arma::uvec xi = {vpatches[min_v][p], ma[p], mb[p]};
+				arma::uvec xi = { vpatches[min_v][p], ma[p], mb[p] };
 				abc = xyz.cols(xi);
-				//abc.row(2).zeros();
 				
-				//gproshan_debug_var(abc);
+				if(p == 76) gproshan_debug_var(xi);
 				//gproshan_debug_var(np);
 				// verify if this is inside a triangle
 
-				double A = area_tri(abc(0,0), abc(0,1), abc(1,0), abc(1,1), abc(2,0), abc(2,1) );
-				double A1 = area_tri(np(0), np(1), abc(1,0), abc(1,1), abc(2,0), abc(2,1) );
-				double A2 = area_tri(abc(0,0), abc(0,1), np(0), np(1), abc(2,0), abc(2,1) );
-				double A3 = area_tri(abc(0,0), abc(0,1), abc(1,0), abc(1,1), np(0), np(1) );
-
-				if( abs(A - (A1 + A2 + A3)) < 0.00001)
+				double A = area_tri(abc(0,0),	abc(1,0),	abc(0,1),	abc(1,1),	abc(0,2),	abc(1,2) );
+				double A1 = area_tri(np(0),		np(1),		abc(0,1),	abc(1,1),	abc(0,2),	abc(1,2) );
+				double A2 = area_tri(abc(0,0), 	abc(1,0),	np(0),		np(1),		abc(0,2),	abc(1,2) );
+				double A3 = area_tri(abc(0,0), 	abc(1,0),	abc(0,1),	abc(1,1),	np(0),		np(1) );
+				
+				if(p == 76)
 				{
-					
+					gproshan_debug_var(abc);
+					gproshan_debug_var(A);
+					gproshan_debug_var(A1);
+					gproshan_debug_var(A2);
+					gproshan_debug_var(A3);
+				}
+				
+				if( abs(A - (A1 + A2 + A3)) < std::numeric_limits<double>::epsilon())
+				{
+					if(p == 76) gproshan_debug(FIND TRIANG);
 					a_mat proj_abc = abc.tail_cols(2).each_col() - abc.col(0);
 					np -= abc.col(0);
 		
