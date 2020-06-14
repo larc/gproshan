@@ -415,7 +415,6 @@ void patch::add_extra_xyz_disjoint(che * mesh, vector<vpatches_t> & vpatches, co
 				arma::uvec xi = { vpatches[min_v][p], ma[p], mb[p] };
 				abc = xyz.cols(xi);
 				
-				if(p == 76) gproshan_debug_var(xi);
 				//gproshan_debug_var(np);
 				// verify if this is inside a triangle
 
@@ -424,18 +423,10 @@ void patch::add_extra_xyz_disjoint(che * mesh, vector<vpatches_t> & vpatches, co
 				double A2 = area_tri(abc(0,0), 	abc(1,0),	np(0),		np(1),		abc(0,2),	abc(1,2) );
 				double A3 = area_tri(abc(0,0), 	abc(1,0),	abc(0,1),	abc(1,1),	np(0),		np(1) );
 				
-				if(p == 76)
-				{
-					gproshan_debug_var(abc);
-					gproshan_debug_var(A);
-					gproshan_debug_var(A1);
-					gproshan_debug_var(A2);
-					gproshan_debug_var(A3);
-				}
+		
 				
 				if( abs(A - (A1 + A2 + A3)) < std::numeric_limits<double>::epsilon())
 				{
-					if(p == 76) gproshan_debug(FIND TRIANG);
 					a_mat proj_abc = abc.tail_cols(2).each_col() - abc.col(0);
 					np -= abc.col(0);
 		
