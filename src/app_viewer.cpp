@@ -649,8 +649,8 @@ bool app_viewer::process_mask(viewer * p_view)
 	static int avg_p = 36; 
 	static int percentage = 0;
 	static float delta = PI/6;
-	static float sum_thres = 1.001;
-	static float area_thres = 0.001;
+	static float sum_thres = 1.01;
+	static float area_thres = 0.005;
 
 	ImGui::InputInt("basis", &n);
 	ImGui::InputInt("atoms", &m);

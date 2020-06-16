@@ -566,8 +566,10 @@ real_t inpainting::execute()
 	save_alpha(f_alpha);
 
 	
-	draw_patches(76);
+	draw_patches(295);
 	draw_patches(384);
+	draw_patches(319);
+	draw_patches(312);
 	//patches_map.resize(n_vertices);
 	for(index_t i = 0; i < n_vertices; i++)
 	{
@@ -611,6 +613,10 @@ real_t inpainting::execute()
 
 	TIC(d_time) mesh_reconstruction([&pmask](const index_t & i) -> bool { return pmask[i]; }); TOC(d_time)
 	gproshan_debug_var(d_time);
+	arma::uvec non_zero = find( abs(alpha) > 0.00001);
+	gproshan_debug_var(non_zero.size());
+	real_t ratio = (M * 13.0 + non_zero.size()) / (3 * mesh->n_vertices());
+	gproshan_debug_var(ratio);
 
 }
 

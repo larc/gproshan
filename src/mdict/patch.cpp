@@ -229,7 +229,7 @@ void patch::init_radial_disjoint(vector<index_t> & idxs_he, che * mesh, const re
 {
 
 	radio = -INFINITY;
-	min_nv = 256;
+	min_nv = 128;
 
 	normal_fit_directions(mesh, v);
 
