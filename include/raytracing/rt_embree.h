@@ -17,6 +17,8 @@ namespace gproshan::rt {
 
 class embree : public raytracing
 {
+	static const float pc_radius;
+
 	struct ray_hit: public RTCRayHit
 	{
 		ray_hit(const glm::vec3 & origin = glm::vec3(0.0f),
@@ -89,8 +91,8 @@ class embree : public raytracing
 		index_t add_mesh(const che * mesh);
 		index_t add_point_cloud(const che * mesh);
 
-		void pointcloud_hit(glm::vec3 & position, glm::vec3 & normal, ray_hit & r);
-		glm::vec4 li(const glm::vec3 & light, const glm::vec3 & position, const glm::vec3 & normal);
+		float pointcloud_hit(glm::vec3 & position, glm::vec3 & normal, ray_hit & r);
+		glm::vec4 li(const glm::vec3 & light, const glm::vec3 & position, const glm::vec3 & normal, const float & near = 1e-5f);
 		glm::vec4 li(ray_hit r, const glm::vec3 & light, const bool & flat);
 };
 
