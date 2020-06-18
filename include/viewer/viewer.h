@@ -150,6 +150,7 @@ class viewer
 
 		// menu functions
 		static bool menu_help(viewer * view);
+		static bool menu_save_load_view(viewer * view);
 		static bool menu_reset_mesh(viewer * view);
 		static bool menu_save_mesh(viewer * view);
 		static bool menu_zoom_in(viewer * view);

@@ -20,7 +20,7 @@ camera::camera()
 	zoom(1.)
 {}
 
-quaternion camera::clickToSphere(int x, int y)
+quaternion camera::click_to_sphere(int x, int y)
 {
 	GLint viewport[4];
 	glGetIntegerv(GL_VIEWPORT, viewport);
@@ -57,7 +57,7 @@ void camera::mouse(int , int state, int x, int y)
 {
 	if(state == GLFW_PRESS)
 	{
-		pClick = pDrag = pLast = clickToSphere(x, y);
+		pClick = pDrag = pLast = click_to_sphere(x, y);
 		momentum = 1.;
 	}
 	if(state == GLFW_RELEASE)
@@ -83,7 +83,7 @@ void camera::motion(int x, int y)
 {
 	tLast = clock();
 	pLast = pDrag;
-	pDrag = clickToSphere(x, y);
+	pDrag = click_to_sphere(x, y);
 }
 
 void camera::idle()

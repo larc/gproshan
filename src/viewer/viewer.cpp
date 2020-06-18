@@ -8,6 +8,7 @@
 #include <vector>
 #include <cassert>
 #include <thread>
+#include <filesystem>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -239,6 +240,7 @@ void viewer::init_menus()
 {
 	sub_menus.push_back("Viewer");
 	add_process(GLFW_KEY_F1, {"F1", "Help", menu_help});
+	add_process(GLFW_KEY_PERIOD, {"PERIOD", "Save/Load view", menu_save_load_view});
 	add_process(GLFW_KEY_UP, {"UP", "Zoom in", menu_zoom_in});
 	add_process(GLFW_KEY_DOWN, {"DOWN", "Zoom out", menu_zoom_out});
 	add_process(GLFW_KEY_RIGHT, {"RIGHT", "Background color inc", menu_bgc_inc});
@@ -396,6 +398,29 @@ bool viewer::menu_help(viewer * view)
 	return false;
 }
 
+bool viewer::menu_save_load_view(viewer * view)
+{
+	static char file[128] = "view";
+	
+	ImGui::InputText("file", file, sizeof(file));
+	
+	if(ImGui::Button("Save"))
+	{
+		ofstream os(tmp_file_path("views/" + file));
+		os << view->cam.current_rotation() << endl;
+		os.close();
+	}
+	
+	ImGui::SameLine();
+
+	if(ImGui::Button("Load"))
+	{
+	}
+
+	return true;
+}
+
+
 bool viewer::menu_reset_mesh(viewer * view)
 {
 	view->active_mesh().selected.clear();
@@ -414,7 +439,7 @@ bool viewer::menu_save_mesh(viewer * view)
 	static int format = 0;
 		
 	ImGui::InputText("file", file, sizeof(file));
-	ImGui::Combo("format", &format, ".off\0.obj\0.ply");
+	ImGui::Combo("format", &format, ".off\0.obj\0.ply\0\0");
 
 	if(ImGui::Button("Save"))
 	{
@@ -423,11 +448,6 @@ bool viewer::menu_save_mesh(viewer * view)
 		if(format == 2) che_ply::write_file(view->active_mesh(), file);
 	}
 
-	return true;
-}
-
-bool viewer::menu_save_view(viewer * view)
-{	
 	return true;
 }
 
