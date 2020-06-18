@@ -55,7 +55,7 @@ class embree : public raytracing
 		
 		const glm::vec3 normal(const che * mesh, const bool & flat = false) const
 		{
-			if(flat || !mesh->n_faces())
+			if(flat || mesh->is_pointcloud())
 				return glm::normalize(glm::vec3(hit.Ng_x, hit.Ng_y, hit.Ng_z));
 			
 			vertex n = mesh->shading_normal(hit.primID, 1.0 - hit.u - hit.v, hit.u, hit.v);	

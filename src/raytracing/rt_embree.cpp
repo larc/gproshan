@@ -134,19 +134,24 @@ index_t embree::add_point_cloud(const che * mesh)
 
 void embree::pointcloud_hit(glm::vec3 & position, glm::vec3 & normal, ray_hit & r)
 {
-	int n = 0;
+	float dist, sum_dist = 0;
+	position = glm::vec3(0);
+	normal = glm::vec3(0);
 
-	r = ray_hit(r.position(), r.dir());
-	while(intersect(r) && r.ray.tfar < 0.001)
+	do
 	{
-		n++;
-		position += r.position();
-		normal += r.normal(geomID_mesh[r.hit.geomID], true);
+		glm::vec4 * xyzr = (glm::vec4 *) rtcGetGeometryBufferData(rtcGetGeometry(scene, r.hit.geomID), RTC_BUFFER_TYPE_VERTEX, 0);
+		
+		sum_dist += dist = glm::length(r.position() - glm::vec3(xyzr[r.hit.primID]));
+		position += dist * r.position();
+		normal += dist * r.normal(geomID_mesh[r.hit.geomID], true);
+
 		r = ray_hit(r.position(), r.dir());
 	}
+	while(intersect(r) && r.ray.tfar < 0.001);
 
-	position /= n;
-	normal /= n;
+	position /= sum_dist;
+	normal /= sum_dist;
 }
 
 glm::vec4 embree::li(const glm::vec3 & light, const glm::vec3 & position, const glm::vec3 & normal)
@@ -181,7 +186,7 @@ glm::vec4 embree::li(ray_hit r, const glm::vec3 & light, const bool & flat)
 		position = r.position();
 		normal = r.normal(geomID_mesh[r.hit.geomID], flat);
 		
-		if(!geomID_mesh[r.hit.geomID]->n_faces())
+		if(geomID_mesh[r.hit.geomID]->is_pointcloud())
 			pointcloud_hit(position, normal, r);
 		
 		L += li(light, position, normal);
