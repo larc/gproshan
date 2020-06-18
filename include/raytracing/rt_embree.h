@@ -21,7 +21,7 @@ class embree : public raytracing
 	{
 		ray_hit(const glm::vec3 & origin = glm::vec3(0.0f),
 				const glm::vec3 & direction = glm::vec3(0.0f),
-				float near = 0.0f,
+				float near = 1e-5f,
 				float far = FLT_MAX)
 		{
 			ray.org_x = origin.x;
@@ -96,7 +96,7 @@ class embree : public raytracing
 		index_t add_mesh(const che * mesh);
 		index_t add_point_cloud(const che * mesh);
 
-		glm::vec4 li(const ray_hit & r, const glm::vec3 & light, const bool & flat);
+		glm::vec4 li(ray_hit r, const glm::vec3 & light, const bool & flat);
 };
 
 
