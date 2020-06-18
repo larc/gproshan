@@ -37,17 +37,17 @@ void che_off::read_file(const string & file)
 	is >> soff;
 	is >> n_v >> n_f >> v;
 	init(n_v, n_f);
+	
+	if(soff[0] == 'N') VN = new vertex[n_vertices_];
 
 	int r, g, b, a;
 	for(index_t i = 0; i < n_vertices_; i++)
 	{
 		is >> GT[i];
-		if(soff[0] == 'C') // COFF file, ignore RGBA
-			is >> r >> g >> b >> a;
-		if(soff[0] == 'N') // NOFF file, ignore normals
-			is >> r >> g >> b;
+		if(soff[0] == 'C') is >> r >> g >> b >> a;	// ignore RGB for now
+		if(soff[0] == 'N') is >> VN[i];
 	}
-
+	
 	index_t he = 0;
 	for(index_t i = 0; i < n_faces_; i++)
 	{
