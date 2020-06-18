@@ -410,20 +410,25 @@ bool viewer::menu_reset_mesh(viewer * view)
 
 bool viewer::menu_save_mesh(viewer * view)
 {
-	gproshan_log(APP_VIEWER);
-	
-	gproshan_log(format: [off obj ply]);
-	
-	string format; cin >> format;
-	string file = view->active_mesh()->filename() + "_new";
-	
-	if(format == "off") che_off::write_file(view->active_mesh(), file);
-	if(format == "obj") che_obj::write_file(view->active_mesh(), file);
-	if(format == "ply") che_ply::write_file(view->active_mesh(), file);
+	static char file[128] = "copy";
+	static int format = 0;
+		
+	ImGui::InputText("file", file, sizeof(file));
+	ImGui::Combo("format", &format, ".off\0.obj\0.ply");
 
-	cerr << "saved: " << file + "." + format << endl;
+	if(ImGui::Button("Save"))
+	{
+		if(format == 0) che_off::write_file(view->active_mesh(), file);
+		if(format == 1) che_obj::write_file(view->active_mesh(), file);
+		if(format == 2) che_ply::write_file(view->active_mesh(), file);
+	}
 
-	return false;
+	return true;
+}
+
+bool viewer::menu_save_view(viewer * view)
+{	
+	return true;
 }
 
 bool viewer::menu_zoom_in(viewer * view)

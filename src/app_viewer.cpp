@@ -104,7 +104,7 @@ int app_viewer::main(int nargs, const char ** args)
 	add_process(GLFW_KEY_N, {"N", "Noise", process_noise});
 	add_process(GLFW_KEY_COMMA, {"COMMA", "Black noise", process_black_noise});
 	add_process(GLFW_KEY_M, {"M", "Multiplicate", process_multiplicate_vertices});
-	add_process(GLFW_KEY_PERIOD, {"PERIOD", "Delete vertices", process_delete_vertices});
+	add_process(GLFW_KEY_DELETE, {"DELETE", "Delete vertices", process_delete_vertices});
 	add_process(GLFW_KEY_MINUS, {"MINUS", "Delete non-manifold vertices", process_delete_non_manifold_vertices});
 	add_process(GLFW_KEY_K, {"K", "Gaussian curvature", process_gaussian_curvature});
 	add_process(GLFW_KEY_9, {"9", "Edge Collapse", process_edge_collapse});
