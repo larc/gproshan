@@ -60,7 +60,11 @@ class embree : public raytracing
 
 		const glm::vec3 shading_normal(const che * mesh) const
 		{
-			vertex n = mesh->shading_normal(hit.primID, 1.0 - hit.u - hit.v, hit.u, hit.v);
+			vertex n;
+			if(mesh->n_faces())
+				n = mesh->shading_normal(hit.primID, 1.0 - hit.u - hit.v, hit.u, hit.v);
+			else
+				n = { hit.Ng_x, hit.Ng_y, hit.Ng_z };
 
 			return glm::normalize(glm::vec3(n.x, n.y, n.z));
 		}
