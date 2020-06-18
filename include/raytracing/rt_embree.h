@@ -53,19 +53,12 @@ class embree : public raytracing
 			return {ray.dir_x, ray.dir_y, ray.dir_z};
 		}
 		
-		const glm::vec3 geometry_normal() const
+		const glm::vec3 normal(const che * mesh, const bool & flat = false) const
 		{
-			return glm::normalize(glm::vec3(hit.Ng_x, hit.Ng_y, hit.Ng_z));
-		}
-
-		const glm::vec3 shading_normal(const che * mesh) const
-		{
-			vertex n;
-			if(mesh->n_faces())
-				n = mesh->shading_normal(hit.primID, 1.0 - hit.u - hit.v, hit.u, hit.v);
-			else
-				n = { hit.Ng_x, hit.Ng_y, hit.Ng_z };
-
+			if(flat || !mesh->n_faces())
+				return glm::normalize(glm::vec3(hit.Ng_x, hit.Ng_y, hit.Ng_z));
+			
+			vertex n = mesh->shading_normal(hit.primID, 1.0 - hit.u - hit.v, hit.u, hit.v);	
 			return glm::normalize(glm::vec3(n.x, n.y, n.z));
 		}
 
@@ -96,6 +89,8 @@ class embree : public raytracing
 		index_t add_mesh(const che * mesh);
 		index_t add_point_cloud(const che * mesh);
 
+		void pointcloud_hit(glm::vec3 & position, glm::vec3 & normal, ray_hit & r);
+		glm::vec4 li(const glm::vec3 & light, const glm::vec3 & position, const glm::vec3 & normal);
 		glm::vec4 li(ray_hit r, const glm::vec3 & light, const bool & flat);
 };
 

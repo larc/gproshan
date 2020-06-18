@@ -132,44 +132,71 @@ index_t embree::add_point_cloud(const che * mesh)
 	return geom_id;
 }
 
-glm::vec4 embree::li(ray_hit r, const glm::vec3 & light, const bool & flat)
+void embree::pointcloud_hit(glm::vec3 & position, glm::vec3 & normal, ray_hit & r)
+{
+	int n = 0;
+
+	r = ray_hit(r.position(), r.dir());
+	while(intersect(r) && r.ray.tfar < 0.001)
+	{
+		n++;
+		position += r.position();
+		normal += r.normal(geomID_mesh[r.hit.geomID], true);
+		r = ray_hit(r.position(), r.dir());
+	}
+
+	position /= n;
+	normal /= n;
+}
+
+glm::vec4 embree::li(const glm::vec3 & light, const glm::vec3 & position, const glm::vec3 & normal)
 {
 	const glm::vec3 color(0.6, 0.8, 1.0);
+	
+	const glm::vec3 wi = normalize(light - position);
+	const float dist_light = glm::length(light - position);
+	const float falloff = 4.f / (dist_light * dist_light);	// intensity multiplier / falloff
+	const float dot_wi_normal = glm::dot(wi, normal);
+
+	const glm::vec4 L = glm::vec4(falloff * (dot_wi_normal < 0 ? -dot_wi_normal : dot_wi_normal) * color, 1);
+
+	ray_hit r(position, wi);
+	
+	return occluded(r) ? 0.5f * L : L;
+}
+
+glm::vec4 embree::li(ray_hit r, const glm::vec3 & light, const bool & flat)
+{
 	const float max_tfar = 8;
 
 	float total_tfar = 0;
 	float tfar = r.ray.tfar;
-	glm::vec4 out_li = glm::vec4(0);
+	glm::vec4 L(0);
 	
-	float dist_light, falloff, dot_wi_normal;
-	glm::vec3 wi;
-
+	glm::vec3 position, normal;
 	while(tfar < max_tfar)
 	{
 		total_tfar += tfar;
+		
+		position = r.position();
+		normal = r.normal(geomID_mesh[r.hit.geomID], flat);
+		
+		if(!geomID_mesh[r.hit.geomID]->n_faces())
+			pointcloud_hit(position, normal, r);
+		
+		L += li(light, position, normal);
 
-		dist_light = glm::length(light - r.position());
-		falloff = 4.f / (dist_light * dist_light);	// intensity multiplier / falloff
-	
-		wi = normalize(light - r.position());
-	
-		dot_wi_normal = flat ? glm::dot(wi, r.geometry_normal())
-								: glm::dot(wi, r.shading_normal(geomID_mesh[r.hit.geomID]));
-
-		if(dot_wi_normal < 0) dot_wi_normal = -dot_wi_normal;
-		
-		out_li += tfar * glm::vec4(color * falloff * dot_wi_normal, 1);
-		
-		ray_hit ro(r.position(), wi);
-		if(occluded(ro)) out_li *= .5f;
-		
+		/*
 		r = ray_hit(r.position(), r.dir());
 		if(!intersect(r)) break;
 
 		tfar = r.ray.tfar + total_tfar;
+		*/
+		
+		tfar = 10;
 	}
 
-	return out_li / total_tfar;
+	return L / total_tfar;
 }
 
 bool embree::intersect(ray_hit & r)
