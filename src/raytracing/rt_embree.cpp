@@ -136,8 +136,6 @@ index_t embree::add_point_cloud(const che * mesh)
 
 float embree::pointcloud_hit(glm::vec3 & position, glm::vec3 & normal, ray_hit & r)
 {
-	const glm::vec3 hit = position;
-
 	float w, sum_w = 0;
 	position = glm::vec3(0);
 	normal = glm::vec3(0);
@@ -157,7 +155,7 @@ float embree::pointcloud_hit(glm::vec3 & position, glm::vec3 & normal, ray_hit &
 	position /= sum_w;
 	normal /= sum_w;
 
-	return std::max(glm::length(hit - position), pc_radius);
+	return sum_w;
 }
 
 glm::vec4 embree::li(const glm::vec3 & light, const glm::vec3 & position, const glm::vec3 & normal, const float & near)
@@ -194,7 +192,7 @@ glm::vec4 embree::li(ray_hit r, const glm::vec3 & light, const bool & flat)
 		
 		near = 1e-5f;
 		if(geomID_mesh[r.hit.geomID]->is_pointcloud())
-			near += 10 * pointcloud_hit(position, normal, r);
+			near += pointcloud_hit(position, normal, r);
 		
 		L += li(light, position, normal, near);
 		
