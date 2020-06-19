@@ -55,9 +55,9 @@ index_t embree::add_sphere(const glm::vec4 & xyzr)
 {
 	RTCGeometry geom = rtcNewGeometry(device, RTC_GEOMETRY_TYPE_SPHERE_POINT);
 
-	glm::vec4 * pxyzr = (glm::vec4 *) rtcSetNewGeometryBuffer(geom,
-															RTC_BUFFER_TYPE_VERTEX, 0,
-															RTC_FORMAT_FLOAT4, 4 * sizeof(float), 1);
+	glm::vec4 * pxyzr = (glm::vec4 *) rtcSetNewGeometryBuffer(	geom,
+																RTC_BUFFER_TYPE_VERTEX, 0,
+																RTC_FORMAT_FLOAT4, 4 * sizeof(float), 1);
 	*pxyzr = xyzr;
 
 	rtcCommitGeometry(geom);
@@ -72,11 +72,11 @@ index_t embree::add_mesh(const che * mesh)
 {
 	RTCGeometry geom = rtcNewGeometry(device, RTC_GEOMETRY_TYPE_TRIANGLE);
 
-	glm::vec3 * vertices = (glm::vec3 *) rtcSetNewGeometryBuffer(geom,
-																RTC_BUFFER_TYPE_VERTEX, 0,
-																RTC_FORMAT_FLOAT3, 3 * sizeof(float),
-																mesh->n_vertices()
-																);
+	glm::vec3 * vertices = (glm::vec3 *) rtcSetNewGeometryBuffer(	geom,
+																	RTC_BUFFER_TYPE_VERTEX, 0,
+																	RTC_FORMAT_FLOAT3, 3 * sizeof(float),
+																	mesh->n_vertices()
+																	);
 
 	index_t * tri_idxs = (index_t *) rtcSetNewGeometryBuffer(	geom,
 																RTC_BUFFER_TYPE_INDEX, 0,
@@ -166,14 +166,13 @@ glm::vec4 embree::li(const glm::vec3 & light, const glm::vec3 & position, const 
 	
 	const glm::vec3 wi = normalize(light - position);
 	const float dist_light = glm::length(light - position);
-	const float falloff = 4.f / (dist_light * dist_light);	// intensity multiplier / falloff
+	const float falloff = 12.f / (dist_light * dist_light);	// intensity multiplier / falloff
 	const float dot_wi_normal = glm::dot(wi, normal);
 
-	const glm::vec4 L = glm::vec4(falloff * (dot_wi_normal < 0 ? -dot_wi_normal : dot_wi_normal) * color, 1);
+	const glm::vec4 L = glm::vec4(falloff * (dot_wi_normal < 0 ? -dot_wi_normal : dot_wi_normal) * glm::vec3(1) * (float(1.f/M_PI) * color), 1);
 
 	ray_hit r(position, wi, near);
-	
-	return occluded(r) ? 0.5f * L : L;
+	return (occluded(r) ? 0.5f : 1.f) * L;	
 }
 
 glm::vec4 embree::li(ray_hit r, const glm::vec3 & light, const bool & flat)
