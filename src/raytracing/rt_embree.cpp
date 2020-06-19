@@ -22,7 +22,7 @@ void embree_error(void * ptr, RTCError error, const char * str)
 	fprintf(stderr, "EMBREE ERROR: %s\n", str);
 }
 
-const float embree::pc_radius = 0.001;
+float embree::pc_radius = 0.0125;
 
 embree::embree(const std::vector<che *> & meshes)
 {

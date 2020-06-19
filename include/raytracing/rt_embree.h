@@ -17,7 +17,7 @@ namespace gproshan::rt {
 
 class embree : public raytracing
 {
-	static const float pc_radius;
+	static float pc_radius;
 
 	struct ray_hit: public RTCRayHit
 	{
