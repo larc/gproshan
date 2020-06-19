@@ -194,7 +194,7 @@ glm::vec4 embree::li(ray_hit r, const glm::vec3 & light, const bool & flat)
 		
 		near = 1e-5f;
 		if(geomID_mesh[r.hit.geomID]->is_pointcloud())
-			near += 20 * pointcloud_hit(position, normal, r);
+			near += 10 * pointcloud_hit(position, normal, r);
 		
 		L += li(light, position, normal, near);
 		
