@@ -17,8 +17,6 @@ namespace gproshan::rt {
 
 class embree : public raytracing
 {
-	static float pc_radius;
-
 	struct ray_hit: public RTCRayHit
 	{
 		ray_hit(const glm::vec3 & origin = glm::vec3(0.0f),
@@ -74,6 +72,9 @@ class embree : public raytracing
 	RTCDevice device;
 	RTCScene scene;	
 	RTCIntersectContext intersect_context;
+	
+	public:
+		static float pc_radius;
 
 	public:
 		embree(const std::vector<che *> & meshes);

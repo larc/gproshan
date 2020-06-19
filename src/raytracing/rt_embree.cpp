@@ -22,7 +22,7 @@ void embree_error(void * ptr, RTCError error, const char * str)
 	fprintf(stderr, "EMBREE ERROR: %s\n", str);
 }
 
-float embree::pc_radius = 0.0125;
+float embree::pc_radius = 0.001;
 
 embree::embree(const std::vector<che *> & meshes)
 {
@@ -162,17 +162,17 @@ float embree::pointcloud_hit(glm::vec3 & position, glm::vec3 & normal, ray_hit &
 
 glm::vec4 embree::li(const glm::vec3 & light, const glm::vec3 & position, const glm::vec3 & normal, const float & near)
 {
-	const glm::vec3 color(0.6, 0.8, 1.0);
+	const glm::vec3 color(0.5, 0.7, 1.0);
 	
 	const glm::vec3 wi = normalize(light - position);
 	const float dist_light = glm::length(light - position);
-	const float falloff = 12.f / (dist_light * dist_light);	// intensity multiplier / falloff
+	const float falloff = 8.f / (dist_light * dist_light);	// intensity multiplier / falloff
 	const float dot_wi_normal = glm::dot(wi, normal);
 
-	const glm::vec4 L = glm::vec4(falloff * (dot_wi_normal < 0 ? -dot_wi_normal : dot_wi_normal) * glm::vec3(1) * (float(1.f/M_PI) * color), 1);
+	const glm::vec4 L = glm::vec4(falloff * (dot_wi_normal < 0 ? -dot_wi_normal : dot_wi_normal) * (float(1.f/M_PI) * color) + glm::vec3(0.1), 1);
 
 	ray_hit r(position, wi, near);
-	return (occluded(r) ? 0.5f : 1.f) * L;	
+	return (occluded(r) ? 0.6f : 1.f) * L;	
 }
 
 glm::vec4 embree::li(ray_hit r, const glm::vec3 & light, const bool & flat)
@@ -197,7 +197,7 @@ glm::vec4 embree::li(ray_hit r, const glm::vec3 & light, const bool & flat)
 			near += 20 * pointcloud_hit(position, normal, r);
 		
 		L += li(light, position, normal, near);
-
+		
 		/*
 		r = ray_hit(r.position(), r.dir());
 		if(!intersect(r)) break;
