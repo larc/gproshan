@@ -356,7 +356,7 @@ a_vec non_local_means_vertex(a_mat & alpha, const index_t & v, vector<patch> & p
 	return n_a_vec;
 }
 
-/// DEPRECATED
+[[deprecated]]
 void mesh_reconstruction(che * mesh, size_t M, vector<patch_t> & patches, vector<patches_map_t> & patches_map, a_mat & A, a_mat & alpha, const index_t & v_i)
 {
 	a_mat V(3, mesh->n_vertices(), arma::fill::zeros);

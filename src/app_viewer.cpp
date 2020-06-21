@@ -599,7 +599,7 @@ bool app_viewer::process_super_resolution(viewer * p_view)
 bool app_viewer::process_inpaiting(viewer * p_view)
 {
 	app_viewer * view = (app_viewer *) p_view;
-	che_viewer & mesh = view->mesh();
+	che_viewer & mesh = view->active_mesh();
 
 	static int n = 12; // dct
 	static int m = 144;
@@ -636,7 +636,7 @@ bool app_viewer::process_inpaiting(viewer * p_view)
 bool app_viewer::process_mask(viewer * p_view)
 {
 	app_viewer * view = (app_viewer *) p_view;
-	che_viewer & mesh = view->mesh();
+	che_viewer & mesh = view->active_mesh();
 
 	static int n = 12; // dct
 	static int m = 144;
@@ -681,7 +681,7 @@ bool app_viewer::process_mask(viewer * p_view)
 bool app_viewer::process_pc_reconstruction(viewer * p_view)
 {
 	app_viewer * view = (app_viewer *) p_view;
-	che_viewer & mesh = view->mesh();
+	che_viewer & mesh = view->active_mesh();
 
 	static int n = 12; // dct
 	static int m = 144;
