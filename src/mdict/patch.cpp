@@ -362,7 +362,7 @@ void patch::reset_xyz(che * mesh, vector<vpatches_t> & vpatches, const index_t &
 
 double area_tri(double x1, double y1, double x2, double y2, double x3, double y3) 
 { 
-   return abs((x1*(y2-y3) + x2*(y3-y1)+ x3*(y1-y2))/2.0); 
+	return abs((x1*(y2-y3) + x2*(y3-y1)+ x3*(y1-y2))/2.0); 
 }
 void patch::add_extra_xyz_disjoint(che * mesh, vector<vpatches_t> & vpatches, const index_t & p)
 {
@@ -401,7 +401,7 @@ void patch::add_extra_xyz_disjoint(che * mesh, vector<vpatches_t> & vpatches, co
 				min_v = v;
 			}
 		}
-		           
+		 
 		// forstar to find closest trinagle
 		a_mat abc(3,3);
 		for_star(he, mesh, min_v)
@@ -462,7 +462,7 @@ void patch::reset_xyz_disjoint(che * mesh, real_t * dist, size_t M, vector<vpatc
 	{
 		m = 0;
 		for(index_t i = 0; i < vertices.size(); i++)
-			if(mask(i)) { dist[vertices[i] ] = float(p + 1) / M; m++; } else {dist[vertices[i] ] = INFINITY; };
+			if(mask(i)) { dist[vertices[i]] = float(p + 1) / M; m++; } else {dist[vertices[i]] = INFINITY; };
 		/*gproshan_debug(number vertices considered);
 		gproshan_debug_var(m);
 		gproshan_debug(number vertices masked);
@@ -473,7 +473,7 @@ void patch::reset_xyz_disjoint(che * mesh, real_t * dist, size_t M, vector<vpatc
 
 	xyz.set_size(3, m);
 	index_t j = 0;
-	for(index_t  i = 0; i < vertices.size(); i++)
+	for(index_t i = 0; i < vertices.size(); i++)
 	{
 		if(!mask || mask(i))
 		{ 
@@ -769,7 +769,7 @@ void patch::compute_avg_distance(che * mesh, vector<vpatches_t> & vpatches, cons
 	size_t n_elem = distances.size();
 	if(distances.size()%2 ==0)
 	{
-		avg_dist = (distances[n_elem/2] + distances[(n_elem/2 -1) ])/2;
+		avg_dist = (distances[n_elem/2] + distances[(n_elem/2 -1)])/2;
 	}
 	else 
 	{	

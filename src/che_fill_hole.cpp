@@ -529,8 +529,8 @@ che * fill_hole_front_angles_test(che * mesh, vector<index_t> & front_vertices, 
 			front.push(border_t(tmp_vertices, n_v, neighbors[n_v], o, tmp_normals[n_v]));
 
 			perimeter += norm(tmp_vertices[p_v] - tmp_vertices[m_v]);
-			perimeter += norm(tmp_vertices[m_v + 1 ] - tmp_vertices[m_v]);
-			perimeter += norm(tmp_vertices[m_v + 1 ] - tmp_vertices[n_v]);
+			perimeter += norm(tmp_vertices[m_v + 1] - tmp_vertices[m_v]);
+			perimeter += norm(tmp_vertices[m_v + 1] - tmp_vertices[n_v]);
 		}
 	}
 
@@ -791,8 +791,8 @@ che * fill_hole_front_angles(vector<vertex> & vertices, const real_t & length, c
 
 
 			perimeter += norm(tmp_vertices[p_v] - tmp_vertices[m_v]);
-			perimeter += norm(tmp_vertices[m_v + 1 ] - tmp_vertices[m_v]);
-			perimeter += norm(tmp_vertices[m_v + 1 ] - tmp_vertices[n_v]);
+			perimeter += norm(tmp_vertices[m_v + 1] - tmp_vertices[m_v]);
+			perimeter += norm(tmp_vertices[m_v + 1] - tmp_vertices[n_v]);
 		}
 	}
 

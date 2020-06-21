@@ -113,17 +113,17 @@ void inpainting::load_mask(const std::vector<index_t> * vertices, const index_t 
 			//gproshan_debug_var(clusters[rn]);
 
 			rn = distribution(generator);
-			if(!mask[rn] && percentages_size[clusters[rn] ] > 0)
+			if(!mask[rn] && percentages_size[clusters[rn]] > 0)
 			{
 
 				mask[rn] = 1;
 				V(rn) = 1;
-				percentages_size[ clusters[rn] ]--;
+				percentages_size[clusters[rn]]--;
 							
 			}
-			if( !cover_cluster[ clusters[rn] ] && percentages_size[clusters[rn] ] == 0)
+			if( !cover_cluster[clusters[rn]] && percentages_size[clusters[rn]] == 0)
 			{
-				cover_cluster[ clusters[rn]] = 1; // It is finished
+				cover_cluster[clusters[rn]] = 1; // It is finished
 				k++;
 			}	
 				
@@ -163,7 +163,7 @@ void inpainting::load_sampling(bool save_all)
 	index_t * indexes = new index_t[geo.n_sorted_index()];
 	geo.copy_sorted_index(indexes, geo.n_sorted_index());
 	size_t count = 0;
-	real_t max_radio = geo[ indexes[mesh->n_vertices()-1] ] ;
+	real_t max_radio = geo[indexes[mesh->n_vertices()-1]] ;
 	
 	//radio *= 1.1;
 	gproshan_debug_var(max_radio);
@@ -220,39 +220,24 @@ void inpainting::load_sampling(bool save_all)
 	bool faces[mesh->n_faces()] = {};
 	vector<index_t> idxs_he;
 
+	bool * invalid_seed = new bool[mesh->n_vertices()];
+	memset(invalid_seed, 0, mesh->n_vertices() * sizeof(bool));
+
 	for(const index_t & vsf: all_sorted_features)
 	{
-		bool found = false;
-
-		//select the next one
-		for(index_t j = 0; j < seeds.size(); j++)
-		{
-			//calculate distance between the actual patch p seed i and other features
-			const vertex & v_patch = mesh->gt(vsf);
-			const vertex & v_seed = mesh->gt(seeds[j]);
-
-			// 0.5 coverage parameter
-			if( *(v_patch - v_seed) < 0.4* radios[j] )
-			{
-				 // radio of each patch	
-				found = true;
-				break;
-			}
-		}
-
-		if(found) continue;
+		if(invalid_seed[vsf]) continue;
 
 		patch p;
 		// increasing a bit the radio
 		idxs_he.clear();
-		p.init_radial_disjoint(idxs_he, mesh, 1*max_radio, vsf, euc_radio, geo_radio, delta, sum_thres, area_thres);
+		p.init_radial_disjoint(idxs_he, mesh, max_radio, vsf, euc_radio, geo_radio, delta, sum_thres, area_thres);
 
 		//gproshan_debug_var(p.vertices.size());
 		count_cov_patch = 0;
 		if(p.vertices.size() >= 7 )
 		{
-			for(index_t k = 0; k < p.vertices.size(); k++)
-				if(!covered[ p.vertices[k] ]) count_cov_patch++;
+			for(const index_t & v: p.vertices)
+				if(!covered[v]) count_cov_patch++;
 
 			count_cov += count_cov_patch;
 			if(count_cov_patch > 0)
@@ -260,18 +245,30 @@ void inpainting::load_sampling(bool save_all)
 				//gproshan_debug_var(p.vertices.size());
 				patches.push_back(p);
 				seeds.push_back(vsf);
-				radios.push_back( euc_radio );
-				geo_radios.push_back( geo_radio);
-				count+=p.vertices.size();
+				radios.push_back(euc_radio);
+				geo_radios.push_back(geo_radio);
+				count += p.vertices.size();
 
-				for(index_t k = 0; k < p.vertices.size(); k++)
-					covered[ p.vertices[k] ] = 1;
+				for(const index_t & v: p.vertices)
+				{
+					covered[v] = 1;
 
-				for(auto i:idxs_he)
+					if(!invalid_seed[v])
+					{
+						const vertex & va = mesh->get_vertex(vsf);
+						const vertex & vb = mesh->get_vertex(v);
+
+						invalid_seed[v] = *(va - vb) < 0.4 * euc_radio;
+					}
+				}
+
+				for(auto i: idxs_he)
 					faces[i] = true;
 			}
 		}
 	}						
+
+	delete [] invalid_seed;
 
 	vector<index_t> outliers;
 	gproshan_debug_var(sum_thres);
@@ -293,7 +290,7 @@ void inpainting::load_sampling(bool save_all)
 		if(!faces[i])
 		{
 			tmp = mesh->vt(next(i*3));
-			if(!covered[ tmp] && !remark[tmp])
+			if(!covered[tmp] && !remark[tmp])
 			{
 				outliers.push_back(tmp);
 				remark[tmp] = true;
@@ -301,14 +298,14 @@ void inpainting::load_sampling(bool save_all)
 			
 			tmp = mesh->vt(prev(i*3));
 
-			if(!covered[ tmp] && !remark[tmp])
+			if(!covered[tmp] && !remark[tmp])
 			{
 				outliers.push_back(tmp);
 				remark[tmp] = true;
 			} 
 
 			tmp = mesh->vt(i*3);
-			if(!covered[ tmp] && !remark[tmp])
+			if(!covered[tmp] && !remark[tmp])
 			{
 				outliers.push_back(tmp);
 				remark[tmp] = true;
@@ -420,8 +417,8 @@ void inpainting::init_radial_feature_patches()
 			AS(i,8) = p.T(1,1);
 			AS(i,9) = p.T(2,1);
 			AS(i,10) = p.T(0,2);
-		AS(i,11) = p.T(1,2);
-		AS(i,12) = p.T(2,2);
+			AS(i,11) = p.T(1,2);
+			AS(i,12) = p.T(2,2);
 
 		}
 		string f_samplall = tmp_file_path(mesh->name_size() + '_' + to_string(delta) + '_' + to_string(sum_thres) + '_' + to_string(area_thres) + ".smp");
@@ -464,7 +461,7 @@ void inpainting::init_voronoi_patches()
 			{		
 				ptp.clusters[i]--;
 				if(sample(ptp.clusters[i]) != i)
-					vertices[ ptp.clusters[i] ].push_back(i) ;
+					vertices[ptp.clusters[i]].push_back(i) ;
 			}
 	
 	

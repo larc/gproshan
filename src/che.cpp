@@ -821,11 +821,11 @@ void che::remove_non_manifold_vertices()
 {
 	for( index_t he = 0; he < n_half_edges_; he+=3)
 	{
-		if(EVT[ VT[he] ] == NIL || EVT[ VT[he+1]] == NIL || EVT[ VT[he+2] ] == NIL)
+		if(EVT[VT[he]] == NIL || EVT[VT[he+1]] == NIL || EVT[VT[he+2]] == NIL)
 		{
 			VT[he] = NIL;
-			VT[he + 1 ] = NIL;
-			VT[he + 2 ] = NIL;
+			VT[he + 1] = NIL;
+			VT[he + 2] = NIL;
 		}
 	}
 

@@ -140,7 +140,7 @@ arma::uword max_index(const a_vec & V,const arma::uchar_vec & mask)
 	arma::uvec indices = arma::sort_index( V , "desscend");
 
 	for(size_t i=0; i< V.size(); i++)
-		if(mask[ indices [i]]) return indices[i];
+		if(mask[indices [i]]) return indices[i];
 	
 }
 
