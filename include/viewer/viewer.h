@@ -142,7 +142,6 @@ class viewer
 		void render_optix();
 
 		// callbacks
-		static void idle();
 		static void keyboard_callback(GLFWwindow * window, int key, int scancode, int action, int mods);
 		static void mouse_callback(GLFWwindow * window, int button, int action, int mods);
 		static void cursor_callback(GLFWwindow * window, double x, double y);

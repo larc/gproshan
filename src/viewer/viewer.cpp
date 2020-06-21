@@ -392,12 +392,6 @@ void viewer::scroll_callback(GLFWwindow * window, double xoffset, double yoffset
 	}
 }
 
-void viewer::idle()
-{
-	//cam.idle();
-	////glutPostRedisplay();
-}
-
 bool viewer::menu_help(viewer * view)
 {
 	for(auto & p: view->processes)
@@ -416,7 +410,7 @@ bool viewer::menu_save_load_view(viewer * view)
 	if(ImGui::Button("Save"))
 	{
 		ofstream os(tmp_file_path("views/" + file));
-		os << view->cam.current_rotation() << endl;
+		os << view->cam;
 		os.close();
 	}
 	
@@ -424,6 +418,9 @@ bool viewer::menu_save_load_view(viewer * view)
 
 	if(ImGui::Button("Load"))
 	{
+		ifstream is(tmp_file_path("views/" + file));
+		is >> view->cam;
+		is.close();
 	}
 
 	return true;
