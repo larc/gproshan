@@ -47,7 +47,7 @@ class che
 		index_t * BT	= nullptr;	///< boundary table			: b 	-> v
 		
 		vertex * VN		= nullptr;	///< vertex normals			: v		-> normal(v)
-		real_t * VC	= nullptr;	///< vertex color			: v		-> color(v)
+		real_t * VC		= nullptr;	///< vertex color			: v		-> color(v)
 
 		bool manifold = true;
 

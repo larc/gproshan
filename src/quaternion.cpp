@@ -10,56 +10,37 @@ using namespace std;
 namespace gproshan {
 
 
-quaternion :: quaternion()
-: s(0.), v(0., 0., 0.)
-{
-}
+quaternion::quaternion(real_t s_, real_t vi, real_t vj, real_t vk): s(s_), v(vi, vj, vk) {}
 
-quaternion :: quaternion(real_t s_, real_t vi, real_t vj, real_t vk)
-: s(s_), v(vi, vj, vk)
-{
-}
+quaternion::quaternion(real_t s_, const vertex & v_): s(s_), v(v_) {}
 
-quaternion :: quaternion(real_t s_, const vertex & v_)
-: s(s_), v(v_)
-{
-}
+quaternion::quaternion(const vertex & v_): s(0), v(v_) {}
 
-quaternion :: quaternion(real_t s_)
-: s(s_),v(0., 0., 0.)
-{
-}
-
-quaternion :: quaternion(const vertex & v_)
-: s(0.), v(v_)
-{
-}
-
-const quaternion & quaternion :: operator=(real_t _s)
+const quaternion & quaternion::operator = (real_t _s)
 {
 	s = _s;
-	v = vertex(0., 0., 0.);
+	v = vertex(0, 0, 0);
 
 	return *this;
 }
 
-const quaternion & quaternion :: operator=(const vertex & _v)
+const quaternion & quaternion::operator = (const vertex & _v)
 {
-	s = 0.;
+	s = 0;
 	v = _v;
 
 	return *this;
 }
 
 
-real_t & quaternion::operator[](int index)
+real_t & quaternion::operator [] (int index)
 {
-	return ( &s)[ index ];
+	return (&s)[index];
 }
 
-const real_t & quaternion::operator[](int index) const
+const real_t & quaternion::operator [] (int index) const
 {
-	return ( &s)[ index ];
+	return (&s)[index];
 }
 
 void quaternion::toMatrix(real_t Q[4][4]) const
@@ -70,92 +51,92 @@ void quaternion::toMatrix(real_t Q[4][4]) const
 	Q[3][0] = v.z; Q[3][1] = -v.y; Q[3][2] =	v.x; Q[3][3] =	 s;
 }
 
-real_t & quaternion::re(void)
+real_t & quaternion::re()
 {
 	return s;
 }
 
-const real_t & quaternion::re(void) const
+const real_t & quaternion::re() const
 {
 	return s;
 }
 
-vertex & quaternion::im(void)
+vertex & quaternion::im()
 {
 	return v;
 }
 
-const vertex & quaternion::im(void) const
+const vertex & quaternion::im() const
 {
 	return v;
 }
 
-quaternion quaternion::operator+(const quaternion & q) const
+quaternion quaternion::operator + (const quaternion & q) const
 {
 	return quaternion(s + q.s, v + q.v);
 }
 
-quaternion quaternion::operator-(const quaternion & q) const
+quaternion quaternion::operator - (const quaternion & q) const
 {
 	return quaternion(s - q.s, v - q.v);
 }
 
-quaternion quaternion::operator-(void) const
+quaternion quaternion::operator - () const
 {
 	return quaternion(-s, -v);
 }
 
-quaternion quaternion::operator*(real_t c) const
+quaternion quaternion::operator * (real_t c) const
 {
 	return quaternion(c * s, c * v);
 }
 
-quaternion operator*(real_t c, const quaternion & q)
+quaternion operator * (real_t c, const quaternion & q)
 {
 	return q * c;
 }
 
-quaternion quaternion::operator/(real_t c) const
+quaternion quaternion::operator / (real_t c) const
 {
 	return quaternion(s / c, v / c);
 }
 
-void quaternion::operator+=(const quaternion & q)
+void quaternion::operator += (const quaternion & q)
 {
 	s += q.s;
 	v += q.v;
 }
 
-void quaternion::operator+=(real_t c)
+void quaternion::operator += (real_t c)
 {
 	s += c;
 }
 
-void quaternion::operator-=(const quaternion & q)
+void quaternion::operator -= (const quaternion & q)
 {
 	s -= q.s;
 	v -= q.v;
 }
 
-void quaternion::operator-=(real_t c)
+void quaternion::operator -= (real_t c)
 {
 	s -= c;
 }
 
-void quaternion::operator*=(real_t c)
+void quaternion::operator *= (real_t c)
 {
 	s *= c;
 	v *= c;
 }
 
-void quaternion::operator/=(real_t c)
+void quaternion::operator /= (real_t c)
 {
 	s /= c;
 	v /= c;
 }
 
 // Hamilton product
-quaternion quaternion::operator*(const quaternion & q) const
+quaternion quaternion::operator * (const quaternion & q) const
 {
 	const real_t & s1(s);
 	const real_t & s2(q.s);
@@ -165,37 +146,37 @@ quaternion quaternion::operator*(const quaternion & q) const
 	return quaternion(s1*s2 - (v1,v2), s1*v2 + s2*v1 + (v1*v2));
 }
 
-void quaternion::operator*=(const quaternion & q)
+void quaternion::operator *= (const quaternion & q)
 {
 	*this = (*this * q);
 }
 
-quaternion quaternion::conj(void) const
+quaternion quaternion::conj() const
 {
 	return quaternion(s, -v);
 }
 
-quaternion quaternion::inv(void) const
+quaternion quaternion::inv() const
 {
 	return (this->conj()) / this->norm2();
 }
 
-real_t quaternion::norm(void) const
+real_t quaternion::norm() const
 {
 	return sqrt(norm2());
 }
 
-real_t quaternion::norm2(void) const
+real_t quaternion::norm2() const
 {
 	return s * s + (v , v);
 }
 
-quaternion quaternion::unit(void) const
+quaternion quaternion::unit() const
 {
 	return *this / norm();
 }
 
-void quaternion::normalize(void)
+void quaternion::normalize()
 {
 	*this /= norm();
 }
@@ -217,11 +198,15 @@ quaternion slerp(const quaternion & q0, const quaternion & q1, real_t t)
 	return m * p;
 }
 
-ostream & operator<<(ostream & os, const quaternion & q)
+ostream & operator << (ostream & os, const quaternion & q)
 {
-	return os << "(" << q.re() << ", " << q.im() << ")";
+	return os << q.s << " " << q.v;
 }
 
+istream & operator >> (istream & is, quaternion & q)
+{
+	return is >> q.s >> q.v;
+}
 
 } // namespace gproshan
 

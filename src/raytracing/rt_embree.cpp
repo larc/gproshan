@@ -12,6 +12,11 @@
 namespace gproshan::rt {
 
 
+void compute_normals(glm::vec3 * normals, const glm::vec3 * vertices, const size_t & n_vertices)
+{
+
+}
+
 void embree_error(void * ptr, RTCError error, const char * str)
 {
 	fprintf(stderr, "EMBREE ERROR: %s\n", str);
@@ -96,7 +101,7 @@ index_t embree::add_mesh(const che * mesh)
 
 index_t embree::add_point_cloud(const che * mesh)
 {
-	RTCGeometry geom = rtcNewGeometry(device, RTC_GEOMETRY_TYPE_DISC_POINT);
+	RTCGeometry geom = rtcNewGeometry(device, RTC_GEOMETRY_TYPE_ORIENTED_DISC_POINT);
 
 	glm::vec4 * pxyzr = (glm::vec4 *) rtcSetNewGeometryBuffer(	geom,
 																RTC_BUFFER_TYPE_VERTEX, 0,
@@ -104,21 +109,19 @@ index_t embree::add_point_cloud(const che * mesh)
 																4 * sizeof(float),
 																mesh->n_vertices()
 																);
-/*
+	
 	glm::vec3 * normal = (glm::vec3 *) rtcSetNewGeometryBuffer(	geom,
 																RTC_BUFFER_TYPE_NORMAL, 0,
 																RTC_FORMAT_FLOAT3,
 																3 * sizeof(float),
 																mesh->n_vertices()
 																);
-	*/
+	
 	#pragma omp parallel for
 	for(index_t i = 0; i < mesh->n_vertices(); i++)
 	{
 		pxyzr[i] = glm::vec4(mesh->gt(i).x, mesh->gt(i).y, mesh->gt(i).z, 0.001);
-		
-		vertex n = mesh->normal(i);
-	//	normal[i] = glm::vec3(n.x, n.y, n.z);
+		normal[i] = glm::vec3(mesh->normal(i).x, mesh->normal(i).y, mesh->normal(i).z);
 	}
 
 	rtcCommitGeometry(geom);

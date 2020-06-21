@@ -37,38 +37,6 @@ namespace gproshan {
 class viewer;
 
 
-struct vcorr_t
-{
-	index_t mesh_i;
-	corr_t * corr;
-
-	vcorr_t()
-	{
-		mesh_i = NIL;
-		corr = nullptr;
-	}
-
-	void init(const size_t & n, const index_t & _mesh_i, const corr_t * _corr)
-	{
-		if(corr) delete [] corr;
-		corr = new corr_t[n];
-
-		mesh_i = _mesh_i;
-		memcpy(corr, _corr, n * sizeof(corr_t));
-	}
-
-	operator corr_t *& ()
-	{
-		return corr;
-	}
-
-	bool is_loaded()
-	{
-		return mesh_i != NIL && corr != nullptr;
-	}
-};
-
-
 class viewer
 {
 	protected:
@@ -87,7 +55,7 @@ class viewer
 			process_t(const std::string & k, const std::string & n, function_t f, const index_t & sm = NIL): key(k), name(n), function(f), sub_menu(sm) {};
 		};
 
-		static const int m_window_size[N_MESHES][2];
+		static const int m_window_size[N_MESHES + 1][2];
 
 
 		GLFWwindow * window = nullptr;
@@ -111,9 +79,8 @@ class viewer
 		glm::mat4 proj_mat;
 
 		che_viewer meshes[N_MESHES];
-		vcorr_t corr_mesh[N_MESHES];
 		size_t n_meshes	= 0;
-		index_t current = 0; // current mesh
+		index_t idx_active_mesh = 0; // idx_active_mesh mesh
 
 		index_t render_opt = 0;
 		
@@ -157,9 +124,9 @@ class viewer
 		
 		bool run();
 		
-		che_viewer & mesh();
+		che_viewer & active_mesh();
 		void add_process(const int & key, const process_t & process);
-		void add_mesh(const std::vector<che *> & _meshes);
+		void add_mesh(che * p_mesh);
 		
 	private:
 
@@ -175,7 +142,6 @@ class viewer
 		void render_optix();
 
 		// callbacks
-		static void idle();
 		static void keyboard_callback(GLFWwindow * window, int key, int scancode, int action, int mods);
 		static void mouse_callback(GLFWwindow * window, int button, int action, int mods);
 		static void cursor_callback(GLFWwindow * window, double x, double y);
@@ -183,6 +149,7 @@ class viewer
 
 		// menu functions
 		static bool menu_help(viewer * view);
+		static bool menu_save_load_view(viewer * view);
 		static bool menu_reset_mesh(viewer * view);
 		static bool menu_save_mesh(viewer * view);
 		static bool menu_zoom_in(viewer * view);

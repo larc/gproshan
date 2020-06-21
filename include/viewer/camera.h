@@ -12,24 +12,30 @@ namespace gproshan {
 
 class camera
 {
+	private:
+		quaternion p_click;
+		quaternion p_drag;
+		quaternion p_last;
+		quaternion r_last;
+		int t_last;
+
 	public:
-		quaternion pClick;
-		quaternion pDrag;
-		quaternion pLast;
-		quaternion rLast;
-		quaternion momentum;
-		int tLast;
-		double zoom, vZoom;
+		double zoom;
 
 	public:
 		camera();
-		quaternion clickToSphere(int x, int y);
 		void mouse(int button, int state, int x, int y);
 		void motion(int x, int y);
 		void idle();
-		void zoomIn();
-		void zoomOut();
-		quaternion currentRotation() const;
+		void zoom_in();
+		void zoom_out();
+		quaternion current_rotation() const;
+	
+	private:
+		quaternion click_to_sphere(int x, int y);
+	
+	friend std::ostream & operator << (std::ostream & os, const camera & cam);
+	friend std::istream & operator >> (std::istream & is, camera & cam);
 };
 
 

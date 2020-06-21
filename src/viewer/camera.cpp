@@ -11,16 +11,9 @@ using namespace std;
 namespace gproshan {
 
 
-camera::camera()
-: pClick(1.),
-	pDrag(1.),
-	pLast(1.),
-	rLast(1.),
-	momentum(1.),
-	zoom(1.)
-{}
+camera::camera(): p_click(1), p_drag(1), p_last(1), r_last(1), zoom(1) {}
 
-quaternion camera::clickToSphere(int x, int y)
+quaternion camera::click_to_sphere(int x, int y)
 {
 	GLint viewport[4];
 	glGetIntegerv(GL_VIEWPORT, viewport);
@@ -30,7 +23,7 @@ quaternion camera::clickToSphere(int x, int y)
 	x %= w;
 	y %= h;
 
-	quaternion p(0.,
+	quaternion p(	0.,
 					2. * (double) x / (double) w - 1.,
 					2. * (double) y / (double) h - 1.,
 					0.);
@@ -48,25 +41,25 @@ quaternion camera::clickToSphere(int x, int y)
 	return p;
 }
 
-quaternion camera::currentRotation() const
+quaternion camera::current_rotation() const
 {
-	return (pDrag * pClick.conj()) * rLast;
+	return (p_drag * p_click.conj()) * r_last;
 }
 
 void camera::mouse(int , int state, int x, int y)
 {
+	quaternion momentum = 1;
+
 	if(state == GLFW_PRESS)
-	{
-		pClick = pDrag = pLast = clickToSphere(x, y);
-		momentum = 1.;
-	}
+		p_click = p_drag = p_last = click_to_sphere(x, y);
+	
 	if(state == GLFW_RELEASE)
 	{
-		double timeSinceDrag = (clock() - tLast) / (double) CLOCKS_PER_SEC;
+		double timeSinceDrag = (clock() - t_last) / (double) CLOCKS_PER_SEC;
 
 		if(timeSinceDrag < .1)
 		{
-			momentum = pDrag * pLast.conj();
+			momentum = p_drag * p_last.conj();
 			momentum = (.03 * momentum + .97).unit();
 		}
 		else
@@ -74,42 +67,46 @@ void camera::mouse(int , int state, int x, int y)
 			momentum = 1.;
 		}
 
-		rLast = pDrag * pClick.conj() * rLast;
-		pClick = pDrag = 1.;
+		r_last = p_drag * p_click.conj() * r_last;
+		p_click = p_drag = 1.;
 	}
 }
 
 void camera::motion(int x, int y)
 {
-	tLast = clock();
-	pLast = pDrag;
-	pDrag = clickToSphere(x, y);
+	t_last = clock();
+	p_last = p_drag;
+	p_drag = click_to_sphere(x, y);
 }
 
-void camera::idle()
-{
-	// get time since last idle event
-	static int t0 = clock();
-	int t1 = clock();
-	double dt = (t1-t0) / (double) CLOCKS_PER_SEC;
-
-	rLast = momentum * rLast;
-	momentum = ((1.-.5*dt) * momentum + .5*dt).unit();
-
-	zoom += vZoom*dt;
-	vZoom *= max(0., 1.-5.*dt);
-
-	t0 = t1;
-}
-
-void camera::zoomIn()
+void camera::zoom_in()
 {
 	zoom -= 0.01;
 }
 
-void camera::zoomOut()
+void camera::zoom_out()
 {
 	zoom += 0.01;
+}
+
+ostream & operator << (ostream & os, const camera & cam)
+{
+	return os << cam.p_click << "\n"
+			<< cam.p_drag << "\n"
+			<< cam.p_last << "\n"
+			<< cam.r_last << "\n"
+			<< cam.t_last << "\n"
+			<< cam.zoom << "\n";
+}
+
+istream & operator >> (istream & is, camera & cam)
+{
+	return is >> cam.p_click
+			>> cam.p_drag
+			>> cam.p_last
+			>> cam.r_last
+			>> cam.t_last
+			>> cam.zoom;
 }
 
 

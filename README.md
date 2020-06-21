@@ -1,14 +1,17 @@
-# gproshan
-### geometry processing and shape analysis framework
+## [gproshan](https://github.com/larc/gproshan): a geometry processing and shape analysis framework 
 
-![](gproshan.png) 
+![](https://raw.githubusercontent.com/larc/gproshan/master/gproshan.png) 
 
 
-## Description
-This framework includes some algorithms of Geometry Processing and Shape Analysis as part of our graduate research.
+This framework integrates some algorithms and contributions focus on the areas of computer graphics, geometry processing and computational geometry.
 
 
 ## Build and Run
+
+| Build Type | Status |
+| --- | --- |
+| `Linux Ubuntu 18.04` | [![Build Status](https://travis-ci.com/larc/gproshan.svg?branch=raytracing)](https://travis-ci.com/larc/gproshan) |
+
 Install all dependencies and run:
 
 	mkdir build
@@ -21,16 +24,12 @@ finally execute:
 	./gproshan [mesh_paths.(off,obj,ply)]
 
 ### Dependencies (Linux)
-g++ >= 8.3, cuda >= 10.1, libarmadillo, libeigen, libsuitesparse, libopenblas, opengl, glew, gnuplot, libcgal, libgles2-mesa, cimg
+g++ >= 8.4, cuda >= 11.0, cmake >= 3.12, armadillo, eigen, cgal, suitesparse, openblas, glew, glfw3, glm, cimg, gnuplot
 
 In Ubuntu (>= 18.04) you can install them with:
 
-	sudo apt install libarmadillo-dev libeigen3-dev libopenblas-dev libsuitesparse-dev libglew-dev freeglut3-dev libgles2-mesa-dev cimg-dev libcgal-dev
+	sudo apt install cmake libarmadillo-dev libeigen3-dev libcgal-dev libsuitesparse-dev libopenblas-dev libglew-dev libglfw3-dev libglm-dev cimg-dev gnuplot
 
-#### Build Status
-
-##### Ubuntu 18.04 (Bionic)
-[![Build Status](https://travis-ci.com/larc/gproshan.svg?branch=master)](https://travis-ci.com/larc/gproshan)
 
 ## Contributions
 
@@ -46,14 +45,14 @@ approach is competitive with the current methods and is simple to implement. Ple
 
 ```bibtex
 @Article{ROMEROCALLA2019,
-  author   = {{Romero Calla}, Luciano A. and {Fuentes Perez}, Lizeth J. and Montenegro, Anselmo A.},
-  title    = {A minimalistic approach for fast computation of geodesic distances on triangular meshes},
-  journal  = {Computers \& Graphics},
-  year     = {2019},
-  issn     = {0097-8493},
-  doi      = {https://doi.org/10.1016/j.cag.2019.08.014},
-  keywords = {Geodesic distance, Fast marching, Triangular meshes, Parallel programming, Breadth-first search},
-  url      = {http://www.sciencedirect.com/science/article/pii/S0097849319301426}
+  author   = { {Romero Calla}, Luciano A. and {Fuentes Perez}, Lizeth J. and Montenegro, Anselmo A. },
+  title    = { A minimalistic approach for fast computation of geodesic distances on triangular meshes },
+  journal  = { Computers \& Graphics },
+  year     = { 2019 },
+  issn     = { 0097-8493 },
+  doi      = { https://doi.org/10.1016/j.cag.2019.08.014 },
+  keywords = { Geodesic distance, Fast marching, Triangular meshes, Parallel programming, Breadth-first search },
+  url      = { http://www.sciencedirect.com/science/article/pii/S0097849319301426 }
 }
 ```
 
@@ -142,7 +141,7 @@ The viewer was initially based in the viewer of [https://github.com/dgpdec/cours
 
 MIT License
 
-## Authors
-- [Lizeth Joseline Fuentes Pérez](https://github.com/lishh)
+## Authors/Contributors
 - [Luciano Arnaldo Romero Calla](https://github.com/larc)
+- [Lizeth Joseline Fuentes Pérez](https://github.com/lishh)
 
