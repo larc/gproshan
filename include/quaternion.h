@@ -17,16 +17,14 @@ class quaternion
 		vertex v;
 
 	public:
-		quaternion();
-		quaternion(real_t s, real_t vi, real_t vj, real_t vk);
+		quaternion(real_t s = 0, real_t vi = 0, real_t vj = 0, real_t vk = 0);
 		quaternion(real_t s, const vertex & v);
-		quaternion(real_t s);
 		quaternion(const vertex & v);
 
-		const quaternion & operator=(real_t s);
-		const quaternion & operator=(const vertex & v);
-		real_t & operator[](int index);
-		const real_t & operator[](int index) const;
+		const quaternion & operator = (real_t s);
+		const quaternion & operator = (const vertex & v);
+		real_t & operator [] (int index);
+		const real_t & operator [] (int index) const;
 		void toMatrix(real_t Q[4][4]) const;
 		real_t & re(void);
 		const real_t & re(void) const;
@@ -53,10 +51,12 @@ class quaternion
 		real_t norm2() const;
 		quaternion unit() const;
 		void normalize();
+	
+	friend std::ostream & operator << (std::ostream & os, const quaternion & q);
+	friend std::istream & operator >> (std::istream & is, quaternion & q);
 };
 
 quaternion operator * (real_t c, const quaternion & q);
-std::ostream & operator << (std::ostream & os, const quaternion & q);
 
 
 } // namespace gproshan
