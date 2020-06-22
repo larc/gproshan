@@ -157,7 +157,7 @@ bool viewer::run()
 			process_t & pro = p.second;
 			if(pro.selected)
 			{
-				ImGui::SetNextWindowSize(ImVec2(300, -1));
+				ImGui::SetNextWindowSize(ImVec2(320, -1));
 				ImGui::SetNextWindowPos(ImVec2(0, 20), ImGuiCond_Once);
 				ImGui::Begin(("[" + pro.key + "] " + pro.name).c_str(), &pro.selected);
 				
@@ -403,9 +403,14 @@ bool viewer::menu_help(viewer * view)
 
 bool viewer::menu_save_load_view(viewer * view)
 {
-	static char file[128] = "view";
+	filesystem::create_directory(tmp_file_path("views/"));
+
+
+	static char file[128] = "new_view";
 	
-	ImGui::InputText("file", file, sizeof(file));
+	ImGui::InputText("##savefile", file, sizeof(file));
+	
+	ImGui::SameLine();
 	
 	if(ImGui::Button("Save"))
 	{
@@ -414,14 +419,39 @@ bool viewer::menu_save_load_view(viewer * view)
 		os.close();
 	}
 	
-	ImGui::SameLine();
 
+	static index_t select = 0;
+	static vector<string> vfiles;
+	
+	vfiles.clear();
+	for(auto & p: filesystem::directory_iterator(tmp_file_path("views/")))
+		vfiles.push_back(p.path().string());
+	
+	if(!vfiles.size()) return true;
+
+	if(ImGui::BeginCombo("##loadfile", vfiles[select].c_str()))
+	{
+		for(index_t i = 0; i < vfiles.size(); i++)
+		{
+			if(ImGui::Selectable(vfiles[i].c_str(), select == i))
+				select = i;
+
+			if(select == i)
+				ImGui::SetItemDefaultFocus();
+		}
+
+		ImGui::EndCombo();
+	}
+	
+	ImGui::SameLine();
+	
 	if(ImGui::Button("Load"))
 	{
-		ifstream is(tmp_file_path("views/" + file));
+		ifstream is(vfiles[select]);
 		is >> view->cam;
 		is.close();
 	}
+
 
 	return true;
 }
