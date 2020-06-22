@@ -10,7 +10,7 @@ This framework integrates some algorithms and contributions focus on the areas o
 
 | Build Type | Status |
 | --- | --- |
-| `Linux Ubuntu 18.04` | [![Build Status](https://travis-ci.com/larc/gproshan.svg?branch=raytracing)](https://travis-ci.com/larc/gproshan) |
+| `Linux Ubuntu 18.04` | [![Build Status](https://travis-ci.com/larc/gproshan.svg?branch=mdict)](https://travis-ci.com/larc/gproshan) |
 
 Install all dependencies and run:
 
