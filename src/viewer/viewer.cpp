@@ -397,9 +397,11 @@ bool viewer::menu_save_load_view(viewer * view)
 	static char file[128] = "view";
 	
 	ImGui::InputText("file", file, sizeof(file));
-	
+
 	if(ImGui::Button("Save"))
 	{
+		filesystem::create_directory(tmp_file_path("views/"));
+
 		ofstream os(tmp_file_path("views/" + file));
 		os << view->cam;
 		os.close();
