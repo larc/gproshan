@@ -258,6 +258,7 @@ void viewer::init_menus()
 	add_process(GLFW_KEY_0, {"0", "Background color black", menu_bgc_black});
 
 	sub_menus.push_back("Render");
+	add_process(GLFW_KEY_F5, {"F5", "Render Point Cloud", set_render_pointcloud});
 	add_process(GLFW_KEY_F6, {"F6", "Render Wireframe", set_render_wireframe});
 	add_process(GLFW_KEY_F7, {"F7", "Render Wireframe Fill", set_render_wireframe_fill});
 	add_process(GLFW_KEY_F8, {"F8", "Render GL", set_render_gl});
@@ -272,7 +273,7 @@ void viewer::init_menus()
 	add_process(GLFW_KEY_F2, {"F2", "Invert Orientation", invert_orientation});
 	add_process(GLFW_KEY_F3, {"F3", "Gradient Field", set_render_gradient_field});
 	add_process(GLFW_KEY_F4, {"F4", "Normal Field", set_render_normal_field});
-	add_process(GLFW_KEY_F5, {"F5", "Select Border Vertices", set_render_border});
+	add_process(GLFW_KEY_APOSTROPHE, {"APOSTROPHE", "Select Border Vertices", set_render_border});
 	add_process(GLFW_KEY_W, {"W", "Save Mesh", menu_save_mesh});
 }
 
@@ -471,17 +472,21 @@ bool viewer::menu_reset_mesh(viewer * view)
 
 bool viewer::menu_save_mesh(viewer * view)
 {
+	const che * mesh = view->active_mesh();
+
 	static char file[128] = "copy";
 	static int format = 0;
+	static bool pc = false;
 		
 	ImGui::InputText("file", file, sizeof(file));
 	ImGui::Combo("format", &format, ".off\0.obj\0.ply\0\0");
+	ImGui::Checkbox("point cloud", &pc);
 
 	if(ImGui::Button("Save"))
 	{
-		if(format == 0) che_off::write_file(view->active_mesh(), file);
-		if(format == 1) che_obj::write_file(view->active_mesh(), file);
-		if(format == 2) che_ply::write_file(view->active_mesh(), file);
+		if(format == 0) che_off::write_file(mesh, file, che_off::NOFF, pc);
+		if(format == 1) che_obj::write_file(mesh, file);
+		if(format == 2) che_ply::write_file(mesh, file);
 	}
 
 	return true;
@@ -561,6 +566,13 @@ bool viewer::set_render_embree(viewer * view)
 bool viewer::set_render_optix(viewer * view)
 {
 	view->render_opt = 2;
+	
+	return false;
+}
+
+bool viewer::set_render_pointcloud(viewer * view)
+{
+	view->render_pointcloud = !view->render_pointcloud;
 	
 	return false;
 }
@@ -670,17 +682,17 @@ void viewer::render_gl()
 
 	if(render_normal_field)
 	{
-		glProgramUniform1f(shader_normals, shader_normals("length"), active_mesh().factor);
+		glProgramUniform1f(shader_normals, shader_normals("length"), cam.zoom * 0.02);
 		glProgramUniformMatrix4fv(shader_normals, shader_normals("model_view_mat"), 1, 0, &view_mat[0][0]);
 		glProgramUniformMatrix4fv(shader_normals, shader_normals("proj_mat"), 1, 0, &proj_mat[0][0]);
 		
-		draw_meshes(shader_normals);
+		draw_meshes(shader_normals, true);
 	}
 	
 	
 	if(render_gradient_field)
 	{
-		glProgramUniform1f(shader_gradient, shader_gradient("length"), active_mesh().factor);
+		glProgramUniform1f(shader_gradient, shader_gradient("length"), cam.zoom * 0.02);
 		glProgramUniformMatrix4fv(shader_gradient, shader_gradient("model_view_mat"), 1, 0, &view_mat[0][0]);	
 		glProgramUniformMatrix4fv(shader_gradient, shader_gradient("proj_mat"), 1, 0, &proj_mat[0][0]);
 		
@@ -746,7 +758,7 @@ void viewer::render_optix()
 #endif // GPROSHAN_OPTIX
 }
 
-void viewer::draw_meshes(shader & program)
+void viewer::draw_meshes(shader & program, const bool & normals)
 {
 	if(render_wireframe)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -758,7 +770,9 @@ void viewer::draw_meshes(shader & program)
 	{
 		glViewport(meshes[i].vx * viewport_width, meshes[i].vy * viewport_height, viewport_width, viewport_height);
 
-		if(!meshes[i]->n_faces())
+		if(normals)
+			meshes[i].draw_point_cloud(program);
+		else if(meshes[i]->is_pointcloud() || render_pointcloud)
 			meshes[i].draw_point_cloud(shader_pointcloud);
 		else
 			meshes[i].draw(program);
