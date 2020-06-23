@@ -96,6 +96,7 @@ class viewer
 
 		bool action = false;
 
+		bool render_pointcloud = false;
 		bool render_wireframe = false;
 		bool render_wireframe_fill = false;
 		bool render_gradient_field = false;
@@ -164,6 +165,7 @@ class viewer
 		static bool set_render_gl(viewer * view);
 		static bool set_render_embree(viewer * view);
 		static bool set_render_optix(viewer * view);
+		static bool set_render_pointcloud(viewer * view);
 		static bool set_render_wireframe(viewer * view);
 		static bool set_render_wireframe_fill(viewer * view);
 		static bool set_render_gradient_field(viewer * view);

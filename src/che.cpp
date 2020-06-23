@@ -454,6 +454,11 @@ void che::normalize()
 		GT[v] /= max_norm;
 }
 
+bool che::is_pointcloud() const
+{
+	return n_faces_ == 0;
+}
+
 bool che::is_manifold() const
 {
 	return manifold;

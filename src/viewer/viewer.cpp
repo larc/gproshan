@@ -249,6 +249,7 @@ void viewer::init_menus()
 	add_process(GLFW_KEY_0, {"0", "Background color black", menu_bgc_black});
 
 	sub_menus.push_back("Render");
+	add_process(GLFW_KEY_F5, {"F5", "Render Point Cloud", set_render_pointcloud});
 	add_process(GLFW_KEY_F6, {"F6", "Render Wireframe", set_render_wireframe});
 	add_process(GLFW_KEY_F7, {"F7", "Render Wireframe Fill", set_render_wireframe_fill});
 	add_process(GLFW_KEY_F8, {"F8", "Render GL", set_render_gl});
@@ -263,7 +264,7 @@ void viewer::init_menus()
 	add_process(GLFW_KEY_F2, {"F2", "Invert Orientation", invert_orientation});
 	add_process(GLFW_KEY_F3, {"F3", "Gradient Field", set_render_gradient_field});
 	add_process(GLFW_KEY_F4, {"F4", "Normal Field", set_render_normal_field});
-	add_process(GLFW_KEY_F5, {"F5", "Select Border Vertices", set_render_border});
+	add_process(GLFW_KEY_APOSTROPHE, {"APOSTROPHE", "Select Border Vertices", set_render_border});
 	add_process(GLFW_KEY_W, {"W", "Save Mesh", menu_save_mesh});
 }
 
@@ -560,6 +561,13 @@ bool viewer::set_render_optix(viewer * view)
 	return false;
 }
 
+bool viewer::set_render_pointcloud(viewer * view)
+{
+	view->render_pointcloud = !view->render_pointcloud;
+	
+	return false;
+}
+
 bool viewer::set_render_wireframe(viewer * view)
 {
 	view->render_wireframe = !view->render_wireframe;
@@ -753,7 +761,7 @@ void viewer::draw_meshes(shader & program)
 	{
 		glViewport(meshes[i].vx * viewport_width, meshes[i].vy * viewport_height, viewport_width, viewport_height);
 
-		if(!meshes[i]->n_faces())
+		if(meshes[i]->is_pointcloud() || render_pointcloud)
 			meshes[i].draw_point_cloud(shader_pointcloud);
 		else
 			meshes[i].draw(program);
