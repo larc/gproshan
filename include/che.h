@@ -89,7 +89,6 @@ class che
 		void normalize();
 		bool is_pointcloud() const;
 		bool is_manifold() const;
-		bool is_pointcloud() const;
 		const index_t & vt(const index_t & he) const;
 		const vertex & gt(const index_t & v) const;
 		const vertex & gt_vt(const index_t & he) const;

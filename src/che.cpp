@@ -464,11 +464,6 @@ bool che::is_manifold() const
 	return manifold;
 }
 
-bool che::is_pointcloud() const
-{
-	return n_faces_ == 0;
-}
-
 const index_t & che::vt(const index_t & he) const
 {
 	assert(he < n_half_edges_);
