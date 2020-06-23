@@ -673,7 +673,7 @@ void viewer::render_gl()
 
 	if(render_normal_field)
 	{
-		glProgramUniform1f(shader_normals, shader_normals("length"), active_mesh().factor);
+		glProgramUniform1f(shader_normals, shader_normals("length"), cam.zoom * 0.02);
 		glProgramUniformMatrix4fv(shader_normals, shader_normals("model_view_mat"), 1, 0, &view_mat[0][0]);
 		glProgramUniformMatrix4fv(shader_normals, shader_normals("proj_mat"), 1, 0, &proj_mat[0][0]);
 		
@@ -683,7 +683,7 @@ void viewer::render_gl()
 	
 	if(render_gradient_field)
 	{
-		glProgramUniform1f(shader_gradient, shader_gradient("length"), active_mesh().factor);
+		glProgramUniform1f(shader_gradient, shader_gradient("length"), cam.zoom * 0.02);
 		glProgramUniformMatrix4fv(shader_gradient, shader_gradient("model_view_mat"), 1, 0, &view_mat[0][0]);	
 		glProgramUniformMatrix4fv(shader_gradient, shader_gradient("proj_mat"), 1, 0, &proj_mat[0][0]);
 		
