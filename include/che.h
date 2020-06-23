@@ -88,6 +88,7 @@ class che
 		real_t mean_curvature(const index_t & v);
 
 		void normalize();
+		bool is_pointcloud() const;
 		bool is_manifold() const;
 		const index_t & vt(const index_t & he) const;
 		const vertex & gt(const index_t & v) const;
