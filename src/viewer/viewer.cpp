@@ -677,7 +677,7 @@ void viewer::render_gl()
 		glProgramUniformMatrix4fv(shader_normals, shader_normals("model_view_mat"), 1, 0, &view_mat[0][0]);
 		glProgramUniformMatrix4fv(shader_normals, shader_normals("proj_mat"), 1, 0, &proj_mat[0][0]);
 		
-		draw_meshes(shader_normals);
+		draw_meshes(shader_normals, true);
 	}
 	
 	
@@ -749,7 +749,7 @@ void viewer::render_optix()
 #endif // GPROSHAN_OPTIX
 }
 
-void viewer::draw_meshes(shader & program)
+void viewer::draw_meshes(shader & program, const bool & normals)
 {
 	if(render_wireframe)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -761,7 +761,9 @@ void viewer::draw_meshes(shader & program)
 	{
 		glViewport(meshes[i].vx * viewport_width, meshes[i].vy * viewport_height, viewport_width, viewport_height);
 
-		if(meshes[i]->is_pointcloud() || render_pointcloud)
+		if(normals)
+			meshes[i].draw_point_cloud(program);
+		else if(meshes[i]->is_pointcloud() || render_pointcloud)
 			meshes[i].draw_point_cloud(shader_pointcloud);
 		else
 			meshes[i].draw(program);

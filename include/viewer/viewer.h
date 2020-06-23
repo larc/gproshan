@@ -177,7 +177,7 @@ class viewer
 		static bool raycasting(viewer * view);
 
 		// draw routines
-		void draw_meshes(shader & program);
+		void draw_meshes(shader & program, const bool & normals = false);
 		void draw_selected_vertices(shader & program);
 		
 		void select_border_vertices();

@@ -279,7 +279,7 @@ real_t & che::color(const index_t & v)
 void che::update_normals()
 {
 	if(VN) return;		// normals was already loaded/computed
-
+	
 	VN = new vertex[n_vertices_];
 	
 	/* point cloud normals

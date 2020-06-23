@@ -82,7 +82,7 @@ void che_viewer::update_vbo()
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	// 3 INDEXES
-	if(mesh->n_faces())
+	if(!mesh->is_pointcloud())
 	{
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[3]);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh->n_half_edges() * sizeof(index_t), &mesh->vt(0), GL_STATIC_DRAW);
