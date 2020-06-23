@@ -462,17 +462,21 @@ bool viewer::menu_reset_mesh(viewer * view)
 
 bool viewer::menu_save_mesh(viewer * view)
 {
+	const che * mesh = view->active_mesh();
+
 	static char file[128] = "copy";
 	static int format = 0;
+	static bool pc = false;
 		
 	ImGui::InputText("file", file, sizeof(file));
 	ImGui::Combo("format", &format, ".off\0.obj\0.ply\0\0");
+	ImGui::Checkbox("point cloud", &pc);
 
 	if(ImGui::Button("Save"))
 	{
-		if(format == 0) che_off::write_file(view->active_mesh(), file);
-		if(format == 1) che_obj::write_file(view->active_mesh(), file);
-		if(format == 2) che_ply::write_file(view->active_mesh(), file);
+		if(format == 0) che_off::write_file(mesh, file, che_off::NOFF, pc);
+		if(format == 1) che_obj::write_file(mesh, file);
+		if(format == 2) che_ply::write_file(mesh, file);
 	}
 
 	return true;

@@ -278,15 +278,18 @@ real_t & che::color(const index_t & v)
 
 void che::update_normals()
 {
-	if(!VN) VN = new vertex[n_vertices_];
+	if(VN) return;		// normals was already loaded/computed
+
+	VN = new vertex[n_vertices_];
 	
-	// point cloud normals
+	/* point cloud normals
 	if(!n_faces_)
 	{
 		kdtree rnn(GT, n_vertices_);
 
 		return;
 	}
+	*/
 
 	#pragma omp parallel for
 	for(index_t v = 0; v < n_vertices_; v++)
