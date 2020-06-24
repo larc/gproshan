@@ -68,7 +68,7 @@ class che
 		real_t real_trig(const index_t & t) const;
 		real_t area_vertex(const index_t & v);
 		real_t area_surface() const;
-		void update_colors(const real_t * vcolor = nullptr);
+		void update_colors(const real_t * vcolor = nullptr, real_t max_color = 0);
 		const real_t & color(const index_t & v) const;
 		real_t & color(const index_t & v);
 		void update_normals();
