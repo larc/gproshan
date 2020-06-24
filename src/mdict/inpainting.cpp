@@ -1,11 +1,12 @@
 #include "inpainting.h"
+
+#include "che_off.h"
+
 #include <cassert>
 #include <fstream>
 #include <algorithm>
 #include <numeric>
 #include <queue>
-#include "che_off.h"
-#define PI 3.14159265
 
 
 // geometry processing and shape analysis framework

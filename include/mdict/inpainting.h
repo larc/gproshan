@@ -2,13 +2,13 @@
 #define INPAINTING_H
 
 #include "dictionary.h"
-#include "../che_poisson.h"
-#include "../che_fill_hole.h"
+#include "che_poisson.h"
+#include "che_fill_hole.h"
 #include "sampling.h"
 #include "geodesics.h"
 #include "geodesics_ptp.h"
+
 #include <random>
-#define PI 3.14159265
 
 // geometry processing and shape analysis framework
 // mesh dictionary learning and sparse coding namespace
@@ -19,7 +19,7 @@ class inpainting : public dictionary
 {
 	public:
 		inpainting(che *const & _mesh, basis *const & _phi_basis, const size_t & _m, const size_t & _M,
-		 const real_t & _f, const bool & _learn, size_t _avg_p = 36, size_t _perc = 0, double _delta=PI/6, double _sum_thres = 0.001 , double _area_thres = 0.001, const bool & _plot = false);
+		 const real_t & _f, const bool & _learn, size_t _avg_p = 36, size_t _perc = 0, double _delta = M_PI/6, double _sum_thres = 0.001 , double _area_thres = 0.001, const bool & _plot = false);
 		virtual ~inpainting() = default;
 
 		real_t execute();

@@ -1,7 +1,6 @@
 #include "app_viewer.h"
 
 #include <random>
-#define PI 3.14159265
 
 using namespace std;
 using namespace gproshan::mdict;
@@ -608,7 +607,7 @@ bool app_viewer::process_inpaiting(viewer * p_view)
 	static bool learn = 0;
 	static int avg_p = 36; 
 	static int percentage = 0;
-	static float delta = PI/6;
+	static float delta = M_PI/6;
 	static float sum_thres = 1.01;
 	static float area_thres = 0.005;
 
@@ -645,7 +644,7 @@ bool app_viewer::process_mask(viewer * p_view)
 	static bool learn = 0;
 	static int avg_p = 36; 
 	static int percentage = 0;
-	static float delta = PI/6;
+	static float delta = M_PI/6;
 	static float sum_thres = 1.01;
 	static float area_thres = 0.005;
 
@@ -690,7 +689,7 @@ bool app_viewer::process_pc_reconstruction(viewer * p_view)
 	static bool learn = 0;
 	static int avg_p = 36; 
 	static int percentage = 0;
-	static float delta = PI/6;
+	static float delta = M_PI/6;
 	static float sum_thres = 1.01;
 	static float area_thres = 0.005;
 	static float percentage_size = 100;

@@ -4,6 +4,9 @@
 #include "che_sphere.h"
 #include "che_off.h"
 
+#include <queue>
+#include <random>
+
 #ifndef CGAL_PATCH_DEFS
 	#define CGAL_PATCH_DEFS
 	#define CGAL_EIGEN3_ENABLED
@@ -14,9 +17,6 @@
 
 #include <CGAL/Simple_cartesian.h>
 #include <CGAL/Monge_via_jet_fitting.h>
-#define PI 3.14159265
-#include <queue>
-#include <random>
 
 // geometry processing and shape analysis framework
 // mesh dictionary learning and sparse coding namespace
@@ -84,7 +84,7 @@ bool patch::add_vertex_by_faces(const vertex & c, vertex & n, vector<vertex> & N
 	index_t a, b, i = 0;
 	vertex min_he;
 	double area_face = 0, proj_area_face = 0;
-	double angle = PI;
+	double angle = M_PI;
 	double tmp_angle;
 	bool added = false;
 	vertex pav, pbv, va, vb,vv;
@@ -171,7 +171,7 @@ void patch::init_random(vertex c, arma::mat T, real_t radio, real_t max_radio, r
 
 	for(size_t i = 1; i < n_points; i++)
 	{
-		double a = abs(dis(gen)) * 2 * PI;
+		double a = abs(dis(gen)) * 2 * M_PI;
 		double r = fr * abs(dis(gen));
 		
 		xyz(0, i) = r * cos(a);
@@ -261,7 +261,7 @@ void patch::init_radial_disjoint(vector<index_t> & idxs_he, che * mesh, const re
 		
 		c = mesh->get_vertex(v); // central vertices
 		ratio = (i==1)? 0:(area/proj_area);
-		if( add_vertex_by_faces(c, n, N, indexes, geo.n_sorted_index(), delta, geo, mesh, indexes[i], area, proj_area, PI/2.5 ) && (ratio < sum_thres || (area/area_mesh) < area_thres ) )
+		if( add_vertex_by_faces(c, n, N, indexes, geo.n_sorted_index(), delta, geo, mesh, indexes[i], area, proj_area, M_PI/2.5 ) && (ratio < sum_thres || (area/area_mesh) < area_thres ) )
 		{	
 			//compute euclidean radio
 			p = mesh->get_vertex(indexes[i]);
@@ -382,7 +382,7 @@ void patch::add_extra_xyz_disjoint(che * mesh, vector<vpatches_t> & vpatches, co
 		
 		// add new vertices
 		// create a random point
-		real_t a = abs(dis(gen)) * 2 * PI;
+		real_t a = abs(dis(gen)) * 2 * M_PI;
 		real_t r = abs(dis(gen));
 		a_vec np = { r * cos(a), r * sin(a), 0 };
 
