@@ -78,25 +78,45 @@ void che_off::read_file(const string & file)
 	is.close();
 }
 
-void che_off::write_file(const che * mesh, const string & file)
+void che_off::write_file(const che * mesh, const string & file, const che_off::type & off, const bool & pointcloud)
 {
 	ofstream os(file + ".off");
 
-	os << "OFF" << endl;
-	os << mesh->n_vertices() << " " << mesh->n_faces() << " 0" << endl;
-
+	os << off << endl;
+	os << mesh->n_vertices() << " " << (pointcloud ? 0 : mesh->n_faces()) << " 0" << endl;
+	
 	for(size_t v = 0; v < mesh->n_vertices(); v++)
-		os << mesh->gt(v) << endl;
-
-	for(index_t he = 0; he < mesh->n_half_edges(); )
 	{
-		os << che::P;
-		for(index_t i = 0; i < che::P; i++)
-			os << " " << mesh->vt(he++);
+		os << mesh->gt(v);
+
+		if(off == NOFF) os << " " << mesh->normal(v);	// NOFF file
+
 		os << endl;
 	}
+	
+	if(!pointcloud)
+		for(index_t he = 0; he < mesh->n_half_edges(); )
+		{
+			os << che::P;
+			for(index_t i = 0; i < che::P; i++)
+				os << " " << mesh->vt(he++);
+			os << endl;
+		}
 
 	os.close();
+}
+
+ostream & operator << (ostream & os, const che_off::type & off)
+{
+	switch(off)
+	{
+		case che_off::OFF	: os << "OFF";		break;
+		case che_off::NOFF	: os << "NOFF";		break;
+		case che_off::COFF	: os << "COFF";		break;
+		case che_off::CNOFF	: os << "CNOFF";	break;
+	}
+
+	return os;
 }
 
 

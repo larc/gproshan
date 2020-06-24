@@ -87,6 +87,7 @@ class che
 		size_t genus() const;
 
 		void normalize();
+		bool is_pointcloud() const;
 		bool is_manifold() const;
 		const index_t & vt(const index_t & he) const;
 		const vertex & gt(const index_t & v) const;
