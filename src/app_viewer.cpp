@@ -611,7 +611,6 @@ bool app_viewer::process_inpaiting(viewer * p_view)
 	static float sum_thres = 1.01;
 	static float area_thres = 0.005;
 
-
 	ImGui::InputInt("basis", &n);
 	ImGui::InputInt("atoms", &m);
 	ImGui::InputFloat("delta", &delta, 0.001, 0.1, 3);	
@@ -621,14 +620,14 @@ bool app_viewer::process_inpaiting(viewer * p_view)
 
 	if(ImGui::Button("Run"))
 	{
-		basis * phi = new basis_dct(n);
-		inpainting dict(mesh, phi, m, M, f, learn, avg_p, percentage, delta, sum_thres, area_thres);
+		basis_dct phi(n);
+		inpainting dict(mesh, &phi, m, M, f, learn, avg_p, percentage, delta, sum_thres, area_thres);
 		dict.execute();
-		delete phi;
-		mesh->update_colors(&dict[0]);
 		
+		mesh->update_colors(&dict[0], 0.003);
 		mesh->update_normals();
 	}
+
 	return true;
 }
 
