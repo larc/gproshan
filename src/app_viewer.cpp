@@ -600,28 +600,22 @@ bool app_viewer::process_inpaiting(viewer * p_view)
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
-	static int n = 12; // dct
-	static int m = 144;
-	static int M = 0;
-	static float f = 1;
-	static bool learn = 0;
-	static int avg_p = 36; 
-	static int percentage = 0;
-	static float delta = M_PI/6;
-	static float sum_thres = 1.01;
-	static float area_thres = 0.005;
-
-	ImGui::InputInt("basis", &n);
-	ImGui::InputInt("atoms", &m);
-	ImGui::InputFloat("delta", &delta, 0.001, 0.1, 3);	
-	ImGui::InputFloat("proj_thres", &sum_thres, 1.001, 0.1, 6);
-	ImGui::InputFloat("area_thres", &area_thres, 0.001, 0.1, 6);
-	ImGui::Checkbox("learn", &learn);
+	static dictionary::params params;
+	static size_t n = 12;
+	
+	assert(sizeof(ImGuiDataType_U64) != sizeof(size_t));
+	
+	ImGui::InputScalar("basis", ImGuiDataType_U64, &n);
+	ImGui::InputScalar("atoms", ImGuiDataType_U64, &params.m);
+	ImGui::InputDouble("delta", &params.delta, 0.001, 0.1, "%.3lf");	
+	ImGui::InputDouble("proj_thres", &params.sum_thres, 1.001, 0.1, "%.6lf");
+	ImGui::InputDouble("area_thres", &params.area_thres, 0.001, 0.1, "%6lf");
+	ImGui::Checkbox("learn", &params.learn);
 
 	if(ImGui::Button("Run"))
 	{
 		basis_dct phi(n);
-		inpainting dict(mesh, &phi, m, M, f, learn, avg_p, percentage, delta, sum_thres, area_thres);
+		inpainting dict(mesh, &phi, params);
 		dict.execute();
 		
 		mesh->update_colors(&dict[0], 0.003);
@@ -636,43 +630,41 @@ bool app_viewer::process_mask(viewer * p_view)
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
-	static int n = 12; // dct
-	static int m = 144;
-	static int M = 0;
-	static float f = 1;
-	static bool learn = 0;
-	static int avg_p = 36; 
-	static int percentage = 0;
-	static float delta = M_PI/6;
-	static float sum_thres = 1.01;
-	static float area_thres = 0.005;
+	static dictionary::params params;
+	static size_t n = 12;
 
-	ImGui::InputInt("basis", &n);
-	ImGui::InputInt("atoms", &m);
-	ImGui::InputFloat("delta", &delta, 0.001, 0.1, 3);	
-	ImGui::InputFloat("proj_thres", &sum_thres, 1.001, 0.1, 6);
-	ImGui::InputFloat("area_thres", &area_thres, 0.001, 0.1, 6);
-	ImGui::Checkbox("learn", &learn);
+	assert(sizeof(ImGuiDataType_U64) != sizeof(size_t));
+	
+	ImGui::InputScalar("basis", ImGuiDataType_U64, &n);
+	ImGui::InputScalar("atoms", ImGuiDataType_U64, &params.m);
+	ImGui::InputDouble("delta", &params.delta, 0.001, 0.1, "%.3lf");	
+	ImGui::InputDouble("proj_thres", &params.sum_thres, 1.001, 0.1, "%.6lf");
+	ImGui::InputDouble("area_thres", &params.area_thres, 0.001, 0.1, "%6lf");
+	ImGui::Checkbox("learn", &params.learn);
 
 	if(ImGui::Button("Run"))
 	{
-		basis * phi = new basis_dct(n);
-		inpainting dict(mesh, phi, m, M, f, learn, avg_p, percentage, delta, sum_thres, area_thres);
+		basis_dct phi(n);
+		inpainting dict(mesh, &phi, params);
 		
 		dict.init_radial_feature_patches();
 		//dict.init_voronoi_patches();
-		delete phi;
 		mesh->update_colors(&dict[0]);
-		string f_points = tmp_file_path(mesh->name_size() + "_" + to_string(sum_thres) +"_" + to_string(area_thres) + ".points");
+		string f_points = tmp_file_path(mesh->name_size() + "_" +
+										to_string(params.sum_thres) + "_" +
+										to_string(params.area_thres) + ".points");
+
 		a_vec points_out;
 		gproshan_debug_var(f_points);
 		points_out.load(f_points);
 		gproshan_debug_var(points_out.size());
-		for(int i = 0; i< points_out.size(); i++)
+		
+		for(index_t i = 0; i < points_out.size(); i++)
 			mesh.selected.push_back(points_out(i));
 		
 		mesh->update_normals();
 	}
+
 	return true;
 }
 
@@ -681,34 +673,29 @@ bool app_viewer::process_pc_reconstruction(viewer * p_view)
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
-	static int n = 12; // dct
-	static int m = 144;
-	static int M = 0;
-	static float f = 1;
-	static bool learn = 0;
-	static int avg_p = 36; 
-	static int percentage = 0;
-	static float delta = M_PI/6;
-	static float sum_thres = 1.01;
-	static float area_thres = 0.005;
-	static float percentage_size = 100;
-	static float radio_factor = 1;	
+	static dictionary::params params;
+	static size_t n = 12;
+	static real_t percentage_size = 100;
+	static real_t radio_factor = 1;	
 
-	ImGui::InputInt("basis", &n);
-	ImGui::InputInt("atoms", &m);
-	ImGui::InputFloat("delta", &delta, 0.001, 0.1, 3);	
-	ImGui::InputFloat("proj_thres", &sum_thres, 1.001, 0.1, 6);
-	ImGui::InputFloat("area_thres", &area_thres, 0.001, 0.1, 6);
-	ImGui::InputFloat("percentage_size", &percentage_size, 100, 10, 6);
-	ImGui::InputFloat("radio_factor", &radio_factor, 1, 0.1, 6);
-	ImGui::Checkbox("learn", &learn);
+	assert(sizeof(ImGuiDataType_U64) != sizeof(size_t));
+	
+	ImGui::InputScalar("basis", ImGuiDataType_U64, &n);
+	ImGui::InputScalar("atoms", ImGuiDataType_U64, &params.m);
+	ImGui::InputDouble("delta", &params.delta, 0.001, 0.1, "%.3lf");	
+	ImGui::InputDouble("proj_thres", &params.sum_thres, 1.001, 0.1, "%.6lf");
+	ImGui::InputDouble("area_thres", &params.area_thres, 0.001, 0.1, "%6lf");
+	ImGui::Checkbox("learn", &params.learn);
+	
+	ImGui::InputDouble("percentage_size", &percentage_size, 100, 10, "%.3f");
+	ImGui::InputDouble("radio_factor", &radio_factor, 1, 0.1, "%.3f");
 
 	if(ImGui::Button("Run"))
 	{
 		basis_dct phi(n);
-		inpainting dict(mesh, &phi, m, M, f, learn, avg_p, percentage, delta, sum_thres,area_thres);
+		inpainting dict(mesh, &phi, params);
 		
-		view->add_mesh({dict.point_cloud_reconstruction(percentage_size,radio_factor)});
+		view->add_mesh({dict.point_cloud_reconstruction(percentage_size, radio_factor)});
 	}
 	
 	return true;
@@ -720,6 +707,8 @@ bool app_viewer::process_synthesis(viewer * p_view)
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
+	static dictionary::params params;
+	
 	size_t n; // dct
 	size_t m, M;
 	real_t f;
@@ -728,11 +717,10 @@ bool app_viewer::process_synthesis(viewer * p_view)
 	gproshan_log(parameters: (n, m, M, f, learn));
 	cin >> n >> m >> M >> f >> learn;
 
-	basis * phi = new basis_dct(n);
-	inpainting dict(mesh, phi, m, M, f, learn);
+	basis_dct phi(n);
+	inpainting dict(mesh, &phi, params);
 	dict.execute();
 
-	delete phi;
 	mesh->update_normals();
 	
 	return false;

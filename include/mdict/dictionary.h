@@ -17,6 +17,21 @@ namespace gproshan::mdict {
 
 class dictionary
 {
+	public:
+		struct params
+		{
+			size_t m = 144;				///< number of dictionary atoms
+			size_t M = 0;				///< number of patches
+			size_t avg_p = 36;			///< avg number of vertices per patch
+			size_t percentage = 0;		///< mask percentage
+			real_t f = 1;				///<
+			real_t delta = M_PI / 6;	///<
+			real_t sum_thres = 1.01;	///<
+			real_t area_thres = 0.005;	///<
+			bool learn = false;			///<
+			bool plot = false;
+		};
+
 	protected:
 		che * mesh;								///< input mesh.
 		size_t n_vertices;						///< number of vertices.
@@ -29,7 +44,7 @@ class dictionary
 		a_mat alpha;							///< sparse coding matrix.
 		
 		real_t f;
-		real_t s_radio;						///< sampling geodesic radio.
+		real_t s_radio;							///< sampling geodesic radio.
 		std::vector<index_t> sampling;			///< samples, center of patches if sampling.
 		std::vector<patch> patches;				///< vector of patches.
 		std::vector<vpatches_t> patches_map;	///< invert index vertex to patches.

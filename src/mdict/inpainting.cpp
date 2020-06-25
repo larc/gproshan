@@ -14,17 +14,17 @@
 namespace gproshan::mdict {
 
 
-inpainting::inpainting(che *const & _mesh, basis *const & _phi_basis, const size_t & _m, const size_t & _M, const real_t & _f,
-	const bool & _learn, size_t _avg_p, size_t _perc, double _delta, double _sum_thres, double _area_thres, const bool & _plot): dictionary(_mesh, _phi_basis, _m, _M, _f, _learn, _plot)
+inpainting::inpainting(che *const & _mesh, basis *const & _phi_basis, const params & p): dictionary(_mesh, _phi_basis, p.m, p.M, p.f, p.learn, p.plot)
 {
-	delta = _delta;
-	sum_thres = _sum_thres;
-	avg_p = _avg_p;	//size avg of number of vertices per patch
-	percent = _perc; // mask percentage
-	area_thres = _area_thres;
-	M = mesh->n_vertices()/avg_p;
+	delta = p.delta;
+	sum_thres = p.sum_thres;
+	avg_p = p.avg_p;
+	percent = p.percentage;
+	area_thres = p.area_thres;
+
+	M = mesh->n_vertices() / avg_p;
 	mask = new bool[mesh->n_vertices()];
-	memset(mask,0,sizeof(bool)*mesh->n_vertices());
+	memset(mask, 0, sizeof(bool) * mesh->n_vertices());
 }
 
 

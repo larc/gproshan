@@ -18,8 +18,7 @@ namespace gproshan::mdict {
 class inpainting : public dictionary
 {
 	public:
-		inpainting(che *const & _mesh, basis *const & _phi_basis, const size_t & _m, const size_t & _M,
-		 const real_t & _f, const bool & _learn, size_t _avg_p = 36, size_t _perc = 0, double _delta = M_PI/6, double _sum_thres = 0.001 , double _area_thres = 0.001, const bool & _plot = false);
+		inpainting(che *const & _mesh, basis *const & _phi_basis, const params & p);
 		virtual ~inpainting() = default;
 
 		real_t execute();
