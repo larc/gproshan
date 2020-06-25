@@ -34,7 +34,7 @@ class geodesics
 			real_t radio		= INFINITY;				///< execute until the specific radio.
 			real_t * dist_alloc	= nullptr;				///< external dist allocation
 			bool cluster		= false;				///< to cluster vertices to closest source.
-			bool (*fun) (const index_t & u) = nullptr;	///< fun is executed inside FM loop
+			bool (*fun) (const index_t &) = nullptr;	///< fun is executed inside FM loop
 		};
 
 	public:
