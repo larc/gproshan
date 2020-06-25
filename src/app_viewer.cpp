@@ -670,14 +670,18 @@ bool app_viewer::process_voronoi(viewer * p_view)
 	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
-
-	TIC(view->time)
+	
+	geodesics::params params;
+	params.cluster = true;
+	
 #ifdef GPROSHAN_CUDA
-	geodesics ptp(mesh, view->active_mesh().selected, geodesics::PTP_GPU, nullptr, 1);
-#else
-	geodesics ptp(mesh, view->active_mesh().selected, geodesics::FM, nullptr, 1);
+	params.alg = geodesics::PTP_GPU;
 #endif
+	
+	TIC(view->time)
+	geodesics ptp(mesh, mesh.selected, params);
 	TOC(view->time)
+	
 	gproshan_log_var(view->time);
 
 	#pragma omp parallel for
@@ -806,7 +810,7 @@ bool app_viewer::process_geodesics_ptp_cpu(viewer * p_view)
 		view->active_mesh().selected.push_back(0);
 	
 	TIC(view->time)
-	geodesics ptp(mesh, view->active_mesh().selected, geodesics::PTP_CPU);
+	geodesics ptp(mesh, view->active_mesh().selected, { geodesics::PTP_CPU });
 	TOC(view->time)
 	gproshan_log_var(view->time);
 
@@ -825,7 +829,7 @@ bool app_viewer::process_geodesics_heat_flow(viewer * p_view)
 		view->active_mesh().selected.push_back(0);
 	
 	TIC(view->time)
-	geodesics heat_flow(mesh, view->active_mesh().selected, geodesics::HEAT_FLOW);
+	geodesics heat_flow(mesh, view->active_mesh().selected, { geodesics::HEAT_FLOW });
 	TOC(view->time)
 	gproshan_log_var(view->time);
 
@@ -854,8 +858,12 @@ bool app_viewer::process_geodesics_ptp_gpu(viewer * p_view)
 		view->dist = new real_t[view->n_dist];
 	}
 
+	geodesics::params params;
+	params.alg = geodesics::PTP_GPU;
+	params.dist_alloc = view->dist;
+
 	TIC(view->time)
-	geodesics ptp(mesh, view->active_mesh().selected, geodesics::PTP_GPU, view->dist);
+	geodesics ptp(mesh, view->active_mesh().selected, params);
 	TOC(view->time)
 	gproshan_log_var(view->time);
 	
@@ -874,7 +882,7 @@ bool app_viewer::process_geodesics_heat_flow_gpu(viewer * p_view)
 		view->active_mesh().selected.push_back(0);
 	
 	TIC(view->time)
-	geodesics heat_flow(mesh, view->active_mesh().selected, geodesics::HEAT_FLOW_GPU);
+	geodesics heat_flow(mesh, view->active_mesh().selected, { geodesics::HEAT_FLOW_GPU });
 	TOC(view->time)
 	gproshan_log_var(view->time);
 

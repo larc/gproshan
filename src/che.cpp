@@ -252,7 +252,7 @@ void che::update_colors(const real_t * vcolor, real_t max_color)
 		return;
 	}
 	
-	if(max_color > numeric_limits<real_t>::epsilon())
+	if(max_color < numeric_limits<real_t>::epsilon())
 	{
 		#pragma omp parallel for reduction(max: max_color)
 		for(index_t v = 0; v < n_vertices_; v++)

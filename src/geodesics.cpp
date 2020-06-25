@@ -13,14 +13,14 @@ using namespace std;
 namespace gproshan {
 
 
-geodesics::geodesics(che * mesh, const vector<index_t> & sources, const option_t & opt, real_t *const & e_dist, const bool & cluster, const size_t & n_iter, const real_t & radio): n_vertices(mesh->n_vertices())
+geodesics::geodesics(che * mesh, const vector<index_t> & sources, const params & p): n_vertices(mesh->n_vertices())
 {
 	assert(n_vertices > 0);
 
-	free_dist = e_dist == nullptr;
+	free_dist = p.dist_alloc == nullptr;
 
-	dist = free_dist ? new real_t[n_vertices] : e_dist;
-	clusters = cluster ? new index_t[n_vertices] : nullptr;
+	dist = free_dist ? new real_t[n_vertices] : p.dist_alloc;
+	clusters = p.cluster ? new index_t[n_vertices] : nullptr;
 	sorted_index = new index_t[n_vertices];
 
 	n_sorted = 0;
@@ -30,7 +30,7 @@ geodesics::geodesics(che * mesh, const vector<index_t> & sources, const option_t
 		dist[v] = INFINITY;
 
 	assert(sources.size() > 0);
-	execute(mesh, sources, n_iter, radio, opt);
+	execute(mesh, sources, p.n_iter, p.radio, p.alg);
 }
 
 geodesics::~geodesics()
@@ -91,9 +91,9 @@ void geodesics::normalize()
 		dist[sorted_index[i]] /= max;
 }
 
-void geodesics::execute(che * mesh, const vector<index_t> & sources, const size_t & n_iter, const real_t & radio, const option_t & opt)
+void geodesics::execute(che * mesh, const vector<index_t> & sources, const size_t & n_iter, const real_t & radio, const algorithm & alg)
 {
-	switch(opt)
+	switch(alg)
 	{
 		case FM: run_fastmarching(mesh, sources, n_iter, radio);
 			break;
