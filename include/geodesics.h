@@ -64,8 +64,8 @@ class geodesics
 		void normalize();
 
 	private:
-		void execute(che * mesh, const std::vector<index_t> & sources, const size_t & n_iter, const real_t & radio, const algorithm & alg);
-		void run_fastmarching(che * mesh, const std::vector<index_t> & sources, const size_t & n_iter, const real_t & radio);
+		void execute(che * mesh, const std::vector<index_t> & sources, const params & p);
+		void run_fastmarching(che * mesh, const std::vector<index_t> & sources, const size_t & n_iter, const real_t & radio, bool (*fun) (const index_t &));
 		void run_parallel_toplesets_propagation_cpu(che * mesh, const std::vector<index_t> & sources, const size_t & n_iter, const real_t & radio);
 		void run_heat_flow(che * mesh, const std::vector<index_t> & sources);
 		

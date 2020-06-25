@@ -30,7 +30,7 @@ geodesics::geodesics(che * mesh, const vector<index_t> & sources, const params &
 		dist[v] = INFINITY;
 
 	assert(sources.size() > 0);
-	execute(mesh, sources, p.n_iter, p.radio, p.alg);
+	execute(mesh, sources, p);
 }
 
 geodesics::~geodesics()
@@ -91,19 +91,19 @@ void geodesics::normalize()
 		dist[sorted_index[i]] /= max;
 }
 
-void geodesics::execute(che * mesh, const vector<index_t> & sources, const size_t & n_iter, const real_t & radio, const algorithm & alg)
+void geodesics::execute(che * mesh, const vector<index_t> & sources, const params & p)
 {
-	switch(alg)
+	switch(p.alg)
 	{
-		case FM: run_fastmarching(mesh, sources, n_iter, radio);
+		case FM: run_fastmarching(mesh, sources, p.n_iter, p.radio, p.fun);
 			break;
-		case PTP_CPU: run_parallel_toplesets_propagation_cpu(mesh, sources, n_iter, radio);
+		case PTP_CPU: run_parallel_toplesets_propagation_cpu(mesh, sources, p.n_iter, p.radio);
 			break;
 		case HEAT_FLOW: run_heat_flow(mesh, sources);
 			break;
 
 #ifdef GPROSHAN_CUDA
-		case PTP_GPU: run_parallel_toplesets_propagation_gpu(mesh, sources, n_iter, radio);
+		case PTP_GPU: run_parallel_toplesets_propagation_gpu(mesh, sources, p.n_iter, p.radio);
 			break;
 		case HEAT_FLOW_GPU: run_heat_flow_gpu(mesh, sources);
 			break;
@@ -111,7 +111,7 @@ void geodesics::execute(che * mesh, const vector<index_t> & sources, const size_
 	}
 }
 
-void geodesics::run_fastmarching(che * mesh, const vector<index_t> & sources, const size_t & n_iter, const real_t & radio)
+void geodesics::run_fastmarching(che * mesh, const vector<index_t> & sources, const size_t & n_iter, const real_t & radio, bool (*fun) (const index_t &))
 {
 	index_t BLACK = 0, GREEN = 1, RED = 2;
 	index_t * color = new index_t[n_vertices];
@@ -156,6 +156,8 @@ void geodesics::run_fastmarching(che * mesh, const vector<index_t> & sources, co
 		if(dist[black_i] > radio) break;
 
 		sorted_index[n_sorted++] = black_i;
+
+		if(fun && !fun(black_i)) break;
 
 		link_t black_link;
 		mesh->link(black_link, black_i);
