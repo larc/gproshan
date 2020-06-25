@@ -160,7 +160,7 @@ tuple<a_vec, arma::uvec> _OMP(const a_vec & x, const a_mat & D, const size_t & L
 		selected_atoms(l) = max_index(abs(D.t() * r), mask);
 		
 		DD = D.cols(selected_atoms.head(l + 1));
-		aa = pinv(DD) * x;
+		aa = solve(DD, x);
 		r = x - DD * aa;
 		l++;
 	}
@@ -242,8 +242,8 @@ a_vec OMP(const patch & p, basis * phi_basis, const a_mat & A, const size_t & L)
 {
 	arma::uchar_vec mask;
 	mask.zeros(A.n_cols);
-	for(int i = 0; i < A.n_cols; i++)
-		if(phi_basis->get_frequency(i) >= 0*p.avg_dist) //2.5* if it ismin
+	for(index_t i = 0; i < A.n_cols; i++)
+		if(phi_basis->get_frequency(i) >= 0.5*p.avg_dist) //2.5* if it ismin
 		{
 		//	gproshan_debug_var(phi_basis->get_frequency(i));
 		//	gproshan_debug_var(p.avg_dist);
@@ -259,7 +259,7 @@ a_mat OMP_all(const vector<patch> & patches, basis * phi_basis, const a_mat & A,
 	#pragma omp parallel for
 	for(index_t i = 0; i < patches.size(); i++)
 		alpha.col(i) = OMP(patches[i],phi_basis, A, L);
-	
+
 	return alpha;
 }
 

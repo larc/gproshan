@@ -229,7 +229,7 @@ void patch::init_radial_disjoint(vector<index_t> & idxs_he, che * mesh, const re
 {
 
 	radio = -INFINITY;
-	min_nv = 128;
+	min_nv = 0;
 
 	normal_fit_directions(mesh, v);
 
@@ -309,7 +309,7 @@ void patch::init_radial_disjoint(vector<index_t> & idxs_he, che * mesh, const re
 	//gproshan_debug_var(geo.n_sorted_index());
 
 	geo_radio = geo[indexes [vertices.size()-1]];
-
+	//gproshan_debug_var(vertices.size());
 	delete indexes;
 }
 
@@ -363,6 +363,19 @@ void patch::reset_xyz(che * mesh, vector<vpatches_t> & vpatches, const index_t &
 double area_tri(double x1, double y1, double x2, double y2, double x3, double y3) 
 { 
 	return abs((x1*(y2-y3) + x2*(y3-y1)+ x3*(y1-y2))/2.0); 
+}
+
+void patch::remove_extra_xyz_disjoint(size_t & max_points)
+{
+	if(vertices.size() > max_points)
+	{		
+		arma::uvec xi;
+		xi.zeros(max_points);
+		for (size_t i=1; i< max_points; i++) xi[i] = i;
+		xi = arma::shuffle(xi);
+		xyz = xyz.cols(xi);
+	}
+	
 }
 void patch::add_extra_xyz_disjoint(che * mesh, vector<vpatches_t> & vpatches, const index_t & p)
 {

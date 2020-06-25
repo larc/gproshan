@@ -39,6 +39,7 @@ class inpainting : public dictionary
 		double sum_thres;
 		bool * mask;
 		double area_thres;
+		size_t max_points;
 	
 };
 

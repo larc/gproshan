@@ -286,10 +286,12 @@ real_t mesh_reconstruction(che * mesh, size_t M, const real_t & radio, vector<pa
 	vertex * new_vertices = (vertex *) V.memptr();
 
 	real_t error = 0;
+	real_t max_error = -1;
 	#pragma omp parallel for reduction(+: error)
 	for(index_t v = v_i; v < mesh->n_vertices(); v++)
 	{
 		dist[v] = *(new_vertices[v] - mesh->get_vertex(v));
+		if(dist[v] > max_error) max_error = dist[v];
 		error += *(new_vertices[v] - mesh->get_vertex(v));
 	}
 		
@@ -297,6 +299,7 @@ real_t mesh_reconstruction(che * mesh, size_t M, const real_t & radio, vector<pa
 	gproshan_debug_var(mesh->n_vertices());
 	error /= mesh->n_vertices();
 	gproshan_debug_var(error);
+	gproshan_debug_var(max_error);
 
 	gproshan_debug_var(v_i);
 	mesh->set_vertices(new_vertices + v_i, mesh->n_vertices() - v_i, v_i);
