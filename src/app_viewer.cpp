@@ -618,7 +618,7 @@ bool app_viewer::process_inpaiting(viewer * p_view)
 		inpainting dict(mesh, &phi, params);
 		dict.execute();
 		
-		mesh->update_colors(&dict[0], 0.003);
+		mesh->update_colors(&dict[0], 0.03);
 		mesh->update_normals();
 	}
 

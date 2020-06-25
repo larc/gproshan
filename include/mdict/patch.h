@@ -92,6 +92,7 @@ class patch
 						const index_t & p,
 						const fmask_t & mask = nullptr
 						);
+		void remove_extra_xyz_disjoint(size_t & max_points);
 		void add_extra_xyz_disjoint(che * mesh, vector<vpatches_t> & vpatches, const index_t & p);
 		const a_vec normal();
 		bool is_covered( bool * covered);
