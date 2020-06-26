@@ -105,7 +105,7 @@ class patch
 		bool add_vertex_by_faces(const vertex & c,
 								vertex & n,
 								vector<vertex> & N,
-								index_t * indexes,
+								const index_t * indexes,
 								size_t nc,
 								double thr_angle,
 								const geodesics & geo,
@@ -143,7 +143,7 @@ class patch
 		real_t get_max_z();
 
 		void save_z(ostream & os);
-		index_t find(index_t * indexes, size_t nc, index_t idx_global);
+		index_t find(const index_t * indexes, size_t nc, index_t idx_global);
 		
 
 	friend class dictionary;

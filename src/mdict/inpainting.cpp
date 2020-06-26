@@ -158,15 +158,16 @@ void inpainting::load_sampling(bool save_all)
 	gproshan_debug_var(all_sorted_features.size());
 	string f_points = tmp_file_path(mesh->name_size() + '_' + to_string(sum_thres) + '_' + to_string(area_thres) + ".points");
 
-	vector<index_t> features(all_sorted_features.begin(), all_sorted_features.begin() + featsize );
-	gproshan_debug_var(features.size());
-	geodesics geo(mesh, features , geodesics::FM, NULL, false, mesh->n_vertices());
-	index_t * indexes = new index_t[geo.n_sorted_index()];
-	geo.copy_sorted_index(indexes, geo.n_sorted_index());
+//	vector<index_t> features(all_sorted_features.begin(), all_sorted_features.begin() + featsize );
+//	gproshan_debug_var(features.size());
+//	geodesics geo(mesh, features , geodesics::FM, NULL, false, mesh->n_vertices());
+//	index_t * indexes = new index_t[geo.n_sorted_index()];
+//	geo.copy_sorted_index(indexes, geo.n_sorted_index());
 	size_t count = 0;
-	real_t max_radio = geo[indexes[mesh->n_vertices()-1]] ;
+//	real_t max_radio = geo[indexes[mesh->n_vertices()-1]] ;
 	
 	//radio *= 1.1;
+	real_t max_radio = 0.05 * mesh->area_surface();
 	gproshan_debug_var(max_radio);
 
 	if(S.load(f_sampl))
@@ -440,13 +441,17 @@ void inpainting::init_voronoi_patches()
 		//FPS samplif_dictng with desired number of sources
 		TIC(d_time) init_sampling(); TOC(d_time)
 		gproshan_debug_var(d_time);
-		
+	
+		geodesics::params params;
+		params.cluster = 1;
+
+
 		// creating disjoint clusters with geodesics aka voronoi
 	#ifdef GPROSHAN_CUDA
-		geodesics ptp( mesh, sampling, geodesics::PTP_GPU, nullptr, 1);
-	#else
-		geodesics ptp( mesh, sampling, geodesics::FM, nullptr, 1);
+		params.alg = geodesics::PTP_GPU;
 	#endif
+		
+		geodesics ptp(mesh, sampling, params);
 		TOC(d_time)
 		gproshan_log_var(d_time);
 

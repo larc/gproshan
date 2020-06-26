@@ -68,14 +68,15 @@ bool patch::exists(index_t idx)
 	return false;
 }
 
-index_t patch::find(index_t * indexes, size_t nc, index_t idx_global)
+index_t patch::find(const index_t * indexes, size_t nc, index_t idx_global)
 {
 	for(size_t i=0; i<nc; i++)
 		if(indexes[i] == idx_global) return i;
+
 	return -1;
 }
-bool patch::add_vertex_by_faces(const vertex & c, vertex & n, vector<vertex> & N, index_t * indexes, size_t nc, double thr_angle, const geodesics & geo,
-								 che * mesh, const index_t & v, double & area, double & proj_area, double deviation)
+
+bool patch::add_vertex_by_faces(const vertex & c, vertex & n, vector<vertex> & N, const index_t * indexes, size_t nc, double thr_angle, const geodesics & geo, che * mesh, const index_t & v, double & area, double & proj_area, double deviation)
 {
 	// it needs to return both vertices
 	// it needs to filter repeated indexes.
@@ -91,7 +92,6 @@ bool patch::add_vertex_by_faces(const vertex & c, vertex & n, vector<vertex> & N
 
 	for_star(he, mesh, v)
 	{
-	
 		a = mesh->vt(next(he)); //index of the next vertex index_t
 		b = mesh->vt(prev(he)); 
 		va = mesh->gt(a);
@@ -102,16 +102,15 @@ bool patch::add_vertex_by_faces(const vertex & c, vertex & n, vector<vertex> & N
 		assert(b < mesh->n_vertices());
 		assert(v < mesh->n_vertices());
 
-		if( geo[a] < geo[v] || geo[b] < geo[v] )
+		if(geo[a] < geo[v] || geo[b] < geo[v] )
 		{
 			if(geo[a] < geo[v])
 			{
-				i = find(indexes, nc,a);
+				i = find(indexes, nc, a);
 			}
 			else
 			{
 				i = find(indexes, nc, b); 
-
 			}
 			tmp_angle = acos( (mesh->normal_he(he), N[i]) );
 
@@ -184,7 +183,11 @@ void patch::recover_radial_disjoint(che * mesh, const real_t & radio_, const ind
 {
 	// for small meshes 6000 0.e-5
 	// for others 2.e-5
-	geodesics geo(mesh, {v}, geodesics::FM, NULL, false, 0, radio_ + 1.e-5);
+	geodesics::params params;
+	params.radio = radio_ + 1.3-5;
+
+	geodesics geo(mesh, {v}, params);
+
 	index_t * indexes = new index_t[geo.n_sorted_index()];
 	geo.copy_sorted_index(indexes, geo.n_sorted_index());
 
@@ -227,15 +230,18 @@ void patch::recover_radial_disjoint(che * mesh, const real_t & radio_, const ind
 
 void patch::init_radial_disjoint(vector<index_t> & idxs_he, che * mesh, const real_t & radio_, const index_t & v, real_t & euc_radio, real_t & geo_radio, double delta, double sum_thres, double area_thres)
 {
-
 	radio = -INFINITY;
 	min_nv = 0;
 
 	normal_fit_directions(mesh, v);
+	
+	geodesics::params params;
+	params.radio = 1.2 * radio_;
 
-	geodesics geo(mesh, {v}, geodesics::FM, NULL, false, 0, 1.2 * radio_);
-	index_t * indexes = new index_t[geo.n_sorted_index()];
-	geo.copy_sorted_index(indexes, geo.n_sorted_index());
+	geodesics geo(mesh, {v}, params);
+
+//	index_t * indexes = new index_t[geo.n_sorted_index()];
+//	geo.copy_sorted_index(indexes, geo.n_sorted_index());
 
 	a_vec vn = T.col(2);// normal at the center
 	vertex n;
@@ -254,17 +260,20 @@ void patch::init_radial_disjoint(vector<index_t> & idxs_he, che * mesh, const re
 	index_t idx_he;
 	
 
-	for(index_t i=1; i<geo.n_sorted_index(); i++)
+	for(index_t i = 1; i < geo.n_sorted_index(); i++)
 	{
-		if (indexes[i] >= mesh->n_vertices() || geo[indexes [i]] > radio_) break;
+		const index_t & v = geo(i);
+
+		if(v >= mesh->n_vertices() || geo[v] > radio_) break;
 		
-		
-		c = mesh->get_vertex(v); // central vertices
-		ratio = (i==1)? 0:(area/proj_area);
-		if( add_vertex_by_faces(c, n, N, indexes, geo.n_sorted_index(), delta, geo, mesh, indexes[i], area, proj_area, M_PI/2.5 ) && (ratio < sum_thres || (area/area_mesh) < area_thres ) )
+		c = mesh->get_vertex(v); // central vertice
+
+		ratio = (i == 1) ? 0 : area / proj_area;
+
+		if(add_vertex_by_faces(c, n, N, &geo(0), geo.n_sorted_index(), delta, geo, mesh, v, area, proj_area, M_PI/2.5 ) && (ratio < sum_thres || (area/area_mesh) < area_thres) )
 		{	
 			//compute euclidean radio
-			p = mesh->get_vertex(indexes[i]);
+			p = mesh->get_vertex(v);
 			if(*(p - c) > euc_radio)
 				euc_radio = *(p - c);
 			idxs_he.push_back(idx_he);
@@ -308,9 +317,8 @@ void patch::init_radial_disjoint(vector<index_t> & idxs_he, che * mesh, const re
 	//gproshan_debug_var(vertices.size());
 	//gproshan_debug_var(geo.n_sorted_index());
 
-	geo_radio = geo[indexes [vertices.size()-1]];
+	geo_radio = geo.radio();
 	//gproshan_debug_var(vertices.size());
-	delete indexes;
 }
 
 // xyz = E.t * (xyz - avg)
@@ -799,6 +807,6 @@ bool patch::is_covered( bool * covered)
 	return true;
 }
 
-	//avg_dist = avg_dist/vertices.size();
+
 } // namespace gproshan::mdict
 
