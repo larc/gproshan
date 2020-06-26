@@ -76,7 +76,7 @@ index_t patch::find(const index_t * indexes, size_t nc, index_t idx_global)
 	return -1;
 }
 
-bool patch::add_vertex_by_faces(const vertex & c, vertex & n, vector<vertex> & N, const index_t * indexes, size_t nc, double thr_angle, const geodesics & geo, che * mesh, const index_t & v, double & area, double & proj_area, double deviation)
+bool patch::add_vertex_by_faces(const vertex & c, vertex & n, vector<vertex> & N, double thr_angle, const geodesics & geo, che * mesh, const index_t & v, double & area, double & proj_area, double deviation)
 {
 	// it needs to return both vertices
 	// it needs to filter repeated indexes.
@@ -105,33 +105,26 @@ bool patch::add_vertex_by_faces(const vertex & c, vertex & n, vector<vertex> & N
 		if(geo[a] < geo[v] || geo[b] < geo[v] )
 		{
 			if(geo[a] < geo[v])
-			{
-				i = find(indexes, nc, a);
-			}
+				i = find(vertices.data(), vertices.size(), a);
 			else
-			{
-				i = find(indexes, nc, b); 
-			}
+				i = find(vertices.data(), vertices.size(), b); 
+			
 			tmp_angle = acos( (mesh->normal_he(he), N[i]) );
 
-			if ( angle > tmp_angle && tmp_angle < thr_angle && acos( (mesh->normal_he(he), N[0]) ) < deviation ) // Fullfill conditions
+			if(angle > tmp_angle && tmp_angle < thr_angle && acos( (mesh->normal_he(he), N[0]) ) < deviation) // Fullfill conditions
 			{
-				
 				angle = tmp_angle;
-				//gproshan_debug_var(he);
-				area_face = mesh->area_trig(he/3);
+				area_face = mesh->area_trig(he / 3);
+
 				// compute projected area
 				pav = va - vv + ( (n,vv) - (n,va) ) * n;
 				pbv = vb - vv + ( (n,vv) - (n,vb) ) * n;
 				proj_area_face = *(pav * pbv) / 2;
 
 				min_he = mesh->normal_he(he); 
-				if( !exists(v) ) vertices.push_back(v);
 				added = true;
 			}
-				
 		}
-	
 	}
 	//p = mesh->get_vertex(indexes[i]); 
 	//p = p - c ;
@@ -139,7 +132,13 @@ bool patch::add_vertex_by_faces(const vertex & c, vertex & n, vector<vertex> & N
 	
 	area += area_face;
 	proj_area += proj_area_face;
-	N.push_back(min_he);
+
+	if(added)
+	{
+		vertices.push_back(v);
+		N.push_back(min_he);
+	}
+	
 	return added;
 }
 
@@ -274,7 +273,7 @@ void patch::init_radial_disjoint(	real_t & euc_radio,
 		
 		ratio = (i == 1) ? 0 : area / proj_area;
 
-		if(add_vertex_by_faces(c, n, N, &geo(0), geo.n_sorted_index(), delta, geo, mesh, u, area, proj_area, M_PI/2.5 ) && (ratio < sum_thres || (area/area_mesh) < area_thres) )
+		if(add_vertex_by_faces(c, n, N, delta, geo, mesh, u, area, proj_area, M_PI/2.5 ) && (ratio < sum_thres || (area/area_mesh) < area_thres) )
 			euc_radio = max(euc_radio, *(mesh->get_vertex(u) - c));
 		else
 			break;
@@ -309,7 +308,7 @@ void patch::init_radial_disjoint(	real_t & euc_radio,
 	//gproshan_debug_var(vertices.size());
 	//gproshan_debug_var(geo.n_sorted_index());
 
-	geo_radio = geo[geo(vertices.size() - 1)];
+	geo_radio = geo[vertices.back()];
 	//gproshan_debug_var(vertices.size());
 }
 

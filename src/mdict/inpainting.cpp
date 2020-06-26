@@ -178,7 +178,7 @@ void inpainting::load_sampling(bool save_all)
 			patch p;
 		//	gproshan_debug_var(i);
 			//p.recover_radial_disjoint( mesh, S(i,1), S(i,0) );
-		//	p.init_radial_disjoint(mesh, S(i,1), S(i,0), euc_radio, geo_radio, delta, sum_thres, area_thres);
+			p.init_radial_disjoint(euc_radio, geo_radio, mesh, S(i, 0), S(i, 1), delta, sum_thres, area_thres, area_mesh);
 			patches.push_back(p); 
 		}
 		
