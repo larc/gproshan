@@ -109,7 +109,7 @@ class patch
 									vertex & n,
 									vector<vertex> & N,
 									double thr_angle,
-									const geodesics & geo,
+									const real_t * geo,
 									che * mesh,
 									const index_t & v,
 									double & area,

@@ -76,7 +76,7 @@ index_t patch::find(const index_t * indexes, size_t nc, index_t idx_global)
 	return -1;
 }
 
-bool patch::add_vertex_by_faces(const vertex & c, vertex & n, vector<vertex> & N, double thr_angle, const geodesics & geo, che * mesh, const index_t & v, double & area, double & proj_area, double deviation)
+bool patch::add_vertex_by_faces(const vertex & c, vertex & n, vector<vertex> & N, double thr_angle, const real_t * geo, che * mesh, const index_t & v, double & area, double & proj_area, double deviation)
 {
 	// it needs to return both vertices
 	// it needs to filter repeated indexes.
@@ -245,12 +245,6 @@ void patch::init_radial_disjoint(	real_t & euc_radio,
 	
 	normal_fit_directions(mesh, v);
 	
-	geodesics::params params;
-	params.radio = 1.2 * max_radio;
-
-	geodesics geo(mesh, {v}, params);
-
-
 	a_vec vn = T.col(2);
 	vertex n = { vn(0), vn(1), vn(2) };
 	
@@ -260,25 +254,31 @@ void patch::init_radial_disjoint(	real_t & euc_radio,
 	N.push_back(n);
 	
 	real_t area = 0;
-	real_t proj_area = 0;
+	real_t proj_area = std::numeric_limits<real_t>::epsilon();
 	real_t ratio;
 	
 	vertex c = mesh->get_vertex(v);
-
-	for(index_t i = 1; i < geo.n_sorted_index(); i++)
-	{
-		const index_t & u = geo(i);
-
-		if(u >= mesh->n_vertices() || geo[u] > max_radio) break;
-		
-		ratio = (i == 1) ? 0 : area / proj_area;
-
-		if(add_vertex_by_faces(c, n, N, delta, geo, mesh, u, area, proj_area, M_PI/2.5 ) && (ratio < sum_thres || (area/area_mesh) < area_thres) )
-			euc_radio = max(euc_radio, *(mesh->get_vertex(u) - c));
-		else
-			break;
-	}
 	
+	geodesics::params params;
+	params.dist_alloc = new real_t[mesh->n_vertices()];
+	params.fun = [&](const index_t & u) -> bool
+	{
+		if(u == v) return true;
+
+		ratio = area / proj_area;
+
+		if(add_vertex_by_faces(c, n, N, delta, params.dist_alloc, mesh, u, area, proj_area, M_PI/2.5 ) && (ratio < sum_thres || (area/area_mesh) < area_thres) )
+		{
+			euc_radio = max(euc_radio, *(mesh->get_vertex(u) - c));
+			return true;
+		}
+
+		return false;
+	};
+
+	geodesics geo(mesh, {v}, params);
+	delete [] params.dist_alloc;
+
 	// Refit the points and update the radius
 	size_t d_fitting = 2;
 	size_t min_points = (d_fitting + 1) * (d_fitting + 2) / 2;

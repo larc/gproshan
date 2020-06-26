@@ -160,7 +160,7 @@ tuple<a_vec, arma::uvec> _OMP(const a_vec & x, const a_mat & D, const size_t & L
 		selected_atoms(l) = max_index(abs(D.t() * r), mask);
 		
 		DD = D.cols(selected_atoms.head(l + 1));
-		aa = solve(DD, x);
+		aa = pinv(DD) * x;
 		r = x - DD * aa;
 		l++;
 	}
