@@ -167,21 +167,21 @@ void inpainting::load_sampling(bool save_all)
 //	real_t max_radio = geo[indexes[mesh->n_vertices()-1]] ;
 	
 	//radio *= 1.1;
-	real_t max_radio = 0.05 * mesh->area_surface();
+	real_t area_mesh = mesh->area_surface();
+	real_t max_radio = 0.05 * area_mesh;
 	gproshan_debug_var(max_radio);
 
 	if(S.load(f_sampl))
 	{
 		gproshan_debug(already done);
 		size_t n_seeds = S.n_rows;
-		vector<index_t> idxs_he;
 		real_t euc_radio, geo_radio;
 		for(index_t i = 0; i < n_seeds; i++)
 		{
 			patch p;
 		//	gproshan_debug_var(i);
 			//p.recover_radial_disjoint( mesh, S(i,1), S(i,0) );
-			p.init_radial_disjoint(idxs_he, mesh, S(i,1), S(i,0), euc_radio, geo_radio, delta, sum_thres, area_thres);
+		//	p.init_radial_disjoint(mesh, S(i,1), S(i,0), euc_radio, geo_radio, delta, sum_thres, area_thres);
 			patches.push_back(p); 
 		}
 		
@@ -214,7 +214,6 @@ void inpainting::load_sampling(bool save_all)
 	for(index_t i = 0; i < mesh->n_vertices(); i++)
 		covered[i] = 0;
 	
-	gproshan_debug(SAMPLING);
 	real_t euc_radio;
 	real_t geo_radio;
 	vector<real_t> radios;
@@ -222,15 +221,8 @@ void inpainting::load_sampling(bool save_all)
 	size_t count_cov = 0;
 	size_t count_cov_patch = 0;
 
-	gproshan_debug(SAMPLING);
-	bool * faces = new bool[mesh->n_faces()];
-	memset(faces, 0, sizeof(bool) * mesh->n_faces());
-	vector<index_t> idxs_he;
-	gproshan_debug(SAMPLING);
-
 	bool * invalid_seed = new bool[mesh->n_vertices()];
 	memset(invalid_seed, 0, mesh->n_vertices() * sizeof(bool));
-	gproshan_debug(SAMPLING);
 
 	for(const index_t & vsf: all_sorted_features)
 	{
@@ -238,8 +230,7 @@ void inpainting::load_sampling(bool save_all)
 
 		patch p;
 		// increasing a bit the radio
-		idxs_he.clear();
-		p.init_radial_disjoint(idxs_he, mesh, max_radio, vsf, euc_radio, geo_radio, delta, sum_thres, area_thres);
+		p.init_radial_disjoint(euc_radio, geo_radio, mesh, vsf, max_radio, delta, sum_thres, area_thres, area_mesh);
 
 		//gproshan_debug_var(p.vertices.size());
 		count_cov_patch = 0;
@@ -270,13 +261,9 @@ void inpainting::load_sampling(bool save_all)
 						invalid_seed[v] = *(va - vb) < 0.4 * euc_radio;
 					}
 				}
-
-				for(auto i: idxs_he)
-					faces[i/3] = true;
 			}
 		}
 	}						
-	gproshan_debug(SAMPLING);
 
 	delete [] invalid_seed;
 
@@ -295,36 +282,6 @@ void inpainting::load_sampling(bool save_all)
 	index_t tmp;
 	bool remark[mesh->n_vertices()] = {};
 	
-	//outliers by triangles.
-	for(index_t i = 0; i < mesh->n_faces(); i++)
-	{
-		if(!faces[i])
-		{
-			tmp = mesh->vt(next(i*3));
-			if(!covered[tmp] && !remark[tmp])
-			{
-				outliers.push_back(tmp);
-				remark[tmp] = true;
-			} 
-			
-			tmp = mesh->vt(prev(i*3));
-
-			if(!covered[tmp] && !remark[tmp])
-			{
-				outliers.push_back(tmp);
-				remark[tmp] = true;
-			} 
-
-			tmp = mesh->vt(i*3);
-			if(!covered[tmp] && !remark[tmp])
-			{
-				outliers.push_back(tmp);
-				remark[tmp] = true;
-			} 
-		}
-		
-	}
-
 	gproshan_debug_var(outliers.size());
 	for(index_t i = 0; i < mesh->n_vertices(); i++)
 	{

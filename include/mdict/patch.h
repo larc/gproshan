@@ -62,15 +62,18 @@ class patch
 					const size_t & n_toplevels,
 					vector<index_t> & _vertices, 
 					index_t * _toplevel = nullptr);
-		void init_radial_disjoint(vector<index_t> & idxs_he,
-					che * mesh,
-					const real_t & radio_,
-					const index_t & v,
-					real_t & euc_radio,
-					real_t & geo_radio,
-					double delta,		
-					double sum_thres,
-					double area_thres);
+		
+		void init_radial_disjoint(	real_t & euc_radio,
+									real_t & geo_radio,
+									che * mesh,
+									const index_t & v,
+									const real_t & radio,
+									const real_t & delta,		
+									const real_t & sum_thres,
+									const real_t & area_thres,
+									const real_t & area_mesh
+									);
+
 		void init_random(vertex c, arma::mat T, real_t radio, real_t max_radio, real_t per, real_t fr);
 		void recover_radial_disjoint(che * mesh,
 					const real_t & radio_,

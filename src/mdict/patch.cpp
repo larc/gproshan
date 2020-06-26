@@ -228,36 +228,41 @@ void patch::recover_radial_disjoint(che * mesh, const real_t & radio_, const ind
 
 }
 
-void patch::init_radial_disjoint(vector<index_t> & idxs_he, che * mesh, const real_t & radio_, const index_t & v, real_t & euc_radio, real_t & geo_radio, double delta, double sum_thres, double area_thres)
+void patch::init_radial_disjoint(	real_t & euc_radio,
+									real_t & geo_radio,
+									che * mesh,
+									const index_t & v,
+									const real_t & max_radio,
+									const real_t & delta,		
+									const real_t & sum_thres,
+									const real_t & area_thres,
+									const real_t & area_mesh
+									)
 {
 	radio = -INFINITY;
 	min_nv = 0;
 
+	euc_radio = -INFINITY;
+	
 	normal_fit_directions(mesh, v);
 	
 	geodesics::params params;
-	params.radio = 1.2 * radio_;
+	params.radio = 1.2 * max_radio;
 
 	geodesics geo(mesh, {v}, params);
 
-//	index_t * indexes = new index_t[geo.n_sorted_index()];
-//	geo.copy_sorted_index(indexes, geo.n_sorted_index());
 
-	a_vec vn = T.col(2);// normal at the center
-	vertex n;
-	n.x = vn(0); n.y = vn(1); n.z = vn(2);
-	vertex p;
+	a_vec vn = T.col(2);
+	vertex n = { vn(0), vn(1), vn(2) };
+	
 	vertices.push_back(v);
-	euc_radio = -INFINITY;
 	
 	vector<vertex> N;
 	N.push_back(n);
-	//double angle;
-	double area = 0;
-	double proj_area = 0;
-	double area_mesh = mesh->area_surface();
-	double ratio;
-//	index_t idx_he;
+	
+	real_t area = 0;
+	real_t proj_area = 0;
+	real_t ratio;
 	
 	vertex c = mesh->get_vertex(v);
 
@@ -265,26 +270,15 @@ void patch::init_radial_disjoint(vector<index_t> & idxs_he, che * mesh, const re
 	{
 		const index_t & u = geo(i);
 
-		if(u >= mesh->n_vertices() || geo[u] > radio_) break;
+		if(u >= mesh->n_vertices() || geo[u] > max_radio) break;
 		
 		ratio = (i == 1) ? 0 : area / proj_area;
 
 		if(add_vertex_by_faces(c, n, N, &geo(0), geo.n_sorted_index(), delta, geo, mesh, u, area, proj_area, M_PI/2.5 ) && (ratio < sum_thres || (area/area_mesh) < area_thres) )
-		{	
-			//compute euclidean radio
-			p = mesh->get_vertex(u);
-			if(*(p - c) > euc_radio)
-				euc_radio = *(p - c);
-//			idxs_he.push_back(idx_he);
-			
-		}
+			euc_radio = max(euc_radio, *(mesh->get_vertex(u) - c));
 		else
-		{
 			break;
-		}
-	//	gproshan_debug_var(acos( (mesh->normal(indexes[i-1]), mesh->normal(indexes[i]) ) ));
 	}
-	//gproshan_debug_var(vertices.size());
 	
 	// Refit the points and update the radius
 	size_t d_fitting = 2;
@@ -299,11 +293,10 @@ void patch::init_radial_disjoint(vector<index_t> & idxs_he, che * mesh, const re
 	n.x = T(0, 2); n.y = T(1, 2); n.z = T(2, 2);
 	radio = -INFINITY;
 
+	vertex p;
 	for(index_t i=1; i < vertices.size(); i++)
 	{
 		p = mesh->get_vertex(vertices[i]); 
-		c = mesh->get_vertex(v); // central vertices
-
 		p = p - c ;
 		p = p - ((p,n)*n);
 
