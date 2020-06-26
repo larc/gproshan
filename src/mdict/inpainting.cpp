@@ -201,7 +201,9 @@ void inpainting::load_sampling(bool save_all)
 	}
 
 	//ELSE IF !S.load(f_sample)
-		
+	
+	gproshan_debug(SAMPLING);
+	
 	// compute features will be seeds
 	patches_map.resize(mesh->n_vertices());
 
@@ -212,6 +214,7 @@ void inpainting::load_sampling(bool save_all)
 	for(index_t i = 0; i < mesh->n_vertices(); i++)
 		covered[i] = 0;
 	
+	gproshan_debug(SAMPLING);
 	real_t euc_radio;
 	real_t geo_radio;
 	vector<real_t> radios;
@@ -219,11 +222,15 @@ void inpainting::load_sampling(bool save_all)
 	size_t count_cov = 0;
 	size_t count_cov_patch = 0;
 
-	bool faces[mesh->n_faces()] = {};
+	gproshan_debug(SAMPLING);
+	bool * faces = new bool[mesh->n_faces()];
+	memset(faces, 0, sizeof(bool) * mesh->n_faces());
 	vector<index_t> idxs_he;
+	gproshan_debug(SAMPLING);
 
 	bool * invalid_seed = new bool[mesh->n_vertices()];
 	memset(invalid_seed, 0, mesh->n_vertices() * sizeof(bool));
+	gproshan_debug(SAMPLING);
 
 	for(const index_t & vsf: all_sorted_features)
 	{
@@ -265,10 +272,11 @@ void inpainting::load_sampling(bool save_all)
 				}
 
 				for(auto i: idxs_he)
-					faces[i] = true;
+					faces[i/3] = true;
 			}
 		}
 	}						
+	gproshan_debug(SAMPLING);
 
 	delete [] invalid_seed;
 
@@ -279,6 +287,7 @@ void inpainting::load_sampling(bool save_all)
 	gproshan_debug_var(seeds.size());
 	M = seeds.size();
 
+	gproshan_debug(SAMPLING);
 	///////////////////////////////////////
 
 #ifndef NDEBUG

@@ -184,7 +184,7 @@ void patch::recover_radial_disjoint(che * mesh, const real_t & radio_, const ind
 	// for small meshes 6000 0.e-5
 	// for others 2.e-5
 	geodesics::params params;
-	params.radio = radio_ + 1.3-5;
+	params.radio = radio_ + 1e-5;//numeric_limits<real_t>::epsilon();
 
 	geodesics geo(mesh, {v}, params);
 
@@ -246,7 +246,7 @@ void patch::init_radial_disjoint(vector<index_t> & idxs_he, che * mesh, const re
 	a_vec vn = T.col(2);// normal at the center
 	vertex n;
 	n.x = vn(0); n.y = vn(1); n.z = vn(2);
-	vertex p, c;
+	vertex p;
 	vertices.push_back(v);
 	euc_radio = -INFINITY;
 	
@@ -257,26 +257,25 @@ void patch::init_radial_disjoint(vector<index_t> & idxs_he, che * mesh, const re
 	double proj_area = 0;
 	double area_mesh = mesh->area_surface();
 	double ratio;
-	index_t idx_he;
+//	index_t idx_he;
 	
+	vertex c = mesh->get_vertex(v);
 
 	for(index_t i = 1; i < geo.n_sorted_index(); i++)
 	{
-		const index_t & v = geo(i);
+		const index_t & u = geo(i);
 
-		if(v >= mesh->n_vertices() || geo[v] > radio_) break;
+		if(u >= mesh->n_vertices() || geo[u] > radio_) break;
 		
-		c = mesh->get_vertex(v); // central vertice
-
 		ratio = (i == 1) ? 0 : area / proj_area;
 
-		if(add_vertex_by_faces(c, n, N, &geo(0), geo.n_sorted_index(), delta, geo, mesh, v, area, proj_area, M_PI/2.5 ) && (ratio < sum_thres || (area/area_mesh) < area_thres) )
+		if(add_vertex_by_faces(c, n, N, &geo(0), geo.n_sorted_index(), delta, geo, mesh, u, area, proj_area, M_PI/2.5 ) && (ratio < sum_thres || (area/area_mesh) < area_thres) )
 		{	
 			//compute euclidean radio
-			p = mesh->get_vertex(v);
+			p = mesh->get_vertex(u);
 			if(*(p - c) > euc_radio)
 				euc_radio = *(p - c);
-			idxs_he.push_back(idx_he);
+//			idxs_he.push_back(idx_he);
 			
 		}
 		else
@@ -317,7 +316,7 @@ void patch::init_radial_disjoint(vector<index_t> & idxs_he, che * mesh, const re
 	//gproshan_debug_var(vertices.size());
 	//gproshan_debug_var(geo.n_sorted_index());
 
-	geo_radio = geo.radio();
+	geo_radio = geo[geo(vertices.size() - 1)];
 	//gproshan_debug_var(vertices.size());
 }
 
