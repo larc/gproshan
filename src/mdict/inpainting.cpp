@@ -150,10 +150,7 @@ void inpainting::load_sampling(bool save_all)
 	vector<index_t> all_sorted_features;
 	vector<index_t> seeds;
 	size_t featsize;
-	TIC(d_time) 
 	load_features(all_sorted_features, featsize);
-	TOC(d_time)
-	gproshan_debug_var(d_time);
 
 	gproshan_debug_var(all_sorted_features.size());
 	string f_points = tmp_file_path(mesh->name_size() + '_' + to_string(sum_thres) + '_' + to_string(area_thres) + ".points");
