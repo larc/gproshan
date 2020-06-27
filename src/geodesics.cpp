@@ -43,6 +43,7 @@ geodesics::~geodesics()
 
 const real_t & geodesics::operator[](const index_t & i) const
 {
+	
 	assert(i < n_vertices);
 	return dist[i];
 }
@@ -111,7 +112,7 @@ void geodesics::execute(che * mesh, const vector<index_t> & sources, const param
 	}
 }
 
-void geodesics::run_fastmarching(che * mesh, const vector<index_t> & sources, const size_t & n_iter, const real_t & radio, bool (*fun) (const index_t &))
+void geodesics::run_fastmarching(che * mesh, const vector<index_t> & sources, const size_t & n_iter, const real_t & radio, const fm_function_t & fun)
 {
 	index_t BLACK = 0, GREEN = 1, RED = 2;
 	index_t * color = new index_t[n_vertices];
