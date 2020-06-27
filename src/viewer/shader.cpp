@@ -3,6 +3,8 @@
 #include <cassert>
 #include <fstream>
 #include <iostream>
+#include <sstream>
+
 
 using namespace std;
 
@@ -119,15 +121,30 @@ bool shader::load(GLenum shader_type, const char * filename)
 
 bool shader::read_source(const char * filename, std::string & source)
 {
+	ifstream is(filename);
+
+	if(!is.is_open())
+		return false;
+
 	source = "";
-
-	ifstream in(filename);
-
-	assert(in.is_open());
-
-	string line;
-	while(getline(in, line))
-		source += line + '\n';
+	
+	string line, include;
+	while(getline(is, line))
+	{
+		stringstream ss(line);
+		
+		ss >> include;
+		if(include == "#include")
+		{
+			ss >> include;
+			if(read_source(include.c_str(), include))
+				source += include + '\n';
+		}
+		else
+			source += line + '\n';
+	}
+	
+	is.close();
 
 	return true;
 }
