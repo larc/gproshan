@@ -98,7 +98,7 @@ vec3 colormap_2(float x)
 	return vec3(r, g, b);
 }
 
-vec3 colormap(int i, float x)
+vec3 colormap(uint i, float x)
 {
 	if(i == 0) return colormap_0(x);
 	if(i == 1) return colormap_1(x);

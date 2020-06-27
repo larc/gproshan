@@ -10,6 +10,7 @@ noperspective in vec3 edge_dist;
 
 layout(location = 0) out vec4 frag_color;
 
+uniform uint idx_colormap;
 uniform vec3 eye;
 uniform vec3 light;
 uniform bool render_flat;
@@ -39,7 +40,7 @@ float fresnel(vec3 N, vec3 E)
 
 void main()
 {
-	vec3 color = colormap(2, gs_color);
+	vec3 color = colormap(idx_colormap, gs_color);
 
 	// lines
 	if(render_lines)
