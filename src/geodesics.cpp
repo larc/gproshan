@@ -112,7 +112,7 @@ void geodesics::execute(che * mesh, const vector<index_t> & sources, const param
 	}
 }
 
-void geodesics::run_fastmarching(che * mesh, const vector<index_t> & sources, const size_t & n_iter, const real_t & radio, fun_t fun)
+void geodesics::run_fastmarching(che * mesh, const vector<index_t> & sources, const size_t & n_iter, const real_t & radio, const fm_function_t & fun)
 {
 	index_t BLACK = 0, GREEN = 1, RED = 2;
 	index_t * color = new index_t[n_vertices];
@@ -158,7 +158,7 @@ void geodesics::run_fastmarching(che * mesh, const vector<index_t> & sources, co
 
 		sorted_index[n_sorted++] = black_i;
 
-		if(!fun(black_i)) break;
+		if(fun && !fun(black_i)) break;
 
 		link_t black_link;
 		mesh->link(black_link, black_i);
