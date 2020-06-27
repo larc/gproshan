@@ -152,11 +152,11 @@ bool app_viewer::process_delete_vertices(viewer * p_view)
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
-	if(!view->active_mesh().selected.size()) return true;
+	if(!mesh.selected.size()) return true;
 
 	gproshan_debug(removing vertex);
-	mesh->remove_vertices(view->active_mesh().selected);
-	view->active_mesh().selected.clear();
+	mesh->remove_vertices(mesh.selected);
+	mesh.selected.clear();
 	gproshan_debug(removing vertex);
 
 	return false;
@@ -301,9 +301,9 @@ bool app_viewer::process_functional_maps(viewer * p_view)
 		
 			#pragma omp parallel for
 			for(index_t v = 0; v < mesh->n_vertices(); v++)
-				view->active_mesh()->color(v) = eigvec(v, k);
+				mesh->color(v) = eigvec(v, k);
 
-			view->active_mesh().update_vbo();
+			mesh.update_vbo();
 		}
 		
 		view->idx_active_mesh = 0;
@@ -458,11 +458,11 @@ bool app_viewer::process_key_points(viewer * p_view)
 	
 	key_points kps(mesh);
 
-	view->active_mesh().selected.clear();
-	view->active_mesh().selected.reserve(kps.size());
+	mesh.selected.clear();
+	mesh.selected.reserve(kps.size());
 
 	for(index_t i = 0; i < kps.size(); i++)
-		view->active_mesh().selected.push_back(kps[i]);
+		mesh.selected.push_back(kps[i]);
 	
 	return false;
 }
@@ -498,7 +498,7 @@ bool app_viewer::process_mdict_patch(viewer * p_view)
 	vertex vdir;
 	patch p;
 	real_t mean_edge = mesh->mean_edge();
-	for(auto & v: view->active_mesh().selected)
+	for(auto & v: mesh.selected)
 	{
 		p.init(mesh, v, dictionary::T, dictionary::T * mean_edge, toplevel);
 		for(auto & u: p.vertices)
@@ -528,7 +528,7 @@ bool app_viewer::process_mdict_patch(viewer * p_view)
 		avg_nvp += p.vertices.size();
 	}
 
-	avg_nvp /= view->active_mesh().selected.size();
+	avg_nvp /= mesh.selected.size();
 	gproshan_debug_var(avg_nvp);
 	
 	delete [] toplevel;
@@ -615,7 +615,7 @@ bool app_viewer::process_iterative_inpaiting(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
 
-//	mesh_iterative_inpaiting(mesh, view->active_mesh().selected, freq, rt, m, M, f, learn);
+//	mesh_iterative_inpaiting(mesh, mesh.selected, freq, rt, m, M, f, learn);
 	
 	return false;
 }
@@ -640,13 +640,13 @@ bool app_viewer::compute_toplesets(viewer * p_view)
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 	
-	if(!view->active_mesh().selected.size())
-		view->active_mesh().selected.push_back(0);
+	if(!mesh.selected.size())
+		mesh.selected.push_back(0);
 
 	index_t * toplesets = new index_t[mesh->n_vertices()];
 	index_t * sorted = new index_t[mesh->n_vertices()];
 	vector<index_t> limites;
-	mesh->compute_toplesets(toplesets, sorted, limites, view->active_mesh().selected);
+	mesh->compute_toplesets(toplesets, sorted, limites, mesh.selected);
 
 	size_t n_toplesets = limites.size() - 1;
 
@@ -670,21 +670,25 @@ bool app_viewer::process_voronoi(viewer * p_view)
 	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
-
-	TIC(view->time)
+	
+	geodesics::params params;
+	params.cluster = true;
+	
 #ifdef GPROSHAN_CUDA
-	geodesics ptp(mesh, view->active_mesh().selected, geodesics::PTP_GPU, nullptr, 1);
-#else
-	geodesics ptp(mesh, view->active_mesh().selected, geodesics::FM, nullptr, 1);
+	params.alg = geodesics::PTP_GPU;
 #endif
+	
+	TIC(view->time)
+	geodesics ptp(mesh, mesh.selected, params);
 	TOC(view->time)
+	
 	gproshan_log_var(view->time);
 
 	#pragma omp parallel for
 	for(index_t i = 0; i < mesh->n_vertices(); i++)
 	{
 		mesh->color(i) = ptp.clusters[i];
-		mesh->color(i) /= view->active_mesh().selected.size() + 1;
+		mesh->color(i) /= mesh.selected.size() + 1;
 	}
 	
 	return false;
@@ -703,13 +707,13 @@ bool app_viewer::process_farthest_point_sampling_radio(viewer * p_view)
 	double time_fps;
 
 	TIC(view->time)
-	radio = farthest_point_sampling_ptp_gpu(mesh, view->active_mesh().selected, time_fps, NIL, radio);
+	radio = farthest_point_sampling_ptp_gpu(mesh, mesh.selected, time_fps, NIL, radio);
 	TOC(view->time)
 	gproshan_log_var(time_fps);
 #endif // GPROSHAN_CUDA
 
 	gproshan_log_var(radio);
-	gproshan_log_var(view->active_mesh().selected.size());
+	gproshan_log_var(mesh.selected.size());
 	gproshan_log_var(view->time);
 	
 	return false;
@@ -729,7 +733,7 @@ bool app_viewer::process_farthest_point_sampling(viewer * p_view)
 	if(ImGui::Button("Run"))
 	{
 		TIC(view->time)
-		load_sampling(view->active_mesh().selected, radio, mesh, n);
+		load_sampling(mesh.selected, radio, mesh, n);
 		TOC(view->time)
 		gproshan_log_var(view->time);
 	}
@@ -783,11 +787,11 @@ bool app_viewer::process_geodesics_fm(viewer * p_view)
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
-	if(!view->active_mesh().selected.size())
-		view->active_mesh().selected.push_back(0);
+	if(!mesh.selected.size())
+		mesh.selected.push_back(0);
 
 	TIC(view->time)
-	geodesics fm(mesh, view->active_mesh().selected);
+	geodesics fm(mesh, mesh.selected);
 	TOC(view->time)
 	gproshan_log_var(view->time);
 
@@ -802,11 +806,11 @@ bool app_viewer::process_geodesics_ptp_cpu(viewer * p_view)
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
-	if(!view->active_mesh().selected.size())
-		view->active_mesh().selected.push_back(0);
+	if(!mesh.selected.size())
+		mesh.selected.push_back(0);
 	
 	TIC(view->time)
-	geodesics ptp(mesh, view->active_mesh().selected, geodesics::PTP_CPU);
+	geodesics ptp(mesh, mesh.selected, { geodesics::PTP_CPU });
 	TOC(view->time)
 	gproshan_log_var(view->time);
 
@@ -821,11 +825,11 @@ bool app_viewer::process_geodesics_heat_flow(viewer * p_view)
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
-	if(!view->active_mesh().selected.size())
-		view->active_mesh().selected.push_back(0);
+	if(!mesh.selected.size())
+		mesh.selected.push_back(0);
 	
 	TIC(view->time)
-	geodesics heat_flow(mesh, view->active_mesh().selected, geodesics::HEAT_FLOW);
+	geodesics heat_flow(mesh, mesh.selected, { geodesics::HEAT_FLOW });
 	TOC(view->time)
 	gproshan_log_var(view->time);
 
@@ -843,8 +847,8 @@ bool app_viewer::process_geodesics_ptp_gpu(viewer * p_view)
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
-	if(!view->active_mesh().selected.size())
-		view->active_mesh().selected.push_back(0);
+	if(!mesh.selected.size())
+		mesh.selected.push_back(0);
 	
 	if(view->n_dist != mesh->n_vertices())
 	{
@@ -854,8 +858,12 @@ bool app_viewer::process_geodesics_ptp_gpu(viewer * p_view)
 		view->dist = new real_t[view->n_dist];
 	}
 
+	geodesics::params params;
+	params.alg = geodesics::PTP_GPU;
+	params.dist_alloc = view->dist;
+
 	TIC(view->time)
-	geodesics ptp(mesh, view->active_mesh().selected, geodesics::PTP_GPU, view->dist);
+	geodesics ptp(mesh, mesh.selected, params);
 	TOC(view->time)
 	gproshan_log_var(view->time);
 	
@@ -870,11 +878,11 @@ bool app_viewer::process_geodesics_heat_flow_gpu(viewer * p_view)
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
-	if(!view->active_mesh().selected.size())
-		view->active_mesh().selected.push_back(0);
+	if(!mesh.selected.size())
+		mesh.selected.push_back(0);
 	
 	TIC(view->time)
-	geodesics heat_flow(mesh, view->active_mesh().selected, geodesics::HEAT_FLOW_GPU);
+	geodesics heat_flow(mesh, mesh.selected, { geodesics::HEAT_FLOW_GPU });
 	TOC(view->time)
 	gproshan_log_var(view->time);
 
@@ -990,6 +998,7 @@ bool app_viewer::process_edge_collapse(viewer * p_view)
 bool app_viewer::select_multiple(viewer * p_view)
 {
 	app_viewer * view = (app_viewer *) p_view;
+	che_viewer & mesh = view->active_mesh();
 
 	static char line[128] = "";
 	
@@ -1000,7 +1009,7 @@ bool app_viewer::select_multiple(viewer * p_view)
 		stringstream ss(line);
 		index_t v;
 		while(ss >> v)
-			view->active_mesh().selected.push_back(v);
+			mesh.selected.push_back(v);
 	}
 	
 	return true;

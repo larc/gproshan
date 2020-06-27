@@ -239,7 +239,7 @@ real_t che::area_surface() const
 	return area;
 }
 
-void che::update_colors(const real_t * vcolor)
+void che::update_colors(const real_t * vcolor, real_t max_color)
 {
 	if(!VC) VC = new real_t[n_vertices_];
 
@@ -251,17 +251,18 @@ void che::update_colors(const real_t * vcolor)
 
 		return;
 	}
-
-	real_t max_c = 0;
 	
-	#pragma omp parallel for reduction(max: max_c)
-	for(index_t v = 0; v < n_vertices_; v++)
-		if(vcolor[v] < INFINITY)
-			max_c = max(vcolor[v], max_c);
+	if(max_color < numeric_limits<real_t>::epsilon())
+	{
+		#pragma omp parallel for reduction(max: max_color)
+		for(index_t v = 0; v < n_vertices_; v++)
+			if(vcolor[v] < INFINITY)
+				max_color = max(vcolor[v], max_color);
+	}
 
 	#pragma omp parallel for
 	for(index_t v = 0; v < n_vertices_; v++)
-		VC[v] = vcolor[v] / max_c;
+		VC[v] = vcolor[v] / max_color;
 }
 
 const real_t & che::color(const index_t & v) const

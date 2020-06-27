@@ -245,11 +245,11 @@ double test_fast_marching(real_t & error, const real_t * exact, che * mesh, cons
 
 	for(int i = 0; i < n_test; i++)
 	{
-		TIC(t) geodesics fm(mesh, source, geodesics::FM); TOC(t);
+		TIC(t) geodesics fm(mesh, source); TOC(t);
 		seconds = min(seconds, t);
 	}
 
-	geodesics fm(mesh, source, geodesics::FM);
+	geodesics fm(mesh, source);
 
 	error = compute_error(&fm[0], exact, mesh->n_vertices(), source.size());
 
