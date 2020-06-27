@@ -124,6 +124,15 @@ bool viewer::run()
 				ImGui::EndMenu();
 			}
 
+			if(ImGui::BeginMenu("Colormap"))
+			{
+				for(index_t i = 0; i < colormap.size(); i++)
+					if(ImGui::MenuItem(colormap[i].c_str(), nullptr, i == idx_colormap, i != idx_colormap))
+						idx_colormap = i;
+
+				ImGui::EndMenu();
+			}
+
 			for(index_t i = 0; i < sub_menus.size(); i++)
 			{
 				if(ImGui::BeginMenu(sub_menus[i].c_str()))
@@ -653,6 +662,7 @@ void viewer::render_gl()
 	glProgramUniform1f(shader_sphere, shader_sphere("scale"), cam.zoom);
 
 
+	glProgramUniform1ui(shader_program, shader_program("idx_colormap"), idx_colormap);
 	glProgramUniform3f(shader_program, shader_program("eye"), eye[1], eye[2], eye[3]);
 	glProgramUniform3f(shader_program, shader_program("light"), light[1], light[2], light[3]);
 	glProgramUniform1i(shader_program, shader_program("render_flat"), render_flat);
@@ -662,6 +672,7 @@ void viewer::render_gl()
 	glProgramUniformMatrix4fv(shader_program, shader_program("proj_mat"), 1, 0, &proj_mat[0][0]);
 
 	
+	glProgramUniform1ui(shader_pointcloud, shader_program("idx_colormap"), idx_colormap);
 	glProgramUniform3f(shader_pointcloud, shader_pointcloud("eye"), eye[1], eye[2], eye[3]);
 	glProgramUniform3f(shader_pointcloud, shader_pointcloud("light"), light[1], light[2], light[3]);
 	glProgramUniformMatrix4fv(shader_pointcloud, shader_pointcloud("model_view_mat"), 1, 0, &view_mat[0][0]);
