@@ -13,14 +13,14 @@ using namespace std;
 namespace gproshan {
 
 
-geodesics::geodesics(che * mesh, const vector<index_t> & sources, const option_t & opt, real_t *const & e_dist, const bool & cluster, const size_t & n_iter, const real_t & radio): n_vertices(mesh->n_vertices())
+geodesics::geodesics(che * mesh, const vector<index_t> & sources, const params & p): n_vertices(mesh->n_vertices())
 {
 	assert(n_vertices > 0);
 
-	free_dist = e_dist == nullptr;
+	free_dist = p.dist_alloc == nullptr;
 
-	dist = free_dist ? new real_t[n_vertices] : e_dist;
-	clusters = cluster ? new index_t[n_vertices] : nullptr;
+	dist = free_dist ? new real_t[n_vertices] : p.dist_alloc;
+	clusters = p.cluster ? new index_t[n_vertices] : nullptr;
 	sorted_index = new index_t[n_vertices];
 
 	n_sorted = 0;
@@ -30,7 +30,7 @@ geodesics::geodesics(che * mesh, const vector<index_t> & sources, const option_t
 		dist[v] = INFINITY;
 
 	assert(sources.size() > 0);
-	execute(mesh, sources, n_iter, radio, opt);
+	execute(mesh, sources, p);
 }
 
 geodesics::~geodesics()
@@ -43,6 +43,7 @@ geodesics::~geodesics()
 
 const real_t & geodesics::operator[](const index_t & i) const
 {
+	
 	assert(i < n_vertices);
 	return dist[i];
 }
@@ -91,19 +92,19 @@ void geodesics::normalize()
 		dist[sorted_index[i]] /= max;
 }
 
-void geodesics::execute(che * mesh, const vector<index_t> & sources, const size_t & n_iter, const real_t & radio, const option_t & opt)
+void geodesics::execute(che * mesh, const vector<index_t> & sources, const params & p)
 {
-	switch(opt)
+	switch(p.alg)
 	{
-		case FM: run_fastmarching(mesh, sources, n_iter, radio);
+		case FM: run_fastmarching(mesh, sources, p.n_iter, p.radio, p.fun);
 			break;
-		case PTP_CPU: run_parallel_toplesets_propagation_cpu(mesh, sources, n_iter, radio);
+		case PTP_CPU: run_parallel_toplesets_propagation_cpu(mesh, sources, p.n_iter, p.radio);
 			break;
 		case HEAT_FLOW: run_heat_flow(mesh, sources);
 			break;
 
 #ifdef GPROSHAN_CUDA
-		case PTP_GPU: run_parallel_toplesets_propagation_gpu(mesh, sources, n_iter, radio);
+		case PTP_GPU: run_parallel_toplesets_propagation_gpu(mesh, sources, p.n_iter, p.radio);
 			break;
 		case HEAT_FLOW_GPU: run_heat_flow_gpu(mesh, sources);
 			break;
@@ -111,7 +112,7 @@ void geodesics::execute(che * mesh, const vector<index_t> & sources, const size_
 	}
 }
 
-void geodesics::run_fastmarching(che * mesh, const vector<index_t> & sources, const size_t & n_iter, const real_t & radio)
+void geodesics::run_fastmarching(che * mesh, const vector<index_t> & sources, const size_t & n_iter, const real_t & radio, const fm_function_t & fun)
 {
 	index_t BLACK = 0, GREEN = 1, RED = 2;
 	index_t * color = new index_t[n_vertices];
@@ -156,6 +157,8 @@ void geodesics::run_fastmarching(che * mesh, const vector<index_t> & sources, co
 		if(dist[black_i] > radio) break;
 
 		sorted_index[n_sorted++] = black_i;
+
+		if(fun && !fun(black_i)) break;
 
 		link_t black_link;
 		mesh->link(black_link, black_i);
