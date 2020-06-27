@@ -1,5 +1,7 @@
 #version 410 core
 
+#include ../shaders/colormap.glsl
+
 in vec3 gs_position;
 in vec3 gs_normal;
 in float gs_color;
@@ -8,6 +10,7 @@ noperspective in vec3 edge_dist;
 
 layout(location = 0) out vec4 frag_color;
 
+uniform uint idx_colormap;
 uniform vec3 eye;
 uniform vec3 light;
 uniform bool render_flat;
@@ -35,41 +38,9 @@ float fresnel(vec3 N, vec3 E)
 	return pow(sqrt( 1. - NE * NE ), sharpness);
 }
 
-//https://github.com/kbinani/colormap-shaders/blob/master/shaders/glsl/IDL_CB-PuBu.frag
-float colormap_red(float x) {
-	if (x < 0.75) {
-		return 1012.0 * x - 389.0;
-	} else {
-		return -1.11322769567548E+03 * x + 1.24461193212872E+03;
-	}
-}
-
-float colormap_green(float x) {
-	if (x < 0.5) {
-		return 1012.0 * x - 129.0;
-	} else {
-		return -1012.0 * x + 899.0;
-	}
-}
-
-float colormap_blue(float x) {
-	if (x < 0.25) {
-		return 1012.0 * x + 131.0;
-	} else {
-		return -1012.0 * x + 643.0;
-	}
-}
-
-vec3 colormap(float x) {
-	float r = clamp(colormap_red(x) / 255.0, 0.0, 1.0);
-	float g = clamp(colormap_green(x) / 255.0, 0.0, 1.0);
-	float b = clamp(colormap_blue(x) / 255.0, 0.0, 1.0);
-	return vec3(r, g, b);
-}
-
 void main()
 {
-	vec3 color = colormap(gs_color);
+	vec3 color = colormap(idx_colormap, gs_color);
 
 	// lines
 	if(render_lines)
