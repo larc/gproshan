@@ -12,17 +12,19 @@ namespace gproshan::mdict {
 class basis_dct: public basis
 {
 	private:
-		int n; // int frequency
+		size_t n_freq;		///< frequency
 
 	public:
-		basis_dct(const size_t & _n, const real_t & _radio = 1);
-		void discrete(a_mat & phi, const a_mat & xy);
-		double get_frequency(size_t idx);
+		basis_dct(const size_t & n, const real_t & r = 1);
+		void discrete(a_mat & phi, const a_vec & x, const a_vec & y);
+		void d_discrete(a_mat & phi, const a_vec & x, const a_vec & y);
+		real_t freq(const index_t & idx);
 
 	private:
 		void plot_basis(std::ostream & os);
 		void plot_atoms(std::ostream & os, const a_vec & A);
 		a_vec dct(const a_vec & x, const a_vec & y, const index_t & nx, const index_t & ny);
+		a_vec d_dct(const a_vec & x, const a_vec & y, const index_t & nx, const index_t & ny);
 		void dct(std::ostream & os, const index_t & nx, const index_t & ny);
 };
 

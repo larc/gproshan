@@ -6,14 +6,27 @@
 namespace gproshan::mdict {
 
 
+basis::basis(const real_t & r, const size_t & d): _radio(r), _dim(d) {}
+
+real_t & basis::radio()
+{
+	return _radio;
+}
+
+const size_t & basis::dim() const
+{
+	return _dim;
+}
+
 void basis::plot_basis()
 {
 	string file = tmp_file_path("basis.gpi");
 	ofstream os(file);
+
 	os << "set term qt size 1000,1000;" << endl;
 	os << "set isosamples 50,50;" << endl;
 	os << "set parametric;" << endl;
-	os << "set vrange [-"<< 0 << ":" << radio <<"];" << endl;
+	os << "set vrange [-"<< 0 << ":" << _radio <<"];" << endl;
 	os << "set urange [-pi:pi];" << endl;
 	os << "unset key;" << endl;
 	os << "set pm3d at b;" << endl;
@@ -45,7 +58,7 @@ void basis::plot_atoms(const a_mat & A)
 	os << "set multiplot layout " << s << "," << s << " rowsfirst scale 1.2;" << endl;
 	os << "set isosamples 25,25;" << endl;
 	os << "set parametric;" << endl;
-	os << "set vrange [-"<< 0 << ":" << radio <<"];" << endl;
+	os << "set vrange [-"<< 0 << ":" << _radio <<"];" << endl;
 	os << "set urange [-pi:pi];" << endl;
 	os << "unset key;" << endl;
 	os << "set pm3d at b;" << endl;
@@ -57,6 +70,7 @@ void basis::plot_atoms(const a_mat & A)
 		plot_atoms(os, A.col(i));
 		os << ";" << endl;
 	}
+
 	os << "unset multiplot;" << endl;
 	os << "pause -1;" << endl;
 
@@ -67,41 +81,30 @@ void basis::plot_atoms(const a_mat & A)
 	system(file.c_str());
 }
 
-size_t basis::get_dim()
+void basis::plot_patch(const a_mat & A, const a_mat & xyz, const index_t & p)
 {
-	return dim;
-}
-
-real_t basis::get_radio()
-{
-	return radio;
-}
-
-
-void basis::plot_patch(const a_mat & A, const a_mat & xyz, index_t i)
-{
-	string data = tmp_file_path("xyz_" + to_string(i) + ".dat");
 	a_mat tmp = xyz.t();
-	tmp.save(data.c_str(),arma::arma_ascii);
+	string data = tmp_file_path("xyz_" + to_string(p) + ".dat");
+	tmp.save(data.c_str(), arma::arma_ascii);
 
 	size_t K = A.n_rows;
 	size_t m = A.n_cols;
 	size_t s = sqrt(m);
 	s += !(s * s == K);
 
-	string file = tmp_file_path("atoms_patch_"+ to_string(i) + ".gpi");
+	string file = tmp_file_path("atoms_patch_"+ to_string(p) + ".gpi");
 	ofstream os(file);
 
 	os << "set term qt size 1000,1000;" << endl;
 	os << "set multiplot layout " << s << "," << s << " rowsfirst scale 1.2;" << endl;
 	os << "set isosamples 25,25;" << endl;
 	os << "set parametric;" << endl;
-	os << "set vrange [-"<< 0 << ":" << radio <<"];" << endl;
+	os << "set vrange [-"<< 0 << ":" << _radio <<"];" << endl;
 	os << "set urange [-pi:pi];" << endl;
 	os << "unset key;" << endl;
 	os << "set pm3d at b;" << endl;
 	os << "unset colorbox;" << endl;
-	os << "splot \"xyz_" << to_string(i) << ".dat\" u 1:2:3 with points palette pointsize 2 pointtype 7,";
+	os << "splot \"xyz_" << to_string(p) << ".dat\" u 1:2:3 with points palette pointsize 2 pointtype 7,";
 
 	for(index_t i = 0; i < m; i++)
 	{
@@ -109,6 +112,7 @@ void basis::plot_patch(const a_mat & A, const a_mat & xyz, index_t i)
 		plot_atoms(os, A.col(i));
 		os << ";" << endl;
 	}
+
 	os << "unset multiplot;" << endl;
 	os << "pause -1;" << endl;
 
@@ -117,8 +121,8 @@ void basis::plot_patch(const a_mat & A, const a_mat & xyz, index_t i)
 	//file = "gnuplot -persist " + file + " &";
 
 	//system(file.c_str());
-
 }
+
 
 } // namespace gproshan::mdict
 

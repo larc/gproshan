@@ -46,7 +46,7 @@ size_t dictionary::T = 5;
 dictionary::dictionary(che *const & _mesh, basis *const & _phi_basis, const size_t & _m, const size_t & _M, const real_t & _f, const bool & _learn, const bool & _d_plot):
 					mesh(_mesh), phi_basis(_phi_basis), m(_m), M(_M), f(_f), learn(_learn), d_plot(_d_plot)
 {
-	A.eye(phi_basis->dim, m);
+	A.eye(phi_basis->dim(), m);
 	dist = new real_t[mesh->n_vertices()]; 
 }
 
@@ -59,7 +59,7 @@ void dictionary::learning()
 {
 	gproshan_log(MDICT);
 
-	string f_dict = tmp_file_path(mesh->name_size() + '_' + to_string(phi_basis->dim) + '_' + to_string(m) + '_' + to_string(f) + '_' + to_string(L) + ".dict");
+	string f_dict = tmp_file_path(mesh->name_size() + '_' + to_string(phi_basis->dim()) + '_' + to_string(m) + '_' + to_string(f) + '_' + to_string(L) + ".dict");
 
 	if(learn)
 	{
@@ -67,7 +67,7 @@ void dictionary::learning()
 
 		if(!A.load(f_dict))
 		{
-			//A.eye(phi_basis->dim, m);
+			//A.eye(phi_basis->dim(), m);
 			//initialize with some alpha
 			//random
 			//arma::uvec r_ind = arma::randi<arma::uvec>(m, arma::distr_param(0, M));
@@ -79,7 +79,7 @@ void dictionary::learning()
 			A = U.cols(0,m);
 			gproshan_debug(svd done!);	
 			A = normalise(A);
-			gproshan_debug_var(phi_basis->radio);
+			gproshan_debug_var(phi_basis->radio());
 			gproshan_debug_var(m);
 			//
 			
@@ -89,9 +89,9 @@ void dictionary::learning()
 			A.save(f_dict);
 		}
 	}
-	else A.eye(phi_basis->dim, m);
-	gproshan_debug_var(phi_basis->radio);
-	assert(A.n_rows == phi_basis->dim);
+	else A.eye(phi_basis->dim(), m);
+	gproshan_debug_var(phi_basis->radio());
+	assert(A.n_rows == phi_basis->dim());
 	assert(A.n_cols == m);
 	if(d_plot)
 	{
@@ -118,20 +118,20 @@ void dictionary::init_sampling()
 	if(M == 0)
 	{
 		M = mesh->n_vertices();
-		phi_basis->radio = mesh->mean_edge();
+		phi_basis->radio() = mesh->mean_edge();
 	}
 	else
 	{
 		sampling.reserve(M);
-		if(!load_sampling(sampling, phi_basis->radio, mesh, M))
+		if(!load_sampling(sampling, phi_basis->radio(), mesh, M))
 			cerr << "Failed to load sampling" << endl;
 	}
 
-	s_radio = phi_basis->radio;
-	phi_basis->radio *= f;
+	s_radio = phi_basis->radio();
+	phi_basis->radio() *= f;
 
 	gproshan_debug_var(s_radio);
-	gproshan_debug_var(phi_basis->radio);
+	gproshan_debug_var(phi_basis->radio());
 }
 
 void dictionary::load_curvatures(a_vec & curvatures)
@@ -263,7 +263,7 @@ void dictionary::init_patches(const bool & reset, const fmask_t & mask)
 			for(index_t s = 0; s < M; s++)
 			{
 				index_t v = sample(s);
-				patches[s].init(mesh, v, dictionary::T, phi_basis->radio, toplevel);
+				patches[s].init(mesh, v, dictionary::T, phi_basis->radio(), toplevel);
 			}
 			
 
@@ -301,8 +301,8 @@ void dictionary::init_patches(const bool & reset, const fmask_t & mask)
 		patch & p = patches[s];
 
 		p.transform();
-		p.phi.set_size(p.xyz.n_cols, phi_basis->dim);
-		phi_basis->discrete(p.phi, p.xyz);
+		p.phi.set_size(p.xyz.n_cols, phi_basis->dim());
+		phi_basis->discrete(p.phi, p.xyz.row(0).t(), p.xyz.row(1).t());
 		p.phi = normalise(p.phi);
 	}
 
@@ -310,7 +310,7 @@ void dictionary::init_patches(const bool & reset, const fmask_t & mask)
 #ifndef NDEBUG
 	CImgList<real_t> imlist;
 	for(index_t s = 0; s < M; s++)
-		patches[s].save(phi_basis->radio, 16, imlist);
+		patches[s].save(phi_basis->radio(), 16, imlist);
 	imlist.save_ffmpeg_external("tmp/patches.mpg", 5);
 #endif	
 
@@ -340,8 +340,9 @@ real_t dictionary::mesh_reconstruction(const fmask_t & mask)
 	gproshan_log(MDICT);
 
 	assert(n_vertices == mesh->n_vertices());
-	return mdict::mesh_reconstruction(mesh, M, phi_basis->get_radio(), patches, patches_map, A, alpha, dist);
+	return mdict::mesh_reconstruction(mesh, M, phi_basis->radio(), patches, patches_map, A, alpha, dist);
 }
+
 void dictionary::update_alphas(a_mat & alpha, size_t threshold)
 {
 	size_t np_new = M - threshold;

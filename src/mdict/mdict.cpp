@@ -243,9 +243,9 @@ a_vec OMP(const patch & p, basis * phi_basis, const a_mat & A, const size_t & L)
 	arma::uchar_vec mask;
 	mask.zeros(A.n_cols);
 	for(index_t i = 0; i < A.n_cols; i++)
-		if(phi_basis->get_frequency(i) >= 0.5*p.avg_dist) //2.5* if it ismin
+		if(phi_basis->freq(i) >= 0.5*p.avg_dist) //2.5* if it ismin
 		{
-		//	gproshan_debug_var(phi_basis->get_frequency(i));
+		//	gproshan_debug_var(phi_basis->freq(i));
 		//	gproshan_debug_var(p.avg_dist);
 			 mask(i) = 1;
 		}

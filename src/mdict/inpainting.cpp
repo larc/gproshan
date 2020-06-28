@@ -354,12 +354,12 @@ void inpainting::init_radial_feature_patches()
 		patch & p = patches[s];
 
 		p.transform();
-		p.scale_xyz(phi_basis->get_radio());
+		p.scale_xyz(phi_basis->radio());
 		// adding add extra function
 		p.add_extra_xyz_disjoint(mesh,patches_map, s);
 		p.compute_avg_distance(mesh, patches_map, s);
-		p.phi.set_size(p.xyz.n_cols, phi_basis->get_dim());
-		phi_basis->discrete(p.phi, p.xyz);
+		p.phi.set_size(p.xyz.n_cols, phi_basis->dim());
+		phi_basis->discrete(p.phi, p.xyz.row(0).t(), p.xyz.row(1).t());
 	}	 
 
 	bool save_all = true;
@@ -484,8 +484,8 @@ void inpainting::init_voronoi_patches()
 		patch & p = patches[s];
 
 		p.transform();
-		p.phi.set_size(p.xyz.n_cols, phi_basis->get_dim());
-		phi_basis->discrete(p.phi, p.xyz);
+		p.phi.set_size(p.xyz.n_cols, phi_basis->dim());
+		phi_basis->discrete(p.phi, p.xyz.row(0).t(), p.xyz.row(1).t());
 		p.compute_avg_distance(mesh, patches_map, s);
 
 	} 
@@ -536,9 +536,9 @@ real_t inpainting::execute()
 		patch & p = patches[s];
 
 		p.transform();
-		p.scale_xyz(phi_basis->get_radio());
-		p.phi.set_size(p.xyz.n_cols, phi_basis->get_dim());
-		phi_basis->discrete(p.phi, p.xyz);
+		p.scale_xyz(phi_basis->radio());
+		p.phi.set_size(p.xyz.n_cols, phi_basis->dim());
+		phi_basis->discrete(p.phi, p.xyz.row(0).t(), p.xyz.row(1).t());
 
 	}
 
@@ -590,7 +590,7 @@ che * inpainting::point_cloud_reconstruction(real_t per, real_t fr)
 		if( S(i,3) > max_radio) max_radio = S(i,3); 
 
 	size_t total_points = 0;
-	A.eye(phi_basis->get_dim(), m);
+	A.eye(phi_basis->dim(), m);
 	
 
 	for(index_t i = 0; i < M; i++)
@@ -608,16 +608,19 @@ che * inpainting::point_cloud_reconstruction(real_t per, real_t fr)
 		T(0,2) = S(i,10);
 		T(1,2) = S(i,11);
 		T(2,2) = S(i,12);
+		
+		patch & p = patches[i];
 
-		patches[i].init_random(c, T, radio, max_radio, per, fr);
-		total_points += patches[i].vertices.size();
-		patches[i].phi.set_size(patches[i].vertices.size(), phi_basis->get_dim());
-		phi_basis->discrete(patches[i].phi, patches[i].xyz);
+		p.init_random(c, T, radio, max_radio, per, fr);
+		p.phi.set_size(p.vertices.size(), phi_basis->dim());
+		phi_basis->discrete(p.phi, p.xyz.row(0).t(), p.xyz.row(1).t());
 		
 
 		a_vec x = patches[i].phi * A * alpha.col(i);
 		patches[i].xyz.row(2) = x.t();
 
+		total_points += patches[i].vertices.size();
+		
 		for(index_t j = 0; j < patches[i].vertices.size(); j++)
 			if (patches[i].xyz(2, j) > 2)
 				gproshan_debug_var( i);
@@ -630,7 +633,7 @@ che * inpainting::point_cloud_reconstruction(real_t per, real_t fr)
 	for(index_t i = 0; i < M; i++)
 	{
 
-		patches[i].iscale_xyz(phi_basis->get_radio());
+		patches[i].iscale_xyz(phi_basis->radio());
 		patches[i].itransform();
 	}
 

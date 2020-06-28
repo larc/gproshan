@@ -8,56 +8,47 @@
 namespace gproshan::mdict {
 
 
-basis_cosine::basis_cosine(const size_t & _r, const size_t & _n, const real_t & _radio)
+basis_cosine::basis_cosine(const size_t & nr, const size_t & nf, const real_t & r): basis(r, r * nf), n_rot(nr), n_freq(nf) {}
+
+void basis_cosine::discrete(a_mat & phi, const a_vec & x, const a_vec & y)
 {
-	radio = _radio;
-	r = _r;
-	n = _n;
-	dim = r * n;
-}
+	assert(phi.n_cols == _dim);
 
-void basis_cosine::discrete(a_mat & phi, const a_mat & xy)
-{
-	assert(phi.n_cols == dim);
-
-	a_vec x = xy.row(0).t();
-	a_vec y = xy.row(1).t();
-
-	real_t d = 1.0 / (r - 1);
+	real_t d = 1.0 / (n_rot - 1);
 	real_t c;
 
-	for(size_t k = 0, ni = 1; ni <= n; ni++ )
+	for(size_t k = 0, ni = 1; ni <= n_freq; ni++ )
 	for(real_t alpha = 0; alpha <= 1; alpha += d, k++)
 	{
-		c = ni * M_PI / radio;
+		c = ni * M_PI / _radio;
 		phi.col(k) = cosine(x, y, c, alpha);
 	}
 }
 
 void basis_cosine::plot_basis(ostream & os)
 {
-	real_t d = 1.0 / (r - 1);
+	real_t d = 1.0 / (n_rot - 1);
 	real_t c;
 
-	os << "set multiplot layout " << n << "," << r << " rowsfirst scale 1.2;" << endl;
+	os << "set multiplot layout " << n_freq << "," << n_rot << " rowsfirst scale 1.2;" << endl;
 
-	for(size_t ni = 1; ni <= n; ni++ )
+	for(size_t ni = 1; ni <= n_freq; ni++ )
 	for(real_t alpha = 0; alpha <= 1; alpha += d)
 	{
-		c = ni * M_PI / radio;
+		c = ni * M_PI / _radio;
 		os << "splot v * cos(u), v * sin(u), "; cosine(os, c, alpha); os << ";" << endl;
 	}
 }
 
 void basis_cosine::plot_atoms(ostream & os, const a_vec & A)
 {
-	real_t d = 1.0 / (r - 1);
+	real_t d = 1.0 / (n_rot - 1);
 	real_t c;
 
-	for(size_t k = 0, ni = 1; ni <= n; ni++ )
+	for(size_t k = 0, ni = 1; ni <= n_freq; ni++ )
 	for(real_t alpha = 0; alpha <= 1; alpha += d, k++)
 	{
-		c = ni * M_PI / radio;
+		c = ni * M_PI / _radio;
 		os << " + " << A(k) << " * "; cosine(os, c, alpha);
 	}
 }
