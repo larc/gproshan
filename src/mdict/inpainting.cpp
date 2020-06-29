@@ -22,11 +22,18 @@ inpainting::inpainting(che *const & _mesh, basis *const & _phi_basis, const para
 	percent = p.percentage;
 	area_thres = p.area_thres;
 
+	key_name = mesh->name_size() + '_' + to_string(delta) + '_' + to_string(sum_thres) + '_' + to_string(area_thres);
+
 	M = mesh->n_vertices() / avg_p;
+
 	mask = new bool[mesh->n_vertices()];
 	memset(mask, 0, sizeof(bool) * mesh->n_vertices());
 }
 
+inpainting::~inpainting()
+{
+	delete [] mask;
+}
 
 void inpainting::load_mask()
 {
@@ -55,7 +62,6 @@ void inpainting::load_mask()
 		size_t rn = 0;
 		while (k < percentage)
 		{
-		
 			rn = distribution(generator);
 			if(!mask[rn])
 			{
@@ -63,11 +69,9 @@ void inpainting::load_mask()
 				V(rn) = 1;
 				k++;
 			}
-				
 		}
 		V.save(f_mask);
 	}
-	
 }
 
 void inpainting::load_mask(const std::vector<index_t> * vertices, const index_t * clusters)
@@ -139,67 +143,38 @@ void inpainting::load_mask(const std::vector<index_t> * vertices, const index_t 
 
 void inpainting::load_sampling(bool save_all)
 {
-	// saving sampling
-	//double delta = PI/6;
-	//double sum_thres = 0.008; // best arma 0.0001 the worst with 0.001, now with 0.0005 lets see tomorrow
-	//double sum_thres = PI;
-	string f_sampl = tmp_file_path(mesh->name_size() + '_' + to_string(delta) + '_' + to_string(sum_thres) + '_' + to_string(area_thres) + ".rsampl");
-
-	arma::mat S;
-
+	size_t featsize;
 	vector<index_t> all_sorted_features;
 	vector<index_t> seeds;
-	size_t featsize;
 	load_features(all_sorted_features, featsize);
 
 	gproshan_debug_var(all_sorted_features.size());
-	string f_points = tmp_file_path(mesh->name_size() + '_' + to_string(sum_thres) + '_' + to_string(area_thres) + ".points");
 
-//	vector<index_t> features(all_sorted_features.begin(), all_sorted_features.begin() + featsize );
-//	gproshan_debug_var(features.size());
-//	geodesics geo(mesh, features , geodesics::FM, NULL, false, mesh->n_vertices());
-//	index_t * indexes = new index_t[geo.n_sorted_index()];
-//	geo.copy_sorted_index(indexes, geo.n_sorted_index());
 	size_t count = 0;
-//	real_t max_radio = geo[indexes[mesh->n_vertices()-1]] ;
-	
-	//radio *= 1.1;
 	real_t area_mesh = mesh->area_surface();
-	real_t max_radio = 0.05 * area_mesh;
-	gproshan_debug_var(max_radio);
 
-	if(S.load(f_sampl))
+	a_vec S;
+	if(S.load(tmp_file_path(key_name + ".rsampl")))
 	{
-		gproshan_debug(already done);
+		gproshan_debug(loading sampling);
+
 		size_t n_seeds = S.n_rows;
 		real_t euc_radio, geo_radio;
 		for(index_t i = 0; i < n_seeds; i++)
 		{
 			patch p;
-		//	gproshan_debug_var(i);
-			//p.recover_radial_disjoint( mesh, S(i,1), S(i,0) );
-			p.init_radial_disjoint(euc_radio, geo_radio, mesh, S(i, 0), S(i, 1), delta, sum_thres, area_thres, area_mesh);
-			patches.push_back(p); 
+			p.init_radial_disjoint(euc_radio, geo_radio, mesh, S(i), delta, sum_thres, area_thres, area_mesh);
+			patches.push_back(move(p)); 
 		}
 		
 		M = n_seeds;
-		string f_points = tmp_file_path(mesh->name_size() + '_' + to_string(sum_thres) + '_' + to_string(area_thres) + ".points");
-		gproshan_debug_var(n_seeds);
-		a_vec outlv(n_seeds);
-		gproshan_debug(restored);
-		for(index_t i = 0; i < n_seeds; i++)
-		{
-			outlv(i) = S(i,0);
-		}
-		outlv.save(f_points);
-		gproshan_debug(restored);
-
+		
 		return;
 	}
 
 	//ELSE IF !S.load(f_sample)
 	
-	gproshan_debug(SAMPLING);
+	gproshan_debug(computing sampling);
 	
 	// compute features will be seeds
 	patches_map.resize(mesh->n_vertices());
@@ -226,10 +201,8 @@ void inpainting::load_sampling(bool save_all)
 		if(invalid_seed[vsf]) continue;
 
 		patch p;
-		// increasing a bit the radio
-		p.init_radial_disjoint(euc_radio, geo_radio, mesh, vsf, max_radio, delta, sum_thres, area_thres, area_mesh);
+		p.init_radial_disjoint(euc_radio, geo_radio, mesh, vsf, delta, sum_thres, area_thres, area_mesh);
 
-		//gproshan_debug_var(p.vertices.size());
 		count_cov_patch = 0;
 		if(p.vertices.size() >= 7 )
 		{
@@ -239,8 +212,7 @@ void inpainting::load_sampling(bool save_all)
 			count_cov += count_cov_patch;
 			if(count_cov_patch > 0)
 			{
-				//gproshan_debug_var(p.vertices.size());
-				patches.push_back(p);
+				patches.push_back(move(p));
 				seeds.push_back(vsf);
 				radios.push_back(euc_radio);
 				geo_radios.push_back(geo_radio);
@@ -264,63 +236,46 @@ void inpainting::load_sampling(bool save_all)
 
 	delete [] invalid_seed;
 
-	vector<index_t> outliers;
+	M = seeds.size();
+	
+	gproshan_log(saving sampling);
+
+	S.resize(seeds.size());
+
+	#pragma omp parallel for
+	for(index_t i = 0; i < seeds.size(); i++)
+		S(i) = seeds[i];
+	
+	S.save(tmp_file_path(key_name + ".rsampl"));
+
 	gproshan_debug_var(sum_thres);
 	gproshan_debug_var(count);
 	gproshan_debug_var(count_cov);
 	gproshan_debug_var(seeds.size());
-	M = seeds.size();
+	gproshan_debug_var(M);
 
-	gproshan_debug(SAMPLING);
-	///////////////////////////////////////
 
 #ifndef NDEBUG
-	gproshan_debug_var(M);
-	index_t tmp;
-	bool remark[mesh->n_vertices()] = {};
+	vector<index_t> outliers;
 	
 	gproshan_debug_var(outliers.size());
 	for(index_t i = 0; i < mesh->n_vertices(); i++)
-	{
-		if(!covered[i] )
-		{
+		if(!covered[i])
 			outliers.push_back(i);
-		}
-	}
-	a_vec outlv(outliers.size() );
-	//gproshan_debug_var(seeds.size());
+
+	a_vec outlv(outliers.size());
 	for(index_t i = 0; i < outliers.size(); i++)
-	{
-		//outlv(i) = seeds[i];
 		outlv(i) = outliers[i];
-		//gproshan_debug_var(seeds[i]);
-	}
 		
-	gproshan_debug_var(f_points);
-	outlv.save(f_points);
-	S.resize(seeds.size(),2);
-	for(index_t i = 0; i < seeds.size(); i++)
-	{
-		S(i,0) = seeds[i];
-		S(i,1) = geo_radios[i];
-	}
-	S.save(f_sampl);
+	outlv.save(tmp_file_path(key_name + ".outlv"));
 #endif // NDEBUG
 }
 
 void inpainting::init_radial_feature_patches()
 {
 	load_sampling(false);
-
 	load_mask();
 
-	//Initializing patches
-	gproshan_log(initializing patches);
-	n_vertices = mesh->n_vertices();
-	patches.resize(M);
-	patches_map.resize(n_vertices);
-	//initializing patch
-	gproshan_debug_var(M);
 	#ifndef NDEBUG
 		size_t patch_avg_size = 0;
 		size_t patch_min_size = NIL;
@@ -342,11 +297,18 @@ void inpainting::init_radial_feature_patches()
 		gproshan_debug_var(patch_max_size);
 	#endif
 
+	//Initializing patches
+	gproshan_log(initializing patches);
+	gproshan_debug_var(M);
+	
+	n_vertices = mesh->n_vertices();
+	patches.resize(M);
+	patches_map.resize(n_vertices);
+	
 	bool * pmask = mask;
+	
 	for(index_t s = 0; s < M; s++)
-		patches[s].reset_xyz_disjoint(mesh, dist, M, patches_map, s ,[&pmask](const index_t & i) -> bool { return pmask[i]; } );
-
-	gproshan_debug(passed);
+		patches[s].reset_xyz_disjoint(mesh, dist, M, patches_map, s, [&pmask](const index_t & i) -> bool { return pmask[i]; });
 
 	#pragma omp parallel for
 	for(index_t s = 0; s < M; s++)
@@ -355,7 +317,6 @@ void inpainting::init_radial_feature_patches()
 
 		p.transform();
 		p.scale_xyz(phi_basis->radio());
-		// adding add extra function
 		p.add_extra_xyz_disjoint(mesh,patches_map, s);
 		p.compute_avg_distance(mesh, patches_map, s);
 		p.phi.set_size(p.xyz.n_cols, phi_basis->dim());
@@ -384,11 +345,11 @@ void inpainting::init_radial_feature_patches()
 			AS(i,10) = p.T(0,2);
 			AS(i,11) = p.T(1,2);
 			AS(i,12) = p.T(2,2);
-
 		}
-		string f_samplall = tmp_file_path(mesh->name_size() + '_' + to_string(delta) + '_' + to_string(sum_thres) + '_' + to_string(area_thres) + ".smp");
-		AS.save(f_samplall);
+		
+		AS.save(tmp_file_path(key_name + ".smp"));
 	}
+	
 	gproshan_log(radial patches are ready);
 }
 
@@ -510,10 +471,9 @@ real_t inpainting::execute()
 	// sparse coding and reconstruction with all patches
 	TIC(d_time) sparse_coding(); TOC(d_time)
 	gproshan_debug_var(d_time);
-	string f_alpha = tmp_file_path(mesh->name_size() + '_' + to_string(delta) + '_' + to_string(sum_thres) + '_' + to_string(area_thres) + ".alpha");
-	save_alpha(f_alpha);
-
 	
+	save_alpha(tmp_file_path(key_name + ".alpha"));
+
 	draw_patches(295);
 	draw_patches(384);
 	draw_patches(319);
@@ -565,40 +525,37 @@ real_t inpainting::execute()
 	gproshan_debug_var(non_zero.size());
 	real_t ratio = (M * 13.0 + non_zero.size()) / (3 * mesh->n_vertices());
 	gproshan_debug_var(ratio);
-
+	
+	return 0;
 }
 
 che * inpainting::point_cloud_reconstruction(real_t per, real_t fr)
 {
 	arma::mat S;
-	arma::mat T(3,3);
 	arma::mat alpha;
 
-
-	string f_smp = tmp_file_path(mesh->name_size() + '_' + to_string(delta) + '_' + to_string(sum_thres) + '_' + to_string(area_thres) + ".smp");
-	string f_alpha = tmp_file_path(mesh->name_size() + '_' + to_string(delta) + '_' + to_string(sum_thres) +'_' + to_string(area_thres) + ".alpha");
-
-	S.load(f_smp);
-	alpha.load(f_alpha);
-	gproshan_debug_var(S.n_rows);
+	S.load(tmp_file_path(key_name + ".smp"));
+	alpha.load(tmp_file_path(key_name + ".alpha"));
+	
 	M = S.n_rows;
-	real_t radio, max_radio = -1;
 	patches.resize(M);
-	vertex c;
 
+	gproshan_debug_var(M);
+
+	real_t max_radio = -1;
+
+	#pragma omp parallel for reduction(max: max_radio)
 	for(index_t i = 0; i < M; i++)
-		if( S(i,3) > max_radio) max_radio = S(i,3); 
+		max_radio = max(max_radio, S(i, 3)); 
 
-	size_t total_points = 0;
 	A.eye(phi_basis->dim(), m);
 	
-
+	size_t total_points = 0;
+	
+	#pragma omp parallel for
 	for(index_t i = 0; i < M; i++)
 	{
-		c.x = S(i,0);
-		c.y = S(i,1);
-		c.z = S(i,2);
-		radio = S(i,3);
+		arma::mat T(3,3);
 		T(0,0) = S(i,4);
 		T(1,0) = S(i,5);
 		T(2,0) = S(i,6);
@@ -611,31 +568,28 @@ che * inpainting::point_cloud_reconstruction(real_t per, real_t fr)
 		
 		patch & p = patches[i];
 
-		p.init_random(c, T, radio, max_radio, per, fr);
+		p.init_random({S(i, 0), S(i, 1), S(i, 2)}, T, S(i, 3), max_radio, per, fr);
 		p.phi.set_size(p.vertices.size(), phi_basis->dim());
 		phi_basis->discrete(p.phi, p.xyz.row(0).t(), p.xyz.row(1).t());
 		
-
 		a_vec x = patches[i].phi * A * alpha.col(i);
-		patches[i].xyz.row(2) = x.t();
+		p.xyz.row(2) = x.t();
+		
+		p.iscale_xyz(phi_basis->radio());
+		p.itransform();
 
-		total_points += patches[i].vertices.size();
+		#pragma omp atomic
+		total_points += p.vertices.size();
 		
 		for(index_t j = 0; j < patches[i].vertices.size(); j++)
-			if (patches[i].xyz(2, j) > 2)
-				gproshan_debug_var( i);
-		
-
+			if(patches[i].xyz(2, j) > 2)
+			{
+				gproshan_debug_var(i);
+				break;
+			}
 	}
 
 	gproshan_debug_var(total_points);
-
-	for(index_t i = 0; i < M; i++)
-	{
-
-		patches[i].iscale_xyz(phi_basis->radio());
-		patches[i].itransform();
-	}
 
 	vector<vertex> point_cloud;
 	point_cloud.reserve(total_points);
@@ -647,16 +601,13 @@ che * inpainting::point_cloud_reconstruction(real_t per, real_t fr)
 								patches[i].xyz(2, j)
 								});
 
-	che * nmesh = new che(point_cloud.data(), point_cloud.size(), nullptr, 0);
+	che * new_mesh = new che(point_cloud.data(), point_cloud.size(), nullptr, 0);
 
-	gproshan_debug_var(sum_thres);
-	string f_pc = tmp_file_path(mesh->name_size() + '_' + to_string(delta) + '_' + to_string(sum_thres)+ '_' + to_string(area_thres) 
-	+ '_' + to_string(per) + '_' + to_string(fr) + "_pc");
-
-	che_off::write_file(nmesh, f_pc);
-	gproshan_debug(Done!);
+	che_off::write_file(new_mesh, tmp_file_path(key_name + '_' + to_string(per) + '_' + to_string(fr) + "_pc"));
 	
-	return nmesh;
+	gproshan_debug(saved new point cloud);
+	
+	return new_mesh;
 }
 
 
@@ -697,6 +648,8 @@ real_t inpainting::execute_tmp()
 
 	TIC(d_time) mesh_reconstruction(); TOC(d_time)
 	gproshan_debug_var(d_time);
+
+	return 0;
 }
 
 

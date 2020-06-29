@@ -19,7 +19,7 @@ class inpainting : public dictionary
 {
 	public:
 		inpainting(che *const & _mesh, basis *const & _phi_basis, const params & p);
-		virtual ~inpainting() = default;
+		virtual ~inpainting();
 
 		real_t execute();
 		void load_mask(const std::vector<index_t> * vertices, const index_t * clusters);
@@ -30,8 +30,8 @@ class inpainting : public dictionary
 		che * point_cloud_reconstruction(real_t per, real_t fr);
 		vector<index_t> sort_indexes(const vector<real_t> &v);
 
-		
 		real_t execute_tmp();
+
 	private:
 		size_t avg_p;
 		size_t percent;
@@ -40,7 +40,8 @@ class inpainting : public dictionary
 		bool * mask;
 		double area_thres;
 		size_t max_points;
-	
+		
+		std::string key_name;
 };
 
 

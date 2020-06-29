@@ -142,14 +142,15 @@ bool patch::add_vertex_by_faces(const vertex & c, vertex & n, vector<vertex> & N
 	return added;
 }
 
-void patch::init_random(vertex c, arma::mat T, real_t radio, real_t max_radio, real_t per, real_t fr)
+void patch::init_random(const vertex & c, const arma::mat & T, const real_t & radio, const real_t & max_radio, const real_t & percent, const real_t & fr)
 {
+	this->radio = radio;
 	this->T = T;
+	
 	x.resize(3);
 	x(0) = c.x;
 	x(1) = c.y;
 	x(2) = c.z;
-	this->radio = radio;
 	
 
 	std::random_device rd; //Will be used to obtain a seed for the random number engine
@@ -159,7 +160,7 @@ void patch::init_random(vertex c, arma::mat T, real_t radio, real_t max_radio, r
 
 	// free the parameters to the interface
 	// fix the point cloud viewer
-	size_t n_points = (radio/max_radio) * per; // change this using a sigmoid function
+	size_t n_points = (radio / max_radio) * percent; // change this using a sigmoid function
 	vertices.resize(n_points);
 	xyz.resize(3,n_points);
 
@@ -231,7 +232,6 @@ void patch::init_radial_disjoint(	real_t & euc_radio,
 									real_t & geo_radio,
 									che * mesh,
 									const index_t & v,
-									const real_t & max_radio,
 									const real_t & delta,		
 									const real_t & sum_thres,
 									const real_t & area_thres,
@@ -267,7 +267,7 @@ void patch::init_radial_disjoint(	real_t & euc_radio,
 
 		ratio = area / proj_area;
 
-		if(add_vertex_by_faces(c, n, N, delta, params.dist_alloc, mesh, u, area, proj_area, M_PI/2.5 ) && (ratio < sum_thres || (area/area_mesh) < area_thres) )
+		if(add_vertex_by_faces(c, n, N, delta, params.dist_alloc, mesh, u, area, proj_area, M_PI / 2.5 ) && (ratio < sum_thres || (area / area_mesh) < area_thres) )
 		{
 			euc_radio = max(euc_radio, *(mesh->get_vertex(u) - c));
 			return true;
@@ -283,9 +283,7 @@ void patch::init_radial_disjoint(	real_t & euc_radio,
 	size_t d_fitting = 2;
 	size_t min_points = (d_fitting + 1) * (d_fitting + 2) / 2;
 	if(vertices.size() > min_points)
-	{
 		jet_fit_directions(mesh, v);
-	}
 	else
 		normal_fit_directions(mesh,v);
 
@@ -293,23 +291,17 @@ void patch::init_radial_disjoint(	real_t & euc_radio,
 	radio = -INFINITY;
 
 	vertex p;
-	for(index_t i=1; i < vertices.size(); i++)
+	for(auto & vi: vertices)
 	{
-		p = mesh->get_vertex(vertices[i]); 
+		p = mesh->get_vertex(vi);
+
 		p = p - c ;
-		p = p - ((p,n)*n);
+		p = p - ((p, n) * n);
 
-		if(*p > radio)
-		{
-			radio = *p;
-		}
-
+		radio = max(radio, *p);
 	}
-	//gproshan_debug_var(vertices.size());
-	//gproshan_debug_var(geo.n_sorted_index());
 
 	geo_radio = geo[vertices.back()];
-	//gproshan_debug_var(vertices.size());
 }
 
 // xyz = E.t * (xyz - avg)
@@ -467,6 +459,7 @@ void patch::add_extra_xyz_disjoint(che * mesh, vector<vpatches_t> & vpatches, co
 		}	
 	}
 }
+
 void patch::reset_xyz_disjoint(che * mesh, real_t * dist, size_t M, vector<vpatches_t> & vpatches, const index_t & p, const fmask_t & mask)
 {
 	size_t m = vertices.size();
@@ -481,23 +474,22 @@ void patch::reset_xyz_disjoint(che * mesh, real_t * dist, size_t M, vector<vpatc
 		gproshan_debug_var(vertices.size() - m);*/
 	}
 	
-	m = std::max (vertices.size(), min_nv);
-
+	m = std::max(vertices.size(), min_nv);
 	xyz.set_size(3, m);
-	index_t j = 0;
-	for(index_t i = 0; i < vertices.size(); i++)
+	
+	index_t i = 0;
+	for(auto & vi: vertices)
 	{
-		if(!mask || mask(i))
+		if(!mask || mask(vi))
 		{ 
-			const vertex & v = mesh->gt(vertices[i]);
-			xyz(0, j) = v.x;
-			xyz(1, j) = v.y;
-			xyz(2, j) = v.z;
-			//vpatches[vertices[i]].push_back({p, j++});
-			vpatches[vertices[i]][p] = j++;
+			const vertex & v = mesh->gt(vi);
+			xyz(0, i) = v.x;
+			xyz(1, i) = v.y;
+			xyz(2, i) = v.z;
+			
+			vpatches[vi][p] = i++;
 		}
 	}
-
 }
 
 void patch::scale_xyz(const real_t & radio_f)
