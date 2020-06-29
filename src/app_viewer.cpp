@@ -616,9 +616,9 @@ bool app_viewer::process_inpaiting(viewer * p_view)
 	{
 		basis_dct phi(n);
 		inpainting dict(mesh, &phi, params);
-		dict.execute();
+		real_t max_error = dict.execute();
 		
-		mesh->update_colors(&dict[0], 0.03);
+		mesh->update_colors(&dict[0], 0.0068);
 		mesh->update_normals();
 	}
 
@@ -650,9 +650,7 @@ bool app_viewer::process_mask(viewer * p_view)
 		dict.init_radial_feature_patches();
 		//dict.init_voronoi_patches();
 		mesh->update_colors(&dict[0]);
-		string f_points = tmp_file_path(mesh->name_size() + "_" +
-										to_string(params.sum_thres) + "_" +
-										to_string(params.area_thres) + ".points");
+		string f_points = tmp_file_path(string(dict) + ".rsampl");
 
 		a_vec points_out;
 		gproshan_debug_var(f_points);

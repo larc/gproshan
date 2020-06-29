@@ -35,6 +35,11 @@ inpainting::~inpainting()
 	delete [] mask;
 }
 
+inpainting::operator const std::string & () const
+{
+	return key_name;
+}
+
 void inpainting::load_mask()
 {
 	//string f_mask = tmp_file_path(mesh->name_size() + '_' + to_string(avg_p) + '_' + to_string(percent) + '_' + to_string(radio) + ".msk");
@@ -227,7 +232,7 @@ void inpainting::load_sampling(bool save_all)
 						const vertex & va = mesh->get_vertex(vsf);
 						const vertex & vb = mesh->get_vertex(v);
 
-						invalid_seed[v] = *(va - vb) < 0.4 * euc_radio;
+						invalid_seed[v] = *(va - vb) < 0.8 * euc_radio;
 					}
 				}
 			}
@@ -258,7 +263,7 @@ void inpainting::load_sampling(bool save_all)
 #ifndef NDEBUG
 	vector<index_t> outliers;
 	
-	gproshan_debug_var(outliers.size());
+
 	for(index_t i = 0; i < mesh->n_vertices(); i++)
 		if(!covered[i])
 			outliers.push_back(i);
@@ -459,11 +464,11 @@ real_t inpainting::execute()
 
 	TIC(d_time) init_radial_feature_patches(); TOC(d_time)
 	gproshan_debug_var(d_time);
-//	L = 15;
+	//L = 10;
 
 	// sparse coding and reconstruction with all patches
-	TIC(d_time) sparse_coding(); TOC(d_time)
-	gproshan_debug_var(d_time);
+	//TIC(d_time) sparse_coding(); TOC(d_time)
+	//gproshan_debug_var(d_time);
 
 	TIC(d_time) learning(); TOC(d_time)
 	gproshan_debug_var(d_time);
@@ -472,11 +477,9 @@ real_t inpainting::execute()
 	TIC(d_time) sparse_coding(); TOC(d_time)
 	gproshan_debug_var(d_time);
 	
-	save_alpha(tmp_file_path(key_name + ".alpha"));
-
 	draw_patches(295);
-	draw_patches(384);
-	draw_patches(319);
+	//draw_patches(384);
+	//draw_patches(319);
 	draw_patches(312);
 	//patches_map.resize(n_vertices);
 	for(index_t i = 0; i < n_vertices; i++)
@@ -505,10 +508,7 @@ real_t inpainting::execute()
 	bool *pmask;
 
 
-	/*draw_patches(295);
-	draw_patches(384);
-	draw_patches(319);
-	draw_patches(312);*/
+
 	//draw_patches(76);
 	//draw_patches(1486);
 	
@@ -518,15 +518,14 @@ real_t inpainting::execute()
 	//phi_basis->plot_basis();
 	//gproshan_debug_var(alpha.col(463));
 	
-
-	TIC(d_time) mesh_reconstruction([&pmask](const index_t & i) -> bool { return pmask[i]; }); TOC(d_time)
+	real_t max_error;
+	TIC(d_time) max_error = mesh_reconstruction([&pmask](const index_t & i) -> bool { return pmask[i]; }); TOC(d_time)
 	gproshan_debug_var(d_time);
 	arma::uvec non_zero = find( abs(alpha) > 0.00001);
 	gproshan_debug_var(non_zero.size());
 	real_t ratio = (M * 13.0 + non_zero.size()) / (3 * mesh->n_vertices());
 	gproshan_debug_var(ratio);
-	
-	return 0;
+
 }
 
 che * inpainting::point_cloud_reconstruction(real_t per, real_t fr)

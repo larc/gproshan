@@ -239,7 +239,7 @@ void patch::init_radial_disjoint(	real_t & euc_radio,
 									)
 {
 	radio = -INFINITY;
-	min_nv = 0;
+	min_nv = 128;
 
 	euc_radio = -INFINITY;
 	

@@ -321,7 +321,7 @@ real_t mesh_reconstruction(che * mesh, size_t M, const real_t & radio, vector<pa
 	image_out.save("../tmp/barbara_output.jpg");
 	(image,image_out).display();*/
 	//real_t error = 0;
-	return error;
+	return max_error;
 }
 
 a_vec non_local_means_vertex(a_mat & alpha, const index_t & v, vector<patch> & patches, vector<vpatches_t> & patches_map, const real_t & h)

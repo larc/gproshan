@@ -259,6 +259,7 @@ a_mat OMP_all(const vector<patch> & patches, basis * phi_basis, const a_mat & A,
 	#pragma omp parallel for
 	for(index_t i = 0; i < patches.size(); i++)
 		alpha.col(i) = OMP(patches[i],phi_basis, A, L);
+		
 
 	return alpha;
 }

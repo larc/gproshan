@@ -247,7 +247,7 @@ void che::update_colors(const real_t * vcolor, real_t max_color)
 	{
 		#pragma omp parallel for
 		for(index_t v = 0; v < n_vertices_; v++)
-			VC[v] = 0.5;
+			VC[v] = 0.3;
 
 		return;
 	}

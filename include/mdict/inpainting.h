@@ -21,6 +21,8 @@ class inpainting : public dictionary
 		inpainting(che *const & _mesh, basis *const & _phi_basis, const params & p);
 		virtual ~inpainting();
 
+		operator const std::string & () const;
+
 		real_t execute();
 		void load_mask(const std::vector<index_t> * vertices, const index_t * clusters);
 		void load_mask();
@@ -40,7 +42,7 @@ class inpainting : public dictionary
 		bool * mask;
 		double area_thres;
 		size_t max_points;
-		
+	
 		std::string key_name;
 };
 
