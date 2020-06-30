@@ -24,7 +24,7 @@ class basis
 		basis(const real_t & r, const size_t & d);
 		virtual ~basis() = default;
 		virtual void discrete(a_mat & phi, const a_vec & x, const a_vec & y) = 0;
-		virtual void d_discrete(a_mat & phi, const a_vec & x, const a_vec & y) = 0;
+		virtual void d_discrete(a_mat & phi, const a_vec & x, const a_vec & y, const bool & b) = 0;
 		virtual real_t freq(const index_t & idx) = 0;
 		real_t & radio();
 		const size_t & dim() const;

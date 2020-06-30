@@ -588,27 +588,22 @@ che * inpainting::point_cloud_reconstruction(real_t per, real_t fr)
 	che * new_mesh = new che(point_cloud.data(), point_cloud.size(), nullptr, 0);
 	new_mesh->update_normals();
 	
-	vertex vdx, vdy;
+	a_vec n;
 	for(index_t v = 0, i = 0; i < M; i++)
 	{
 		patch & p = patches[i];
 
-		phi_basis->d_discrete(p.phi, p.xyz.row(0).t(), p.xyz.row(1).t());
+		phi_basis->d_discrete(p.phi, p.xyz.row(0).t(), p.xyz.row(1).t(), 0);
 		a_vec dx = p.phi * A * alpha.col(i);
 		
-		phi_basis->d_discrete(p.phi, p.xyz.row(1).t(), p.xyz.row(0).t());
+		phi_basis->d_discrete(p.phi, p.xyz.row(0).t(), p.xyz.row(1).t(), 1);
 		a_vec dy = p.phi * A * alpha.col(i);
 
 		for(index_t j = 0; j < patches[i].xyz.n_cols; j++, v++)
 		{
-			vertex & n = new_mesh->normal(v);
-
-			vdx = {1, 0, dx(j)};
-			vdy = {0, 1, dy(j)};
-				
-			n = vdx * vdy;
-			n /= *n;
-		//	n = {p.T(0, 2), p.T(1, 2), p.T(2, 2)};
+			n = {-dx(j), -dy(j), 1};
+			n = normalise(p.T * n);
+			new_mesh->normal(v) = {n(0), n(1), n(2)};
 		}	
 	}
 
