@@ -353,7 +353,7 @@ real_t dictionary::mesh_reconstruction(const fmask_t & mask)
 		
 		a_vec x = rp.phi * A * alpha.col(p);
 			
-		patches_error[p] = { norm(x - rp.xyz.row(2).t()), p };
+		patches_error[p] = { accu(abs(x - rp.xyz.row(2).t())) / rp.vertices.size(), p };
 
 		rp.xyz.row(2) = x.t();
 	}
