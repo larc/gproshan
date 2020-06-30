@@ -476,7 +476,9 @@ real_t inpainting::execute()
 	// sparse coding and reconstruction with all patches
 	TIC(d_time) sparse_coding(); TOC(d_time)
 	gproshan_debug_var(d_time);
-	
+
+	save_alpha(tmp_file_path(key_name + ".alpha"));
+
 	draw_patches(295);
 	draw_patches(312);
 
@@ -551,19 +553,19 @@ che * inpainting::point_cloud_reconstruction(real_t per, real_t fr)
 		patch & p = patches[i];
 
 		p.init_random({S(i, 0), S(i, 1), S(i, 2)}, T, S(i, 3), max_radio, per, fr);
-		p.phi.set_size(p.vertices.size(), phi_basis->dim());
+		p.phi.set_size(p.xyz.n_cols, phi_basis->dim());
 		phi_basis->discrete(p.phi, p.xyz.row(0).t(), p.xyz.row(1).t());
 		
-		a_vec x = patches[i].phi * A * alpha.col(i);
+		a_vec x = p.phi * A * alpha.col(i);
 		p.xyz.row(2) = x.t();
 		
 		p.iscale_xyz(phi_basis->radio());
 		p.itransform();
 
 		#pragma omp atomic
-		total_points += p.vertices.size();
+		total_points += p.xyz.n_cols;
 		
-		for(index_t j = 0; j < patches[i].vertices.size(); j++)
+		for(index_t j = 0; j < patches[i].xyz.n_cols; j++)
 			if(patches[i].xyz(2, j) > 2)
 			{
 				gproshan_debug_var(i);
@@ -577,15 +579,40 @@ che * inpainting::point_cloud_reconstruction(real_t per, real_t fr)
 	point_cloud.reserve(total_points);
 
 	for(index_t i = 0; i < M; i++)
-	for(index_t j = 0; j < patches[i].vertices.size(); j++)
+	for(index_t j = 0; j < patches[i].xyz.n_cols; j++)
 		point_cloud.push_back({	patches[i].xyz(0, j), 
 								patches[i].xyz(1, j),
 								patches[i].xyz(2, j)
 								});
 
 	che * new_mesh = new che(point_cloud.data(), point_cloud.size(), nullptr, 0);
+	new_mesh->update_normals();
+	
+	vertex vdx, vdy;
+	for(index_t v = 0, i = 0; i < M; i++)
+	{
+		patch & p = patches[i];
 
-	che_off::write_file(new_mesh, tmp_file_path(key_name + '_' + to_string(per) + '_' + to_string(fr) + "_pc"));
+		phi_basis->d_discrete(p.phi, p.xyz.row(0).t(), p.xyz.row(1).t());
+		a_vec dx = p.phi * A * alpha.col(i);
+		
+		phi_basis->d_discrete(p.phi, p.xyz.row(1).t(), p.xyz.row(0).t());
+		a_vec dy = p.phi * A * alpha.col(i);
+
+		for(index_t j = 0; j < patches[i].xyz.n_cols; j++, v++)
+		{
+			vertex & n = new_mesh->normal(v);
+
+			vdx = {1, 0, dx(j)};
+			vdy = {0, 1, dy(j)};
+				
+			n = vdx * vdy;
+			n /= *n;
+		//	n = {p.T(0, 2), p.T(1, 2), p.T(2, 2)};
+		}	
+	}
+
+	che_off::write_file(new_mesh, tmp_file_path(key_name + '_' + to_string(per) + '_' + to_string(fr) + "_pc"), che_off::NOFF);
 	
 	gproshan_debug(saved new point cloud);
 	

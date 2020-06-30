@@ -161,8 +161,7 @@ void patch::init_random(const vertex & c, const arma::mat & T, const real_t & ra
 	// free the parameters to the interface
 	// fix the point cloud viewer
 	size_t n_points = (radio / max_radio) * percent; // change this using a sigmoid function
-	vertices.resize(n_points);
-	xyz.resize(3,n_points);
+	xyz.resize(3, n_points);
 
 	xyz(0, 0) = 0;
 	xyz(1, 0) = 0;
