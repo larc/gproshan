@@ -478,20 +478,14 @@ real_t inpainting::execute()
 	gproshan_debug_var(d_time);
 	
 	draw_patches(295);
-	//draw_patches(384);
-	//draw_patches(319);
 	draw_patches(312);
-	//patches_map.resize(n_vertices);
-	for(index_t i = 0; i < n_vertices; i++)
-	{
-		patches_map[i].clear();
-	}
 
+	#pragma omp parallel for
+	for(index_t i = 0; i < n_vertices; i++)
+		patches_map[i].clear();
 	
 	for(index_t s = 0; s < M; s++)
 		patches[s].reset_xyz(mesh, patches_map, s, 0);
-
-
 
 	#pragma omp parallel for
 	for(index_t s = 0; s < M; s++)
@@ -502,30 +496,19 @@ real_t inpainting::execute()
 		p.scale_xyz(phi_basis->radio());
 		p.phi.set_size(p.xyz.n_cols, phi_basis->dim());
 		phi_basis->discrete(p.phi, p.xyz.row(0).t(), p.xyz.row(1).t());
-
 	}
 
-	bool *pmask;
+	bool * pmask = mask;
 
-
-
-	//draw_patches(76);
-	//draw_patches(1486);
-	
-	//draw_patches(400);
-	//draw_patches(500);
-	//draw_patches(56);
-	//phi_basis->plot_basis();
-	//gproshan_debug_var(alpha.col(463));
-	
-	real_t max_error;
-	TIC(d_time) max_error = mesh_reconstruction([&pmask](const index_t & i) -> bool { return pmask[i]; }); TOC(d_time)
+	TIC(d_time)
+	real_t max_error = mesh_reconstruction([&pmask](const index_t & i) -> bool { return pmask[i]; }); 
+	TOC(d_time)
 	gproshan_debug_var(d_time);
+	
 	arma::uvec non_zero = find( abs(alpha) > 0.00001);
 	gproshan_debug_var(non_zero.size());
 	real_t ratio = (M * 13.0 + non_zero.size()) / (3 * mesh->n_vertices());
 	gproshan_debug_var(ratio);
-
 }
 
 che * inpainting::point_cloud_reconstruction(real_t per, real_t fr)

@@ -48,6 +48,7 @@ class dictionary
 		std::vector<index_t> sampling;			///< samples, center of patches if sampling.
 		std::vector<patch> patches;				///< vector of patches.
 		std::vector<vpatches_t> patches_map;	///< invert index vertex to patches.
+		std::vector<std::pair<real_t, index_t> > patches_error;
 
 		double d_time;							///< time of operations.
 		bool learn;
@@ -61,7 +62,7 @@ class dictionary
 	
 	public:
 		const real_t & operator[](const index_t & i) const;
-		void draw_patches(index_t i);
+		const index_t & draw_patches(const index_t & p);
 
 	protected:
 		dictionary(	che *const & _mesh, 		///< pointer to input mesh.

@@ -4,6 +4,7 @@
 #include "mdict.h"
 #include "che_poisson.h"
 #include "che_fill_hole.h"
+#include "che_off.h"
 
 #include "viewer/viewer.h"
 
@@ -229,17 +230,17 @@ void dictionary::load_features(vector<index_t> & v_feat, size_t & featsize)
 	}
 
 	gproshan_debug(exists);
-	inp>>featsize;
-	//v_feat.resize(tam);
-	for(int i=0; i<featsize; i++)
+	inp >> featsize;
+	for(index_t i = 0; i < featsize; i++)
 	{
 		inp>>tmp;
 		v_feat.push_back(tmp);
 	}
-	inp>>tam;
-	for(int i=0; i<tam; i++)
+
+	inp >> tam;
+	for(index_t i = 0; i < tam; i++)
 	{
-		inp>>tmp;
+		inp >> tmp;
 		v_feat.push_back(tmp);
 	}
 
@@ -340,7 +341,80 @@ real_t dictionary::mesh_reconstruction(const fmask_t & mask)
 	gproshan_log(MDICT);
 
 	assert(n_vertices == mesh->n_vertices());
-	return mdict::mesh_reconstruction(mesh, M, phi_basis->radio(), patches, patches_map, A, alpha, dist);
+
+	a_mat V(3, mesh->n_vertices(), arma::fill::zeros);
+
+	patches_error.resize(M);
+
+	#pragma omp parallel for
+	for(index_t p = 0; p < M; p++)
+	{
+		patch & rp = patches[p];
+		
+		a_vec x = rp.phi * A * alpha.col(p);
+			
+		patches_error[p] = { norm(x - rp.xyz.row(2).t()), p };
+
+		rp.xyz.row(2) = x.t();
+	}
+
+	sort(patches_error.begin(), patches_error.end());
+	
+	fprintf(stderr, "error %16s%16s\n", "best", "worst");
+	for(index_t i = 0; i < 10; i++)
+	{
+		const index_t & best = patches_error[i].second;
+		const index_t & worst = patches_error[M - i - 1].second;
+		
+		fprintf(stderr, "%5d:%8u>%8u%8u>%8u\n", i, best, draw_patches(best), worst, draw_patches(worst));
+	}
+	
+	#pragma omp parallel for
+	for(index_t p = 0; p < M; p++)
+	{
+		patch & rp = patches[p];
+		rp.iscale_xyz(phi_basis->radio());
+		rp.itransform();
+	}
+
+	#pragma omp parallel for
+	for(index_t v = 0; v < mesh->n_vertices(); v++)
+	{
+		if(patches_map[v].size() && (!mask || mask(v)) )
+			V.col(v) = simple_means_vertex(v, patches, patches_map);
+		else
+		{
+			V(0, v) = mesh->gt(v).x;
+			V(1, v) = mesh->gt(v).y;
+			V(2, v) = mesh->gt(v).z;
+		}
+	}
+
+	// ------------------------------------------------------------------------
+
+	vertex * new_vertices = (vertex *) V.memptr();
+
+	real_t error = 0;
+	real_t max_error = -1;
+
+	#pragma omp parallel for reduction(+: error) reduction(max: max_error)
+	for(index_t v = 0; v < mesh->n_vertices(); v++)
+	{
+		dist[v] = *(new_vertices[v] - mesh->get_vertex(v));
+		error += dist[v];
+		max_error = max(max_error, dist[v]);
+	}
+		
+	error /= mesh->n_vertices();
+
+	gproshan_debug_var(mesh->n_vertices());
+	gproshan_debug_var(error);
+	gproshan_debug_var(max_error);
+
+	mesh->set_vertices(new_vertices, mesh->n_vertices());
+	che_off::write_file(mesh, "../tmp/recon_mesh");
+	
+	return max_error;
 }
 
 void dictionary::update_alphas(a_mat & alpha, size_t threshold)
@@ -399,10 +473,10 @@ const real_t & dictionary::operator[](const index_t & i) const
 	return dist[i];
 }
 
-void dictionary::draw_patches(index_t i)
+const index_t & dictionary::draw_patches(const index_t & p)
 {
-	gproshan_debug_var(patches[i].vertices[0]);
-	phi_basis->plot_patch(A*alpha.col(i),patches[i].xyz, patches[i].vertices[0]);
+	phi_basis->plot_patch(A * alpha.col(p), patches[p].xyz, patches[p].vertices[0]);
+	return patches[p].vertices[0];
 }
 
 void dictionary::save_alpha(string file)
