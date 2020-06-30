@@ -293,9 +293,9 @@ void viewer::init_glsl()
 	shader_sphere.load_vertex("../shaders/vertex_sphere.glsl");
 	shader_sphere.load_fragment("../shaders/fragment_sphere.glsl");
 
-	shader_program.load_vertex("../shaders/vertex.glsl");
-	shader_program.load_geometry("../shaders/geometry.glsl");
-	shader_program.load_fragment("../shaders/fragment.glsl");
+	shader_triangles.load_vertex("../shaders/vertex.glsl");
+	shader_triangles.load_geometry("../shaders/geometry.glsl");
+	shader_triangles.load_fragment("../shaders/fragment.glsl");
 	
 	shader_normals.load_vertex("../shaders/vertex_normals.glsl");
 	shader_normals.load_geometry("../shaders/geometry_normals.glsl");
@@ -672,25 +672,23 @@ void viewer::render_gl()
 	glProgramUniformMatrix4fv(shader_sphere, shader_sphere("proj_mat"), 1, 0, &proj_mat[0][0]);
 	glProgramUniform1f(shader_sphere, shader_sphere("scale"), cam.zoom);
 
+	glProgramUniform1ui(shader_triangles, shader_triangles("idx_colormap"), idx_colormap);
+	glProgramUniform3f(shader_triangles, shader_triangles("eye"), eye[1], eye[2], eye[3]);
+	glProgramUniform3f(shader_triangles, shader_triangles("light"), light[1], light[2], light[3]);
+	glProgramUniform1i(shader_triangles, shader_triangles("render_flat"), render_flat);
+	glProgramUniform1i(shader_triangles, shader_triangles("render_lines"), render_lines);
+	glProgramUniform1i(shader_triangles, shader_triangles("render_wireframe"), render_wireframe_fill);
+	glProgramUniformMatrix4fv(shader_triangles, shader_triangles("model_view_mat"), 1, 0, &view_mat[0][0]);
+	glProgramUniformMatrix4fv(shader_triangles, shader_triangles("proj_mat"), 1, 0, &proj_mat[0][0]);
 
-	glProgramUniform1ui(shader_program, shader_program("idx_colormap"), idx_colormap);
-	glProgramUniform3f(shader_program, shader_program("eye"), eye[1], eye[2], eye[3]);
-	glProgramUniform3f(shader_program, shader_program("light"), light[1], light[2], light[3]);
-	glProgramUniform1i(shader_program, shader_program("render_flat"), render_flat);
-	glProgramUniform1i(shader_program, shader_program("render_lines"), render_lines);
-	glProgramUniform1i(shader_program, shader_program("render_wireframe"), render_wireframe_fill);
-	glProgramUniformMatrix4fv(shader_program, shader_program("model_view_mat"), 1, 0, &view_mat[0][0]);
-	glProgramUniformMatrix4fv(shader_program, shader_program("proj_mat"), 1, 0, &proj_mat[0][0]);
-
-	
-	glProgramUniform1ui(shader_pointcloud, shader_program("idx_colormap"), idx_colormap);
+	glProgramUniform1ui(shader_pointcloud, shader_pointcloud("idx_colormap"), idx_colormap);
 	glProgramUniform3f(shader_pointcloud, shader_pointcloud("eye"), eye[1], eye[2], eye[3]);
 	glProgramUniform3f(shader_pointcloud, shader_pointcloud("light"), light[1], light[2], light[3]);
 	glProgramUniformMatrix4fv(shader_pointcloud, shader_pointcloud("model_view_mat"), 1, 0, &view_mat[0][0]);
 	glProgramUniformMatrix4fv(shader_pointcloud, shader_pointcloud("proj_mat"), 1, 0, &proj_mat[0][0]);
 
 
-	draw_meshes(shader_program);
+	draw_meshes(shader_triangles);
 
 
 	if(render_normal_field)
