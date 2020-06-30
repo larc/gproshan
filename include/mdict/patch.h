@@ -46,6 +46,7 @@ class patch
 	
 	public:
 		static size_t expected_nv;		///< Expected number of patch vertices.
+		static real_t nyquist_factor;	///< nyquist factor
 
 	public:
 		patch() = default;

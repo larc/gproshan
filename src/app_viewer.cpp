@@ -605,6 +605,7 @@ bool app_viewer::process_inpaiting(viewer * p_view)
 	
 	assert(sizeof(ImGuiDataType_U64) != sizeof(size_t));
 	
+	ImGui::InputDouble("nyquist_factor", &patch::nyquist_factor, 0.01, 0.01, "%.2lf");
 	ImGui::InputScalar("basis", ImGuiDataType_U64, &n);
 	ImGui::InputScalar("atoms", ImGuiDataType_U64, &params.m);
 	ImGui::InputDouble("delta", &params.delta, 0.001, 0.1, "%.3lf");	

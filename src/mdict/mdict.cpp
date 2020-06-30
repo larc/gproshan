@@ -235,20 +235,16 @@ void KSVD(a_mat & D, const a_mat & X, const size_t & L, size_t k)
 
 a_vec OMP(const patch & p, const a_mat & A, const size_t & L)
 {
-	
 	return OMP(p.xyz.row(2).t(), p.phi * A, L);
 }
+
 a_vec OMP(const patch & p, basis * phi_basis, const a_mat & A, const size_t & L)
 {
-	arma::uchar_vec mask;
-	mask.zeros(A.n_cols);
+	arma::uchar_vec mask(A.n_cols);
+	
 	for(index_t i = 0; i < A.n_cols; i++)
-		if(phi_basis->freq(i) >= 0.5*p.avg_dist) //2.5* if it ismin
-		{
-		//	gproshan_debug_var(phi_basis->freq(i));
-		//	gproshan_debug_var(p.avg_dist);
-			 mask(i) = 1;
-		}
+		mask(i) = phi_basis->freq(i) >= patch::nyquist_factor * p.avg_dist;		 // 2.5* if it ismin
+	
 	return OMP(p.xyz.row(2).t(), p.phi * A, L, mask);
 }
 
@@ -260,7 +256,6 @@ a_mat OMP_all(const vector<patch> & patches, basis * phi_basis, const a_mat & A,
 	for(index_t i = 0; i < patches.size(); i++)
 		alpha.col(i) = OMP(patches[i],phi_basis, A, L);
 		
-
 	return alpha;
 }
 
