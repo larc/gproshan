@@ -618,7 +618,7 @@ bool app_viewer::process_inpaiting(viewer * p_view)
 		inpainting dict(mesh, &phi, params);
 		real_t max_error = dict.execute();
 		
-		mesh->update_colors(&dict[0], 0.0068);
+		mesh->update_colors(&dict[0]);
 		mesh->update_normals();
 	}
 
