@@ -61,7 +61,7 @@ class viewer
 
 		unsigned int idx_colormap = 0;		// colormap index defined in shaders/colormap.glsl
 		const std::vector<std::string> colormap = {"blue", "red", "blue/read"};
-		shader shader_program;
+		shader shader_triangles;
 		shader shader_normals;
 		shader shader_gradient;
 		shader shader_pointcloud;
