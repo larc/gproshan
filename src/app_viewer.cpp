@@ -20,6 +20,7 @@ che * load_mesh(const string & file_path)
 	if(extension == "off") return new che_off(file_path);
 	if(extension == "obj") return new che_obj(file_path);
 	if(extension == "ply") return new che_ply(file_path);
+	if(extension == "ptx") return new che_ptx(file_path);
 
 	return new che_img(file_path);
 }
@@ -69,7 +70,7 @@ int app_viewer::main(int nargs, const char ** args)
 
 #ifdef GPROSHAN_CUDA
 	add_process(GLFW_KEY_G, {"G", "Parallel Toplesets Propagation GPU", process_geodesics_ptp_gpu});
-//	add_process('L', "Geodesics (HEAT_FLOW_GPU)", process_geodesics_heat_flow_gpu);
+	add_process(GLFW_KEY_Q, {"Q", "Heat Method GPU", process_geodesics_heat_flow_gpu});
 #endif // GPROSHAN_CUDA
 
 	add_process(GLFW_KEY_S, {"S", "Geodesic Farthest Point Sampling", process_farthest_point_sampling});
