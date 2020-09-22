@@ -53,6 +53,9 @@ void che_ptx::read_file(const string & file)
 		stringstream ss(line);
 		
 		ss >> GT[i];
+
+		VN[i] = T[0] - GT[i];
+		VN[i].unit();
 	}
 	
 	is.close();

@@ -74,11 +74,18 @@ void che_viewer::update_vbo()
 	glVertexAttribPointer(1, 3, GL_VERTEX_T, GL_FALSE, 0, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	// 2 COLOR
+	// 2 MESH COLOR
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[2]);
-	glBufferData(GL_ARRAY_BUFFER, mesh->n_vertices() * sizeof(real_t), &mesh->color(0), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, mesh->n_vertices() * sizeof(vertex), &mesh->color(0), GL_STATIC_DRAW);
 	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 1, GL_VERTEX_T, GL_FALSE, 0, 0);
+	glVertexAttribPointer(2, 3, GL_VERTEX_T, GL_FALSE, 0, 0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	
+	// 3 HEAT MAP COLOR
+	glBindBuffer(GL_ARRAY_BUFFER, vbo[2]);
+	glBufferData(GL_ARRAY_BUFFER, mesh->n_vertices() * sizeof(real_t), &mesh->hm_color(0), GL_STATIC_DRAW);
+	glEnableVertexAttribArray(3);
+	glVertexAttribPointer(3, 1, GL_VERTEX_T, GL_FALSE, 0, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	// 3 INDEXES

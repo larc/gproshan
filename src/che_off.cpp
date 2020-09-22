@@ -39,12 +39,13 @@ void che_off::read_file(const string & file)
 	init(n_v, n_f);
 	
 	if(soff[0] == 'N') VN = new vertex[n_vertices_];
+	if(soff[0] == 'C' || soff[1] == 'C') VC = new vertex[n_vertices_];
 
-	int r, g, b, a;
+	real_t alpha;	// color
 	for(index_t i = 0; i < n_vertices_; i++)
 	{
 		is >> GT[i];
-		if(soff[0] == 'C') is >> r >> g >> b >> a;	// ignore RGB for now
+		if(soff[0] == 'C' || soff[1] == 'C') is >> VC[i] >> alpha;
 		if(soff[0] == 'N') is >> VN[i];
 	}
 	
