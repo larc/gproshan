@@ -30,7 +30,7 @@ class che_viewer
 		vertex v_translate;
 
 		GLuint vao;
-		GLuint vbo[5];
+		GLuint vbo[6];
 	
 	public:
 		int vx, vy;					///< viewport positions.

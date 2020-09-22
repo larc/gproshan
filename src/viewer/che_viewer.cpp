@@ -30,7 +30,7 @@ che_viewer::operator che *& ()
 void che_viewer::init(che * mesh, const bool & normalize)
 {
 	glGenVertexArrays(1, &vao);
-	glGenBuffers(5, vbo);
+	glGenBuffers(6, vbo);
 	
 	this->mesh = mesh;
 	this->normalize = normalize;
@@ -82,7 +82,7 @@ void che_viewer::update_vbo()
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	
 	// 3 HEAT MAP COLOR
-	glBindBuffer(GL_ARRAY_BUFFER, vbo[2]);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo[3]);
 	glBufferData(GL_ARRAY_BUFFER, mesh->n_vertices() * sizeof(real_t), &mesh->hm_color(0), GL_STATIC_DRAW);
 	glEnableVertexAttribArray(3);
 	glVertexAttribPointer(3, 1, GL_VERTEX_T, GL_FALSE, 0, 0);
@@ -91,7 +91,7 @@ void che_viewer::update_vbo()
 	// 3 INDEXES
 	if(!mesh->is_pointcloud())
 	{
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[3]);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[4]);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh->n_half_edges() * sizeof(index_t), &mesh->vt(0), GL_STATIC_DRAW);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	}
@@ -107,7 +107,7 @@ void che_viewer::update_instances_translations(const vector<vertex> & translatio
 	glBindVertexArray(vao);
 
 	// 4 INSTANCES (translations)
-	glBindBuffer(GL_ARRAY_BUFFER, vbo[4]);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo[5]);
 	glBufferData(GL_ARRAY_BUFFER, n_instances * sizeof(vertex), translations.data(), GL_STATIC_DRAW);
 	glEnableVertexAttribArray(3);
 	glVertexAttribPointer(3, 3, GL_VERTEX_T, GL_FALSE, 0, 0);
@@ -123,7 +123,7 @@ void che_viewer::draw(shader & program)
 	program.enable();
 
 	glBindVertexArray(vao);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[3]);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[4]);
 
 	if(n_instances)
 		glDrawElementsInstanced(GL_TRIANGLES, mesh->n_half_edges(), GL_UNSIGNED_INT, 0, n_instances);
