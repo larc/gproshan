@@ -47,7 +47,8 @@ class che
 		index_t * BT	= nullptr;	///< boundary table			: b 	-> v
 		
 		vertex * VN		= nullptr;	///< vertex normals			: v		-> normal(v)
-		real_t * VC		= nullptr;	///< vertex color			: v		-> color(v)
+		vertex * VC		= nullptr;	///< vertex color			: v		-> 
+		real_t * VHC	= nullptr;	///< vertex color heat map	: v		-> hm_color(v)
 
 		bool manifold = true;
 
@@ -69,8 +70,10 @@ class che
 		real_t area_vertex(const index_t & v);
 		real_t area_surface() const;
 		void update_colors(const real_t * vcolor = nullptr, real_t max_color = 0);
-		const real_t & color(const index_t & v) const;
-		real_t & color(const index_t & v);
+		const vertex & color(const index_t & v) const;
+		vertex & color(const index_t & v);
+		const real_t & hm_color(const index_t & v) const;
+		real_t & hm_color(const index_t & v);
 		void update_normals();
 		const vertex & normal(const index_t & v) const;
 		vertex & normal(const index_t & v);

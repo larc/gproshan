@@ -60,7 +60,7 @@ class viewer
 		int viewport_height;
 
 		unsigned int idx_colormap = 0;		// colormap index defined in shaders/colormap.glsl
-		const std::vector<std::string> colormap = {"blue", "red", "blue/read"};
+		const std::vector<std::string> colormap = {"blue", "red", "blue/read", "mesh"};
 		shader shader_triangles;
 		shader shader_normals;
 		shader shader_gradient;

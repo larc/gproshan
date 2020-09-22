@@ -103,6 +103,5 @@ vec3 colormap(uint i, float x)
 	if(i == 0) return colormap_0(x);
 	if(i == 1) return colormap_1(x);
 	if(i == 2) return colormap_2(x);
-
 }
 
