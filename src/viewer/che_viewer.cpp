@@ -83,7 +83,7 @@ void che_viewer::update_vbo()
 	
 	// 3 HEAT MAP COLOR
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[3]);
-	glBufferData(GL_ARRAY_BUFFER, mesh->n_vertices() * sizeof(real_t), &mesh->hm_color(0), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, mesh->n_vertices() * sizeof(real_t), &mesh->heatmap(0), GL_STATIC_DRAW);
 	glEnableVertexAttribArray(3);
 	glVertexAttribPointer(3, 1, GL_VERTEX_T, GL_FALSE, 0, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
