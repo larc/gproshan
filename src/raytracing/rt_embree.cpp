@@ -134,11 +134,12 @@ index_t embree::add_point_cloud(const che * mesh)
 	return geom_id;
 }
 
-float embree::pointcloud_hit(glm::vec3 & position, glm::vec3 & normal, ray_hit & r)
+float embree::pointcloud_hit(glm::vec3 & position, glm::vec3 & normal, glm::vec3 & color, ray_hit & r)
 {
 	float w, sum_w = 0;
 	position = glm::vec3(0);
 	normal = glm::vec3(0);
+	color = glm::vec3(0);
 
 	do
 	{
@@ -147,6 +148,7 @@ float embree::pointcloud_hit(glm::vec3 & position, glm::vec3 & normal, ray_hit &
 		sum_w += w = pc_radius - glm::length(r.position() - glm::vec3(xyzr[r.hit.primID]));
 		position += w * r.position();
 		normal += w * r.normal(geomID_mesh[r.hit.geomID], true);
+		color += w * r.color(geomID_mesh[r.hit.geomID]);
 
 		r = ray_hit(r.position(), r.dir());
 	}
@@ -154,14 +156,13 @@ float embree::pointcloud_hit(glm::vec3 & position, glm::vec3 & normal, ray_hit &
 
 	position /= sum_w;
 	normal /= sum_w;
+	color /= sum_w;
 
 	return sum_w;
 }
 
-glm::vec4 embree::li(const glm::vec3 & light, const glm::vec3 & position, const glm::vec3 & normal, const float & near)
+glm::vec4 embree::li(const glm::vec3 & light, const glm::vec3 & position, const glm::vec3 & normal, const glm::vec3 & color, const float & near)
 {
-	const glm::vec3 color(0.5, 0.7, 1.0);
-	
 	const glm::vec3 wi = normalize(light - position);
 	const float dist_light = glm::length(light - position);
 	const float falloff = 8.f / (dist_light * dist_light);	// intensity multiplier / falloff
@@ -182,19 +183,20 @@ glm::vec4 embree::li(ray_hit r, const glm::vec3 & light, const bool & flat)
 	glm::vec4 L(0);
 	
 	float near;
-	glm::vec3 position, normal;
+	glm::vec3 position, normal, color;
 	while(tfar < max_tfar)
 	{
 		total_tfar += tfar;
 		
 		position = r.position();
 		normal = r.normal(geomID_mesh[r.hit.geomID], flat);
+		color = r.color(geomID_mesh[r.hit.geomID]);
 		
 		near = 1e-5f;
 		if(geomID_mesh[r.hit.geomID]->is_pointcloud())
-			near += pointcloud_hit(position, normal, r);
+			near += pointcloud_hit(position, normal, color, r);
 		
-		L += li(light, position, normal, near);
+		L += li(light, position, normal, color, near);
 		
 		/*
 		r = ray_hit(r.position(), r.dir());
