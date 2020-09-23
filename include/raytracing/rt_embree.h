@@ -55,7 +55,8 @@ class embree : public raytracing
 		
 		const glm::vec3 color(const che * mesh)
 		{
-			const vertex & c = mesh->color(hit.primID);
+			const vertex & c = mesh->is_pointcloud() ?	mesh->color(hit.primID) :
+														mesh->shading_color(hit.primID, 1.0 - hit.u - hit.v, hit.u, hit.v);	
 			return glm::vec3(c.x, c.y, c.z);
 		}
 
@@ -64,7 +65,7 @@ class embree : public raytracing
 			if(flat || mesh->is_pointcloud())
 				return glm::normalize(glm::vec3(hit.Ng_x, hit.Ng_y, hit.Ng_z));
 			
-			vertex n = mesh->shading_normal(hit.primID, 1.0 - hit.u - hit.v, hit.u, hit.v);	
+			const vertex & n = mesh->shading_normal(hit.primID, 1.0 - hit.u - hit.v, hit.u, hit.v);	
 			return glm::normalize(glm::vec3(n.x, n.y, n.z));
 		}
 
