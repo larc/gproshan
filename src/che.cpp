@@ -241,13 +241,13 @@ real_t che::area_surface() const
 
 void che::update_colors(const real_t * vcolor, real_t max_color)
 {
-	if(!VC) VC = new real_t[n_vertices_];
+	if(!VHC) VHC = new real_t[n_vertices_];
 
 	if(!vcolor)
 	{
 		#pragma omp parallel for
 		for(index_t v = 0; v < n_vertices_; v++)
-			VC[v] = 0.5;
+			VHC[v] = 0.45;
 
 		return;
 	}
@@ -262,19 +262,31 @@ void che::update_colors(const real_t * vcolor, real_t max_color)
 
 	#pragma omp parallel for
 	for(index_t v = 0; v < n_vertices_; v++)
-		VC[v] = vcolor[v] / max_color;
+		VHC[v] = vcolor[v] / max_color;
 }
 
-const real_t & che::color(const index_t & v) const
+const vertex & che::color(const index_t & v) const
 {
 	assert(VC && v < n_vertices_);
 	return VC[v];
 }
 
-real_t & che::color(const index_t & v)
+vertex & che::color(const index_t & v)
 {
 	assert(VC && v < n_vertices_);
 	return VC[v];
+}
+
+const real_t & che::heatmap(const index_t & v) const
+{
+	assert(VHC && v < n_vertices_);
+	return VHC[v];
+}
+
+real_t & che::heatmap(const index_t & v)
+{
+	assert(VHC && v < n_vertices_);
+	return VHC[v];
 }
 
 void che::update_normals()
@@ -1486,6 +1498,7 @@ void che::delete_me()
 	delete [] BT;	BT = nullptr;
 	delete [] VN;	VN = nullptr;
 	delete [] VC;	VC = nullptr;
+	delete [] VHC;	VHC = nullptr;
 }
 
 void che::read_file(const string & )

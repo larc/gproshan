@@ -4,6 +4,7 @@
 
 in vec3 gs_position;
 in vec3 gs_normal;
+in vec3 gs_mesh_color;
 in float gs_color;
 
 noperspective in vec3 edge_dist;
@@ -40,7 +41,7 @@ float fresnel(vec3 N, vec3 E)
 
 void main()
 {
-	vec3 color = colormap(idx_colormap, gs_color);
+	vec3 color = idx_colormap > 0 ? colormap(idx_colormap, gs_color) : gs_mesh_color;
 
 	// lines
 	if(render_lines)

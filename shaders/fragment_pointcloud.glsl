@@ -4,6 +4,7 @@
 
 in vec3 vs_position;
 in vec3 vs_normal;
+in vec3 vs_mesh_color;
 in float vs_color;
 
 layout(location = 0) out vec4 frag_color;
@@ -36,7 +37,7 @@ float fresnel(vec3 N, vec3 E)
 
 void main()
 {
-	vec3 color = colormap(idx_colormap, vs_color);
+	vec3 color = idx_colormap > 0 ? colormap(idx_colormap, vs_color) : vs_mesh_color;
 
 	// lines
 	if(render_lines)

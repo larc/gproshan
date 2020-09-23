@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.16)
 
 project(gproshan VERSION 3.0)
 
@@ -17,7 +17,7 @@ if(CUDA_FOUND)
 	add_definitions(-DGPROSHAN_CUDA)
 	include_directories(${CUDA_INCLUDE_DIRS})
 	
-	find_package(OptiX 7.0)
+	find_package(OptiX 7.1)
 	if(OptiX_INCLUDE)
 		set(CUDA_HOST_COMPILER ${CMAKE_CUDA_HOST_COMPILER})
 		add_definitions(-DGPROSHAN_OPTIX)
