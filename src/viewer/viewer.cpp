@@ -109,6 +109,17 @@ bool viewer::run()
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 		
+	#ifdef GPROSHAN_EMBREE
+		if(!rt_embree)
+		{
+			ImGui::SetNextWindowSize(ImVec2(300, -1));
+			ImGui::SetNextWindowPos(ImVec2(0, 20), ImGuiCond_Once);
+			ImGui::Begin("rt_embree_pointcloud");
+			ImGui::InputFloat("pc_radius", &rt::embree::pc_radius, 0, 0, "%.4f");
+			ImGui::End();
+		}
+	#endif // GPROSHAN_EMBREE
+
 		if(ImGui::BeginMainMenuBar())
 		{
 			if(ImGui::BeginMenu("Select"))
