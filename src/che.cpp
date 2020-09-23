@@ -247,7 +247,7 @@ void che::update_colors(const real_t * vcolor, real_t max_color)
 	{
 		#pragma omp parallel for
 		for(index_t v = 0; v < n_vertices_; v++)
-			VHC[v] = 0.5;
+			VHC[v] = 0.45;
 
 		return;
 	}
@@ -277,13 +277,13 @@ vertex & che::color(const index_t & v)
 	return VC[v];
 }
 
-const real_t & che::hm_color(const index_t & v) const
+const real_t & che::heatmap(const index_t & v) const
 {
 	assert(VHC && v < n_vertices_);
 	return VHC[v];
 }
 
-real_t & che::hm_color(const index_t & v)
+real_t & che::heatmap(const index_t & v)
 {
 	assert(VHC && v < n_vertices_);
 	return VHC[v];

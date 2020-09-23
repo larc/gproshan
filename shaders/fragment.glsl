@@ -41,11 +41,7 @@ float fresnel(vec3 N, vec3 E)
 
 void main()
 {
-	vec3 color;
-	if(idx_colormap == 3)
-		color = gs_mesh_color;
-	else
-		color = colormap(idx_colormap, gs_color);
+	vec3 color = idx_colormap > 0 ? colormap(idx_colormap, gs_color) : gs_mesh_color;
 
 	// lines
 	if(render_lines)
