@@ -10,7 +10,7 @@ This framework integrates some algorithms and contributions focus on the areas o
 
 | Build Type | Status |
 | --- | --- |
-| `Linux Ubuntu 18.04` | [![Build Status](https://travis-ci.com/larc/gproshan_dev.svg?token=t9aCnytCvpecrZv3sMxq&branch=dev)](https://travis-ci.com/larc/gproshan_dev) |
+| `Linux Ubuntu 20.04` | [![Build Status](https://travis-ci.com/larc/gproshan_dev.svg?token=t9aCnytCvpecrZv3sMxq&branch=dev)](https://travis-ci.com/larc/gproshan_dev) |
 
 Install all dependencies and run:
 
@@ -24,12 +24,13 @@ finally execute:
 	./gproshan [mesh_paths.(off,obj,ply)]
 
 ### Dependencies (Linux)
-g++ >= 8.4, cuda >= 11.0, cmake >= 3.12, armadillo, eigen, cgal, suitesparse, openblas, glew, glfw3, glm, cimg, gnuplot
+g++ >= 9.3, cuda >= 11.0, cmake >= 3.16, armadillo, eigen, cgal, suitesparse, openblas, glew, glfw3, glm, cimg, gnuplot
 
 In Ubuntu (>= 18.04) you can install them with:
 
 	sudo apt install cmake libarmadillo-dev libeigen3-dev libcgal-dev libsuitesparse-dev libopenblas-dev libglew-dev libglfw3-dev libglm-dev cimg-dev gnuplot
 
+You can build and run with g++ >= 8.4 and cmake >= 3.12, but for the std::filesystem iterator need to add some flags to compile.
 
 ## Contributions
 
@@ -44,7 +45,7 @@ approach is competitive with the current methods and is simple to implement. Ple
 [A minimalistic approach for fast computation of geodesic distances on triangular meshes](https://doi.org/10.1016/j.cag.2019.08.014)
 
 ```bibtex
-@Article{ROMEROCALLA2019,
+@Article{RFM19,
   author   = { {Romero Calla}, Luciano A. and {Fuentes Perez}, Lizeth J. and Montenegro, Anselmo A. },
   title    = { A minimalistic approach for fast computation of geodesic distances on triangular meshes },
   journal  = { Computers \& Graphics },
@@ -68,13 +69,13 @@ our work:
 ```bibtex
 
 @ARTICLE{2018arXiv181008266F,
-	author	= { {Fuentes Perez}, L.~J. and {Romero Calla}, L.~A. and {Montenegro}, A.~A. },
+	author	= { {Fuentes Perez}, Lizeth J. and {Romero Calla}, Luciano A. and {Montenegro}, Anselmo A. },
 	title	= { Dictionary Learning-based Inpainting on Triangular Meshes },
 	journal	= { ArXiv e-prints },
 	eprint	= { 1810.08266 },
 	year	= 2018,
 	month	= oct,
-	url	= { https://arxiv.org/abs/1810.08266 }
+	url		= { https://arxiv.org/abs/1810.08266 }
 }
 ```
 
@@ -97,14 +98,14 @@ Please cite our paper (in Spanish):
 [Efficient approach for interest points detection in non-rigid shapes](https://doi.org/10.1109/CLEI.2015.7359459)
 
 ```bibtex
-@INPROCEEDINGS{7359459,
-	author		= { C. J. Lopez Del Alamo and L. A. Romero Calla and L. J. Fuentes Perez },
-	booktitle	= { 2015 Latin American Computing Conference (CLEI) },
+@INPROCEEDINGS{LRF2015,
+	author		= { {Lopez Del Alamo} Cristian J. and {Romero Calla} Luciano A. and {Fuentes Perez} Lizeth J. },
+	booktitle	= { Latin American Computing Conference (CLEI) },
 	title		= { Efficient approach for interest points detection in non-rigid shapes },
 	year		= { 2015 },
 	month		= { Oct },
 	pages		= { 1-8 },
-	doi		= { 10.1109/CLEI.2015.7359459 }
+	doi			= { 10.1109/CLEI.2015.7359459 }
 }
 ```
 
@@ -135,7 +136,9 @@ Execute:
 to generate the documentation in *html* and *LaTeX*.
 
 ## Viewer
-The viewer was initially based in the viewer of [https://github.com/dgpdec/course](https://github.com/dgpdec/course). The current viewer uses VAO and VBO to render, and the shaders have been modified and upgraded.
+- The viewer was initially based in the viewer of [https://github.com/dgpdec/course](https://github.com/dgpdec/course).
+- The current viewer is done in modern OpengGL: uses VAO and VBO to render and the shaders have been modified and upgraded.
+- The viewer now presents an GUI using Dear ImGui [https://github.com/ocornut/imgui](https://github.com/ocornut/imgui).
 
 ## License
 
