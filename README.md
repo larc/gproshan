@@ -30,7 +30,7 @@ In Ubuntu (>= 18.04) you can install them with:
 
 	sudo apt install cmake libarmadillo-dev libeigen3-dev libcgal-dev libsuitesparse-dev libopenblas-dev libglew-dev libglfw3-dev libglm-dev cimg-dev gnuplot
 
-You can build and run with g++ >= 8.4 and cmake >= 3.12, but for the std::filesystem iterator need to add some flags to compile.
+You can build and run with g++ >= 8.4 and cmake >= 3.12, but the std::filesystem iterator could present some problems then you need to add some flags to compile.
 
 ## Contributions
 
@@ -59,6 +59,9 @@ approach is competitive with the current methods and is simple to implement. Ple
 
 Also, we have implemented the [Fast Marching algorithm](), and the [Heat method](https://www.cs.cmu.edu/~kmcrane/Projects/HeatMethod/index.html).
 
+### Ray Tracing
+We have implemented a ray tracing viewer option for mesh and pointcloud visualization using [Intel Embree](https://www.embree.org/) v3.1x and [Nvidia Optix](https://developer.nvidia.com/optix) v7.1.
+
 ### Dictionary Learning
 We proposed a Dictionary Learning and Sparse Coding framework, to solve the problems of Denoising,
 Inpainting, and Multiresolution on triangular meshes. This work is still in process. Please cite
@@ -75,7 +78,7 @@ our work:
 	eprint	= { 1810.08266 },
 	year	= 2018,
 	month	= oct,
-	url		= { https://arxiv.org/abs/1810.08266 }
+	url	= { https://arxiv.org/abs/1810.08266 }
 }
 ```
 
@@ -105,7 +108,7 @@ Please cite our paper (in Spanish):
 	year		= { 2015 },
 	month		= { Oct },
 	pages		= { 1-8 },
-	doi			= { 10.1109/CLEI.2015.7359459 }
+	doi		= { 10.1109/CLEI.2015.7359459 }
 }
 ```
 
@@ -115,7 +118,6 @@ he defined for the first time the notion of a key-component in meshes.
 We proposed a method based on geodesics to determine the key components.
 
 Please see and cite our final undergraduate project: [key-components report](http://repositorio.unsa.edu.pe/handle/UNSA/2575) (in Spanish).
-
 
 ### Decimation
 We are implementing the algorithm described by the paper [Stellar Mesh Simplification Using Probabilistic Optimization](https://doi.org/10.1111/j.1467-8659.2004.00811.x),
@@ -128,6 +130,7 @@ See the Chapter 4 of the book [Polygon Mesh Processing](http://www.pmp-book.org/
 ### Laplacian and signatures
 Laplace-Beltrami operator and its eigen decomposition, WKS, HKS, GPS signatures.
 
+
 ## Documentation
 Execute:
 
@@ -135,16 +138,18 @@ Execute:
 
 to generate the documentation in *html* and *LaTeX*.
 
+
 ## Viewer
 - The viewer was initially based in the viewer of [https://github.com/dgpdec/course](https://github.com/dgpdec/course).
 - The current viewer is done in modern OpengGL: uses VAO and VBO to render and the shaders have been modified and upgraded.
 - The viewer now presents an GUI using Dear ImGui [https://github.com/ocornut/imgui](https://github.com/ocornut/imgui).
 
+
 ## License
 
 MIT License
 
+
 ## Authors/Contributors
 - [Luciano Arnaldo Romero Calla](https://github.com/larc)
 - [Lizeth Joseline Fuentes Pérez](https://github.com/lishh)
-
