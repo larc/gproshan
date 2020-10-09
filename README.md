@@ -8,6 +8,8 @@ This framework integrates some algorithms and contributions focus on the areas o
 
 ## Build and Run
 
+![build](https://github.com/larc/gproshan_dev/workflows/build/badge.svg?branch=dev)
+
 | Build Type | Status |
 | --- | --- |
 | `Linux Ubuntu 20.04` | [![Build Status](https://travis-ci.com/larc/gproshan_dev.svg?token=t9aCnytCvpecrZv3sMxq&branch=dev)](https://travis-ci.com/larc/gproshan_dev) |
