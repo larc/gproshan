@@ -8,7 +8,7 @@ This framework integrates some algorithms and contributions focus on the areas o
 
 ## Build and Run
 
-![build](https://github.com/larc/gproshan_dev/workflows/build/badge.svg?branch=dev)
+![Build](https://github.com/larc/gproshan_dev/workflows/Build/badge.svg)
 
 | Build Type | Status |
 | --- | --- |
