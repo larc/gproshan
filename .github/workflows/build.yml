@@ -7,22 +7,21 @@ env:
 
 jobs:
   build:
-    name: ${{ matrix.os }} (${{ matrix.config }})
+    name: ${{ matrix.os }} (${{ matrix.config }}) ${{ matrix.cuda }}
     runs-on: ${{ matrix.os }}
     
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04, ubuntu-18.04]
+        os: [ubuntu-20.04]
         config: [Release, Debug]
-        cuda: [on, off]
+        cuda: [cuda, ]
 
     steps:
     - uses: actions/checkout@v2
     
     - name: Install Dependencies
       run: |
-        $CC -v && $CXX -v && cmake --version
         sudo apt update
         sudo apt install \
                           libarmadillo-dev \
@@ -36,7 +35,7 @@ jobs:
                           cimg-dev
                           
     - name: Install Cuda
-      if: runner.cuda == 'on'
+      if: matrix.cuda == 'cuda'
       run: |
         wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-ubuntu2004.pin
         sudo mv cuda-ubuntu2004.pin /etc/apt/preferences.d/cuda-repository-pin-600
