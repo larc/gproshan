@@ -14,6 +14,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(CUDA 11)
 if(CUDA_FOUND)
 	enable_language(CUDA)
+	set(CMAKE_CUDA_STANDARD 17)
+	set(CMAKE_CUDA_STANDARD_REQUIRED ON)
+
 	add_definitions(-DGPROSHAN_CUDA)
 	include_directories(${CUDA_INCLUDE_DIRS})
 	
@@ -122,6 +125,11 @@ target_link_libraries(test_geodesics gproshan_cpp)
 target_link_libraries(test_image_denoising gproshan_cpp)
 
 if(CUDA_FOUND)
+	set_property(TARGET gproshan_cu PROPERTY CUDA_ARCHITECTURES 60 61 62)
+	set_property(TARGET gproshan PROPERTY CUDA_ARCHITECTURES 60 61 62)
+	set_property(TARGET test_geodesics PROPERTY CUDA_ARCHITECTURES 60 61 62)
+	set_property(TARGET test_image_denoising PROPERTY CUDA_ARCHITECTURES 60 61 62)
+
 	target_link_libraries(gproshan gproshan_cu)
 	target_link_libraries(test_geodesics gproshan_cu)
 	target_link_libraries(test_image_denoising gproshan_cu)
