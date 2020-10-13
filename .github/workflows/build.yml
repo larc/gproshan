@@ -15,7 +15,7 @@ jobs:
       matrix:
         os: [ubuntu-20.04]
         config: [Release, Debug]
-        cuda: [cuda, ]
+        cuda: [cuda, '']
 
     steps:
     - uses: actions/checkout@v2
