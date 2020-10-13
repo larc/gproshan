@@ -22,6 +22,7 @@ jobs:
     
     - name: Install Dependencies
       run: |
+        $CC -v && $CXX -v && cmake --version
         sudo apt update
         sudo apt install \
                           libarmadillo-dev \
@@ -35,7 +36,7 @@ jobs:
                           cimg-dev
                           
     - name: Install Cuda
-      if: ${{ matrix.cuda }} == 'on'
+      if: runner.cuda == 'on'
       run: |
         wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-ubuntu2004.pin
         sudo mv cuda-ubuntu2004.pin /etc/apt/preferences.d/cuda-repository-pin-600
