@@ -26,6 +26,8 @@ struct corr_t;
 
 class che
 {
+	vertex vcolor = { 0.75, 0.85, 1.0 };
+
 	public:
 		static const size_t P = 3; ///< default polygon size 3, triangular meshes
 
@@ -47,7 +49,8 @@ class che
 		index_t * BT	= nullptr;	///< boundary table			: b 	-> v
 		
 		vertex * VN		= nullptr;	///< vertex normals			: v		-> normal(v)
-		real_t * VC		= nullptr;	///< vertex color			: v		-> color(v)
+		vertex * VC		= nullptr;	///< vertex color			: v		-> color(v)
+		real_t * VHC	= nullptr;	///< vertex color heat map	: v		-> heatmap(v)
 
 		bool manifold = true;
 
@@ -68,9 +71,12 @@ class che
 		real_t area_trig(const index_t & t) const;
 		real_t area_vertex(const index_t & v);
 		real_t area_surface() const;
-		void update_colors(const real_t * vcolor = nullptr, real_t max_color = 0);
-		const real_t & color(const index_t & v) const;
-		real_t & color(const index_t & v);
+		void update_heatmaps(const real_t * hm = nullptr, real_t max_color = 0);
+		const vertex & color(const index_t & v) const;
+		vertex & color(const index_t & v);
+		vertex shading_color(const index_t & f, const float & u, const float & v, const float & w) const;
+		const real_t & heatmap(const index_t & v) const;
+		real_t & heatmap(const index_t & v);
 		void update_normals();
 		const vertex & normal(const index_t & v) const;
 		vertex & normal(const index_t & v);

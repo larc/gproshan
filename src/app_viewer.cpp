@@ -20,6 +20,7 @@ che * load_mesh(const string & file_path)
 	if(extension == "off") return new che_off(file_path);
 	if(extension == "obj") return new che_obj(file_path);
 	if(extension == "ply") return new che_ply(file_path);
+	if(extension == "ptx") return new che_ptx(file_path);
 
 	return new che_img(file_path);
 }
@@ -69,7 +70,7 @@ int app_viewer::main(int nargs, const char ** args)
 
 #ifdef GPROSHAN_CUDA
 	add_process(GLFW_KEY_G, {"G", "Parallel Toplesets Propagation GPU", process_geodesics_ptp_gpu});
-//	add_process('L', "Geodesics (HEAT_FLOW_GPU)", process_geodesics_heat_flow_gpu);
+	add_process(GLFW_KEY_Q, {"Q", "Heat Method GPU", process_geodesics_heat_flow_gpu});
 #endif // GPROSHAN_CUDA
 
 	add_process(GLFW_KEY_S, {"S", "Geodesic Farthest Point Sampling", process_farthest_point_sampling});
@@ -131,7 +132,7 @@ bool paint_holes_vertices(viewer * p_view)
 
 	#pragma omp parallel for
 	for(index_t v = 0; v < mesh->n_vertices(); v++)
-		if(v >= nv) mesh->color(v) = .25;
+		if(v >= nv) mesh->heatmap(v) = .25;
 
 	return false;
 }
@@ -264,7 +265,7 @@ bool app_viewer::process_threshold(viewer * p_view)
 	che_viewer & mesh = view->active_mesh();
 
 	for(index_t v = 0; v < mesh->n_vertices(); v++)
-		mesh->color(v) = mesh->color(v) > 0.5 ? 1 : 0.5;
+		mesh->heatmap(v) = mesh->heatmap(v) > 0.5 ? 1 : 0.5;
 	
 	return false;
 }
@@ -304,7 +305,7 @@ bool app_viewer::process_functional_maps(viewer * p_view)
 		
 			#pragma omp parallel for
 			for(index_t v = 0; v < mesh->n_vertices(); v++)
-				mesh->color(v) = eigvec(v, k);
+				mesh->heatmap(v) = eigvec(v, k);
 
 			mesh.update_vbo();
 		}
@@ -348,13 +349,13 @@ bool app_viewer::process_wks(viewer * p_view)
 			for(int k = 1; k < K; k++)
 				s(t) += exp(-eigval(k) * t) * eigvec(v, k) * eigvec(v, k);
 
-			mesh->color(v) = norm(s);
-			max_s = max(max_s, mesh->color(v));
+			mesh->heatmap(v) = norm(s);
+			max_s = max(max_s, mesh->heatmap(v));
 		}
 
 		#pragma omp parallel for
 		for(index_t v = 0; v < mesh->n_vertices(); v++)
-			mesh->color(v) /= max_s;
+			mesh->heatmap(v) /= max_s;
 	}
 
 	return true;
@@ -395,14 +396,14 @@ bool app_viewer::process_hks(viewer * p_view)
 			for(int k = 1; k < K; k++)
 				s(t) += exp(-abs(eigval(k)) * t) * eigvec(v, k) * eigvec(v, k);
 
-			mesh->color(v) = norm(abs(arma::fft(s, 128)));
-			//mesh->color(v) = norm(s);
-			max_s = max(max_s, mesh->color(v));
+			mesh->heatmap(v) = norm(abs(arma::fft(s, 128)));
+			//mesh->heatmap(v) = norm(s);
+			max_s = max(max_s, mesh->heatmap(v));
 		}
 
 		#pragma omp parallel for
 		for(index_t v = 0; v < mesh->n_vertices(); v++)
-			mesh->color(v) /= max_s;
+			mesh->heatmap(v) /= max_s;
 	}
 
 	return true;
@@ -441,13 +442,13 @@ bool app_viewer::process_gps(viewer * p_view)
 		#pragma omp parallel for reduction(max: max_s)
 		for(index_t v = 0; v < mesh->n_vertices(); v++)
 		{
-			mesh->color(v) = norm(eigvec.row(v));
-				max_s = max(max_s, mesh->color(v));
+			mesh->heatmap(v) = norm(eigvec.row(v));
+				max_s = max(max_s, mesh->heatmap(v));
 		}
 
 		#pragma omp parallel for
 		for(index_t v = 0; v < mesh->n_vertices(); v++)
-			mesh->color(v) /= max_s;
+			mesh->heatmap(v) /= max_s;
 	}
 
 	return true;
@@ -483,7 +484,7 @@ bool app_viewer::process_key_components(viewer * p_view)
 	
 	#pragma omp parallel for
 	for(index_t v = 0; v < mesh->n_vertices(); v++)
-		mesh->color(v) = (real_t) kcs(v) / kcs;
+		mesh->heatmap(v) = (real_t) kcs(v) / kcs;
 	
 	return false;
 }
@@ -505,7 +506,7 @@ bool app_viewer::process_mdict_patch(viewer * p_view)
 	{
 		p.init(mesh, v, dictionary::T, dictionary::T * mean_edge, toplevel);
 		for(auto & u: p.vertices)
-			mesh->color(u) = 1;
+			mesh->heatmap(u) = 1;
 
 		vdir.x = p.T(0, 0);
 		vdir.y = p.T(0, 1);
@@ -768,7 +769,7 @@ bool app_viewer::compute_toplesets(viewer * p_view)
 	for(index_t v = 0; v < mesh->n_vertices(); v++)
 	{
 		if(toplesets[v] < n_toplesets) 
-			mesh->color(v) = real_t(toplesets[v]) / (n_toplesets);
+			mesh->heatmap(v) = real_t(toplesets[v]) / (n_toplesets);
 	}
 
 	gproshan_debug_var(n_toplesets);
@@ -801,8 +802,8 @@ bool app_viewer::process_voronoi(viewer * p_view)
 	#pragma omp parallel for
 	for(index_t i = 0; i < mesh->n_vertices(); i++)
 	{
-		mesh->color(i) = ptp.clusters[i];
-		mesh->color(i) /= mesh.selected.size() + 1;
+		mesh->heatmap(i) = ptp.clusters[i];
+		mesh->heatmap(i) /= mesh.selected.size() + 1;
 	}
 	
 	return false;
@@ -910,7 +911,7 @@ bool app_viewer::process_geodesics_fm(viewer * p_view)
 	TOC(view->time)
 	gproshan_log_var(view->time);
 
-	mesh->update_colors(&fm[0]);
+	mesh->update_heatmaps(&fm[0]);
 	
 	return false;
 }
@@ -929,7 +930,7 @@ bool app_viewer::process_geodesics_ptp_cpu(viewer * p_view)
 	TOC(view->time)
 	gproshan_log_var(view->time);
 
-	mesh->update_colors(&ptp[0]);
+	mesh->update_heatmaps(&ptp[0]);
 	
 	return false;
 }
@@ -948,7 +949,7 @@ bool app_viewer::process_geodesics_heat_flow(viewer * p_view)
 	TOC(view->time)
 	gproshan_log_var(view->time);
 
-	mesh->update_colors(&heat_flow[0]);
+	mesh->update_heatmaps(&heat_flow[0]);
 	
 	return false;
 }
@@ -982,7 +983,7 @@ bool app_viewer::process_geodesics_ptp_gpu(viewer * p_view)
 	TOC(view->time)
 	gproshan_log_var(view->time);
 	
-	mesh->update_colors(&ptp[0]);
+	mesh->update_heatmaps(&ptp[0]);
 	
 	return false;
 }
@@ -1001,7 +1002,7 @@ bool app_viewer::process_geodesics_heat_flow_gpu(viewer * p_view)
 	TOC(view->time)
 	gproshan_log_var(view->time);
 
-	mesh->update_colors(&heat_flow[0]);
+	mesh->update_heatmaps(&heat_flow[0]);
 	
 	return false;
 }
@@ -1092,7 +1093,7 @@ bool app_viewer::process_gaussian_curvature(viewer * p_view)
 
 	#pragma omp parallel for
 	for(index_t v = 0; v < mesh->n_vertices(); v++)
-		mesh->color(v) = 2 * atan(gv(v) * 10) / M_PI;
+		mesh->heatmap(v) = f(gv(v));
 	
 	return false;
 }

@@ -615,10 +615,8 @@ void patch::jet_fit_directions(che * mesh, const index_t & v)
 {
 	size_t d_fitting = 2;
 	size_t d_monge = 2;
-	size_t min_points = (d_fitting + 1) * (d_fitting + 2) / 2;
-
-	assert(vertices.size() > min_points);
-	
+	//size_t min_points = (d_fitting + 1) * (d_fitting + 2) / 2;
+	//assert(vertices.size() > min_points);
 
 	vector<DPoint> in_points;
 	in_points.reserve(vertices.size());

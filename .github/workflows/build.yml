@@ -1,0 +1,71 @@
+name: Build
+
+on: [push]
+
+env:
+  CUDA_BIN: /usr/local/cuda/bin
+
+jobs:
+  build:
+    name: ${{ matrix.os }} (${{ matrix.config }}) ${{ matrix.cuda }}
+    runs-on: ${{ matrix.os }}
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-20.04]
+        config: [Release, Debug]
+        cuda: [cuda, '']
+
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Install Dependencies
+      run: |
+        sudo apt remove --purge cmake
+        sudo snap install cmake --classic
+        sudo apt update
+        sudo apt install \
+                          libarmadillo-dev \
+                          libeigen3-dev \
+                          libcgal-dev \
+                          libsuitesparse-dev \
+                          libopenblas-dev \
+                          libglew-dev \
+                          libglfw3-dev \
+                          libglm-dev \
+                          cimg-dev
+                          
+    - name: Install Cuda
+      if: matrix.cuda == 'cuda'
+      run: |
+        wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-ubuntu2004.pin
+        sudo mv cuda-ubuntu2004.pin /etc/apt/preferences.d/cuda-repository-pin-600
+        sudo apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/7fa2af80.pub
+        sudo add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/ /"
+        sudo apt update
+        sudo apt -y install cuda
+      
+    - name: Create Build Environment
+      # Some projects don't allow in-source building, so create a separate build directory
+      # We'll use this as our working directory for all subsequent commands
+      run: cmake -E make_directory ${{runner.workspace}}/build
+
+    - name: Configure CMake
+      # Use a bash shell so we can use the same syntax for environment variable
+      # access regardless of the host operating system
+      shell: bash
+      working-directory: ${{runner.workspace}}/build
+      # Note the current convention is to use the -S and -B options here to specify source 
+      # and build directories, but this is only available with CMake 3.13 and higher.  
+      # The CMake binaries on the Github Actions machines are (as of this writing) 3.12
+      run: |
+        export PATH=${CUDA_BIN}:${PATH}
+        cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{ matrix.config }}
+
+    - name: Build
+      working-directory: ${{runner.workspace}}/build
+      shell: bash
+      # Execute the build.  You can specify a specific target with "--target <NAME>"
+      run: cmake --build . --config ${{ matrix.config }}
+

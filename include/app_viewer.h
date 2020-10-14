@@ -6,6 +6,7 @@
 #include "che_off.h"
 #include "che_obj.h"
 #include "che_ply.h"
+#include "che_ptx.h"
 #include "che_img.h"
 #include "che_sphere.h"
 #include "laplacian.h"

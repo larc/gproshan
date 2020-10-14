@@ -8,9 +8,7 @@ This framework integrates some algorithms and contributions focus on the areas o
 
 ## Build and Run
 
-| Build Type | Status |
-| --- | --- |
-| `Linux Ubuntu 18.04` | [![Build Status](https://travis-ci.com/larc/gproshan_dev.svg?token=t9aCnytCvpecrZv3sMxq&branch=mdict)](https://travis-ci.com/larc/gproshan_dev) |
+![Build](https://github.com/larc/gproshan_dev/workflows/Build/badge.svg?branch=mdict)
 
 Install all dependencies and run:
 
@@ -24,9 +22,9 @@ finally execute:
 	./gproshan [mesh_paths.(off,obj,ply)]
 
 ### Dependencies (Linux)
-g++ >= 8.4, cuda >= 11.0, cmake >= 3.12, armadillo, eigen, cgal, suitesparse, openblas, glew, glfw3, glm, cimg, gnuplot
+g++ >= 9.3, cuda >= 11.0, cmake >= 3.18, armadillo, eigen, cgal, suitesparse, openblas, glew, glfw3, glm, cimg, gnuplot
 
-In Ubuntu (>= 18.04) you can install them with:
+In Ubuntu you can install them with:
 
 	sudo apt install cmake libarmadillo-dev libeigen3-dev libcgal-dev libsuitesparse-dev libopenblas-dev libglew-dev libglfw3-dev libglm-dev cimg-dev gnuplot
 
@@ -34,41 +32,40 @@ In Ubuntu (>= 18.04) you can install them with:
 ## Contributions
 
 ### CHE implementation
-We have implemented a [Compact Half-Edge (CHE)](http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.523.7580) data structure to manipulated triangular meshes, also can be extended for other polygonal meshes.
-See the paper: [CHE: A scalable topological data structure for triangular meshes](http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.523.7580) for more details.
+We have implemented a [Compact Half-Edge (CHE)](http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.523.7580) data structure to manipulated triangular meshes, also can be extended for other polygonal meshes. See the paper: [CHE: A scalable topological data structure for triangular meshes](http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.523.7580) for more details.
 
 ### Geodesics
-We proposed a CPU/GPU parallel algorithm to compute geodesics distances on triangular meshes. Our
-approach is competitive with the current methods and is simple to implement. Please cite our paper:
+We proposed a CPU/GPU parallel algorithm to compute geodesics distances on triangular meshes. Our approach is competitive with the current methods and is simple to implement. Please cite our paper:
 
 [A minimalistic approach for fast computation of geodesic distances on triangular meshes](https://doi.org/10.1016/j.cag.2019.08.014)
 
 ```bibtex
-@Article{ROMEROCALLA2019,
-  author   = { {Romero Calla}, Luciano A. and {Fuentes Perez}, Lizeth J. and Montenegro, Anselmo A. },
-  title    = { A minimalistic approach for fast computation of geodesic distances on triangular meshes },
-  journal  = { Computers \& Graphics },
-  year     = { 2019 },
-  issn     = { 0097-8493 },
-  doi      = { https://doi.org/10.1016/j.cag.2019.08.014 },
-  keywords = { Geodesic distance, Fast marching, Triangular meshes, Parallel programming, Breadth-first search },
-  url      = { http://www.sciencedirect.com/science/article/pii/S0097849319301426 }
+@Article{RFM19,
+	author   = { {Romero Calla}, Luciano A. and {Fuentes Perez}, Lizeth J. and Montenegro, Anselmo A. },
+	title    = { A minimalistic approach for fast computation of geodesic distances on triangular meshes },
+	journal  = { Computers \& Graphics },
+	year     = { 2019 },
+	issn     = { 0097-8493 },
+	doi      = { https://doi.org/10.1016/j.cag.2019.08.014 },
+	keywords = { Geodesic distance, Fast marching, Triangular meshes, Parallel programming, Breadth-first search },
+	url      = { http://www.sciencedirect.com/science/article/pii/S0097849319301426 }
 }
 ```
 
 Also, we have implemented the [Fast Marching algorithm](), and the [Heat method](https://www.cs.cmu.edu/~kmcrane/Projects/HeatMethod/index.html).
 
+### Ray Tracing
+We have implemented a ray tracing viewer option for mesh and pointcloud visualization using [Intel Embree](https://www.embree.org/) v3.1x and [Nvidia Optix](https://developer.nvidia.com/optix) v7.1.
+
 ### Dictionary Learning
-We proposed a Dictionary Learning and Sparse Coding framework, to solve the problems of Denoising,
-Inpainting, and Multiresolution on triangular meshes. This work is still in process. Please cite
-our work:
+We proposed a Dictionary Learning and Sparse Coding framework, to solve the problems of Denoising, Inpainting, and Multiresolution on triangular meshes. This work is still in process. Please cite our work:
 
 [A Dictionary Learning-based framework on Triangular Meshes](https://arxiv.org/abs/1810.08266)
 
 ```bibtex
 
 @ARTICLE{2018arXiv181008266F,
-	author	= { {Fuentes Perez}, L.~J. and {Romero Calla}, L.~A. and {Montenegro}, A.~A. },
+	author	= { {Fuentes Perez}, Lizeth J. and {Romero Calla}, Luciano A. and {Montenegro}, Anselmo A. },
 	title	= { Dictionary Learning-based Inpainting on Triangular Meshes },
 	journal	= { ArXiv e-prints },
 	eprint	= { 1810.08266 },
@@ -83,8 +80,7 @@ We implemented repairing mesh holes in two steps:
 
 1. Generate a mesh to cover the hole. We modified the algorithm presented in the paper: [A robust hole-filling algorithm for triangular mesh](https://doi.org/10.1007/s00371-007-0167-y), in order to
 generate a planar triangular mesh using a priority queue.
-2. Fit the surface described by the new points in order to minimize the variation of the surface,
-solving the Poisson equation (see the Chapter 4 of the book [Polygon Mesh Processing](http://www.pmp-book.org/)) or using Biharmonic splines.
+2. Fit the surface described by the new points in order to minimize the variation of the surface, solving the Poisson equation (see the Chapter 4 of the book [Polygon Mesh Processing](http://www.pmp-book.org/)) or using Biharmonic splines.
 
 Please see and cite our final undergraduate project: [mesh hole repairing report](http://repositorio.unsa.edu.pe/handle/UNSA/2576) (in Spanish).
 
@@ -97,9 +93,9 @@ Please cite our paper (in Spanish):
 [Efficient approach for interest points detection in non-rigid shapes](https://doi.org/10.1109/CLEI.2015.7359459)
 
 ```bibtex
-@INPROCEEDINGS{7359459,
-	author		= { C. J. Lopez Del Alamo and L. A. Romero Calla and L. J. Fuentes Perez },
-	booktitle	= { 2015 Latin American Computing Conference (CLEI) },
+@INPROCEEDINGS{LRF2015,
+	author		= { {Lopez Del Alamo} Cristian J. and {Romero Calla} Luciano A. and {Fuentes Perez} Lizeth J. },
+	booktitle	= { Latin American Computing Conference (CLEI) },
 	title		= { Efficient approach for interest points detection in non-rigid shapes },
 	year		= { 2015 },
 	month		= { Oct },
@@ -108,24 +104,19 @@ Please cite our paper (in Spanish):
 }
 ```
 
-Computing key-components depends on the accuracy and definition of the key points. We were inspired
-by the [work of Ivan Sipiran](https://www.researchgate.net/publication/262350194_Key-component_detection_on_3D_meshes_using_local_features),
-he defined for the first time the notion of a key-component in meshes.
-We proposed a method based on geodesics to determine the key components.
+Computing key-components depends on the accuracy and definition of the key points. We were inspired by the [work of Ivan Sipiran](https://www.researchgate.net/publication/262350194_Key-component_detection_on_3D_meshes_using_local_features), he defined for the first time the notion of a key-component in meshes. We proposed a method based on geodesics to determine the key components.
 
 Please see and cite our final undergraduate project: [key-components report](http://repositorio.unsa.edu.pe/handle/UNSA/2575) (in Spanish).
 
-
 ### Decimation
-We are implementing the algorithm described by the paper [Stellar Mesh Simplification Using Probabilistic Optimization](https://doi.org/10.1111/j.1467-8659.2004.00811.x),
-to compute a mesh simplification.
+We are implementing the algorithm described by the paper [Stellar Mesh Simplification Using Probabilistic Optimization](https://doi.org/10.1111/j.1467-8659.2004.00811.x), to compute a mesh simplification.
 
 ### Fairing
-We implemented Spectral and Taubin fairing algorithms to smooth a mesh surface.
-See the Chapter 4 of the book [Polygon Mesh Processing](http://www.pmp-book.org/).
+We implemented Spectral and Taubin fairing algorithms to smooth a mesh surface. See the Chapter 4 of the book [Polygon Mesh Processing](http://www.pmp-book.org/).
 
 ### Laplacian and signatures
 Laplace-Beltrami operator and its eigen decomposition, WKS, HKS, GPS signatures.
+
 
 ## Documentation
 Execute:
@@ -134,14 +125,16 @@ Execute:
 
 to generate the documentation in *html* and *LaTeX*.
 
+
 ## Viewer
-The viewer was initially based in the viewer of [https://github.com/dgpdec/course](https://github.com/dgpdec/course). The current viewer uses VAO and VBO to render, and the shaders have been modified and upgraded.
+The viewer is done with modern OpenGL and a GUI using Dear ImGui [https://github.com/ocornut/imgui](https://github.com/ocornut/imgui). The viewer was initially based in the viewer of [https://github.com/dgpdec/course](https://github.com/dgpdec/course).
+
 
 ## License
 
 MIT License
 
-## Authors/Contributors
-- [Luciano Arnaldo Romero Calla](https://github.com/larc)
-- [Lizeth Joseline Fuentes Pérez](https://github.com/lishh)
 
+## Authors/Contributors
+- [Luciano A. Romero Calla](https://github.com/larc)
+- [Lizeth J. Fuentes Pérez](https://github.com/lishh)
