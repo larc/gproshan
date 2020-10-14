@@ -8,9 +8,7 @@ This framework integrates some algorithms and contributions focus on the areas o
 
 ## Build and Run
 
-| Build Type | Status |
-| --- | --- |
-| `Linux Ubuntu 20.04` | [![Build Status](https://travis-ci.com/larc/gproshan.svg?branch=alpha)](https://travis-ci.com/larc/gproshan) |
+![Build](https://github.com/larc/gproshan/workflows/Build/badge.svg?branch=alpha)
 
 Install all dependencies and run:
 
@@ -24,13 +22,12 @@ finally execute:
 	./gproshan [mesh_paths.(off,obj,ply)]
 
 ### Dependencies (Linux)
-g++ >= 9.3, cuda >= 11.0, cmake >= 3.16, armadillo, eigen, cgal, suitesparse, openblas, glew, glfw3, glm, cimg, gnuplot
+g++ >= 9.3, cuda >= 11.0, cmake >= 3.18, armadillo, eigen, cgal, suitesparse, openblas, glew, glfw3, glm, cimg, gnuplot
 
-In Ubuntu (>= 18.04) you can install them with:
+In Ubuntu you can install them with:
 
 	sudo apt install cmake libarmadillo-dev libeigen3-dev libcgal-dev libsuitesparse-dev libopenblas-dev libglew-dev libglfw3-dev libglm-dev cimg-dev gnuplot
 
-You can build and run with g++ >= 8.4 and cmake >= 3.12, but the std::filesystem iterator could present some errors, then you need to add some flags to compile.
 
 ## Contributions
 

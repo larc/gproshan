@@ -44,19 +44,27 @@ void che_ptx::read_file(const string & file)
 	is >> R[2] >> s;
 	is >> tr >> s;
 
+	VN = new vertex[n_vertices_];
+	VC = new vertex[n_vertices_];
+	
 	char line[256];
 	is.getline(line, sizeof(line));
 
+	real_t alpha;	// color
 	for(index_t i = 0; i < n_vertices_; i++)
 	{
 		is.getline(line, sizeof(line));
 		stringstream ss(line);
 		
-		ss >> GT[i];
+		ss >> GT[i] >> alpha >> VC[i];
 
-		VN[i] = T[0] - GT[i];
+		VN[i] = tr - GT[i];
 		VN[i].unit();
 	}
+	
+	#pragma omp parallel for
+	for(index_t i = 0; i < n_vertices_; i++)
+		VC[i] /= 255;
 	
 	is.close();
 }
