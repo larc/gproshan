@@ -20,9 +20,6 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     
-    - name: CMake version
-      run: cmake --version
-
     - name: Install Dependencies
       run: |
         sudo apt remove --purge cmake
