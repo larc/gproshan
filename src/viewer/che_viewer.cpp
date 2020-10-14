@@ -51,7 +51,7 @@ void che_viewer::update()
 	factor = mesh->mean_edge();
 	
 	mesh->update_normals();
-	mesh->update_colors();
+	mesh->update_heatmaps();
 
 	update_vbo();
 }

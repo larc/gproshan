@@ -796,7 +796,7 @@ bool app_viewer::process_geodesics_fm(viewer * p_view)
 	TOC(view->time)
 	gproshan_log_var(view->time);
 
-	mesh->update_colors(&fm[0]);
+	mesh->update_heatmaps(&fm[0]);
 	
 	return false;
 }
@@ -815,7 +815,7 @@ bool app_viewer::process_geodesics_ptp_cpu(viewer * p_view)
 	TOC(view->time)
 	gproshan_log_var(view->time);
 
-	mesh->update_colors(&ptp[0]);
+	mesh->update_heatmaps(&ptp[0]);
 	
 	return false;
 }
@@ -834,7 +834,7 @@ bool app_viewer::process_geodesics_heat_flow(viewer * p_view)
 	TOC(view->time)
 	gproshan_log_var(view->time);
 
-	mesh->update_colors(&heat_flow[0]);
+	mesh->update_heatmaps(&heat_flow[0]);
 	
 	return false;
 }
@@ -868,7 +868,7 @@ bool app_viewer::process_geodesics_ptp_gpu(viewer * p_view)
 	TOC(view->time)
 	gproshan_log_var(view->time);
 	
-	mesh->update_colors(&ptp[0]);
+	mesh->update_heatmaps(&ptp[0]);
 	
 	return false;
 }
@@ -887,7 +887,7 @@ bool app_viewer::process_geodesics_heat_flow_gpu(viewer * p_view)
 	TOC(view->time)
 	gproshan_log_var(view->time);
 
-	mesh->update_colors(&heat_flow[0]);
+	mesh->update_heatmaps(&heat_flow[0]);
 	
 	return false;
 }
