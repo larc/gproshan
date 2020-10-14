@@ -8,7 +8,7 @@ This framework integrates some algorithms and contributions focus on the areas o
 
 ## Build and Run
 
-![Build](https://github.com/larc/gproshan_dev/workflows/Build/badge.svg)
+![Build](https://github.com/larc/gproshan_dev/workflows/Build/badge.svg?branch=dev)
 
 Install all dependencies and run:
 
