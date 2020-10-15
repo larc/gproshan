@@ -561,7 +561,7 @@ bool app_viewer::process_denoising(viewer * p_view)
 	dict.execute();
 	
 	delete phi;
-	mesh->update_heatmaps(&dict[0]);
+	mesh->update_heatmap(&dict[0]);
 	
 	#pragma omp parallel for
 	for(index_t v = 0; v < mesh->n_vertices(); v++)
@@ -620,7 +620,7 @@ bool app_viewer::process_inpaiting(viewer * p_view)
 		inpainting dict(mesh, &phi, params);
 		real_t max_error = dict.execute();
 		
-		mesh->update_heatmaps(&dict[0]);
+		mesh->update_heatmap(&dict[0]);
 		mesh->update_normals();
 	}
 
@@ -651,7 +651,7 @@ bool app_viewer::process_mask(viewer * p_view)
 		
 		dict.init_radial_feature_patches();
 		//dict.init_voronoi_patches();
-		mesh->update_heatmaps(&dict[0]);
+		mesh->update_heatmap(&dict[0]);
 		string f_points = tmp_file_path(string(dict) + ".rsampl");
 
 		a_vec points_out;
