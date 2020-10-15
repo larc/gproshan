@@ -239,7 +239,7 @@ real_t che::area_surface() const
 	return area;
 }
 
-void che::update_heatmaps(const real_t * hm, real_t max_color)
+void che::update_heatmap(const real_t * hm, real_t max_color)
 {
 	if(!VHC) VHC = new real_t[n_vertices_];
 
