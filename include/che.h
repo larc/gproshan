@@ -71,7 +71,7 @@ class che
 		real_t real_trig(const index_t & t) const;
 		real_t area_vertex(const index_t & v);
 		real_t area_surface() const;
-		void update_heatmaps(const real_t * hm = nullptr, real_t max_color = 0);
+		void update_heatmap(const real_t * hm = nullptr, real_t max_color = 0);
 		const vertex & color(const index_t & v) const;
 		vertex & color(const index_t & v);
 		vertex shading_color(const index_t & f, const float & u, const float & v, const float & w) const;
