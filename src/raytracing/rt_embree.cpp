@@ -177,17 +177,15 @@ glm::vec4 embree::li(const glm::vec3 & light, const glm::vec3 & position, const 
 
 glm::vec4 embree::li(ray_hit r, const glm::vec3 & light, const bool & flat)
 {
-	const float max_tfar = 8;
-
 	float total_tfar = 0;
-	float tfar = r.ray.tfar;
-	glm::vec4 L(0);
 	
 	float near;
 	glm::vec3 position, normal, color;
-	while(tfar < max_tfar)
+	
+	glm::vec4 L(0);
+	while(true)
 	{
-		total_tfar += tfar;
+		total_tfar += r.ray.tfar;
 		
 		position = r.position();
 		normal = r.normal(geomID_mesh[r.hit.geomID], flat);
@@ -197,19 +195,14 @@ glm::vec4 embree::li(ray_hit r, const glm::vec3 & light, const bool & flat)
 		if(geomID_mesh[r.hit.geomID]->is_pointcloud())
 			near += pointcloud_hit(position, normal, color, r);
 		
-		L += li(light, position, normal, color, near);
+		L += r.ray.tfar * li(light, position, normal, color, near);
 		
-		/*
 		r = ray_hit(r.position(), r.dir());
-		if(!intersect(r)) break;
-
-		tfar = r.ray.tfar + total_tfar;
-		*/
-		
-		tfar = 10;
+		if(!intersect(r))
+			break;
 	}
 
-	return L;// / total_tfar;
+	return L / total_tfar;
 }
 
 bool embree::intersect(ray_hit & r)
