@@ -26,7 +26,7 @@ struct corr_t;
 
 class che
 {
-	vertex vcolor = { 0.75, 0.85, 1.0 };
+	vertex vcolor{ 0.75, 0.85, 1.0 };
 
 	public:
 		static const size_t P = 3; ///< default polygon size 3, triangular meshes

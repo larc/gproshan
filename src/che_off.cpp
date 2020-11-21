@@ -40,18 +40,18 @@ void che_off::read_file(const string & file)
 	
 	if(soff[0] == 'N')
 		VN = new vertex[n_vertices_];
-	if(soff[0] == 'C' || soff[1] == 'C')
-		VC = new vertex[n_vertices_];
 
 	real_t alpha;	// color
 	for(index_t i = 0; i < n_vertices_; i++)
 	{
 		is >> GT[i];
-		if(VC) is >> VC[i] >> alpha;
-		if(VN) is >> VN[i];
+		if(soff[0] == 'C' || soff[1] == 'C')
+			is >> VC[i] >> alpha;
+		if(soff[0] == 'N')
+			is >> VN[i];
 	}
 	
-	if(VC)
+	if(soff[0] == 'C' || soff[1] == 'C')
 	{
 		#pragma omp parallel for
 		for(index_t i = 0; i < n_vertices_; i++)
