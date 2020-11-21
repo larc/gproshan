@@ -134,7 +134,7 @@ index_t embree::add_point_cloud(const che * mesh)
 	return geom_id;
 }
 
-float embree::pointcloud_hit(glm::vec3 & position, glm::vec3 & normal, glm::vec3 & color, ray_hit & r)
+float embree::pointcloud_hit(glm::vec3 & position, glm::vec3 & normal, glm::vec3 & color, ray_hit r)
 {
 	float w, sum_w = 0;
 	position = glm::vec3(0);
