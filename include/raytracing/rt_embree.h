@@ -99,7 +99,7 @@ class embree : public raytracing
 		index_t add_mesh(const che * mesh);
 		index_t add_point_cloud(const che * mesh);
 
-		float pointcloud_hit(glm::vec3 & position, glm::vec3 & normal, glm::vec3 & color, ray_hit & r);
+		float pointcloud_hit(glm::vec3 & position, glm::vec3 & normal, glm::vec3 & color, ray_hit r);
 		glm::vec4 li(const glm::vec3 & light, const glm::vec3 & position, const glm::vec3 & normal, const glm::vec3 & color, const float & near = 1e-5f);
 		glm::vec4 li(ray_hit r, const glm::vec3 & light, const bool & flat);
 };
