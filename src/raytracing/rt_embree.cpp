@@ -183,7 +183,7 @@ glm::vec4 embree::li(ray_hit r, const glm::vec3 & light, const bool & flat)
 	glm::vec3 position, normal, color;
 	
 	glm::vec4 L(0);
-	while(true)
+	while(total_tfar < 0.1)
 	{
 		total_tfar += r.ray.tfar;
 		
