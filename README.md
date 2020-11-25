@@ -72,20 +72,6 @@ We proposed a Dictionary Learning and Sparse Coding framework, to solve the prob
 }
 ```
 
-[A Dictionary Learning-based framework on Triangular Meshes](https://arxiv.org/abs/1810.08266)
-
-```bibtex
-@ARTICLE{2018arXiv181008266F,
-  author   = { {Fuentes Perez}, L.~J. and {Romero Calla}, L.~A. and {Montenegro}, A.~A. },
-  title    = { Dictionary Learning-based Inpainting on Triangular Meshes },
-  journal  = { ArXiv e-prints },
-  eprint   = { 1810.08266 },
-  year     = 2018,
-  month    = oct,
-  url      = { https://arxiv.org/abs/1810.08266 }
-}
-```
-
 ### Hole repairing
 We implemented repairing mesh holes in two steps:
 

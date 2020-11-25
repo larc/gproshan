@@ -46,7 +46,25 @@ void che_viewer::reload()
 
 void che_viewer::update()
 {
-	if(normalize) mesh->normalize();	
+	if(normalize) mesh->normalize();
+	
+	vertex pmin(INFINITY, INFINITY, INFINITY);
+	vertex pmax(0, 0, 0);
+
+	for(index_t v = 0; v < mesh->n_vertices(); v++)
+	{
+		const vertex & p = mesh->gt(v);
+		
+		pmin.x = min(pmin.x, p.x);
+		pmin.y = min(pmin.y, p.y);
+		pmin.z = min(pmin.z, p.z);
+
+		pmax.x = max(pmax.x, p.x);
+		pmax.y = max(pmax.y, p.y);
+		pmax.z = max(pmax.z, p.z);
+	}
+	
+	translate(-(pmax + pmin) / 2);
 	
 	factor = mesh->mean_edge();
 	

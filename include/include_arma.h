@@ -3,6 +3,7 @@
 
 #include "include.h"
 
+#define ARMA_ALLOW_FAKE_GCC
 #include <armadillo>
 
 #ifdef NDEBUG
