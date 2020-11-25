@@ -281,7 +281,7 @@ vertex che::shading_color(const index_t & f, const float & u, const float & v, c
 {
 	index_t he = f * che::P;
 
-	return VC ? vertex(u * VC[VT[he]] + v * VC[VT[he + 1]] + w * VC[VT[he + 2]]) : vcolor;
+	return VC ? u * VC[VT[he]] + v * VC[VT[he + 1]] + w * VC[VT[he + 2]] : vcolor;
 }
 
 const real_t & che::heatmap(const index_t & v) const
@@ -1383,6 +1383,12 @@ void che::init(const size_t & n_v, const size_t & n_f)
 	if(n_half_edges_)	OT = new index_t[n_half_edges_];
 	if(n_vertices_)		EVT = new index_t[n_vertices_];
 	if(n_vertices_)		EHT = new index_t[n_half_edges_];
+	
+	if(n_vertices_)		VC = new vertex[n_vertices_];
+
+	#pragma omp parallel for
+	for(index_t v = 0; v < n_vertices_; v++)
+		VC[v] = vcolor;
 }
 
 void che::update_evt_ot_et()

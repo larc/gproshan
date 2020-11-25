@@ -41,14 +41,12 @@ We proposed a CPU/GPU parallel algorithm to compute geodesics distances on trian
 
 ```bibtex
 @Article{RFM19,
-	author   = { {Romero Calla}, Luciano A. and {Fuentes Perez}, Lizeth J. and Montenegro, Anselmo A. },
-	title    = { A minimalistic approach for fast computation of geodesic distances on triangular meshes },
-	journal  = { Computers \& Graphics },
-	year     = { 2019 },
-	issn     = { 0097-8493 },
-	doi      = { https://doi.org/10.1016/j.cag.2019.08.014 },
-	keywords = { Geodesic distance, Fast marching, Triangular meshes, Parallel programming, Breadth-first search },
-	url      = { http://www.sciencedirect.com/science/article/pii/S0097849319301426 }
+  author       = { {Romero Calla}, Luciano A. and {Fuentes Perez}, Lizeth J. and Montenegro, Anselmo A. },
+  title        = { A minimalistic approach for fast computation of geodesic distances on triangular meshes },
+  issn         = { 0097-8493 },
+  year         = { 2019 },
+  doi          = { 10.1016/j.cag.2019.08.014 },
+  journaltitle = { Computers \& Graphics }
 }
 ```
 
@@ -60,18 +58,17 @@ We have implemented a ray tracing viewer option for mesh and pointcloud visualiz
 ### Dictionary Learning
 We proposed a Dictionary Learning and Sparse Coding framework, to solve the problems of Denoising, Inpainting, and Multiresolution on triangular meshes. This work is still in process. Please cite our work:
 
-[A Dictionary Learning-based framework on Triangular Meshes](https://arxiv.org/abs/1810.08266)
+[A Robust Feature-aware Sparse Mesh Representation](https://diglib.eg.org/handle/10.2312/pg20201226)
 
 ```bibtex
-
-@ARTICLE{2018arXiv181008266F,
-	author	= { {Fuentes Perez}, Lizeth J. and {Romero Calla}, Luciano A. and {Montenegro}, Anselmo A. },
-	title	= { Dictionary Learning-based Inpainting on Triangular Meshes },
-	journal	= { ArXiv e-prints },
-	eprint	= { 1810.08266 },
-	year	= 2018,
-	month	= oct,
-	url	= { https://arxiv.org/abs/1810.08266 }
+@InProceedings{FRMMP20,
+  booktitle    = { Pacific Graphics Short Papers, Posters, and Work-in-Progress Papers},
+  title        = { {A Robust Feature-aware Sparse Mesh Representation} },
+  author       = { {Fuentes Perez}, Lizeth J.  and {Romero Calla}, Luciano A. and Montenegro, Anselmo A. and Mura, Claudio and Pajarola, Renato },
+  year         = { 2020 },
+  publisher    = { The Eurographics Association },
+  ISBN         = { 978-3-03868-120-5 },
+  DOI          = { 10.2312/pg.20201226 }
 }
 ```
 
@@ -93,14 +90,13 @@ Please cite our paper (in Spanish):
 [Efficient approach for interest points detection in non-rigid shapes](https://doi.org/10.1109/CLEI.2015.7359459)
 
 ```bibtex
-@INPROCEEDINGS{LRF2015,
-	author		= { {Lopez Del Alamo} Cristian J. and {Romero Calla} Luciano A. and {Fuentes Perez} Lizeth J. },
-	booktitle	= { Latin American Computing Conference (CLEI) },
-	title		= { Efficient approach for interest points detection in non-rigid shapes },
-	year		= { 2015 },
-	month		= { Oct },
-	pages		= { 1-8 },
-	doi		= { 10.1109/CLEI.2015.7359459 }
+@InProceedings{LRF15,
+  author    = { {Lopez Del Alamo}, Cristian J. and {Romero Calla}, Luciano A. and {Fuentes Perez}, Lizeth J. },
+  title     = { Efficient approach for interest points detection in non-rigid shapes },
+  booktitle = { Latin American Computing Conference (CLEI) },
+  pages     = { 1-8 },
+  year      = { 2015 },
+  doi       = { 10.1109/CLEI.2015.7359459 }
 }
 ```
 

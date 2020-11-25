@@ -134,7 +134,7 @@ index_t embree::add_point_cloud(const che * mesh)
 	return geom_id;
 }
 
-float embree::pointcloud_hit(glm::vec3 & position, glm::vec3 & normal, glm::vec3 & color, ray_hit & r)
+float embree::pointcloud_hit(glm::vec3 & position, glm::vec3 & normal, glm::vec3 & color, ray_hit r)
 {
 	float w, sum_w = 0;
 	position = glm::vec3(0);
@@ -165,10 +165,11 @@ glm::vec4 embree::li(const glm::vec3 & light, const glm::vec3 & position, const 
 {
 	const glm::vec3 wi = normalize(light - position);
 	const float dist_light = glm::length(light - position);
-	const float falloff = 8.f / (dist_light * dist_light);	// intensity multiplier / falloff
+	const float falloff = 4.f / (dist_light * dist_light);	// intensity multiplier / falloff
 	const float dot_wi_normal = glm::dot(wi, normal);
 
-	const glm::vec4 L = glm::vec4(falloff * (dot_wi_normal < 0 ? -dot_wi_normal : dot_wi_normal) * (float(1.f/M_PI) * color) + glm::vec3(0.1), 1);
+	const glm::vec4 L = glm::vec4((dot_wi_normal < 0 ? -dot_wi_normal : dot_wi_normal) * color, 1);
+	//const glm::vec4 L = glm::vec4(falloff * (dot_wi_normal < 0 ? -dot_wi_normal : dot_wi_normal) * (float(1.f/M_PI) * color) + glm::vec3(0.3), 1);
 
 	ray_hit r(position, wi, near);
 	return (occluded(r) ? 0.6f : 1.f) * L;	
@@ -176,36 +177,29 @@ glm::vec4 embree::li(const glm::vec3 & light, const glm::vec3 & position, const 
 
 glm::vec4 embree::li(ray_hit r, const glm::vec3 & light, const bool & flat)
 {
-	const float max_tfar = 8;
-
 	float total_tfar = 0;
-	float tfar = r.ray.tfar;
-	glm::vec4 L(0);
 	
 	float near;
 	glm::vec3 position, normal, color;
-	while(tfar < max_tfar)
+	
+	glm::vec4 L(0);
+	while(total_tfar < 0.1)
 	{
-		total_tfar += tfar;
+		total_tfar += r.ray.tfar;
 		
 		position = r.position();
 		normal = r.normal(geomID_mesh[r.hit.geomID], flat);
 		color = r.color(geomID_mesh[r.hit.geomID]);
-		
+
 		near = 1e-5f;
 		if(geomID_mesh[r.hit.geomID]->is_pointcloud())
 			near += pointcloud_hit(position, normal, color, r);
 		
-		L += li(light, position, normal, color, near);
+		L += r.ray.tfar * li(light, position, normal, color, near);
 		
-		/*
 		r = ray_hit(r.position(), r.dir());
-		if(!intersect(r)) break;
-
-		tfar = r.ray.tfar + total_tfar;
-		*/
-		
-		tfar = 10;
+		if(!intersect(r))
+			break;
 	}
 
 	return L / total_tfar;
