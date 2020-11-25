@@ -95,9 +95,12 @@ target_link_libraries(gproshan_cpp ${X11_X11_LIB})
 target_link_libraries(gproshan_cpp ${ARMADILLO_LIBRARIES})
 target_link_libraries(gproshan_cpp ${SuiteSparse_LIBRARIES})
 target_link_libraries(gproshan_cpp CGAL::CGAL)
-target_link_libraries(gproshan_cpp embree)
 target_link_libraries(gproshan_cpp ${OptiX_LIBRARY})
 target_link_libraries(gproshan_cpp imgui)
+
+if(embree_FOUND)
+	target_link_libraries(gproshan_cpp embree)
+endif(embree_FOUND)
 
 if(CUDAToolkit_FOUND)
 	FILE(GLOB_RECURSE cu_sources ${gproshan_SOURCE_DIR}/src/cuda/*.cu)
