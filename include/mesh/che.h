@@ -68,7 +68,7 @@ class che
 		void flip(const index_t & e);
 		real_t pdetriq(const index_t & t) const;
 		real_t quality();
-		real_t real_trig(const index_t & t) const;
+		real_t area_trig(const index_t & t) const;
 		real_t area_vertex(const index_t & v);
 		real_t area_surface() const;
 		void update_heatmap(const real_t * hm = nullptr, real_t max_color = 0);
