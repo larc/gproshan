@@ -3,7 +3,7 @@
 
 #include "mdict/denoising.h"
 
-#include "che_off.h"
+#include "mesh/che_off.h"
 
 
 // geometry processing and shape analysis framework
@@ -15,6 +15,7 @@ void test_mesh_denoising(const string & file);
 
 
 } // namespace gproshan::mdict
+
 
 #endif // D_MESH_DENOISING_H
 

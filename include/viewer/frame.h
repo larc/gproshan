@@ -2,9 +2,9 @@
 #define VIEWER_FRAME_H
 
 
-#include "shader.h"
+#include "viewer/shader.h"
 
-#include "include_opengl.h"
+#include "viewer/include_opengl.h"
 
 
 // geometry processing and shape analysis framework

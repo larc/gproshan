@@ -1,4 +1,4 @@
-#include "denoising.h"
+#include "mdict/denoising.h"
 
 
 // geometry processing and shape analysis framework

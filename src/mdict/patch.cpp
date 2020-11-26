@@ -1,8 +1,6 @@
-#include "patch.h"
+#include "mdict/patch.h"
 
-#include "dictionary.h"
-#include "che_sphere.h"
-#include "che_off.h"
+#include "mdict/dictionary.h"
 
 #include <queue>
 #include <random>

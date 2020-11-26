@@ -1,6 +1,6 @@
-#include "inpainting.h"
+#include "mdict/inpainting.h"
 
-#include "che_off.h"
+#include "mesh/che_off.h"
 
 #include <cassert>
 #include <fstream>

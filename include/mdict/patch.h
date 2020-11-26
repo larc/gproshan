@@ -2,14 +2,17 @@
 #define PATCH_H
 
 #include "include.h"
-#include "che.h"
-#include "include_arma.h"
-#include "geodesics.h"
+#include "mesh/che.h"
 
 #include <vector>
 #include <map>
-#include <CImg.h>
 #include <algorithm> 
+
+
+#include "include_arma.h"
+
+#include <CImg.h>
+
 
 #ifdef Success
 	#undef Success

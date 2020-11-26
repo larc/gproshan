@@ -1,12 +1,9 @@
 #ifndef INPAINTING_H
 #define INPAINTING_H
 
-#include "dictionary.h"
-#include "che_poisson.h"
-#include "che_fill_hole.h"
-#include "sampling.h"
-#include "geodesics.h"
-#include "geodesics_ptp.h"
+#include "mdict/dictionary.h"
+#include "mesh/che_poisson.h"
+#include "mesh/che_fill_hole.h"
 
 #include <random>
 

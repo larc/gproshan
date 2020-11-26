@@ -1,9 +1,9 @@
 #ifndef VIEWER_CAMERA_H
 #define VIEWER_CAMERA_H
 
-#include "quaternion.h"
+#include "mesh/quaternion.h"
 
-#include "include_opengl.h"
+#include "viewer/include_opengl.h"
 
 
 // geometry processing and shape analysis framework

@@ -1,4 +1,4 @@
-#include "viewer.h"
+#include "viewer/viewer.h"
 
 #include <cmath>
 #include <cstdlib>
@@ -13,10 +13,10 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "che_off.h"
-#include "che_obj.h"
-#include "che_ply.h"
-#include "che_sphere.h"
+#include "mesh/che_off.h"
+#include "mesh/che_obj.h"
+#include "mesh/che_ply.h"
+#include "mesh/che_sphere.h"
 
 #include <CImg.h>
 

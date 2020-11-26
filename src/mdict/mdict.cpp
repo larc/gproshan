@@ -1,6 +1,6 @@
-#include "mdict.h"
+#include "mdict/mdict.h"
 
-#include "sampling.h"
+#include "geodesics/sampling.h"
 
 #include <cmath>
 #include <iomanip>

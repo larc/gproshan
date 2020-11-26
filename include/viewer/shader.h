@@ -4,7 +4,7 @@
 #include <string>
 #include <map>
 
-#include "include_opengl.h"
+#include "viewer/include_opengl.h"
 
 // geometry processing and shape analysis framework
 namespace gproshan {

@@ -1,4 +1,4 @@
-#include "raytracing.h"
+#include "raytracing/raytracing.h"
 
 #include <iostream>
 #include <random>

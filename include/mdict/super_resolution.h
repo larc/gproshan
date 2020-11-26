@@ -1,7 +1,7 @@
 #ifndef SUPER_RESOLUTION_H
 #define SUPER_RESOLUTION_H
 
-#include "dictionary.h"
+#include "mdict/dictionary.h"
 
 
 // geometry processing and shape analysis framework

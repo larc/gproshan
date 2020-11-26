@@ -2,9 +2,10 @@
 #define MDICT_H
 
 #include "include.h"
-#include "patch.h"
-#include "d_mesh.h"
-#include "basis.h"
+
+#include "mdict/d_mesh.h"
+#include "mdict/patch.h"
+#include "mdict/basis.h"
 
 
 #include "include_arma.h"

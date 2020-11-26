@@ -1,4 +1,4 @@
-#include "synthesis.h"
+#include "mdict/synthesis.h"
 
 
 // geometry processing and shape analysis framework
@@ -37,6 +37,7 @@ real_t synthesis::execute()
 	TIC(d_time) mesh_reconstruction(); TOC(d_time)
 	gproshan_debug_var(d_time);
 }
+
 
 } // namespace gproshan::mdict
 

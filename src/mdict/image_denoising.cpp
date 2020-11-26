@@ -1,4 +1,4 @@
-#include "image_denoising.h"
+#include "mdict/image_denoising.h"
 
 #include <CImg.h>
 

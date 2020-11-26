@@ -1,5 +1,4 @@
- #include "d_mesh.h"
-	#include "che_off.h"
+#include "mdict/d_mesh.h"
 
 #ifndef CGAL_PATCH_DEFS
 	#define CGAL_PATCH_DEFS

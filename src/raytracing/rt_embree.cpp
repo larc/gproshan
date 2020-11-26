@@ -1,4 +1,4 @@
-#include "rt_embree.h"
+#include "raytracing/rt_embree.h"
 
 #ifdef GPROSHAN_EMBREE
 

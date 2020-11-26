@@ -1,4 +1,16 @@
-#include "d_hybrid_denoising.h"
+#include "mdict/d_hybrid_denoising.h"
+
+#include "mesh/che_off.h"
+#include "mesh/che_img.h"
+
+#include "mdict/mdict.h"
+#include "mdict/patch.h"
+#include "mdict/basis.h"
+#include "mdict/basis_dct.h"
+#include "mdict/d_mesh.h"
+
+
+#include "include_arma.h"
 
 #include <CImg.h>
 
