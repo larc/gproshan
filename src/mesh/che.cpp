@@ -196,7 +196,7 @@ real_t che::pdetriq(const index_t & t) const
 						*(GT[VT[prev(he)]] - GT[VT[next(he)]]),
 						*(GT[VT[he]] - GT[VT[prev(he)]])
 					};
-	return (4 * sqrt(3) * real_trig(t)) / (h[0] * h[0] + h[1] * h[1] + h[2] * h[2]);
+	return (4 * sqrt(3) * area_trig(t)) / (h[0] * h[0] + h[1] * h[1] + h[2] * h[2]);
 }
 
 real_t che::quality()
@@ -210,7 +210,7 @@ real_t che::quality()
 	return q * 100 / n_faces_;
 }
 
-real_t che::real_trig(const index_t & t) const
+real_t che::area_trig(const index_t & t) const
 {
 	index_t he = t * P;
 	vertex a = GT[VT[next(he)]] - GT[VT[he]];
@@ -223,7 +223,7 @@ real_t che::area_vertex(const index_t & v)
 {
 	real_t area_star = 0;
 	for_star(he, this, v)
-		area_star += real_trig(trig(he));
+		area_star += area_trig(trig(he));
 
 	return area_star / 3;
 }
@@ -234,7 +234,7 @@ real_t che::area_surface() const
 
 	#pragma omp parallel for reduction(+: area)
 	for(index_t i = 0; i < n_faces_; i++)
-		area += real_trig(i);
+		area += area_trig(i);
 
 	return area;
 }
@@ -318,7 +318,7 @@ void che::update_normals()
 		
 		n = 0;
 		for_star(he, this, v)
-			n += real_trig(trig(he)) * normal_he(he);
+			n += area_trig(trig(he)) * normal_he(he);
 		
 		n /= *n;
 	}
@@ -366,7 +366,7 @@ vertex che::gradient_he(const index_t & he, const real_t *const & f) const
 
 	vertex n = normal_he(he);
 
-	real_t A2 = real_trig(trig(he)) * 2;
+	real_t A2 = area_trig(trig(he)) * 2;
 
 	vertex pij = n * (xj - xi);
 	vertex pjk = n * (xk - xj);
@@ -383,7 +383,7 @@ vertex che::gradient(const index_t & v, const real_t *const & f)
 
 	for_star(he, this, v)
 	{
-		area = real_trig(trig(he));
+		area = area_trig(trig(he));
 		area_star += area;
 		g += area * gradient_he(he, f);
 	}
