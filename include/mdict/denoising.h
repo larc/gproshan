@@ -1,7 +1,7 @@
 #ifndef DENOISING_H
 #define DENOISING_H
 
-#include "dictionary.h"
+#include "mdict/dictionary.h"
 
 
 // geometry processing and shape analysis framework

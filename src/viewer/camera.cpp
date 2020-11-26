@@ -1,4 +1,4 @@
-#include "camera.h"
+#include "viewer/camera.h"
 
 #include <cmath>
 #include <ctime>

@@ -6,12 +6,12 @@
 
 #include <glm/glm.hpp>
 
-#include "camera.h"
-#include "shader.h"
-#include "frame.h"
-#include "che_viewer.h"
+#include "viewer/camera.h"
+#include "viewer/shader.h"
+#include "viewer/frame.h"
+#include "viewer/che_viewer.h"
 
-#include "include_opengl.h"
+#include "viewer/include_opengl.h"
 
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
@@ -19,11 +19,11 @@
 
 
 #ifdef GPROSHAN_EMBREE
-	#include "rt_embree.h"
+	#include "raytracing/rt_embree.h"
 #endif // GPROSHAN_EMBREE
 
 #ifdef GPROSHAN_OPTIX
-	#include "rt_optix.h"
+	#include "raytracing/rt_optix.h"
 #endif // GPROSHAN_OPTIX
 
 

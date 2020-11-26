@@ -1,4 +1,4 @@
-#include "test_geodesics_ptp.h"
+#include "geodesics/test_geodesics_ptp.h"
 
 int main(int nargs, const char ** args)
 {

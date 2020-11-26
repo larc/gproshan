@@ -1,7 +1,7 @@
 #ifndef IMAGE_DENOISING_H
 #define IMAGE_DENOISING_H
 
-#include "mdict.h"
+#include "mdict/mdict.h"
 
 
 // geometry processing and shape analysis framework

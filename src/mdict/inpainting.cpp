@@ -1,4 +1,4 @@
-#include "inpainting.h"
+#include "mdict/inpainting.h"
 
 
 // geometry processing and shape analysis framework

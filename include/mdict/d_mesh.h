@@ -2,9 +2,9 @@
 #define D_MESH_H
 
 #include "include.h"
-#include "che.h"
-#include "patch.h"
-#include "geodesics.h"
+#include "mesh/che.h"
+#include "mdict/patch.h"
+#include "geodesics/geodesics.h"
 
 #include "include_arma.h"
 

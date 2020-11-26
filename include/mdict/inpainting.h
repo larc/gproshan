@@ -1,9 +1,9 @@
 #ifndef INPAINTING_H
 #define INPAINTING_H
 
-#include "dictionary.h"
-#include "../che_poisson.h"
-#include "../che_fill_hole.h"
+#include "mdict/dictionary.h"
+#include "../mesh/che_poisson.h"
+#include "../mesh/che_fill_hole.h"
 
 
 // geometry processing and shape analysis framework

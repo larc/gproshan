@@ -3,8 +3,8 @@
 #ifndef RT_EMBREE_H
 #define RT_EMBREE_H
 
-#include "che.h"
-#include "raytracing.h"
+#include "mesh/che.h"
+#include "raytracing/raytracing.h"
 
 #include <embree3/rtcore.h>
 #include <glm/glm.hpp>
