@@ -1,6 +1,6 @@
-#include "patch.h"
+#include "mdict/patch.h"
 
-#include "dictionary.h"
+#include "mdict/dictionary.h"
 
 #ifndef CGAL_PATCH_DEFS
 	#define CGAL_PATCH_DEFS

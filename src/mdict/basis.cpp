@@ -1,4 +1,4 @@
-#include "basis.h"
+#include "mdict/basis.h"
 
 
 // geometry processing and shape analysis framework

@@ -1,4 +1,4 @@
-#include "che_viewer.h"
+#include "viewer/che_viewer.h"
 
 #include <cassert>
 #include <cmath>

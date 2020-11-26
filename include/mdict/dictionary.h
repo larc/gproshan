@@ -1,11 +1,11 @@
 #ifndef DICTIONARY_H
 #define DICTIONARY_H
 
-#include "che.h"
-#include "patch.h"
-#include "mdict.h"
-#include "basis.h"
-#include "d_mesh.h"
+#include "mesh/che.h"
+#include "mdict/patch.h"
+#include "mdict/mdict.h"
+#include "mdict/basis.h"
+#include "mdict/d_mesh.h"
 
 #include "include_arma.h"
 

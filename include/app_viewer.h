@@ -1,31 +1,35 @@
 #ifndef APP_VIEWER_H
 #define APP_VIEWER_H
 
-#include "viewer/viewer.h"
 #include "include.h"
-#include "che_off.h"
-#include "che_obj.h"
-#include "che_ply.h"
-#include "che_ptx.h"
-#include "che_img.h"
-#include "che_sphere.h"
-#include "laplacian.h"
-#include "che_off.h"
-#include "dijkstra.h"
-#include "geodesics.h"
-#include "fairing_taubin.h"
-#include "fairing_spectral.h"
-#include "sampling.h"
-#include "che_fill_hole.h"
-#include "che_poisson.h"
-#include "decimation.h"
+#include "viewer/viewer.h"
+
+#include "mesh/che_off.h"
+#include "mesh/che_obj.h"
+#include "mesh/che_ply.h"
+#include "mesh/che_ptx.h"
+#include "mesh/che_img.h"
+#include "mesh/che_sphere.h"
+#include "mesh/che_fill_hole.h"
+#include "mesh/che_poisson.h"
+#include "mesh/decimation.h"
+
+#include "laplacian/laplacian.h"
+#include "laplacian/fairing_taubin.h"
+#include "laplacian/fairing_spectral.h"
+
+#include "geodesics/dijkstra.h"
+#include "geodesics/geodesics.h"
+#include "geodesics/sampling.h"
+
 #include "mdict/denoising.h"
 #include "mdict/super_resolution.h"
 #include "mdict/inpainting.h"
 #include "mdict/basis_dct.h"
 #include "mdict/patch.h"
-#include "key_points.h"
-#include "key_components.h"
+
+#include "features/key_points.h"
+#include "features/key_components.h"
 
 
 // geometry processing and shape analysis framework

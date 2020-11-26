@@ -3,8 +3,8 @@
 #ifndef RT_OPTIX_H
 #define RT_OPTIX_H
 
-#include "che.h"
-#include "raytracing.h"
+#include "mesh/che.h"
+#include "raytracing/raytracing.h"
 
 #include <cuda_runtime.h>
 #include <optix.h>

@@ -1,4 +1,4 @@
-#include "basis_cosine.h"
+#include "mdict/basis_cosine.h"
 
 #include <cassert>
 

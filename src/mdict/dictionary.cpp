@@ -1,9 +1,9 @@
-#include "dictionary.h"
+#include "mdict/dictionary.h"
 
-#include "sampling.h"
-#include "mdict.h"
-#include "che_poisson.h"
-#include "che_fill_hole.h"
+#include "geodesics/sampling.h"
+#include "mdict/mdict.h"
+#include "mesh/che_poisson.h"
+#include "mesh/che_fill_hole.h"
 
 #include <cassert>
 

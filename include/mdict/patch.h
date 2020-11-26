@@ -2,7 +2,7 @@
 #define PATCH_H
 
 #include "include.h"
-#include "che.h"
+#include "mesh/che.h"
 
 #include <vector>
 #include "include_arma.h"
