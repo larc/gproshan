@@ -1,7 +1,7 @@
 #ifndef BASIS_DCT_H
 #define BASIS_DCT_H
 
-#include "basis.h"
+#include "mdict/basis.h"
 
 
 // geometry processing and shape analysis framework

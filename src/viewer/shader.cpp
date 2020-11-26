@@ -1,4 +1,4 @@
-#include "shader.h"
+#include "viewer/shader.h"
 
 #include <cassert>
 #include <fstream>

@@ -1,10 +1,10 @@
 #ifndef CHE_VIEWER_H
 #define CHE_VIEWER_H
 
-#include "che.h"
-#include "shader.h"
+#include "mesh/che.h"
+#include "viewer/shader.h"
 
-#include "include_opengl.h"
+#include "viewer/include_opengl.h"
 
 
 #ifdef SINGLE_P

@@ -1,4 +1,4 @@
-#include "basis_dct.h"
+#include "mdict/basis_dct.h"
 
 #include <cassert>
 
