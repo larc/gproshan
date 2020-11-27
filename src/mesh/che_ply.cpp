@@ -110,10 +110,18 @@ void che_ply::read_file(const string & file)
 	}
 	else // binary_little_endian
 	{
+		bool big_endian = format == "binary_big_endian";
+		auto big_to_little = [](char * buffer, const index_t & n)
+		{
+			for(index_t i = 0, j = n - 1; i < j; i++, j--)
+				swap(buffer[i], buffer[j]);
+		};
+
 		char * vbuffer = new char[vbytes];
 		for(index_t v = 0; v < n_vertices_; v++)
 		{
 			is.read(vbuffer, vbytes);
+			if(big_endian) big_to_little(vbuffer, vbytes);
 
 			if(xyz == sizeof(real_t))
 				memcpy(&GT[v], vbuffer, 3 * sizeof(real_t));
@@ -139,6 +147,7 @@ void che_ply::read_file(const string & file)
 		while(n_f--)
 		{
 			is.read(vbuffer, fn);
+			if(big_endian) big_to_little(vbuffer, fn);
 
 			if(fn == 1) p = *((char *) vbuffer);
 			if(fn == 2) p = *((short *) vbuffer);
@@ -147,6 +156,8 @@ void che_ply::read_file(const string & file)
 			while(p--)
 			{
 				is.read(vbuffer, fbytes);
+				if(big_endian) big_to_little(vbuffer, fbytes);
+
 				if(fbytes == 1) VT[he++] = *((char *) vbuffer);
 				if(fbytes == 2) VT[he++] = *((short *) vbuffer);
 				if(fbytes == 4) VT[he++] = *((int *) vbuffer);
