@@ -55,7 +55,7 @@ void che_obj::read_file(const string & file)
 			for(i = 0; ss >> face[i]; i++)
 				ss.ignore(256, ' ');
 			
-			if(i == che::mtrig) // che::mtrig = 3, triangular mesh
+			if(i == che::mtrig)
 			{
 				if(face[0] < 0)
 				{
@@ -70,7 +70,7 @@ void che_obj::read_file(const string & file)
 					faces.push_back(face[2] - 1);
 				}
 			}
-			else if(i == che::mquad) // quadrangular mesh, split two triangles
+			else if(i == che::mquad)
 			{
 				if(face[0] < 0)
 				{
