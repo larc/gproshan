@@ -76,7 +76,7 @@ void che_off::read_file(const string & file)
 			is >> VT[he++];
 
 		// divide face
-		if(v == 4)
+		if(v == che::mquad)
 		{
 			VT[he] = VT[he - v];		he++;
 			VT[he] = VT[he - che::mtrig];	he++;

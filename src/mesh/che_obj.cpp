@@ -70,7 +70,7 @@ void che_obj::read_file(const string & file)
 					faces.push_back(face[2] - 1);
 				}
 			}
-			else if(i == 4) // quadrangular mesh, split two triangles
+			else if(i == che::mquad) // quadrangular mesh, split two triangles
 			{
 				if(face[0] < 0)
 				{
