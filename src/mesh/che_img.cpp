@@ -68,9 +68,9 @@ void che_img::write_file(const string & file) const
 
 	for(index_t he = 0; he < n_half_edges_; he++)
 	{
-		if(!(he % che::P)) os << che::P;
+		if(!(he % che::mtrig)) os << che::mtrig;
 		os << " " << VT[he];
-		if(he % che::P == che::P - 1) os << endl;
+		if(he % che::mtrig == che::mtrig - 1) os << endl;
 	}
 
 	os.close();
