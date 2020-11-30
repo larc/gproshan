@@ -1,6 +1,7 @@
 #include "mesh/che_ptx.h"
 
 #include <fstream>
+#include <sstream>
 #include <vector>
 #include <cstring>
 #include <cassert>
@@ -36,7 +37,7 @@ void che_ptx::read_file(const string & file)
 	assert(is.good());
 
 	is >> n_rows >> n_cols;
-	init(n_rows * n_cols, 0);
+	init(n_rows * n_cols, 2 * (n_rows - 1) * (n_cols - 1));
 
 	is >> T[0] >> T[1] >> T[2] >> T[3];
 	is >> R[0] >> s;
@@ -44,9 +45,6 @@ void che_ptx::read_file(const string & file)
 	is >> R[2] >> s;
 	is >> tr >> s;
 
-	VN = new vertex[n_vertices_];
-	VC = new vertex[n_vertices_];
-	
 	char line[256];
 	is.getline(line, sizeof(line));
 
@@ -57,11 +55,37 @@ void che_ptx::read_file(const string & file)
 		stringstream ss(line);
 		
 		ss >> GT[i] >> alpha >> VC[i];
-
-		VN[i] = tr - GT[i];
-		VN[i].unit();
 	}
-	
+
+	index_t he = 0;
+	auto add_trig = [&](const index_t & i, const index_t & j, const index_t & k)
+	{
+		if(GT[i].is_zero() || GT[j].is_zero() || GT[k].is_zero())
+			return;
+		
+		VT[he++] = i;
+		VT[he++] = j;
+		VT[he++] = k;
+		
+		if(pdetriq(trig(he - 1)) < 0.08)
+			he -= 3;
+	};
+
+	for(index_t r = 0; r < n_rows - 1; r++)
+	for(index_t c = 0; c < n_cols - 1; c++)
+	{
+		add_trig(	c + r * n_cols,
+					c + (r + 1) * n_cols,
+					(c + 1) + r * n_cols	);
+
+		add_trig(	(c + 1) + (r + 1) * n_cols,
+					(c + 1) + r * n_cols,
+					c + (r + 1) * n_cols	);
+	}
+
+	n_half_edges_ = he;
+	n_faces_ = he / che::mtrig;
+
 	#pragma omp parallel for
 	for(index_t i = 0; i < n_vertices_; i++)
 		VC[i] /= 255;
