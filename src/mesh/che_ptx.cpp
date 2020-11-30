@@ -67,20 +67,20 @@ void che_ptx::read_file(const string & file)
 		VT[he++] = j;
 		VT[he++] = k;
 		
-		if(pdetriq(trig(he - 1)) < 0.08)
+		if(pdetriq(trig(he - 1)) < 0.1)
 			he -= 3;
 	};
 
 	for(index_t r = 0; r < n_rows - 1; r++)
 	for(index_t c = 0; c < n_cols - 1; c++)
 	{
-		add_trig(	c + r * n_cols,
-					c + (r + 1) * n_cols,
-					(c + 1) + r * n_cols	);
-
-		add_trig(	(c + 1) + (r + 1) * n_cols,
-					(c + 1) + r * n_cols,
-					c + (r + 1) * n_cols	);
+		add_trig((c    ) + (r    ) * n_cols,
+				 (c    ) + (r + 1) * n_cols,
+				 (c + 1) + (r    ) * n_cols);
+		
+		add_trig((c + 1) + (r + 1) * n_cols,
+				 (c + 1) + (r    ) * n_cols,
+				 (c    ) + (r + 1) * n_cols);
 	}
 
 	n_half_edges_ = he;
