@@ -28,16 +28,15 @@ che_ptx::~che_ptx()
 
 void che_ptx::read_file(const string & file)
 {
-	size_t n_rows, n_cols;
-	vertex T[4], R[3], tr;
-	real_t s;
-
 	ifstream is(file);
 
 	assert(is.good());
 
+	size_t n_rows, n_cols;
+	vertex T[4], R[3], tr;
+	real_t s;
+
 	is >> n_rows >> n_cols;
-	init(n_rows * n_cols, 2 * (n_rows - 1) * (n_cols - 1));
 
 	is >> T[0] >> T[1] >> T[2] >> T[3];
 	is >> R[0] >> s;
@@ -45,17 +44,30 @@ void che_ptx::read_file(const string & file)
 	is >> R[2] >> s;
 	is >> tr >> s;
 
-	char line[256];
-	is.getline(line, sizeof(line));
+	real_t * points = new real_t[7 * n_rows * n_cols];
 
-	real_t alpha;	// color
-	for(index_t i = 0; i < n_vertices_; i++)
+	index_t p = 0;
+	while(is >> points[p++]);
+
+	// p is offset for [x y z a] or [x y z a r g b] point data
+	p = n_rows * n_cols * 4 == p ? 4 : 7;
+
+	init(n_rows * n_cols, 2 * (n_rows - 1) * (n_cols - 1));
+
+	#pragma omp parallel for
+	for(index_t v = 0; v < n_vertices_; v++)
 	{
-		is.getline(line, sizeof(line));
-		stringstream ss(line);
-		
-		ss >> GT[i] >> alpha >> VC[i];
+		const index_t & i = v * p;
+
+		GT[v] = { points[i], points[i + 1], points[i + 2] };
+
+		if(p == 4)
+			VC[v] = { points[i + 3], points[i + 3], points[i + 3] };
+		else
+			VC[v] = { points[i + 4], points[i + 5], points[i + 6] };
 	}
+
+	delete [] points;
 
 	index_t he = 0;
 	auto add_trig = [&](const index_t & i, const index_t & j, const index_t & k)
