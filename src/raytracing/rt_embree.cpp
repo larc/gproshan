@@ -164,11 +164,11 @@ float embree::pointcloud_hit(glm::vec3 & position, glm::vec3 & normal, glm::vec3
 glm::vec4 embree::li(const glm::vec3 & light, const glm::vec3 & position, const glm::vec3 & normal, const glm::vec3 & color, const float & near)
 {
 	const glm::vec3 wi = normalize(light - position);
-	const float dist_light = glm::length(light - position);
-	const float falloff = 4.f / (dist_light * dist_light);	// intensity multiplier / falloff
 	const float dot_wi_normal = glm::dot(wi, normal);
-
 	const glm::vec4 L = glm::vec4((dot_wi_normal < 0 ? -dot_wi_normal : dot_wi_normal) * color, 1);
+	
+	// const float dist_light = glm::length(light - position);
+	// const float falloff = 4.f / (dist_light * dist_light);	// intensity multiplier / falloff
 	//const glm::vec4 L = glm::vec4(falloff * (dot_wi_normal < 0 ? -dot_wi_normal : dot_wi_normal) * (float(1.f/M_PI) * color) + glm::vec3(0.3), 1);
 
 	ray_hit r(position, wi, near);

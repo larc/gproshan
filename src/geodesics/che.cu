@@ -9,21 +9,21 @@ __host__ __device__
 index_t cu_trig(index_t he)
 {
 	if(he == NIL) return NIL;
-	return he / che::P;
+	return he / che::mtrig;
 }
 
 __host__ __device__
 index_t cu_next(index_t he)
 {
 	if(he == NIL) return NIL;
-	return che::P * cu_trig(he) + (he + 1) % che::P;
+	return che::mtrig * cu_trig(he) + (he + 1) % che::mtrig;
 }
 
 __host__ __device__
 index_t cu_prev(index_t he)
 {
 	if(he == NIL) return NIL;
-	return che::P * cu_trig(he) + (he + che::P - 1) % che::P;
+	return che::mtrig * cu_trig(he) + (he + che::mtrig - 1) % che::mtrig;
 }
 
 void cuda_create_CHE(CHE * h_che, CHE *& dd_che, CHE *& d_che)

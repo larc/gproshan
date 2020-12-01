@@ -25,7 +25,7 @@ vector<pair<index_t, real_t> > iter_error_parallel_toplesets_propagation_coalesc
 	// sort data by levels, must be improve the coalescence
 
 	vertex * V = new vertex[mesh->n_vertices()];
-	index_t * F = new index_t[mesh->n_faces() * che::P];
+	index_t * F = new index_t[mesh->n_faces() * che::mtrig];
 	index_t * inv = new index_t[mesh->n_vertices()];
 	real_t * exact_dist_sorted = new real_t[mesh->n_vertices()];
 	
@@ -107,7 +107,7 @@ double * times_farthest_point_sampling_ptp_coalescence_gpu(che * mesh, vector<in
 	// BEGIN FPS PTP
 	
 	vertex * V = new vertex[mesh->n_vertices()];
-	index_t * F = new index_t[mesh->n_faces() * che::P];
+	index_t * F = new index_t[mesh->n_faces() * che::mtrig];
 	index_t * inv = new index_t[mesh->n_vertices()];
 
 

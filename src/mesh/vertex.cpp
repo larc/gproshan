@@ -104,6 +104,13 @@ bool vertex::operator == (const vertex & v)
 	return x == v.x && y == v.y && z == v.z;
 }
 
+bool vertex::is_zero()
+{
+	real_t eps = std::numeric_limits<real_t>::epsilon();
+
+	return abs(x) < eps && abs(y) < eps && abs(z) < eps;
+}
+
 vertex operator * (const real_t & a, const vertex & v)
 {
 	return vertex(a * v.x, a * v.y, a * v.z);
