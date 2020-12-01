@@ -68,8 +68,8 @@ void key_points::compute_kps(che * mesh)
 	index_t he, k = 0;
 	for(index_t t = 0; t < n_faces; t++)
 	{
-		he = che::P * face_areas[t].second;
-		for(index_t i = 0; i < che::P; i++)
+		he = che::mtrig * face_areas[t].second;
+		for(index_t i = 0; i < che::mtrig; i++)
 		{
 			const index_t & v = mesh->vt(he);
 			if(!is_kp[v])

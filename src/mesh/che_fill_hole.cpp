@@ -876,7 +876,7 @@ che * fill_hole_center_triangle(che * mesh, vector<index_t> & select_vertices, i
 	size_t n_faces = select_vertices.size() + 4;
 
 	vertex * vertices = new vertex[n_vertices];
-	index_t * faces = new index_t[n_faces * che::P];
+	index_t * faces = new index_t[n_faces * che::mtrig];
 
 	vector<vertex> triangle;
 	vector<size_t> tri_sizes(3,0);

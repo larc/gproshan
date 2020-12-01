@@ -44,6 +44,8 @@ class vertex
 		
 		bool operator < (const vertex & v);
 		bool operator == (const vertex & v);
+
+		bool is_zero();
 };
 
 vertex operator * (const real_t & a, const vertex & v);

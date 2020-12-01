@@ -18,19 +18,19 @@ namespace gproshan {
 index_t trig(const index_t & he)
 {
 	if(he == NIL) return NIL;
-	return he / che::P;
+	return he / che::mtrig;
 }
 
 index_t next(const index_t & he)
 {
 	if(he == NIL) return NIL;
-	return che::P * trig(he) + (he + 1) % che::P;
+	return che::mtrig * trig(he) + (he + 1) % che::mtrig;
 }
 
 index_t prev(const index_t & he)
 {
 	if(he == NIL) return NIL;
-	return che::P * trig(he) + (he + che::P - 1) % che::P;
+	return che::mtrig * trig(he) + (he + che::mtrig - 1) % che::mtrig;
 }
 
 CHE::CHE(che * mesh)
@@ -190,7 +190,7 @@ void che::flip(const index_t & e)
 // h1^2+h2^2+h3^2
 real_t che::pdetriq(const index_t & t) const
 {
-	index_t he = t * P;
+	index_t he = t * che::mtrig;
 	real_t h[3] = {
 						*(GT[VT[next(he)]] - GT[VT[he]]),
 						*(GT[VT[prev(he)]] - GT[VT[next(he)]]),
@@ -212,7 +212,7 @@ real_t che::quality()
 
 real_t che::area_trig(const index_t & t) const
 {
-	index_t he = t * P;
+	index_t he = t * che::mtrig;
 	vertex a = GT[VT[next(he)]] - GT[VT[he]];
 	vertex b = GT[VT[prev(he)]] - GT[VT[he]];
 
@@ -279,7 +279,7 @@ vertex & che::color(const index_t & v)
 
 vertex che::shading_color(const index_t & f, const float & u, const float & v, const float & w) const
 {
-	index_t he = f * che::P;
+	index_t he = f * che::mtrig;
 
 	return VC ? u * VC[VT[he]] + v * VC[VT[he + 1]] + w * VC[VT[he + 2]] : vcolor;
 }
@@ -338,14 +338,14 @@ vertex & che::normal(const index_t & v)
 
 vertex che::shading_normal(const index_t & f, const float & u, const float & v, const float & w) const
 {
-	index_t he = f * che::P;
+	index_t he = f * che::mtrig;
 
 	return {u * VN[VT[he]] + v * VN[VT[he + 1]] + w * VN[VT[he + 2]]};
 }
 
 vertex che::normal_trig(const index_t & f) const
 {
-	return normal_he(f * che::P);
+	return normal_he(f * che::mtrig);
 }
 
 vertex che::normal_he(const index_t & he) const
@@ -394,7 +394,7 @@ vertex che::gradient(const index_t & v, const real_t *const & f)
 vertex che::barycenter(const index_t & t) const
 {
 	vertex bc;
-	index_t tmp, he = t * P;
+	index_t tmp, he = t * che::mtrig;
 	tmp = he;
 
 	do
@@ -404,12 +404,12 @@ vertex che::barycenter(const index_t & t) const
 	}
 	while(he != tmp);
 
-	return bc / P;
+	return bc / che::mtrig;
 }
 
 vertex che::corr_vertex(corr_t & corr) const
 {
-	index_t he = corr.t * P;
+	index_t he = corr.t * che::mtrig;
 	assert(he < n_half_edges_);
 	return corr.alpha[0] * gt_vt(he) + corr.alpha[1] * gt_vt(next(he)) + corr.alpha[2] * gt_vt(prev(he));
 }
@@ -744,8 +744,8 @@ void che::multiplicate_vertices()
 	for(index_t f = 0; f < n_faces_; f++)
 	{
 		index_t v = n_vertices_ + f;
-		index_t he = f * P;
-		index_t ahe = f * P * 3;
+		index_t he = f * che::mtrig;
+		index_t ahe = f * che::mtrig * 3;
 
 		aGT[v] = (GT[VT[prev(he)]] + GT[VT[he]] + GT[VT[next(he)]]) / 3;
 
@@ -840,7 +840,7 @@ void che::multiplicate_vertices()
 		}
 		else flip(e);
 
-	n_faces_ = n_half_edges_ / che::P;
+	n_faces_ = n_half_edges_ / che::mtrig;
 
 	update_bt();
 }
@@ -900,7 +900,7 @@ void che::remove_non_manifold_vertices()
 	gproshan_debug(removing vertex);
 	delete_me();
 	gproshan_debug(removing vertex);
-	init(new_vertices.data(), new_vertices.size(), new_faces.data(), new_faces.size() / P);
+	init(new_vertices.data(), new_vertices.size(), new_faces.data(), new_faces.size() / che::mtrig);
 	gproshan_debug(removing vertex);
 }
 
@@ -968,7 +968,7 @@ void che::remove_vertices(const vector<index_t> & vertices)
 	gproshan_debug(removing vertex);
 	delete_me();
 	gproshan_debug(removing vertex);
-	init(new_vertices.data(), new_vertices.size(), new_faces.data(), new_faces.size() / P);
+	init(new_vertices.data(), new_vertices.size(), new_faces.data(), new_faces.size() / che::mtrig);
 	gproshan_debug(removing vertex);
 }
 
@@ -1213,10 +1213,10 @@ corr_t * che::edge_collapse(const index_t *const & sort_edges, const vertex *con
 				vector<index_t> he_trigs;
 				for_star(he, this, va)
 				if(faces_fixed[trig(he)] > -1)
-					he_trigs.push_back(trig(he) * P);
+					he_trigs.push_back(trig(he) * che::mtrig);
 				for_star(he, this, vb)
 				if(faces_fixed[trig(he)] > -1)
-					he_trigs.push_back(trig(he) * P);
+					he_trigs.push_back(trig(he) * che::mtrig);
 
 				gproshan_debug_var(va);
 				corr[va] = find_corr(aux_va, normals[va], he_trigs);
@@ -1255,10 +1255,10 @@ corr_t * che::edge_collapse(const index_t *const & sort_edges, const vertex *con
 		}
 
 	for(index_t v = 0; v < n_vertices_; v++)
-		corr[v].t = trig(map_he[corr[v].t * P]);
+		corr[v].t = trig(map_he[corr[v].t * che::mtrig]);
 
 	delete_me();
-	init(new_vertices.data(), new_vertices.size(), new_faces.data(), new_faces.size() / P);
+	init(new_vertices.data(), new_vertices.size(), new_faces.data(), new_faces.size() / che::mtrig);
 
 	delete [] faces_fixed;
 	delete [] deleted_vertices;
@@ -1388,7 +1388,7 @@ void che::init(const size_t & n_v, const size_t & n_f)
 {
 	n_vertices_ = n_v;
 	n_faces_ = n_f;
-	n_half_edges_ = che::P * n_faces_;
+	n_half_edges_ = che::mtrig * n_faces_;
 	
 	n_edges_ = n_borders_ = 0;
 	

@@ -29,7 +29,7 @@ class che
 	vertex vcolor{ 0.75, 0.85, 1.0 };
 
 	public:
-		static const size_t P = 3; ///< default polygon size 3, triangular meshes
+		enum mesh_type { mtrig = 3, mquad = 4 }; ///< meshes_types
 
 	protected:
 		std::string filename_;
@@ -175,11 +175,11 @@ struct corr_t
 
 	void init(const index_t & he)
 	{
-		t = trig(he) * che::P;
+		t = trig(he) * che::mtrig;
 		alpha[0] = he == t;
 		alpha[1] = he == next(t);
 		alpha[2] = he == prev(t);
-		t /= che::P;
+		t /= che::mtrig;
 	}
 };
 

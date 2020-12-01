@@ -62,12 +62,12 @@ void che_off::read_file(const string & file)
 	for(index_t i = 0; i < n_faces_; i++)
 	{
 		is >> v;
-		if(!i && v > che::P)
+		if(!i && v > che::mtrig)
 		{
 			vertex * tGT = GT; GT = nullptr;
 
 			delete_me();
-			init(n_v, n_f * (v - che::P + 1));
+			init(n_v, n_f * (v - che::mtrig + 1));
 
 			GT = tGT;
 		}
@@ -76,10 +76,10 @@ void che_off::read_file(const string & file)
 			is >> VT[he++];
 
 		// divide face
-		if(v == 4)
+		if(v == che::mquad)
 		{
 			VT[he] = VT[he - v];		he++;
-			VT[he] = VT[he - che::P];	he++;
+			VT[he] = VT[he - che::mtrig];	he++;
 
 			i++;
 		}
@@ -107,8 +107,8 @@ void che_off::write_file(const che * mesh, const string & file, const che_off::t
 	if(!pointcloud)
 		for(index_t he = 0; he < mesh->n_half_edges(); )
 		{
-			os << che::P;
-			for(index_t i = 0; i < che::P; i++)
+			os << che::mtrig;
+			for(index_t i = 0; i < che::mtrig; i++)
 				os << " " << mesh->vt(he++);
 			os << endl;
 		}
