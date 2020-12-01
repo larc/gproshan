@@ -55,7 +55,7 @@ void che_obj::read_file(const string & file)
 			for(i = 0; ss >> face[i]; i++)
 				ss.ignore(256, ' ');
 			
-			if(i == che::P) // che::P = 3, triangular mesh
+			if(i == che::mtrig)
 			{
 				if(face[0] < 0)
 				{
@@ -70,7 +70,7 @@ void che_obj::read_file(const string & file)
 					faces.push_back(face[2] - 1);
 				}
 			}
-			else if(i == 4) // quadrangular mesh, split two triangles
+			else if(i == che::mquad)
 			{
 				if(face[0] < 0)
 				{
@@ -98,7 +98,7 @@ void che_obj::read_file(const string & file)
 
 	is.close();
 	
-	init(vertices.data(), vertices.size(), faces.data(), faces.size() / che::P);
+	init(vertices.data(), vertices.size(), faces.data(), faces.size() / che::mtrig);
 }
 
 void che_obj::write_file(const che * mesh, const string & file)
@@ -117,7 +117,7 @@ void che_obj::write_file(const che * mesh, const string & file)
 	for(index_t he = 0; he < mesh->n_half_edges(); )
 	{
 		os << "f";
-		for(index_t i = 0; i < che::P; i++)
+		for(index_t i = 0; i < che::mtrig; i++)
 			os << " " << mesh->vt(he++) + 1;
 		os << endl;
 	}

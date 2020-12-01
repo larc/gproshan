@@ -35,7 +35,7 @@ che * ptp_coalescence(index_t * & inv, const che * mesh, const toplesets_t & top
 		if(inv[mesh->vt(he)] != NIL && inv[mesh->vt(prev(he))] != NIL && inv[mesh->vt(next(he))] != NIL)
 			F.push_back(inv[mesh->vt(he)]);
 	
-	return new che(V.data(), toplesets.limits.back(), F.data(), F.size() / che::P);
+	return new che(V.data(), toplesets.limits.back(), F.data(), F.size() / che::mtrig);
 }
 
 void parallel_toplesets_propagation_coalescence_cpu(const ptp_out_t & ptp_out, che * mesh, const vector<index_t> & sources, const toplesets_t & toplesets)
