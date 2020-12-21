@@ -41,8 +41,6 @@ class app_viewer : public viewer
 {
 	private:
 		double time;
-		real_t * dist;
-		size_t n_dist;
 
 	public:
 		app_viewer();
@@ -54,7 +52,7 @@ class app_viewer : public viewer
 		static bool process_fairing_taubin(viewer * p_view);
 		static bool process_fairing_spectral(viewer * p_view);
 
-		static bool process_fastmarching(viewer * p_view);
+		static bool process_geodesics(viewer * p_view, const geodesics::algorithm & alg);
 		static bool process_geodesics_fm(viewer * p_view);
 		static bool process_geodesics_ptp_cpu(viewer * p_view);
 		static bool process_geodesics_heat_flow(viewer * p_view);
