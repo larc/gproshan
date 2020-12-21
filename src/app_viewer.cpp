@@ -61,12 +61,12 @@ int app_viewer::main(int nargs, const char ** args)
 	add_process(GLFW_KEY_F, {"F", "Fast Marching", process_geodesics_fm});
 	add_process(GLFW_KEY_C, {"C", "Parallel Toplesets Propagation CPU", process_geodesics_ptp_cpu});
 #ifndef SINGLE_P
-	add_process(GLFW_KEY_L, {"L", "Heat Method", process_geodesics_heat_flow});
+	add_process(GLFW_KEY_L, {"L", "Heat Method", process_geodesics_heat_method});
 #endif
 
 #ifdef GPROSHAN_CUDA
 	add_process(GLFW_KEY_G, {"G", "Parallel Toplesets Propagation GPU", process_geodesics_ptp_gpu});
-	add_process(GLFW_KEY_Q, {"Q", "Heat Method GPU", process_geodesics_heat_flow_gpu});
+	add_process(GLFW_KEY_Q, {"Q", "Heat Method GPU", process_geodesics_heat_method_gpu});
 #endif // GPROSHAN_CUDA
 
 	add_process(GLFW_KEY_S, {"S", "Geodesic Farthest Point Sampling", process_farthest_point_sampling});
@@ -820,11 +820,11 @@ bool app_viewer::process_geodesics_ptp_cpu(viewer * p_view)
 	return process_geodesics(p_view, geodesics::PTP_CPU);
 }
 
-bool app_viewer::process_geodesics_heat_flow(viewer * p_view)
+bool app_viewer::process_geodesics_heat_method(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
 
-	return process_geodesics(p_view, geodesics::HEAT_FLOW);
+	return process_geodesics(p_view, geodesics::HEAT_METHOD);
 }
 
 
@@ -837,11 +837,11 @@ bool app_viewer::process_geodesics_ptp_gpu(viewer * p_view)
 	return process_geodesics(p_view, geodesics::PTP_GPU);
 }
 
-bool app_viewer::process_geodesics_heat_flow_gpu(viewer * p_view)
+bool app_viewer::process_geodesics_heat_method_gpu(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
 
-	return process_geodesics(p_view, geodesics::HEAT_FLOW_GPU);
+	return process_geodesics(p_view, geodesics::HEAT_METHOD_GPU);
 }
 
 #endif // GPROSHAN_CUDA

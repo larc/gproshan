@@ -1,7 +1,7 @@
 #include "geodesics/geodesics.h"
 #include "geodesics/geodesics_ptp.h"
 
-#include "geodesics/heat_flow.h"
+#include "geodesics/heat_method.h"
 
 #include <queue>
 #include <cassert>
@@ -100,13 +100,13 @@ void geodesics::execute(che * mesh, const vector<index_t> & sources, const param
 			break;
 		case PTP_CPU: run_parallel_toplesets_propagation_cpu(mesh, sources, p.n_iter, p.radio);
 			break;
-		case HEAT_FLOW: run_heat_flow(mesh, sources);
+		case HEAT_METHOD: run_heat_method(mesh, sources);
 			break;
 
 #ifdef GPROSHAN_CUDA
 		case PTP_GPU: run_parallel_toplesets_propagation_gpu(mesh, sources, p.n_iter, p.radio);
 			break;
-		case HEAT_FLOW_GPU: run_heat_flow_gpu(mesh, sources);
+		case HEAT_METHOD_GPU: run_heat_method_gpu(mesh, sources);
 			break;
 #endif // GPROSHAN_CUDA
 	}
@@ -211,11 +211,11 @@ void geodesics::run_parallel_toplesets_propagation_cpu(che * mesh, const vector<
 	delete [] toplesets;
 }
 
-void geodesics::run_heat_flow(che * mesh, const vector<index_t> & sources)
+void geodesics::run_heat_method(che * mesh, const vector<index_t> & sources)
 {
 	double time_total, solve_time;
 	TIC(time_total)
-	solve_time = heat_flow(dist, mesh, sources);
+	solve_time = heat_method(dist, mesh, sources);
 	TOC(time_total)
 
 	gproshan_log_var(time_total - solve_time);
@@ -242,11 +242,11 @@ void geodesics::run_parallel_toplesets_propagation_gpu(che * mesh, const vector<
 	delete [] toplesets;
 }
 
-void geodesics::run_heat_flow_gpu(che * mesh, const vector<index_t> & sources)
+void geodesics::run_heat_method_gpu(che * mesh, const vector<index_t> & sources)
 {
 	double time_total, solve_time;
 	TIC(time_total)
-	dist = heat_flow_gpu(mesh, sources, solve_time);
+	dist = heat_method_gpu(mesh, sources, solve_time);
 	TOC(time_total)
 
 	gproshan_debug_var(time_total - solve_time);

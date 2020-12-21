@@ -1,4 +1,4 @@
-#include "geodesics/heat_flow.h"
+#include "geodesics/heat_method.h"
 
 #include "laplacian/laplacian.h"
 
@@ -11,7 +11,7 @@ using namespace std;
 namespace gproshan {
 
 
-double heat_flow(real_t * dist, che * mesh, const vector<index_t> & sources)
+double heat_method(real_t * dist, che * mesh, const vector<index_t> & sources)
 {
 	if(!sources.size()) return 0;
 	
@@ -62,7 +62,7 @@ double heat_flow(real_t * dist, che * mesh, const vector<index_t> & sources)
 
 #ifdef GPROSHAN_CUDA
 
-real_t * heat_flow_gpu(che * mesh, const vector<index_t> & sources, double & solve_time)
+real_t * heat_method_gpu(che * mesh, const vector<index_t> & sources, double & solve_time)
 {
 	if(!sources.size()) return 0;
 	
