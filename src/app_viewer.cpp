@@ -785,21 +785,16 @@ bool app_viewer::process_geodesics(viewer * p_view, const geodesics::algorithm &
 
 	if(!mesh.selected.size())
 		mesh.selected.push_back(0);
-
-	static size_t n_dist = 0;
-	static real_t * dist = nullptr;
-
-	if(n_dist != mesh->n_vertices())
-	{
-		delete [] dist;
 	
-		n_dist = mesh->n_vertices();
-		dist = new real_t[n_dist];
-	}
+
+	static vector<real_t> dist;
+
+	if(dist.size() != mesh->n_vertices())
+		dist.resize(mesh->n_vertices());
 
 	geodesics::params params;
 	params.alg			= alg;
-	params.dist_alloc	= dist;
+	params.dist_alloc	= dist.data();
 
 	TIC(view->time)
 		geodesics G(mesh, mesh.selected, params);

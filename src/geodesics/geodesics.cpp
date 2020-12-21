@@ -213,11 +213,9 @@ void geodesics::run_parallel_toplesets_propagation_cpu(che * mesh, const vector<
 
 void geodesics::run_heat_flow(che * mesh, const vector<index_t> & sources)
 {
-	delete [] dist;
-
 	double time_total, solve_time;
 	TIC(time_total)
-	dist = heat_flow(mesh, sources, solve_time);
+	solve_time = heat_flow(dist, mesh, sources);
 	TOC(time_total)
 
 	gproshan_log_var(time_total - solve_time);
@@ -246,8 +244,6 @@ void geodesics::run_parallel_toplesets_propagation_gpu(che * mesh, const vector<
 
 void geodesics::run_heat_flow_gpu(che * mesh, const vector<index_t> & sources)
 {
-	delete [] dist;
-
 	double time_total, solve_time;
 	TIC(time_total)
 	dist = heat_flow_gpu(mesh, sources, solve_time);

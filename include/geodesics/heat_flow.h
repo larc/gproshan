@@ -20,7 +20,7 @@
 namespace gproshan {
 
 
-real_t * heat_flow(che * mesh, const std::vector<index_t> & sources, double & solve_time);
+double heat_flow(real_t * dist, che * mesh, const std::vector<index_t> & sources);
 
 #ifdef GPROSHAN_CUDA
 real_t * heat_flow_gpu(che * mesh, const std::vector<index_t> & sources, double & solve_time);

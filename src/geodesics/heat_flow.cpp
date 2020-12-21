@@ -11,7 +11,7 @@ using namespace std;
 namespace gproshan {
 
 
-real_t * heat_flow(che * mesh, const vector<index_t> & sources, double & solve_time)
+double heat_flow(real_t * dist, che * mesh, const vector<index_t> & sources)
 {
 	if(!sources.size()) return 0;
 	
@@ -36,13 +36,12 @@ real_t * heat_flow(che * mesh, const vector<index_t> & sources, double & solve_t
 	cholmod_common context;
 	cholmod_l_start(&context);
 	
-	solve_time = 0;
+	double solve_time = 0;
 
 	solve_time += solve_positive_definite(u, A, u0, &context);		// cholmod (suitesparse)
 	//assert(spsolve(u, A, u0));	// arma
 
 	// extract geodesics
-	real_t * dist = new real_t[mesh->n_vertices()];
 	
 	a_mat div(mesh->n_vertices(), 1);
 	compute_divergence(mesh, u, div);
@@ -58,7 +57,7 @@ real_t * heat_flow(che * mesh, const vector<index_t> & sources, double & solve_t
 	//cholmod_l_gpu_stats(&context);
 	cholmod_l_finish(&context);
 
-	return dist;
+	return solve_time;
 }
 
 #ifdef GPROSHAN_CUDA
