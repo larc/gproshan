@@ -1,4 +1,4 @@
-#include "mesh/decimation.h"
+#include "mesh/simplification.h"
 
 using namespace std;
 
@@ -7,7 +7,7 @@ using namespace std;
 namespace gproshan {
 
 
-decimation::decimation(che * mesh_, const vertex *const & normals, const index_t & levels_)
+simplification::simplification(che * mesh_, const vertex *const & normals, const index_t & levels_)
 {
 	mesh = mesh_;
 	levels = levels_;
@@ -16,18 +16,18 @@ decimation::decimation(che * mesh_, const vertex *const & normals, const index_t
 	execute(normals);
 }
 
-decimation::~decimation()
+simplification::~simplification()
 {
 	if(Q) delete [] Q;
 	if(corr) delete [] corr;
 }
 
-decimation::operator const corr_t * ()
+simplification::operator const corr_t * ()
 {
 	return corr;
 }
 
-void decimation::execute(const vertex *const & normals)
+void simplification::execute(const vertex *const & normals)
 {
 	compute_quadrics();
 
@@ -97,7 +97,7 @@ void decimation::execute(const vertex *const & normals)
 	delete [] corr_i;
 }
 
-void decimation::compute_quadrics()
+void simplification::compute_quadrics()
 {
 	vertex n;
 
@@ -121,7 +121,7 @@ void decimation::compute_quadrics()
 	}
 }
 
-void decimation::order_edges(index_t * const & sort_edges, real_t * const & error_edges)
+void simplification::order_edges(index_t * const & sort_edges, real_t * const & error_edges)
 {
 	#pragma omp parallel for
 	for(index_t e = 0; e < mesh->n_edges(); e++)
@@ -138,7 +138,7 @@ void decimation::order_edges(index_t * const & sort_edges, real_t * const & erro
 		);
 }
 
-real_t decimation::compute_error(const index_t & e)
+real_t simplification::compute_error(const index_t & e)
 {
 	vertex ve = create_vertex(e);
 	a_vec v(4);
@@ -151,7 +151,7 @@ real_t decimation::compute_error(const index_t & e)
 	return as_scalar(v.t() * (Q[mesh->vt_e(e)] + Q[mesh->vt_e(e, true)]) * v);
 }
 
-vertex decimation::create_vertex(const index_t & e)
+vertex simplification::create_vertex(const index_t & e)
 {
 	vertex va, vb;
 	va = mesh->gt_e(e);
