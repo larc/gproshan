@@ -100,26 +100,15 @@ bool viewer::run()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
 		switch(render_opt)
 		{
-			case 0: render_gl(); break;
-			case 1: render_embree(); break;
-			case 2: render_optix(); break;
+			case R_GL:		render_gl();		break;
+			case R_EMBREE:	render_embree();	break;
+			case R_OPTIX:	render_optix();		break;
 		}
 		
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 		
-	#ifdef GPROSHAN_EMBREE
-		if(!rt_embree)
-		{
-			ImGui::SetNextWindowSize(ImVec2(300, -1));
-			ImGui::SetNextWindowPos(ImVec2(0, 20), ImGuiCond_Once);
-			ImGui::Begin("rt_embree_pointcloud");
-			ImGui::InputFloat("pc_radius", &rt::embree::pc_radius, 0, 0, "%.4f");
-			ImGui::End();
-		}
-	#endif // GPROSHAN_EMBREE
-
 		if(ImGui::BeginMainMenuBar())
 		{
 			if(ImGui::BeginMenu("Select"))
@@ -563,15 +552,39 @@ bool viewer::invert_orientation(viewer * view)
 
 bool viewer::set_render_gl(viewer * view)
 {
-	view->render_opt = 0;
+	view->render_opt = R_GL;
 
 	return false;
 }
 
 bool viewer::set_render_embree(viewer * view)
 {
-	view->render_opt = 1;
-	
+#ifdef GPROSHAN_EMBREE
+
+	if(!view->rt_embree)
+	{
+		ImGui::InputFloat("disk radius", &rt::embree::pc_radius, 0, 0, "%.4f");
+
+		if(ImGui::Button("Start"))
+			view->render_opt = R_EMBREE;
+	}
+	else
+	{
+		ImGui::LabelText("disk radius", "%.4f", rt::embree::pc_radius);
+
+		if(ImGui::Button("Reset"))
+		{
+			delete view->rt_embree;
+			view->rt_embree = nullptr;
+			
+			view->render_opt = R_GL;
+		}
+	}
+
+	return true;
+
+#endif // GPROSHAN_EMBREE
+
 	return false;
 }
 

@@ -12,7 +12,7 @@
 #include "mesh/che_sphere.h"
 #include "mesh/che_fill_hole.h"
 #include "mesh/che_poisson.h"
-#include "mesh/decimation.h"
+#include "mesh/simplification.h"
 
 #include "laplacian/laplacian.h"
 #include "laplacian/fairing_taubin.h"

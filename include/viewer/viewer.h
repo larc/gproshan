@@ -81,7 +81,8 @@ class viewer
 		size_t n_meshes	= 0;
 		index_t idx_active_mesh = 0; // idx_active_mesh mesh
 
-		index_t render_opt = 0;
+		enum render_type: index_t { R_GL, R_EMBREE, R_OPTIX };
+		index_t render_opt = R_GL;
 		
 		frame * render_frame = nullptr;
 

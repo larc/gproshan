@@ -1,5 +1,5 @@
-#ifndef DECIMATION_H
-#define DECIMATION_H
+#ifndef SIMPLIFICATION_H
+#define SIMPLIFICATION_H
 
 #include "mesh/che.h"
 #include "include_arma.h"
@@ -11,7 +11,7 @@
 namespace gproshan {
 
 
-class decimation
+class simplification
 {
 	private:
 		a_mat * Q;
@@ -20,8 +20,8 @@ class decimation
 		index_t levels;
 
 	public:
-		decimation(che * mesh, const vertex *const & normals, const index_t & levels_ = 1);
-		~decimation();
+		simplification(che * mesh, const vertex *const & normals, const index_t & levels_ = 1);
+		~simplification();
 		operator const corr_t * ();
 
 	private:
@@ -35,5 +35,5 @@ class decimation
 
 } // namespace gproshan
 
-#endif // DECIMATION_H
+#endif // SIMPLIFICATION_H
 
