@@ -103,7 +103,7 @@ if(CUDAToolkit_FOUND)
 	add_library(gproshan_cu STATIC ${cu_sources})
 	target_compile_options(gproshan_cu PRIVATE -Xcompiler -fopenmp)
 	set_target_properties(gproshan_cu PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
-	set_property(TARGET gproshan_cu PROPERTY CUDA_ARCHITECTURES 52 53 60 61 62 70 72 75 80 86)
+	set_property(TARGET gproshan_cu PROPERTY CUDA_ARCHITECTURES 52 53 60 61 62 70 72 75 80)
 
 	target_link_libraries(gproshan_cu gproshan_cpp)
 	target_link_libraries(gproshan_cu CUDA::cudart)
