@@ -27,14 +27,10 @@ che * load_mesh(const string & file_path)
 
 app_viewer::app_viewer()
 {
-	dist = nullptr;
-	n_dist = 0;
 }
 
 app_viewer::~app_viewer()
 {
-	delete [] dist;
-
 	for(che * mesh: meshes)
 		delete mesh;
 }
@@ -782,61 +778,58 @@ bool app_viewer::process_fairing_taubin(viewer * p_view)
 	return true;
 }
 
-bool app_viewer::process_geodesics_fm(viewer * p_view)
+bool app_viewer::process_geodesics(viewer * p_view, const geodesics::algorithm & alg)
 {
-	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
 	if(!mesh.selected.size())
 		mesh.selected.push_back(0);
 
+	static size_t n_dist = 0;
+	static real_t * dist = nullptr;
+
+	if(n_dist != mesh->n_vertices())
+	{
+		delete [] dist;
+	
+		n_dist = mesh->n_vertices();
+		dist = new real_t[n_dist];
+	}
+
+	geodesics::params params;
+	params.alg			= alg;
+	params.dist_alloc	= dist;
+
 	TIC(view->time)
-	geodesics fm(mesh, mesh.selected);
+		geodesics G(mesh, mesh.selected, params);
 	TOC(view->time)
 	gproshan_log_var(view->time);
-
-	mesh->update_heatmap(&fm[0]);
+	
+	mesh->update_heatmap(&G[0]);
 	
 	return false;
+}
+
+bool app_viewer::process_geodesics_fm(viewer * p_view)
+{
+	gproshan_log(APP_VIEWER);
+
+	return process_geodesics(p_view, geodesics::FM);
 }
 
 bool app_viewer::process_geodesics_ptp_cpu(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
-	app_viewer * view = (app_viewer *) p_view;
-	che_viewer & mesh = view->active_mesh();
 
-	if(!mesh.selected.size())
-		mesh.selected.push_back(0);
-	
-	TIC(view->time)
-	geodesics ptp(mesh, mesh.selected, { geodesics::PTP_CPU });
-	TOC(view->time)
-	gproshan_log_var(view->time);
-
-	mesh->update_heatmap(&ptp[0]);
-	
-	return false;
+	return process_geodesics(p_view, geodesics::PTP_CPU);
 }
 
 bool app_viewer::process_geodesics_heat_flow(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
-	app_viewer * view = (app_viewer *) p_view;
-	che_viewer & mesh = view->active_mesh();
 
-	if(!mesh.selected.size())
-		mesh.selected.push_back(0);
-	
-	TIC(view->time)
-	geodesics heat_flow(mesh, mesh.selected, { geodesics::HEAT_FLOW });
-	TOC(view->time)
-	gproshan_log_var(view->time);
-
-	mesh->update_heatmap(&heat_flow[0]);
-	
-	return false;
+	return process_geodesics(p_view, geodesics::HEAT_FLOW);
 }
 
 
@@ -845,51 +838,15 @@ bool app_viewer::process_geodesics_heat_flow(viewer * p_view)
 bool app_viewer::process_geodesics_ptp_gpu(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
-	app_viewer * view = (app_viewer *) p_view;
-	che_viewer & mesh = view->active_mesh();
 
-	if(!mesh.selected.size())
-		mesh.selected.push_back(0);
-	
-	if(view->n_dist != mesh->n_vertices())
-	{
-		delete [] view->dist;
-	
-		view->n_dist = mesh->n_vertices();
-		view->dist = new real_t[view->n_dist];
-	}
-
-	geodesics::params params;
-	params.alg = geodesics::PTP_GPU;
-	params.dist_alloc = view->dist;
-
-	TIC(view->time)
-	geodesics ptp(mesh, mesh.selected, params);
-	TOC(view->time)
-	gproshan_log_var(view->time);
-	
-	mesh->update_heatmap(&ptp[0]);
-	
-	return false;
+	return process_geodesics(p_view, geodesics::PTP_GPU);
 }
 
 bool app_viewer::process_geodesics_heat_flow_gpu(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
-	app_viewer * view = (app_viewer *) p_view;
-	che_viewer & mesh = view->active_mesh();
 
-	if(!mesh.selected.size())
-		mesh.selected.push_back(0);
-	
-	TIC(view->time)
-	geodesics heat_flow(mesh, mesh.selected, { geodesics::HEAT_FLOW_GPU });
-	TOC(view->time)
-	gproshan_log_var(view->time);
-
-	mesh->update_heatmap(&heat_flow[0]);
-	
-	return false;
+	return process_geodesics(p_view, geodesics::HEAT_FLOW_GPU);
 }
 
 #endif // GPROSHAN_CUDA
