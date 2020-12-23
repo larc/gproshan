@@ -74,6 +74,15 @@ che::che(const che & mesh)
 
 	BT = new index_t[n_borders_];
 	memcpy(BT, mesh.BT, n_borders_ * sizeof(index_t));
+	
+	VN = new vertex[n_vertices_];
+	memcpy(VN, mesh.VN, n_vertices_ * sizeof(vertex));
+	
+	VC = new vertex[n_vertices_];
+	memcpy(VC, mesh.VC, n_vertices_ * sizeof(vertex));
+	
+	VHC = new real_t[n_vertices_];
+	memcpy(VHC, mesh.VHC, n_vertices_ * sizeof(real_t));
 }
 
 che::che(const size_t & n_v, const size_t & n_f)

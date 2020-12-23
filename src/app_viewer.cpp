@@ -298,9 +298,9 @@ bool app_viewer::process_functional_maps(viewer * p_view)
 		
 			#pragma omp parallel for
 			for(index_t v = 0; v < mesh->n_vertices(); v++)
-				mesh->heatmap(v) = eigvec(v, k);
+				view->active_mesh()->heatmap(v) = eigvec(v, k);
 
-			mesh.update_vbo();
+			view->active_mesh().update_vbo();
 		}
 		
 		view->idx_active_mesh = 0;
