@@ -2,7 +2,7 @@
 
 #include "mesh/che_off.h"
 #include "geodesics/geodesics_ptp.h"
-#include "geodesics/heat_flow.h"
+#include "geodesics/heat_method.h"
 
 #include <cassert>
 
@@ -279,12 +279,10 @@ double test_heat_method_cholmod(real_t & error, double & stime, const real_t * e
 	double t, st, ptime;
 	ptime = stime = INFINITY;
 	
-	real_t * dist = nullptr;
+	real_t * dist = new real_t[mesh->n_vertices()];
 	for(int i = 0; i < n_test; i++)
 	{
-		if(dist) delete [] dist;
-		
-		TIC(t) dist = heat_flow(mesh, source, st); TOC(t)
+		TIC(t) st = heat_method(dist, mesh, source); TOC(t)
 		ptime = min(t - st, ptime);
 		stime = min(st, stime);
 	}
@@ -327,7 +325,7 @@ double test_heat_method_gpu(real_t & error, double & stime, const real_t * exact
 	{
 		if(dist) delete [] dist;
 		
-		TIC(t) dist = heat_flow_gpu(mesh, source, st); TOC(t)
+		TIC(t) dist = heat_method_gpu(mesh, source, st); TOC(t)
 
 		ptime = min(t - st, ptime);
 		stime = min(st, stime);

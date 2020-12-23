@@ -2,13 +2,13 @@
  * Base on the code https://github.com/larc/dgpdec-course/tree/master/Geodesics
  * forked from https://github.com/dgpdec/course
  *
- * Geodesics in Heat: A New Approach to Computing Distance Based on Heat Flow
+ * Geodesics in Heat: A New Approach to Computing Distance Based on Heat Method
  * Keenan Crane, Clarisse Weischedel, Max Wardetzky
  * To appear at ACM Transactions on Graphics
  */
 
-#ifndef HEAT_FLOW_H
-#define HEAT_FLOW_H
+#ifndef HEAT_METHOD_H
+#define HEAT_METHOD_H
 
 #include "mesh/che.h"
 #include "include_arma.h"
@@ -20,10 +20,10 @@
 namespace gproshan {
 
 
-real_t * heat_flow(che * mesh, const std::vector<index_t> & sources, double & solve_time);
+double heat_method(real_t * dist, che * mesh, const std::vector<index_t> & sources);
 
 #ifdef GPROSHAN_CUDA
-real_t * heat_flow_gpu(che * mesh, const std::vector<index_t> & sources, double & solve_time);
+real_t * heat_method_gpu(che * mesh, const std::vector<index_t> & sources, double & solve_time);
 #endif // GPROSHAN_CUDA
 
 void compute_divergence(che * mesh, const a_mat & u, a_mat & div);
@@ -57,5 +57,5 @@ double solve_positive_definite_cusolver_preview(const int m, const int nnz, cons
 
 } // namespace gproshan
 
-#endif // HEAT_FLOW_H
+#endif // HEAT_METHOD_H
 
