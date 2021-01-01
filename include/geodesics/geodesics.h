@@ -26,10 +26,10 @@ class geodesics
 		enum algorithm {	FM,				///< Execute Fast Marching algorithm
 						#ifdef GPROSHAN_CUDA
 							PTP_GPU,		///< Execute Parallel Toplesets Propagation GPU algorithm
-							HEAT_FLOW_GPU,	///< Execute Heat Flow - cusparse (GPU)
+							HEAT_METHOD_GPU,	///< Execute Heat Method - cusparse (GPU)
 						#endif // GPROSHAN_CUDA
 							PTP_CPU,		///< Execute Parallel Toplesets Propagation CPU algorithm
-							HEAT_FLOW		///< Execute Heat Flow - cholmod (CPU)
+							HEAT_METHOD		///< Execute Heat Method - cholmod (CPU)
 						};
 		
 		struct params
@@ -72,11 +72,11 @@ class geodesics
 		void execute(che * mesh, const std::vector<index_t> & sources, const params & p);
 		void run_fastmarching(che * mesh, const std::vector<index_t> & sources, const size_t & n_iter, const real_t & radio, const fm_function_t & fun);
 		void run_parallel_toplesets_propagation_cpu(che * mesh, const std::vector<index_t> & sources, const size_t & n_iter, const real_t & radio);
-		void run_heat_flow(che * mesh, const std::vector<index_t> & sources);
+		void run_heat_method(che * mesh, const std::vector<index_t> & sources);
 		
 #ifdef GPROSHAN_CUDA
 		void run_parallel_toplesets_propagation_gpu(che * mesh, const std::vector<index_t> & sources, const size_t & n_iter, const real_t & radio);
-		void run_heat_flow_gpu(che * mesh, const std::vector<index_t> & sources);
+		void run_heat_method_gpu(che * mesh, const std::vector<index_t> & sources);
 #endif // GPROSHAN_CUDA
 
 		real_t update(index_t & d, che * mesh, const index_t & he, vertex & vx);

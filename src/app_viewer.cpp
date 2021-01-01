@@ -61,12 +61,12 @@ int app_viewer::main(int nargs, const char ** args)
 	add_process(GLFW_KEY_F, {"F", "Fast Marching", process_geodesics_fm});
 	add_process(GLFW_KEY_C, {"C", "Parallel Toplesets Propagation CPU", process_geodesics_ptp_cpu});
 #ifndef SINGLE_P
-	add_process(GLFW_KEY_L, {"L", "Heat Method", process_geodesics_heat_flow});
+	add_process(GLFW_KEY_L, {"L", "Heat Method", process_geodesics_heat_method});
 #endif
 
 #ifdef GPROSHAN_CUDA
 	add_process(GLFW_KEY_G, {"G", "Parallel Toplesets Propagation GPU", process_geodesics_ptp_gpu});
-	add_process(GLFW_KEY_Q, {"Q", "Heat Method GPU", process_geodesics_heat_flow_gpu});
+	add_process(GLFW_KEY_Q, {"Q", "Heat Method GPU", process_geodesics_heat_method_gpu});
 #endif // GPROSHAN_CUDA
 
 	add_process(GLFW_KEY_S, {"S", "Geodesic Farthest Point Sampling", process_farthest_point_sampling});
@@ -301,9 +301,9 @@ bool app_viewer::process_functional_maps(viewer * p_view)
 		
 			#pragma omp parallel for
 			for(index_t v = 0; v < mesh->n_vertices(); v++)
-				mesh->heatmap(v) = eigvec(v, k);
+				view->active_mesh()->heatmap(v) = eigvec(v, k);
 
-			mesh.update_vbo();
+			view->active_mesh().update_vbo();
 		}
 		
 		view->idx_active_mesh = 0;
@@ -900,21 +900,16 @@ bool app_viewer::process_geodesics(viewer * p_view, const geodesics::algorithm &
 
 	if(!mesh.selected.size())
 		mesh.selected.push_back(0);
-
-	static size_t n_dist = 0;
-	static real_t * dist = nullptr;
-
-	if(n_dist != mesh->n_vertices())
-	{
-		delete [] dist;
 	
-		n_dist = mesh->n_vertices();
-		dist = new real_t[n_dist];
-	}
+
+	static vector<real_t> dist;
+
+	if(dist.size() != mesh->n_vertices())
+		dist.resize(mesh->n_vertices());
 
 	geodesics::params params;
 	params.alg			= alg;
-	params.dist_alloc	= dist;
+	params.dist_alloc	= dist.data();
 
 	TIC(view->time)
 		geodesics G(mesh, mesh.selected, params);
@@ -940,11 +935,11 @@ bool app_viewer::process_geodesics_ptp_cpu(viewer * p_view)
 	return process_geodesics(p_view, geodesics::PTP_CPU);
 }
 
-bool app_viewer::process_geodesics_heat_flow(viewer * p_view)
+bool app_viewer::process_geodesics_heat_method(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
 
-	return process_geodesics(p_view, geodesics::HEAT_FLOW);
+	return process_geodesics(p_view, geodesics::HEAT_METHOD);
 }
 
 
@@ -957,11 +952,11 @@ bool app_viewer::process_geodesics_ptp_gpu(viewer * p_view)
 	return process_geodesics(p_view, geodesics::PTP_GPU);
 }
 
-bool app_viewer::process_geodesics_heat_flow_gpu(viewer * p_view)
+bool app_viewer::process_geodesics_heat_method_gpu(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
 
-	return process_geodesics(p_view, geodesics::HEAT_FLOW_GPU);
+	return process_geodesics(p_view, geodesics::HEAT_METHOD_GPU);
 }
 
 #endif // GPROSHAN_CUDA
