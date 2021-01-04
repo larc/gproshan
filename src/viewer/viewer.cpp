@@ -738,7 +738,7 @@ void viewer::render_embree()
 		double time_build_embree;
 		TIC(time_build_embree);
 
-			rt_embree = new rt::embree({active_mesh()});
+			rt_embree = new rt::embree({active_mesh()}, render_pointcloud);
 
 		TOC(time_build_embree);
 		gproshan_log_var(time_build_embree);

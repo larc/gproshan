@@ -17,7 +17,18 @@ namespace gproshan::rt {
 class raytracing
 {
 	protected:
-		std::map<index_t, const che *> geomID_mesh;
+		struct rt_mesh
+		{
+			che * mesh;
+			bool pointcloud;
+
+			che * operator -> () const
+			{
+				return mesh;
+			}
+		};
+
+		std::map<index_t, rt_mesh> geomID_mesh;
 
 		size_t width;
 		size_t height;
