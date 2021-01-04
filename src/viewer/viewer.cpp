@@ -569,6 +569,8 @@ bool viewer::set_render_embree(viewer * view)
 	}
 	else
 	{
+		view->render_opt = R_EMBREE;
+
 		ImGui::LabelText("disk radius", "%.4f", rt::embree::pc_radius);
 
 		if(ImGui::Button("Reset"))
