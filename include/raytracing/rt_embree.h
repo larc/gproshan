@@ -53,16 +53,16 @@ class embree : public raytracing
 			return {ray.dir_x, ray.dir_y, ray.dir_z};
 		}
 		
-		const glm::vec3 color(const che * mesh)
+		const glm::vec3 color(const rt_mesh & mesh)
 		{
-			const vertex & c = mesh->is_pointcloud() ?	mesh->color(hit.primID) :
-														mesh->shading_color(hit.primID, 1.0 - hit.u - hit.v, hit.u, hit.v);	
+			const vertex & c = mesh.pointcloud ?	mesh->color(hit.primID) :
+													mesh->shading_color(hit.primID, 1.0 - hit.u - hit.v, hit.u, hit.v);	
 			return glm::vec3(c.x, c.y, c.z);
 		}
 
-		const glm::vec3 normal(const che * mesh, const bool & flat = false) const
+		const glm::vec3 normal(const rt_mesh & mesh, const bool & flat = false) const
 		{
-			if(flat || mesh->is_pointcloud())
+			if(flat || mesh.pointcloud)
 				return glm::normalize(glm::vec3(hit.Ng_x, hit.Ng_y, hit.Ng_z));
 			
 			const vertex & n = mesh->shading_normal(hit.primID, 1.0 - hit.u - hit.v, hit.u, hit.v);	
@@ -84,7 +84,7 @@ class embree : public raytracing
 		static float pc_radius;
 
 	public:
-		embree(const std::vector<che *> & meshes);
+		embree(const std::vector<che *> & meshes, const bool & pointcloud = false);
 		~embree();
 	
 	private:
@@ -94,7 +94,7 @@ class embree : public raytracing
 		glm::vec4 intersect_li(const glm::vec3 & org, const glm::vec3 & dir, const glm::vec3 & light, const bool & flat);
 		float intersect_depth(const glm::vec3 & org, const glm::vec3 & dir);
 		
-		void build_bvh(const std::vector<che *> & meshes);
+		void build_bvh(const std::vector<che *> & meshes, const bool & pointcloud = false);
 		index_t add_sphere(const glm::vec4 & xyzr);
 		index_t add_mesh(const che * mesh);
 		index_t add_point_cloud(const che * mesh);

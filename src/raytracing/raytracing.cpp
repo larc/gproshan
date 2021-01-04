@@ -25,7 +25,7 @@ bool raytracing::rt_restart(const size_t & w, const size_t & h)
 {
 	if(width * height < w * h)
 	{
-		if(img) delete [] img;
+		delete [] img;
 
 		width = w;
 		height = h;
@@ -63,12 +63,20 @@ void raytracing::pathtracing(	const glm::uvec2 & windows_size,
 
 	glm::vec4 li;
 
+	if(!n_samples)
+	{
+		#pragma omp parallel for
+		for(index_t i = 0; i < width; i++)
+		for(index_t j = 0; j < height; j++)
+			img[j * width + i] = glm::vec4(0);
+	}
+
 	#pragma omp parallel for private(li)
 	for(index_t i = 0; i < width; i++)
 	for(index_t j = 0; j < height; j++)
 	{
 		//row major
-		glm::vec4 & color = img[j * windows_size.x + i];
+		glm::vec4 & color = img[j * width + i];
 		
 		glm::vec2 screen = glm::vec2(	(float(i) + randf(gen)) / width, 
 										(float(j) + randf(gen)) / height
