@@ -569,6 +569,8 @@ bool viewer::set_render_embree(viewer * view)
 	}
 	else
 	{
+		view->render_opt = R_EMBREE;
+
 		ImGui::LabelText("disk radius", "%.4f", rt::embree::pc_radius);
 
 		if(ImGui::Button("Reset"))
@@ -738,7 +740,7 @@ void viewer::render_embree()
 		double time_build_embree;
 		TIC(time_build_embree);
 
-			rt_embree = new rt::embree({active_mesh()});
+			rt_embree = new rt::embree({active_mesh()}, render_pointcloud);
 
 		TOC(time_build_embree);
 		gproshan_log_var(time_build_embree);
