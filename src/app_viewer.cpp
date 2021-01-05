@@ -614,7 +614,9 @@ bool app_viewer::process_inpaiting(viewer * p_view)
 	{
 		basis_dct phi(n);
 		inpainting dict(mesh, &phi, params);
+		
 		real_t max_error = dict.execute();
+		gproshan_log_var(max_error);
 		
 		mesh->update_heatmap(&dict[0]);
 		mesh->update_normals();
