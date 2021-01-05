@@ -26,6 +26,8 @@ real_t super_resolution::execute()
 
 	TIC(d_time) mesh_reconstruction(); TOC(d_time)
 	gproshan_debug_var(d_time);
+
+	return 0;
 }
 
 

@@ -136,12 +136,12 @@ tuple<a_vec, arma::uvec> _OMP(const a_vec & x, const a_mat & D, const size_t & L
 
 arma::uword max_index(const a_vec & V,const arma::uchar_vec & mask)
 {
-
-	arma::uvec indices = arma::sort_index( V , "desscend");
+	arma::uvec indices = arma::sort_index(V, "descend");
 
 	for(size_t i=0; i< V.size(); i++)
-		if(mask[indices [i]]) return indices[i];
+		if(mask[indices[i]]) return indices[i];
 	
+	return NIL;
 }
 
 tuple<a_vec, arma::uvec> _OMP(const a_vec & x, const a_mat & D, const size_t & L, const arma::uchar_vec & mask)

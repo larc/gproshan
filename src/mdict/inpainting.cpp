@@ -511,7 +511,9 @@ real_t inpainting::execute()
 	arma::uvec non_zero = find( abs(alpha) > 0.00001);
 	gproshan_debug_var(non_zero.size());
 	real_t ratio = (M * 13.0 + non_zero.size()) / (3 * mesh->n_vertices());
-	gproshan_debug_var(ratio);
+	gproshan_log_var(ratio);
+
+	return max_error;
 }
 
 che * inpainting::point_cloud_reconstruction(real_t per, real_t fr)
