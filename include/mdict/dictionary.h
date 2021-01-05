@@ -5,7 +5,6 @@
 #include "mdict/patch.h"
 #include "mdict/mdict.h"
 #include "mdict/basis.h"
-#include "mdict/d_mesh.h"
 
 #include "include_arma.h"
 
@@ -69,7 +68,7 @@ class dictionary
 					basis *const &_phi_basis,	///< pointer to continuous basis.
 					const size_t & _m,			///< number of dictionary atoms.
 					const size_t & _M,			///< number of patches.
-					const real_t & _f,		///< deprecated
+					const real_t & _f,			///< deprecated
 					const bool & _learn,		
 					const bool & _plot			///< flag to plot basis and atoms with gnuplot.
 					);
@@ -81,7 +80,6 @@ class dictionary
 		void learning();
 		void sparse_coding();
 		void init_sampling();
-		void load_curvatures(a_vec & curvatures);
 		void load_features(vector<index_t> & v_feat, size_t & featsize);
 		void init_patches(	const bool & reset = 1,
 							const fmask_t & mask = nullptr

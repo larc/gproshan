@@ -3,7 +3,6 @@
 
 #include "include.h"
 
-#include "mdict/d_mesh.h"
 #include "mdict/patch.h"
 #include "mdict/basis.h"
 

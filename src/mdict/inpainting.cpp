@@ -1,6 +1,7 @@
 #include "mdict/inpainting.h"
 
 #include "mesh/che_off.h"
+#include "geodesics/geodesics.h"
 
 #include <cassert>
 #include <fstream>

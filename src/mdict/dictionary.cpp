@@ -53,7 +53,6 @@ dictionary::dictionary(che *const & _mesh, basis *const & _phi_basis, const size
 
 dictionary::~dictionary()
 {
-	patch_t::del_index = true;
 }
 
 void dictionary::learning()
@@ -133,75 +132,6 @@ void dictionary::init_sampling()
 
 	gproshan_debug_var(s_radio);
 	gproshan_debug_var(phi_basis->radio());
-}
-
-void dictionary::load_curvatures(a_vec & curvatures)
-{
-	string f_curv = tmp_file_path(mesh->name_size() + ".curv");
-	string f_norm = tmp_file_path(mesh->name_size() + ".n");
-
-	if(! curvatures.load(f_curv))
-	{
-		curvatures.zeros(mesh->n_vertices());
-		//real_t *mean_curvature = new real_t[mesh->n_vertices()];
-		vector<index_t> points;
-
-		map<size_t, char> non_rep;
-		map<size_t, char>::iterator it;
-		size_t d_fitting = 2;
-		size_t d_monge = 2;
-		size_t min_points = (d_fitting + 1) * (d_fitting + 2) / 2;
-
-		real_t min = INFINITY;
-		real_t max = -INFINITY;
-		a_mat normals;
-		normals.zeros(3, mesh->n_vertices());
-
-		for(index_t v = 0; v < mesh->n_vertices(); v++)
-		{
-			link_t linkv;
-			mesh->link(linkv, v);
-			for(const index_t & he: linkv)
-			{
-				link_t linku;
-				const index_t & u = mesh->vt(he);
-				mesh->link(linku, u);
-				for(const index_t & he: linku)
-				{
-					it = non_rep.find(u);
-					if(it == non_rep.end()) 
-						points.push_back(u);
-					
-				}
-			}
-			assert(points.size() > min_points);
-			vector<DPoint> in_points;
-			in_points.reserve(points.size());
-			for(const index_t & u: points)
-				in_points.push_back(DPoint(mesh->gt(u).x, mesh->gt(u).y, mesh->gt(u).z));
-			
-			My_Monge_form monge_form;
-			My_Monge_via_jet_fitting monge_fit;
-			monge_form = monge_fit(in_points.begin(), in_points.end(), d_fitting, d_monge);
-
-			vertex normal = mesh->normal(v);
-			monge_form.comply_wrt_given_normal(DVector(normal.x, normal.y, normal.z));
-			curvatures(v) = ( monge_form.principal_curvatures(0) + monge_form.principal_curvatures(0) ) / 2;
-
-
-			normals(0, v) = monge_form.normal_direction()[0];
-			normals(1, v) = monge_form.normal_direction()[1];
-			normals(2, v) = monge_form.normal_direction()[2];
-			//gproshan_debug_var(mean_curvature[v]);
-			points.clear();
-			non_rep.clear();
-			
-		}
-		curvatures.save(f_curv);
-		normals.save(f_norm);
-	}
-	gproshan_debug(curvatures ready);
-
 }
 
 void dictionary::load_features(vector<index_t> & v_feat, size_t & featsize)
@@ -380,8 +310,15 @@ real_t dictionary::mesh_reconstruction(const fmask_t & mask)
 	#pragma omp parallel for
 	for(index_t v = 0; v < mesh->n_vertices(); v++)
 	{
-		if(patches_map[v].size() && (!mask || mask(v)) )
-			V.col(v) = simple_means_vertex(v, patches, patches_map);
+		// simple means vertex
+		if(patches_map[v].size() && (!mask || mask(v)))
+		{
+			a_vec mv = arma::zeros(3);		
+			for(auto p: patches_map[v])
+				mv += patches[p.first].xyz.col(p.second);
+
+			V.col(v) = mv / patches_map[v].size();
+		}
 		else
 		{
 			V(0, v) = mesh->gt(v).x;
@@ -483,6 +420,7 @@ void dictionary::save_alpha(string file)
 {
 	alpha.save(file);
 }
+
 
 } // namespace gproshan::mdict
 

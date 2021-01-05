@@ -1,6 +1,7 @@
 #include "mdict/patch.h"
 
 #include "mdict/dictionary.h"
+#include "geodesics/geodesics.h"
 
 #include <queue>
 #include <random>
