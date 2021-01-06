@@ -23,10 +23,8 @@
 #include "geodesics/sampling.h"
 
 #include "mdict/denoising.h"
-#include "mdict/super_resolution.h"
 #include "mdict/inpainting.h"
 #include "mdict/basis_dct.h"
-#include "mdict/synthesis.h"
 #include "mdict/patch.h"
 
 #include "features/key_points.h"
@@ -69,12 +67,9 @@ class app_viewer : public viewer
 
 		static bool process_mdict_patch(viewer * p_view);
 		static bool process_denoising(viewer * p_view);
-		static bool process_super_resolution(viewer * p_view);
 		static bool process_inpaiting(viewer * p_view);
-		static bool process_iterative_inpaiting(viewer * p_view);
 		static bool process_mask(viewer * p_view);
 		static bool process_pc_reconstruction(viewer * p_view);
-		static bool process_synthesis(viewer * p_view);
 
 		static bool process_functional_maps(viewer * p_view);
 		static bool process_gps(viewer * p_view);

@@ -77,12 +77,9 @@ int app_viewer::main(int nargs, const char ** args)
 	sub_menus.push_back("Dictionary Learning");
 	add_process(GLFW_KEY_J, {"J", "MDICT Patch", process_mdict_patch});
 	add_process(GLFW_KEY_D, {"D", "MDICT Denoising", process_denoising});
-	add_process(GLFW_KEY_A, {"A", "MDICT Super Resolution", process_super_resolution});
 	add_process(GLFW_KEY_I, {"I", "MDICT Inpaiting", process_inpaiting});
 	add_process(GLFW_KEY_F13, {"F13", "MDICT Mask", process_mask});
 	add_process(GLFW_KEY_NUM_LOCK , {"Numlock", "PC reconstruction", process_pc_reconstruction});
-	add_process(GLFW_KEY_F14, {"F14", "MDICT Synthesis", process_synthesis});
-//	add_process('A', "IT Inpainting", process_iterative_inpaiting);
 
 	sub_menus.push_back("Signatures");
 	add_process(GLFW_KEY_2, {"2", "GPS", process_gps});
@@ -568,30 +565,6 @@ bool app_viewer::process_denoising(viewer * p_view)
 	return false;
 }
 
-bool app_viewer::process_super_resolution(viewer * p_view)
-{
-	gproshan_log(APP_VIEWER);
-	app_viewer * view = (app_viewer *) p_view;
-	che_viewer & mesh = view->active_mesh();
-
-	size_t n; // dct
-	size_t m, M;
-	real_t f;
-	bool learn;
-
-	gproshan_log(parameters: (n, m, M, f, learn));
-	cin >> n >> m >> M >> f >> learn;
-
-	basis * phi = new basis_dct(n);
-	super_resolution dict(mesh, phi, m, M, f, learn);
-	dict.execute();
-
-	delete phi;
-	mesh->update_normals();
-	
-	return false;
-}
-
 bool app_viewer::process_inpaiting(viewer * p_view)
 {
 	app_viewer * view = (app_viewer *) p_view;
@@ -697,40 +670,6 @@ bool app_viewer::process_pc_reconstruction(viewer * p_view)
 	}
 	
 	return true;
-}
-
-bool app_viewer::process_synthesis(viewer * p_view)
-{
-	gproshan_log(APP_VIEWER);
-	app_viewer * view = (app_viewer *) p_view;
-	che_viewer & mesh = view->active_mesh();
-
-	static dictionary::params params;
-	
-	size_t n; // dct
-	size_t m, M;
-	real_t f;
-	bool learn;
-
-	gproshan_log(parameters: (n, m, M, f, learn));
-	cin >> n >> m >> M >> f >> learn;
-
-	basis_dct phi(n);
-	inpainting dict(mesh, &phi, params);
-	dict.execute();
-
-	mesh->update_normals();
-	
-	return false;
-}
-
-bool app_viewer::process_iterative_inpaiting(viewer * p_view)
-{
-	gproshan_log(APP_VIEWER);
-
-//	mesh_iterative_inpaiting(mesh, mesh.selected, freq, rt, m, M, f, learn);
-	
-	return false;
 }
 
 bool app_viewer::process_multiplicate_vertices(viewer * p_view)
