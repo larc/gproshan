@@ -76,7 +76,6 @@ int app_viewer::main(int nargs, const char ** args)
 
 	sub_menus.push_back("Dictionary Learning");
 	add_process(GLFW_KEY_J, {"J", "MDICT Patch", process_mdict_patch});
-	add_process(GLFW_KEY_D, {"D", "MDICT Denoising", process_denoising});
 	add_process(GLFW_KEY_I, {"I", "MDICT Inpaiting", process_inpaiting});
 	add_process(GLFW_KEY_F13, {"F13", "MDICT Mask", process_mask});
 	add_process(GLFW_KEY_NUM_LOCK , {"Numlock", "PC reconstruction", process_pc_reconstruction});
@@ -532,36 +531,6 @@ bool app_viewer::process_mdict_patch(viewer * p_view)
 	TOC(view->time)
 	gproshan_debug_var(view->time);
 	
-	return false;
-}
-
-bool app_viewer::process_denoising(viewer * p_view)
-{
-	gproshan_log(APP_VIEWER);
-	app_viewer * view = (app_viewer *) p_view;
-	che_viewer & mesh = view->active_mesh();
-
-	size_t n; // dct
-	size_t m, M;
-	real_t f;
-	bool learn;
-
-	gproshan_input(n m M f learn);
-	cin >> n >> m >> M >> f >> learn;
-
-	basis * phi = new basis_dct(n);
-	denoising dict(mesh, phi, m, M, f, learn);
-	dict.execute();
-	
-	delete phi;
-	mesh->update_heatmap(&dict[0]);
-	
-	#pragma omp parallel for
-	for(index_t v = 0; v < mesh->n_vertices(); v++)
-		mesh->color(v) = 2 * atan(mesh->heatmap(v) * 10) / M_PI;
-	
-	mesh->update_normals();
-
 	return false;
 }
 
