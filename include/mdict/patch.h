@@ -28,7 +28,7 @@ using namespace std;
 namespace gproshan::mdict {
 
 
-class dictionary;
+class msparse_coding;
 
 typedef function<bool(const index_t &)> fmask_t;
 typedef function<bool(const index_t &, size_t tam)> fmask_local_t;
@@ -152,7 +152,7 @@ class patch
 		index_t find(const index_t * indexes, size_t nc, index_t idx_global);
 		
 
-	friend class dictionary;
+	friend class msparse_coding;
 };
 
 

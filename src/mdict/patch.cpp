@@ -1,6 +1,6 @@
 #include "mdict/patch.h"
 
-#include "mdict/dictionary.h"
+#include "mdict/msparse_coding.h"
 #include "geodesics/geodesics.h"
 
 #include <queue>
@@ -30,7 +30,7 @@ typedef CGAL::Monge_via_jet_fitting<Data_Kernel> My_Monge_via_jet_fitting;
 typedef My_Monge_via_jet_fitting::Monge_form My_Monge_form;
 
 
-size_t patch::expected_nv = 3 * dictionary::T * (dictionary::T + 1);
+size_t patch::expected_nv = 3 * msparse_coding::T * (msparse_coding::T + 1);
 real_t patch::nyquist_factor = 0.5;
 
 void patch::init(che * mesh, const index_t & v, const size_t & n_toplevels, const real_t & radio_, index_t * _toplevel)

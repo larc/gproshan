@@ -1,4 +1,4 @@
-#include "mdict/dictionary.h"
+#include "mdict/msparse_coding.h"
 
 #include "geodesics/sampling.h"
 #include "mdict/mdict.h"
@@ -40,22 +40,22 @@ typedef My_Monge_via_jet_fitting::Monge_form My_Monge_form;
 
 
 
-size_t dictionary::L = 12;
-size_t dictionary::K = 10;
-size_t dictionary::T = 5;
+size_t msparse_coding::L = 12;
+size_t msparse_coding::K = 10;
+size_t msparse_coding::T = 5;
 
-dictionary::dictionary(che *const & _mesh, basis *const & _phi_basis, const size_t & _m, const size_t & _M, const real_t & _f, const bool & _learn, const bool & _d_plot):
+msparse_coding::msparse_coding(che *const & _mesh, basis *const & _phi_basis, const size_t & _m, const size_t & _M, const real_t & _f, const bool & _learn, const bool & _d_plot):
 					mesh(_mesh), phi_basis(_phi_basis), m(_m), M(_M), f(_f), learn(_learn), d_plot(_d_plot)
 {
 	A.eye(phi_basis->dim(), m);
 	dist = new real_t[mesh->n_vertices()]; 
 }
 
-dictionary::~dictionary()
+msparse_coding::~msparse_coding()
 {
 }
 
-void dictionary::learning()
+void msparse_coding::learning()
 {
 	gproshan_log(MDICT);
 
@@ -100,7 +100,7 @@ void dictionary::learning()
 	}
 }
 
-void dictionary::sparse_coding()
+void msparse_coding::sparse_coding()
 {
 	gproshan_log(MDICT);
 	
@@ -108,7 +108,7 @@ void dictionary::sparse_coding()
 	alpha = OMP_all(patches, phi_basis, A, L);
 }
 
-void dictionary::init_sampling()
+void msparse_coding::init_sampling()
 {
 	gproshan_log(MDICT);
 
@@ -134,7 +134,7 @@ void dictionary::init_sampling()
 	gproshan_debug_var(phi_basis->radio());
 }
 
-void dictionary::load_features(vector<index_t> & v_feat, size_t & featsize)
+void msparse_coding::load_features(vector<index_t> & v_feat, size_t & featsize)
 {
 	string f_feat = tmp_file_path(mesh->name() + ".int");
 	ifstream inp;
@@ -177,7 +177,7 @@ void dictionary::load_features(vector<index_t> & v_feat, size_t & featsize)
 	inp.close();
 }
 
-void dictionary::init_patches(const bool & reset, const fmask_t & mask)
+void msparse_coding::init_patches(const bool & reset, const fmask_t & mask)
 {
 	gproshan_log(MDICT);
 
@@ -194,7 +194,7 @@ void dictionary::init_patches(const bool & reset, const fmask_t & mask)
 			for(index_t s = 0; s < M; s++)
 			{
 				index_t v = sample(s);
-				patches[s].init(mesh, v, dictionary::T, phi_basis->radio(), toplevel);
+				patches[s].init(mesh, v, msparse_coding::T, phi_basis->radio(), toplevel);
 			}
 			
 
@@ -266,7 +266,7 @@ void dictionary::init_patches(const bool & reset, const fmask_t & mask)
 	*/
 }
 
-real_t dictionary::mesh_reconstruction(const fmask_t & mask)
+real_t msparse_coding::mesh_reconstruction(const fmask_t & mask)
 {
 	gproshan_log(MDICT);
 
@@ -354,7 +354,7 @@ real_t dictionary::mesh_reconstruction(const fmask_t & mask)
 	return max_error;
 }
 
-void dictionary::update_alphas(a_mat & alpha, size_t threshold)
+void msparse_coding::update_alphas(a_mat & alpha, size_t threshold)
 {
 	size_t np_new = M - threshold;
 	bool patches_covered[np_new];
@@ -397,26 +397,26 @@ void dictionary::update_alphas(a_mat & alpha, size_t threshold)
 	// repeat until threshold reachs all patches
 }
 
-index_t dictionary::sample(const index_t & s)
+index_t msparse_coding::sample(const index_t & s)
 {
 	assert(s < M);
 	if(sampling.size()) return sampling[s];
 	return s;
 }
 
-const real_t & dictionary::operator[](const index_t & i) const
+const real_t & msparse_coding::operator[](const index_t & i) const
 {
 	assert(i < mesh->n_vertices());
 	return dist[i];
 }
 
-const index_t & dictionary::draw_patches(const index_t & p)
+const index_t & msparse_coding::draw_patches(const index_t & p)
 {
 	phi_basis->plot_patch(A * alpha.col(p), patches[p].xyz, patches[p].vertices[0]);
 	return patches[p].vertices[0];
 }
 
-void dictionary::save_alpha(string file)
+void msparse_coding::save_alpha(string file)
 {
 	alpha.save(file);
 }

@@ -1,7 +1,7 @@
 #ifndef INPAINTING_H
 #define INPAINTING_H
 
-#include "mdict/dictionary.h"
+#include "mdict/msparse_coding.h"
 #include "mesh/che_poisson.h"
 #include "mesh/che_fill_hole.h"
 
@@ -12,7 +12,7 @@
 namespace gproshan::mdict {
 
 
-class inpainting : public dictionary
+class inpainting : public msparse_coding
 {
 	public:
 		inpainting(che *const & _mesh, basis *const & _phi_basis, const params & p);

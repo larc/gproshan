@@ -496,7 +496,7 @@ bool app_viewer::process_mdict_patch(viewer * p_view)
 	real_t mean_edge = mesh->mean_edge();
 	for(auto & v: mesh.selected)
 	{
-		p.init(mesh, v, dictionary::T, dictionary::T * mean_edge, toplevel);
+		p.init(mesh, v, msparse_coding::T, msparse_coding::T * mean_edge, toplevel);
 		for(auto & u: p.vertices)
 			mesh->heatmap(u) = 1;
 
@@ -539,7 +539,7 @@ bool app_viewer::process_inpaiting(viewer * p_view)
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
-	static dictionary::params params;
+	static msparse_coding::params params;
 	static size_t n = 12;
 	
 	assert(sizeof(ImGuiDataType_U64) != sizeof(size_t));
@@ -572,7 +572,7 @@ bool app_viewer::process_mask(viewer * p_view)
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
-	static dictionary::params params;
+	static msparse_coding::params params;
 	static size_t n = 12;
 
 	assert(sizeof(ImGuiDataType_U64) != sizeof(size_t));
@@ -613,7 +613,7 @@ bool app_viewer::process_pc_reconstruction(viewer * p_view)
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
-	static dictionary::params params;
+	static msparse_coding::params params;
 	static size_t n = 12;
 	static real_t percentage_size = 100;
 	static real_t radio_factor = 1;	

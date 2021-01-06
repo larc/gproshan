@@ -15,7 +15,7 @@
 namespace gproshan::mdict {
 
 
-inpainting::inpainting(che *const & _mesh, basis *const & _phi_basis, const params & p): dictionary(_mesh, _phi_basis, p.m, p.M, p.f, p.learn, p.plot)
+inpainting::inpainting(che *const & _mesh, basis *const & _phi_basis, const params & p): msparse_coding(_mesh, _phi_basis, p.m, p.M, p.f, p.learn, p.plot)
 {
 	delta = p.delta;
 	sum_thres = p.sum_thres;
@@ -416,7 +416,7 @@ void inpainting::init_voronoi_patches()
 		#pragma omp for 
 		for(index_t s = 0; s < M; s++)
 		{
-			patches[s].init_disjoint(mesh, sample(s), dictionary::T, vertices[s], toplevel);
+			patches[s].init_disjoint(mesh, sample(s), msparse_coding::T, vertices[s], toplevel);
 			
 		}		
 		#ifndef NDEBUG

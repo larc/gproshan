@@ -14,7 +14,7 @@
 namespace gproshan::mdict {
 
 
-class dictionary
+class msparse_coding
 {
 	public:
 		struct params
@@ -64,7 +64,7 @@ class dictionary
 		const index_t & draw_patches(const index_t & p);
 
 	protected:
-		dictionary(	che *const & _mesh, 		///< pointer to input mesh.
+		msparse_coding(	che *const & _mesh, 		///< pointer to input mesh.
 					basis *const &_phi_basis,	///< pointer to continuous basis.
 					const size_t & _m,			///< number of dictionary atoms.
 					const size_t & _M,			///< number of patches.
@@ -73,7 +73,7 @@ class dictionary
 					const bool & _plot			///< flag to plot basis and atoms with gnuplot.
 					);
 
-		virtual ~dictionary();
+		virtual ~msparse_coding();
 
 		virtual real_t execute() = 0;
 
