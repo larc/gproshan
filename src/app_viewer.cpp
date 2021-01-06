@@ -74,7 +74,7 @@ int app_viewer::main(int nargs, const char ** args)
 	add_process(GLFW_KEY_V, {"V", "Geodesic Voronoi", process_voronoi});
 	add_process(GLFW_KEY_P, {"P", "Toplesets", compute_toplesets});
 
-	sub_menus.push_back("Dictionary Learning");
+	sub_menus.push_back("Sparse Coding");
 	add_process(GLFW_KEY_J, {"J", "MDICT Patch", process_mdict_patch});
 	add_process(GLFW_KEY_I, {"I", "MDICT Inpaiting", process_inpaiting});
 	add_process(GLFW_KEY_F13, {"F13", "MDICT Mask", process_mask});
@@ -546,7 +546,7 @@ bool app_viewer::process_inpaiting(viewer * p_view)
 	
 	ImGui::InputDouble("nyquist_factor", &patch::nyquist_factor, 0.01, 0.01, "%.2lf");
 	ImGui::InputScalar("basis", ImGuiDataType_U64, &n);
-	ImGui::InputScalar("atoms", ImGuiDataType_U64, &params.m);
+	ImGui::InputScalar("atoms", ImGuiDataType_U64, &params.n_atoms);
 	ImGui::InputDouble("delta", &params.delta, 0.001, 0.1, "%.3lf");	
 	ImGui::InputDouble("proj_thres", &params.sum_thres, 1.001, 0.1, "%.6lf");
 	ImGui::InputDouble("area_thres", &params.area_thres, 0.001, 0.1, "%6lf");
@@ -578,7 +578,7 @@ bool app_viewer::process_mask(viewer * p_view)
 	assert(sizeof(ImGuiDataType_U64) != sizeof(size_t));
 	
 	ImGui::InputScalar("basis", ImGuiDataType_U64, &n);
-	ImGui::InputScalar("atoms", ImGuiDataType_U64, &params.m);
+	ImGui::InputScalar("atoms", ImGuiDataType_U64, &params.n_atoms);
 	ImGui::InputDouble("delta", &params.delta, 0.001, 0.1, "%.3lf");	
 	ImGui::InputDouble("proj_thres", &params.sum_thres, 1.001, 0.1, "%.6lf");
 	ImGui::InputDouble("area_thres", &params.area_thres, 0.001, 0.1, "%6lf");
@@ -621,7 +621,7 @@ bool app_viewer::process_pc_reconstruction(viewer * p_view)
 	assert(sizeof(ImGuiDataType_U64) != sizeof(size_t));
 	
 	ImGui::InputScalar("basis", ImGuiDataType_U64, &n);
-	ImGui::InputScalar("atoms", ImGuiDataType_U64, &params.m);
+	ImGui::InputScalar("atoms", ImGuiDataType_U64, &params.n_atoms);
 	ImGui::InputDouble("delta", &params.delta, 0.001, 0.1, "%.3lf");	
 	ImGui::InputDouble("proj_thres", &params.sum_thres, 1.001, 0.1, "%.6lf");
 	ImGui::InputDouble("area_thres", &params.area_thres, 0.001, 0.1, "%6lf");

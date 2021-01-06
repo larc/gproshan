@@ -15,17 +15,11 @@
 namespace gproshan::mdict {
 
 
-inpainting::inpainting(che *const & _mesh, basis *const & _phi_basis, const params & p): msparse_coding(_mesh, _phi_basis, p.m, p.M, p.f, p.learn, p.plot)
+inpainting::inpainting(che *const & _mesh, basis *const & _phi_basis, const params & p): msparse_coding(_mesh, _phi_basis, p)
 {
-	delta = p.delta;
-	sum_thres = p.sum_thres;
-	avg_p = p.avg_p;
-	percent = p.percentage;
-	area_thres = p.area_thres;
-
-	key_name = mesh->name_size() + '_' + to_string(delta) + '_' + to_string(sum_thres) + '_' + to_string(area_thres);
-
-	M = mesh->n_vertices() / avg_p;
+	m_params.n_patches = mesh->n_vertices() / m_params.avg_p;
+	
+	key_name = mesh->name_size() + '_' + to_string(m_params.delta) + '_' + to_string(m_params.sum_thres) + '_' + to_string(m_params.area_thres);
 
 	mask = new bool[mesh->n_vertices()];
 	memset(mask, 0, sizeof(bool) * mesh->n_vertices());
@@ -44,7 +38,7 @@ inpainting::operator const std::string & () const
 void inpainting::load_mask()
 {
 	//string f_mask = tmp_file_path(mesh->name_size() + '_' + to_string(avg_p) + '_' + to_string(percent) + '_' + to_string(radio) + ".msk");
-	string f_mask = tmp_file_path(mesh->name_size() + '_' + to_string(percent) + ".msk");
+	string f_mask = tmp_file_path(mesh->name_size() + '_' + to_string(m_params.percent) + ".msk");
 	arma::uvec V;
 	gproshan_log(loading radial mask);
 	
@@ -62,7 +56,7 @@ void inpainting::load_mask()
 		V.zeros(mesh->n_vertices());
 		std::default_random_engine generator;
 		std::uniform_int_distribution<int> distribution(0, mesh->n_vertices()-1);
-		size_t percentage = mesh->n_vertices() - ceil(mesh->n_vertices() * (percent/ 100.0)) ;
+		size_t percentage = mesh->n_vertices() - ceil(mesh->n_vertices() * (m_params.percent / 100.0)) ;
 
 		size_t k = 0;
 		size_t rn = 0;
@@ -82,7 +76,7 @@ void inpainting::load_mask()
 
 void inpainting::load_mask(const std::vector<index_t> * vertices, const index_t * clusters)
 {
-	string f_mask = tmp_file_path(mesh->name_size() + '_' + to_string(avg_p) + '_' + to_string(percent) + ".msk");
+	string f_mask = tmp_file_path(mesh->name_size() + '_' + to_string(m_params.avg_p) + '_' + to_string(m_params.percent) + ".msk");
 	arma::uvec V;
 
 	if(V.load(f_mask))
@@ -98,28 +92,26 @@ void inpainting::load_mask(const std::vector<index_t> * vertices, const index_t 
 	{
 
 		V.zeros(mesh->n_vertices());
-		size_t * percentages_size = new size_t[M];
-		bool cover_cluster[M];
+		size_t * percentages_size = new size_t[m_params.n_patches];
+		bool cover_cluster[m_params.n_patches];
 
 			
 		// create initial desired percentage sizes
 		#pragma omp for 
-		for(index_t s = 0; s < M; s++)
+		for(index_t s = 0; s < m_params.n_patches; s++)
 		{
-		
-			percentages_size[s] = ceil(vertices[s].size() * (percent/ 100.0)) ;
+			percentages_size[s] = ceil(vertices[s].size() * (m_params.percent / 100.0)) ;
 			cover_cluster[s] = 0;
-			
 		}
+
 		//Generate random mask according to a percentage of patches capacity
 		std::default_random_engine generator;
 		std::uniform_int_distribution<int> distribution(0,n_vertices-1);
 
 		size_t k = 0;
-		size_t rn=0;
+		size_t rn = 0;
 		
-
-		while( k < M )
+		while(k < m_params.n_patches)
 		{	
 			//gproshan_debug_var(clusters[rn]);
 
@@ -169,11 +161,11 @@ void inpainting::load_sampling(bool save_all)
 		for(index_t i = 0; i < n_seeds; i++)
 		{
 			patch p;
-			p.init_radial_disjoint(euc_radio, geo_radio, mesh, S(i), delta, sum_thres, area_thres, area_mesh);
+			p.init_radial_disjoint(euc_radio, geo_radio, mesh, S(i), m_params.delta, m_params.sum_thres, m_params.area_thres, area_mesh);
 			patches.push_back(move(p)); 
 		}
 		
-		M = n_seeds;
+		m_params.n_patches = n_seeds;
 		
 		return;
 	}
@@ -207,7 +199,7 @@ void inpainting::load_sampling(bool save_all)
 		if(invalid_seed[vsf]) continue;
 
 		patch p;
-		p.init_radial_disjoint(euc_radio, geo_radio, mesh, vsf, delta, sum_thres, area_thres, area_mesh);
+		p.init_radial_disjoint(euc_radio, geo_radio, mesh, vsf, m_params.delta, m_params.sum_thres, m_params.area_thres, area_mesh);
 
 		count_cov_patch = 0;
 		if(p.vertices.size() >= 7 )
@@ -242,7 +234,7 @@ void inpainting::load_sampling(bool save_all)
 
 	delete [] invalid_seed;
 
-	M = seeds.size();
+	m_params.n_patches = seeds.size();
 	
 	gproshan_log(saving sampling);
 
@@ -254,11 +246,11 @@ void inpainting::load_sampling(bool save_all)
 	
 	S.save(tmp_file_path(key_name + ".rsampl"));
 
-	gproshan_debug_var(sum_thres);
+	gproshan_debug_var(m_params.sum_thres);
 	gproshan_debug_var(count);
 	gproshan_debug_var(count_cov);
 	gproshan_debug_var(seeds.size());
-	gproshan_debug_var(M);
+	gproshan_debug_var(m_params.n_patches);
 
 
 #ifndef NDEBUG
@@ -288,16 +280,16 @@ void inpainting::init_radial_feature_patches()
 		size_t patch_max_size = 0;
 
 		#pragma omp parallel for reduction(+: patch_avg_size)
-		for(index_t s = 0; s < M; s++)
+		for(index_t s = 0; s < m_params.n_patches; s++)
 			patch_avg_size += patches[s].vertices.size();
 		#pragma omp parallel for reduction(min: patch_min_size)
-		for(index_t s = 0; s < M; s++)
+		for(index_t s = 0; s < m_params.n_patches; s++)
 			patch_min_size = min(patches[s].vertices.size(), patch_min_size);
 		#pragma omp parallel for reduction(max: patch_max_size)
-		for(index_t s = 0; s < M; s++)
+		for(index_t s = 0; s < m_params.n_patches; s++)
 			patch_max_size = max(patches[s].vertices.size(), patch_max_size);
 
-		patch_avg_size /= M;
+		patch_avg_size /= m_params.n_patches;
 		gproshan_debug_var(patch_avg_size);
 		gproshan_debug_var(patch_min_size);
 		gproshan_debug_var(patch_max_size);
@@ -305,19 +297,19 @@ void inpainting::init_radial_feature_patches()
 
 	//Initializing patches
 	gproshan_log(initializing patches);
-	gproshan_debug_var(M);
+	gproshan_debug_var(m_params.n_patches);
 	
 	n_vertices = mesh->n_vertices();
-	patches.resize(M);
+	patches.resize(m_params.n_patches);
 	patches_map.resize(n_vertices);
 	
 	bool * pmask = mask;
 	
-	for(index_t s = 0; s < M; s++)
-		patches[s].reset_xyz_disjoint(mesh, dist, M, patches_map, s, [&pmask](const index_t & i) -> bool { return pmask[i]; });
+	for(index_t s = 0; s < m_params.n_patches; s++)
+		patches[s].reset_xyz_disjoint(mesh, dist, m_params.n_patches, patches_map, s, [&pmask](const index_t & i) -> bool { return pmask[i]; });
 
 	#pragma omp parallel for
-	for(index_t s = 0; s < M; s++)
+	for(index_t s = 0; s < m_params.n_patches; s++)
 	{
 		patch & p = patches[s];
 
@@ -333,8 +325,8 @@ void inpainting::init_radial_feature_patches()
 	if(save_all)
 	{
 		arma::mat AS;
-		AS.resize(M,13);
-		for(index_t i = 0; i < M; i++)
+		AS.resize(m_params.n_patches, 13);
+		for(index_t i = 0; i < m_params.n_patches; i++)
 		{
 			patch & p = patches[i];
 			
@@ -362,11 +354,11 @@ void inpainting::init_radial_feature_patches()
 void inpainting::init_voronoi_patches()
 {
 	/////
-	std::vector<index_t> vertices[M];
+	std::vector<index_t> vertices[m_params.n_patches];
 	//index_t * clusters_tmp = init_voronoi_sampling(vertices);
 
 	//////
-	gproshan_log_var(M);
+	gproshan_log_var(m_params.n_patches);
 
 		//FPS samplif_dictng with desired number of sources
 		TIC(d_time) init_sampling(); TOC(d_time)
@@ -388,7 +380,7 @@ void inpainting::init_voronoi_patches()
 
 		//saving first vertex aka seed vertices
 		#pragma omp for 
-		for(index_t s = 0; s < M; s++)
+		for(index_t s = 0; s < m_params.n_patches; s++)
 		{
 			vertices[s].push_back(sample(s));
 		}
@@ -406,7 +398,7 @@ void inpainting::init_voronoi_patches()
 	//Initializing patches
 	gproshan_log(initializing patches);
 
-	patches.resize(M);
+	patches.resize(m_params.n_patches);
 	patches_map.resize(n_vertices);
 	//initializing patch
 	#pragma omp parallel
@@ -414,7 +406,7 @@ void inpainting::init_voronoi_patches()
 		index_t * toplevel = new index_t[mesh->n_vertices()];
 
 		#pragma omp for 
-		for(index_t s = 0; s < M; s++)
+		for(index_t s = 0; s < m_params.n_patches; s++)
 		{
 			patches[s].init_disjoint(mesh, sample(s), msparse_coding::T, vertices[s], toplevel);
 			
@@ -425,16 +417,16 @@ void inpainting::init_voronoi_patches()
 			size_t patch_max_size = 0;
 
 			#pragma omp parallel for reduction(+: patch_avg_size)
-			for(index_t s = 0; s < M; s++)
+			for(index_t s = 0; s < m_params.n_patches; s++)
 				patch_avg_size += patches[s].vertices.size();
 			#pragma omp parallel for reduction(min: patch_min_size)
-			for(index_t s = 0; s < M; s++)
+			for(index_t s = 0; s < m_params.n_patches; s++)
 				patch_min_size = min(patches[s].vertices.size(), patch_min_size);
 			#pragma omp parallel for reduction(max: patch_max_size)
-			for(index_t s = 0; s < M; s++)
+			for(index_t s = 0; s < m_params.n_patches; s++)
 				patch_max_size = max(patches[s].vertices.size(), patch_max_size);
 
-			patch_avg_size /= M;
+			patch_avg_size /= m_params.n_patches;
 			//gproshan_debug_var(patch_avg_size);
 			//gproshan_debug_var(patch_min_size);
 			//gproshan_debug_var(patch_max_size);
@@ -442,11 +434,11 @@ void inpainting::init_voronoi_patches()
 	}
 
 	bool * pmask = mask;
-	for(index_t s = 0; s < M; s++)
-		patches[s].reset_xyz_disjoint(mesh, dist, M, patches_map, s ,[&pmask](const index_t & i) -> bool { return pmask[i]; } );
+	for(index_t s = 0; s < m_params.n_patches; s++)
+		patches[s].reset_xyz_disjoint(mesh, dist, m_params.n_patches, patches_map, s ,[&pmask](const index_t & i) -> bool { return pmask[i]; } );
 
 	#pragma omp parallel for
-	for(index_t s = 0; s < M; s++)
+	for(index_t s = 0; s < m_params.n_patches; s++)
 	{
 		patch & p = patches[s];
 
@@ -487,11 +479,11 @@ real_t inpainting::execute()
 	for(index_t i = 0; i < n_vertices; i++)
 		patches_map[i].clear();
 	
-	for(index_t s = 0; s < M; s++)
+	for(index_t s = 0; s < m_params.n_patches; s++)
 		patches[s].reset_xyz(mesh, patches_map, s, 0);
 
 	#pragma omp parallel for
-	for(index_t s = 0; s < M; s++)
+	for(index_t s = 0; s < m_params.n_patches; s++)
 	{
 		patch & p = patches[s];
 
@@ -510,7 +502,7 @@ real_t inpainting::execute()
 	
 	arma::uvec non_zero = find( abs(alpha) > 0.00001);
 	gproshan_debug_var(non_zero.size());
-	real_t ratio = (M * 13.0 + non_zero.size()) / (3 * mesh->n_vertices());
+	real_t ratio = (m_params.n_patches * 13.0 + non_zero.size()) / (3 * mesh->n_vertices());
 	gproshan_log_var(ratio);
 
 	return max_error;
@@ -524,23 +516,23 @@ che * inpainting::point_cloud_reconstruction(real_t per, real_t fr)
 	S.load(tmp_file_path(key_name + ".smp"));
 	alpha.load(tmp_file_path(key_name + ".alpha"));
 	
-	M = S.n_rows;
-	patches.resize(M);
+	m_params.n_patches = S.n_rows;
+	patches.resize(m_params.n_patches);
 
-	gproshan_debug_var(M);
+	gproshan_debug_var(m_params.n_patches);
 
 	real_t max_radio = -1;
 
 	#pragma omp parallel for reduction(max: max_radio)
-	for(index_t i = 0; i < M; i++)
+	for(index_t i = 0; i < m_params.n_patches; i++)
 		max_radio = max(max_radio, S(i, 3)); 
 
-	A.eye(phi_basis->dim(), m);
+	A.eye(phi_basis->dim(), m_params.n_atoms);
 	
 	size_t total_points = 0;
 	
 	#pragma omp parallel for
-	for(index_t i = 0; i < M; i++)
+	for(index_t i = 0; i < m_params.n_patches; i++)
 	{
 		arma::mat T(3,3);
 		T(0,0) = S(i,4);
@@ -581,7 +573,7 @@ che * inpainting::point_cloud_reconstruction(real_t per, real_t fr)
 	vector<vertex> point_cloud;
 	point_cloud.reserve(total_points);
 
-	for(index_t i = 0; i < M; i++)
+	for(index_t i = 0; i < m_params.n_patches; i++)
 	for(index_t j = 0; j < patches[i].xyz.n_cols; j++)
 		point_cloud.push_back({	patches[i].xyz(0, j), 
 								patches[i].xyz(1, j),
@@ -592,7 +584,7 @@ che * inpainting::point_cloud_reconstruction(real_t per, real_t fr)
 	new_mesh->update_normals();
 	
 	a_vec n;
-	for(index_t v = 0, i = 0; i < M; i++)
+	for(index_t v = 0, i = 0; i < m_params.n_patches; i++)
 	{
 		patch & p = patches[i];
 

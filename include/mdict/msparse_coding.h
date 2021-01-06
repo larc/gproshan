@@ -19,16 +19,16 @@ class msparse_coding
 	public:
 		struct params
 		{
-			size_t m = 144;				///< number of dictionary atoms
-			size_t M = 0;				///< number of patches
-			size_t avg_p = 36;			///< avg number of vertices per patch
-			size_t percentage = 0;		///< mask percentage
-			real_t f = 1;				///<
-			real_t delta = M_PI / 6;	///<
-			real_t sum_thres = 1.01;	///<
-			real_t area_thres = 0.005;	///<
-			bool learn = false;			///<
-			bool plot = false;
+			size_t n_atoms		= 144;			///< number of dictionary atoms
+			size_t n_patches	= 0;			///< number of patches
+			size_t avg_p		= 36;			///< avg number of vertices per patch
+			size_t percent		= 0;			///< mask percentage
+			real_t f			= 1;			///<
+			real_t delta		= M_PI / 6;		///<
+			real_t sum_thres	= 1.01;			///<
+			real_t area_thres	= 0.005;		///<
+			bool learn			= false;		///<
+			bool plot			= false;		///<
 		};
 
 	protected:
@@ -36,13 +36,11 @@ class msparse_coding
 		size_t n_vertices;						///< number of vertices.
 
 		basis * phi_basis;						///< continuous basis.
+		params m_params;						///<
 
-		size_t m;								///< number of dictionary atoms.
-		size_t M;								///< number of patches.
 		a_mat A;								///< dictionary continuous matrix.
 		a_mat alpha;							///< sparse coding matrix.
 		
-		real_t f;
 		real_t s_radio;							///< sampling geodesic radio.
 		std::vector<index_t> sampling;			///< samples, center of patches if sampling.
 		std::vector<patch> patches;				///< vector of patches.
@@ -50,8 +48,6 @@ class msparse_coding
 		std::vector<std::pair<real_t, index_t> > patches_error;
 
 		double d_time;							///< time of operations.
-		bool learn;
-		bool d_plot;							///< plot atoms and basis with gnuplot.
 		real_t * dist;
 	
 	public:
@@ -65,13 +61,9 @@ class msparse_coding
 
 	protected:
 		msparse_coding(	che *const & _mesh, 		///< pointer to input mesh.
-					basis *const &_phi_basis,	///< pointer to continuous basis.
-					const size_t & _m,			///< number of dictionary atoms.
-					const size_t & _M,			///< number of patches.
-					const real_t & _f,			///< deprecated
-					const bool & _learn,		
-					const bool & _plot			///< flag to plot basis and atoms with gnuplot.
-					);
+						basis *const &_phi_basis,	///< pointer to continuous basis.
+						const params & p			///<
+						);
 
 		virtual ~msparse_coding();
 
@@ -89,8 +81,7 @@ class msparse_coding
 		void update_alphas(a_mat & alpha, size_t threshold);
 		void save_alpha(string file);
 
-		index_t sample(const index_t & s);
-		
+		index_t sample(const index_t & s);	
 };
 
 

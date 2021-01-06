@@ -32,14 +32,7 @@ class inpainting : public msparse_coding
 		real_t execute_tmp();
 
 	private:
-		size_t avg_p;
-		size_t percent;
-		double delta;
-		double sum_thres;
 		bool * mask;
-		double area_thres;
-		size_t max_points;
-	
 		std::string key_name;
 };
 
@@ -47,3 +40,4 @@ class inpainting : public msparse_coding
 } // namespace gproshan::mdict
 
 #endif // INPAINTING_H
+

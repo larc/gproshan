@@ -44,10 +44,9 @@ size_t msparse_coding::L = 12;
 size_t msparse_coding::K = 10;
 size_t msparse_coding::T = 5;
 
-msparse_coding::msparse_coding(che *const & _mesh, basis *const & _phi_basis, const size_t & _m, const size_t & _M, const real_t & _f, const bool & _learn, const bool & _d_plot):
-					mesh(_mesh), phi_basis(_phi_basis), m(_m), M(_M), f(_f), learn(_learn), d_plot(_d_plot)
+msparse_coding::msparse_coding(che *const & _mesh, basis *const & _phi_basis, const params & p): mesh(_mesh), phi_basis(_phi_basis), m_params(p)
 {
-	A.eye(phi_basis->dim(), m);
+	A.eye(phi_basis->dim(), m_params.n_atoms);
 	dist = new real_t[mesh->n_vertices()]; 
 }
 
@@ -59,9 +58,9 @@ void msparse_coding::learning()
 {
 	gproshan_log(MDICT);
 
-	string f_dict = tmp_file_path(mesh->name_size() + '_' + to_string(phi_basis->dim()) + '_' + to_string(m) + '_' + to_string(f) + '_' + to_string(L) + ".dict");
+	string f_dict = tmp_file_path(mesh->name_size() + '_' + to_string(phi_basis->dim()) + '_' + to_string(m_params.n_atoms) + '_' + to_string(m_params.f) + '_' + to_string(L) + ".dict");
 
-	if(learn)
+	if(m_params.learn)
 	{
 		gproshan_log_var(f_dict);
 
@@ -76,11 +75,11 @@ void msparse_coding::learning()
 			a_vec s;
 			svd(U, s, V, alpha);
 			gproshan_debug(svd done!);	
-			A = U.cols(0,m);
+			A = U.cols(0, m_params.n_atoms);
 			gproshan_debug(svd done!);	
 			A = normalise(A);
 			gproshan_debug_var(phi_basis->radio());
-			gproshan_debug_var(m);
+			gproshan_debug_var(m_params.n_atoms);
 			//
 			
 			phi_basis->plot_atoms(A);
@@ -89,11 +88,11 @@ void msparse_coding::learning()
 			A.save(f_dict);
 		}
 	}
-	else A.eye(phi_basis->dim(), m);
+	else A.eye(phi_basis->dim(), m_params.n_atoms);
 	gproshan_debug_var(phi_basis->radio());
 	assert(A.n_rows == phi_basis->dim());
-	assert(A.n_cols == m);
-	if(d_plot)
+	assert(A.n_cols == m_params.n_atoms);
+	if(m_params.plot)
 	{
 		phi_basis->plot_basis();
 		phi_basis->plot_atoms(A);
@@ -115,20 +114,20 @@ void msparse_coding::init_sampling()
 	n_vertices = mesh->n_vertices();
 
 	// load sampling
-	if(M == 0)
+	if(m_params.n_patches == 0)
 	{
-		M = mesh->n_vertices();
+		m_params.n_patches = mesh->n_vertices();
 		phi_basis->radio() = mesh->mean_edge();
 	}
 	else
 	{
-		sampling.reserve(M);
-		if(!load_sampling(sampling, phi_basis->radio(), mesh, M))
+		sampling.reserve(m_params.n_patches);
+		if(!load_sampling(sampling, phi_basis->radio(), mesh, m_params.n_patches))
 			cerr << "Failed to load sampling" << endl;
 	}
 
 	s_radio = phi_basis->radio();
-	phi_basis->radio() *= f;
+	phi_basis->radio() *= m_params.f;
 
 	gproshan_debug_var(s_radio);
 	gproshan_debug_var(phi_basis->radio());
@@ -183,7 +182,7 @@ void msparse_coding::init_patches(const bool & reset, const fmask_t & mask)
 
 	if(reset)
 	{
-		patches.resize(M);
+		patches.resize(m_params.n_patches);
 		patches_map.resize(n_vertices);
 
 		#pragma omp parallel
@@ -191,7 +190,7 @@ void msparse_coding::init_patches(const bool & reset, const fmask_t & mask)
 			index_t * toplevel = new index_t[n_vertices];
 
 			#pragma omp for 
-			for(index_t s = 0; s < M; s++)
+			for(index_t s = 0; s < m_params.n_patches; s++)
 			{
 				index_t v = sample(s);
 				patches[s].init(mesh, v, msparse_coding::T, phi_basis->radio(), toplevel);
@@ -207,27 +206,27 @@ void msparse_coding::init_patches(const bool & reset, const fmask_t & mask)
 			size_t patch_max_size = 0;
 
 			#pragma omp parallel for reduction(+: patch_avg_size)
-			for(index_t s = 0; s < M; s++)
+			for(index_t s = 0; s < m_params.n_patches; s++)
 				patch_avg_size += patches[s].vertices.size();
 			#pragma omp parallel for reduction(min: patch_min_size)
-			for(index_t s = 0; s < M; s++)
+			for(index_t s = 0; s < m_params.n_patches; s++)
 				patch_min_size = min(patches[s].vertices.size(), patch_min_size);
 			#pragma omp parallel for reduction(max: patch_max_size)
-			for(index_t s = 0; s < M; s++)
+			for(index_t s = 0; s < m_params.n_patches; s++)
 				patch_max_size = max(patches[s].vertices.size(), patch_max_size);
 
-			patch_avg_size /= M;
+			patch_avg_size /= m_params.n_patches;
 			gproshan_debug_var(patch_avg_size);
 			gproshan_debug_var(patch_min_size);
 			gproshan_debug_var(patch_max_size);
 		#endif
 	}
 
-	for(index_t s = 0; s < M; s++)
+	for(index_t s = 0; s < m_params.n_patches; s++)
 		patches[s].reset_xyz(mesh, patches_map, s, mask);
 
 	#pragma omp parallel for
-	for(index_t s = 0; s < M; s++)
+	for(index_t s = 0; s < m_params.n_patches; s++)
 	{
 		patch & p = patches[s];
 
@@ -240,7 +239,7 @@ void msparse_coding::init_patches(const bool & reset, const fmask_t & mask)
 /*	
 #ifndef NDEBUG
 	CImgList<real_t> imlist;
-	for(index_t s = 0; s < M; s++)
+	for(index_t s = 0; s < m_params.n_patches; s++)
 		patches[s].save(phi_basis->radio(), 16, imlist);
 	imlist.save_ffmpeg_external("tmp/patches.mpg", 5);
 #endif	
@@ -250,14 +249,14 @@ void msparse_coding::init_patches(const bool & reset, const fmask_t & mask)
 	/*Saving Patches*/
 /*
 	ofstream os(tmp_file_path("patch-mat"));
-	for(index_t s = 0; s < M; s++)
+	for(index_t s = 0; s < m_params.n_patches; s++)
 	{
 		patch & p = patches[s];
 		p.save_z(os);
 	}
 	os.close();
 	// DRAW NORMALS DEBUG
-	for(index_t s = 0; s < M; s++)
+	for(index_t s = 0; s < m_params.n_patches; s++)
 	{
 		viewer::vectors.push_back({patches[s].x(0), patches[s].x(1), patches[s].x(2)});
 		a_vec r = patches[s].x + 0.02 * patches[s].normal();
@@ -274,10 +273,10 @@ real_t msparse_coding::mesh_reconstruction(const fmask_t & mask)
 
 	a_mat V(3, mesh->n_vertices(), arma::fill::zeros);
 
-	patches_error.resize(M);
+	patches_error.resize(m_params.n_patches);
 
 	#pragma omp parallel for
-	for(index_t p = 0; p < M; p++)
+	for(index_t p = 0; p < m_params.n_patches; p++)
 	{
 		patch & rp = patches[p];
 		
@@ -294,13 +293,13 @@ real_t msparse_coding::mesh_reconstruction(const fmask_t & mask)
 	for(index_t i = 0; i < 10; i++)
 	{
 		const index_t & best = patches_error[i].second;
-		const index_t & worst = patches_error[M - i - 1].second;
+		const index_t & worst = patches_error[m_params.n_patches - i - 1].second;
 		
 		fprintf(stderr, "%5d:%8u>%8u%8u>%8u\n", i, best, draw_patches(best), worst, draw_patches(worst));
 	}
 	
 	#pragma omp parallel for
-	for(index_t p = 0; p < M; p++)
+	for(index_t p = 0; p < m_params.n_patches; p++)
 	{
 		patch & rp = patches[p];
 		rp.iscale_xyz(phi_basis->radio());
@@ -356,7 +355,7 @@ real_t msparse_coding::mesh_reconstruction(const fmask_t & mask)
 
 void msparse_coding::update_alphas(a_mat & alpha, size_t threshold)
 {
-	size_t np_new = M - threshold;
+	size_t np_new = m_params.n_patches - threshold;
 	bool patches_covered[np_new];
 	memset(patches_covered, 0, sizeof(patches_covered));
 	size_t count = 0;
@@ -365,7 +364,7 @@ void msparse_coding::update_alphas(a_mat & alpha, size_t threshold)
 	while(count < threshold)
 	{
 		#pragma omp parallel for
-		for(index_t s = threshold; s < M; s++)
+		for(index_t s = threshold; s < m_params.n_patches; s++)
 		{	
 
 			if(!patches_covered[s-threshold])
@@ -399,7 +398,7 @@ void msparse_coding::update_alphas(a_mat & alpha, size_t threshold)
 
 index_t msparse_coding::sample(const index_t & s)
 {
-	assert(s < M);
+	assert(s < m_params.n_patches);
 	if(sampling.size()) return sampling[s];
 	return s;
 }
