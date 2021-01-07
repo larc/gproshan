@@ -12,12 +12,12 @@ namespace gproshan::mdict {
 class basis_cosine: public basis
 {
 	private:
-		real_t r; // rotations
-		real_t n; // frequency
+		size_t n_rot;		///< rotations
+		size_t n_freq;		///< frequency
 
 	public:
-		basis_cosine(const size_t & _r, const size_t & _n, const real_t & _radio = 0);
-		void discrete(a_mat & phi, const a_mat & xy);
+		basis_cosine(const size_t & nr, const size_t & nf, const real_t & r = 0);
+		void discrete(a_mat & phi, const a_vec & x, const a_vec & y);
 
 	private:
 		void plot_basis(std::ostream & os);

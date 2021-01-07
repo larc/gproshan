@@ -60,13 +60,13 @@ void frame::display(const int & width, const int & height, void * buffer)
 	glBindVertexArray(vao);
 
 	glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, render_tex);
+	glBindTexture(GL_TEXTURE_2D, render_tex);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_FLOAT, buffer);
 
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 
-	glBindBuffer(GL_ARRAY_BUFFER, 0);    
+	glBindBuffer(GL_ARRAY_BUFFER, 0); 
 	glBindTexture(GL_TEXTURE_2D, 0);
 	glBindVertexArray(0);
 	
