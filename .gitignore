@@ -8,3 +8,5 @@ tmp/*
 *.user
 .vscode/*
 .DS_Store
+
+src/.vscode/settings.json

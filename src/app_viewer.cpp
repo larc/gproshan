@@ -74,12 +74,11 @@ int app_viewer::main(int nargs, const char ** args)
 	add_process(GLFW_KEY_V, {"V", "Geodesic Voronoi", process_voronoi});
 	add_process(GLFW_KEY_P, {"P", "Toplesets", compute_toplesets});
 
-	sub_menus.push_back("Dictionary Learning");
+	sub_menus.push_back("Sparse Coding");
+	add_process(GLFW_KEY_I, {"I", "Mesh Sparse Coding", process_msparse_coding});
 	add_process(GLFW_KEY_J, {"J", "MDICT Patch", process_mdict_patch});
-	add_process(GLFW_KEY_D, {"D", "MDICT Denoising", process_denoising});
-	add_process(GLFW_KEY_A, {"A", "MDICT Super Resolution", process_super_resolution});
-	add_process(GLFW_KEY_I, {"I", "MDICT Inpaiting", process_inpaiting});
-//	add_process('A', "IT Inpainting", process_iterative_inpaiting);
+	add_process(GLFW_KEY_F13, {"F13", "MDICT Mask", process_mask});
+	add_process(GLFW_KEY_NUM_LOCK , {"Numlock", "PC reconstruction", process_pc_reconstruction});
 
 	sub_menus.push_back("Signatures");
 	add_process(GLFW_KEY_2, {"2", "GPS", process_gps});
@@ -497,7 +496,7 @@ bool app_viewer::process_mdict_patch(viewer * p_view)
 	real_t mean_edge = mesh->mean_edge();
 	for(auto & v: mesh.selected)
 	{
-		p.init(mesh, v, dictionary::T, dictionary::T * mean_edge, toplevel);
+		p.init(mesh, v, msparse_coding::T, msparse_coding::T * mean_edge, toplevel);
 		for(auto & u: p.vertices)
 			mesh->heatmap(u) = 1;
 
@@ -535,86 +534,111 @@ bool app_viewer::process_mdict_patch(viewer * p_view)
 	return false;
 }
 
-bool app_viewer::process_denoising(viewer * p_view)
+bool app_viewer::process_msparse_coding(viewer * p_view)
 {
-	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
-	size_t n; // dct
-	size_t m, M;
-	real_t f;
-	bool learn;
-
-	gproshan_input(n m M f learn);
-	cin >> n >> m >> M >> f >> learn;
-
-	basis * phi = new basis_dct(n);
-	denoising dict(mesh, phi, m, M, f);
-	dict.execute();
-
-	delete phi;
-	mesh->update_normals();
+	static msparse_coding::params params;
+	static size_t n = 12;
 	
-	return false;
+	assert(sizeof(ImGuiDataType_U64) != sizeof(size_t));
+	
+	ImGui::InputDouble("nyquist_factor", &patch::nyquist_factor, 0.01, 0.01, "%.2lf");
+	ImGui::InputScalar("basis", ImGuiDataType_U64, &n);
+	ImGui::InputScalar("atoms", ImGuiDataType_U64, &params.n_atoms);
+	ImGui::InputDouble("delta", &params.delta, 0.001, 0.1, "%.3lf");	
+	ImGui::InputDouble("proj_thres", &params.sum_thres, 1.001, 0.1, "%.6lf");
+	ImGui::InputDouble("area_thres", &params.area_thres, 0.001, 0.1, "%6lf");
+	ImGui::Checkbox("learn", &params.learn);
+
+	if(ImGui::Button("Run"))
+	{
+		basis_dct phi(n);
+		msparse_coding msc(mesh, &phi, params);
+		
+		real_t max_error = msc.execute();
+		gproshan_log_var(max_error);
+		
+		mesh->update_heatmap(&msc[0]);
+		mesh->update_normals();
+	}
+
+	return true;
 }
 
-bool app_viewer::process_super_resolution(viewer * p_view)
+bool app_viewer::process_mask(viewer * p_view)
 {
-	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
-	size_t n; // dct
-	size_t m, M;
-	real_t f;
-	bool learn;
+	static msparse_coding::params params;
+	static size_t n = 12;
 
-	gproshan_log(parameters: (n, m, M, f, learn));
-	cin >> n >> m >> M >> f >> learn;
-
-	basis * phi = new basis_dct(n);
-	super_resolution dict(mesh, phi, m, M, f);
-	dict.execute();
-
-	delete phi;
-	mesh->update_normals();
+	assert(sizeof(ImGuiDataType_U64) != sizeof(size_t));
 	
-	return false;
+	ImGui::InputScalar("basis", ImGuiDataType_U64, &n);
+	ImGui::InputScalar("atoms", ImGuiDataType_U64, &params.n_atoms);
+	ImGui::InputDouble("delta", &params.delta, 0.001, 0.1, "%.3lf");	
+	ImGui::InputDouble("proj_thres", &params.sum_thres, 1.001, 0.1, "%.6lf");
+	ImGui::InputDouble("area_thres", &params.area_thres, 0.001, 0.1, "%6lf");
+	ImGui::Checkbox("learn", &params.learn);
+
+	if(ImGui::Button("Run"))
+	{
+		basis_dct phi(n);
+		msparse_coding msc(mesh, &phi, params);
+		
+		msc.init_radial_feature_patches();
+		//dict.init_voronoi_patches();
+		mesh->update_heatmap(&msc[0]);
+		string f_points = tmp_file_path(string(msc) + ".rsampl");
+
+		a_vec points_out;
+		gproshan_debug_var(f_points);
+		points_out.load(f_points);
+		gproshan_debug_var(points_out.size());
+		
+		for(index_t i = 0; i < points_out.size(); i++)
+			mesh.selected.push_back(points_out(i));
+		
+		mesh->update_normals();
+	}
+
+	return true;
 }
 
-bool app_viewer::process_inpaiting(viewer * p_view)
+bool app_viewer::process_pc_reconstruction(viewer * p_view)
 {
-	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
-	size_t n; // dct
-	size_t m, M;
-	real_t f;
-	bool learn;
+	static msparse_coding::params params;
+	static size_t n = 12;
+	static real_t percentage_size = 100;
+	static real_t radio_factor = 1;	
 
-	gproshan_log(parameters: (n, m, M, f, learn));
-	cin >> n >> m >> M >> f >> learn;
-
-	basis * phi = new basis_dct(n);
-	inpainting dict(mesh, phi, m, M, f);
-	dict.execute();
-
-	delete phi;
-	mesh->update_normals();
+	assert(sizeof(ImGuiDataType_U64) != sizeof(size_t));
 	
-	return false;
-}
-
-
-bool app_viewer::process_iterative_inpaiting(viewer * p_view)
-{
-	gproshan_log(APP_VIEWER);
-
-//	mesh_iterative_inpaiting(mesh, mesh.selected, freq, rt, m, M, f, learn);
+	ImGui::InputScalar("basis", ImGuiDataType_U64, &n);
+	ImGui::InputScalar("atoms", ImGuiDataType_U64, &params.n_atoms);
+	ImGui::InputDouble("delta", &params.delta, 0.001, 0.1, "%.3lf");	
+	ImGui::InputDouble("proj_thres", &params.sum_thres, 1.001, 0.1, "%.6lf");
+	ImGui::InputDouble("area_thres", &params.area_thres, 0.001, 0.1, "%6lf");
+	ImGui::Checkbox("learn", &params.learn);
 	
-	return false;
+	ImGui::InputDouble("percentage_size", &percentage_size, 100, 10, "%.3f");
+	ImGui::InputDouble("radio_factor", &radio_factor, 1, 0.1, "%.3f");
+
+	if(ImGui::Button("Run"))
+	{
+		basis_dct phi(n);
+		msparse_coding msc(mesh, &phi, params);
+		
+		view->add_mesh({msc.point_cloud_reconstruction(percentage_size, radio_factor)});
+	}
+	
+	return true;
 }
 
 bool app_viewer::process_multiplicate_vertices(viewer * p_view)
@@ -693,6 +717,7 @@ bool app_viewer::process_voronoi(viewer * p_view)
 
 bool app_viewer::process_farthest_point_sampling_radio(viewer * p_view)
 {
+	
 	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
@@ -899,16 +924,21 @@ bool app_viewer::process_gaussian_curvature(viewer * p_view)
 			b = mesh->gt_vt(prev(he)) - mesh->gt(v);
 			g += acos((a,b) / (*a * *b));
 		}
-		gv(v) = (2 * M_PI - g) / mesh->area_vertex(v);
+		//gv(v) = (2 * M_PI - g) / mesh->area_vertex(v);
+		gv(v) = mesh->mean_curvature(v);
+		
 		g_max = max(g_max, gv(v));
 		g_min = min(g_min, gv(v));
 	}
 
 	g = g_max - g_min;
+	gproshan_log_var(g);
+	gproshan_log_var(g_min);
+	gproshan_log_var(g_max);
 
 	#pragma omp parallel for
 	for(index_t v = 0; v < mesh->n_vertices(); v++)
-		gv(v) = (gv(v) - g_min) / g;
+		gv(v) = (gv(v) + g_min) / g;
 
 	real_t gm = mean(gv);
 	real_t gs = var(gv);

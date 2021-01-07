@@ -8,7 +8,7 @@ This framework integrates some algorithms and contributions focus on the areas o
 
 ## Build and Run
 
-![Build](https://github.com/larc/gproshan_dev/workflows/Build/badge.svg?branch=dev)
+![Build](https://github.com/larc/gproshan_dev/workflows/Build/badge.svg?branch=mdict)
 
 Install all dependencies and run:
 
