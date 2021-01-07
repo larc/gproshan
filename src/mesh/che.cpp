@@ -456,6 +456,21 @@ size_t che::genus() const
 	return (g - 2) / (-2);
 }
 
+// The Gauss-Bonnet Scheme
+real_t che::mean_curvature(const index_t & v)
+{
+	real_t h = 0;
+	real_t a = 0;
+	
+	for_star(he, this, v)
+	{
+		a += area_trig(trig(he));
+		h += *(GT[VT[next(he)]] - GT[v]) * (normal(v), normal_he(he));
+	}
+
+	return 0.75 * h / a;
+}
+
 void che::normalize()
 {
 	vertex center;
@@ -844,11 +859,11 @@ void che::remove_non_manifold_vertices()
 {
 	for( index_t he = 0; he < n_half_edges_; he+=3)
 	{
-		if(EVT[ VT[he] ] == NIL || EVT[ VT[he+1]] == NIL || EVT[ VT[he+2] ] == NIL)
+		if(EVT[VT[he]] == NIL || EVT[VT[he+1]] == NIL || EVT[VT[he+2]] == NIL)
 		{
 			VT[he] = NIL;
-			VT[he + 1 ] = NIL;
-			VT[he + 2 ] = NIL;
+			VT[he + 1] = NIL;
+			VT[he + 2] = NIL;
 		}
 	}
 

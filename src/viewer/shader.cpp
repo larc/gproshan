@@ -101,7 +101,7 @@ bool shader::load(GLenum shader_type, const char * filename)
 
 		if(maxLength > 0)
 		{
-			GLchar* infoLog = new char[ maxLength ];
+			GLchar* infoLog = new char[maxLength];
 			GLsizei length;
 
 			glGetShaderInfoLog(shader, maxLength, &length, infoLog);
