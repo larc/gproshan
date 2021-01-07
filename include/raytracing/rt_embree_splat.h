@@ -13,11 +13,29 @@ namespace gproshan::rt {
 
 class embree_splat : public embree
 {
+	static const size_t K = 16;
+
 	struct splat
 	{
-		glm::vec4 xyzr;
-		glm::vec3 normal;
-		glm::vec3 color;
+		glm::vec3 P[K];
+		glm::vec3 N[K];
+		glm::vec3 C[K];
+		float radio;
+
+		const glm::vec4 xyzr()
+		{
+			return glm::vec4(P[0], radio);
+		}
+
+		const glm::vec3 & normal()
+		{
+			return N[0];
+		}
+
+		const glm::vec3 & color()
+		{
+			return C[0];
+		}
 	};
 	
 	std::vector<splat> vsplat;
