@@ -196,8 +196,6 @@ index_t embree::add_pointcloud(const che * mesh)
 	index_t geom_id = rtcAttachGeometry(scene, geom);
 	rtcReleaseGeometry(geom);
 	
-	gproshan_log(EMBREE);
-
 	return geom_id;
 }
 
