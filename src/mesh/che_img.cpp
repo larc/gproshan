@@ -56,34 +56,6 @@ void che_img::read_file(const string & file)
 	thread([](CImg<real_t> img) { img.display(); }, img).detach();
 }
 
-void che_img::write_file(const string & file) const
-{
-	ofstream os(file);
-
-	os << "OFF" << endl;
-	os << n_vertices_ << " " << n_faces_ << " 0" << endl;
-
-	for(size_t v = 0; v < n_vertices_; v++)
-		os << GT[v] << endl;
-
-	for(index_t he = 0; he < n_half_edges_; he++)
-	{
-		if(!(he % che::mtrig)) os << che::mtrig;
-		os << " " << VT[he];
-		if(he % che::mtrig == che::mtrig - 1) os << endl;
-	}
-
-	os.close();
-}
-void save_img(const che * mesh, const std::string & file, size_t tam)
-{
-	CImg<double> image_out(tam,tam);
-
-	for(size_t v = 0; v < mesh->n_vertices(); v++)
-		image_out(mesh->gt(v).x, mesh->gt(v).y) = mesh->gt(v).z;
-
-	image_out.save(file.c_str());
-}
 
 } // namespace gproshan
 

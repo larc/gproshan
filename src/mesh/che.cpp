@@ -456,6 +456,7 @@ size_t che::genus() const
 	return (g - 2) / (-2);
 }
 
+// The Gauss-Bonnet Scheme
 real_t che::mean_curvature(const index_t & v)
 {
 	real_t h = 0;
