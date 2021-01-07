@@ -75,8 +75,8 @@ int app_viewer::main(int nargs, const char ** args)
 	add_process(GLFW_KEY_P, {"P", "Toplesets", compute_toplesets});
 
 	sub_menus.push_back("Sparse Coding");
+	add_process(GLFW_KEY_I, {"I", "Mesh Sparse Coding", process_msparse_coding});
 	add_process(GLFW_KEY_J, {"J", "MDICT Patch", process_mdict_patch});
-	add_process(GLFW_KEY_I, {"I", "MDICT Inpaiting", process_inpaiting});
 	add_process(GLFW_KEY_F13, {"F13", "MDICT Mask", process_mask});
 	add_process(GLFW_KEY_NUM_LOCK , {"Numlock", "PC reconstruction", process_pc_reconstruction});
 
@@ -534,7 +534,7 @@ bool app_viewer::process_mdict_patch(viewer * p_view)
 	return false;
 }
 
-bool app_viewer::process_inpaiting(viewer * p_view)
+bool app_viewer::process_msparse_coding(viewer * p_view)
 {
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
@@ -555,12 +555,12 @@ bool app_viewer::process_inpaiting(viewer * p_view)
 	if(ImGui::Button("Run"))
 	{
 		basis_dct phi(n);
-		inpainting dict(mesh, &phi, params);
+		msparse_coding msc(mesh, &phi, params);
 		
-		real_t max_error = dict.execute();
+		real_t max_error = msc.execute();
 		gproshan_log_var(max_error);
 		
-		mesh->update_heatmap(&dict[0]);
+		mesh->update_heatmap(&msc[0]);
 		mesh->update_normals();
 	}
 
@@ -587,12 +587,12 @@ bool app_viewer::process_mask(viewer * p_view)
 	if(ImGui::Button("Run"))
 	{
 		basis_dct phi(n);
-		inpainting dict(mesh, &phi, params);
+		msparse_coding msc(mesh, &phi, params);
 		
-		dict.init_radial_feature_patches();
+		msc.init_radial_feature_patches();
 		//dict.init_voronoi_patches();
-		mesh->update_heatmap(&dict[0]);
-		string f_points = tmp_file_path(string(dict) + ".rsampl");
+		mesh->update_heatmap(&msc[0]);
+		string f_points = tmp_file_path(string(msc) + ".rsampl");
 
 		a_vec points_out;
 		gproshan_debug_var(f_points);
@@ -633,9 +633,9 @@ bool app_viewer::process_pc_reconstruction(viewer * p_view)
 	if(ImGui::Button("Run"))
 	{
 		basis_dct phi(n);
-		inpainting dict(mesh, &phi, params);
+		msparse_coding msc(mesh, &phi, params);
 		
-		view->add_mesh({dict.point_cloud_reconstruction(percentage_size, radio_factor)});
+		view->add_mesh({msc.point_cloud_reconstruction(percentage_size, radio_factor)});
 	}
 	
 	return true;

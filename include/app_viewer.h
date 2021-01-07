@@ -22,7 +22,7 @@
 #include "geodesics/geodesics.h"
 #include "geodesics/sampling.h"
 
-#include "mdict/inpainting.h"
+#include "mdict/msparse_coding.h"
 #include "mdict/basis_dct.h"
 #include "mdict/patch.h"
 
@@ -64,8 +64,8 @@ class app_viewer : public viewer
 		static bool compute_toplesets(viewer * p_view);
 		static bool process_voronoi(viewer * p_view);
 
+		static bool process_msparse_coding(viewer * p_view);
 		static bool process_mdict_patch(viewer * p_view);
-		static bool process_inpaiting(viewer * p_view);
 		static bool process_mask(viewer * p_view);
 		static bool process_pc_reconstruction(viewer * p_view);
 

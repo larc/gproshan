@@ -1,5 +1,5 @@
-#ifndef DICTIONARY_H
-#define DICTIONARY_H
+#ifndef MSPARSE_CODING_H
+#define MSPARSE_CODING_H
 
 #include "mesh/che.h"
 #include "mdict/patch.h"
@@ -31,7 +31,7 @@ class msparse_coding
 			bool plot			= false;		///<
 		};
 
-	protected:
+	private:
 		che * mesh;								///< input mesh.
 		size_t n_vertices;						///< number of vertices.
 
@@ -49,6 +49,9 @@ class msparse_coding
 
 		double d_time;							///< time of operations.
 		real_t * dist;
+		
+		bool * mask = nullptr;
+		std::string key_name;
 	
 	public:
 		static size_t K;						///< number of iterations KSVD.
@@ -56,19 +59,30 @@ class msparse_coding
 		static size_t T;						///< factor of patches' size, default 5 toplesets.
 	
 	public:
-		const real_t & operator[](const index_t & i) const;
-		const index_t & draw_patches(const index_t & p);
-
-	protected:
 		msparse_coding(	che *const & _mesh, 		///< pointer to input mesh.
 						basis *const &_phi_basis,	///< pointer to continuous basis.
 						const params & p			///<
 						);
 
 		virtual ~msparse_coding();
+		
+		const real_t & operator[](const index_t & i) const;
+		const index_t & draw_patches(const index_t & p);
 
-		virtual real_t execute() = 0;
+		operator const std::string & () const;
 
+		real_t execute();
+		void load_mask(const std::vector<index_t> * vertices, const index_t * clusters);
+		void load_mask();
+		void init_voronoi_patches();
+		void init_radial_feature_patches();
+		void load_sampling(bool save_all);
+		che * point_cloud_reconstruction(real_t per, real_t fr);
+		vector<index_t> sort_indexes(const vector<real_t> &v);
+
+		real_t execute_tmp();
+
+	private:
 		void learning();
 		void sparse_coding();
 		void init_sampling();
@@ -87,5 +101,5 @@ class msparse_coding
 
 } // namespace gproshan::mdict
 
-#endif // DICTIONARY_H
+#endif // MSPARSE_CODING_H
 
