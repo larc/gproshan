@@ -11,10 +11,13 @@
 namespace gproshan::rt {
 
 
-class rt_embree_splat
+class embree_splat : public embree
 {
+	public:
+		embree_splat(const std::vector<che *> & meshes, const bool & pointcloud);
+	
 	private:
-		ray_hit rh;
+		index_t add_pointcloud(const che * mesh);
 };
 
 
