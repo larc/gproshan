@@ -12,10 +12,59 @@
 namespace gproshan::rt {
 
 
-void compute_normals(glm::vec3 * normals, const glm::vec3 * vertices, const size_t & n_vertices)
+embree::ray_hit::ray_hit(const glm::vec3 & p_org, const glm::vec3 & v_dir, float near, float far)
 {
+	ray.org_x = p_org.x;
+	ray.org_y = p_org.y;
+	ray.org_z = p_org.z;
+	ray.tnear = near;
 
+	ray.dir_x = v_dir.x;
+	ray.dir_y = v_dir.y;
+	ray.dir_z = v_dir.z;
+
+	ray.time = 0.0f;
+
+	ray.tfar = far;
+	ray.mask = 0;
+	ray.flags = 0;
+
+	//hit.primID = RTC_INVALID_GEOMETRY_ID;
+	hit.geomID = RTC_INVALID_GEOMETRY_ID;
+	hit.instID[0] = RTC_INVALID_GEOMETRY_ID;
 }
+
+glm::vec3 embree::ray_hit::org() const
+{
+	return {ray.org_x, ray.org_y, ray.org_z};
+}
+
+glm::vec3 embree::ray_hit::dir() const
+{
+	return {ray.dir_x, ray.dir_y, ray.dir_z};
+}
+
+glm::vec3 embree::ray_hit::color(const rt_mesh & mesh) const
+{
+	const vertex & c = mesh.pointcloud ? mesh->color(hit.primID) :
+										 mesh->shading_color(hit.primID, 1.0 - hit.u - hit.v, hit.u, hit.v);	
+	return glm::vec3(c.x, c.y, c.z);
+}
+
+glm::vec3 embree::ray_hit::normal(const rt_mesh & mesh, const bool & flat) const
+{
+	if(flat || mesh.pointcloud)
+		return glm::normalize(glm::vec3(hit.Ng_x, hit.Ng_y, hit.Ng_z));
+	
+	const vertex & n = mesh->shading_normal(hit.primID, 1.0 - hit.u - hit.v, hit.u, hit.v);	
+	return glm::normalize(glm::vec3(n.x, n.y, n.z));
+}
+
+glm::vec3 embree::ray_hit::position() const
+{
+	return org() + ray.tfar * dir();
+}
+
 
 void embree_error(void * ptr, RTCError error, const char * str)
 {
