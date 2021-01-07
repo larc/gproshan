@@ -55,15 +55,16 @@ index_t embree_splat::add_pointcloud(const che * mesh)
 float embree_splat::pointcloud_hit(glm::vec3 & position, glm::vec3 & normal, glm::vec3 & color, ray_hit r)
 {
 	position = r.position();
-	normal = vsplat[r.hit.primID].normal();
-	color = vsplat[r.hit.primID].color();
+	vsplat[r.hit.primID].shading(position, normal, color);
+	// normal = vsplat[r.hit.primID].normal();
+	// color = vsplat[r.hit.primID].color();
 
-	return 1e-5f;
+	return 1e-2f;
 }
 
 void embree_splat::init_splats(const che * mesh)
 {
-	const size_t n = 10;
+	const size_t n = 5;
 	vsplat.resize((mesh->n_vertices() + n - 1) / n);
 
 	gproshan_log_var(vsplat.size());

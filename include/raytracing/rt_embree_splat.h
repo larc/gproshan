@@ -36,6 +36,26 @@ class embree_splat : public embree
 		{
 			return C[0];
 		}
+
+		void shading(const glm::vec3 & p, glm::vec3 & normal, glm::vec3 & color)
+		{
+			normal = glm::vec3(0);
+			color = glm::vec3(0);
+
+			float w, sum_w = 0, sigma = radio * 0.1;
+
+			for(index_t i = 0; i < K; i++)
+			{
+				w = glm::length(p - P[i]);
+				w = exp(-0.5 * w * w / (sigma * sigma)) / (sigma * sqrt(2 * M_PI));
+				normal += w * N[i];
+				color += w * C[i];
+				sum_w += w;
+			}
+			
+			normal /= sum_w;
+			color /= sum_w;
+		}
 	};
 	
 	std::vector<splat> vsplat;

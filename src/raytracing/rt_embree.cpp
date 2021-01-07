@@ -244,7 +244,7 @@ glm::vec4 embree::li(ray_hit r, const glm::vec3 & light, const bool & flat)
 	glm::vec3 position, normal, color;
 	
 	glm::vec4 L(0);
-	while(total_tfar < 0.1)
+//	while(total_tfar < 0.1)
 	{
 		total_tfar += r.ray.tfar;
 		
@@ -259,8 +259,8 @@ glm::vec4 embree::li(ray_hit r, const glm::vec3 & light, const bool & flat)
 		L += r.ray.tfar * li(light, position, normal, color, near);
 		
 		r = ray_hit(r.position(), r.dir());
-		if(!intersect(r))
-			break;
+//		if(!intersect(r))
+//			break;
 	}
 
 	return L / total_tfar;
