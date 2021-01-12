@@ -13,7 +13,7 @@ namespace gproshan::rt {
 
 class embree_splat : public embree
 {
-	static const size_t K = 16;
+	static const size_t K = 32;
 
 	struct splat
 	{
@@ -37,17 +37,17 @@ class embree_splat : public embree
 			return C[0];
 		}
 
-		void shading(const glm::vec3 & p, glm::vec3 & normal, glm::vec3 & color)
+		float shading(const glm::vec3 & p, glm::vec3 & normal, glm::vec3 & color)
 		{
 			normal = glm::vec3(0);
 			color = glm::vec3(0);
 
-			float w, sum_w = 0, sigma = radio * 0.1;
+			float w, sum_w = 0, sigma = radio * pc_radius;
 
 			for(index_t i = 0; i < K; i++)
 			{
 				w = glm::length(p - P[i]);
-				w = exp(-0.5 * w * w / (sigma * sigma)) / (sigma * sqrt(2 * M_PI));
+				w = exp(-0.5 * w * w / (sigma * sigma));
 				normal += w * N[i];
 				color += w * C[i];
 				sum_w += w;
@@ -55,6 +55,8 @@ class embree_splat : public embree
 			
 			normal /= sum_w;
 			color /= sum_w;
+
+			return sum_w;
 		}
 	};
 	
