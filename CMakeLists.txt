@@ -29,7 +29,7 @@ if(CUDAToolkit_FOUND)
 endif(CUDAToolkit_FOUND)
 
 
-find_package(embree 3.0)
+find_package(embree 3.10)
 if(embree_FOUND)
 	add_definitions(-DGPROSHAN_EMBREE)
 	include_directories(${embree_INCLUDE_DIRS})
