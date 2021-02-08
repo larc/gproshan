@@ -31,7 +31,6 @@ namespace gproshan::mdict {
 class msparse_coding;
 
 typedef function<bool(const index_t &)> fmask_t;
-typedef function<bool(const index_t &, size_t tam)> fmask_local_t;
 typedef std::map<index_t, index_t> vpatches_t;
 
 /// 
@@ -41,15 +40,15 @@ class patch
 		std::vector<index_t> vertices;		///< Vertices of the patch.
 		a_mat T;							///< Transformation matrix.
 		a_vec x;							///< Center point.
-		a_mat xyz;						///< Matrix of points.
-		a_mat phi;
-		double avg_dist; // Average distance betweenn points in a patch
-		real_t radio; // radio of a patch
-		size_t min_nv;
+		a_mat xyz;							///< Matrix of points.
+		a_mat phi;							///< Projected basis.
+		double avg_dist;					///< Average distance between points.
+		real_t radio;						///< Radio.
+		size_t min_nv;						///<
 	
 	public:
-		static size_t expected_nv;		///< Expected number of patch vertices.
-		static real_t nyquist_factor;	///< nyquist factor
+		static size_t expected_nv;			///< Expected number of patch vertices.
+		static real_t nyquist_factor;		///< nyquist factor
 
 	public:
 		patch() = default;
@@ -58,9 +57,10 @@ class patch
 		void init(	che * mesh,						///< input mesh.
 					const index_t & v,				///< center vertex of the patch.
 					const size_t & n_toplevels,		///< number of toplevels to jet fitting.
-					const real_t & radio_,		///< euclidean radio in XY of the patch.
-					index_t * _toplevel = nullptr		///< aux memory to gather toplevel vertices.
+					const real_t & radio_,			///< euclidean radio in XY of the patch.
+					index_t * _toplevel = nullptr	///< aux memory to gather toplevel vertices.
 					);
+
 		void init_disjoint(che * mesh,
 					const index_t & v,
 					const size_t & n_toplevels,
