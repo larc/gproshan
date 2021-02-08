@@ -18,6 +18,16 @@
 #include "mesh/che_ply.h"
 #include "mesh/che_sphere.h"
 
+#ifdef GPROSHAN_EMBREE
+	#include "raytracing/rt_embree.h"
+	#include "raytracing/rt_embree_splat.h"
+#endif // GPROSHAN_EMBREE
+
+#ifdef GPROSHAN_OPTIX
+	#include "raytracing/rt_optix.h"
+#endif // GPROSHAN_OPTIX
+
+
 #include <CImg.h>
 
 
@@ -58,13 +68,8 @@ viewer::~viewer()
 	glfwDestroyWindow(window);
 	glfwTerminate();
 
-	#ifdef GPROSHAN_EMBREE
-		if(rt_embree) delete rt_embree;
-	#endif // GPROSHAN_EMBREE
-
-	#ifdef GPROSHAN_OPTIX
-		if(rt_optix) delete rt_optix;
-	#endif // GPROSHAN_OPTIX
+	delete rt_embree;
+	delete rt_optix;
 
 	if(render_frame) delete render_frame;
 }
@@ -740,7 +745,7 @@ void viewer::render_embree()
 		double time_build_embree;
 		TIC(time_build_embree);
 
-			rt_embree = new rt::embree({active_mesh()}, render_pointcloud);
+			rt_embree = new rt::embree_splat({active_mesh()}, render_pointcloud);
 
 		TOC(time_build_embree);
 		gproshan_log_var(time_build_embree);

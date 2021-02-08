@@ -11,20 +11,13 @@
 #include "viewer/frame.h"
 #include "viewer/che_viewer.h"
 
+#include "raytracing/raytracing.h"
+
 #include "viewer/include_opengl.h"
 
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
-
-
-#ifdef GPROSHAN_EMBREE
-	#include "raytracing/rt_embree.h"
-#endif // GPROSHAN_EMBREE
-
-#ifdef GPROSHAN_OPTIX
-	#include "raytracing/rt_optix.h"
-#endif // GPROSHAN_OPTIX
 
 
 #define N_MESHES 12
@@ -86,13 +79,8 @@ class viewer
 		
 		frame * render_frame = nullptr;
 
-	#ifdef GPROSHAN_EMBREE
-		rt::embree * rt_embree = nullptr;
-	#endif // GPROSHAN_EMBREE
-	
-	#ifdef GPROSHAN_OPTIX
-		rt::optix * rt_optix = nullptr;
-	#endif // GPROSHAN_OPTIX
+		rt::raytracing * rt_embree = nullptr;
+		rt::raytracing * rt_optix = nullptr;
 
 		bool action = false;
 		
