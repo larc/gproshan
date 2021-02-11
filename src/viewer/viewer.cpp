@@ -78,7 +78,9 @@ bool viewer::run()
 {
 	while(!glfwWindowShouldClose(window))
 	{
+		glfwGetWindowSize(window, &window_width, &window_height);
 		glfwGetFramebufferSize(window, &viewport_width, &viewport_height);
+
 		viewport_width /= m_window_size[n_meshes][1];
 		viewport_height /= m_window_size[n_meshes][0];
 
@@ -355,16 +357,17 @@ void viewer::keyboard_callback(GLFWwindow * window, int key, int scancode, int a
 		view->processes[key].selected = !view->processes[key].selected;
 }
 
-void viewer::mouse_callback(GLFWwindow* window, int button, int action, int mods)
+void viewer::mouse_callback(GLFWwindow * window, int button, int action, int mods)
 {
 	viewer * view = (viewer *) glfwGetWindowUserPointer(window);
 	
 	double xpos, ypos;
 	glfwGetCursorPos(window, &xpos, &ypos);
 	
+	printf("mouse %f, %f, %d, %d\n", xpos, ypos, view->window_width, view->window_height);
 	if(mods == GLFW_MOD_SHIFT && action == GLFW_RELEASE)
 		view->pick_vertex(xpos, ypos);
-	else view->cam.mouse(button, action, xpos, ypos);
+	else view->cam.mouse(button, action, xpos, ypos, view->window_width, view->window_height);
 }
 
 void viewer::cursor_callback(GLFWwindow * window, double x, double y)
@@ -375,7 +378,8 @@ void viewer::cursor_callback(GLFWwindow * window, double x, double y)
 		viewer * view = (viewer *) glfwGetWindowUserPointer(window);
 		if(ImGui::GetIO().WantCaptureMouse) return;
 		
-		view->cam.motion(x, y);
+		printf("%lf, %lf, %d, %d\n", x, y, view->window_width, view->window_height);
+		view->cam.motion(x, y, view->window_width, view->window_height);
 		view->action = true;
 	}
 }

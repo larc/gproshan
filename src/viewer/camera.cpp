@@ -13,16 +13,8 @@ namespace gproshan {
 
 camera::camera(): p_click(1), p_drag(1), p_last(1), r_last(1), zoom(1) {}
 
-quaternion camera::click_to_sphere(int x, int y)
+quaternion camera::click_to_sphere(int x, int y, int w, int h)
 {
-	GLint viewport[4];
-	glGetIntegerv(GL_VIEWPORT, viewport);
-	int w = viewport[2];
-	int h = viewport[3];
-
-	x %= w;
-	y %= h;
-
 	quaternion p(	0.,
 					2. * (double) x / (double) w - 1.,
 					2. * (double) y / (double) h - 1.,
@@ -46,12 +38,12 @@ quaternion camera::current_rotation() const
 	return (p_drag * p_click.conj()) * r_last;
 }
 
-void camera::mouse(int , int state, int x, int y)
+void camera::mouse(int , int state, int x, int y, int w, int h)
 {
 	quaternion momentum = 1;
 
 	if(state == GLFW_PRESS)
-		p_click = p_drag = p_last = click_to_sphere(x, y);
+		p_click = p_drag = p_last = click_to_sphere(x, y, w, h);
 	
 	if(state == GLFW_RELEASE)
 	{
@@ -64,7 +56,7 @@ void camera::mouse(int , int state, int x, int y)
 		}
 		else
 		{
-			momentum = 1.;
+			momentum = 1.; 
 		}
 
 		r_last = p_drag * p_click.conj() * r_last;
@@ -72,11 +64,11 @@ void camera::mouse(int , int state, int x, int y)
 	}
 }
 
-void camera::motion(int x, int y)
+void camera::motion(int x, int y, int w, int h)
 {
 	t_last = clock();
 	p_last = p_drag;
-	p_drag = click_to_sphere(x, y);
+	p_drag = click_to_sphere(x, y, w, h);
 }
 
 void camera::zoom_in()

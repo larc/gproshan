@@ -1,5 +1,5 @@
-#ifndef VIEWER_VIEWER_H
-#define VIEWER_VIEWER_H
+#ifndef VIEWER_H
+#define VIEWER_H
 
 #include <map>
 #include <cstring>
@@ -49,8 +49,8 @@ class viewer
 
 
 		GLFWwindow * window = nullptr;
-		int viewport_width;
-		int viewport_height;
+		int window_width, window_height;
+		int viewport_width, viewport_height;
 
 		unsigned int idx_colormap = 1;		// colormap index defined in shaders/colormap.glsl
 		const std::vector<std::string> colormap = {"vertex color", "blue", "red", "blue/read"};
@@ -175,5 +175,5 @@ class viewer
 
 } // namespace gproshan
 
-#endif // VIEWER_VIEWER_H
+#endif // VIEWER_H
 
