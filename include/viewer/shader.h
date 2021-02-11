@@ -1,5 +1,5 @@
-#ifndef VIEWER_SHADER_H
-#define VIEWER_SHADER_H
+#ifndef SHADER_H
+#define SHADER_H
 
 #include <string>
 #include <map>
@@ -36,5 +36,5 @@ class shader
 
 } // namespace gproshan
 
-#endif // VIEWER_SHADER_H
+#endif // SHADER_H
 
