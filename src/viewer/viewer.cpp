@@ -378,7 +378,6 @@ void viewer::mouse_callback(GLFWwindow * window, int button, int action, int mod
 	double xpos, ypos;
 	glfwGetCursorPos(window, &xpos, &ypos);
 	
-	printf("mouse %f, %f, %d, %d\n", xpos, ypos, view->window_width, view->window_height);
 	if(mods == GLFW_MOD_SHIFT && action == GLFW_RELEASE)
 		view->pick_vertex(xpos, ypos);
 	else view->cam.mouse(button, action, xpos, ypos, view->window_width, view->window_height);
@@ -392,7 +391,6 @@ void viewer::cursor_callback(GLFWwindow * window, double x, double y)
 		viewer * view = (viewer *) glfwGetWindowUserPointer(window);
 		if(ImGui::GetIO().WantCaptureMouse) return;
 		
-		printf("%lf, %lf, %d, %d\n", x, y, view->window_width, view->window_height);
 		view->cam.motion(x, y, view->window_width, view->window_height);
 		view->action = true;
 	}

@@ -1,5 +1,5 @@
-#ifndef VIEWER_FRAME_H
-#define VIEWER_FRAME_H
+#ifndef FRAME_H
+#define FRAME_H
 
 
 #include "viewer/shader.h"
@@ -29,5 +29,5 @@ class frame
 
 } // namespace gproshan
 
-#endif // VIEWER_FRAME_H
+#endif // FRAME_H
 
