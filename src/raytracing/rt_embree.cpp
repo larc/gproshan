@@ -73,15 +73,17 @@ void embree_error(void * ptr, RTCError error, const char * str)
 
 float embree::pc_radius = 0.001;
 
-embree::embree(const std::vector<che *> & meshes, const bool & pointcloud)
+embree::embree()
 {
 	device = rtcNewDevice(NULL);
-	rtcSetDeviceErrorFunction(device, embree_error, NULL);
-
 	scene = rtcNewScene(device);
 	
 	rtcInitIntersectContext(&intersect_context);
+	rtcSetDeviceErrorFunction(device, embree_error, NULL);
+}
 
+embree::embree(const std::vector<che *> & meshes, const bool & pointcloud): embree()
+{
 	build_bvh(meshes, pointcloud);
 }
 
@@ -91,11 +93,23 @@ embree::~embree()
 	rtcReleaseDevice(device);
 }
 
+bool embree::intersect(ray_hit & r)
+{
+	rtcIntersect1(scene, &intersect_context, &r);
+	return r.hit.geomID != RTC_INVALID_GEOMETRY_ID;
+}
+
+bool embree::occluded(ray_hit & r)
+{
+	rtcIntersect1(scene, &intersect_context, &r);
+	return r.hit.geomID != RTC_INVALID_GEOMETRY_ID;
+}
+
 void embree::build_bvh(const std::vector<che *> & meshes, const bool & pointcloud)
 {
 	for(auto & m: meshes)
 		if(!m->n_faces() || pointcloud) 
-			geomID_mesh[add_point_cloud(m)] = {m, true};
+			geomID_mesh[add_pointcloud(m)] = {m, true};
 		else
 			geomID_mesh[add_mesh(m)] = {m, false};
 
@@ -152,7 +166,7 @@ index_t embree::add_mesh(const che * mesh)
 	return geom_id;
 }
 
-index_t embree::add_point_cloud(const che * mesh)
+index_t embree::add_pointcloud(const che * mesh)
 {
 	RTCGeometry geom = rtcNewGeometry(device, RTC_GEOMETRY_TYPE_ORIENTED_DISC_POINT);
 
@@ -181,7 +195,7 @@ index_t embree::add_point_cloud(const che * mesh)
 	
 	index_t geom_id = rtcAttachGeometry(scene, geom);
 	rtcReleaseGeometry(geom);
-
+	
 	return geom_id;
 }
 
@@ -230,7 +244,7 @@ glm::vec4 embree::li(ray_hit r, const glm::vec3 & light, const bool & flat)
 	glm::vec3 position, normal, color;
 	
 	glm::vec4 L(0);
-	while(total_tfar < 0.1)
+//	while(total_tfar < 0.1)
 	{
 		total_tfar += r.ray.tfar;
 		
@@ -245,25 +259,12 @@ glm::vec4 embree::li(ray_hit r, const glm::vec3 & light, const bool & flat)
 		L += r.ray.tfar * li(light, position, normal, color, near);
 		
 		r = ray_hit(r.position(), r.dir());
-		if(!intersect(r))
-			break;
+//		if(!intersect(r))
+//			break;
 	}
 
 	return L / total_tfar;
 }
-
-bool embree::intersect(ray_hit & r)
-{
-	rtcIntersect1(scene, &intersect_context, &r);
-	return r.hit.geomID != RTC_INVALID_GEOMETRY_ID;
-}
-
-bool embree::occluded(ray_hit & r)
-{
-	rtcIntersect1(scene, &intersect_context, &r);
-	return r.hit.geomID != RTC_INVALID_GEOMETRY_ID;
-}
-
 
 glm::vec4 embree::intersect_li(const glm::vec3 & org, const glm::vec3 & dir, const glm::vec3 & light,const bool & flat)
 {

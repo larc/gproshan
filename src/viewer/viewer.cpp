@@ -18,6 +18,16 @@
 #include "mesh/che_ply.h"
 #include "mesh/che_sphere.h"
 
+#ifdef GPROSHAN_EMBREE
+	#include "raytracing/rt_embree.h"
+	#include "raytracing/rt_embree_splat.h"
+#endif // GPROSHAN_EMBREE
+
+#ifdef GPROSHAN_OPTIX
+	#include "raytracing/rt_optix.h"
+#endif // GPROSHAN_OPTIX
+
+
 #include <CImg.h>
 
 
@@ -37,7 +47,7 @@ const int viewer::m_window_size[N_MESHES + 1][2] = {{1, 1},
 													};
 
 
-viewer::viewer()
+viewer::viewer(int width, int height): window_width(width), window_height(height)
 {
 	init_gl();
 	init_glsl();
@@ -46,7 +56,7 @@ viewer::viewer()
 	
 	info_gl();
 	
-	sphere.init(new che_sphere(0.01), false);
+	sphere.init(new che_sphere(0.01), false);	
 }
 
 viewer::~viewer()
@@ -58,25 +68,16 @@ viewer::~viewer()
 	glfwDestroyWindow(window);
 	glfwTerminate();
 
-	#ifdef GPROSHAN_EMBREE
-		if(rt_embree) delete rt_embree;
-	#endif // GPROSHAN_EMBREE
+	delete rt_embree;
+	delete rt_optix;
 
-	#ifdef GPROSHAN_OPTIX
-		if(rt_optix) delete rt_optix;
-	#endif // GPROSHAN_OPTIX
-
-	if(render_frame) delete render_frame;
+	delete render_frame;
 }
 
 bool viewer::run()
 {
 	while(!glfwWindowShouldClose(window))
 	{
-		glfwGetFramebufferSize(window, &viewport_width, &viewport_height);
-		viewport_width /= m_window_size[n_meshes][1];
-		viewport_height /= m_window_size[n_meshes][0];
-
 		eye		= vertex(0., 0., -2. * cam.zoom);
 		center	= vertex(0., 0., 0.);
 		up		= vertex(0., 1., 0.);
@@ -214,10 +215,12 @@ void viewer::init_gl()
 		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	#endif
 		
-	window = glfwCreateWindow(1600, 900, "gproshan", NULL, NULL);
+	window = glfwCreateWindow(window_width, window_height, "gproshan", NULL, NULL);
 
 	glfwSetWindowUserPointer(window, this);
 
+	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+	glfwSetWindowSizeCallback(window, window_size_callback);
 	glfwSetKeyCallback(window, keyboard_callback);
 	glfwSetMouseButtonCallback(window, mouse_callback);
 	glfwSetCursorPosCallback(window, cursor_callback);
@@ -331,6 +334,24 @@ void viewer::add_mesh(che * p_mesh)
 		meshes[m].vx = m % cols;
 		meshes[m].vy = rows - (m / cols) - 1;
 	}
+
+	glfwGetFramebufferSize(window, &viewport_width, &viewport_height);
+	viewport_width /= m_window_size[n_meshes][1];
+	viewport_height /= m_window_size[n_meshes][0];
+}
+
+void viewer::framebuffer_size_callback(GLFWwindow * window, int width, int height)
+{
+	viewer * view = (viewer *) glfwGetWindowUserPointer(window);
+	view->viewport_width = width / m_window_size[view->n_meshes][1];
+	view->viewport_height = height / m_window_size[view->n_meshes][0];
+}
+
+void viewer::window_size_callback(GLFWwindow * window, int width, int height)
+{
+	viewer * view = (viewer *) glfwGetWindowUserPointer(window);
+	view->window_width = width;
+	view->window_height = height;
 }
 
 void viewer::keyboard_callback(GLFWwindow * window, int key, int scancode, int action, int mods)
@@ -350,16 +371,17 @@ void viewer::keyboard_callback(GLFWwindow * window, int key, int scancode, int a
 		view->processes[key].selected = !view->processes[key].selected;
 }
 
-void viewer::mouse_callback(GLFWwindow* window, int button, int action, int mods)
+void viewer::mouse_callback(GLFWwindow * window, int button, int action, int mods)
 {
 	viewer * view = (viewer *) glfwGetWindowUserPointer(window);
 	
 	double xpos, ypos;
 	glfwGetCursorPos(window, &xpos, &ypos);
 	
+	printf("mouse %f, %f, %d, %d\n", xpos, ypos, view->window_width, view->window_height);
 	if(mods == GLFW_MOD_SHIFT && action == GLFW_RELEASE)
 		view->pick_vertex(xpos, ypos);
-	else view->cam.mouse(button, action, xpos, ypos);
+	else view->cam.mouse(button, action, xpos, ypos, view->window_width, view->window_height);
 }
 
 void viewer::cursor_callback(GLFWwindow * window, double x, double y)
@@ -370,7 +392,8 @@ void viewer::cursor_callback(GLFWwindow * window, double x, double y)
 		viewer * view = (viewer *) glfwGetWindowUserPointer(window);
 		if(ImGui::GetIO().WantCaptureMouse) return;
 		
-		view->cam.motion(x, y);
+		printf("%lf, %lf, %d, %d\n", x, y, view->window_width, view->window_height);
+		view->cam.motion(x, y, view->window_width, view->window_height);
 		view->action = true;
 	}
 }
@@ -740,7 +763,7 @@ void viewer::render_embree()
 		double time_build_embree;
 		TIC(time_build_embree);
 
-			rt_embree = new rt::embree({active_mesh()}, render_pointcloud);
+			rt_embree = new rt::embree_splat({active_mesh()}, render_pointcloud);
 
 		TOC(time_build_embree);
 		gproshan_log_var(time_build_embree);

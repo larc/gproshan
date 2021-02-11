@@ -1,5 +1,5 @@
-#ifndef VIEWER_VIEWER_H
-#define VIEWER_VIEWER_H
+#ifndef VIEWER_H
+#define VIEWER_H
 
 #include <map>
 #include <cstring>
@@ -11,20 +11,13 @@
 #include "viewer/frame.h"
 #include "viewer/che_viewer.h"
 
+#include "raytracing/raytracing.h"
+
 #include "viewer/include_opengl.h"
 
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
-
-
-#ifdef GPROSHAN_EMBREE
-	#include "raytracing/rt_embree.h"
-#endif // GPROSHAN_EMBREE
-
-#ifdef GPROSHAN_OPTIX
-	#include "raytracing/rt_optix.h"
-#endif // GPROSHAN_OPTIX
 
 
 #define N_MESHES 12
@@ -56,8 +49,8 @@ class viewer
 
 
 		GLFWwindow * window = nullptr;
-		int viewport_width;
-		int viewport_height;
+		int window_width, window_height;
+		int viewport_width, viewport_height;
 
 		unsigned int idx_colormap = 1;		// colormap index defined in shaders/colormap.glsl
 		const std::vector<std::string> colormap = {"vertex color", "blue", "red", "blue/read"};
@@ -86,13 +79,8 @@ class viewer
 		
 		frame * render_frame = nullptr;
 
-	#ifdef GPROSHAN_EMBREE
-		rt::embree * rt_embree = nullptr;
-	#endif // GPROSHAN_EMBREE
-	
-	#ifdef GPROSHAN_OPTIX
-		rt::optix * rt_optix = nullptr;
-	#endif // GPROSHAN_OPTIX
+		rt::raytracing * rt_embree = nullptr;
+		rt::raytracing * rt_optix = nullptr;
 
 		bool action = false;
 		
@@ -113,14 +101,12 @@ class viewer
 		shader shader_sphere;
 	
 	public:
-
 		std::vector<vertex> other_vertices;
 		std::vector<vertex> vectors;
 		std::vector<std::string> sub_menus;
 
 	public:
-
-		viewer();
+		viewer(int width = 1600, int height = 900);
 		virtual ~viewer();
 		
 		bool run();
@@ -130,8 +116,6 @@ class viewer
 		void add_mesh(che * p_mesh);
 		
 	private:
-
-		// init
 		void info_gl();
 		void init_gl();
 		void init_imgui();
@@ -142,13 +126,13 @@ class viewer
 		void render_embree();
 		void render_optix();
 
-		// callbacks
+		static void framebuffer_size_callback(GLFWwindow * window, int width, int height);
+		static void window_size_callback(GLFWwindow * window, int width, int height);
 		static void keyboard_callback(GLFWwindow * window, int key, int scancode, int action, int mods);
 		static void mouse_callback(GLFWwindow * window, int button, int action, int mods);
 		static void cursor_callback(GLFWwindow * window, double x, double y);
 		static void scroll_callback(GLFWwindow * window, double xoffset, double yoffset);
 
-		// menu functions
 		static bool menu_help(viewer * view);
 		static bool menu_save_load_view(viewer * view);
 		static bool menu_reset_mesh(viewer * view);
@@ -187,5 +171,5 @@ class viewer
 
 } // namespace gproshan
 
-#endif // VIEWER_VIEWER_H
+#endif // VIEWER_H
 

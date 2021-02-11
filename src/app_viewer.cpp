@@ -289,7 +289,7 @@ bool app_viewer::process_functional_maps(viewer * p_view)
 		K = K < N_MESHES ? K : N_MESHES;
 		for(index_t k = 0; k < N_MESHES; k++)
 		{
-			if(k) view->add_mesh({new che(*mesh)});
+			if(k) view->add_mesh(new che(*mesh));
 			view->idx_active_mesh = k;
 
 			eigvec.col(k) -= eigvec.col(k).min();
@@ -635,7 +635,7 @@ bool app_viewer::process_pc_reconstruction(viewer * p_view)
 		basis_dct phi(n);
 		msparse_coding msc(mesh, &phi, params);
 		
-		view->add_mesh({msc.point_cloud_reconstruction(percentage_size, radio_factor)});
+		view->add_mesh(msc.point_cloud_reconstruction(percentage_size, radio_factor));
 	}
 	
 	return true;
@@ -973,7 +973,7 @@ bool app_viewer::process_edge_collapse(viewer * p_view)
 	gproshan_debug_var(view->time);
 
 	//if(view->n_meshes < 2)
-	//	view->add_mesh({new che(*mesh)});
+	//	view->add_mesh(new che(*mesh));
 
 	return false;
 }

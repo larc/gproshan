@@ -1,5 +1,5 @@
-#ifndef VIEWER_CAMERA_H
-#define VIEWER_CAMERA_H
+#ifndef CAMERA_H
+#define CAMERA_H
 
 #include "mesh/quaternion.h"
 
@@ -24,15 +24,15 @@ class camera
 
 	public:
 		camera();
-		void mouse(int button, int state, int x, int y);
-		void motion(int x, int y);
+		void mouse(int button, int state, int x, int y, int w, int h);
+		void motion(int x, int y, int w, int h);
 		void idle();
 		void zoom_in();
 		void zoom_out();
 		quaternion current_rotation() const;
 	
 	private:
-		quaternion click_to_sphere(int x, int y);
+		quaternion click_to_sphere(int x, int y, int w, int h);
 	
 	friend std::ostream & operator << (std::ostream & os, const camera & cam);
 	friend std::istream & operator >> (std::istream & is, camera & cam);
@@ -41,5 +41,5 @@ class camera
 
 } // namespace gproshan
 
-#endif
+#endif // CAMERA_H
 
