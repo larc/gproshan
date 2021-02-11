@@ -101,14 +101,12 @@ class viewer
 		shader shader_sphere;
 	
 	public:
-
 		std::vector<vertex> other_vertices;
 		std::vector<vertex> vectors;
 		std::vector<std::string> sub_menus;
 
 	public:
-
-		viewer();
+		viewer(int width = 1600, int height = 900);
 		virtual ~viewer();
 		
 		bool run();
@@ -118,8 +116,6 @@ class viewer
 		void add_mesh(che * p_mesh);
 		
 	private:
-
-		// init
 		void info_gl();
 		void init_gl();
 		void init_imgui();
@@ -130,13 +126,13 @@ class viewer
 		void render_embree();
 		void render_optix();
 
-		// callbacks
+		static void framebuffer_size_callback(GLFWwindow * window, int width, int height);
+		static void window_size_callback(GLFWwindow * window, int width, int height);
 		static void keyboard_callback(GLFWwindow * window, int key, int scancode, int action, int mods);
 		static void mouse_callback(GLFWwindow * window, int button, int action, int mods);
 		static void cursor_callback(GLFWwindow * window, double x, double y);
 		static void scroll_callback(GLFWwindow * window, double xoffset, double yoffset);
 
-		// menu functions
 		static bool menu_help(viewer * view);
 		static bool menu_save_load_view(viewer * view);
 		static bool menu_reset_mesh(viewer * view);
