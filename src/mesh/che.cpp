@@ -250,8 +250,6 @@ real_t che::area_surface() const
 
 void che::update_heatmap(const real_t * hm, real_t max_color)
 {
-	if(!VHC) VHC = new real_t[n_vertices_];
-
 	if(!hm)
 	{
 		#pragma omp parallel for
@@ -307,18 +305,7 @@ real_t & che::heatmap(const index_t & v)
 
 void che::update_normals()
 {
-	if(VN) return;		// normals was already loaded/computed
-	
-	VN = new vertex[n_vertices_];
-	
-	/* point cloud normals
-	if(!n_faces_)
-	{
-		kdtree rnn(GT, n_vertices_);
-
-		return;
-	}
-	*/
+	if(!n_faces_) return;
 
 	#pragma omp parallel for
 	for(index_t v = 0; v < n_vertices_; v++)
@@ -1408,7 +1395,9 @@ void che::init(const size_t & n_v, const size_t & n_f)
 	if(n_vertices_)		EVT = new index_t[n_vertices_];
 	if(n_vertices_)		EHT = new index_t[n_half_edges_];
 	
+	if(n_vertices_)		VN = new vertex[n_vertices_];
 	if(n_vertices_)		VC = new vertex[n_vertices_];
+	if(n_vertices_)		VHC = new real_t[n_vertices_];
 
 	#pragma omp parallel for
 	for(index_t v = 0; v < n_vertices_; v++)

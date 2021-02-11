@@ -38,9 +38,6 @@ void che_off::read_file(const string & file)
 	is >> n_v >> n_f >> v;
 	init(n_v, n_f);
 	
-	if(soff[0] == 'N')
-		VN = new vertex[n_vertices_];
-
 	real_t alpha;	// color
 	for(index_t i = 0; i < n_vertices_; i++)
 	{
