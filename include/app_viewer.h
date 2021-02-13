@@ -26,6 +26,7 @@
 #include "mdict/basis_dct.h"
 #include "mdict/patch.h"
 
+#include "features/descriptor.h"
 #include "features/key_points.h"
 #include "features/key_components.h"
 

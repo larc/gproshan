@@ -228,7 +228,7 @@ real_t che::area_trig(const index_t & t) const
 	return *(a * b) / 2;
 }
 
-real_t che::area_vertex(const index_t & v)
+real_t che::area_vertex(const index_t & v) const
 {
 	real_t area_star = 0;
 	for_star(he, this, v)

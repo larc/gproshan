@@ -2,6 +2,7 @@
 
 #include <random>
 
+
 using namespace std;
 using namespace gproshan::mdict;
 
@@ -274,14 +275,10 @@ bool app_viewer::process_functional_maps(viewer * p_view)
 	if(ImGui::Button("Run"))
 	{
 		a_sp_mat L, A;
-
-		TIC(view->time) laplacian(mesh, L, A); TOC(view->time)
-		gproshan_log_var(view->time);
-
 		a_vec eigval;
 		a_mat eigvec;
 
-		TIC(view->time) K = eigs_laplacian(eigval, eigvec, mesh, L, A, K); TOC(view->time)
+		TIC(view->time) K = eigs_laplacian(mesh, eigval, eigvec, L, A, K); TOC(view->time)
 		gproshan_log_var(view->time);
 
 		gproshan_log_var(K);
@@ -322,14 +319,10 @@ bool app_viewer::process_wks(viewer * p_view)
 	if(ImGui::Button("Run"))
 	{
 		a_sp_mat L, A;
-
-		TIC(view->time) laplacian(mesh, L, A); TOC(view->time)
-		gproshan_log_var(view->time);
-
 		a_vec eigval;
 		a_mat eigvec;
 
-		TIC(view->time) K = eigs_laplacian(eigval, eigvec, mesh, L, A, K); TOC(view->time)
+		TIC(view->time) K = eigs_laplacian(mesh, eigval, eigvec, L, A, K); TOC(view->time)
 		gproshan_log_var(view->time);
 
 		real_t max_s = 0;
@@ -367,14 +360,10 @@ bool app_viewer::process_hks(viewer * p_view)
 	if(ImGui::Button("Run"))
 	{
 		a_sp_mat L, A;
-
-		TIC(view->time) laplacian(mesh, L, A); TOC(view->time)
-		gproshan_log_var(view->time);
-
 		a_vec eigval;
 		a_mat eigvec;
 
-		TIC(view->time) K = eigs_laplacian(eigval, eigvec, mesh, L, A, K); TOC(view->time)
+		TIC(view->time) K = eigs_laplacian(mesh, eigval, eigvec, L, A, K); TOC(view->time)
 		gproshan_log_var(view->time);
 
 		if(!K) return true;
@@ -412,14 +401,10 @@ bool app_viewer::process_gps(viewer * p_view)
 	if(ImGui::Button("Run"))
 	{
 		a_sp_mat L, A;
-
-		TIC(view->time) laplacian(mesh, L, A); TOC(view->time)
-		gproshan_log_var(view->time);
-
 		a_vec eigval;
 		a_mat eigvec;
 
-		TIC(view->time) K = eigs_laplacian(eigval, eigvec, mesh, L, A, K); TOC(view->time)
+		TIC(view->time) K = eigs_laplacian(mesh, eigval, eigvec, L, A, K); TOC(view->time)
 		gproshan_log_var(view->time);
 
 		eigvec = abs(eigvec);

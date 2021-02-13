@@ -69,7 +69,7 @@ class che
 		real_t pdetriq(const index_t & t) const;
 		real_t quality();
 		real_t area_trig(const index_t & t) const;
-		real_t area_vertex(const index_t & v);
+		real_t area_vertex(const index_t & v) const;
 		real_t area_surface() const;
 		void update_heatmap(const real_t * hm = nullptr, real_t max_color = 0);
 		const vertex & color(const index_t & v) const;

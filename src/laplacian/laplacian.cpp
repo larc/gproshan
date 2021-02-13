@@ -8,7 +8,7 @@ using namespace Eigen;
 namespace gproshan {
 
 
-void laplacian(che * mesh, a_sp_mat & L, a_sp_mat & A)
+void laplacian(const che * mesh, a_sp_mat & L, a_sp_mat & A)
 {
 	size_t n_edges = mesh->n_edges();
 	size_t n_vertices = mesh->n_vertices();
@@ -51,7 +51,7 @@ void laplacian(che * mesh, a_sp_mat & L, a_sp_mat & A)
 		A(v, v) = mesh->area_vertex(v);
 }
 
-void laplacian(che * mesh, sp_mat_e & L, sp_mat_e & A)
+void laplacian(const che * mesh, sp_mat_e & L, sp_mat_e & A)
 {
 	gproshan_debug(LAPLACIAN);
 
@@ -80,12 +80,14 @@ void laplacian(che * mesh, sp_mat_e & L, sp_mat_e & A)
 		A.insert(v, v) = mesh->area_vertex(v);
 }
 
-size_t eigs_laplacian(a_vec & eigval, a_mat & eigvec, che * mesh, const a_sp_mat & L, const a_sp_mat & A, const size_t & K)
+size_t eigs_laplacian(const che * mesh, a_vec & eigval, a_mat & eigvec, a_sp_mat & L, a_sp_mat & A, const size_t & k)
 {
 	gproshan_debug(LAPLACIAN);
+	
+	laplacian(mesh, L, A);
 
-	string feigval = tmp_file_path(mesh->name_size() + '_' + to_string(K) + ".L_eigval");
-	string feigvec = tmp_file_path(mesh->name_size() + '_' + to_string(K) + ".L_eigvec");
+	string feigval = tmp_file_path(mesh->name_size() + '_' + to_string(k) + ".L_eigval");
+	string feigvec = tmp_file_path(mesh->name_size() + '_' + to_string(k) + ".L_eigvec");
 
 	gproshan_debug_var(feigval);
 	gproshan_debug_var(feigvec);
@@ -95,7 +97,7 @@ size_t eigs_laplacian(a_vec & eigval, a_mat & eigvec, che * mesh, const a_sp_mat
 	//	a_sp_mat D = sqrt(A);
 	//	D.for_each([](a_sp_mat::elem_type & val) { val = 1. / val; });
 
-		if(!eigs_sym(eigval, eigvec, L, K, "sa"))
+		if(!eigs_sym(eigval, eigvec, L, k, "sa"))
 			return 0;
 		
 		eigval.save(feigval);
