@@ -312,19 +312,25 @@ bool app_viewer::process_wks(viewer * p_view)
 
 	static int K = 100;
 	static int T = 100;
+	static bool status = true;
 
 	ImGui::InputInt("eigenvectors", &K);
 	ImGui::InputInt("times", &T);
+	if(!status) ImGui::TextColored({1, 0, 0, 1}, "Error computing WKS.");
 
 	if(ImGui::Button("Run"))
 	{
-		a_sp_mat L, A;
-		a_vec eigval;
-		a_mat eigvec;
+		descriptor wks(descriptor::WKS, mesh, K);		
+		
+		if(wks)
+		{
+			status = true;
 
-		TIC(view->time) K = eigs_laplacian(mesh, eigval, eigvec, L, A, K); TOC(view->time)
-		gproshan_log_var(view->time);
-
+		
+		}
+		else status = false;
+		
+/*
 		real_t max_s = 0;
 		#pragma omp parallel for reduction(max: max_s)
 		for(index_t v = 0; v < mesh->n_vertices(); v++)
@@ -340,7 +346,8 @@ bool app_viewer::process_wks(viewer * p_view)
 
 		#pragma omp parallel for
 		for(index_t v = 0; v < mesh->n_vertices(); v++)
-			mesh->heatmap(v) /= max_s;
+			mesh->heatmap(v) /= max_s;i
+			*/
 	}
 
 	return true;
@@ -396,36 +403,30 @@ bool app_viewer::process_gps(viewer * p_view)
 	che_viewer & mesh = view->active_mesh();
 
 	static int K = 50;
+	static bool status = true;
 	ImGui::InputInt("eigenvectors", &K);
 
 	if(ImGui::Button("Run"))
 	{
-		a_sp_mat L, A;
-		a_vec eigval;
-		a_mat eigvec;
-
-		TIC(view->time) K = eigs_laplacian(mesh, eigval, eigvec, L, A, K); TOC(view->time)
-		gproshan_log_var(view->time);
-
-		eigvec = abs(eigvec);
-		eigvec.col(0).zeros();
-		for(int i = 1; i < K; i++)
-			eigvec.col(i) /= sqrt(abs(eigval(i)));
-
-		a_mat data = eigvec.t();
-		a_mat means;
-
-		real_t max_s = 0;
-		#pragma omp parallel for reduction(max: max_s)
-		for(index_t v = 0; v < mesh->n_vertices(); v++)
+		descriptor GPS(descriptor::GPS, mesh, K);		
+		
+		if(GPS)
 		{
-			mesh->heatmap(v) = norm(eigvec.row(v));
-				max_s = max(max_s, mesh->heatmap(v));
-		}
+			status = true;
 
-		#pragma omp parallel for
-		for(index_t v = 0; v < mesh->n_vertices(); v++)
-			mesh->heatmap(v) /= max_s;
+			real_t max_s = 0;
+			#pragma omp parallel for reduction(max: max_s)
+			for(index_t v = 0; v < mesh->n_vertices(); v++)
+			{
+				mesh->heatmap(v) = GPS(v);
+				max_s = max(max_s, mesh->heatmap(v));
+			}
+
+			#pragma omp parallel for
+			for(index_t v = 0; v < mesh->n_vertices(); v++)
+				mesh->heatmap(v) /= max_s;
+		}
+		else status = false;
 	}
 
 	return true;
