@@ -24,13 +24,13 @@ vector<pair<index_t, real_t> > iter_error_parallel_toplesets_propagation_coalesc
 {
 	// sort data by levels, must be improve the coalescence
 
-	vertex * V = new vertex[mesh->n_vertices()];
-	index_t * F = new index_t[mesh->n_faces() * che::mtrig];
-	index_t * inv = new index_t[mesh->n_vertices()];
-	real_t * exact_dist_sorted = new real_t[mesh->n_vertices()];
+	vertex * V = new vertex[mesh->n_vertices];
+	index_t * F = new index_t[mesh->n_faces * che::mtrig];
+	index_t * inv = new index_t[mesh->n_vertices];
+	real_t * exact_dist_sorted = new real_t[mesh->n_vertices];
 	
 	#pragma omp parallel for
-	for(index_t i = 0; i < mesh->n_vertices(); i++)
+	for(index_t i = 0; i < mesh->n_vertices; i++)
 	{
 		V[i] = mesh->gt(sorted_index[i]);
 		inv[sorted_index[i]] = i;
@@ -38,10 +38,10 @@ vector<pair<index_t, real_t> > iter_error_parallel_toplesets_propagation_coalesc
 	}
 
 	#pragma omp parallel for
-	for(index_t he = 0; he < mesh->n_half_edges(); he++)
+	for(index_t he = 0; he < mesh->n_half_edges; he++)
 		F[he] = inv[mesh->vt(he)];
 
-	mesh = new che(V, mesh->n_vertices(), F, mesh->n_faces());
+	mesh = new che(V, mesh->n_vertices, F, mesh->n_faces);
 
 	delete [] V;
 	delete [] F;
@@ -106,28 +106,28 @@ double * times_farthest_point_sampling_ptp_coalescence_gpu(che * mesh, vector<in
 
 	// BEGIN FPS PTP
 	
-	vertex * V = new vertex[mesh->n_vertices()];
-	index_t * F = new index_t[mesh->n_faces() * che::mtrig];
-	index_t * inv = new index_t[mesh->n_vertices()];
+	vertex * V = new vertex[mesh->n_vertices];
+	index_t * F = new index_t[mesh->n_faces * che::mtrig];
+	index_t * inv = new index_t[mesh->n_vertices];
 
 
-	real_t * h_dist = new real_t[mesh->n_vertices()];
+	real_t * h_dist = new real_t[mesh->n_vertices];
 
 	real_t * d_dist[2];
-	cudaMalloc(&d_dist[0], sizeof(real_t) * mesh->n_vertices());
-	cudaMalloc(&d_dist[1], sizeof(real_t) * mesh->n_vertices());
+	cudaMalloc(&d_dist[0], sizeof(real_t) * mesh->n_vertices);
+	cudaMalloc(&d_dist[1], sizeof(real_t) * mesh->n_vertices);
 
 	real_t * d_error;
-	cudaMalloc(&d_error, sizeof(real_t) * mesh->n_vertices());
+	cudaMalloc(&d_error, sizeof(real_t) * mesh->n_vertices);
 
 	vector<index_t> limits;
-	index_t * toplesets = new index_t[mesh->n_vertices()];
-	index_t * sorted_index = new index_t[mesh->n_vertices()];
+	index_t * toplesets = new index_t[mesh->n_vertices];
+	index_t * sorted_index = new index_t[mesh->n_vertices];
 
 	cublasHandle_t handle;
 	cublasCreate(&handle);
 
-	if(n >= mesh->n_vertices()) n = mesh->n_vertices() >> 1;
+	if(n >= mesh->n_vertices) n = mesh->n_vertices >> 1;
 
 	double * times = new double[n + 1];
 
@@ -148,17 +148,17 @@ double * times_farthest_point_sampling_ptp_coalescence_gpu(che * mesh, vector<in
 		// sort data by levels, must be improve the coalescence
 	
 		#pragma omp parallel for
-		for(index_t i = 0; i < mesh->n_vertices(); i++)
+		for(index_t i = 0; i < mesh->n_vertices; i++)
 		{
 			V[i] = mesh->gt(sorted_index[i]);
 			inv[sorted_index[i]] = i;
 		}
 
 		#pragma omp parallel for
-		for(index_t he = 0; he < mesh->n_half_edges(); he++)
+		for(index_t he = 0; he < mesh->n_half_edges; he++)
 			F[he] = inv[mesh->vt(he)];
 
-		che * tmp_mesh = new che(V, mesh->n_vertices(), F, mesh->n_faces());
+		che * tmp_mesh = new che(V, mesh->n_vertices, F, mesh->n_faces);
 
 		CHE * h_mesh = new CHE(tmp_mesh);
 		CHE * dd_mesh, * d_mesh;
@@ -173,9 +173,9 @@ double * times_farthest_point_sampling_ptp_coalescence_gpu(che * mesh, vector<in
 
 		// 1 indexing
 		#ifdef SINGLE_P
-			cublasIsamax(handle, mesh->n_vertices(), d_dist[d], 1, &f);
+			cublasIsamax(handle, mesh->n_vertices, d_dist[d], 1, &f);
 		#else
-			cublasIdamax(handle, mesh->n_vertices(), d_dist[d], 1, &f);
+			cublasIdamax(handle, mesh->n_vertices, d_dist[d], 1, &f);
 		#endif
 		
 		cudaEventRecord(stop, 0);

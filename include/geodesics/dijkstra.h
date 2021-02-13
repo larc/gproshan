@@ -17,14 +17,14 @@ class dijkstra
 		index_t source;
 
 	public:
-		dijkstra(che * shape, index_t src);
+		dijkstra(che * mesh, index_t src);
 		~dijkstra();
 		real_t & operator()(index_t i);
 		index_t & operator[](index_t i);
 		void print(std::ostream & os);
 
 	private:
-		void run(che * shape);
+		void run(che * mesh);
 };
 
 

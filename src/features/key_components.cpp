@@ -13,7 +13,7 @@ namespace gproshan {
 
 key_components::key_components(che * mesh, const key_points & kps, const real_t & r): radio(r)
 {
-	n_vertices = mesh->n_vertices();
+	n_vertices = mesh->n_vertices;
 
 	comp = new index_t[n_vertices];
 	comp_size = new size_t[n_vertices];

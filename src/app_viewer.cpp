@@ -2,6 +2,7 @@
 
 #include <random>
 
+
 using namespace std;
 using namespace gproshan::mdict;
 
@@ -118,12 +119,12 @@ bool paint_holes_vertices(viewer * p_view)
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
-	size_t nv = mesh->n_vertices();
+	size_t nv = mesh->n_vertices;
 
 	mesh.update();
 
 	#pragma omp parallel for
-	for(index_t v = 0; v < mesh->n_vertices(); v++)
+	for(index_t v = 0; v < mesh->n_vertices; v++)
 		if(v >= nv) mesh->heatmap(v) = .25;
 
 	return false;
@@ -163,7 +164,7 @@ bool app_viewer::process_poisson(viewer * p_view, const index_t & k)
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
-	size_t old_n_vertices = mesh->n_vertices();
+	size_t old_n_vertices = mesh->n_vertices;
 	delete [] fill_all_holes(mesh);
 
 	TIC(view->time) poisson(mesh, old_n_vertices, k); TOC(view->time)
@@ -217,7 +218,7 @@ bool app_viewer::process_noise(viewer * p_view)
 	std::uniform_int_distribution<int> d_mod_1000(0, 999);
 
 	#pragma omp parallel for
-	for(index_t v = 0; v < mesh->n_vertices(); v++)
+	for(index_t v = 0; v < mesh->n_vertices; v++)
 	{
 		real_t r = real_t(d_mod_1000(generator)) / 200000;
 		mesh->get_vertex(v) += (!d_mod_5(generator)) * r * mesh->normal(v);
@@ -239,7 +240,7 @@ bool app_viewer::process_black_noise(viewer * p_view)
 	std::uniform_int_distribution<int> d_mod_1000(0, 999);
 
 	#pragma omp parallel for
-	for(index_t v = 0; v < mesh->n_vertices(); v++)
+	for(index_t v = 0; v < mesh->n_vertices; v++)
 	{
 		real_t r = real_t(d_mod_1000(generator)) / 200000;
 		mesh->get_vertex(v) += (!d_mod_5(generator)) * r * mesh->normal(v);
@@ -256,7 +257,7 @@ bool app_viewer::process_threshold(viewer * p_view)
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
-	for(index_t v = 0; v < mesh->n_vertices(); v++)
+	for(index_t v = 0; v < mesh->n_vertices; v++)
 		mesh->heatmap(v) = mesh->heatmap(v) > 0.5 ? 1 : 0.5;
 	
 	return false;
@@ -274,14 +275,10 @@ bool app_viewer::process_functional_maps(viewer * p_view)
 	if(ImGui::Button("Run"))
 	{
 		a_sp_mat L, A;
-
-		TIC(view->time) laplacian(mesh, L, A); TOC(view->time)
-		gproshan_log_var(view->time);
-
 		a_vec eigval;
 		a_mat eigvec;
 
-		TIC(view->time) K = eigs_laplacian(eigval, eigvec, mesh, L, A, K); TOC(view->time)
+		TIC(view->time) K = eigs_laplacian(mesh, eigval, eigvec, L, A, K); TOC(view->time)
 		gproshan_log_var(view->time);
 
 		gproshan_log_var(K);
@@ -296,7 +293,7 @@ bool app_viewer::process_functional_maps(viewer * p_view)
 			eigvec.col(k) /= eigvec.col(k).max();
 		
 			#pragma omp parallel for
-			for(index_t v = 0; v < mesh->n_vertices(); v++)
+			for(index_t v = 0; v < mesh->n_vertices; v++)
 				view->active_mesh()->heatmap(v) = eigvec(v, k);
 
 			view->active_mesh().update_vbo();
@@ -315,26 +312,28 @@ bool app_viewer::process_wks(viewer * p_view)
 
 	static int K = 100;
 	static int T = 100;
+	static bool status = true;
 
 	ImGui::InputInt("eigenvectors", &K);
 	ImGui::InputInt("times", &T);
+	if(!status) ImGui::TextColored({1, 0, 0, 1}, "Error computing WKS.");
 
 	if(ImGui::Button("Run"))
 	{
-		a_sp_mat L, A;
+		descriptor wks(descriptor::WKS, mesh, K);		
+		
+		if(wks)
+		{
+			status = true;
 
-		TIC(view->time) laplacian(mesh, L, A); TOC(view->time)
-		gproshan_log_var(view->time);
-
-		a_vec eigval;
-		a_mat eigvec;
-
-		TIC(view->time) K = eigs_laplacian(eigval, eigvec, mesh, L, A, K); TOC(view->time)
-		gproshan_log_var(view->time);
-
+		
+		}
+		else status = false;
+		
+/*
 		real_t max_s = 0;
 		#pragma omp parallel for reduction(max: max_s)
-		for(index_t v = 0; v < mesh->n_vertices(); v++)
+		for(index_t v = 0; v < mesh->n_vertices; v++)
 		{
 			a_vec s(T, arma::fill::zeros);
 			for(int t = 0; t < T; t++)
@@ -346,8 +345,9 @@ bool app_viewer::process_wks(viewer * p_view)
 		}
 
 		#pragma omp parallel for
-		for(index_t v = 0; v < mesh->n_vertices(); v++)
-			mesh->heatmap(v) /= max_s;
+		for(index_t v = 0; v < mesh->n_vertices; v++)
+			mesh->heatmap(v) /= max_s;i
+			*/
 	}
 
 	return true;
@@ -367,21 +367,17 @@ bool app_viewer::process_hks(viewer * p_view)
 	if(ImGui::Button("Run"))
 	{
 		a_sp_mat L, A;
-
-		TIC(view->time) laplacian(mesh, L, A); TOC(view->time)
-		gproshan_log_var(view->time);
-
 		a_vec eigval;
 		a_mat eigvec;
 
-		TIC(view->time) K = eigs_laplacian(eigval, eigvec, mesh, L, A, K); TOC(view->time)
+		TIC(view->time) K = eigs_laplacian(mesh, eigval, eigvec, L, A, K); TOC(view->time)
 		gproshan_log_var(view->time);
 
 		if(!K) return true;
 
 		real_t max_s = 0;
 		#pragma omp parallel for reduction(max: max_s)
-		for(index_t v = 0; v < mesh->n_vertices(); v++)
+		for(index_t v = 0; v < mesh->n_vertices; v++)
 		{
 			a_vec s(T, arma::fill::zeros);
 			for(int t = 0; t < T; t++)
@@ -394,7 +390,7 @@ bool app_viewer::process_hks(viewer * p_view)
 		}
 
 		#pragma omp parallel for
-		for(index_t v = 0; v < mesh->n_vertices(); v++)
+		for(index_t v = 0; v < mesh->n_vertices; v++)
 			mesh->heatmap(v) /= max_s;
 	}
 
@@ -407,40 +403,30 @@ bool app_viewer::process_gps(viewer * p_view)
 	che_viewer & mesh = view->active_mesh();
 
 	static int K = 50;
+	static bool status = true;
 	ImGui::InputInt("eigenvectors", &K);
 
 	if(ImGui::Button("Run"))
 	{
-		a_sp_mat L, A;
-
-		TIC(view->time) laplacian(mesh, L, A); TOC(view->time)
-		gproshan_log_var(view->time);
-
-		a_vec eigval;
-		a_mat eigvec;
-
-		TIC(view->time) K = eigs_laplacian(eigval, eigvec, mesh, L, A, K); TOC(view->time)
-		gproshan_log_var(view->time);
-
-		eigvec = abs(eigvec);
-		eigvec.col(0).zeros();
-		for(int i = 1; i < K; i++)
-			eigvec.col(i) /= sqrt(abs(eigval(i)));
-
-		a_mat data = eigvec.t();
-		a_mat means;
-
-		real_t max_s = 0;
-		#pragma omp parallel for reduction(max: max_s)
-		for(index_t v = 0; v < mesh->n_vertices(); v++)
+		descriptor GPS(descriptor::GPS, mesh, K);		
+		
+		if(GPS)
 		{
-			mesh->heatmap(v) = norm(eigvec.row(v));
-				max_s = max(max_s, mesh->heatmap(v));
-		}
+			status = true;
 
-		#pragma omp parallel for
-		for(index_t v = 0; v < mesh->n_vertices(); v++)
-			mesh->heatmap(v) /= max_s;
+			real_t max_s = 0;
+			#pragma omp parallel for reduction(max: max_s)
+			for(index_t v = 0; v < mesh->n_vertices; v++)
+			{
+				mesh->heatmap(v) = GPS(v);
+				max_s = max(max_s, mesh->heatmap(v));
+			}
+
+			#pragma omp parallel for
+			for(index_t v = 0; v < mesh->n_vertices; v++)
+				mesh->heatmap(v) /= max_s;
+		}
+		else status = false;
 	}
 
 	return true;
@@ -475,7 +461,7 @@ bool app_viewer::process_key_components(viewer * p_view)
 	gproshan_debug_var(kcs);
 	
 	#pragma omp parallel for
-	for(index_t v = 0; v < mesh->n_vertices(); v++)
+	for(index_t v = 0; v < mesh->n_vertices; v++)
 		mesh->heatmap(v) = (real_t) kcs(v) / kcs;
 	
 	return false;
@@ -488,7 +474,7 @@ bool app_viewer::process_mdict_patch(viewer * p_view)
 	che_viewer & mesh = view->active_mesh();
 	
 	TIC(view->time)
-	index_t * toplevel = new index_t[mesh->n_vertices()];
+	index_t * toplevel = new index_t[mesh->n_vertices];
 	size_t avg_nvp = 0;
 
 	vertex vdir;
@@ -664,15 +650,15 @@ bool app_viewer::compute_toplesets(viewer * p_view)
 	if(!mesh.selected.size())
 		mesh.selected.push_back(0);
 
-	index_t * toplesets = new index_t[mesh->n_vertices()];
-	index_t * sorted = new index_t[mesh->n_vertices()];
+	index_t * toplesets = new index_t[mesh->n_vertices];
+	index_t * sorted = new index_t[mesh->n_vertices];
 	vector<index_t> limites;
 	mesh->compute_toplesets(toplesets, sorted, limites, mesh.selected);
 
 	size_t n_toplesets = limites.size() - 1;
 
 	#pragma omp parallel for
-	for(index_t v = 0; v < mesh->n_vertices(); v++)
+	for(index_t v = 0; v < mesh->n_vertices; v++)
 	{
 		if(toplesets[v] < n_toplesets) 
 			mesh->heatmap(v) = real_t(toplesets[v]) / (n_toplesets);
@@ -706,7 +692,7 @@ bool app_viewer::process_voronoi(viewer * p_view)
 	gproshan_log_var(view->time);
 
 	#pragma omp parallel for
-	for(index_t i = 0; i < mesh->n_vertices(); i++)
+	for(index_t i = 0; i < mesh->n_vertices; i++)
 	{
 		mesh->heatmap(i) = ptp.clusters[i];
 		mesh->heatmap(i) /= mesh.selected.size() + 1;
@@ -749,7 +735,7 @@ bool app_viewer::process_farthest_point_sampling(viewer * p_view)
 	static int n = 10;
 	static real_t radio;
 
-	ImGui::SliderInt("samples", &n, 1, mesh->n_vertices() / 6);
+	ImGui::SliderInt("samples", &n, 1, mesh->n_vertices / 6);
 	ImGui::Text("radio: %.3f", radio);
 	
 	if(ImGui::Button("Run"))
@@ -769,7 +755,7 @@ bool app_viewer::process_fairing_spectral(viewer * p_view)
 	che_viewer & mesh = view->active_mesh();
 	
 	static int k = 100;
-	ImGui::SliderInt("eigenvectors", &k, 1, mesh->n_vertices() / 6);
+	ImGui::SliderInt("eigenvectors", &k, 1, mesh->n_vertices / 6);
 	
 	if(ImGui::Button("Run"))
 	{
@@ -814,8 +800,8 @@ bool app_viewer::process_geodesics(viewer * p_view, const geodesics::algorithm &
 
 	static vector<real_t> dist;
 
-	if(dist.size() != mesh->n_vertices())
-		dist.resize(mesh->n_vertices());
+	if(dist.size() != mesh->n_vertices)
+		dist.resize(mesh->n_vertices);
 
 	geodesics::params params;
 	params.alg			= alg;
@@ -878,8 +864,8 @@ bool app_viewer::process_fill_holes_biharmonic_splines(viewer * p_view)
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
-	size_t old_n_vertices, n_vertices = mesh->n_vertices();
-	size_t n_holes = mesh->n_borders();
+	size_t old_n_vertices, n_vertices = mesh->n_vertices;
+	size_t n_holes = mesh->n_borders;
 
 	vector<index_t> * border_vertices;
 	che ** holes;
@@ -892,7 +878,7 @@ bool app_viewer::process_fill_holes_biharmonic_splines(viewer * p_view)
 		if(holes[h])
 		{
 			old_n_vertices = n_vertices;
-			biharmonic_interp_2(mesh, old_n_vertices, n_vertices += holes[h]->n_vertices() - border_vertices[h].size(), border_vertices[h], k);
+			biharmonic_interp_2(mesh, old_n_vertices, n_vertices += holes[h]->n_vertices - border_vertices[h].size(), border_vertices[h], k);
 			delete holes[h];
 		}
 
@@ -912,10 +898,10 @@ bool app_viewer::process_gaussian_curvature(viewer * p_view)
 	real_t g, g_max = -INFINITY, g_min = INFINITY;
 	vertex a, b;
 
-	a_vec gv(mesh->n_vertices());
+	a_vec gv(mesh->n_vertices);
 
 	#pragma omp parallel for private(g, a, b) reduction(max: g_max) reduction(min: g_min)
-	for(index_t v = 0; v < mesh->n_vertices(); v++)
+	for(index_t v = 0; v < mesh->n_vertices; v++)
 	{
 		g = 0;
 		for_star(he, mesh, v)
@@ -937,7 +923,7 @@ bool app_viewer::process_gaussian_curvature(viewer * p_view)
 	gproshan_log_var(g_max);
 
 	#pragma omp parallel for
-	for(index_t v = 0; v < mesh->n_vertices(); v++)
+	for(index_t v = 0; v < mesh->n_vertices; v++)
 		gv(v) = (gv(v) + g_min) / g;
 
 	real_t gm = mean(gv);
@@ -954,7 +940,7 @@ bool app_viewer::process_gaussian_curvature(viewer * p_view)
 	};
 
 	#pragma omp parallel for
-	for(index_t v = 0; v < mesh->n_vertices(); v++)
+	for(index_t v = 0; v < mesh->n_vertices; v++)
 		mesh->heatmap(v) = f(gv(v));
 	
 	return false;

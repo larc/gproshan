@@ -129,17 +129,17 @@ che * mesh_fill_hole(che * mesh, const vector<index_t> & border_vertices, const 
 
 			if(j != p.second)
 			{
-				n_v = add_border_vertices((j + 1) % size, p.second, hole->n_vertices() - merge_vertices[!c].size());
-				merge_vertices[c].push_back(hole->n_vertices() + n_v - 1);
+				n_v = add_border_vertices((j + 1) % size, p.second, hole->n_vertices - merge_vertices[!c].size());
+				merge_vertices[c].push_back(hole->n_vertices + n_v - 1);
 			}
 			else merge_vertices[c].push_back(merge_vertices[!c].back());
 
-			gen_vertices(merge_vertices[c], vertices[c], mesh->gt(border_vertices[p.second]), mesh->gt(border_vertices[p.first]), hole->n_vertices() - merge_vertices[!c].size());
+			gen_vertices(merge_vertices[c], vertices[c], mesh->gt(border_vertices[p.second]), mesh->gt(border_vertices[p.first]), hole->n_vertices - merge_vertices[!c].size());
 
 			if(i != p.first)
 			{
-				merge_vertices[c].push_back(vertices[c].size() + hole->n_vertices() - merge_vertices[!c].size());
-				n_v += add_border_vertices(p.first, i > 0 ? i - 1 : size - 1 , hole->n_vertices() - merge_vertices[!c].size());
+				merge_vertices[c].push_back(vertices[c].size() + hole->n_vertices - merge_vertices[!c].size());
+				n_v += add_border_vertices(p.first, i > 0 ? i - 1 : size - 1 , hole->n_vertices - merge_vertices[!c].size());
 			}
 			else merge_vertices[c].push_back(merge_vertices[!c].front());
 
@@ -183,7 +183,7 @@ che * mesh_fill_hole(che * mesh, const vector<index_t> & border_vertices, const 
 		j = (j + 1) % size;
 
 		normal = 0;
-		n_v = add_border_vertices(j, i, hole->n_vertices() - merge_vertices[!c].size());
+		n_v = add_border_vertices(j, i, hole->n_vertices - merge_vertices[!c].size());
 		normal /= n_v;
 
 		aux_hole = nullptr;
@@ -265,7 +265,7 @@ vector<index_t> * fill_all_holes(che * mesh, const size_t & max_iter)
 	tie(border_vertices, holes) = fill_all_holes_meshes(mesh, max_iter);
 	if(holes)
 	{
-		for(index_t b = 0; b < mesh->n_borders(); b++)
+		for(index_t b = 0; b < mesh->n_borders; b++)
 			if(holes[b]) delete holes[b];
 	}
 	delete [] holes;
@@ -277,7 +277,7 @@ tuple<vector<index_t> *, che **> fill_all_holes_meshes(che * mesh, const size_t 
 	vector<index_t> * border_vertices = nullptr;
 	che ** holes = nullptr;
 
-	const size_t n_borders = mesh->n_borders();
+	const size_t n_borders = mesh->n_borders;
 	if(!n_borders) return make_tuple(border_vertices, holes);
 
 	border_vertices = new vector<index_t>[n_borders];
@@ -311,7 +311,7 @@ tuple<vector<index_t> *, che **> fill_all_holes_meshes(che * mesh, const size_t 
 		}
 
 
-	gproshan_debug_var(mesh->n_borders());
+	gproshan_debug_var(mesh->n_borders);
 	return make_tuple(border_vertices, holes);
 }
 

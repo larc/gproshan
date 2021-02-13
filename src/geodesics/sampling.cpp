@@ -12,7 +12,7 @@ using namespace std;
 namespace gproshan {
 
 
-index_t ** sampling_shape(vector<index_t> & points, size_t *& sizes, vertex *& normals, che * shape, size_t n_points, real_t radio)
+index_t ** sampling_shape(vector<index_t> & points, size_t *& sizes, vertex *& normals, che * mesh, size_t n_points, real_t radio)
 {
 	normals = new vertex[n_points];
 	sizes = new size_t[n_points];
@@ -25,9 +25,9 @@ index_t ** sampling_shape(vector<index_t> & points, size_t *& sizes, vertex *& n
 	for(index_t i = 0; i < n_points; i++)
 	{
 		const index_t & v = points[i];
-		normals[i] = shape->normal(v);
+		normals[i] = mesh->normal(v);
 
-		geodesics fm(shape, { v }, params);
+		geodesics fm(mesh, { v }, params);
 
 		indexes[i] = new index_t[fm.n_sorted_index()];
 

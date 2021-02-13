@@ -47,7 +47,7 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 		vector<index_t> source = { 0 };
 		
 		che * mesh = new che_off(data_path + filename + ".off");
-		size_t n_vertices = mesh->n_vertices();
+		size_t n_vertices = mesh->n_vertices;
 		
 		index_t * toplesets = new index_t[n_vertices];
 		index_t * sorted_index = new index_t[n_vertices];
@@ -251,7 +251,7 @@ double test_fast_marching(real_t & error, const real_t * exact, che * mesh, cons
 
 	geodesics fm(mesh, source);
 
-	error = compute_error(&fm[0], exact, mesh->n_vertices(), source.size());
+	error = compute_error(&fm[0], exact, mesh->n_vertices, source.size());
 
 	return seconds;
 }
@@ -260,14 +260,14 @@ double test_ptp_cpu(real_t & error, const real_t * exact, che * mesh, const vect
 {
 	double t, seconds = INFINITY;
 	
-	real_t * dist = new real_t[mesh->n_vertices()];
+	real_t * dist = new real_t[mesh->n_vertices];
 	for(int i = 0; i < n_test; i++)
 	{
 		TIC(t) parallel_toplesets_propagation_cpu(dist, mesh, source, toplesets); TOC(t)
 		seconds = min(seconds, t);
 	}
 
-	error = compute_error(dist, exact, mesh->n_vertices(), source.size());
+	error = compute_error(dist, exact, mesh->n_vertices, source.size());
 	
 	delete [] dist;
 
@@ -279,7 +279,7 @@ double test_heat_method_cholmod(real_t & error, double & stime, const real_t * e
 	double t, st, ptime;
 	ptime = stime = INFINITY;
 	
-	real_t * dist = new real_t[mesh->n_vertices()];
+	real_t * dist = new real_t[mesh->n_vertices];
 	for(int i = 0; i < n_test; i++)
 	{
 		TIC(t) st = heat_method(dist, mesh, source); TOC(t)
@@ -287,7 +287,7 @@ double test_heat_method_cholmod(real_t & error, double & stime, const real_t * e
 		stime = min(st, stime);
 	}
 
-	error = compute_error(dist, exact, mesh->n_vertices(), source.size());
+	error = compute_error(dist, exact, mesh->n_vertices, source.size());
 
 	delete [] dist;
 
@@ -301,14 +301,14 @@ double test_ptp_gpu(real_t & error, const real_t * exact, che * mesh, const vect
 {
 	double t, seconds = INFINITY;
 	
-	real_t * dist = new real_t[mesh->n_vertices()];
+	real_t * dist = new real_t[mesh->n_vertices];
 	for(int i = 0; i < n_test; i++)
 	{
 		t = parallel_toplesets_propagation_coalescence_gpu(dist, mesh, source, toplesets);
 		seconds = min(seconds, t);
 	}
 
-	error = compute_error(dist, exact, mesh->n_vertices(), source.size());
+	error = compute_error(dist, exact, mesh->n_vertices, source.size());
 
 	delete [] dist;
 	
@@ -331,7 +331,7 @@ double test_heat_method_gpu(real_t & error, double & stime, const real_t * exact
 		stime = min(st, stime);
 	}
 
-	error = compute_error(dist, exact, mesh->n_vertices(), source.size());
+	error = compute_error(dist, exact, mesh->n_vertices, source.size());
 
 	delete [] dist;
 

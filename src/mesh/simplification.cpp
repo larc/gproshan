@@ -11,7 +11,7 @@ simplification::simplification(che * mesh_, const vertex *const & normals, const
 {
 	mesh = mesh_;
 	levels = levels_;
-	Q = new a_mat[mesh->n_vertices()];
+	Q = new a_mat[mesh->n_vertices];
 
 	execute(normals);
 }
@@ -31,9 +31,9 @@ void simplification::execute(const vertex *const & normals)
 {
 	compute_quadrics();
 
-	const size_t n_vertices = mesh->n_vertices();
-	index_t * sort_edges = new index_t[mesh->n_edges()];
-	real_t * error_edges = new real_t[mesh->n_edges()];
+	const size_t n_vertices = mesh->n_vertices;
+	index_t * sort_edges = new index_t[mesh->n_edges];
+	real_t * error_edges = new real_t[mesh->n_edges];
 	vertex * corr_v = new vertex[n_vertices];
 	index_t * corr_i = new index_t[n_vertices * che::mtrig];
 
@@ -102,7 +102,7 @@ void simplification::compute_quadrics()
 	vertex n;
 
 	#pragma omp parallel for private(n)
-	for(index_t v = 0; v < mesh->n_vertices(); v++)
+	for(index_t v = 0; v < mesh->n_vertices; v++)
 	{
 		Q[v].resize(4,4);
 		Q[v].zeros();
@@ -124,13 +124,13 @@ void simplification::compute_quadrics()
 void simplification::order_edges(index_t * const & sort_edges, real_t * const & error_edges)
 {
 	#pragma omp parallel for
-	for(index_t e = 0; e < mesh->n_edges(); e++)
+	for(index_t e = 0; e < mesh->n_edges; e++)
 	{
 		sort_edges[e] = e;
 		error_edges[e] = compute_error(e);
 	}
 
-	sort(sort_edges, sort_edges + mesh->n_edges(),
+	sort(sort_edges, sort_edges + mesh->n_edges,
 		[&error_edges](const index_t & a, const index_t & b)
 		{
 			return error_edges[a] < error_edges[b];

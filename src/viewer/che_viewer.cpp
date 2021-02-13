@@ -51,7 +51,7 @@ void che_viewer::update()
 	vertex pmin(INFINITY, INFINITY, INFINITY);
 	vertex pmax(0, 0, 0);
 
-	for(index_t v = 0; v < mesh->n_vertices(); v++)
+	for(index_t v = 0; v < mesh->n_vertices; v++)
 	{
 		const vertex & p = mesh->gt(v);
 		
@@ -80,28 +80,28 @@ void che_viewer::update_vbo()
 
 	// 0 VERTEX
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
-	glBufferData(GL_ARRAY_BUFFER, mesh->n_vertices() * sizeof(vertex), &mesh->gt(0), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, mesh->n_vertices * sizeof(vertex), &mesh->gt(0), GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_VERTEX_T, GL_FALSE, 0, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	// 1 NORMAL
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
-	glBufferData(GL_ARRAY_BUFFER, mesh->n_vertices() * sizeof(vertex), &mesh->normal(0), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, mesh->n_vertices * sizeof(vertex), &mesh->normal(0), GL_STATIC_DRAW);
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 3, GL_VERTEX_T, GL_FALSE, 0, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	// 2 MESH COLOR
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[2]);
-	glBufferData(GL_ARRAY_BUFFER, mesh->n_vertices() * sizeof(vertex), &mesh->color(0), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, mesh->n_vertices * sizeof(vertex), &mesh->color(0), GL_STATIC_DRAW);
 	glEnableVertexAttribArray(2);
 	glVertexAttribPointer(2, 3, GL_VERTEX_T, GL_FALSE, 0, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	
 	// 3 HEAT MAP COLOR
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[3]);
-	glBufferData(GL_ARRAY_BUFFER, mesh->n_vertices() * sizeof(real_t), &mesh->heatmap(0), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, mesh->n_vertices * sizeof(real_t), &mesh->heatmap(0), GL_STATIC_DRAW);
 	glEnableVertexAttribArray(3);
 	glVertexAttribPointer(3, 1, GL_VERTEX_T, GL_FALSE, 0, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -110,7 +110,7 @@ void che_viewer::update_vbo()
 	if(!mesh->is_pointcloud())
 	{
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[4]);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh->n_half_edges() * sizeof(index_t), &mesh->vt(0), GL_STATIC_DRAW);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh->n_half_edges * sizeof(index_t), &mesh->vt(0), GL_STATIC_DRAW);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	}
 	
@@ -144,9 +144,9 @@ void che_viewer::draw(shader & program)
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[4]);
 
 	if(n_instances)
-		glDrawElementsInstanced(GL_TRIANGLES, mesh->n_half_edges(), GL_UNSIGNED_INT, 0, n_instances);
+		glDrawElementsInstanced(GL_TRIANGLES, mesh->n_half_edges, GL_UNSIGNED_INT, 0, n_instances);
 	else
-		glDrawElements(GL_TRIANGLES, mesh->n_half_edges(), GL_UNSIGNED_INT, 0);
+		glDrawElements(GL_TRIANGLES, mesh->n_half_edges, GL_UNSIGNED_INT, 0);
 	
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
@@ -161,7 +161,7 @@ void che_viewer::draw_point_cloud(shader & program)
 	glBindVertexArray(vao);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
 	
-	glDrawArrays(GL_POINTS, 0, mesh->n_vertices());
+	glDrawArrays(GL_POINTS, 0, mesh->n_vertices);
 	
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
@@ -174,14 +174,14 @@ void che_viewer::translate(const vertex & p)
 	v_translate = p;
 
 	#pragma omp parallel for
-	for(index_t v = 0; v < mesh->n_vertices(); v++)
+	for(index_t v = 0; v < mesh->n_vertices; v++)
 		mesh->get_vertex(v) += v_translate;
 }
 
 void che_viewer::invert_orientation()
 {
 	#pragma omp parallel for
-	for(index_t v = 0; v < mesh->n_vertices(); v++)
+	for(index_t v = 0; v < mesh->n_vertices; v++)
 		mesh->normal(v) = -mesh->normal(v);
 }
 
@@ -190,13 +190,13 @@ void che_viewer::log_info()
 	if(!mesh) return;
 
 	gproshan_log_var(mesh->filename());
-	gproshan_log_var(mesh->n_vertices());
-	gproshan_log_var(mesh->n_faces());
-	gproshan_log_var(mesh->n_half_edges());
-	gproshan_log_var(mesh->n_edges());
+	gproshan_log_var(mesh->n_vertices);
+	gproshan_log_var(mesh->n_faces);
+	gproshan_log_var(mesh->n_half_edges);
+	gproshan_log_var(mesh->n_edges);
 	gproshan_log_var(mesh->area_surface());
 	gproshan_log_var(mesh->is_manifold());
-	gproshan_log_var(mesh->n_borders());
+	gproshan_log_var(mesh->n_borders);
 	gproshan_log_var(mesh->memory() / 1E6);
 	gproshan_log_var(mesh->quality());
 	gproshan_log_var(mesh->genus());

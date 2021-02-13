@@ -39,7 +39,7 @@ void che_off::read_file(const string & file)
 	init(n_v, n_f);
 	
 	real_t alpha;	// color
-	for(index_t i = 0; i < n_vertices_; i++)
+	for(index_t i = 0; i < n_vertices; i++)
 	{
 		is >> GT[i];
 		if(soff[0] == 'C' || soff[1] == 'C')
@@ -51,12 +51,12 @@ void che_off::read_file(const string & file)
 	if(soff[0] == 'C' || soff[1] == 'C')
 	{
 		#pragma omp parallel for
-		for(index_t i = 0; i < n_vertices_; i++)
+		for(index_t i = 0; i < n_vertices; i++)
 			VC[i] /= 255;
 	}
 
 	index_t he = 0;
-	for(index_t i = 0; i < n_faces_; i++)
+	for(index_t i = 0; i < n_faces; i++)
 	{
 		is >> v;
 		if(!i && v > che::mtrig)
@@ -90,9 +90,9 @@ void che_off::write_file(const che * mesh, const string & file, const che_off::t
 	ofstream os(file + ".off");
 
 	os << off << endl;
-	os << mesh->n_vertices() << " " << (pointcloud ? 0 : mesh->n_faces()) << " 0" << endl;
+	os << mesh->n_vertices << " " << (pointcloud ? 0 : mesh->n_faces) << " 0" << endl;
 	
-	for(size_t v = 0; v < mesh->n_vertices(); v++)
+	for(size_t v = 0; v < mesh->n_vertices; v++)
 	{
 		os << mesh->gt(v);
 
@@ -102,7 +102,7 @@ void che_off::write_file(const che * mesh, const string & file, const che_off::t
 	}
 	
 	if(!pointcloud)
-		for(index_t he = 0; he < mesh->n_half_edges(); )
+		for(index_t he = 0; he < mesh->n_half_edges; )
 		{
 			os << che::mtrig;
 			for(index_t i = 0; i < che::mtrig; i++)

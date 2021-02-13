@@ -13,7 +13,7 @@ using namespace std;
 namespace gproshan {
 
 
-geodesics::geodesics(che * mesh, const vector<index_t> & sources, const params & p): n_vertices(mesh->n_vertices())
+geodesics::geodesics(che * mesh, const vector<index_t> & sources, const params & p): n_vertices(mesh->n_vertices)
 {
 	assert(n_vertices > 0);
 

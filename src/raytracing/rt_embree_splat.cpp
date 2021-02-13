@@ -77,7 +77,7 @@ float embree_splat::pointcloud_hit(glm::vec3 & position, glm::vec3 & normal, glm
 void embree_splat::init_splats(const che * mesh)
 {
 	const size_t n = 10;
-	vsplat.resize((mesh->n_vertices() + n - 1) / n);
+	vsplat.resize((mesh->n_vertices + n - 1) / n);
 
 	gproshan_log_var(vsplat.size());
 	

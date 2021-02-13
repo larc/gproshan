@@ -18,7 +18,7 @@ class fairing_taubin : public fairing
 		virtual ~fairing_taubin();
 
 	private:
-		void compute(che * shape);
+		void compute(che * mesh);
 };
 
 

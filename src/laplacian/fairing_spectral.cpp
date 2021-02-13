@@ -16,27 +16,23 @@ fairing_spectral::~fairing_spectral()
 
 }
 
-void fairing_spectral::compute(che * shape)
+void fairing_spectral::compute(che * mesh)
 {
 	double time;
 
-	a_sp_mat L, A;
+	positions = new vertex[mesh->n_vertices];
 
-	TIC(time) laplacian(shape, L, A); TOC(time)
-	gproshan_debug_var(time);
-
-	positions = new vertex[shape->n_vertices()];
-
-	a_mat X((real_t *) positions, 3, shape->n_vertices(), false, true);
+	a_mat X((real_t *) positions, 3, mesh->n_vertices, false, true);
 
 	#pragma omp parallel for
-	for(index_t v = 0; v < shape->n_vertices(); v++)
-		positions[v] = shape->gt(v);
+	for(index_t v = 0; v < mesh->n_vertices; v++)
+		positions[v] = mesh->gt(v);
 
+	a_sp_mat L, A;
 	a_vec eigval;
 	a_mat eigvec;
 
-	TIC(time) k = eigs_laplacian(eigval, eigvec, shape, L, A, k); TOC(time)
+	TIC(time) k = eigs_laplacian(mesh, eigval, eigvec, L, A, k); TOC(time)
 	gproshan_debug_var(time);
 
 	X = X * eigvec * eigvec.t();

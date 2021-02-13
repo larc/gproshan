@@ -19,10 +19,10 @@ che * ptp_coalescence(index_t * & inv, const che * mesh, const toplesets_t & top
 	
 	vector<vertex> V(toplesets.limits.back());
 	vector<index_t> F;
-	F.reserve(mesh->n_half_edges());
+	F.reserve(mesh->n_half_edges);
 	
-	inv = !inv ? new index_t[mesh->n_vertices()] : inv;
-	memset(inv, -1, sizeof(index_t) * mesh->n_vertices());
+	inv = !inv ? new index_t[mesh->n_vertices] : inv;
+	memset(inv, -1, sizeof(index_t) * mesh->n_vertices);
 
 	#pragma omp parallel for
 	for(index_t i = 0; i < toplesets.limits.back(); i++)
@@ -31,7 +31,7 @@ che * ptp_coalescence(index_t * & inv, const che * mesh, const toplesets_t & top
 		inv[toplesets.index[i]] = i;
 	}
 
-	for(index_t he = 0; he < mesh->n_half_edges(); he++)
+	for(index_t he = 0; he < mesh->n_half_edges; he++)
 		if(inv[mesh->vt(he)] != NIL && inv[mesh->vt(prev(he))] != NIL && inv[mesh->vt(next(he))] != NIL)
 			F.push_back(inv[mesh->vt(he)]);
 	
@@ -40,17 +40,17 @@ che * ptp_coalescence(index_t * & inv, const che * mesh, const toplesets_t & top
 
 void parallel_toplesets_propagation_coalescence_cpu(const ptp_out_t & ptp_out, che * mesh, const vector<index_t> & sources, const toplesets_t & toplesets)
 {
-	const size_t n_vertices = mesh->n_vertices();
+	const size_t n_vertices = mesh->n_vertices;
 
 	index_t * inv = nullptr;
 	mesh = ptp_coalescence(inv, mesh, toplesets);
 
 	// ------------------------------------------------------
-	real_t * pdist[2] = {new real_t[mesh->n_vertices()], new real_t[mesh->n_vertices()]};
-	real_t * error = new real_t[mesh->n_vertices()];
+	real_t * pdist[2] = {new real_t[mesh->n_vertices], new real_t[mesh->n_vertices]};
+	real_t * error = new real_t[mesh->n_vertices];
 
 	#pragma omp parallel for
-	for(index_t v = 0; v < mesh->n_vertices(); v++)
+	for(index_t v = 0; v < mesh->n_vertices; v++)
 		pdist[0][v] = pdist[1][v] = INFINITY;
 
 	for(index_t i = 0; i < sources.size(); i++)
@@ -122,11 +122,11 @@ void parallel_toplesets_propagation_coalescence_cpu(const ptp_out_t & ptp_out, c
 
 void parallel_toplesets_propagation_cpu(const ptp_out_t & ptp_out, che * mesh, const vector<index_t> & sources, const toplesets_t & toplesets)
 {
-	real_t * pdist[2] = {ptp_out.dist, new real_t[mesh->n_vertices()]};
-	real_t * error = new real_t[mesh->n_vertices()];
+	real_t * pdist[2] = {ptp_out.dist, new real_t[mesh->n_vertices]};
+	real_t * error = new real_t[mesh->n_vertices];
 
 	#pragma omp parallel for
-	for(index_t v = 0; v < mesh->n_vertices(); v++)
+	for(index_t v = 0; v < mesh->n_vertices; v++)
 		pdist[0][v] = pdist[1][v] = INFINITY;
 
 	for(index_t i = 0; i < sources.size(); i++)
@@ -193,7 +193,7 @@ void parallel_toplesets_propagation_cpu(const ptp_out_t & ptp_out, che * mesh, c
 	
 	if(ptp_out.dist != pdist[!d])
 	{
-		memcpy(ptp_out.dist, pdist[!d], mesh->n_vertices() * sizeof(real_t));
+		memcpy(ptp_out.dist, pdist[!d], mesh->n_vertices * sizeof(real_t));
 		delete [] pdist[!d];
 	}
 	else delete [] pdist[d];

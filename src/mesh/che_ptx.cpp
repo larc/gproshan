@@ -55,7 +55,7 @@ void che_ptx::read_file(const string & file)
 	init(n_rows * n_cols, 2 * (n_rows - 1) * (n_cols - 1));
 
 	#pragma omp parallel for
-	for(index_t v = 0; v < n_vertices_; v++)
+	for(index_t v = 0; v < n_vertices; v++)
 	{
 		const index_t & i = v * p;
 
@@ -95,11 +95,11 @@ void che_ptx::read_file(const string & file)
 				 (c    ) + (r + 1) * n_cols);
 	}
 
-	n_half_edges_ = he;
-	n_faces_ = he / che::mtrig;
+	rw(n_half_edges)	= he;
+	rw(n_faces)			= he / che::mtrig;
 
 	#pragma omp parallel for
-	for(index_t i = 0; i < n_vertices_; i++)
+	for(index_t i = 0; i < n_vertices; i++)
 		VC[i] /= 255;
 	
 	is.close();

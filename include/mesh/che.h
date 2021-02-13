@@ -18,6 +18,7 @@ namespace gproshan {
 typedef std::vector<index_t> star_t;		// star (vector of he)
 typedef std::vector<index_t> link_t;		// link (vector of he)
 
+size_t & rw(const size_t & n);
 index_t trig(const index_t & he);
 index_t next(const index_t & he);
 index_t prev(const index_t & he);
@@ -31,14 +32,14 @@ class che
 	public:
 		enum mesh_type { mtrig = 3, mquad = 4 }; ///< meshes_types
 
+		const size_t n_vertices		= 0;
+		const size_t n_faces		= 0;
+		const size_t n_half_edges	= 0;
+		const size_t n_edges		= 0;
+		const size_t n_borders		= 0;
+
 	protected:
 		std::string filename_;
-
-		size_t n_vertices_		= 0;
-		size_t n_faces_			= 0;
-		size_t n_half_edges_	= 0;
-		size_t n_edges_			= 0;
-		size_t n_borders_		= 0;
 
 		vertex * GT		= nullptr;	///< geometry table			: v		-> vertex
 		index_t * VT	= nullptr;	///< vertex table (faces)	: he	-> v
@@ -69,7 +70,7 @@ class che
 		real_t pdetriq(const index_t & t) const;
 		real_t quality();
 		real_t area_trig(const index_t & t) const;
-		real_t area_vertex(const index_t & v);
+		real_t area_vertex(const index_t & v) const;
 		real_t area_surface() const;
 		void update_heatmap(const real_t * hm = nullptr, real_t max_color = 0);
 		const vertex & color(const index_t & v) const;
@@ -108,11 +109,6 @@ class che
 		const index_t & ot_evt(const index_t & v) const;
 		const index_t & evt(const index_t & v) const;
 		const index_t & bt(const index_t & b) const;
-		const size_t & n_vertices() const;
-		const size_t & n_faces() const;
-		const size_t & n_half_edges() const;
-		const size_t & n_edges() const;
-		const size_t & n_borders() const;
 		size_t max_degree() const;
 		vertex & get_vertex(index_t v);
 		void set_vertices(const vertex *const& positions, size_t n = 0, const index_t & v_i = 0);

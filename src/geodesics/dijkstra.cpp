@@ -10,9 +10,9 @@ using namespace std;
 namespace gproshan {
 
 
-dijkstra::dijkstra(che * shape, index_t src)
+dijkstra::dijkstra(che * mesh, index_t src)
 {
-	n_vertices = shape->n_vertices();
+	n_vertices = mesh->n_vertices;
 	source = src;
 
 	weights = new real_t[n_vertices];
@@ -23,7 +23,7 @@ dijkstra::dijkstra(che * shape, index_t src)
 	for(index_t i = 0; i < n_vertices; i++)
 		weights[i] = INFINITY;
 
-	run(shape);
+	run(mesh);
 }
 
 dijkstra::~dijkstra()
@@ -48,7 +48,7 @@ void dijkstra::print(ostream & os)
 		os<<weights[i]<<endl;
 }
 
-void dijkstra::run(che * shape)
+void dijkstra::run(che * mesh)
 {
 	bool * visited = new bool[n_vertices];
 	memset(visited, 0, sizeof(bool)*n_vertices);
@@ -73,15 +73,15 @@ void dijkstra::run(che * shape)
 			if(!visited[v])
 			{
 				link_t link_he;
-				shape->link(link_he, v);
+				mesh->link(link_he, v);
 
 				for(index_t he: link_he)
 				{
-					nv = shape->vt(next(he));
+					nv = mesh->vt(next(he));
 
 					if(visited[nv])
 					{
-						w = weights[nv] + *(shape->get_vertex(nv) - shape->get_vertex(v));
+						w = weights[nv] + *(mesh->get_vertex(nv) - mesh->get_vertex(v));
 
 						if(w < weights[v])
 							weights[v] = w;
