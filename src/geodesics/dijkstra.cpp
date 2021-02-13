@@ -12,7 +12,7 @@ namespace gproshan {
 
 dijkstra::dijkstra(che * mesh, index_t src)
 {
-	n_vertices = mesh->n_vertices();
+	n_vertices = mesh->n_vertices;
 	source = src;
 
 	weights = new real_t[n_vertices];

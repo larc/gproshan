@@ -124,9 +124,9 @@ double * times_farthest_point_sampling_ptp_gpu(che * mesh, vector<index_t> & sam
 
 		// 1 indexing
 		#ifdef SINGLE_P
-			cublasIsamax(handle, mesh->n_vertices(), d_dist[d], 1, &f);
+			cublasIsamax(handle, mesh->n_vertices, d_dist[d], 1, &f);
 		#else
-			cublasIdamax(handle, mesh->n_vertices(), d_dist[d], 1, &f);
+			cublasIdamax(handle, mesh->n_vertices, d_dist[d], 1, &f);
 		#endif
 		
 		cudaEventRecord(stop, 0);

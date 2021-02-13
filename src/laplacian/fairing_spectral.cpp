@@ -20,12 +20,12 @@ void fairing_spectral::compute(che * mesh)
 {
 	double time;
 
-	positions = new vertex[mesh->n_vertices()];
+	positions = new vertex[mesh->n_vertices];
 
-	a_mat X((real_t *) positions, 3, mesh->n_vertices(), false, true);
+	a_mat X((real_t *) positions, 3, mesh->n_vertices, false, true);
 
 	#pragma omp parallel for
-	for(index_t v = 0; v < mesh->n_vertices(); v++)
+	for(index_t v = 0; v < mesh->n_vertices; v++)
 		positions[v] = mesh->gt(v);
 
 	a_sp_mat L, A;

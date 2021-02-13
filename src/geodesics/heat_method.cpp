@@ -16,7 +16,7 @@ double heat_method(real_t * dist, che * mesh, const vector<index_t> & sources)
 	if(!sources.size()) return 0;
 	
 	// build impulse signal
-	a_mat u0(mesh->n_vertices(), 1, arma::fill::zeros);
+	a_mat u0(mesh->n_vertices, 1, arma::fill::zeros);
 	for(auto & v: sources) u0(v) = 1;
 	
 	// step
@@ -31,7 +31,7 @@ double heat_method(real_t * dist, che * mesh, const vector<index_t> & sources)
 
 	// heat flow for short interval
 	A += dt * L;
-	a_mat u(mesh->n_vertices(), 1);
+	a_mat u(mesh->n_vertices, 1);
 	
 	cholmod_common context;
 	cholmod_l_start(&context);
@@ -43,10 +43,10 @@ double heat_method(real_t * dist, che * mesh, const vector<index_t> & sources)
 
 	// extract geodesics
 	
-	a_mat div(mesh->n_vertices(), 1);
+	a_mat div(mesh->n_vertices, 1);
 	compute_divergence(mesh, u, div);
 
-	a_mat phi(dist, mesh->n_vertices(), 1, false);
+	a_mat phi(dist, mesh->n_vertices, 1, false);
 
 	solve_time += solve_positive_definite(phi, L, div, &context);	// cholmod (suitesparse)
 	//assert(spsolve(phi, L, div));	// arma
@@ -67,7 +67,7 @@ real_t * heat_method_gpu(che * mesh, const vector<index_t> & sources, double & s
 	if(!sources.size()) return 0;
 	
 	// build impulse signal
-	a_mat u0(mesh->n_vertices(), 1, arma::fill::zeros);
+	a_mat u0(mesh->n_vertices, 1, arma::fill::zeros);
 	for(auto & v: sources) u0(v) = 1;
 	
 	// step
@@ -82,19 +82,19 @@ real_t * heat_method_gpu(che * mesh, const vector<index_t> & sources, double & s
 
 	// heat flow for short interval
 	A += dt * L;
-	a_mat u(mesh->n_vertices(), 1);
+	a_mat u(mesh->n_vertices, 1);
 	
 	solve_time = 0;
 
 	solve_time += solve_positive_definite_gpu(u, A, u0);		// cusorlver (cusparse)
 
 	// extract geodesics
-	real_t * dist = new real_t[mesh->n_vertices()];
+	real_t * dist = new real_t[mesh->n_vertices];
 	
-	a_mat div(mesh->n_vertices(), 1);
+	a_mat div(mesh->n_vertices, 1);
 	compute_divergence(mesh, u, div);
 
-	a_mat phi(dist, mesh->n_vertices(), 1, false);
+	a_mat phi(dist, mesh->n_vertices, 1, false);
 
 	solve_time += solve_positive_definite_gpu(phi, L, div);	// cusolver (cusparse)
 	
@@ -109,7 +109,7 @@ real_t * heat_method_gpu(che * mesh, const vector<index_t> & sources, double & s
 
 void compute_divergence(che * mesh, const a_mat & u, a_mat & div)
 {
-	for(index_t v = 0; v < mesh->n_vertices(); v++)
+	for(index_t v = 0; v < mesh->n_vertices; v++)
 	{
 		real_t & sum = div(v);
 

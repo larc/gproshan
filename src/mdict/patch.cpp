@@ -36,7 +36,7 @@ real_t patch::nyquist_factor = 0.5;
 void patch::init(che * mesh, const index_t & v, const size_t & n_toplevels, const real_t & radio_, index_t * _toplevel)
 {
 	radio = radio_;
-	index_t * toplevel = _toplevel ? _toplevel : new index_t[mesh->n_vertices()];
+	index_t * toplevel = _toplevel ? _toplevel : new index_t[mesh->n_vertices];
 	
 	gather_vertices(mesh, v, n_toplevels, toplevel);
 	jet_fit_directions(mesh, v);
@@ -48,7 +48,7 @@ void patch::init(che * mesh, const index_t & v, const size_t & n_toplevels, cons
 void patch::init_disjoint(che * mesh, const index_t & v, const size_t & n_toplevels, vector<index_t> & _vertices, index_t * _toplevel)
 {
 	radio = 1;
-	index_t * toplevel = _toplevel ? _toplevel : new index_t[mesh->n_vertices()];
+	index_t * toplevel = _toplevel ? _toplevel : new index_t[mesh->n_vertices];
 	
 	gather_vertices(mesh, v, n_toplevels, toplevel);
 	jet_fit_directions(mesh, v);
@@ -98,9 +98,9 @@ bool patch::add_vertex_by_faces(const vertex & c, vertex & n, vector<vertex> & N
 		vb = mesh->gt(b);
 		vv = mesh->gt(v);
 		// If is an adjacent face
-		assert(a < mesh->n_vertices());
-		assert(b < mesh->n_vertices());
-		assert(v < mesh->n_vertices());
+		assert(a < mesh->n_vertices);
+		assert(b < mesh->n_vertices);
+		assert(v < mesh->n_vertices);
 
 		if(geo[a] < geo[v] || geo[b] < geo[v] )
 		{
@@ -259,7 +259,7 @@ void patch::init_radial_disjoint(	real_t & euc_radio,
 	vertex c = mesh->get_vertex(v);
 	
 	geodesics::params params;
-	params.dist_alloc = new real_t[mesh->n_vertices()];
+	params.dist_alloc = new real_t[mesh->n_vertices];
 	params.fun = [&](const index_t & u) -> bool
 	{
 		if(u == v) return true;
@@ -536,7 +536,7 @@ void patch::gather_vertices(che * mesh, const index_t & v, const size_t & n_topl
 	if(vertices.size()) vertices.clear();
 
 	vertices.reserve(expected_nv);
-	memset(toplevel, -1, sizeof(index_t) * mesh->n_vertices());
+	memset(toplevel, -1, sizeof(index_t) * mesh->n_vertices);
 	
 	link_t link;
 	toplevel[v] = 0;
@@ -572,7 +572,7 @@ void patch::gather_vertices(che * mesh, const index_t & v, const real_t & radio,
 	
 	priority_queue<pair<real_t, index_t> > qvertices;
 
-	memset(toplevel, -1, sizeof(index_t) * mesh->n_vertices());
+	memset(toplevel, -1, sizeof(index_t) * mesh->n_vertices);
 	
 	a_vec p(3);
 	link_t link;

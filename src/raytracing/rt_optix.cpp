@@ -174,35 +174,35 @@ void optix::add_mesh(OptixBuildInput & optix_mesh, uint32_t & optix_trig_flags, 
 
 
 #ifdef SINGLE_P
-	cudaMalloc(&d_vertex, mesh->n_vertices() * sizeof(vertex));
-	cudaMemcpy(d_vertex, &mesh->gt(0), mesh->n_vertices() * sizeof(vertex), cudaMemcpyHostToDevice);
+	cudaMalloc(&d_vertex, mesh->n_vertices * sizeof(vertex));
+	cudaMemcpy(d_vertex, &mesh->gt(0), mesh->n_vertices * sizeof(vertex), cudaMemcpyHostToDevice);
 #else
-	glm::vec3 * vertices = new glm::vec3[mesh->n_vertices()];
-	cudaMalloc(&d_vertex, mesh->n_vertices() * sizeof(float) * 3);
+	glm::vec3 * vertices = new glm::vec3[mesh->n_vertices];
+	cudaMalloc(&d_vertex, mesh->n_vertices * sizeof(float) * 3);
 	
 	#pragma omp parallel for
-	for(index_t i = 0; i < mesh->n_vertices(); i++)
+	for(index_t i = 0; i < mesh->n_vertices; i++)
 		vertices[i] = glm::vec3(mesh->gt(i).x, mesh->gt(i).y, mesh->gt(i).z);
 	
-	cudaMemcpy(d_vertex, vertices, mesh->n_vertices() * sizeof(vertex), cudaMemcpyHostToDevice);
+	cudaMemcpy(d_vertex, vertices, mesh->n_vertices * sizeof(vertex), cudaMemcpyHostToDevice);
 
 	delete [] vertices;
 #endif // SINGLE_P
 	
-	cudaMalloc(&d_index, mesh->n_half_edges() * sizeof(index_t));
-	cudaMemcpy(d_index, &mesh->vt(0), mesh->n_half_edges() * sizeof(index_t), cudaMemcpyHostToDevice);
+	cudaMalloc(&d_index, mesh->n_half_edges * sizeof(index_t));
+	cudaMemcpy(d_index, &mesh->vt(0), mesh->n_half_edges * sizeof(index_t), cudaMemcpyHostToDevice);
 
 	optix_mesh = {};
 	optix_mesh.type = OPTIX_BUILD_INPUT_TYPE_TRIANGLES;
 
 	optix_mesh.triangleArray.vertexFormat			= OPTIX_VERTEX_FORMAT_FLOAT3;
 	optix_mesh.triangleArray.vertexStrideInBytes	= 3 * sizeof(float); 
-	optix_mesh.triangleArray.numVertices			= mesh->n_vertices(); 
+	optix_mesh.triangleArray.numVertices			= mesh->n_vertices; 
 	optix_mesh.triangleArray.vertexBuffers			= (CUdeviceptr *) &d_vertex;
 
 	optix_mesh.triangleArray.indexFormat			= OPTIX_INDICES_FORMAT_UNSIGNED_INT3;
 	optix_mesh.triangleArray.indexStrideInBytes		= 3 * sizeof(index_t);
-	optix_mesh.triangleArray.numIndexTriplets		= mesh->n_faces();
+	optix_mesh.triangleArray.numIndexTriplets		= mesh->n_faces;
 	optix_mesh.triangleArray.indexBuffer			= (CUdeviceptr) d_index;
 
 	optix_trig_flags = 0 ;

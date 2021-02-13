@@ -849,7 +849,7 @@ void viewer::draw_selected_vertices(shader & program)
 void viewer::select_border_vertices()
 {
 	active_mesh().selected.clear();
-	for(index_t b = 0; b < active_mesh()->n_borders(); b++)
+	for(index_t b = 0; b < active_mesh()->n_borders; b++)
 		for_border(he, active_mesh(), active_mesh()->bt(b))
 			active_mesh().selected.push_back(active_mesh()->vt(he));
 }

@@ -10,8 +10,8 @@ namespace gproshan {
 
 void laplacian(const che * mesh, a_sp_mat & L, a_sp_mat & A)
 {
-	size_t n_edges = mesh->n_edges();
-	size_t n_vertices = mesh->n_vertices();
+	size_t n_edges = mesh->n_edges;
+	size_t n_vertices = mesh->n_vertices;
 
 	arma::umat DI(2, 2 * n_edges);
 	a_vec DV(2 * n_edges);
@@ -55,8 +55,8 @@ void laplacian(const che * mesh, sp_mat_e & L, sp_mat_e & A)
 {
 	gproshan_debug(LAPLACIAN);
 
-	size_t n_edges = mesh->n_edges();
-	size_t n_vertices = mesh->n_vertices();
+	size_t n_edges = mesh->n_edges;
+	size_t n_vertices = mesh->n_vertices;
 
 	sp_mat_e D(n_edges, n_vertices);
 	sp_mat_e S(n_edges, n_edges);

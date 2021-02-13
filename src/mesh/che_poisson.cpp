@@ -14,8 +14,8 @@ void poisson(che * mesh, const size_t & old_n_vertices, index_t k)
 {
 	if(!k) return;
 
-	a_mat B(mesh->n_vertices(), 3);
-	for(index_t v = 0; v < mesh->n_vertices(); v++)
+	a_mat B(mesh->n_vertices, 3);
+	for(index_t v = 0; v < mesh->n_vertices; v++)
 	{
 		if(v < old_n_vertices)
 		{
@@ -29,7 +29,7 @@ void poisson(che * mesh, const size_t & old_n_vertices, index_t k)
 	a_sp_mat L, A;
 	laplacian(mesh, L, A);
 
-	for(index_t i = 0; i < mesh->n_vertices(); i++)
+	for(index_t i = 0; i < mesh->n_vertices; i++)
 		B.row(i) *= -1 / A(i,i);
 
 	a_sp_mat M;
@@ -53,7 +53,7 @@ void poisson(che * mesh, const size_t & old_n_vertices, index_t k)
 
 	a_mat X;
 	if(spsolve(X, s * L, s * B))
-	for(index_t v = old_n_vertices; v < mesh->n_vertices(); v++)
+	for(index_t v = old_n_vertices; v < mesh->n_vertices; v++)
 	{
 		mesh->get_vertex(v).x = X(v - old_n_vertices, 0);
 		mesh->get_vertex(v).y = X(v - old_n_vertices, 1);
@@ -101,8 +101,8 @@ void biharmonic_interp_2(che * mesh, const size_t & old_n_vertices, const size_t
 {
 	if(old_n_vertices == n_vertices) return;
 
-	index_t * rings = new index_t[mesh->n_vertices()];
-	index_t * sorted = new index_t[mesh->n_vertices()];
+	index_t * rings = new index_t[mesh->n_vertices];
+	index_t * sorted = new index_t[mesh->n_vertices];
 	vector<index_t> limites;
 	mesh->compute_toplesets(rings, sorted, limites, border_vertices, k);
 

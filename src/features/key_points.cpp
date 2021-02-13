@@ -13,8 +13,8 @@ namespace gproshan {
 
 key_points::key_points(che * mesh, const real_t & percent)
 {
-	n_faces = mesh->n_faces();
-	n_vertices = mesh->n_vertices();
+	n_faces = mesh->n_faces;
+	n_vertices = mesh->n_vertices;
 
 	face_areas = new real_idx_t[n_faces];
 	

@@ -108,7 +108,7 @@ bool embree::occluded(ray_hit & r)
 void embree::build_bvh(const std::vector<che *> & meshes, const bool & pointcloud)
 {
 	for(auto & m: meshes)
-		if(!m->n_faces() || pointcloud) 
+		if(!m->n_faces || pointcloud) 
 			geomID_mesh[add_pointcloud(m)] = {m, true};
 		else
 			geomID_mesh[add_mesh(m)] = {m, false};
@@ -140,23 +140,23 @@ index_t embree::add_mesh(const che * mesh)
 	glm::vec3 * vertices = (glm::vec3 *) rtcSetNewGeometryBuffer(	geom,
 																	RTC_BUFFER_TYPE_VERTEX, 0,
 																	RTC_FORMAT_FLOAT3, 3 * sizeof(float),
-																	mesh->n_vertices()
+																	mesh->n_vertices
 																	);
 
 	index_t * tri_idxs = (index_t *) rtcSetNewGeometryBuffer(	geom,
 																RTC_BUFFER_TYPE_INDEX, 0,
 																RTC_FORMAT_UINT3, 3 * sizeof(index_t),
-																mesh->n_faces()
+																mesh->n_faces
 																);
 #ifdef SINGLE_P
-	memcpy(vertices, &mesh->gt(0), mesh->n_vertices() * sizeof(vertex));
+	memcpy(vertices, &mesh->gt(0), mesh->n_vertices * sizeof(vertex));
 #else
 	#pragma omp parallel for
-	for(index_t i = 0; i < mesh->n_vertices(); i++)
+	for(index_t i = 0; i < mesh->n_vertices; i++)
 		vertices[i] = glm::vec3(mesh->gt(i).x, mesh->gt(i).y, mesh->gt(i).z);
 #endif // SINGLE_P
 	
-	memcpy(tri_idxs, &mesh->vt(0), mesh->n_half_edges() * sizeof(index_t));
+	memcpy(tri_idxs, &mesh->vt(0), mesh->n_half_edges * sizeof(index_t));
 
 	rtcCommitGeometry(geom);
 	
@@ -174,18 +174,18 @@ index_t embree::add_pointcloud(const che * mesh)
 																RTC_BUFFER_TYPE_VERTEX, 0,
 																RTC_FORMAT_FLOAT4,
 																4 * sizeof(float),
-																mesh->n_vertices()
+																mesh->n_vertices
 																);
 	
 	glm::vec3 * normal = (glm::vec3 *) rtcSetNewGeometryBuffer(	geom,
 																RTC_BUFFER_TYPE_NORMAL, 0,
 																RTC_FORMAT_FLOAT3,
 																3 * sizeof(float),
-																mesh->n_vertices()
+																mesh->n_vertices
 																);
 	
 	#pragma omp parallel for
-	for(index_t i = 0; i < mesh->n_vertices(); i++)
+	for(index_t i = 0; i < mesh->n_vertices; i++)
 	{
 		pxyzr[i] = glm::vec4(mesh->gt(i).x, mesh->gt(i).y, mesh->gt(i).z, pc_radius);
 		normal[i] = glm::vec3(mesh->normal(i).x, mesh->normal(i).y, mesh->normal(i).z);
