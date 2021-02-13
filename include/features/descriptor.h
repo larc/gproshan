@@ -23,7 +23,6 @@ class descriptor
 		descriptor(const signature & sig, const che * mesh, const size_t & n_eigs);
 
 	private:
-		bool compute_eigs(const che * mesh, const size_t & n_eigs);
 };
 
 

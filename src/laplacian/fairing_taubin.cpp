@@ -16,13 +16,13 @@ fairing_taubin::~fairing_taubin()
 
 }
 
-void fairing_taubin::compute(che * shape)
+void fairing_taubin::compute(che * mesh)
 {
 	double time;
 /*
 	a_sp_mat_e Le, Ae;
 	TIC(time)
-	laplacian(shape, Le, Ae);
+	laplacian(mesh, Le, Ae);
 	TOC(time)
 	cout<<"time laplacian: "<<time<<endl;
 */
@@ -30,16 +30,16 @@ void fairing_taubin::compute(che * shape)
 
 	gproshan_debug(compute laplacian);
 
-	TIC(time) laplacian(shape, L, A); TOC(time)
+	TIC(time) laplacian(mesh, L, A); TOC(time)
 	gproshan_debug_var(time);
 
-	positions = new vertex[shape->n_vertices()];
+	positions = new vertex[mesh->n_vertices()];
 
-	a_mat X((real_t *) positions, 3, shape->n_vertices(), false, true);
+	a_mat X((real_t *) positions, 3, mesh->n_vertices(), false, true);
 
 	#pragma omp parallel for
-	for(index_t v = 0; v < shape->n_vertices(); v++)
-		positions[v] = shape->gt(v);
+	for(index_t v = 0; v < mesh->n_vertices(); v++)
+		positions[v] = mesh->gt(v);
 
 	a_mat R;
 	a_mat AX = A * X.t();

@@ -18,7 +18,7 @@ class fairing_spectral : public fairing
 		virtual ~fairing_spectral();
 
 	private:
-		void compute(che * shape);
+		void compute(che * mesh);
 };
 
 

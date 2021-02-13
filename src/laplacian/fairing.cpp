@@ -15,9 +15,9 @@ fairing::~fairing()
 	if(positions) delete [] positions;
 }
 
-void fairing::run(che * shape)
+void fairing::run(che * mesh)
 {
-	compute(shape);
+	compute(mesh);
 }
 
 vertex * fairing::get_postions()

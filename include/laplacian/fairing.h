@@ -16,11 +16,11 @@ class fairing
 	public:
 		fairing();
 		virtual ~fairing();
-		void run(che * shape);
+		void run(che * mesh);
 		vertex * get_postions();
 
 	protected:
-		virtual void compute(che * shape) = 0;
+		virtual void compute(che * mesh) = 0;
 };
 
 
