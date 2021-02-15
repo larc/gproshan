@@ -38,18 +38,31 @@ void descriptor::compute_gps()
 
 void descriptor::compute_hks()
 {
-	features.zeros(eigvec.n_rows, eigvec.n_cols);
+	eigvec %= eigvec; 								// element wise product
 	
-	eigvec %= eigvec; 		// element wise product
+	features.zeros(eigvec.n_rows, eigvec.n_cols);
 	
 	#pragma omp parallel for
 	for(index_t t = 0; t < features.n_cols; t++)
 		features.col(t) = eigvec * exp(-eigval * t);
 }
 
+///< http://imagine.enpc.fr/~aubrym/projects/wks/index.html
 void descriptor::compute_wks()
-{
-	features.zeros();
+{	
+	eigvec %= eigvec; 								// element wise product
+	eigval = log(eigval);
+
+	a_vec e = arma::linspace(eigval(1), eigval(eigval.n_elem - 1), eigval.n_elem);
+	real_t sigma = (e(1) - e(0)) * 6;				// 6 is wks variance see reference
+	real_t sigma_2 = 2 * sigma * sigma;
+	
+	features.zeros(eigvec.n_rows, e.n_elem);
+	
+	#pragma omp parallel for
+	for(index_t t = 0; t < features.n_cols; t++)
+		features.col(t) = eigvec * exp(-pow(e(t) - eigval, 2) / sigma_2) / 
+							sum(exp(-pow(e(t) - eigval, 2) / sigma_2));
 }
 
 
