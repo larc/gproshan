@@ -315,7 +315,6 @@ bool app_viewer::process_wks(viewer * p_view)
 	static bool status = true;
 
 	ImGui::InputInt("eigenvectors", &K);
-	ImGui::InputInt("times", &T);
 	if(!status) ImGui::TextColored({1, 0, 0, 1}, "Error computing WKS.");
 
 	if(ImGui::Button("Run"))
@@ -358,40 +357,32 @@ bool app_viewer::process_hks(viewer * p_view)
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
-	static int K = 100;
-	static int T = 100;
-
+	static int K = 50;
+	static bool status = true;
 	ImGui::InputInt("eigenvectors", &K);
-	ImGui::InputInt("times", &T);
+	if(!status) ImGui::TextColored({1, 0, 0, 1}, "Error computing HKS.");
 
 	if(ImGui::Button("Run"))
 	{
-		a_sp_mat L, A;
-		a_vec eigval;
-		a_mat eigvec;
-
-		TIC(view->time) K = eigs_laplacian(mesh, eigval, eigvec, L, A, K); TOC(view->time)
-		gproshan_log_var(view->time);
-
-		if(!K) return true;
-
-		real_t max_s = 0;
-		#pragma omp parallel for reduction(max: max_s)
-		for(index_t v = 0; v < mesh->n_vertices; v++)
+		descriptor HKS(descriptor::HKS, mesh, K);
+		
+		if(HKS)
 		{
-			a_vec s(T, arma::fill::zeros);
-			for(int t = 0; t < T; t++)
-			for(int k = 1; k < K; k++)
-				s(t) += exp(-abs(eigval(k)) * t) * eigvec(v, k) * eigvec(v, k);
+			status = true;
 
-			mesh->heatmap(v) = norm(abs(arma::fft(s, 128)));
-			//mesh->heatmap(v) = norm(s);
-			max_s = max(max_s, mesh->heatmap(v));
+			real_t max_s = 0;
+			#pragma omp parallel for reduction(max: max_s)
+			for(index_t v = 0; v < mesh->n_vertices; v++)
+			{
+				mesh->heatmap(v) = HKS(v);
+				max_s = max(max_s, mesh->heatmap(v));
+			}
+
+			#pragma omp parallel for
+			for(index_t v = 0; v < mesh->n_vertices; v++)
+				mesh->heatmap(v) /= max_s;
 		}
-
-		#pragma omp parallel for
-		for(index_t v = 0; v < mesh->n_vertices; v++)
-			mesh->heatmap(v) /= max_s;
+		else status = false;
 	}
 
 	return true;
@@ -405,10 +396,11 @@ bool app_viewer::process_gps(viewer * p_view)
 	static int K = 50;
 	static bool status = true;
 	ImGui::InputInt("eigenvectors", &K);
+	if(!status) ImGui::TextColored({1, 0, 0, 1}, "Error computing GPS.");
 
 	if(ImGui::Button("Run"))
 	{
-		descriptor GPS(descriptor::GPS, mesh, K);		
+		descriptor GPS(descriptor::GPS, mesh, K);
 		
 		if(GPS)
 		{
