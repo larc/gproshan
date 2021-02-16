@@ -19,16 +19,16 @@ class descriptor
 		a_vec eigval;
 		a_mat eigvec;
 		a_mat features;
-	
+		
 	public:
 		descriptor(const signature & sig, const che * mesh, const size_t & n_eigs);
 		operator bool () const;		///< return true if the features were computed
 		real_t operator () (const index_t & v) const;
 
 	private:
-		void compute_gps(const size_t & t);
-		void compute_hks(const size_t & t);
-		void compute_wks(const size_t & t);
+		void compute_gps();
+		void compute_hks();
+		void compute_wks();
 };
 
 
