@@ -71,7 +71,7 @@ include_directories(${gproshan_SOURCE_DIR}/imgui)
 
 
 FILE(GLOB_RECURSE imgui_sources ${gproshan_SOURCE_DIR}/imgui/*.cpp)
-add_library(imgui STATIC ${imgui_sources})
+add_library(imgui SHARED ${imgui_sources})
 
 
 set(ptx_code "")
@@ -91,7 +91,7 @@ if(CUDAToolkit_FOUND)
 	FILE(GLOB_RECURSE cu_sources ${gproshan_SOURCE_DIR}/src/*.cu)
 endif(CUDAToolkit_FOUND)
 
-add_library(gproshan STATIC ${cpp_sources} ${cu_sources} ${ptx_code})
+add_library(gproshan SHARED ${cpp_sources} ${cu_sources} ${ptx_code})
 
 target_compile_options(gproshan PRIVATE -Wall -Wno-unused-result)
 
@@ -117,11 +117,13 @@ if(CUDAToolkit_FOUND)
 	target_link_libraries(gproshan CUDA::cusparse)
 endif(CUDAToolkit_FOUND)
 
-add_executable(gproshan_viewer gproshan.cpp)
+add_executable(gproshan_exe gproshan.cpp)
+set_target_properties(gproshan_exe PROPERTIES OUTPUT_NAME gproshan)
+
 add_executable(test_geodesics test_geodesics.cpp)
 add_executable(test_image_denoising test_image_denoising.cpp)
 
-target_link_libraries(gproshan_viewer gproshan)
+target_link_libraries(gproshan_exe gproshan)
 target_link_libraries(test_geodesics gproshan)
 target_link_libraries(test_image_denoising gproshan)
 
