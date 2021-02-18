@@ -9,9 +9,6 @@
 #include <optix_function_table_definition.h>
 
 
-extern "C" char ptx_code[];
-
-
 // geometry processing and shape analysis framework
 // raytracing approach
 namespace gproshan::rt {
@@ -55,10 +52,9 @@ optix::optix(const std::vector<che *> & meshes)
 	optix_pipeline_compile_opt.exceptionFlags			= OPTIX_EXCEPTION_FLAG_NONE;
 	optix_pipeline_compile_opt.pipelineLaunchParamsVariableName = "optix_launch_params";
 
-	optix_pipeline_link_opt.overrideUsesMotionBlur	= false;
 	optix_pipeline_link_opt.maxTraceDepth			= 2;
 
-	const std::string str_ptx_code = ptx_code;
+	const std::string str_ptx_code = "";
 	
 	optixModuleCreateFromPTX(	optix_context,
 								&optix_module_compile_opt,

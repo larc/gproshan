@@ -26,7 +26,6 @@ if(CUDAToolkit_FOUND)
 	
 	find_package(OptiX 7.2)
 	if(OptiX_INCLUDE)
-#		set(CUDA_HOST_COMPILER ${CMAKE_CUDA_HOST_COMPILER})
 		add_definitions(-DGPROSHAN_OPTIX)
 		include_directories(${OptiX_INCLUDE})
 	endif(OptiX_INCLUDE)
@@ -74,24 +73,22 @@ FILE(GLOB_RECURSE imgui_sources ${gproshan_SOURCE_DIR}/imgui/*.cpp)
 add_library(imgui SHARED ${imgui_sources})
 
 
-set(ptx_code "")
-if(OptiX_INCLUDE)
-	cuda_compile_ptx(ptx_files "${gproshan_SOURCE_DIR}/src/raytracing/rt_optix.cu")
-	list(GET ptx_files 0 ptx_file)
-	set(ptx_code ptx_code.c)
-	add_custom_command(	OUTPUT ${ptx_code} 
-						COMMAND bin2c --const --padd 0 --type char --name ptx_code ${ptx_file} > ${ptx_code}
-						DEPENDS ${ptx_file} 
-						)
-endif(OptiX_INCLUDE)
-
-
 FILE(GLOB_RECURSE cpp_sources ${gproshan_SOURCE_DIR}/src/*.cpp)
 if(CUDAToolkit_FOUND)
 	FILE(GLOB_RECURSE cu_sources ${gproshan_SOURCE_DIR}/src/*.cu)
+	list(REMOVE_ITEM cu_sources ${gproshan_SOURCE_DIR}/src/raytracing/rt_optix.cu)
 endif(CUDAToolkit_FOUND)
 
-add_library(gproshan SHARED ${cpp_sources} ${cu_sources} ${ptx_code})
+
+add_library(gproshan SHARED ${cpp_sources} ${cu_sources})
+
+
+if(OptiX_INCLUDE)
+	add_library(ptx_sources OBJECT ${gproshan_SOURCE_DIR}/src/raytracing/rt_optix.cu)
+	set_property(TARGET ptx_sources PROPERTY CUDA_PTX_COMPILATION ON)
+	add_dependencies(gproshan ptx_sources)
+endif(OptiX_INCLUDE)
+
 
 target_compile_options(gproshan PRIVATE -Wall -Wno-unused-result)
 
@@ -112,6 +109,7 @@ endif(embree_FOUND)
 
 if(CUDAToolkit_FOUND)
 	target_link_libraries(gproshan CUDA::cudart)
+	target_link_libraries(gproshan CUDA::cuda_driver)
 	target_link_libraries(gproshan CUDA::cublas)
 	target_link_libraries(gproshan CUDA::cusolver)
 	target_link_libraries(gproshan CUDA::cusparse)
