@@ -116,9 +116,8 @@ target_link_libraries(test_gproshan gproshan)
 if(OptiX_INCLUDE)
 	add_library(ptx_sources OBJECT ${gproshan_SOURCE_DIR}/src/raytracing/rt_optix.cu)
 	set_property(TARGET ptx_sources PROPERTY CUDA_PTX_COMPILATION ON)
-	add_dependencies(test_gproshan ptx_sources)
-	add_custom_target(ptx_copy COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_OBJECTS:ptx_sources> $<TARGET_FILE_DIR:gproshan>)
-	add_dependencies(test_gproshan ptx_copy)
+	add_custom_target(ptx_cp_sources COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_OBJECTS:ptx_sources> $<TARGET_FILE_DIR:gproshan>)
+	add_dependencies(test_gproshan ptx_cp_sources)
 endif(OptiX_INCLUDE)
 
 

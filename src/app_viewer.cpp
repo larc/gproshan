@@ -11,7 +11,13 @@ using namespace gproshan::mdict;
 namespace gproshan {
 
 
-che * load_mesh(const string & file_path)
+app_viewer::~app_viewer()
+{
+	for(che * mesh: meshes)
+		delete mesh;
+}
+
+che * app_viewer::load_mesh(const string & file_path)
 {
 	size_t pos = file_path.rfind('.');
 	assert(pos != string::npos);
@@ -24,16 +30,6 @@ che * load_mesh(const string & file_path)
 	if(extension == "ptx") return new che_ptx(file_path);
 
 	return new che_img(file_path);
-}
-
-app_viewer::app_viewer()
-{
-}
-
-app_viewer::~app_viewer()
-{
-	for(che * mesh: meshes)
-		delete mesh;
 }
 
 int app_viewer::main(int nargs, const char ** args)
@@ -54,6 +50,14 @@ int app_viewer::main(int nargs, const char ** args)
 	gproshan_log_var(sizeof(real_t));
 	gproshan_log_var(time);
 	
+	init();
+	run();
+
+	return 0;
+}
+
+void app_viewer::init()
+{
 	sub_menus.push_back("Fairing");
 	add_process(GLFW_KEY_T, {"T", "Fairing Taubin", process_fairing_taubin});
 	add_process(GLFW_KEY_E, {"E", "Fairing Spectral", process_fairing_spectral});
@@ -106,12 +110,6 @@ int app_viewer::main(int nargs, const char ** args)
 	add_process(GLFW_KEY_K, {"K", "Gaussian curvature", process_gaussian_curvature});
 	add_process(GLFW_KEY_9, {"9", "Edge Collapse", process_edge_collapse});
 	add_process(GLFW_KEY_SEMICOLON, {"SEMICOLON", "Select multiple vertices", select_multiple});
-
-
-	run();
-
-
-	return 0;
 }
 
 bool paint_holes_vertices(viewer * p_view)
