@@ -12,6 +12,7 @@ out float vs_color;
 
 uniform mat4 model_view_mat;
 uniform mat4 proj_mat;
+uniform uint point_size;
 
 void main()
 {
@@ -21,5 +22,6 @@ void main()
 	vs_color = in_color;
 
 	gl_Position = proj_mat * model_view_mat * vec4(in_position, 1);
+	gl_PointSize = point_size;
 }
 
