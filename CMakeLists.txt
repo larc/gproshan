@@ -65,6 +65,7 @@ include_directories(${EIGEN3_INCLUDE_DIR})
 include_directories(${SuiteSparse_INCLUDE_DIRS})
 include_directories(${CGAL_INCLUDE_DIRS})
 
+
 include_directories(${gproshan_SOURCE_DIR}/include)
 include_directories(${gproshan_SOURCE_DIR}/imgui)
 
@@ -81,13 +82,6 @@ endif(CUDAToolkit_FOUND)
 
 
 add_library(gproshan SHARED ${cpp_sources} ${cu_sources})
-
-
-if(OptiX_INCLUDE)
-	add_library(ptx_sources OBJECT ${gproshan_SOURCE_DIR}/src/raytracing/rt_optix.cu)
-	set_property(TARGET ptx_sources PROPERTY CUDA_PTX_COMPILATION ON)
-	add_dependencies(gproshan ptx_sources)
-endif(OptiX_INCLUDE)
 
 
 target_compile_options(gproshan PRIVATE -Wall -Wno-unused-result)
@@ -115,15 +109,26 @@ if(CUDAToolkit_FOUND)
 	target_link_libraries(gproshan CUDA::cusparse)
 endif(CUDAToolkit_FOUND)
 
-add_executable(gproshan_exe gproshan.cpp)
-set_target_properties(gproshan_exe PROPERTIES OUTPUT_NAME gproshan)
+add_executable(test_gproshan gproshan.cpp)
+set_target_properties(test_gproshan PROPERTIES OUTPUT_NAME gproshan)
+target_link_libraries(test_gproshan gproshan)
+
+if(OptiX_INCLUDE)
+	add_library(ptx_sources OBJECT ${gproshan_SOURCE_DIR}/src/raytracing/rt_optix.cu)
+	set_property(TARGET ptx_sources PROPERTY CUDA_PTX_COMPILATION ON)
+	add_dependencies(test_gproshan ptx_sources)
+	add_custom_target(ptx_copy COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_OBJECTS:ptx_sources> $<TARGET_FILE_DIR:gproshan>)
+	add_dependencies(test_gproshan ptx_copy)
+endif(OptiX_INCLUDE)
+
 
 add_executable(test_geodesics test_geodesics.cpp)
-add_executable(test_image_denoising test_image_denoising.cpp)
-
-target_link_libraries(gproshan_exe gproshan)
 target_link_libraries(test_geodesics gproshan)
+
+
+add_executable(test_image_denoising test_image_denoising.cpp)
 target_link_libraries(test_image_denoising gproshan)
+
 
 file(MAKE_DIRECTORY tmp)
 
