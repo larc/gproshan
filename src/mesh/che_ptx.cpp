@@ -50,16 +50,37 @@ void che_ptx::read_file(const string & file)
 	float values[7];
 	char line[128];
 
-	for(index_t v = 0; v < n_vertices; v++)
+	bool rgb = false;
+
+	// vertex 0: x y z a or x y z r g b a
+	fgets(line, sizeof(line), fp);
+	rgb = sscanf(line, "%f %f %f %f %f %f %f", values, values + 1, values + 2, values + 3, values + 4, values + 5, values + 6) == 7;
+
+	if(rgb)
 	{
-		fgets(line, sizeof(line), fp);
+		GT[0] = { values[0], values[1], values[2] };
+		VC[0] = { values[4], values[5], values[6] };
 
-		if(sscanf(line, "%f %f %f %f %f %f %f", values, values + 1, values + 2, values + 3, values + 4, values + 5, values + 6) == 7)
-			VC[v] = { values[3], values[3], values[3] };
-		else 
+		for(index_t v = 1; v < n_vertices; v++)
+		{
+			fgets(line, sizeof(line), fp);
+			sscanf(line, "%f %f %f %f %f %f %f", values, values + 1, values + 2, values + 3, values + 4, values + 5, values + 6);
+			GT[v] = { values[0], values[1], values[2] };
 			VC[v] = { values[4], values[5], values[6] };
+		}
+	}
+	else
+	{
+		GT[0] = { values[0], values[1], values[2] };
+		VC[0] = { values[4], values[5], values[6] };
 
-		GT[v] = { values[0], values[1], values[2] };
+		for(index_t v = 1; v < n_vertices; v++)
+		{
+			fgets(line, sizeof(line), fp);
+			sscanf(line, "%f %f %f %f", values, values + 1, values + 2, values + 3);
+			GT[v] = { values[0], values[1], values[2] };
+			VC[v] = { values[4], values[3], values[3] };
+		}
 	}
 
 	fclose(fp);
