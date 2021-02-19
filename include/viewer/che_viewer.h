@@ -9,10 +9,10 @@
 
 #ifdef SINGLE_P
 	#define glVertex3v(x) glVertex3fv(x)
-	#define GL_VERTEX_T GL_FLOAT
+	#define GL_REAL GL_FLOAT
 #else
 	#define glVertex3v(x) glVertex3dv(x)
-	#define GL_VERTEX_T GL_DOUBLE
+	#define GL_REAL GL_DOUBLE
 #endif
 
 

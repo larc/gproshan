@@ -356,7 +356,7 @@ void msparse_coding::init_radial_feature_patches()
 	bool save_all = true;
 	if(save_all)
 	{
-		arma::mat AS;
+		a_mat AS;
 		AS.resize(m_params.n_patches, 13);
 		for(index_t i = 0; i < m_params.n_patches; i++)
 		{
@@ -542,8 +542,8 @@ real_t msparse_coding::execute()
 
 che * msparse_coding::point_cloud_reconstruction(real_t per, real_t fr)
 {
-	arma::mat S;
-	arma::mat alpha;
+	a_mat S;
+	a_mat alpha;
 
 	S.load(tmp_file_path(key_name + ".smp"));
 	alpha.load(tmp_file_path(key_name + ".alpha"));
@@ -566,7 +566,7 @@ che * msparse_coding::point_cloud_reconstruction(real_t per, real_t fr)
 	#pragma omp parallel for
 	for(index_t i = 0; i < m_params.n_patches; i++)
 	{
-		arma::mat T(3,3);
+		a_mat T(3,3);
 		T(0,0) = S(i,4);
 		T(1,0) = S(i,5);
 		T(2,0) = S(i,6);
@@ -941,7 +941,7 @@ real_t msparse_coding::mesh_reconstruction(const fmask_t & mask)
 		// simple means vertex
 		if(patches_map[v].size() && (!mask || mask(v)))
 		{
-			a_vec mv = arma::zeros(3);		
+			a_vec mv = arma::zeros<a_vec>(3);		
 			for(auto p: patches_map[v])
 				mv += patches[p.first].xyz.col(p.second);
 
