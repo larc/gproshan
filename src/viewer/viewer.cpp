@@ -165,10 +165,12 @@ bool viewer::run()
 			process_t & pro = p.second;
 			if(ImGui::CollapsingHeader(("[" + pro.key + "] " + pro.name).c_str(), &pro.selected, ImGuiTreeNodeFlags_DefaultOpen))
 			{
+				ImGui::PushID(pro.name.c_str());
 				ImGui::Indent();
 				pro.selected = pro.selected && p.second.function(this);
 				active_mesh().update_vbo();
 				ImGui::Unindent();
+				ImGui::PopID();
 			}
 		}
 		
