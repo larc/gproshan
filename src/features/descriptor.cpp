@@ -38,7 +38,7 @@ void descriptor::compute_gps()
 
 void descriptor::compute_hks()
 {
-	eigvec %= eigvec; 								// element wise product
+	eigvec = eigvec % eigvec; 						// element wise product
 	
 	features.zeros(eigvec.n_rows, eigvec.n_cols);
 	
@@ -50,7 +50,7 @@ void descriptor::compute_hks()
 ///< http://imagine.enpc.fr/~aubrym/projects/wks/index.html
 void descriptor::compute_wks()
 {	
-	eigvec %= eigvec; 								// element wise product
+	eigvec = eigvec % eigvec; 						// element wise product
 	eigval = log(eigval);
 
 	a_vec e = arma::linspace<a_vec>(eigval(1), eigval(eigval.n_elem - 1), eigval.n_elem);
