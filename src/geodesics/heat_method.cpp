@@ -34,12 +34,12 @@ double heat_method(real_t * dist, che * mesh, const vector<index_t> & sources)
 	a_mat u(mesh->n_vertices, 1);
 	
 	cholmod_common context;
-	cholmod_l_start(&context);
+	cholmod_start(&context);
 	
 	double solve_time = 0;
 
-	solve_time += solve_positive_definite(u, A, u0, &context);		// cholmod (suitesparse)
-	//assert(spsolve(u, A, u0));	// arma
+	//solve_time += solve_positive_definite(u, A, u0, &context);		// cholmod (suitesparse)
+	assert(spsolve(u, A, u0));	// arma
 
 	// extract geodesics
 	
@@ -48,14 +48,14 @@ double heat_method(real_t * dist, che * mesh, const vector<index_t> & sources)
 
 	a_mat phi(dist, mesh->n_vertices, 1, false);
 
-	solve_time += solve_positive_definite(phi, L, div, &context);	// cholmod (suitesparse)
-	//assert(spsolve(phi, L, div));	// arma
+	//solve_time += solve_positive_definite(phi, L, div, &context);	// cholmod (suitesparse)
+	assert(spsolve(phi, L, div));	// arma
 	
 	real_t min_val = phi.min();
 	phi.for_each([&min_val](a_mat::elem_type & val) { val -= min_val; val *= 0.5; });
 	
-	//cholmod_l_gpu_stats(&context);
-	cholmod_l_finish(&context);
+	//cholmod_gpu_stats(&context);
+	cholmod_finish(&context);
 
 	return solve_time;
 }
@@ -129,8 +129,8 @@ double solve_positive_definite(a_mat & x, const a_sp_mat & A, const a_mat & b, c
 	
 	cholmod_dense * cb = arma_2_cholmod(b, context);
 
-	cholmod_factor * L = cholmod_l_analyze(cA, context);
-	cholmod_l_factorize(cA, L, context);
+	cholmod_factor * L = cholmod_analyze(cA, context);
+	cholmod_factorize(cA, L, context);
 	
 	/* fill ratio
 	gproshan_debug_var(L->xsize);
@@ -140,22 +140,22 @@ double solve_positive_definite(a_mat & x, const a_sp_mat & A, const a_mat & b, c
 
 	double solve_time;
 	TIC(solve_time)
-	cholmod_dense * cx = cholmod_l_solve(CHOLMOD_A, L, cb, context);
+	cholmod_dense * cx = cholmod_solve(CHOLMOD_A, L, cb, context);
 	TOC(solve_time)
 	
 	assert(x.n_rows == b.n_rows);
 	memcpy(x.memptr(), cx->x, x.n_rows * sizeof(real_t));
 
-	cholmod_l_free_factor(&L, context);
-	cholmod_l_free_sparse(&cA, context);
-	cholmod_l_free_dense(&cb, context);
+	cholmod_free_factor(&L, context);
+	cholmod_free_sparse(&cA, context);
+	cholmod_free_dense(&cb, context);
 
 	return solve_time;
 }
 	
 cholmod_dense * arma_2_cholmod(const a_mat & D, cholmod_common * context)
 {
-	cholmod_dense * cD = cholmod_l_allocate_dense(D.n_rows, D.n_cols, D.n_rows, CHOLMOD_REAL, context);
+	cholmod_dense * cD = cholmod_allocate_dense(D.n_rows, D.n_cols, D.n_rows, CHOLMOD_REAL, context);
 	memcpy(cD->x, D.memptr(), D.n_elem * sizeof(real_t));
 
 	return cD;
@@ -165,7 +165,7 @@ cholmod_sparse * arma_2_cholmod(const a_sp_mat & S, cholmod_common * context)
 {
 	assert(sizeof(arma::uword) == sizeof(SuiteSparse_long));
 	
-	cholmod_sparse * cS = cholmod_l_allocate_sparse(S.n_rows, S.n_cols, S.n_nonzero, 1, 1, 0, CHOLMOD_REAL, context);
+	cholmod_sparse * cS = cholmod_allocate_sparse(S.n_rows, S.n_cols, S.n_nonzero, 1, 1, 0, CHOLMOD_REAL, context);
 	
 	memcpy(cS->p, S.col_ptrs, (S.n_cols + 1) * sizeof(arma::uword));
 	memcpy(cS->i, S.row_indices, S.n_nonzero * sizeof(arma::uword));

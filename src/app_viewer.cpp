@@ -36,7 +36,7 @@ int app_viewer::main(int nargs, const char ** args)
 {
 	if(nargs < 2)
 	{
-		printf("./gproshan [mesh_paths.(off,obj,ply)]\n");
+		printf("./%s [mesh_paths.(off,obj,ply)]\n", args[0]);
 		return 0;
 	}
 
@@ -65,9 +65,7 @@ void app_viewer::init()
 	sub_menus.push_back("Geodesics");
 	add_process(GLFW_KEY_F, {"F", "Fast Marching", process_geodesics_fm});
 	add_process(GLFW_KEY_C, {"C", "Parallel Toplesets Propagation CPU", process_geodesics_ptp_cpu});
-#ifndef SINGLE_P
 	add_process(GLFW_KEY_L, {"L", "Heat Method", process_geodesics_heat_method});
-#endif
 
 #ifdef GPROSHAN_CUDA
 	add_process(GLFW_KEY_G, {"G", "Parallel Toplesets Propagation GPU", process_geodesics_ptp_gpu});
