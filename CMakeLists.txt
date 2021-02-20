@@ -41,7 +41,6 @@ endif(embree_FOUND)
 
 find_package(Threads REQUIRED)
 find_package(OpenMP REQUIRED)
-find_package(OpenGL REQUIRED)
 find_package(GLEW 2 REQUIRED)
 find_package(glfw3 3 REQUIRED)
 find_package(glm REQUIRED)
@@ -56,7 +55,6 @@ find_package(Boost COMPONENTS thread system)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 
 
-include_directories(${OPENGL_INCLUDE_DIR})
 include_directories(${GLEW_INCLUDE_DIRS})
 include_directories(${GLFW3_INCLUDE_DIRS})
 include_directories(${X11_INCLUDE_DIR})
@@ -72,6 +70,8 @@ include_directories(${gproshan_SOURCE_DIR}/imgui)
 
 FILE(GLOB_RECURSE imgui_sources ${gproshan_SOURCE_DIR}/imgui/*.cpp)
 add_library(imgui SHARED ${imgui_sources})
+target_link_libraries(imgui GLEW::GLEW)
+target_link_libraries(imgui glfw)
 
 
 FILE(GLOB_RECURSE cpp_sources ${gproshan_SOURCE_DIR}/src/*.cpp)
@@ -87,7 +87,6 @@ add_library(gproshan SHARED ${cpp_sources} ${cu_sources})
 target_compile_options(gproshan PRIVATE -Wall -Wno-unused-result)
 
 target_link_libraries(gproshan OpenMP::OpenMP_CXX)
-target_link_libraries(gproshan OpenGL::GL)
 target_link_libraries(gproshan GLEW::GLEW)
 target_link_libraries(gproshan glfw)
 target_link_libraries(gproshan ${X11_X11_LIB})
