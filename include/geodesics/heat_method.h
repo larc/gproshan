@@ -13,20 +13,17 @@
 #include "mesh/che.h"
 #include "include_arma.h"
 
-#include <cholmod.h>	// suitesparse/cholmod.h
+#include <cholmod.h>
 
 
 // geometry processing and shape analysis framework
 namespace gproshan {
 
+enum heat_method_opt { HEAT_ARMA, HEAT_CHOLMOD, HEAT_CUDA };
 
-double heat_method(real_t * dist, che * mesh, const std::vector<index_t> & sources);
+double heat_method(real_t * dist, const che * mesh, const std::vector<index_t> & sources, const heat_method_opt & opt);
 
-#ifdef GPROSHAN_CUDA
-real_t * heat_method_gpu(che * mesh, const std::vector<index_t> & sources, double & solve_time);
-#endif // GPROSHAN_CUDA
-
-void compute_divergence(che * mesh, const a_mat & u, a_mat & div);
+void compute_divergence(const che * mesh, const a_mat & u, a_mat & div);
 
 /// cholmod Keenan implementation
 /// base on the code https://github.com/larc/dgpdec-course/tree/master/Geodesics
@@ -37,6 +34,7 @@ cholmod_dense * arma_2_cholmod(const a_mat & m, cholmod_common * context);
 cholmod_sparse * arma_2_cholmod(const a_sp_mat & m, cholmod_common * context);
 
 #ifdef GPROSHAN_CUDA
+
 /// 
 double solve_positive_definite_gpu(a_mat & x, const a_sp_mat & A, const a_mat & b);
 #endif // GPROSHAN_CUDA

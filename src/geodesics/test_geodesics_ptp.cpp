@@ -282,7 +282,7 @@ double test_heat_method_cholmod(real_t & error, double & stime, const real_t * e
 	real_t * dist = new real_t[mesh->n_vertices];
 	for(int i = 0; i < n_test; i++)
 	{
-		TIC(t) st = heat_method(dist, mesh, source); TOC(t)
+		TIC(t) st = heat_method(dist, mesh, source, HEAT_CHOLMOD); TOC(t)
 		ptime = min(t - st, ptime);
 		stime = min(st, stime);
 	}
@@ -325,8 +325,7 @@ double test_heat_method_gpu(real_t & error, double & stime, const real_t * exact
 	{
 		if(dist) delete [] dist;
 		
-		TIC(t) dist = heat_method_gpu(mesh, source, st); TOC(t)
-
+		TIC(t) st = heat_method(dist, mesh, source, HEAT_CUDA); TOC(t)
 		ptime = min(t - st, ptime);
 		stime = min(st, stime);
 	}

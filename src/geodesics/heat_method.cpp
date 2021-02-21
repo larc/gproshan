@@ -11,7 +11,7 @@ using namespace std;
 namespace gproshan {
 
 
-double heat_method(real_t * dist, che * mesh, const vector<index_t> & sources)
+double heat_method(real_t * dist, const che * mesh, const std::vector<index_t> & sources, const heat_method_opt & opt)
 {
 	if(!sources.size()) return 0;
 	
@@ -34,12 +34,24 @@ double heat_method(real_t * dist, che * mesh, const vector<index_t> & sources)
 	a_mat u(mesh->n_vertices, 1);
 	
 	cholmod_common context;
-	cholmod_start(&context);
+	cholmod_l_start(&context);
 	
 	double solve_time = 0;
-
-	//solve_time += solve_positive_definite(u, A, u0, &context);		// cholmod (suitesparse)
-	assert(spsolve(u, A, u0));	// arma
+	
+	switch(opt)
+	{
+		case HEAT_ARMA: 
+			if(spsolve(u, A, u0)) gproshan_error(arma: no solution);
+			break;
+		case HEAT_CHOLMOD:
+			solve_time += solve_positive_definite(u, A, u0, &context);
+			break;
+	#ifdef GPROSHAN_CUDA
+		case HEAT_CUDA:
+			solve_time += solve_positive_definite_gpu(u, A, u0);
+			break;
+	#endif // GPROSHAN_CUDA
+	}
 
 	// extract geodesics
 	
@@ -48,66 +60,30 @@ double heat_method(real_t * dist, che * mesh, const vector<index_t> & sources)
 
 	a_mat phi(dist, mesh->n_vertices, 1, false);
 
-	//solve_time += solve_positive_definite(phi, L, div, &context);	// cholmod (suitesparse)
-	assert(spsolve(phi, L, div));	// arma
-	
+	switch(opt)
+	{
+		case HEAT_ARMA: 
+			if(spsolve(phi, L, div)) gproshan_error(arma: no solution);
+			break;
+		case HEAT_CHOLMOD:
+			solve_time += solve_positive_definite(phi, L, div, &context);
+			break;
+	#ifdef GPROSHAN_CUDA
+		case HEAT_CUDA:
+			solve_time += solve_positive_definite_gpu(phi, L, div);
+			break;
+	#endif // GPROSHAN_CUDA
+	}
+
 	real_t min_val = phi.min();
 	phi.for_each([&min_val](a_mat::elem_type & val) { val -= min_val; val *= 0.5; });
 	
-	//cholmod_gpu_stats(&context);
-	cholmod_finish(&context);
+	cholmod_l_finish(&context);
 
 	return solve_time;
 }
 
-#ifdef GPROSHAN_CUDA
-
-real_t * heat_method_gpu(che * mesh, const vector<index_t> & sources, double & solve_time)
-{
-	if(!sources.size()) return 0;
-	
-	// build impulse signal
-	a_mat u0(mesh->n_vertices, 1, arma::fill::zeros);
-	for(auto & v: sources) u0(v) = 1;
-	
-	// step
-	real_t dt = mesh->mean_edge();
-	dt *= dt;
-
-	a_sp_mat L, A;
-	laplacian(mesh, L, A);
-	
-	// make L positive-definite
-	L += 1.0e-8 * A;
-
-	// heat flow for short interval
-	A += dt * L;
-	a_mat u(mesh->n_vertices, 1);
-	
-	solve_time = 0;
-
-	solve_time += solve_positive_definite_gpu(u, A, u0);		// cusorlver (cusparse)
-
-	// extract geodesics
-	real_t * dist = new real_t[mesh->n_vertices];
-	
-	a_mat div(mesh->n_vertices, 1);
-	compute_divergence(mesh, u, div);
-
-	a_mat phi(dist, mesh->n_vertices, 1, false);
-
-	solve_time += solve_positive_definite_gpu(phi, L, div);	// cusolver (cusparse)
-	
-	real_t min_val = phi.min();
-	phi.for_each([&min_val](a_mat::elem_type & val) { val -= min_val; val *= 0.5; });
-
-	return dist;
-}
-
-#endif // GPROSHAN_CUDA
-
-
-void compute_divergence(che * mesh, const a_mat & u, a_mat & div)
+void compute_divergence(const che * mesh, const a_mat & u, a_mat & div)
 {
 	for(index_t v = 0; v < mesh->n_vertices; v++)
 	{
@@ -129,8 +105,8 @@ double solve_positive_definite(a_mat & x, const a_sp_mat & A, const a_mat & b, c
 	
 	cholmod_dense * cb = arma_2_cholmod(b, context);
 
-	cholmod_factor * L = cholmod_analyze(cA, context);
-	cholmod_factorize(cA, L, context);
+	cholmod_factor * L = cholmod_l_analyze(cA, context);
+	cholmod_l_factorize(cA, L, context);
 	
 	/* fill ratio
 	gproshan_debug_var(L->xsize);
@@ -140,22 +116,22 @@ double solve_positive_definite(a_mat & x, const a_sp_mat & A, const a_mat & b, c
 
 	double solve_time;
 	TIC(solve_time)
-	cholmod_dense * cx = cholmod_solve(CHOLMOD_A, L, cb, context);
+	cholmod_dense * cx = cholmod_l_solve(CHOLMOD_A, L, cb, context);
 	TOC(solve_time)
 	
 	assert(x.n_rows == b.n_rows);
 	memcpy(x.memptr(), cx->x, x.n_rows * sizeof(real_t));
 
-	cholmod_free_factor(&L, context);
-	cholmod_free_sparse(&cA, context);
-	cholmod_free_dense(&cb, context);
+	cholmod_l_free_factor(&L, context);
+	cholmod_l_free_sparse(&cA, context);
+	cholmod_l_free_dense(&cb, context);
 
 	return solve_time;
 }
 	
 cholmod_dense * arma_2_cholmod(const a_mat & D, cholmod_common * context)
 {
-	cholmod_dense * cD = cholmod_allocate_dense(D.n_rows, D.n_cols, D.n_rows, CHOLMOD_REAL, context);
+	cholmod_dense * cD = cholmod_l_allocate_dense(D.n_rows, D.n_cols, D.n_rows, CHOLMOD_REAL, context);
 	memcpy(cD->x, D.memptr(), D.n_elem * sizeof(real_t));
 
 	return cD;
@@ -165,7 +141,7 @@ cholmod_sparse * arma_2_cholmod(const a_sp_mat & S, cholmod_common * context)
 {
 	assert(sizeof(arma::uword) == sizeof(SuiteSparse_long));
 	
-	cholmod_sparse * cS = cholmod_allocate_sparse(S.n_rows, S.n_cols, S.n_nonzero, 1, 1, 0, CHOLMOD_REAL, context);
+	cholmod_sparse * cS = cholmod_l_allocate_sparse(S.n_rows, S.n_cols, S.n_nonzero, 1, 1, 0, CHOLMOD_REAL, context);
 	
 	memcpy(cS->p, S.col_ptrs, (S.n_cols + 1) * sizeof(arma::uword));
 	memcpy(cS->i, S.row_indices, S.n_nonzero * sizeof(arma::uword));
