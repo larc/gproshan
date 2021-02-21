@@ -2,6 +2,8 @@
 
 #ifdef GPROSHAN_EMBREE
 
+#include "util.h"
+
 #include <iostream>
 #include <random>
 #include <cstring>
@@ -148,14 +150,8 @@ index_t embree::add_mesh(const che * mesh)
 																RTC_FORMAT_UINT3, 3 * sizeof(index_t),
 																mesh->n_faces
 																);
-#ifdef SINGLE_P
-	memcpy(vertices, &mesh->gt(0), mesh->n_vertices * sizeof(vertex));
-#else
-	#pragma omp parallel for
-	for(index_t i = 0; i < mesh->n_vertices; i++)
-		vertices[i] = glm::vec3(mesh->gt(i).x, mesh->gt(i).y, mesh->gt(i).z);
-#endif // SINGLE_P
-	
+
+	copy_real_t_array((float *) vertices, (real_t *) &mesh->gt(0), 3 * mesh->n_vertices);
 	memcpy(tri_idxs, &mesh->vt(0), mesh->n_half_edges * sizeof(index_t));
 
 	rtcCommitGeometry(geom);

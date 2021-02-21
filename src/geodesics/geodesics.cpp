@@ -246,7 +246,7 @@ void geodesics::run_heat_method_gpu(che * mesh, const vector<index_t> & sources)
 {
 	double time_total, solve_time;
 	TIC(time_total)
-	solve_time = heat_method(dist, mesh, sources, HEAT_ARMA);
+	solve_time = heat_method(dist, mesh, sources, HEAT_CUDA);
 	TOC(time_total)
 
 	gproshan_log_var(time_total - solve_time);
