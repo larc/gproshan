@@ -1,9 +1,9 @@
 #include "mesh/che_off.h"
 
-#include <fstream>
-#include <vector>
 #include <cstring>
 #include <cassert>
+#include <cstdio>
+#include <fstream>
 
 using namespace std;
 
@@ -27,25 +27,34 @@ che_off::~che_off()
 
 void che_off::read_file(const string & file)
 {
-	string soff;
-	size_t n_v, n_f, v;
-
-	ifstream is(file);
-
-	assert(is.good());
-
-	is >> soff;
-	is >> n_v >> n_f >> v;
-	init(n_v, n_f);
+	char soff[32];
+	size_t nv, nf, ne;
 	
-	real_t alpha;	// color
-	for(index_t i = 0; i < n_vertices; i++)
+	FILE * fp = fopen(file.c_str(), "r");
+	assert(fp);
+
+	fgets(soff, sizeof(soff), fp);
+	fscanf(fp, "%lu %lu %lu", &nv, &nf, &ne);
+	
+	init(nv, nf);
+	
+	float x, y, z, r, g, b, a;
+	for(index_t v = 0; v < n_vertices; v++)
 	{
-		is >> GT[i];
+		fscanf(fp, "%f %f %f", &x, &y, &z);
+		GT[v] = { x, y, z };
+
 		if(soff[0] == 'C' || soff[1] == 'C')
-			is >> VC[i] >> alpha;
+		{
+			fscanf(fp, "%f %f %f %f", &r, &g, &b, &a);
+			VC[v] = { r, g, b };
+		}
+
 		if(soff[0] == 'N')
-			is >> VN[i];
+		{
+			fscanf(fp, "%f %f %f", &x, &y, &z);
+			VN[v] = { x, y, z };
+		}
 	}
 	
 	if(soff[0] == 'C' || soff[1] == 'C')
@@ -58,31 +67,31 @@ void che_off::read_file(const string & file)
 	index_t he = 0;
 	for(index_t i = 0; i < n_faces; i++)
 	{
-		is >> v;
-		if(!i && v > che::mtrig)
+		fscanf(fp, "%lu", &ne);
+		if(!i && ne > che::mtrig)
 		{
 			vertex * tGT = GT; GT = nullptr;
 
 			delete_me();
-			init(n_v, n_f * (v - che::mtrig + 1));
+			init(nv, nf * (ne - che::mtrig + 1));
 
 			GT = tGT;
 		}
 
-		for(index_t j = 0; j < v; j++)
-			is >> VT[he++];
+		for(index_t j = 0; j < ne; j++)
+			fscanf(fp, "%u", VT + he++);
 
 		// divide face
-		if(v == che::mquad)
+		if(ne == che::mquad)
 		{
-			VT[he] = VT[he - v];		he++;
+			VT[he] = VT[he - ne];			he++;
 			VT[he] = VT[he - che::mtrig];	he++;
 
 			i++;
 		}
 	}
 
-	is.close();
+	fclose(fp);
 }
 
 void che_off::write_file(const che * mesh, const string & file, const che_off::type & off, const bool & pointcloud)

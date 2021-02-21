@@ -3,7 +3,6 @@
 #include <cstring>
 #include <cassert>
 #include <cstdio>
-#include <vector>
 
 using namespace std;
 
