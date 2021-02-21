@@ -17,7 +17,7 @@ double heat_method(real_t * dist, const che * mesh, const std::vector<index_t> &
 	if(!sources.size()) return 0;
 	
 	// build impulse signal
-	a_mat u0(mesh->n_vertices, 1, arma::fill::zeros);
+	a_vec u0(mesh->n_vertices, arma::fill::zeros);
 	for(auto & v: sources) u0(v) = 1;
 	
 	// step
@@ -32,7 +32,7 @@ double heat_method(real_t * dist, const che * mesh, const std::vector<index_t> &
 
 	// heat flow for short interval
 	A += dt * L;
-	a_mat u(mesh->n_vertices, 1);
+	a_vec u(mesh->n_vertices);
 	
 	cholmod_common context;
 	cholmod_l_start(&context);
@@ -56,10 +56,10 @@ double heat_method(real_t * dist, const che * mesh, const std::vector<index_t> &
 
 	// extract geodesics
 	
-	a_mat div(mesh->n_vertices, 1);
+	a_vec div(mesh->n_vertices);
 	compute_divergence(mesh, u, div);
 
-	a_mat phi(dist, mesh->n_vertices, 1, false);
+	a_vec phi(dist, mesh->n_vertices, false);
 
 	switch(opt)
 	{
@@ -77,7 +77,8 @@ double heat_method(real_t * dist, const che * mesh, const std::vector<index_t> &
 	}
 
 	real_t min_val = phi.min();
-	phi.for_each([&min_val](a_mat::elem_type & val) { val -= min_val; val *= 0.5; });
+	phi -= min_val;
+	phi *= 0.5;
 	
 	cholmod_l_finish(&context);
 
