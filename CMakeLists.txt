@@ -74,6 +74,8 @@ target_link_libraries(imgui GLEW::GLEW)
 target_link_libraries(imgui glfw)
 
 
+add_compile_definitions(GPROSHAN_DIR="${gproshan_SOURCE_DIR}")
+
 FILE(GLOB_RECURSE cpp_sources ${gproshan_SOURCE_DIR}/src/*.cpp)
 if(CUDAToolkit_FOUND)
 	FILE(GLOB_RECURSE cu_sources ${gproshan_SOURCE_DIR}/src/*.cu)

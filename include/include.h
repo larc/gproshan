@@ -24,8 +24,8 @@ typedef unsigned int index_t;
 #endif
 
 
-#define TMP_DIR	"../tmp/"
-#define tmp_file_path(file) (std::string(TMP_DIR) + file)
+#define tmp_file_path(file) (std::string(GPROSHAN_DIR) + "/tmp/" + file)
+#define shaders_path(file) (std::string(GPROSHAN_DIR) + "/shaders/" + file)
 
 #ifdef LOG
 	#define gproshan_log_var(vari) std::cerr << "\033[0;33m[LOG] " << std::setprecision(3) << std::scientific << #vari << ":\033[0m " << (vari) << std::endl

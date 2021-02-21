@@ -158,7 +158,10 @@ bool viewer::run()
 		ImGui::Begin("gproshan");
 
 		if(render_pointcloud)
+		{
+			ImGui::Checkbox("point_normals", &point_normals);
 			ImGui::SliderInt("point_size", (int *) &point_size, 1, 32);
+		}
 
 		for(auto & p: processes)
 		{
@@ -290,23 +293,23 @@ void viewer::init_menus()
 
 void viewer::init_glsl()
 {
-	shader_sphere.load_vertex("../shaders/vertex_sphere.glsl");
-	shader_sphere.load_fragment("../shaders/fragment_sphere.glsl");
+	shader_sphere.load_vertex(shaders_path("vertex_sphere.glsl"));
+	shader_sphere.load_fragment(shaders_path("fragment_sphere.glsl"));
 
-	shader_triangles.load_vertex("../shaders/vertex.glsl");
-	shader_triangles.load_geometry("../shaders/geometry.glsl");
-	shader_triangles.load_fragment("../shaders/fragment.glsl");
+	shader_triangles.load_vertex(shaders_path("vertex.glsl"));
+	shader_triangles.load_geometry(shaders_path("geometry.glsl"));
+	shader_triangles.load_fragment(shaders_path("fragment.glsl"));
 	
-	shader_normals.load_vertex("../shaders/vertex_normals.glsl");
-	shader_normals.load_geometry("../shaders/geometry_normals.glsl");
-	shader_normals.load_fragment("../shaders/fragment_normals.glsl");
+	shader_normals.load_vertex(shaders_path("vertex_normals.glsl"));
+	shader_normals.load_geometry(shaders_path("geometry_normals.glsl"));
+	shader_normals.load_fragment(shaders_path("fragment_normals.glsl"));
 	
-	shader_gradient.load_vertex("../shaders/vertex_gradient.glsl");
-	shader_gradient.load_geometry("../shaders/geometry_gradient.glsl");
-	shader_gradient.load_fragment("../shaders/fragment_gradient.glsl");
+	shader_gradient.load_vertex(shaders_path("vertex_gradient.glsl"));
+	shader_gradient.load_geometry(shaders_path("geometry_gradient.glsl"));
+	shader_gradient.load_fragment(shaders_path("fragment_gradient.glsl"));
 	
-	shader_pointcloud.load_vertex("../shaders/vertex_pointcloud.glsl");
-	shader_pointcloud.load_fragment("../shaders/fragment_pointcloud.glsl");
+	shader_pointcloud.load_vertex(shaders_path("vertex_pointcloud.glsl"));
+	shader_pointcloud.load_fragment(shaders_path("fragment_pointcloud.glsl"));
 }
 
 void viewer::add_process(const int & key, const process_t & process)
@@ -730,6 +733,7 @@ void viewer::render_gl()
 	glProgramUniform3f(shader_pointcloud, shader_pointcloud("light"), light[1], light[2], light[3]);
 	glProgramUniformMatrix4fv(shader_pointcloud, shader_pointcloud("model_view_mat"), 1, 0, &view_mat[0][0]);
 	glProgramUniformMatrix4fv(shader_pointcloud, shader_pointcloud("proj_mat"), 1, 0, &proj_mat[0][0]);
+	glProgramUniform1i(shader_pointcloud, shader_pointcloud("point_normals"), point_normals);
 	glProgramUniform1ui(shader_pointcloud, shader_pointcloud("point_size"), point_size);
 
 
