@@ -37,16 +37,20 @@ namespace gproshan {
 
 class app_viewer : public viewer
 {
-	private:
+	protected:
 		double time;
 
 	public:
-		app_viewer();
+		app_viewer() = default;
 		~app_viewer();
 		
 		int main(int nargs, const char ** args);
 	
-	private:
+	protected:
+		virtual void init();
+		
+		che * load_mesh(const string & file_path);
+
 		static bool process_fairing_taubin(viewer * p_view);
 		static bool process_fairing_spectral(viewer * p_view);
 

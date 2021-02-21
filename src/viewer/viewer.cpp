@@ -153,22 +153,29 @@ bool viewer::run()
 			ImGui::EndMainMenuBar();
 		}
 		
+		ImGui::SetNextWindowSize(ImVec2(320, -1));
+		ImGui::SetNextWindowPos(ImVec2(0, 20), ImGuiCond_Once);
+		ImGui::Begin("gproshan");
+
+		if(render_pointcloud)
+			ImGui::SliderInt("point_size", (int *) &point_size, 1, 32);
+
 		for(auto & p: processes)
 		{
 			process_t & pro = p.second;
-			if(pro.selected)
+			if(ImGui::CollapsingHeader(("[" + pro.key + "] " + pro.name).c_str(), &pro.selected, ImGuiTreeNodeFlags_DefaultOpen))
 			{
-				ImGui::SetNextWindowSize(ImVec2(320, -1));
-				ImGui::SetNextWindowPos(ImVec2(0, 20), ImGuiCond_Once);
-				ImGui::Begin(("[" + pro.key + "] " + pro.name).c_str(), &pro.selected);
-				
+				ImGui::PushID(pro.name.c_str());
+				ImGui::Indent();
 				pro.selected = pro.selected && p.second.function(this);
 				active_mesh().update_vbo();
-				
-				ImGui::End();
+				ImGui::Unindent();
+				ImGui::PopID();
 			}
 		}
-				
+		
+		ImGui::End();
+
 		// Rendering
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -233,6 +240,7 @@ void viewer::init_gl()
 
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
+	glEnable(GL_PROGRAM_POINT_SIZE);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
@@ -722,6 +730,7 @@ void viewer::render_gl()
 	glProgramUniform3f(shader_pointcloud, shader_pointcloud("light"), light[1], light[2], light[3]);
 	glProgramUniformMatrix4fv(shader_pointcloud, shader_pointcloud("model_view_mat"), 1, 0, &view_mat[0][0]);
 	glProgramUniformMatrix4fv(shader_pointcloud, shader_pointcloud("proj_mat"), 1, 0, &proj_mat[0][0]);
+	glProgramUniform1ui(shader_pointcloud, shader_pointcloud("point_size"), point_size);
 
 
 	draw_meshes(shader_triangles);

@@ -20,6 +20,12 @@
 #include "imgui_impl_opengl3.h"
 
 
+#ifdef SINGLE_P
+	#define ImGui_InputReal ImGui::InputFloat
+#else
+	#define ImGui_InputReal ImGui::InputDouble
+#endif // SINGLE_P
+
 #define N_MESHES 12
 
 
@@ -84,6 +90,7 @@ class viewer
 
 		bool action = false;
 		
+		unsigned int point_size = 1;
 		bool render_pointcloud = false;
 		bool render_wireframe = false;
 		bool render_wireframe_fill = false;

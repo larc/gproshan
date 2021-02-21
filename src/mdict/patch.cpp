@@ -76,7 +76,7 @@ index_t patch::find(const index_t * indexes, size_t nc, index_t idx_global)
 	return -1;
 }
 
-bool patch::add_vertex_by_faces(const vertex & c, vertex & n, vector<vertex> & N, double thr_angle, const real_t * geo, che * mesh, const index_t & v, double & area, double & proj_area, double deviation)
+bool patch::add_vertex_by_faces(const vertex & c, vertex & n, vector<vertex> & N, double thr_angle, const real_t * geo, che * mesh, const index_t & v, real_t & area, real_t & proj_area, real_t deviation)
 {
 	// it needs to return both vertices
 	// it needs to filter repeated indexes.
@@ -142,7 +142,7 @@ bool patch::add_vertex_by_faces(const vertex & c, vertex & n, vector<vertex> & N
 	return added;
 }
 
-void patch::init_random(const vertex & c, const arma::mat & T, const real_t & radio, const real_t & max_radio, const real_t & percent, const real_t & fr)
+void patch::init_random(const vertex & c, const a_mat & T, const real_t & radio, const real_t & max_radio, const real_t & percent, const real_t & fr)
 {
 	this->radio = radio;
 	this->T = T;

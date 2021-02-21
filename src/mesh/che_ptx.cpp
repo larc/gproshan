@@ -1,10 +1,9 @@
 #include "mesh/che_ptx.h"
 
-#include <fstream>
-#include <sstream>
-#include <vector>
 #include <cstring>
 #include <cassert>
+#include <cstdio>
+#include <vector>
 
 using namespace std;
 
@@ -28,46 +27,64 @@ che_ptx::~che_ptx()
 
 void che_ptx::read_file(const string & file)
 {
-	ifstream is(file);
-
-	assert(is.good());
+	FILE * fp = fopen(file.c_str(), "r");
+	assert(fp);
 
 	size_t n_rows, n_cols;
-	vertex T[4], R[3], tr;
-	real_t s;
+	float T[12], R[12], tr[4];
 
-	is >> n_rows >> n_cols;
+	fscanf(fp, "%lu %lu", &n_rows, &n_cols);
+	
+	for(index_t i = 0; i < 12; i++)
+		fscanf(fp, "%f", T + i);
 
-	is >> T[0] >> T[1] >> T[2] >> T[3];
-	is >> R[0] >> s;
-	is >> R[1] >> s;
-	is >> R[2] >> s;
-	is >> tr >> s;
-
-	real_t * points = new real_t[7 * n_rows * n_cols];
-
-	index_t p = 0;
-	while(is >> points[p++]);
-
-	// p is offset for [x y z a] or [x y z a r g b] point data
-	p = n_rows * n_cols * 4 == p ? 4 : 7;
+	for(index_t i = 0; i < 12; i++)
+		fscanf(fp, "%f", R + i);
+	
+	for(index_t i = 0; i < 4; i++)
+		fscanf(fp, "%f", tr + i);
+	
 
 	init(n_rows * n_cols, 2 * (n_rows - 1) * (n_cols - 1));
+	
+	float values[7];
+	char line[128];
 
-	#pragma omp parallel for
-	for(index_t v = 0; v < n_vertices; v++)
+	bool rgb = false;
+
+	// vertex 0: x y z a or x y z r g b a
+	fgets(line, sizeof(line), fp);
+	rgb = sscanf(line, "%f %f %f %f %f %f %f", values, values + 1, values + 2, values + 3, values + 4, values + 5, values + 6) == 7;
+
+	if(rgb)
 	{
-		const index_t & i = v * p;
+		GT[0] = { values[0], values[1], values[2] };
+		VC[0] = { values[4], values[5], values[6] };
 
-		GT[v] = { points[i], points[i + 1], points[i + 2] };
+		for(index_t v = 1; v < n_vertices; v++)
+		{
+			fgets(line, sizeof(line), fp);
+			sscanf(line, "%f %f %f %f %f %f %f", values, values + 1, values + 2, values + 3, values + 4, values + 5, values + 6);
+			GT[v] = { values[0], values[1], values[2] };
+			VC[v] = { values[4], values[5], values[6] };
+		}
+	}
+	else
+	{
+		GT[0] = { values[0], values[1], values[2] };
+		VC[0] = { values[4], values[5], values[6] };
 
-		if(p == 4)
-			VC[v] = { points[i + 3], points[i + 3], points[i + 3] };
-		else
-			VC[v] = { points[i + 4], points[i + 5], points[i + 6] };
+		for(index_t v = 1; v < n_vertices; v++)
+		{
+			fgets(line, sizeof(line), fp);
+			sscanf(line, "%f %f %f %f", values, values + 1, values + 2, values + 3);
+			GT[v] = { values[0], values[1], values[2] };
+			VC[v] = { values[4], values[3], values[3] };
+		}
 	}
 
-	delete [] points;
+	fclose(fp);
+
 
 	index_t he = 0;
 	auto add_trig = [&](const index_t & i, const index_t & j, const index_t & k)
@@ -100,17 +117,11 @@ void che_ptx::read_file(const string & file)
 
 	#pragma omp parallel for
 	for(index_t i = 0; i < n_vertices; i++)
-		VC[i] /= 255;
-	
-	is.close();
+		VC[i] /= 255;	
 }
 
 void che_ptx::write_file(const che * mesh, const string & file)
 {
-	ofstream os(file + ".off");
-
-
-	os.close();
 }
 
 

@@ -2,14 +2,12 @@
 
 #ifdef GPROSHAN_OPTIX
 
-#include <iostream>
-#include <random>
 #include <cstring>
+#include <iostream>
+#include <fstream>
+#include <random>
 
 #include <optix_function_table_definition.h>
-
-
-extern "C" char ptx_code[];
 
 
 // geometry processing and shape analysis framework
@@ -55,10 +53,11 @@ optix::optix(const std::vector<che *> & meshes)
 	optix_pipeline_compile_opt.exceptionFlags			= OPTIX_EXCEPTION_FLAG_NONE;
 	optix_pipeline_compile_opt.pipelineLaunchParamsVariableName = "optix_launch_params";
 
-	optix_pipeline_link_opt.overrideUsesMotionBlur	= false;
-	optix_pipeline_link_opt.maxTraceDepth			= 2;
-
-	const std::string str_ptx_code = ptx_code;
+	optix_pipeline_link_opt.maxTraceDepth		= 2;
+	
+	std::ifstream ptx_is("rt_optix.ptx");
+	const std::string str_ptx_code = std::string(std::istreambuf_iterator<char>(ptx_is), std::istreambuf_iterator<char>());
+	ptx_is.close();
 	
 	optixModuleCreateFromPTX(	optix_context,
 								&optix_module_compile_opt,
@@ -205,7 +204,7 @@ void optix::add_mesh(OptixBuildInput & optix_mesh, uint32_t & optix_trig_flags, 
 	optix_mesh.triangleArray.numIndexTriplets		= mesh->n_faces;
 	optix_mesh.triangleArray.indexBuffer			= (CUdeviceptr) d_index;
 
-	optix_trig_flags = 0 ;
+	optix_trig_flags = 0;
 	
 	optix_mesh.triangleArray.flags							= &optix_trig_flags;
 	optix_mesh.triangleArray.numSbtRecords					= 1;

@@ -77,7 +77,7 @@ class patch
 									const real_t & area_mesh
 									);
 
-		void init_random(const vertex & c, const arma::mat & T, const real_t & radio, const real_t & max_radio, const real_t & percent, const real_t & fr);
+		void init_random(const vertex & c, const a_mat & T, const real_t & radio, const real_t & max_radio, const real_t & percent, const real_t & fr);
 
 		void recover_radial_disjoint(che * mesh,
 					const real_t & radio_,
@@ -116,9 +116,9 @@ class patch
 									const real_t * geo,
 									che * mesh,
 									const index_t & v,
-									double & area,
-									double & proj_area,
-									double deviation
+									real_t & area,
+									real_t & proj_area,
+									real_t deviation
 									);
 		
 

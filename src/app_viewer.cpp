@@ -11,7 +11,13 @@ using namespace gproshan::mdict;
 namespace gproshan {
 
 
-che * load_mesh(const string & file_path)
+app_viewer::~app_viewer()
+{
+	for(che * mesh: meshes)
+		delete mesh;
+}
+
+che * app_viewer::load_mesh(const string & file_path)
 {
 	size_t pos = file_path.rfind('.');
 	assert(pos != string::npos);
@@ -26,21 +32,11 @@ che * load_mesh(const string & file_path)
 	return new che_img(file_path);
 }
 
-app_viewer::app_viewer()
-{
-}
-
-app_viewer::~app_viewer()
-{
-	for(che * mesh: meshes)
-		delete mesh;
-}
-
 int app_viewer::main(int nargs, const char ** args)
 {
 	if(nargs < 2)
 	{
-		printf("./gproshan [mesh_paths.(off,obj,ply)]\n");
+		printf("./%s [mesh_paths.(off,obj,ply)]\n", args[0]);
 		return 0;
 	}
 
@@ -54,6 +50,14 @@ int app_viewer::main(int nargs, const char ** args)
 	gproshan_log_var(sizeof(real_t));
 	gproshan_log_var(time);
 	
+	init();
+	run();
+
+	return 0;
+}
+
+void app_viewer::init()
+{
 	sub_menus.push_back("Fairing");
 	add_process(GLFW_KEY_T, {"T", "Fairing Taubin", process_fairing_taubin});
 	add_process(GLFW_KEY_E, {"E", "Fairing Spectral", process_fairing_spectral});
@@ -61,9 +65,7 @@ int app_viewer::main(int nargs, const char ** args)
 	sub_menus.push_back("Geodesics");
 	add_process(GLFW_KEY_F, {"F", "Fast Marching", process_geodesics_fm});
 	add_process(GLFW_KEY_C, {"C", "Parallel Toplesets Propagation CPU", process_geodesics_ptp_cpu});
-#ifndef SINGLE_P
 	add_process(GLFW_KEY_L, {"L", "Heat Method", process_geodesics_heat_method});
-#endif
 
 #ifdef GPROSHAN_CUDA
 	add_process(GLFW_KEY_G, {"G", "Parallel Toplesets Propagation GPU", process_geodesics_ptp_gpu});
@@ -106,12 +108,6 @@ int app_viewer::main(int nargs, const char ** args)
 	add_process(GLFW_KEY_K, {"K", "Gaussian curvature", process_gaussian_curvature});
 	add_process(GLFW_KEY_9, {"9", "Edge Collapse", process_edge_collapse});
 	add_process(GLFW_KEY_SEMICOLON, {"SEMICOLON", "Select multiple vertices", select_multiple});
-
-
-	run();
-
-
-	return 0;
 }
 
 bool paint_holes_vertices(viewer * p_view)
@@ -454,12 +450,12 @@ bool app_viewer::process_msparse_coding(viewer * p_view)
 	
 	assert(sizeof(ImGuiDataType_U64) != sizeof(size_t));
 	
-	ImGui::InputDouble("nyquist_factor", &patch::nyquist_factor, 0.01, 0.01, "%.2lf");
+	ImGui_InputReal("nyquist_factor", &patch::nyquist_factor, 0.01, 0.01, "%.2lf");
 	ImGui::InputScalar("basis", ImGuiDataType_U64, &n);
 	ImGui::InputScalar("atoms", ImGuiDataType_U64, &params.n_atoms);
-	ImGui::InputDouble("delta", &params.delta, 0.001, 0.1, "%.3lf");	
-	ImGui::InputDouble("proj_thres", &params.sum_thres, 1.001, 0.1, "%.6lf");
-	ImGui::InputDouble("area_thres", &params.area_thres, 0.001, 0.1, "%6lf");
+	ImGui_InputReal("delta", &params.delta, 0.001, 0.1, "%.3lf");	
+	ImGui_InputReal("proj_thres", &params.sum_thres, 1.001, 0.1, "%.6lf");
+	ImGui_InputReal("area_thres", &params.area_thres, 0.001, 0.1, "%6lf");
 	ImGui::Checkbox("learn", &params.learn);
 
 	if(ImGui::Button("Run"))
@@ -489,9 +485,9 @@ bool app_viewer::process_mask(viewer * p_view)
 	
 	ImGui::InputScalar("basis", ImGuiDataType_U64, &n);
 	ImGui::InputScalar("atoms", ImGuiDataType_U64, &params.n_atoms);
-	ImGui::InputDouble("delta", &params.delta, 0.001, 0.1, "%.3lf");	
-	ImGui::InputDouble("proj_thres", &params.sum_thres, 1.001, 0.1, "%.6lf");
-	ImGui::InputDouble("area_thres", &params.area_thres, 0.001, 0.1, "%6lf");
+	ImGui_InputReal("delta", &params.delta, 0.001, 0.1, "%.3lf");	
+	ImGui_InputReal("proj_thres", &params.sum_thres, 1.001, 0.1, "%.6lf");
+	ImGui_InputReal("area_thres", &params.area_thres, 0.001, 0.1, "%6lf");
 	ImGui::Checkbox("learn", &params.learn);
 
 	if(ImGui::Button("Run"))
@@ -532,13 +528,13 @@ bool app_viewer::process_pc_reconstruction(viewer * p_view)
 	
 	ImGui::InputScalar("basis", ImGuiDataType_U64, &n);
 	ImGui::InputScalar("atoms", ImGuiDataType_U64, &params.n_atoms);
-	ImGui::InputDouble("delta", &params.delta, 0.001, 0.1, "%.3lf");	
-	ImGui::InputDouble("proj_thres", &params.sum_thres, 1.001, 0.1, "%.6lf");
-	ImGui::InputDouble("area_thres", &params.area_thres, 0.001, 0.1, "%6lf");
+	ImGui_InputReal("delta", &params.delta, 0.001, 0.1, "%.3lf");	
+	ImGui_InputReal("proj_thres", &params.sum_thres, 1.001, 0.1, "%.6lf");
+	ImGui_InputReal("area_thres", &params.area_thres, 0.001, 0.1, "%6lf");
 	ImGui::Checkbox("learn", &params.learn);
 	
-	ImGui::InputDouble("percentage_size", &percentage_size, 100, 10, "%.3f");
-	ImGui::InputDouble("radio_factor", &radio_factor, 1, 0.1, "%.3f");
+	ImGui_InputReal("percentage_size", &percentage_size, 100, 10, "%.3f");
+	ImGui_InputReal("radio_factor", &radio_factor, 1, 0.1, "%.3f");
 
 	if(ImGui::Button("Run"))
 	{
