@@ -1,5 +1,6 @@
 #include "geodesics/heat_method.h"
 
+#include "util.h"
 #include "laplacian/laplacian.h"
 
 #include <cassert>
@@ -41,7 +42,7 @@ double heat_method(real_t * dist, const che * mesh, const std::vector<index_t> &
 	switch(opt)
 	{
 		case HEAT_ARMA: 
-			if(spsolve(u, A, u0)) gproshan_error(arma: no solution);
+			if(!spsolve(u, A, u0)) gproshan_error(arma: no solution);
 			break;
 		case HEAT_CHOLMOD:
 			solve_time += solve_positive_definite(u, A, u0, &context);
@@ -63,7 +64,7 @@ double heat_method(real_t * dist, const che * mesh, const std::vector<index_t> &
 	switch(opt)
 	{
 		case HEAT_ARMA: 
-			if(spsolve(phi, L, div)) gproshan_error(arma: no solution);
+			if(!spsolve(phi, L, div)) gproshan_error(arma: no solution);
 			break;
 		case HEAT_CHOLMOD:
 			solve_time += solve_positive_definite(phi, L, div, &context);
@@ -120,7 +121,7 @@ double solve_positive_definite(a_mat & x, const a_sp_mat & A, const a_mat & b, c
 	TOC(solve_time)
 	
 	assert(x.n_rows == b.n_rows);
-	memcpy(x.memptr(), cx->x, x.n_rows * sizeof(real_t));
+	copy_real_t_array(x.memptr(), (double *) cx->x, x.n_rows);
 
 	cholmod_l_free_factor(&L, context);
 	cholmod_l_free_sparse(&cA, context);
@@ -132,7 +133,7 @@ double solve_positive_definite(a_mat & x, const a_sp_mat & A, const a_mat & b, c
 cholmod_dense * arma_2_cholmod(const a_mat & D, cholmod_common * context)
 {
 	cholmod_dense * cD = cholmod_l_allocate_dense(D.n_rows, D.n_cols, D.n_rows, CHOLMOD_REAL, context);
-	memcpy(cD->x, D.memptr(), D.n_elem * sizeof(real_t));
+	copy_real_t_array((double *) cD->x, D.memptr(), D.n_elem);
 
 	return cD;
 }
@@ -143,9 +144,9 @@ cholmod_sparse * arma_2_cholmod(const a_sp_mat & S, cholmod_common * context)
 	
 	cholmod_sparse * cS = cholmod_l_allocate_sparse(S.n_rows, S.n_cols, S.n_nonzero, 1, 1, 0, CHOLMOD_REAL, context);
 	
+	copy_real_t_array((double *) cS->x, S.values, S.n_nonzero);
 	memcpy(cS->p, S.col_ptrs, (S.n_cols + 1) * sizeof(arma::uword));
 	memcpy(cS->i, S.row_indices, S.n_nonzero * sizeof(arma::uword));
-	memcpy(cS->x, S.values, S.n_nonzero * sizeof(real_t));
 	
 	return cS;
 }
