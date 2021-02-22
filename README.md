@@ -28,7 +28,7 @@ In Ubuntu (>= 18.04) you can install them with:
 #### Build Status
 
 ##### Ubuntu 18.04 (Bionic)
-[![Build Status](https://travis-ci.com/larc/gproshan.svg?branch=master)](https://travis-ci.com/larc/gproshan)
+[![Build Status](https://travis-ci.com/larc/gproshan.svg?branch=main)](https://travis-ci.com/larc/gproshan)
 
 ## Contributions
 
