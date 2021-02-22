@@ -1,5 +1,7 @@
 #include "viewer/shader.h"
 
+#include "include.h"
+
 #include <cassert>
 #include <fstream>
 #include <iostream>
@@ -137,7 +139,7 @@ bool shader::read_source(const std::string & filename, std::string & source)
 		if(include == "#include")
 		{
 			ss >> include;
-			if(read_source(include.c_str(), include))
+			if(read_source(shaders_path(include), include))
 				source += include + '\n';
 		}
 		else

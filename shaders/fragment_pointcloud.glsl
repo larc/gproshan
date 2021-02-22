@@ -1,6 +1,6 @@
 #version 410 core
 
-#include ../shaders/colormap.glsl
+#include colormap.glsl
 
 in vec3 vs_position;
 in vec3 vs_normal;
