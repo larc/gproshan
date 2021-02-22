@@ -1,12 +1,11 @@
-build*/*
-obj/*
+build/*
+bin/*
 lib/*
 doc/*
 tmp/*
 *.swp
 *.swo
 *.user
-.vscode/*
-.DS_Store
+*.vscode/*
+*.DS_Store
 
-src/.vscode/settings.json

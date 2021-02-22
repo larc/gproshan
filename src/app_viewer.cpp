@@ -36,7 +36,7 @@ int app_viewer::main(int nargs, const char ** args)
 {
 	if(nargs < 2)
 	{
-		printf("./%s [mesh_paths.(off,obj,ply)]\n", args[0]);
+		printf("%s [mesh_paths.(off,obj,ply)]\n", args[0]);
 		return 0;
 	}
 

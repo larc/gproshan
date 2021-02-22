@@ -3,7 +3,6 @@
 #include <cstring>
 #include <cassert>
 #include <cstdio>
-#include <vector>
 
 using namespace std;
 
@@ -47,39 +46,40 @@ void che_ptx::read_file(const string & file)
 
 	init(n_rows * n_cols, 2 * (n_rows - 1) * (n_cols - 1));
 	
-	float values[7];
+	float x, y, z, a, r, g, b;
 	char line[128];
 
 	bool rgb = false;
 
-	// vertex 0: x y z a or x y z r g b a
+	// vertex 0: x y z a or x y z a r g b
 	fgets(line, sizeof(line), fp);
-	rgb = sscanf(line, "%f %f %f %f %f %f %f", values, values + 1, values + 2, values + 3, values + 4, values + 5, values + 6) == 7;
-
+	fgets(line, sizeof(line), fp);
+	rgb = sscanf(line, "%f %f %f %f %f %f %f", &x, &y, &z, &a, &r, &g, &b) == 7;
+	
 	if(rgb)
 	{
-		GT[0] = { values[0], values[1], values[2] };
-		VC[0] = { values[4], values[5], values[6] };
+		GT[0] = { x, y, z };
+		VC[0] = { r, g, b };
 
 		for(index_t v = 1; v < n_vertices; v++)
 		{
 			fgets(line, sizeof(line), fp);
-			sscanf(line, "%f %f %f %f %f %f %f", values, values + 1, values + 2, values + 3, values + 4, values + 5, values + 6);
-			GT[v] = { values[0], values[1], values[2] };
-			VC[v] = { values[4], values[5], values[6] };
+			sscanf(line, "%f %f %f %f %f %f %f", &x, &y, &z, &a, &r, &g, &b);
+			GT[v] = { x, y, z };
+			VC[v] = { r, g, b };
 		}
 	}
 	else
 	{
-		GT[0] = { values[0], values[1], values[2] };
-		VC[0] = { values[4], values[5], values[6] };
+		GT[0] = { x, y, z };
+		VC[0] = { a, a, a };
 
 		for(index_t v = 1; v < n_vertices; v++)
 		{
 			fgets(line, sizeof(line), fp);
-			sscanf(line, "%f %f %f %f", values, values + 1, values + 2, values + 3);
-			GT[v] = { values[0], values[1], values[2] };
-			VC[v] = { values[4], values[3], values[3] };
+			sscanf(line, "%f %f %f %f", &x, &y, &z, &a);
+			GT[v] = { x, y, z };
+			VC[v] = { a, a, a };
 		}
 	}
 

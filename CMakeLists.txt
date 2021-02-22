@@ -74,6 +74,8 @@ target_link_libraries(imgui GLEW::GLEW)
 target_link_libraries(imgui glfw)
 
 
+add_compile_definitions(GPROSHAN_DIR="${gproshan_SOURCE_DIR}")
+
 FILE(GLOB_RECURSE cpp_sources ${gproshan_SOURCE_DIR}/src/*.cpp)
 if(CUDAToolkit_FOUND)
 	FILE(GLOB_RECURSE cu_sources ${gproshan_SOURCE_DIR}/src/*.cu)
@@ -108,6 +110,7 @@ if(CUDAToolkit_FOUND)
 	target_link_libraries(gproshan CUDA::cusparse)
 endif(CUDAToolkit_FOUND)
 
+
 add_executable(test_gproshan gproshan.cpp)
 set_target_properties(test_gproshan PROPERTIES OUTPUT_NAME gproshan)
 target_link_libraries(test_gproshan gproshan)
@@ -126,6 +129,12 @@ target_link_libraries(test_geodesics gproshan)
 
 add_executable(test_image_denoising test_image_denoising.cpp)
 target_link_libraries(test_image_denoising gproshan)
+
+
+install(TARGETS gproshan imgui test_gproshan test_geodesics test_image_denoising
+		ARCHIVE DESTINATION ${gproshan_SOURCE_DIR}/lib
+		LIBRARY DESTINATION ${gproshan_SOURCE_DIR}/lib
+		RUNTIME DESTINATION ${gproshan_SOURCE_DIR}/bin)
 
 
 file(MAKE_DIRECTORY tmp)

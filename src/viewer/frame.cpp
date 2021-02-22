@@ -1,5 +1,6 @@
 #include "viewer/frame.h"
 
+#include "include.h"
 
 // geometry processing and shape analysis framework
 namespace gproshan {
@@ -10,8 +11,8 @@ frame::frame()
 	render_tex = 0;
 	vbo = 0;
 
-	program.load_vertex("../shaders/vertex_frame.glsl");	
-	program.load_fragment("../shaders/fragment_frame.glsl");
+	program.load_vertex(shaders_path("vertex_frame.glsl"));
+	program.load_fragment(shaders_path("fragment_frame.glsl"));
 	
 
 	const GLfloat vertices[] = {

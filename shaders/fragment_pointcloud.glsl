@@ -1,6 +1,6 @@
 #version 410 core
 
-#include ../shaders/colormap.glsl
+#include colormap.glsl
 
 in vec3 vs_position;
 in vec3 vs_normal;
@@ -13,6 +13,7 @@ uniform uint idx_colormap;
 uniform vec3 eye;
 uniform vec3 light;
 uniform bool render_lines;
+uniform bool point_normals;
 
 float diffuse(vec3 N, vec3 L)
 {
@@ -49,16 +50,19 @@ void main()
 		h = 1 - h;
 		color = vec3(0) + (1. - h) * color;
 	}
-
- 	vec3 N = normalize(vs_normal);
 	
-	vec3 L = normalize(light - vs_position);
-	vec3 E = normalize(eye - vs_position);
-	vec3 R = 2 * dot(L, N) * N - L;
-	vec3 one = vec3(1);
+	if(point_normals)
+	{
+ 		vec3 N = normalize(vs_normal);
+	
+		vec3 L = normalize(light - vs_position);
+		vec3 E = normalize(eye - vs_position);
+		vec3 R = 2 * dot(L, N) * N - L;
+		vec3 one = vec3(1);
 
+		color = diffuse(N, L) * color + 0.1 * specular(N, L, E) * one + 0.25 * fresnel(N,E) * one;
+	}
 
-	color = diffuse(N, L) * color + 0.1 * specular(N, L, E) * one + 0.25 * fresnel(N,E) * one;
 	frag_color = vec4(color, 1);
 }
 

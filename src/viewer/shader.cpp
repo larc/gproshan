@@ -1,5 +1,7 @@
 #include "viewer/shader.h"
 
+#include "include.h"
+
 #include <cassert>
 #include <fstream>
 #include <iostream>
@@ -31,17 +33,17 @@ shader::operator GLuint() const
 	return program;
 }
 
-void shader::load_vertex(const char * filename)
+void shader::load_vertex(const std::string & filename)
 {
 	load(GL_VERTEX_SHADER, filename);
 }
 
-void shader::load_fragment(const char * filename)
+void shader::load_fragment(const std::string & filename)
 {
 	load(GL_FRAGMENT_SHADER, filename);
 }
 
-void shader::load_geometry(const char * filename)
+void shader::load_geometry(const std::string & filename)
 {
 	load(GL_GEOMETRY_SHADER_EXT, filename);
 }
@@ -62,7 +64,7 @@ void shader::disable() const
 	glUseProgram(0);
 }
 
-bool shader::load(GLenum shader_type, const char * filename)
+bool shader::load(GLenum shader_type, const std::string & filename)
 {
 	string source;
 
@@ -119,7 +121,7 @@ bool shader::load(GLenum shader_type, const char * filename)
 	return true;
 }
 
-bool shader::read_source(const char * filename, std::string & source)
+bool shader::read_source(const std::string & filename, std::string & source)
 {
 	ifstream is(filename);
 
@@ -137,7 +139,7 @@ bool shader::read_source(const char * filename, std::string & source)
 		if(include == "#include")
 		{
 			ss >> include;
-			if(read_source(include.c_str(), include))
+			if(read_source(shaders_path(include), include))
 				source += include + '\n';
 		}
 		else

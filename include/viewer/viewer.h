@@ -90,6 +90,7 @@ class viewer
 
 		bool action = false;
 		
+		bool point_normals = true;
 		unsigned int point_size = 1;
 		bool render_pointcloud = false;
 		bool render_wireframe = false;

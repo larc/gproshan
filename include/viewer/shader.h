@@ -22,15 +22,15 @@ class shader
 		~shader();
 		const GLint & operator () (const std::string & name);
 		operator GLuint () const;
-		void load_vertex(const char * filename);
-		void load_fragment(const char * filename);
-		void load_geometry(const char * filename);
+		void load_vertex(const std::string & filename);
+		void load_fragment(const std::string & filename);
+		void load_geometry(const std::string & filename);
 		void enable();
 		void disable() const;
 
 	protected:
-		bool load(GLenum shader_type, const char * filename);
-		bool read_source(const char * filename, std::string & source);
+		bool load(GLenum shader_type, const std::string & filename);
+		bool read_source(const std::string & filename, std::string & source);
 };
 
 
