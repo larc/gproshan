@@ -110,7 +110,7 @@ bool embree::occluded(ray_hit & r)
 void embree::build_bvh(const std::vector<che *> & meshes, const bool & pointcloud)
 {
 	for(auto & m: meshes)
-		if(!m->n_faces || pointcloud) 
+		if(!m->n_faces || pointcloud)
 			geomID_mesh[add_pointcloud(m)] = {m, true};
 		else
 			geomID_mesh[add_mesh(m)] = {m, false};

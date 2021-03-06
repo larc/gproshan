@@ -229,7 +229,7 @@ real_t update_step(che * mesh, const real_t * dist, const index_t & he)
 
 	real_t delta = t[0] * (Q[0][0] + Q[1][0]) + t[1] * (Q[0][1] + Q[1][1]);
 	real_t dis = delta * delta -
-					(Q[0][0] + Q[0][1] + Q[1][0] + Q[1][1]) * 
+					(Q[0][0] + Q[0][1] + Q[1][0] + Q[1][1]) *
 					(t[0] * t[0] * Q[0][0] + t[0] * t[1] * (Q[1][0] + Q[0][1]) + t[1] * t[1] * Q[1][1] - 1);
 
 	real_t p = (delta + sqrt(dis)) / (Q[0][0] + Q[0][1] + Q[1][0] + Q[1][1]);

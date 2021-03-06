@@ -2,7 +2,7 @@
 
 #include <optix_device.h>
 
-extern "C" __constant__ void * optix_launch_params; 
+extern "C" __constant__ void * optix_launch_params;
 
 extern "C" __global__ void closest_hit()
 {

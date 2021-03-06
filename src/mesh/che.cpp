@@ -1420,7 +1420,7 @@ void che::update_evt_ot_et()
 		}
 	}
 	
-	// non manifold two disk 
+	// non manifold two disk
 	//for(index_t he = 0; he < n_half_edges; ++he)
 	//	if(OT[he] != NIL) assert(he == OT[OT[he]]);
 	

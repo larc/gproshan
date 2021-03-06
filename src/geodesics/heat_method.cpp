@@ -41,7 +41,7 @@ double heat_method(real_t * dist, const che * mesh, const std::vector<index_t> &
 	
 	switch(opt)
 	{
-		case HEAT_ARMA: 
+		case HEAT_ARMA:
 			if(!spsolve(u, A, u0)) gproshan_error(arma: no solution);
 			break;
 		case HEAT_CHOLMOD:
@@ -63,7 +63,7 @@ double heat_method(real_t * dist, const che * mesh, const std::vector<index_t> &
 
 	switch(opt)
 	{
-		case HEAT_ARMA: 
+		case HEAT_ARMA:
 			if(!spsolve(phi, L, div)) gproshan_error(arma: no solution);
 			break;
 		case HEAT_CHOLMOD:
@@ -95,7 +95,7 @@ void compute_divergence(const che * mesh, const a_mat & u, a_mat & div)
 		for_star(he, mesh, v)
 			sum += (
 					mesh->normal_he(he) * ( mesh->gt_vt(prev(he)) - mesh->gt_vt(next(he)) ) ,
-					- mesh->gradient_he(he, u.memptr()) 
+					- mesh->gradient_he(he, u.memptr())
 					);
 	}
 }

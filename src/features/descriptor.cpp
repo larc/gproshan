@@ -61,7 +61,7 @@ void descriptor::compute_wks()
 	
 	#pragma omp parallel for
 	for(index_t t = 0; t < features.n_cols; ++t)
-		features.col(t) = eigvec * exp(-pow(e(t) - eigval, 2) / sigma_2) / 
+		features.col(t) = eigvec * exp(-pow(e(t) - eigval, 2) / sigma_2) /
 							sum(exp(-pow(e(t) - eigval, 2) / sigma_2));
 }
 

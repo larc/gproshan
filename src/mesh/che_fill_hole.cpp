@@ -595,8 +595,8 @@ che * fill_hole_front_angles(vector<vertex> & vertices, const real_t & length, c
 	//debug(E)
 
 
-	//debug(E * normalise(orientation)) 
-	//debug(dot(E.col(2), orientation)) 
+	//debug(E * normalise(orientation))
+	//debug(dot(E.col(2), orientation))
 	E.col(2) = normalise(dot(orientation, E.col(2)) * E.col(2));
 	E.col(1) = normalise(cross(E.col(2), E.col(0)));
 	//debug(E)

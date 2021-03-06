@@ -195,8 +195,8 @@ void optix::add_mesh(OptixBuildInput & optix_mesh, uint32_t & optix_trig_flags, 
 	optix_mesh.type = OPTIX_BUILD_INPUT_TYPE_TRIANGLES;
 
 	optix_mesh.triangleArray.vertexFormat			= OPTIX_VERTEX_FORMAT_FLOAT3;
-	optix_mesh.triangleArray.vertexStrideInBytes	= 3 * sizeof(float); 
-	optix_mesh.triangleArray.numVertices			= mesh->n_vertices; 
+	optix_mesh.triangleArray.vertexStrideInBytes	= 3 * sizeof(float);
+	optix_mesh.triangleArray.numVertices			= mesh->n_vertices;
 	optix_mesh.triangleArray.vertexBuffers			= (CUdeviceptr *) &d_vertex;
 
 	optix_mesh.triangleArray.indexFormat			= OPTIX_INDICES_FORMAT_UNSIGNED_INT3;
@@ -208,9 +208,9 @@ void optix::add_mesh(OptixBuildInput & optix_mesh, uint32_t & optix_trig_flags, 
 	
 	optix_mesh.triangleArray.flags							= &optix_trig_flags;
 	optix_mesh.triangleArray.numSbtRecords					= 1;
-	optix_mesh.triangleArray.sbtIndexOffsetBuffer			= 0; 
-	optix_mesh.triangleArray.sbtIndexOffsetSizeInBytes		= 0; 
-	optix_mesh.triangleArray.sbtIndexOffsetStrideInBytes	= 0; 
+	optix_mesh.triangleArray.sbtIndexOffsetBuffer			= 0;
+	optix_mesh.triangleArray.sbtIndexOffsetSizeInBytes		= 0;
+	optix_mesh.triangleArray.sbtIndexOffsetStrideInBytes	= 0;
 }
 
 glm::vec4 optix::intersect_li(const glm::vec3 & org, const glm::vec3 & dir, const glm::vec3 & light, const bool & flat)

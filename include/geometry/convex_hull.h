@@ -1,7 +1,7 @@
 #ifndef CONVEX_HULL_H
 #define CONVEX_HULL_H
 
-#include "mesh/vertex.h" 
+#include "mesh/vertex.h"
 
 #include <vector>
 
@@ -10,7 +10,7 @@
 namespace gproshan {
 
 
-///< 2D Convex Hull 
+///< 2D Convex Hull
 class convex_hull
 {
 	private:

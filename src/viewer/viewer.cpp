@@ -40,7 +40,7 @@ namespace gproshan {
 
 
 const int viewer::m_window_size[N_MESHES + 1][2] = {{1, 1},
-													{1, 1}, {1, 2}, {1, 3}, 
+													{1, 1}, {1, 2}, {1, 3},
 													{2, 2}, {2, 3}, {2, 3},
 													{2, 4}, {2, 4}, {2, 5},
 													{2, 5}, {3, 4}, {3, 4}
@@ -92,12 +92,12 @@ bool viewer::run()
 		
 
 		proj_mat = glm::perspective(45.f, float(viewport_width) / float(viewport_height), .01f, 1000.f);
-		view_mat = glm::lookAt(	glm::vec3(eye[1], eye[2], eye[3]), 
-								glm::vec3(center[1], center[2], center[3]), 
+		view_mat = glm::lookAt(	glm::vec3(eye[1], eye[2], eye[3]),
+								glm::vec3(center[1], center[2], center[3]),
 								glm::vec3(up[1], up[2], up[3])
 								);
 		
-		// RENDER 
+		// RENDER
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
 		switch(render_opt)
 		{
@@ -696,7 +696,7 @@ bool viewer::raycasting(viewer * view)
 	
 	float * frame = rc.raycaster(	glm::uvec2(view->viewport_width, view->viewport_height),
 									view->view_mat, view->proj_mat	
-									); 
+									);
 
 	std::thread([](CImg<float> img)
 	{
@@ -781,7 +781,7 @@ void viewer::render_embree()
 	}
 
 	rt_embree->pathtracing(	glm::uvec2(viewport_width, viewport_height),
-							view_mat, proj_mat, {glm::vec3(light[1], light[2], light[3])}, 
+							view_mat, proj_mat, {glm::vec3(light[1], light[2], light[3])},
 							render_flat, action );
 	
 	action = false;

@@ -580,7 +580,7 @@ bool app_viewer::compute_toplesets(viewer * p_view)
 	#pragma omp parallel for
 	for(index_t v = 0; v < mesh->n_vertices; ++v)
 	{
-		if(toplesets[v] < n_toplesets) 
+		if(toplesets[v] < n_toplesets)
 			mesh->heatmap(v) = real_t(toplesets[v]) / (n_toplesets);
 	}
 

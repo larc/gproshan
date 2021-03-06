@@ -78,7 +78,7 @@ void raytracing::pathtracing(	const glm::uvec2 & windows_size,
 		//row major
 		glm::vec4 & color = img[j * width + i];
 		
-		glm::vec2 screen = glm::vec2(	(float(i) + randf(gen)) / width, 
+		glm::vec2 screen = glm::vec2(	(float(i) + randf(gen)) / width,
 										(float(j) + randf(gen)) / height
 										);
 
@@ -118,7 +118,7 @@ float * raytracing::raycaster(	const glm::uvec2 & windows_size,
 		
 		for(index_t s = 0; s < samples; ++s)
 		{
-			glm::vec2 screen = glm::vec2(	(float(i) + randf(gen)) / windows_size.x, 
+			glm::vec2 screen = glm::vec2(	(float(i) + randf(gen)) / windows_size.x,
 											(float(j) + randf(gen)) / windows_size.y
 											);
 

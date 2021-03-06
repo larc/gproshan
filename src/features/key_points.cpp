@@ -35,13 +35,13 @@ key_points::~key_points()
 const index_t & key_points::operator[](const index_t & i) const
 {
 	assert(i < n_vertices);
-	return kps[i]; 
+	return kps[i];
 }
 
 const bool & key_points::operator()(const index_t & i) const
 {
 	assert(i < n_vertices);
-	return is_kp[i]; 
+	return is_kp[i];
 }
 
 const size_t & key_points::size() const

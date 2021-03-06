@@ -80,7 +80,7 @@ bool patch::add_vertex_by_faces(const vertex & c, vertex & n, vector<vertex> & N
 {
 	// it needs to return both vertices
 	// it needs to filter repeated indexes.
-	// p should be the maximun 
+	// p should be the maximun
 	
 	index_t a, b, i = 0;
 	vertex min_he;
@@ -93,7 +93,7 @@ bool patch::add_vertex_by_faces(const vertex & c, vertex & n, vector<vertex> & N
 	for_star(he, mesh, v)
 	{
 		a = mesh->vt(next(he)); //index of the next vertex index_t
-		b = mesh->vt(prev(he)); 
+		b = mesh->vt(prev(he));
 		va = mesh->gt(a);
 		vb = mesh->gt(b);
 		vv = mesh->gt(v);
@@ -107,7 +107,7 @@ bool patch::add_vertex_by_faces(const vertex & c, vertex & n, vector<vertex> & N
 			if(geo[a] < geo[v])
 				i = find(vertices.data(), vertices.size(), a);
 			else
-				i = find(vertices.data(), vertices.size(), b); 
+				i = find(vertices.data(), vertices.size(), b);
 			
 			tmp_angle = acos( (mesh->normal_he(he), N[i]) );
 
@@ -121,12 +121,12 @@ bool patch::add_vertex_by_faces(const vertex & c, vertex & n, vector<vertex> & N
 				pbv = vb - vv + ( (n,vv) - (n,vb) ) * n;
 				proj_area_face = *(pav * pbv) / 2;
 
-				min_he = mesh->normal_he(he); 
+				min_he = mesh->normal_he(he);
 				added = true;
 			}
 		}
 	}
-	//p = mesh->get_vertex(indexes[i]); 
+	//p = mesh->get_vertex(indexes[i]);
 	//p = p - c ;
 	//p = p - ((p,n)*n);
 	
@@ -208,7 +208,7 @@ void patch::recover_radial_disjoint(che * mesh, const real_t & radio_, const ind
 
 		for(index_t i=1; i < vertices.size(); ++i)
 		{
-			p = mesh->get_vertex(indexes[i]); 
+			p = mesh->get_vertex(indexes[i]);
 			c = mesh->get_vertex(v); // central vertices
 
 			p = p - c ;
@@ -338,7 +338,7 @@ void patch::reset_xyz(che * mesh, vector<vpatches_t> & vpatches, const index_t &
 			xyz(1, j) = v.y;
 			xyz(2, j) = v.z;
 		//p idx patche where belongs to
-			//j: local index 
+			//j: local index
 			//i: global index
 			//if(vpatches[vertices[i]].size() == 0)
 			//vpatches[vertices[i]].push_back({p, j++});
@@ -350,9 +350,9 @@ void patch::reset_xyz(che * mesh, vector<vpatches_t> & vpatches, const index_t &
 
 }
 
-double area_tri(double x1, double y1, double x2, double y2, double x3, double y3) 
-{ 
-	return abs((x1*(y2-y3) + x2*(y3-y1)+ x3*(y1-y2))/2.0); 
+double area_tri(double x1, double y1, double x2, double y2, double x3, double y3)
+{
+	return abs((x1*(y2-y3) + x2*(y3-y1)+ x3*(y1-y2))/2.0);
 }
 
 void patch::remove_extra_xyz_disjoint(size_t & max_points)
@@ -390,7 +390,7 @@ void patch::add_extra_xyz_disjoint(che * mesh, vector<vpatches_t> & vpatches, co
 		a_vec np = { r * cos(a), r * sin(a), 0 };
 
 		//gproshan_debug_var(np);
-		// find the closest point 
+		// find the closest point
 		index_t min_v;
 		double min_d = INFINITY;
 		for(index_t v: vertices)
@@ -404,7 +404,7 @@ void patch::add_extra_xyz_disjoint(che * mesh, vector<vpatches_t> & vpatches, co
 				min_v = v;
 			}
 		}
-		 
+		
 		// forstar to find closest trinagle
 		a_mat abc(3,3);
 		for_star(he, mesh, min_v)
@@ -488,7 +488,7 @@ void patch::reset_xyz_disjoint(che * mesh, real_t * dist, size_t M, vector<vpatc
 	for(auto & vi: vertices)
 	{
 		if(!mask || mask(vi))
-		{ 
+		{
 			const vertex & v = mesh->gt(vi);
 			xyz(0, i) = v.x;
 			xyz(1, i) = v.y;
@@ -525,7 +525,7 @@ void patch::save(const real_t & radio, const size_t & imsize, CImgList<real_t> &
 	CImg<real_t> img(imsize, imsize);
 	size_t x, y;
 	img.fill(0);
-	// for each x y plus 1, multiply by delta and floor, get i and j 
+	// for each x y plus 1, multiply by delta and floor, get i and j
 	for(index_t i = 0; i < vertices.size(); ++i)
 	{
 		x = floor((xyz.col(i)[0] + radio) * (imsize - 1) / (2 * radio));
@@ -780,7 +780,7 @@ void patch::compute_avg_distance(che * mesh, vector<vpatches_t> & vpatches, cons
 	{
 		avg_dist = (distances[n_elem/2] + distances[(n_elem/2 -1)])/2;
 	}
-	else 
+	else
 	{	
 		avg_dist = distances[n_elem/2];
 	}	

@@ -24,7 +24,7 @@ bool operator < (const locval_t & a, const locval_t & b)
 
 std::ostream & operator << (std::ostream & os, const locval_t & lc)
 {
-	return os << '(' << lc.i << ',' << lc.j << ") = " << lc.val; 
+	return os << '(' << lc.i << ',' << lc.j << ") = " << lc.val;
 }
 
 void OMP(vector<locval_t> & alpha, const a_vec & x, const index_t & i, const a_mat & D, const size_t & L)
@@ -231,7 +231,7 @@ void KSVD(a_mat & D, const a_mat & X, const size_t & L, size_t k)
 }
 
 
-// MESH DENSE 
+// MESH DENSE
 
 a_vec OMP(const patch & p, const a_mat & A, const size_t & L)
 {
@@ -301,7 +301,7 @@ void KSVD(a_mat & A, const vector<patch> & patches, const size_t & L, size_t k)
 				a(j) = 0;
 
 				D = patches[i].phi * A; // fetch the discrete dictionary for the patch i
-				e = patches[i].xyz.row(2).t() - D * a; // getting the rec error for the patch i 
+				e = patches[i].xyz.row(2).t() - D * a; // getting the rec error for the patch i
 				aj = as_scalar(e.t() * D.col(j) / (D.col(j).t() * D.col(j)));
 
 				sum += aj * aj * patches[i].phi.t() * patches[i].phi;

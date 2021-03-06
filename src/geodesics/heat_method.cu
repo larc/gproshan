@@ -24,7 +24,7 @@ struct cu_spAxb
 		cudaMemcpy(A_row_indices, hA_row_indices, nnz * sizeof(int), cudaMemcpyHostToDevice);
 
 		cudaMalloc(&A_values, nnz * sizeof(real_t));
-		cudaMemcpy(A_values, hA_values, nnz * sizeof(real_t), cudaMemcpyHostToDevice); 
+		cudaMemcpy(A_values, hA_values, nnz * sizeof(real_t), cudaMemcpyHostToDevice);
 		
 		cudaMalloc(&b, nnz * sizeof(real_t));
 		cudaMemcpy(b, hb, nnz * sizeof(real_t), cudaMemcpyHostToDevice);
