@@ -428,7 +428,7 @@ void patch::add_extra_xyz_disjoint(che * mesh, vector<vpatches_t> & vpatches, co
 				
 		
 				
-				if( abs(A - (A1 + A2 + A3)) < std::numeric_limits<double>::epsilon())
+				if(abs(A - (A1 + A2 + A3)) < std::numeric_limits<real_t>::epsilon())
 				{
 					a_mat proj_abc = abc.tail_cols(2).each_col() - abc.col(0);
 					np -= abc.col(0);
