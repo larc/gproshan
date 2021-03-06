@@ -38,7 +38,7 @@ index_t embree_splat::add_pointcloud(const che * mesh)
 																);
 	
 	#pragma omp parallel for
-	for(index_t i = 0; i < vsplat.size(); i++)
+	for(index_t i = 0; i < vsplat.size(); ++i)
 	{
 		pxyzr[i] = vsplat[i].xyzr();
 		normal[i] = vsplat[i].normal();
@@ -82,7 +82,7 @@ void embree_splat::init_splats(const che * mesh)
 	gproshan_log_var(vsplat.size());
 	
 	#pragma omp parallel for
-	for(index_t i = 0; i < vsplat.size(); i++)
+	for(index_t i = 0; i < vsplat.size(); ++i)
 	{
 		const index_t v = n * i;	// random, feature aware index
 		
@@ -112,7 +112,7 @@ void embree_splat::init_splats(const che * mesh)
 		const vertex & c = mesh->gt(v);
 		
 		splat & s = vsplat[i];
-		for(index_t j = 0; j < K; j++)
+		for(index_t j = 0; j < K; ++j)
 		{
 			dist = INFINITY;
 

@@ -66,14 +66,14 @@ void raytracing::pathtracing(	const glm::uvec2 & windows_size,
 	if(!n_samples)
 	{
 		#pragma omp parallel for
-		for(index_t i = 0; i < width; i++)
-		for(index_t j = 0; j < height; j++)
+		for(index_t i = 0; i < width; ++i)
+		for(index_t j = 0; j < height; ++j)
 			img[j * width + i] = glm::vec4(0);
 	}
 
 	#pragma omp parallel for private(li)
-	for(index_t i = 0; i < width; i++)
-	for(index_t j = 0; j < height; j++)
+	for(index_t i = 0; i < width; ++i)
+	for(index_t j = 0; j < height; ++j)
 	{
 		//row major
 		glm::vec4 & color = img[j * width + i];
@@ -110,13 +110,13 @@ float * raytracing::raycaster(	const glm::uvec2 & windows_size,
 	glm::mat4 inv_proj_view = glm::inverse(proj_mat * view_mat);
 
 	#pragma omp parallel for
-	for(index_t i = 0; i < windows_size.x; i++)
-	for(index_t j = 0; j < windows_size.y; j++)
+	for(index_t i = 0; i < windows_size.x; ++i)
+	for(index_t j = 0; j < windows_size.y; ++j)
 	{
 		//row major
 		float & color = frame[(windows_size.y - j - 1) * windows_size.x + i] = 0;
 		
-		for(index_t s = 0; s < samples; s++)
+		for(index_t s = 0; s < samples; ++s)
 		{
 			glm::vec2 screen = glm::vec2(	(float(i) + randf(gen)) / windows_size.x, 
 											(float(j) + randf(gen)) / windows_size.y

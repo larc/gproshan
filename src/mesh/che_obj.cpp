@@ -52,7 +52,7 @@ void che_obj::read_file(const string & file)
 
 		if(key == "f")
 		{
-			for(i = 0; ss >> face[i]; i++)
+			for(i = 0; ss >> face[i]; ++i)
 				ss.ignore(256, ' ');
 			
 			if(i == che::mtrig)
@@ -111,13 +111,13 @@ void che_obj::write_file(const che * mesh, const string & file)
 	os << "# faces: " << mesh->n_faces << endl;
 	os << "#\n####\n";
 
-	for(size_t v = 0; v < mesh->n_vertices; v++)
+	for(size_t v = 0; v < mesh->n_vertices; ++v)
 		os << "v " << mesh->gt(v) << endl;
 
 	for(index_t he = 0; he < mesh->n_half_edges; )
 	{
 		os << "f";
-		for(index_t i = 0; i < che::mtrig; i++)
+		for(index_t i = 0; i < che::mtrig; ++i)
 			os << " " << mesh->vt(he++) + 1;
 		os << endl;
 	}

@@ -114,7 +114,7 @@ bool viewer::run()
 		{
 			if(ImGui::BeginMenu("Select"))
 			{
-				for(index_t i = 0; i < n_meshes; i++)
+				for(index_t i = 0; i < n_meshes; ++i)
 					if(ImGui::MenuItem((to_string(i) + ". " + meshes[i]->name()).c_str(), nullptr, i == idx_active_mesh, i != idx_active_mesh))
 					{
 						idx_active_mesh = i;	
@@ -127,14 +127,14 @@ bool viewer::run()
 
 			if(ImGui::BeginMenu("Colormap"))
 			{
-				for(index_t i = 0; i < colormap.size(); i++)
+				for(index_t i = 0; i < colormap.size(); ++i)
 					if(ImGui::MenuItem(colormap[i].c_str(), nullptr, i == idx_colormap, i != idx_colormap))
 						idx_colormap = i;
 
 				ImGui::EndMenu();
 			}
 
-			for(index_t i = 0; i < sub_menus.size(); i++)
+			for(index_t i = 0; i < sub_menus.size(); ++i)
 			{
 				if(ImGui::BeginMenu(sub_menus[i].c_str()))
 				{
@@ -340,7 +340,7 @@ void viewer::add_mesh(che * p_mesh)
 	
 	const int & rows = m_window_size[n_meshes][0];
 	const int & cols = m_window_size[n_meshes][1];
-	for(index_t m = 0; m < n_meshes; m++)
+	for(index_t m = 0; m < n_meshes; ++m)
 	{
 		meshes[m].vx = m % cols;
 		meshes[m].vy = rows - (m / cols) - 1;
@@ -464,7 +464,7 @@ bool viewer::menu_save_load_view(viewer * view)
 
 	if(ImGui::BeginCombo("##loadfile", vfiles[select].c_str()))
 	{
-		for(index_t i = 0; i < vfiles.size(); i++)
+		for(index_t i = 0; i < vfiles.size(); ++i)
 		{
 			if(ImGui::Selectable(vfiles[i].c_str(), select == i))
 				select = i;
@@ -826,7 +826,7 @@ void viewer::draw_meshes(shader & program, const bool & normals)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 
-	for(index_t i = 0; i < n_meshes; i++)
+	for(index_t i = 0; i < n_meshes; ++i)
 	{
 		glViewport(meshes[i].vx * viewport_width, meshes[i].vy * viewport_height, viewport_width, viewport_height);
 
@@ -845,7 +845,7 @@ void viewer::draw_selected_vertices(shader & program)
 	{
 		sphere_translations.resize(active_mesh().selected.size());
 
-		for(index_t i = 0; i < active_mesh().selected.size(); i++)
+		for(index_t i = 0; i < active_mesh().selected.size(); ++i)
 			sphere_translations[i] = active_mesh()->gt(active_mesh().selected[i]);
 
 		sphere.update_instances_translations(sphere_translations);
@@ -862,7 +862,7 @@ void viewer::draw_selected_vertices(shader & program)
 void viewer::select_border_vertices()
 {
 	active_mesh().selected.clear();
-	for(index_t b = 0; b < active_mesh()->n_borders; b++)
+	for(index_t b = 0; b < active_mesh()->n_borders; ++b)
 		for_border(he, active_mesh(), active_mesh()->bt(b))
 			active_mesh().selected.push_back(active_mesh()->vt(he));
 }

@@ -94,11 +94,11 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 		#endif
 		
 		index_t t_min = 0;
-		for(index_t i = 1; i < sizeof(Time) / sizeof(double); i++)
+		for(index_t i = 1; i < sizeof(Time) / sizeof(double); ++i)
 			if(Time[t_min] > Time[i]) t_min = i;
 		
 		index_t e_min = 0;
-		for(index_t i = 1; i < sizeof(Error) / sizeof(real_t); i++)
+		for(index_t i = 1; i < sizeof(Error) / sizeof(real_t); ++i)
 			if(Error[e_min] > Error[i]) e_min = i;
 		
 		fprintf(ftable, "%20s ", ("\\verb|" + filename + '|').c_str());
@@ -157,7 +157,7 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 
 		index_t dv;
 		map<index_t, index_t> deg;
-		for(index_t v = 0; v < n_vertices; v++)
+		for(index_t v = 0; v < n_vertices; ++v)
 		{
 			dv = mesh->ot_evt(v) == NIL ? 1 : 0;
 			for_star(he, mesh, v) dv++;
@@ -175,7 +175,7 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 		index_t * toplesets_dist = new index_t[limits.size() - 1];
 
 		os.open(test_path + filename + "_toplesets.dist");
-		for(index_t i = 1; i < limits.size(); i++)
+		for(index_t i = 1; i < limits.size(); ++i)
 		{
 			toplesets_dist[i - 1] = limits[i] - limits[i - 1];
 			os << i - 1 << " " << toplesets_dist[i - 1] << endl;
@@ -185,7 +185,7 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 		sort(toplesets_dist, toplesets_dist + limits.size() - 1);
 
 		os.open(test_path + filename + "_toplesets_sorted.dist");
-		for(index_t i = 0; i < limits.size() - 1; i++)
+		for(index_t i = 0; i < limits.size() - 1; ++i)
 			os << i << " " << toplesets_dist[i] << endl;
 		os.close();
 
@@ -220,7 +220,7 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 		double * times_fps = times_farthest_point_sampling_ptp_gpu(mesh, source, n_samples);
 		
 		os.open(test_path + filename + ".fps");
-		for(index_t i = i_samples; i < n_samples; i++)
+		for(index_t i = i_samples; i < n_samples; ++i)
 			os << i << " " << times_fps[i] << endl;
 		os.close();
 
@@ -243,7 +243,7 @@ double test_fast_marching(real_t & error, const real_t * exact, che * mesh, cons
 {
 	double t, seconds = INFINITY;
 
-	for(int i = 0; i < n_test; i++)
+	for(int i = 0; i < n_test; ++i)
 	{
 		TIC(t) geodesics fm(mesh, source); TOC(t);
 		seconds = min(seconds, t);
@@ -261,7 +261,7 @@ double test_ptp_cpu(real_t & error, const real_t * exact, che * mesh, const vect
 	double t, seconds = INFINITY;
 	
 	real_t * dist = new real_t[mesh->n_vertices];
-	for(int i = 0; i < n_test; i++)
+	for(int i = 0; i < n_test; ++i)
 	{
 		TIC(t) parallel_toplesets_propagation_cpu(dist, mesh, source, toplesets); TOC(t)
 		seconds = min(seconds, t);
@@ -280,7 +280,7 @@ double test_heat_method_cholmod(real_t & error, double & stime, const real_t * e
 	ptime = stime = INFINITY;
 	
 	real_t * dist = new real_t[mesh->n_vertices];
-	for(int i = 0; i < n_test; i++)
+	for(int i = 0; i < n_test; ++i)
 	{
 		TIC(t) st = heat_method(dist, mesh, source, HEAT_CHOLMOD); TOC(t)
 		ptime = min(t - st, ptime);
@@ -302,7 +302,7 @@ double test_ptp_gpu(real_t & error, const real_t * exact, che * mesh, const vect
 	double t, seconds = INFINITY;
 	
 	real_t * dist = new real_t[mesh->n_vertices];
-	for(int i = 0; i < n_test; i++)
+	for(int i = 0; i < n_test; ++i)
 	{
 		t = parallel_toplesets_propagation_coalescence_gpu(dist, mesh, source, toplesets);
 		seconds = min(seconds, t);
@@ -321,7 +321,7 @@ double test_heat_method_gpu(real_t & error, double & stime, const real_t * exact
 	ptime = stime = INFINITY;
 	
 	real_t * dist = nullptr;
-	for(int i = 0; i < n_test; i++)
+	for(int i = 0; i < n_test; ++i)
 	{
 		if(dist) delete [] dist;
 		
@@ -348,7 +348,7 @@ real_t * load_exact_geodesics(const string & file, const size_t & n)
 
 	real_t * exact = new real_t[n];
 
-	for(index_t i = 0; i < n; i++)
+	for(index_t i = 0; i < n; ++i)
 		is >> exact[i];
 	is.close();
 	
@@ -360,7 +360,7 @@ real_t compute_error(const real_t * dist, const real_t * exact, const size_t & n
 	real_t error = 0;
 
 	#pragma omp parallel for reduction(+: error)
-	for(index_t v = 0; v < n; v++)
+	for(index_t v = 0; v < n; ++v)
 		if(exact[v] > 0) error += abs(dist[v] - exact[v]) / exact[v];
 
 	return error * 100 / (n - s);

@@ -54,7 +54,7 @@ void key_points::compute_kps(che * mesh)
 	// compute faces areas
 
 	#pragma omp parallel for
-	for(index_t t = 0; t < n_faces; t++)
+	for(index_t t = 0; t < n_faces; ++t)
 	{
 		face_areas[t].first = mesh->area_trig(t);
 		face_areas[t].second = t;
@@ -66,10 +66,10 @@ void key_points::compute_kps(che * mesh)
 	memset(is_kp, 0, sizeof(bool) * n_vertices);
 
 	index_t he, k = 0;
-	for(index_t t = 0; t < n_faces; t++)
+	for(index_t t = 0; t < n_faces; ++t)
 	{
 		he = che::mtrig * face_areas[t].second;
-		for(index_t i = 0; i < che::mtrig; i++)
+		for(index_t i = 0; i < che::mtrig; ++i)
 		{
 			const index_t & v = mesh->vt(he);
 			if(!is_kp[v])
@@ -85,7 +85,7 @@ void key_points::compute_kps(che * mesh)
 	memset(is_kp, 0, sizeof(bool) * n_vertices);
 
 	#pragma omp parallel for
-	for(index_t i = 0; i < n_kps; i++)
+	for(index_t i = 0; i < n_kps; ++i)
 		is_kp[kps[i]] = 1;
 }
 

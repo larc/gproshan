@@ -89,7 +89,7 @@ void che_ply::read_file(const string & file)
 	
 	if(format == "ascii")
 	{
-		for(index_t v = 0; v < n_vertices; v++)
+		for(index_t v = 0; v < n_vertices; ++v)
 		{
 			getline(is, str);
 			stringstream ss(str);
@@ -118,7 +118,7 @@ void che_ply::read_file(const string & file)
 		};
 
 		char * vbuffer = new char[vbytes];
-		for(index_t v = 0; v < n_vertices; v++)
+		for(index_t v = 0; v < n_vertices; ++v)
 		{
 			is.read(vbuffer, vbytes);
 			if(big_endian) big_to_little(vbuffer, vbytes);
@@ -130,13 +130,13 @@ void che_ply::read_file(const string & file)
 				if(xyz == 4)
 				{
 					float * X = (float *) vbuffer;
-					for(index_t i = 0; i < 3; i++)
+					for(index_t i = 0; i < 3; ++i)
 						GT[v][i] = X[i];
 				}
 				else
 				{
 					double * X = (double *) vbuffer;
-					for(index_t i = 0; i < 3; i++)
+					for(index_t i = 0; i < 3; ++i)
 						GT[v][i] = (real_t) X[i];
 				}
 			}
@@ -185,13 +185,13 @@ void che_ply::write_file(const che * mesh, const string & file)
 	os << "property list uchar int vertex_index" << endl;
 	os << "end_header" << endl;
 
-	for(size_t v = 0; v < mesh->n_vertices; v++)
+	for(size_t v = 0; v < mesh->n_vertices; ++v)
 		os << mesh->gt(v) << endl;
 
 	for(index_t he = 0; he < mesh->n_half_edges; )
 	{
 		os << che::mtrig;
-		for(index_t i = 0; i < che::mtrig; i++)
+		for(index_t i = 0; i < che::mtrig; ++i)
 			os << " " << mesh->vt(he++);
 		os << endl;
 	}

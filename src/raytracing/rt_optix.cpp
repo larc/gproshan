@@ -92,7 +92,7 @@ OptixTraversableHandle optix::build_as(const std::vector<che *> & meshes)
 	std::vector<OptixBuildInput> optix_meshes(meshes.size());
 	std::vector<uint32_t> optix_trig_flags(meshes.size());
 
-	for(index_t i = 0; i < meshes.size(); i++)
+	for(index_t i = 0; i < meshes.size(); ++i)
 		add_mesh(optix_meshes[i], optix_trig_flags[i], meshes[i]);
 
 	OptixAccelBuildOptions optix_accel_opt	= {};
@@ -180,7 +180,7 @@ void optix::add_mesh(OptixBuildInput & optix_mesh, uint32_t & optix_trig_flags, 
 	cudaMalloc(&d_vertex, mesh->n_vertices * sizeof(float) * 3);
 	
 	#pragma omp parallel for
-	for(index_t i = 0; i < mesh->n_vertices; i++)
+	for(index_t i = 0; i < mesh->n_vertices; ++i)
 		vertices[i] = glm::vec3(mesh->gt(i).x, mesh->gt(i).y, mesh->gt(i).z);
 	
 	cudaMemcpy(d_vertex, vertices, mesh->n_vertices * sizeof(vertex), cudaMemcpyHostToDevice);

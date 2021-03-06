@@ -38,7 +38,7 @@ void fairing_taubin::compute(che * mesh)
 	a_mat X((real_t *) positions, 3, mesh->n_vertices, false, true);
 
 	#pragma omp parallel for
-	for(index_t v = 0; v < mesh->n_vertices; v++)
+	for(index_t v = 0; v < mesh->n_vertices; ++v)
 		positions[v] = mesh->gt(v);
 
 	a_mat R;

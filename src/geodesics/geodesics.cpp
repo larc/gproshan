@@ -26,7 +26,7 @@ geodesics::geodesics(che * mesh, const vector<index_t> & sources, const params &
 	n_sorted = 0;
 
 	memset(sorted_index, -1, n_vertices * sizeof(index_t));
-	for(index_t v = 0; v < n_vertices; v++)
+	for(index_t v = 0; v < n_vertices; ++v)
 		dist[v] = INFINITY;
 
 	assert(sources.size() > 0);
@@ -88,7 +88,7 @@ void geodesics::normalize()
 	real_t max = dist[farthest()];
 
 	#pragma omp parallel for
-	for(size_t i = 0; i < n_sorted; i++)
+	for(size_t i = 0; i < n_sorted; ++i)
 		dist[sorted_index[i]] /= max;
 }
 
@@ -118,7 +118,7 @@ void geodesics::run_fastmarching(che * mesh, const vector<index_t> & sources, co
 	index_t * color = new index_t[n_vertices];
 
 	#pragma omp parallel for
-	for(index_t v = 0; v < n_vertices; v++)
+	for(index_t v = 0; v < n_vertices; ++v)
 		color[v] = GREEN;
 
 	size_t green_count = n_iter ? n_iter : n_vertices;

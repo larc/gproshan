@@ -15,7 +15,7 @@ void poisson(che * mesh, const size_t & old_n_vertices, index_t k)
 	if(!k) return;
 
 	a_mat B(mesh->n_vertices, 3);
-	for(index_t v = 0; v < mesh->n_vertices; v++)
+	for(index_t v = 0; v < mesh->n_vertices; ++v)
 	{
 		if(v < old_n_vertices)
 		{
@@ -29,7 +29,7 @@ void poisson(che * mesh, const size_t & old_n_vertices, index_t k)
 	a_sp_mat L, A;
 	laplacian(mesh, L, A);
 
-	for(index_t i = 0; i < mesh->n_vertices; i++)
+	for(index_t i = 0; i < mesh->n_vertices; ++i)
 		B.row(i) *= -1 / A(i,i);
 
 	a_sp_mat M;
@@ -38,7 +38,7 @@ void poisson(che * mesh, const size_t & old_n_vertices, index_t k)
 	if(k > 1) M = A * L;
 	while(--k) L *= M;
 
-	for(index_t v = 0; v < old_n_vertices; v++)
+	for(index_t v = 0; v < old_n_vertices; ++v)
 	{
 		B.col(0) -= mesh->gt(v).x * L.col(v);
 		B.col(1) -= mesh->gt(v).y * L.col(v);
@@ -53,7 +53,7 @@ void poisson(che * mesh, const size_t & old_n_vertices, index_t k)
 
 	a_mat X;
 	if(spsolve(X, s * L, s * B))
-	for(index_t v = old_n_vertices; v < mesh->n_vertices; v++)
+	for(index_t v = old_n_vertices; v < mesh->n_vertices; ++v)
 	{
 		mesh->get_vertex(v).x = X(v - old_n_vertices, 0);
 		mesh->get_vertex(v).y = X(v - old_n_vertices, 1);
@@ -69,10 +69,10 @@ void biharmonic_interp_2(a_mat & P, a_mat & H)
 	a_mat A(n, n);
 	a_vec pi(2), pj(2);
 
-	for(index_t i = 0; i < n; i++)
+	for(index_t i = 0; i < n; ++i)
 	{
 		pi(0) = P(0, i); pi(1) = P(1, i);
-		for(index_t j = 0; j < n; j++)
+		for(index_t j = 0; j < n; ++j)
 		{
 			pj(0) = P(0, j); pj(1) = P(1, j);
 			x = norm(pi - pj);
@@ -82,11 +82,11 @@ void biharmonic_interp_2(a_mat & P, a_mat & H)
 
 	a_mat alpha = solve(A, P.row(2).t());
 
-	for(index_t i = 0; i < H.n_cols; i++)
+	for(index_t i = 0; i < H.n_cols; ++i)
 	{
 		H(2, i) = 0;
 		pi(0) = H(0, i); pi(1) = H(1, i);
-		for(index_t j = 0; j < n; j++)
+		for(index_t j = 0; j < n; ++j)
 		{
 			pj(0) = P(0, j); pj(1) = P(1, j);
 			x = norm(pi - pj);
@@ -111,7 +111,7 @@ void biharmonic_interp_2(che * mesh, const size_t & old_n_vertices, const size_t
 	vector<index_t> sub_mesh_hole;
 	sub_mesh_hole.reserve(n_border_vertices);
 
-	for(index_t b = 0; b < n_border_vertices; b++)
+	for(index_t b = 0; b < n_border_vertices; ++b)
 		if(sorted[b] < old_n_vertices)
 			sub_mesh_hole.push_back(sorted[b]);
 
@@ -130,7 +130,7 @@ void biharmonic_interp_2(che * mesh, const size_t & old_n_vertices, const size_t
 
 	a_mat H(3, n_vertices - old_n_vertices);
 
-	for(index_t i = 0, v = old_n_vertices; v < n_vertices; v++)
+	for(index_t i = 0, v = old_n_vertices; v < n_vertices; ++v)
 	{
 		H(0, i) = mesh->gt(v).x;
 		H(1, i) = mesh->gt(v).y;

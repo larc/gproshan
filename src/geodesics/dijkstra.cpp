@@ -20,7 +20,7 @@ dijkstra::dijkstra(che * mesh, index_t src)
 
 	memset(predecessors, 255, sizeof(real_t)*n_vertices);
 
-	for(index_t i = 0; i < n_vertices; i++)
+	for(index_t i = 0; i < n_vertices; ++i)
 		weights[i] = INFINITY;
 
 	run(mesh);
@@ -44,7 +44,7 @@ index_t & dijkstra::operator[](index_t i)
 
 void dijkstra::print(ostream & os)
 {
-	for(index_t i = 0; i < n_vertices; i++)
+	for(index_t i = 0; i < n_vertices; ++i)
 		os<<weights[i]<<endl;
 }
 
@@ -59,13 +59,13 @@ void dijkstra::run(che * mesh)
 	real_t min;
 	index_t min_i;
 
-	for(index_t i = 0; i < n_vertices; i++)
+	for(index_t i = 0; i < n_vertices; ++i)
 	{
 		min = INFINITY;
 		min_i = NIL;
 
 		#pragma	omp parallel for num_threads(8)
-		for(index_t v = 0; v < n_vertices; v++)
+		for(index_t v = 0; v < n_vertices; ++v)
 		{
 			real_t w;
 			index_t nv;

@@ -32,7 +32,7 @@ real_t descriptor::operator () (const index_t & v) const
 void descriptor::compute_gps()
 {
 	features = eigvec.tail_cols(eigvec.n_cols - 1);
-	for(index_t i = 1; i < eigval.size(); i++)
+	for(index_t i = 1; i < eigval.size(); ++i)
 		features.col(i - 1) /= sqrt(eigval(i));
 }
 
@@ -43,7 +43,7 @@ void descriptor::compute_hks()
 	features.zeros(eigvec.n_rows, eigvec.n_cols);
 	
 	#pragma omp parallel for
-	for(index_t t = 0; t < features.n_cols; t++)
+	for(index_t t = 0; t < features.n_cols; ++t)
 		features.col(t) = eigvec * exp(-eigval * t);
 }
 
@@ -60,7 +60,7 @@ void descriptor::compute_wks()
 	features.zeros(eigvec.n_rows, e.n_elem);
 	
 	#pragma omp parallel for
-	for(index_t t = 0; t < features.n_cols; t++)
+	for(index_t t = 0; t < features.n_cols; ++t)
 		features.col(t) = eigvec * exp(-pow(e(t) - eigval, 2) / sigma_2) / 
 							sum(exp(-pow(e(t) - eigval, 2) / sigma_2));
 }

@@ -27,14 +27,14 @@ void test_image_denoising(const string & file)
 
 	a_mat X(n, M);
 
-	for(index_t x = 0; x < rows; x++)
-	for(index_t y = 0; y < cols; y++)
+	for(index_t x = 0; x < rows; ++x)
+	for(index_t y = 0; y < cols; ++y)
 	{
 		index_t i = x + y * rows;
 		index_t k = 0;
 
-		for(index_t b = y; b < y + p; b++)
-		for(index_t a = x; a < x + p; a++)
+		for(index_t b = y; b < y + p; ++b)
+		for(index_t a = x; a < x + p; ++a)
 		{
 			X(k, i) = image(a, b);
 			k++;
@@ -47,10 +47,10 @@ void test_image_denoising(const string & file)
 	a_mat spD = D;
 	
 	CImg<real_t> imdict;
-	for(index_t i = 0; i < 16; i++)
+	for(index_t i = 0; i < 16; ++i)
 	{
 		CImg<real_t> imrow;
-		for(index_t j = 0; j < 16; j++)
+		for(index_t j = 0; j < 16; ++j)
 			imrow.append(CImg<real_t>(D.colptr(i * 16 + j), p, p, 1, 1, true), 'x');
 
 		imdict.append(imrow, 'y');
@@ -76,10 +76,10 @@ void test_image_denoising(const string & file)
 	gproshan_log_var(norm(D - spD));
 	
 	CImg<real_t> imdictlearned;
-	for(index_t i = 0; i < 16; i++)
+	for(index_t i = 0; i < 16; ++i)
 	{
 		CImg<real_t> imrow;
-		for(index_t j = 0; j < 16; j++)
+		for(index_t j = 0; j < 16; ++j)
 			imrow.append(CImg<real_t>(D.colptr(i * 16 + j), p, p, 1, 1, true), 'x');
 
 		imdictlearned.append(imrow, 'y');
@@ -107,14 +107,14 @@ void test_image_denoising(const string & file)
 	CImg<double> image_out = image;
 	image_out.fill(0);
 
-	for(index_t x = 0; x < rows; x++)
-	for(index_t y = 0; y < cols; y++)
+	for(index_t x = 0; x < rows; ++x)
+	for(index_t y = 0; y < cols; ++y)
 	{
 		index_t i = x + y * rows;
 		index_t k = 0;
 
-		for(index_t b = y; b < y + p; b++)
-		for(index_t a = x; a < x + p; a++)
+		for(index_t b = y; b < y + p; ++b)
+		for(index_t a = x; a < x + p; ++a)
 		{
 			image_out(a, b) += Y(k, i);
 			k++;
@@ -123,8 +123,8 @@ void test_image_denoising(const string & file)
 
 	rows = image.width();
 	cols = image.height();
-	for(index_t x = 0; x < rows; x++)
-	for(index_t y = 0; y < cols; y++)
+	for(index_t x = 0; x < rows; ++x)
+	for(index_t y = 0; y < cols; ++y)
 	{
 		index_t dx = p, dy = p;
 		if(x < p && x < dx) dx = x + 1;

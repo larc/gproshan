@@ -218,7 +218,7 @@ real_t che::quality()
 	real_t q = 0;
 
 	#pragma omp parallel for reduction(+: q)
-	for(index_t t = 0; t < n_faces; t++)
+	for(index_t t = 0; t < n_faces; ++t)
 		q += pdetriq(t) > 0.6; // is confederating good triangle
 
 	return q * 100 / n_faces;
@@ -247,7 +247,7 @@ real_t che::area_surface() const
 	real_t area = 0;
 
 	#pragma omp parallel for reduction(+: area)
-	for(index_t i = 0; i < n_faces; i++)
+	for(index_t i = 0; i < n_faces; ++i)
 		area += area_trig(i);
 
 	return area;
@@ -258,7 +258,7 @@ void che::update_heatmap(const real_t * hm, real_t max_color)
 	if(!hm)
 	{
 		#pragma omp parallel for
-		for(index_t v = 0; v < n_vertices; v++)
+		for(index_t v = 0; v < n_vertices; ++v)
 			VHC[v] = 0.45;
 
 		return;
@@ -267,13 +267,13 @@ void che::update_heatmap(const real_t * hm, real_t max_color)
 	if(max_color < numeric_limits<real_t>::epsilon())
 	{
 		#pragma omp parallel for reduction(max: max_color)
-		for(index_t v = 0; v < n_vertices; v++)
+		for(index_t v = 0; v < n_vertices; ++v)
 			if(hm[v] < INFINITY)
 				max_color = max(hm[v], max_color);
 	}
 
 	#pragma omp parallel for
-	for(index_t v = 0; v < n_vertices; v++)
+	for(index_t v = 0; v < n_vertices; ++v)
 		VHC[v] = hm[v] / max_color;
 }
 
@@ -313,7 +313,7 @@ void che::update_normals()
 	if(!n_faces) return;
 
 	#pragma omp parallel for
-	for(index_t v = 0; v < n_vertices; v++)
+	for(index_t v = 0; v < n_vertices; ++v)
 	{
 		vertex & n = VN[v];
 		
@@ -430,7 +430,7 @@ real_t che::mean_edge() const
 	real_t m = 0;
 
 	#pragma omp parallel for reduction(+: m)
-	for(index_t e = 0; e < n_edges; e++)
+	for(index_t e = 0; e < n_edges; ++e)
 		m += *(GT[VT[ET[e]]] - GT[VT[next(ET[e])]]);
 
 	return m / n_edges;
@@ -468,7 +468,7 @@ void che::normalize()
 	vertex center;
 
 	#pragma omp parallel for
-	for(index_t v = 0; v < n_vertices; v++)
+	for(index_t v = 0; v < n_vertices; ++v)
 	{
 		#pragma omp critical
 		center += GT[v];
@@ -479,14 +479,14 @@ void che::normalize()
 	real_t max_norm = 0;
 
 	#pragma omp parallel for reduction(max : max_norm)
-	for(index_t v = 0; v < n_vertices; v++)
+	for(index_t v = 0; v < n_vertices; ++v)
 	{
 		GT[v] -= center;
 		max_norm = std::max(max_norm, *GT[v]);
 	}
 
 	#pragma omp parallel for
-	for(index_t v = 0; v < n_vertices; v++)
+	for(index_t v = 0; v < n_vertices; ++v)
 		GT[v] /= max_norm;
 }
 
@@ -576,7 +576,7 @@ size_t che::max_degree() const
 	size_t d, md = 0;
 
 	#pragma omp parallel for private(d) reduction(max: md)
-	for(index_t v = 0; v < n_vertices; v++)
+	for(index_t v = 0; v < n_vertices; ++v)
 	{
 		d = 0;
 		for_star(he, this, v) d++;
@@ -650,7 +650,7 @@ void che::compute_toplesets(index_t *& toplesets, index_t *& sorted, vector<inde
 	}
 
 	limits.push_back(0);
-	for(index_t i = 0; i < p; i++)
+	for(index_t i = 0; i < p; ++i)
 	{
 		const index_t & v = sorted[i];
 		
@@ -698,27 +698,27 @@ void che::multiplicate_vertices()
 	memcpy(aGT, GT, n_vertices * sizeof(vertex));
 
 	#pragma omp parallel for
-	for(index_t he = 0; he < n_half_edges; he++)
+	for(index_t he = 0; he < n_half_edges; ++he)
 		aVT[3 * he] = VT[he];
 	
 	#pragma omp parallel for
-	for(index_t he = 0; he < n_half_edges; he++)
+	for(index_t he = 0; he < n_half_edges; ++he)
 		aOT[3 * he] = OT[he] != NIL ? OT[he] * 3 : NIL;
 	
 	#pragma omp parallel for
-	for(index_t he = 0; he < n_half_edges; he++)
+	for(index_t he = 0; he < n_half_edges; ++he)
 		aEHT[3 * he] = EHT[he];
 	
 	#pragma omp parallel for
-	for(index_t e = 0; e < n_edges; e++)
+	for(index_t e = 0; e < n_edges; ++e)
 		aET[e] = ET[e] * 3;
 
 	#pragma omp parallel for
-	for(index_t v = 0; v < n_vertices; v++)
+	for(index_t v = 0; v < n_vertices; ++v)
 		aEVT[v] = EVT[v] != NIL ? EVT[v] * 3 : NIL;
 
 	#pragma omp parallel for
-	for(index_t f = 0; f < n_faces; f++)
+	for(index_t f = 0; f < n_faces; ++f)
 	{
 		index_t v = n_vertices + f;
 		index_t he = f * che::mtrig;
@@ -795,7 +795,7 @@ void che::multiplicate_vertices()
 		}
 	};
 	
-	for(index_t e = 0; e < n_flips; e++)
+	for(index_t e = 0; e < n_flips; ++e)
 		if(OT[ET[e]] == NIL || (normal_he(ET[e]), normal_he(OT[ET[e]])) < 0.8)		// could be improve by quadric error
 		{
 			index_t he = ET[e];
@@ -840,7 +840,7 @@ void che::remove_non_manifold_vertices()
 	vector<index_t> new_faces; // each 3
 
 	gproshan_debug(removing vertex);
-	for(index_t v = 0; v < n_vertices; v++)
+	for(index_t v = 0; v < n_vertices; ++v)
 	{
 		if(EVT[v] != NIL)
 			new_vertices.push_back(GT[v]);
@@ -853,7 +853,7 @@ void che::remove_non_manifold_vertices()
 	gproshan_debug_var(removed[0]);
 	index_t r = 1;
 	index_t d = 1;
-	for(index_t v = removed[0] + 1; v < n_vertices; v++)
+	for(index_t v = removed[0] + 1; v < n_vertices; ++v)
 	{
 		if(v < removed[r])
 		{
@@ -867,7 +867,7 @@ void che::remove_non_manifold_vertices()
 		}
 	}
 
-	for(index_t he = 0; he < n_half_edges; he++)
+	for(index_t he = 0; he < n_half_edges; ++he)
 		if(VT[he] != NIL)
 			new_faces.push_back(VT[he]);
 		else gproshan_error_var(he);
@@ -908,7 +908,7 @@ void che::remove_vertices(const vector<index_t> & vertices)
 	vector<index_t> new_faces; // each 3
 
 	gproshan_debug(removing vertex);
-	for(index_t v = 0; v < n_vertices; v++)
+	for(index_t v = 0; v < n_vertices; ++v)
 	{
 		if(EVT[v] != NIL)
 			new_vertices.push_back(GT[v]);
@@ -921,7 +921,7 @@ void che::remove_vertices(const vector<index_t> & vertices)
 	gproshan_debug_var(removed[0]);
 	index_t r = 1;
 	index_t d = 1;
-	for(index_t v = removed[0] + 1; v < n_vertices; v++)
+	for(index_t v = removed[0] + 1; v < n_vertices; ++v)
 	{
 		if(v < removed[r])
 		{
@@ -935,7 +935,7 @@ void che::remove_vertices(const vector<index_t> & vertices)
 		}
 	}
 
-	for(index_t he = 0; he < n_half_edges; he++)
+	for(index_t he = 0; he < n_half_edges; ++he)
 		if(VT[he] != NIL)
 			new_faces.push_back(VT[he]);
 		else gproshan_error_var(he);
@@ -977,7 +977,7 @@ gproshan_debug(fill_holes);
 	memcpy(aVT, VT, sizeof(index_t) * n_half_edges);
 
 	index_t * t_aVT = aVT + n_half_edges;
-	for(index_t he = 0; he < mesh->n_half_edges; he++)
+	for(index_t he = 0; he < mesh->n_half_edges; ++he)
 		t_aVT[he] = mesh->VT[he] < ncv ? com_vertices[mesh->VT[he]] : mesh->VT[he] + n_vertices - ncv;
 gproshan_debug(fill_holes);
 
@@ -985,11 +985,11 @@ gproshan_debug(fill_holes);
 gproshan_debug(fill_holes);
 
 	index_t * t_aOT = aOT + n_half_edges;
-	for(index_t he = 0; he < mesh->n_half_edges; he++)
+	for(index_t he = 0; he < mesh->n_half_edges; ++he)
 		t_aOT[he] = mesh->OT[he] != NIL ? mesh->OT[he] + n_half_edges : NIL;
 gproshan_debug(fill_holes);
 
-	for(index_t v, he_v, he_i, i = 0; i < ncv; i++)
+	for(index_t v, he_v, he_i, i = 0; i < ncv; ++i)
 	{
 		he_i = mesh->EVT[i];
 		if(he_i != NIL && mesh->VT[next(he_i)] < ncv)
@@ -1009,7 +1009,7 @@ gproshan_debug(fill_holes);
 
 gproshan_debug(fill_holes);
 	index_t * t_aEVT = aEVT + n_vertices;
-	for(index_t v = ncv; v < mesh->n_vertices; v++)
+	for(index_t v = ncv; v < mesh->n_vertices; ++v)
 		t_aEVT[v - ncv] = mesh->EVT[v] != NIL ? mesh->EVT[v] + n_half_edges : NIL;
 gproshan_debug(fill_holes);
 
@@ -1018,7 +1018,7 @@ gproshan_debug(fill_holes);
 
 	bool * common_edge = new bool[mesh->n_edges];
 	memset(common_edge, 0, sizeof(bool) * mesh->n_edges);
-	for(index_t he_i, i = 0; i < ncv; i++)
+	for(index_t he_i, i = 0; i < ncv; ++i)
 	{
 		he_i = mesh->EVT[i];
 		if(he_i != NIL && mesh->VT[next(he_i)] < ncv)
@@ -1026,7 +1026,7 @@ gproshan_debug(fill_holes);
 	}
 
 	index_t ae = n_edges;
-	for(index_t e = 0; e < mesh->n_edges; e++)
+	for(index_t e = 0; e < mesh->n_edges; ++e)
 		if(!common_edge[e])
 			aET[ae++] = mesh->ET[e] + n_half_edges;
 
@@ -1057,11 +1057,11 @@ gproshan_debug(fill_holes);
 
 void che::set_head_vertices(index_t * head, const size_t & n)
 {
-	for(index_t v, i = 0; i < n; i++)
+	for(index_t v, i = 0; i < n; ++i)
 	{
 		v = head[i];
 
-		for(index_t j = i + 1; j < n; j++)
+		for(index_t j = i + 1; j < n; ++j)
 			if(i == head[j])
 			{
 				head[j] = v;
@@ -1076,7 +1076,7 @@ void che::set_head_vertices(index_t * head, const size_t & n)
 			VT[he] = v;
 
 		swap(EVT[v], EVT[i]);
-		for(index_t b = 0; b < n_borders; b++)
+		for(index_t b = 0; b < n_borders; ++b)
 		{
 			if(BT[b] == i) BT[b] = v;
 			else if(BT[b] == v) BT[b] = i;
@@ -1107,7 +1107,7 @@ corr_t * che::edge_collapse(const index_t *const & sort_edges, const vertex *con
 	// init default corr
 	corr_t * corr = new corr_t[n_vertices];
 	#pragma omp parallel for
-	for(index_t v = 0; v < n_vertices; v++)
+	for(index_t v = 0; v < n_vertices; ++v)
 		corr[v].init(EVT[v]);
 
 	short * faces_fixed = new short[n_faces];
@@ -1131,7 +1131,7 @@ corr_t * che::edge_collapse(const index_t *const & sort_edges, const vertex *con
 
 	bool is_collapse;
 
-	for(index_t e = 0; e < n_edges; e++)
+	for(index_t e = 0; e < n_edges; ++e)
 	{
 		//e_d = ne;
 		e_d = sort_edges ? sort_edges[e] : rand() % n_edges;
@@ -1211,7 +1211,7 @@ corr_t * che::edge_collapse(const index_t *const & sort_edges, const vertex *con
 	new_faces.reserve(n_faces);
 
 	index_t dv = 0;
-	for(index_t v = 0; v < n_vertices; v++)
+	for(index_t v = 0; v < n_vertices; ++v)
 	{
 		if(deleted_vertices[v]) dv++;
 		else
@@ -1224,14 +1224,14 @@ corr_t * che::edge_collapse(const index_t *const & sort_edges, const vertex *con
 	index_t * map_he = new index_t[n_half_edges];
 	memset(map_he, 255, sizeof(index_t) * n_half_edges);
 
-	for(index_t n_he = 0, he = 0; he < n_half_edges; he++)
+	for(index_t n_he = 0, he = 0; he < n_half_edges; ++he)
 		if(faces_fixed[trig(he)] > -1)
 		{
 			new_faces.push_back(VT[he] - deleted_vertices[VT[he]]);
 			map_he[he] = n_he++;
 		}
 
-	for(index_t v = 0; v < n_vertices; v++)
+	for(index_t v = 0; v < n_vertices; ++v)
 		corr[v].t = trig(map_he[corr[v].t * che::mtrig]);
 
 	delete_me();
@@ -1380,7 +1380,7 @@ void che::init(const size_t & n_v, const size_t & n_f)
 	if(n_vertices)		VHC	= new real_t[n_vertices];
 
 	#pragma omp parallel for
-	for(index_t v = 0; v < n_vertices; v++)
+	for(index_t v = 0; v < n_vertices; ++v)
 		VC[v] = vcolor;
 }
 
@@ -1393,7 +1393,7 @@ void che::update_evt_ot_et()
 	vector<index_t> * he_p_vertex = new vector<index_t>[n_vertices];
 
 	//vertex table
-	for(index_t he = 0; he < n_half_edges; he++)
+	for(index_t he = 0; he < n_half_edges; ++he)
 	{
 		EVT[VT[he]] = he;
 		he_p_vertex[VT[he]].push_back(he);
@@ -1403,7 +1403,7 @@ void che::update_evt_ot_et()
 	memset(OT, -1, sizeof(index_t) * n_half_edges);
 
 	vector<index_t> et;
-	for(index_t he = 0; he < n_half_edges; he++)
+	for(index_t he = 0; he < n_half_edges; ++he)
 	{
 		if(OT[he] == NIL)
 		{
@@ -1423,7 +1423,7 @@ void che::update_evt_ot_et()
 	}
 	
 	// non manifold two disk 
-	//for(index_t he = 0; he < n_half_edges; he++)
+	//for(index_t he = 0; he < n_half_edges; ++he)
 	//	if(OT[he] != NIL) assert(he == OT[OT[he]]);
 	
 	//edge table
@@ -1432,7 +1432,7 @@ void che::update_evt_ot_et()
 	memcpy(ET, et.data(), sizeof(index_t) * n_edges);
 
 
-	for(index_t he = 0; he < n_half_edges; he++)
+	for(index_t he = 0; he < n_half_edges; ++he)
 		if(OT[he] == NIL && EVT[VT[he]] != NIL)
 		{
 			if(OT[EVT[VT[he]]] == NIL && EVT[VT[he]] != he)
@@ -1443,7 +1443,7 @@ void che::update_evt_ot_et()
 			else EVT[VT[he]] = he;
 		}
 
-//	for(index_t v = 0; v < n_vertices; v++)
+//	for(index_t v = 0; v < n_vertices; ++v)
 //		if(EVT[v] >= n_half_edges)
 //		{
 //			gproshan_debug_var(EVT[v]);
@@ -1456,7 +1456,7 @@ void che::update_evt_ot_et()
 void che::update_eht()
 {
 	#pragma omp parallel for
-	for(index_t e = 0; e < n_edges; e++)
+	for(index_t e = 0; e < n_edges; ++e)
 	{
 		EHT[ET[e]] = e;
 		if(OT[ET[e]] != NIL)
@@ -1474,7 +1474,7 @@ void che::update_bt()
 
 	vector<index_t> borders;
 
-	for(index_t v = 0; v < n_vertices; v++)
+	for(index_t v = 0; v < n_vertices; ++v)
 		if(!border[v] && EVT[v] != NIL && OT[EVT[v]] == NIL)
 		{
 			borders.push_back(v);

@@ -60,7 +60,7 @@ void patch::init_disjoint(che * mesh, const index_t & v, const size_t & n_toplev
 
 bool patch::exists(index_t idx)
 {
-	for(size_t i=1; i < vertices.size(); i++)
+	for(size_t i=1; i < vertices.size(); ++i)
 	{
 		if(vertices[i] == idx)
 			return true;
@@ -70,7 +70,7 @@ bool patch::exists(index_t idx)
 
 index_t patch::find(const index_t * indexes, size_t nc, index_t idx_global)
 {
-	for(size_t i=0; i<nc; i++)
+	for(size_t i=0; i<nc; ++i)
 		if(indexes[i] == idx_global) return i;
 
 	return -1;
@@ -167,7 +167,7 @@ void patch::init_random(const vertex & c, const a_mat & T, const real_t & radio,
 	xyz(1, 0) = 0;
 	xyz(2, 0) = 0;
 
-	for(size_t i = 1; i < n_points; i++)
+	for(size_t i = 1; i < n_points; ++i)
 	{
 		double a = abs(dis(gen)) * 2 * M_PI;
 		double r = fr * abs(dis(gen));
@@ -192,7 +192,7 @@ void patch::recover_radial_disjoint(che * mesh, const real_t & radio_, const ind
 
 	vertices.push_back(v);
 
-	for(index_t i=1; i<geo.n_sorted_index(); i++)
+	for(index_t i=1; i<geo.n_sorted_index(); ++i)
 	{
 		vertices.push_back(indexes[i]);
 	}
@@ -206,7 +206,7 @@ void patch::recover_radial_disjoint(che * mesh, const real_t & radio_, const ind
 		n.x = T(0, 2); n.y = T(1, 2); n.z = T(2, 2);
 		radio = -INFINITY;
 
-		for(index_t i=1; i < vertices.size(); i++)
+		for(index_t i=1; i < vertices.size(); ++i)
 		{
 			p = mesh->get_vertex(indexes[i]); 
 			c = mesh->get_vertex(v); // central vertices
@@ -324,12 +324,12 @@ void patch::reset_xyz(che * mesh, vector<vpatches_t> & vpatches, const index_t &
 	if(mask)
 	{
 		m = 0;
-		for(index_t i = 0; i < vertices.size(); i++)
+		for(index_t i = 0; i < vertices.size(); ++i)
 			if(mask(vertices[i])) m++;
 	}
 
 	xyz.set_size(3, m);
-	for(index_t j = 0, i = 0; i < vertices.size(); i++)
+	for(index_t j = 0, i = 0; i < vertices.size(); ++i)
 	{
 		if(!mask || mask(vertices[i]))
 		{
@@ -361,7 +361,7 @@ void patch::remove_extra_xyz_disjoint(size_t & max_points)
 	{		
 		arma::uvec xi;
 		xi.zeros(max_points);
-		for (size_t i=1; i< max_points; i++) xi[i] = i;
+		for (size_t i=1; i< max_points; ++i) xi[i] = i;
 		xi = arma::shuffle(xi);
 		xyz = xyz.cols(xi);
 	}
@@ -465,7 +465,7 @@ void patch::reset_xyz_disjoint(che * mesh, real_t * dist, size_t M, vector<vpatc
 	if(mask)
 	{
 		m = 0;
-		for(index_t i = 0; i < vertices.size(); i++)
+		for(index_t i = 0; i < vertices.size(); ++i)
 			if(mask(i)) { dist[vertices[i]] = float(p + 1) / M; m++; } else {dist[vertices[i]] = INFINITY; };
 		/*gproshan_debug(number vertices considered);
 		gproshan_debug_var(m);
@@ -518,7 +518,7 @@ void patch::save(const real_t & radio, const size_t & imsize, CImgList<real_t> &
 	size_t x, y;
 	img.fill(0);
 	// for each x y plus 1, multiply by delta and floor, get i and j 
-	for(index_t i = 0; i < vertices.size(); i++)
+	for(index_t i = 0; i < vertices.size(); ++i)
 	{
 		x = floor((xyz.col(i)[0] + radio) * (imsize - 1) / (2 * radio));
 		y = floor((xyz.col(i)[1] + radio) * (imsize - 1) / (2 * radio));
@@ -542,7 +542,7 @@ void patch::gather_vertices(che * mesh, const index_t & v, const size_t & n_topl
 	toplevel[v] = 0;
 	vertices.push_back(v);
 	
-	for(index_t i = 0; i < vertices.size(); i++)
+	for(index_t i = 0; i < vertices.size(); ++i)
 	{
 		const index_t & v = vertices[i];
 		if(toplevel[v] == n_toplevels)
@@ -700,14 +700,14 @@ void patch::update_heights(real_t & min, real_t & max, bool flag)
 	real_t tmp;
 	if(flag)
 	{
-		for(index_t i = 0; i < xyz.n_cols; i++)
+		for(index_t i = 0; i < xyz.n_cols; ++i)
 			{
 				xyz(2, i) = (xyz(2, i) - min) / (max - min);
 			}
 	}	
 	else
 	{
-		for(index_t i = 0; i < vertices.size(); i++)
+		for(index_t i = 0; i < vertices.size(); ++i)
 		{
 			tmp = xyz.col(i)[2];
 			tmp = (max - min) * tmp + min;
@@ -720,7 +720,7 @@ void patch::update_heights(real_t & min, real_t & max, bool flag)
 void patch::save_z(ostream & os)
 {
 	index_t i;
-	for( i = 0; i < vertices.size()-1; i++)
+	for( i = 0; i < vertices.size()-1; ++i)
 	{
 		os<<xyz.col(i)[2]<<"\t";
 	}
@@ -733,7 +733,7 @@ void patch::compute_avg_distance(che * mesh, vector<vpatches_t> & vpatches, cons
 	vector<double> distances;
 	link_t link;
 
-	for(size_t i = 0; i < vertices.size(); i++)
+	for(size_t i = 0; i < vertices.size(); ++i)
 	{
 		const index_t & v = vertices[i];
 		mesh->link(link, v);
@@ -757,7 +757,7 @@ void patch::compute_avg_distance(che * mesh, vector<vpatches_t> & vpatches, cons
 
 	}
 	/*
-		for(size_t j = i+1; j < vertices.size(); j++) // replace for 1 ring
+		for(size_t j = i+1; j < vertices.size(); ++j) // replace for 1 ring
 		{
 			a_vec a = xyz.col(i);
 			a_vec b = xyz.col(j);
@@ -781,7 +781,7 @@ void patch::compute_avg_distance(che * mesh, vector<vpatches_t> & vpatches, cons
 
 bool patch::is_covered( bool * covered)
 {
-	for(index_t i = 0; i < vertices.size(); i++)
+	for(index_t i = 0; i < vertices.size(); ++i)
 		if(!covered[i]) return false;
 	
 	return true;

@@ -22,7 +22,7 @@ index_t ** sampling_shape(vector<index_t> & points, size_t *& sizes, vertex *& n
 	params.radio = radio;
 	
 	#pragma omp parallel for
-	for(index_t i = 0; i < n_points; i++)
+	for(index_t i = 0; i < n_points; ++i)
 	{
 		const index_t & v = points[i];
 		normals[i] = mesh->normal(v);

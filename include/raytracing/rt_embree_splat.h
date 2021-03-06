@@ -44,7 +44,7 @@ class embree_splat : public embree
 
 			float w, sum_w = 0, sigma = radio * pc_radius;
 
-			for(index_t i = 0; i < K; i++)
+			for(index_t i = 0; i < K; ++i)
 			{
 				w = glm::length(p - P[i]);
 				w = exp(-0.5 * w * w / (sigma * sigma));

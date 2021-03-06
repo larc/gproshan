@@ -64,7 +64,7 @@ void basis::plot_atoms(const a_mat & A)
 	os << "set pm3d at b;" << endl;
 	os << "unset colorbox;" << endl;
 
-	for(index_t i = 0; i < m; i++)
+	for(index_t i = 0; i < m; ++i)
 	{
 		os << "splot v * cos(u), v * sin(u), 0 ";
 		plot_atoms(os, A.col(i));
@@ -106,7 +106,7 @@ void basis::plot_patch(const a_mat & A, const a_mat & xyz, const index_t & p)
 	os << "unset colorbox;" << endl;
 	os << "splot \"xyz_" << to_string(p) << ".dat\" u 1:2:3 with points palette pointsize 2 pointtype 7,";
 
-	for(index_t i = 0; i < m; i++)
+	for(index_t i = 0; i < m; ++i)
 	{
 		os << " v * cos(u), v * sin(u), 0 ";
 		plot_atoms(os, A.col(i));

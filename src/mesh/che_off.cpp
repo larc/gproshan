@@ -39,7 +39,7 @@ void che_off::read_file(const string & file)
 	init(nv, nf);
 	
 	float x, y, z, r, g, b, a;
-	for(index_t v = 0; v < n_vertices; v++)
+	for(index_t v = 0; v < n_vertices; ++v)
 	{
 		fscanf(fp, "%f %f %f", &x, &y, &z);
 		GT[v] = { x, y, z };
@@ -60,12 +60,12 @@ void che_off::read_file(const string & file)
 	if(soff[0] == 'C' || soff[1] == 'C')
 	{
 		#pragma omp parallel for
-		for(index_t i = 0; i < n_vertices; i++)
+		for(index_t i = 0; i < n_vertices; ++i)
 			VC[i] /= 255;
 	}
 
 	index_t he = 0;
-	for(index_t i = 0; i < n_faces; i++)
+	for(index_t i = 0; i < n_faces; ++i)
 	{
 		fscanf(fp, "%lu", &ne);
 		if(!i && ne > che::mtrig)
@@ -78,7 +78,7 @@ void che_off::read_file(const string & file)
 			GT = tGT;
 		}
 
-		for(index_t j = 0; j < ne; j++)
+		for(index_t j = 0; j < ne; ++j)
 			fscanf(fp, "%u", VT + he++);
 
 		// divide face
@@ -101,7 +101,7 @@ void che_off::write_file(const che * mesh, const string & file, const che_off::t
 	os << off << endl;
 	os << mesh->n_vertices << " " << (pointcloud ? 0 : mesh->n_faces) << " 0" << endl;
 	
-	for(size_t v = 0; v < mesh->n_vertices; v++)
+	for(size_t v = 0; v < mesh->n_vertices; ++v)
 	{
 		os << mesh->gt(v);
 
@@ -114,7 +114,7 @@ void che_off::write_file(const che * mesh, const string & file, const che_off::t
 		for(index_t he = 0; he < mesh->n_half_edges; )
 		{
 			os << che::mtrig;
-			for(index_t i = 0; i < che::mtrig; i++)
+			for(index_t i = 0; i < che::mtrig; ++i)
 				os << " " << mesh->vt(he++);
 			os << endl;
 		}
