@@ -129,7 +129,7 @@ tuple<a_vec, arma::uvec> _OMP(const a_vec & x, const a_mat & D, const size_t & L
 		DD = D.cols(selected_atoms.head(l + 1));
 		aa = pinv(DD) * x;
 		r = x - DD * aa;
-		l++;
+		++l;
 	}
 	return {aa, selected_atoms.head(l)};
 }
@@ -162,7 +162,7 @@ tuple<a_vec, arma::uvec> _OMP(const a_vec & x, const a_mat & D, const size_t & L
 		DD = D.cols(selected_atoms.head(l + 1));
 		aa = pinv(DD) * x;
 		r = x - DD * aa;
-		l++;
+		++l;
 	}
 	return {aa, selected_atoms.head(l)};
 }

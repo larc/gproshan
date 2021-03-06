@@ -160,8 +160,8 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 		for(index_t v = 0; v < n_vertices; ++v)
 		{
 			dv = mesh->ot_evt(v) == NIL ? 1 : 0;
-			for_star(he, mesh, v) dv++;
-			deg[dv]++;
+			for_star(he, mesh, v) ++dv;
+			++deg[dv];
 		}
 
 		ofstream os(test_path + filename + ".deg");

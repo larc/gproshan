@@ -103,8 +103,8 @@ void parallel_toplesets_propagation_coalescence_cpu(const ptp_out_t & ptp_out, c
 		for(index_t v = start; v < start + n_cond; ++v)
 			count += error[v] < PTP_TOL;
 
-		if(n_cond == count) i++;
-		if(j < toplesets.limits.size() - 1) j++;
+		if(n_cond == count) ++i;
+		if(j < toplesets.limits.size() - 1) ++j;
 
 		d = !d;
 	}
@@ -183,8 +183,8 @@ void parallel_toplesets_propagation_cpu(const ptp_out_t & ptp_out, che * mesh, c
 		for(index_t vi = start; vi < start + n_cond; ++vi)
 			count += error[vi] < PTP_TOL;
 
-		if(n_cond == count) i++;
-		if(j < toplesets.limits.size() - 1) j++;
+		if(n_cond == count) ++i;
+		if(j < toplesets.limits.size() - 1) ++j;
 
 		d = !d;
 	}

@@ -222,8 +222,8 @@ index_t run_ptp_gpu(CHE * d_mesh, const index_t & n_vertices, real_t * h_dist, r
 		cudaDeviceSynchronize();
 
 		if(n_cond == thrust::count_if(thrust::device, d_error + start, d_error + start + n_cond, is_ok()))
-			i++;
-		if(j < limits.size() - 1) j++;
+			++i;
+		if(j < limits.size() - 1) ++j;
 		
 		d = !d;
 	}

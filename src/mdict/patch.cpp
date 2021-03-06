@@ -325,7 +325,7 @@ void patch::reset_xyz(che * mesh, vector<vpatches_t> & vpatches, const index_t &
 	{
 		m = 0;
 		for(index_t i = 0; i < vertices.size(); ++i)
-			if(mask(vertices[i])) m++;
+			if(mask(vertices[i])) ++m;
 	}
 
 	xyz.set_size(3, m);
@@ -441,7 +441,7 @@ void patch::add_extra_xyz_disjoint(che * mesh, vector<vpatches_t> & vpatches, co
 						xyz(0, j) = np(0);
 						xyz(1, j) = np(1);
 						xyz(2, j) = np(2);
-						j++;
+						++j;
 						/*if(p == 76)
 						{
 							gproshan_debug_var(np);
@@ -466,7 +466,15 @@ void patch::reset_xyz_disjoint(che * mesh, real_t * dist, size_t M, vector<vpatc
 	{
 		m = 0;
 		for(index_t i = 0; i < vertices.size(); ++i)
-			if(mask(i)) { dist[vertices[i]] = float(p + 1) / M; m++; } else {dist[vertices[i]] = INFINITY; };
+			if(mask(i))
+			{
+				dist[vertices[i]] = float(p + 1) / M;
+				++m;
+			}
+			else
+			{
+				dist[vertices[i]] = INFINITY;
+			};
 		/*gproshan_debug(number vertices considered);
 		gproshan_debug_var(m);
 		gproshan_debug(number vertices masked);

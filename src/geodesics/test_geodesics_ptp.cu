@@ -184,7 +184,7 @@ vector<pair<index_t, real_t> > iter_error_run_ptp_gpu(CHE * d_mesh, const index_
 
 	while(i < j)
 	{
-		n_iter++;
+		++n_iter;
 		start = limits[i];
 		end = limits[j];
 		n_cond = limits[i + 1] - start;
@@ -201,8 +201,8 @@ vector<pair<index_t, real_t> > iter_error_run_ptp_gpu(CHE * d_mesh, const index_
 		cudaDeviceSynchronize();
 		
 		if(n_cond == thrust::count_if(thrust::device, d_error + start, d_error + start + n_cond, is_ok()))
-			i++;
-		if(j < limits.size() - 1) j++;	
+			++i;
+		if(j < limits.size() - 1) ++j;
 		
 		d = !d;
 	}

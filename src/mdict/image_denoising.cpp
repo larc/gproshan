@@ -35,10 +35,7 @@ void test_image_denoising(const string & file)
 
 		for(index_t b = y; b < y + p; ++b)
 		for(index_t a = x; a < x + p; ++a)
-		{
-			X(k, i) = image(a, b);
-			k++;
-		}
+			X(k++, i) = image(a, b);
 	}
 	
 	a_mat D(n, m, arma::fill::randu);
@@ -115,10 +112,7 @@ void test_image_denoising(const string & file)
 
 		for(index_t b = y; b < y + p; ++b)
 		for(index_t a = x; a < x + p; ++a)
-		{
-			image_out(a, b) += Y(k, i);
-			k++;
-		}
+			image_out(a, b) += Y(k++, i);
 	}
 
 	rows = image.width();

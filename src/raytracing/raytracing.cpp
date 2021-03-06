@@ -93,7 +93,7 @@ void raytracing::pathtracing(	const glm::uvec2 & windows_size,
 		color = (color * float(n_samples) + li / float(light.size())) / float(n_samples + 1);
 	}
 
-	n_samples++;
+	++n_samples;
 }
 
 float * raytracing::raycaster(	const glm::uvec2 & windows_size,

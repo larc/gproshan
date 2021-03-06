@@ -333,7 +333,7 @@ void viewer::add_mesh(che * p_mesh)
 
 	meshes[n_meshes].init(p_mesh);
 	meshes[n_meshes].log_info();
-	n_meshes++;
+	++n_meshes;
 	
 	idx_active_mesh = n_meshes - 1;
 	glfwSetWindowTitle(window, active_mesh()->filename().c_str());

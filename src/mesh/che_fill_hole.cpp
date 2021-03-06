@@ -828,8 +828,7 @@ void get_real_tri(che * mesh, vector<index_t> & select_vertices, vector<vertex> 
 
 	vertex tri[3];
 
-	if(r == 2)
-		c++;
+	if(r == 2) ++c;
 
 
 	for (size_t i = 0; i < d ; ++i)
@@ -837,17 +836,17 @@ void get_real_tri(che * mesh, vector<index_t> & select_vertices, vector<vertex> 
 		if(i < b)
 		{
 			tri[0] += mesh->gt(select_vertices[i]);
-			tri_sizes[0]++;
+			++tri_sizes[0];
 		}
 		else if ( i >= b && i < c)
 		{
 			tri[1] += mesh->gt(select_vertices[i]);
-			tri_sizes[1]++;
+			++tri_sizes[1];
 		}
 		else
 		{
 			tri[2] += mesh->gt(select_vertices[i]);
-			tri_sizes[2]++;
+			++tri_sizes[2];
 		}
 	}
 
@@ -902,7 +901,7 @@ che * fill_hole_center_triangle(che * mesh, vector<index_t> & select_vertices, i
 		faces[f++] = i + 1;
 	}
 
-	i++;
+	++i;
 	for( ; i < tri_sizes[0] + tri_sizes[1] - 1; ++i)
 	{
 		faces[f++] = i;
@@ -910,7 +909,7 @@ che * fill_hole_center_triangle(che * mesh, vector<index_t> & select_vertices, i
 		faces[f++] = i + 1;
 	}
 
-	i++;
+	++i;
 	for( ; i < select_vertices.size() - 1; ++i)
 	{
 		faces[f++] = i;

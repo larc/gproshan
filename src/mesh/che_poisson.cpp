@@ -125,17 +125,16 @@ void biharmonic_interp_2(che * mesh, const size_t & old_n_vertices, const size_t
 		P(0, i) = mesh->gt(b).x;
 		P(1, i) = mesh->gt(b).y;
 		P(2, i) = mesh->gt(b).z;
-		i++;
+		++i;
 	}
 
 	a_mat H(3, n_vertices - old_n_vertices);
 
-	for(index_t i = 0, v = old_n_vertices; v < n_vertices; ++v)
+	for(index_t i = 0, v = old_n_vertices; v < n_vertices; ++i, ++v)
 	{
 		H(0, i) = mesh->gt(v).x;
 		H(1, i) = mesh->gt(v).y;
 		H(2, i) = mesh->gt(v).z;
-		i++;
 	}
 
 	a_vec avg = mean(H, 1);

@@ -84,10 +84,10 @@ void che_off::read_file(const string & file)
 		// divide face
 		if(ne == che::mquad)
 		{
-			VT[he] = VT[he - ne];			he++;
-			VT[he] = VT[he - che::mtrig];	he++;
+			VT[he] = VT[he - ne];			++he;
+			VT[he] = VT[he - che::mtrig];	++he;
 
-			i++;
+			++i;
 		}
 	}
 

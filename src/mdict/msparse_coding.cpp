@@ -99,7 +99,7 @@ void msparse_coding::load_mask()
 			{
 				mask[rn] = 1;
 				V(rn) = 1;
-				k++;
+				++k;
 			}
 		}
 		V.save(f_mask);
@@ -159,7 +159,7 @@ void msparse_coding::load_mask(const std::vector<index_t> * vertices, const inde
 			if( !cover_cluster[clusters[rn]] && percentages_size[clusters[rn]] == 0)
 			{
 				cover_cluster[clusters[rn]] = 1; // It is finished
-				k++;
+				++k;
 			}	
 				
 		}
@@ -237,7 +237,7 @@ void msparse_coding::load_sampling(bool save_all)
 		if(p.vertices.size() >= 7 )
 		{
 			for(const index_t & v: p.vertices)
-				if(!covered[v]) count_cov_patch++;
+				if(!covered[v]) ++count_cov_patch;
 
 			count_cov += count_cov_patch;
 			if(count_cov_patch > 0)
@@ -1014,7 +1014,7 @@ void msparse_coding::update_alphas(a_mat & alpha, size_t threshold)
 				}
 				alpha.col(s) = sum;
 				patches_covered[s-threshold] = 1;
-				count++;
+				++count;
 			}	
 
 		}

@@ -579,7 +579,7 @@ size_t che::max_degree() const
 	for(index_t v = 0; v < n_vertices; ++v)
 	{
 		d = 0;
-		for_star(he, this, v) d++;
+		for_star(he, this, v) ++d;
 		d += is_border_v(v);
 		md = max(md, d);
 	}
@@ -656,9 +656,7 @@ void che::compute_toplesets(index_t *& toplesets, index_t *& sorted, vector<inde
 		
 		if(toplesets[v] > level)
 		{
-			level++;
-
-			if(level > k) break;
+			if(++level > k) break;
 
 			limits.push_back(i);
 		}
@@ -785,13 +783,13 @@ void che::multiplicate_vertices()
 		ET[n_edges] = next(he);
 		EHT[next(he)] = n_edges;
 		EHT[OT[next(he)]] = n_edges;
-		rw(n_edges)++;
+		++rw(n_edges);
 
 		if(split)
 		{
 			ET[n_edges] = n_half_edges - 3;
 			EHT[n_half_edges - 3] = n_edges;
-			rw(n_edges)++;
+			++rw(n_edges);
 		}
 	};
 	
@@ -813,7 +811,7 @@ void che::multiplicate_vertices()
 				OT[he] = n_half_edges - 3;
 			}
 			
-			rw(n_vertices)++;
+			++rw(n_vertices);
 		}
 		else flip(e);
 
@@ -862,8 +860,8 @@ void che::remove_non_manifold_vertices()
 		}
 		else if(v == removed[r])
 		{
-			d++;
-			r++;
+			++d;
+			++r;
 		}
 	}
 
@@ -930,8 +928,8 @@ void che::remove_vertices(const vector<index_t> & vertices)
 		}
 		else if(v == removed[r])
 		{
-			d++;
-			r++;
+			++d;
+			++r;
 		}
 	}
 
@@ -1095,7 +1093,7 @@ index_t che::link_intersect(const index_t & v_a, const index_t & v_b)
 	for(index_t & he_a: link_a)
 	for(index_t & he_b: link_b)
 		if(VT[he_a] == VT[he_b])
-			intersect++;
+			++intersect;
 
 	return intersect;
 }
@@ -1213,7 +1211,7 @@ corr_t * che::edge_collapse(const index_t *const & sort_edges, const vertex *con
 	index_t dv = 0;
 	for(index_t v = 0; v < n_vertices; ++v)
 	{
-		if(deleted_vertices[v]) dv++;
+		if(deleted_vertices[v]) ++dv;
 		else
 		{
 			deleted_vertices[v] = dv;

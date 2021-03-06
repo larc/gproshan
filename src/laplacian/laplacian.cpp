@@ -28,7 +28,7 @@ void laplacian(const che * mesh, a_sp_mat & L, a_sp_mat & A)
 		DI(1, i) = mesh->vt(mesh->et(e));
 		DV(i) = -1;
 
-		i++;
+		++i;
 
 		DI(0, i) = e;
 		DI(1, i) = mesh->vt(next(mesh->et(e)));
