@@ -20,7 +20,7 @@ namespace gproshan {
 double parallel_toplesets_propagation_gpu(const ptp_out_t & ptp_out, che * mesh, const vector<index_t> & sources, const toplesets_t & toplesets)
 {
 	cudaDeviceReset();
-	
+
 	float time;
 	cudaEvent_t start, stop;
 	cudaEventCreate(&start);
@@ -44,7 +44,7 @@ double parallel_toplesets_propagation_gpu(const ptp_out_t & ptp_out, che * mesh,
 
 	real_t * d_error;
 	cudaMalloc(&d_error, sizeof(real_t) * h_mesh->n_vertices);
-	
+
 	index_t d;
 	if(ptp_out.clusters)
 	{
@@ -65,7 +65,7 @@ double parallel_toplesets_propagation_gpu(const ptp_out_t & ptp_out, che * mesh,
 	}
 
 	cudaMemcpy(h_dist, d_dist[d], sizeof(real_t) * h_mesh->n_vertices, cudaMemcpyDeviceToHost);
-	
+
 	cudaFree(d_error);
 	cudaFree(d_dist[0]);
 	cudaFree(d_dist[1]);
@@ -93,7 +93,7 @@ real_t farthest_point_sampling_ptp_gpu(che * mesh, vector<index_t> & samples, do
 	cudaEventCreate(&start);
 	cudaEventCreate(&stop);
 	cudaEventRecord(start, 0);
-	
+
 	// BEGIN FPS PTP
 
 	CHE * h_mesh = new CHE(mesh);
@@ -152,7 +152,7 @@ real_t farthest_point_sampling_ptp_gpu(che * mesh, vector<index_t> & samples, do
 	delete [] h_dist;
 	delete [] toplesets;
 	delete [] sorted_index;
-	
+
 	cudaFree(d_error);
 	cudaFree(d_dist[0]);
 	cudaFree(d_dist[1]);
@@ -164,7 +164,7 @@ real_t farthest_point_sampling_ptp_gpu(che * mesh, vector<index_t> & samples, do
 	cudaEventSynchronize(stop);
 	cudaEventElapsedTime(&time, start, stop);
 	time_fps = time / 1000;
-	
+
 	cudaEventDestroy(start);
 	cudaEventDestroy(stop);
 
@@ -206,11 +206,11 @@ index_t run_ptp_gpu(CHE * d_mesh, const index_t & n_vertices, real_t * h_dist, r
 	while(i < j && iter++ < max_iter)
 	{
 		if(i < (j >> 1)) i = (j >> 1); // K/2 limit band size
-		
+
 		start = limits[i];
 		end = limits[j];
 		n_cond = limits[i + 1] - start;
-		
+
 		if(h_clusters)
 			relax_ptp <<< NB(end - start), NT >>> (d_mesh, d_dist[!d], d_dist[d], d_clusters[!d], d_clusters[d], d_sorted, end, start);
 		else
@@ -224,7 +224,7 @@ index_t run_ptp_gpu(CHE * d_mesh, const index_t & n_vertices, real_t * h_dist, r
 		if(n_cond == thrust::count_if(thrust::device, d_error + start, d_error + start + n_cond, is_ok()))
 			++i;
 		if(j < limits.size() - 1) ++j;
-		
+
 		d = !d;
 	}
 

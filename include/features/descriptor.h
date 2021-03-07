@@ -13,13 +13,13 @@ class descriptor
 {
 	public:
 		enum signature { GPS, HKS, WKS };
-		
+
 	private:
 		a_sp_mat L, A;
 		a_vec eigval;
 		a_mat eigvec;
 		a_mat features;
-		
+
 	public:
 		descriptor(const signature & sig, const che * mesh, const size_t & n_eigs);
 		operator bool () const;		///< return true if the features were computed

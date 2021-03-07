@@ -33,14 +33,14 @@ void convex_hull::andrew_algorithm(vertex * points, const size_t & n_points)
 		while(k > 1 && !ccw(CH[k - 2], CH[k - 1], points[i])) --k;
 		CH[k++] = points[i];
 	}
-	
+
 	index_t t = k;
 	for(index_t i = n_points - 2; i > 0; --i)
 	{
 		while(k > t && !ccw(CH[k - 2], CH[k - 1], points[i])) --k;
 		CH[k++] = points[i];
 	}
-	
+
 	while(k > t && !ccw(CH[k - 2], CH[k - 1], points[0])) --k;
 
 	CH.resize(k);

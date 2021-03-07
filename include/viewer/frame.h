@@ -16,7 +16,7 @@ class frame
 	private:
 		GLuint render_tex;
 		GLuint vao, vbo;
-		
+
 		shader program;
 
 	public:

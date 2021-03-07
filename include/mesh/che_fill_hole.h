@@ -45,7 +45,7 @@ struct border_t
 
 		a_vec a = V[p_v] - V[v];
 		a_vec b = V[n_v] - V[v];
-		
+
 		a(2) = b(2) = 0;
 
 		a_vec r = div * a + (1 - div) * b;

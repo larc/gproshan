@@ -44,7 +44,7 @@ void camera::mouse(int , int state, int x, int y, int w, int h)
 
 	if(state == GLFW_PRESS)
 		p_click = p_drag = p_last = click_to_sphere(x, y, w, h);
-	
+
 	if(state == GLFW_RELEASE)
 	{
 		double timeSinceDrag = (clock() - t_last) / (double) CLOCKS_PER_SEC;

@@ -17,10 +17,10 @@ index_t ** sampling_shape(vector<index_t> & points, size_t *& sizes, vertex *& n
 	normals = new vertex[n_points];
 	sizes = new size_t[n_points];
 	index_t ** indexes = new index_t * [n_points];
-	
+
 	geodesics::params params;
 	params.radio = radio;
-	
+
 	#pragma omp parallel for
 	for(index_t i = 0; i < n_points; ++i)
 	{

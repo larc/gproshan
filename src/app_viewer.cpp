@@ -21,7 +21,7 @@ che * app_viewer::load_mesh(const string & file_path)
 {
 	size_t pos = file_path.rfind('.');
 	assert(pos != string::npos);
-	
+
 	string extension = file_path.substr(pos + 1);
 
 	if(extension == "off") return new che_off(file_path);
@@ -44,12 +44,12 @@ int app_viewer::main(int nargs, const char ** args)
 
 	for(int i = 1; i < nargs; ++i)
 		add_mesh(load_mesh(args[i]));
-	
+
 	TOC(time)
 
 	gproshan_log_var(sizeof(real_t));
 	gproshan_log_var(time);
-	
+
 	init();
 	run();
 
@@ -199,7 +199,7 @@ bool app_viewer::process_fill_holes(viewer * p_view)
 	fill_all_holes(mesh);
 
 	paint_holes_vertices(p_view);
-	
+
 	return false;
 }
 
@@ -221,7 +221,7 @@ bool app_viewer::process_noise(viewer * p_view)
 	}
 
 	mesh->update_normals();
-	
+
 	return false;
 }
 
@@ -243,7 +243,7 @@ bool app_viewer::process_black_noise(viewer * p_view)
 	}
 
 	mesh->update_normals();
-	
+
 	return false;
 }
 
@@ -255,7 +255,7 @@ bool app_viewer::process_threshold(viewer * p_view)
 
 	for(index_t v = 0; v < mesh->n_vertices; ++v)
 		mesh->heatmap(v) = mesh->heatmap(v) > 0.5 ? 1 : 0.5;
-	
+
 	return false;
 }
 
@@ -265,7 +265,7 @@ bool app_viewer::process_functional_maps(viewer * p_view)
 	che_viewer & mesh = view->active_mesh();
 
 	static int K = 20;
-	
+
 	ImGui::InputInt("eigenvectors", &K);
 
 	if(ImGui::Button("Run"))
@@ -287,14 +287,14 @@ bool app_viewer::process_functional_maps(viewer * p_view)
 
 			eigvec.col(k) -= eigvec.col(k).min();
 			eigvec.col(k) /= eigvec.col(k).max();
-		
+
 			#pragma omp parallel for
 			for(index_t v = 0; v < mesh->n_vertices; ++v)
 				view->active_mesh()->heatmap(v) = eigvec(v, k);
 
 			view->active_mesh().update_vbo();
 		}
-		
+
 		view->idx_active_mesh = 0;
 	}
 
@@ -314,7 +314,7 @@ bool app_viewer::descriptor_heatmap(viewer * p_view, const descriptor::signature
 	if(ImGui::Button("Run"))
 	{
 		descriptor features(sig, mesh, K);
-		
+
 		if(features)
 		{
 			status = true;
@@ -357,7 +357,7 @@ bool app_viewer::process_key_points(viewer * p_view)
 	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
-	
+
 	key_points kps(mesh);
 
 	mesh.selected.clear();
@@ -365,7 +365,7 @@ bool app_viewer::process_key_points(viewer * p_view)
 
 	for(index_t i = 0; i < kps.size(); ++i)
 		mesh.selected.push_back(kps[i]);
-	
+
 	return false;
 }
 
@@ -374,16 +374,16 @@ bool app_viewer::process_key_components(viewer * p_view)
 	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
-	
+
 	key_points kps(mesh);
 	key_components kcs(mesh, kps, .25);
-	
+
 	gproshan_debug_var(kcs);
-	
+
 	#pragma omp parallel for
 	for(index_t v = 0; v < mesh->n_vertices; ++v)
 		mesh->heatmap(v) = (real_t) kcs(v) / kcs;
-	
+
 	return false;
 }
 
@@ -392,7 +392,7 @@ bool app_viewer::process_mdict_patch(viewer * p_view)
 	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
-	
+
 	TIC(view->time)
 	index_t * toplevel = new index_t[mesh->n_vertices];
 	size_t avg_nvp = 0;
@@ -411,19 +411,19 @@ bool app_viewer::process_mdict_patch(viewer * p_view)
 		vdir.z = p.T(0, 2);
 		view->vectors.push_back(mesh->gt(v));
 		view->vectors.push_back(mesh->gt(v) + 3 * mean_edge * vdir);
-		
+
 		vdir.x = p.T(1, 0);
 		vdir.y = p.T(1, 1);
 		vdir.z = p.T(1, 2);
 		view->vectors.push_back(mesh->gt(v));
 		view->vectors.push_back(mesh->gt(v) + 3 * mean_edge * vdir);
-		
+
 		vdir.x = p.T(2, 0);
 		vdir.y = p.T(2, 1);
 		vdir.z = p.T(2, 2);
 		view->vectors.push_back(mesh->gt(v));
 		view->vectors.push_back(mesh->gt(v) + 3 * mean_edge * vdir);
-		
+
 		view->vectors.push_back(mesh->gt(v));
 		view->vectors.push_back(mesh->gt(v) + 3 * mean_edge * mesh->normal(v));
 
@@ -432,11 +432,11 @@ bool app_viewer::process_mdict_patch(viewer * p_view)
 
 	avg_nvp /= mesh.selected.size();
 	gproshan_debug_var(avg_nvp);
-	
+
 	delete [] toplevel;
 	TOC(view->time)
 	gproshan_debug_var(view->time);
-	
+
 	return false;
 }
 
@@ -447,13 +447,13 @@ bool app_viewer::process_msparse_coding(viewer * p_view)
 
 	static msparse_coding::params params;
 	static size_t n = 12;
-	
+
 	assert(sizeof(ImGuiDataType_U64) != sizeof(size_t));
-	
+
 	ImGui_InputReal("nyquist_factor", &patch::nyquist_factor, 0.01, 0.01, "%.2lf");
 	ImGui::InputScalar("basis", ImGuiDataType_U64, &n);
 	ImGui::InputScalar("atoms", ImGuiDataType_U64, &params.n_atoms);
-	ImGui_InputReal("delta", &params.delta, 0.001, 0.1, "%.3lf");	
+	ImGui_InputReal("delta", &params.delta, 0.001, 0.1, "%.3lf");
 	ImGui_InputReal("proj_thres", &params.sum_thres, 1.001, 0.1, "%.6lf");
 	ImGui_InputReal("area_thres", &params.area_thres, 0.001, 0.1, "%6lf");
 	ImGui::Checkbox("learn", &params.learn);
@@ -462,10 +462,10 @@ bool app_viewer::process_msparse_coding(viewer * p_view)
 	{
 		basis_dct phi(n);
 		msparse_coding msc(mesh, &phi, params);
-		
+
 		real_t max_error = msc.execute();
 		gproshan_log_var(max_error);
-		
+
 		mesh->update_heatmap(&msc[0]);
 		mesh->update_normals();
 	}
@@ -482,10 +482,10 @@ bool app_viewer::process_mask(viewer * p_view)
 	static size_t n = 12;
 
 	assert(sizeof(ImGuiDataType_U64) != sizeof(size_t));
-	
+
 	ImGui::InputScalar("basis", ImGuiDataType_U64, &n);
 	ImGui::InputScalar("atoms", ImGuiDataType_U64, &params.n_atoms);
-	ImGui_InputReal("delta", &params.delta, 0.001, 0.1, "%.3lf");	
+	ImGui_InputReal("delta", &params.delta, 0.001, 0.1, "%.3lf");
 	ImGui_InputReal("proj_thres", &params.sum_thres, 1.001, 0.1, "%.6lf");
 	ImGui_InputReal("area_thres", &params.area_thres, 0.001, 0.1, "%6lf");
 	ImGui::Checkbox("learn", &params.learn);
@@ -494,7 +494,7 @@ bool app_viewer::process_mask(viewer * p_view)
 	{
 		basis_dct phi(n);
 		msparse_coding msc(mesh, &phi, params);
-		
+
 		msc.init_radial_feature_patches();
 		//dict.init_voronoi_patches();
 		mesh->update_heatmap(&msc[0]);
@@ -504,10 +504,10 @@ bool app_viewer::process_mask(viewer * p_view)
 		gproshan_debug_var(f_points);
 		points_out.load(f_points);
 		gproshan_debug_var(points_out.size());
-		
+
 		for(index_t i = 0; i < points_out.size(); ++i)
 			mesh.selected.push_back(points_out(i));
-		
+
 		mesh->update_normals();
 	}
 
@@ -522,17 +522,17 @@ bool app_viewer::process_pc_reconstruction(viewer * p_view)
 	static msparse_coding::params params;
 	static size_t n = 12;
 	static real_t percentage_size = 100;
-	static real_t radio_factor = 1;	
+	static real_t radio_factor = 1;
 
 	assert(sizeof(ImGuiDataType_U64) != sizeof(size_t));
-	
+
 	ImGui::InputScalar("basis", ImGuiDataType_U64, &n);
 	ImGui::InputScalar("atoms", ImGuiDataType_U64, &params.n_atoms);
-	ImGui_InputReal("delta", &params.delta, 0.001, 0.1, "%.3lf");	
+	ImGui_InputReal("delta", &params.delta, 0.001, 0.1, "%.3lf");
 	ImGui_InputReal("proj_thres", &params.sum_thres, 1.001, 0.1, "%.6lf");
 	ImGui_InputReal("area_thres", &params.area_thres, 0.001, 0.1, "%6lf");
 	ImGui::Checkbox("learn", &params.learn);
-	
+
 	ImGui_InputReal("percentage_size", &percentage_size, 100, 10, "%.3f");
 	ImGui_InputReal("radio_factor", &radio_factor, 1, 0.1, "%.3f");
 
@@ -540,10 +540,10 @@ bool app_viewer::process_pc_reconstruction(viewer * p_view)
 	{
 		basis_dct phi(n);
 		msparse_coding msc(mesh, &phi, params);
-		
+
 		view->add_mesh(msc.point_cloud_reconstruction(percentage_size, radio_factor));
 	}
-	
+
 	return true;
 }
 
@@ -557,7 +557,7 @@ bool app_viewer::process_multiplicate_vertices(viewer * p_view)
 	mesh.update();
 
 	mesh.log_info();
-	
+
 	return false;
 }
 
@@ -566,7 +566,7 @@ bool app_viewer::compute_toplesets(viewer * p_view)
 	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
-	
+
 	if(!mesh.selected.size())
 		mesh.selected.push_back(0);
 
@@ -588,7 +588,7 @@ bool app_viewer::compute_toplesets(viewer * p_view)
 
 	delete [] toplesets;
 	delete [] sorted;
-	
+
 	return false;
 }
 
@@ -597,18 +597,18 @@ bool app_viewer::process_voronoi(viewer * p_view)
 	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
-	
+
 	geodesics::params params;
 	params.cluster = true;
-	
+
 #ifdef GPROSHAN_CUDA
 	params.alg = geodesics::PTP_GPU;
 #endif
-	
+
 	TIC(view->time)
 	geodesics ptp(mesh, mesh.selected, params);
 	TOC(view->time)
-	
+
 	gproshan_log_var(view->time);
 
 	#pragma omp parallel for
@@ -617,7 +617,7 @@ bool app_viewer::process_voronoi(viewer * p_view)
 		mesh->heatmap(i) = ptp.clusters[i];
 		mesh->heatmap(i) /= mesh.selected.size() + 1;
 	}
-	
+
 	return false;
 }
 
@@ -642,7 +642,7 @@ bool app_viewer::process_farthest_point_sampling_radio(viewer * p_view)
 	gproshan_log_var(radio);
 	gproshan_log_var(mesh.selected.size());
 	gproshan_log_var(view->time);
-	
+
 	return false;
 }
 
@@ -656,7 +656,7 @@ bool app_viewer::process_farthest_point_sampling(viewer * p_view)
 
 	ImGui::SliderInt("samples", &n, 1, mesh->n_vertices / 6);
 	ImGui::Text("radio: %.3f", radio);
-	
+
 	if(ImGui::Button("Run"))
 	{
 		TIC(view->time)
@@ -664,7 +664,7 @@ bool app_viewer::process_farthest_point_sampling(viewer * p_view)
 		TOC(view->time)
 		gproshan_log_var(view->time);
 	}
-	
+
 	return true;
 }
 
@@ -672,10 +672,10 @@ bool app_viewer::process_fairing_spectral(viewer * p_view)
 {
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
-	
+
 	static int k = 100;
 	ImGui::SliderInt("eigenvectors", &k, 1, mesh->n_vertices / 6);
-	
+
 	if(ImGui::Button("Run"))
 	{
 		fairing_spectral fair(k);
@@ -695,12 +695,12 @@ bool app_viewer::process_fairing_taubin(viewer * p_view)
 
 	static float step = 0.001; //cin >> step;
 	ImGui::InputFloat("step", &step, 0.001, 1, "%.3f");
-	
+
 	if(ImGui::Button("Run"))
 	{
 		fairing_taubin fair(step);
 		fair.run(mesh);
-	
+
 		mesh->set_vertices(fair.get_postions());
 		mesh->update_normals();
 	}
@@ -715,7 +715,7 @@ bool app_viewer::process_geodesics(viewer * p_view, const geodesics::algorithm &
 
 	if(!mesh.selected.size())
 		mesh.selected.push_back(0);
-	
+
 
 	static vector<real_t> dist;
 
@@ -730,9 +730,9 @@ bool app_viewer::process_geodesics(viewer * p_view, const geodesics::algorithm &
 		geodesics G(mesh, mesh.selected, params);
 	TOC(view->time)
 	gproshan_log_var(view->time);
-	
+
 	mesh->update_heatmap(&G[0]);
-	
+
 	return false;
 }
 
@@ -804,7 +804,7 @@ bool app_viewer::process_fill_holes_biharmonic_splines(viewer * p_view)
 	delete [] holes;
 	delete [] border_vertices;
 	paint_holes_vertices(p_view);
-	
+
 	return false;
 }
 
@@ -831,7 +831,7 @@ bool app_viewer::process_gaussian_curvature(viewer * p_view)
 		}
 		//gv(v) = (2 * M_PI - g) / mesh->area_vertex(v);
 		gv(v) = mesh->mean_curvature(v);
-		
+
 		g_max = max(g_max, gv(v));
 		g_min = min(g_min, gv(v));
 	}
@@ -861,7 +861,7 @@ bool app_viewer::process_gaussian_curvature(viewer * p_view)
 	#pragma omp parallel for
 	for(index_t v = 0; v < mesh->n_vertices; ++v)
 		mesh->heatmap(v) = f(gv(v));
-	
+
 	return false;
 }
 
@@ -889,7 +889,7 @@ bool app_viewer::select_multiple(viewer * p_view)
 	che_viewer & mesh = view->active_mesh();
 
 	static char line[128] = "";
-	
+
 	ImGui::InputText("select", line, sizeof(line));
 
 	if(ImGui::Button("Add"))
@@ -899,7 +899,7 @@ bool app_viewer::select_multiple(viewer * p_view)
 		while(ss >> v)
 			mesh.selected.push_back(v);
 	}
-	
+
 	return true;
 }
 

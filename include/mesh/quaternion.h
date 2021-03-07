@@ -51,7 +51,7 @@ class quaternion
 		real_t norm2() const;
 		quaternion unit() const;
 		void normalize();
-	
+
 	friend std::ostream & operator << (std::ostream & os, const quaternion & q);
 	friend std::istream & operator >> (std::istream & is, quaternion & q);
 };

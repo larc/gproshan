@@ -21,7 +21,7 @@ kdtree::~kdtree()
 
 void kdtree::build(const index_t & n, const vertex * pc, const index_t & i, const index_t & j, const index_t & d)
 {
-	
+
 	if(i == j)
 	{
 		nodes[i] = i;

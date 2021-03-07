@@ -78,10 +78,10 @@ che::che(const che & mesh)
 
 	VN = new vertex[n_vertices];
 	memcpy(VN, mesh.VN, n_vertices * sizeof(vertex));
-	
+
 	VC = new vertex[n_vertices];
 	memcpy(VC, mesh.VC, n_vertices * sizeof(vertex));
-	
+
 	VHC = new real_t[n_vertices];
 	memcpy(VHC, mesh.VHC, n_vertices * sizeof(real_t));
 }
@@ -121,7 +121,7 @@ void che::link(link_t & l, const index_t & v) const
 	}
 }
 
-///< return a vector of indices of one vertex per boundary 
+///< return a vector of indices of one vertex per boundary
 vector<index_t> che::bounds() const
 {
 	if(!n_faces) return {};
@@ -153,7 +153,7 @@ vector<index_t> che::boundary(const index_t & v) const
 
 	for_boundary(he, this, v)
 		vbound.push_back(VT[he]);
-	
+
 	return vbound;
 }
 
@@ -190,7 +190,7 @@ void che::flip(const index_t & e)
 	index_t ot_na = OT[next(ha)];
 	index_t ot_pb = OT[prev(hb)];
 	index_t ot_nb = OT[next(hb)];
-	
+
 	VT[prev(ha)] = vb;
 	VT[ha] = vc;
 	VT[next(ha)] = vd;
@@ -289,7 +289,7 @@ void che::update_heatmap(const real_t * hm, real_t max_color)
 
 		return;
 	}
-	
+
 	if(max_color < numeric_limits<real_t>::epsilon())
 	{
 		#pragma omp parallel for reduction(max: max_color)
@@ -342,11 +342,11 @@ void che::update_normals()
 	for(index_t v = 0; v < n_vertices; ++v)
 	{
 		vertex & n = VN[v];
-		
+
 		n = 0;
 		for_star(he, this, v)
 			n += area_trig(trig(he)) * normal_he(he);
-		
+
 		n /= *n;
 	}
 }
@@ -479,7 +479,7 @@ real_t che::mean_curvature(const index_t & v)
 {
 	real_t h = 0;
 	real_t a = 0;
-	
+
 	for_star(he, this, v)
 	{
 		a += area_trig(trig(he));
@@ -655,7 +655,7 @@ void che::compute_toplesets(index_t *& toplesets, index_t *& sorted, vector<inde
 	for(const index_t & s: sources)
 	{
 		sorted[p++] = s;
-		
+
 		if(toplesets[s] == NIL)
 			toplesets[s] = level;
 	}
@@ -664,7 +664,7 @@ void che::compute_toplesets(index_t *& toplesets, index_t *& sorted, vector<inde
 	for(index_t i = 0; i < p; ++i)
 	{
 		const index_t & v = sorted[i];
-		
+
 		if(toplesets[v] > level)
 		{
 			if(++level > k) break;
@@ -685,7 +685,7 @@ void che::compute_toplesets(index_t *& toplesets, index_t *& sorted, vector<inde
 			}
 		}
 	}
-	
+
 	assert(p <= n_vertices);
 	limits.push_back(p);
 }
@@ -696,7 +696,7 @@ void che::multiplicate_vertices()
 	size_t nf = 3 * n_faces;
 	size_t nh = 3 * n_half_edges;
 	size_t ne = n_edges + n_faces * 3;
-	
+
 	vertex * aGT = new vertex[nv + n_edges];
 	index_t * aVT = new index_t[nh + 6 * n_edges];
 	index_t * aOT = new index_t[nh + 6 * n_edges];
@@ -709,15 +709,15 @@ void che::multiplicate_vertices()
 	#pragma omp parallel for
 	for(index_t he = 0; he < n_half_edges; ++he)
 		aVT[3 * he] = VT[he];
-	
+
 	#pragma omp parallel for
 	for(index_t he = 0; he < n_half_edges; ++he)
 		aOT[3 * he] = OT[he] != NIL ? OT[he] * 3 : NIL;
-	
+
 	#pragma omp parallel for
 	for(index_t he = 0; he < n_half_edges; ++he)
 		aEHT[3 * he] = EHT[he];
-	
+
 	#pragma omp parallel for
 	for(index_t e = 0; e < n_edges; ++e)
 		aET[e] = ET[e] * 3;
@@ -752,7 +752,7 @@ void che::multiplicate_vertices()
 		aET[n_edges + he] = ahe + 2;
 		aET[n_edges + he + 1] = ahe + 5;
 		aET[n_edges + he + 2] = ahe + 8;
-		
+
 		aEHT[ahe + 2] = aEHT[ahe + 7] = n_edges + he;
 		aEHT[ahe + 5] = aEHT[ahe + 1] = n_edges + he + 1;
 		aEHT[ahe + 8] = aEHT[ahe + 4] = n_edges + he + 2;
@@ -771,14 +771,14 @@ void che::multiplicate_vertices()
 	rw(n_faces)			= nf;
 	rw(n_half_edges)	= nh;
 	rw(n_edges)			= ne;
-	
+
 
 	auto split_edge = [&](const index_t & he, const bool & split = true)
 	{
 		VT[rw(n_half_edges)++] = n_vertices;
 		VT[rw(n_half_edges)++] = VT[next(he)];
 		VT[rw(n_half_edges)++] = VT[prev(he)];
-		
+
 		OT[n_half_edges - 3] = OT[he];
 		OT[n_half_edges - 2] = OT[next(he)];
 		OT[n_half_edges - 1] = next(he);
@@ -790,7 +790,7 @@ void che::multiplicate_vertices()
 		OT[next(he)] = n_half_edges - 1;
 
 		EVT[n_vertices] = n_half_edges - 3;
-			
+
 		ET[n_edges] = next(he);
 		EHT[next(he)] = n_edges;
 		EHT[OT[next(he)]] = n_edges;
@@ -803,25 +803,25 @@ void che::multiplicate_vertices()
 			++rw(n_edges);
 		}
 	};
-	
+
 	for(index_t e = 0; e < n_flips; ++e)
 		if(OT[ET[e]] == NIL || (normal_he(ET[e]), normal_he(OT[ET[e]])) < 0.8)		// could be improve by quadric error
 		{
 			index_t he = ET[e];
 			GT[n_vertices] = (GT[VT[he]] + GT[VT[next(he)]]) / 2;
-			
+
 			split_edge(he);
 			if(OT[he] != NIL)
 			{
 				split_edge(OT[he], false);
-		
+
 				EHT[OT[he]] = EHT[n_half_edges - 6];
 				EHT[n_half_edges - 3] = e;
 
 				OT[OT[he]] = n_half_edges - 6;
 				OT[he] = n_half_edges - 3;
 			}
-			
+
 			++rw(n_vertices);
 		}
 		else flip(e);
@@ -1367,14 +1367,14 @@ void che::alloc(const size_t & n_v, const size_t & n_f)
 	rw(n_faces)			= n_f;
 	rw(n_half_edges)	= che::mtrig * n_faces;
 	rw(n_edges)			= n_half_edges;				// max number of edges
-	
+
 	if(n_vertices)		GT	= new vertex[n_vertices];
 	if(n_half_edges)	VT	= new index_t[n_half_edges];
 	if(n_half_edges)	OT	= new index_t[n_half_edges];
 	if(n_vertices)		EVT	= new index_t[n_vertices];
 	if(n_half_edges)	ET	= new index_t[n_half_edges];
 	if(n_half_edges)	EHT	= new index_t[n_half_edges];
-	
+
 	if(n_vertices)		VN	= new vertex[n_vertices];
 	if(n_vertices)		VC	= new vertex[n_vertices];
 	if(n_vertices)		VHC	= new real_t[n_vertices];
@@ -1402,20 +1402,20 @@ void che::read_file(const string & ) {}		/* virtual */
 void che::update_evt_ot_et()
 {
 	if(!n_faces) return;
-	
+
 	memset(EVT, -1, sizeof(index_t) * n_vertices);
 	memset(OT, -1, sizeof(index_t) * n_half_edges);
 
 	map<index_t, index_t> * medges = new map<index_t, index_t>[n_vertices];
-	
+
 	size_t ne = 0;
 	for(index_t he = 0; he < n_half_edges; ++he)
 	{
 		const index_t & u = VT[he];
 		const index_t & v = VT[next(he)];
-		
+
 		EVT[u] = he;
-		
+
 		index_t & mhe = u < v ? medges[u][v] : medges[v][u];
 		if(!mhe)
 		{
@@ -1428,15 +1428,15 @@ void che::update_evt_ot_et()
 			OT[OT[he]] = he;
 		}
 	}
-	
+
 	rw(n_edges) = ne;
-	
+
 	delete [] medges;
 
 	// non manifold two disk
 	//for(index_t he = 0; he < n_half_edges; ++he)
 	//	if(OT[he] != NIL) assert(he == OT[OT[he]]);
-	
+
 	for(index_t he = 0; he < n_half_edges; ++he)
 		if(OT[he] == NIL && EVT[VT[he]] != NIL)
 		{

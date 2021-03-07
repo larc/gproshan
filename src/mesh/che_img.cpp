@@ -32,9 +32,9 @@ che_img::~che_img()
 void che_img::read_file(const string & file)
 {
 	CImg<real_t> img(file.c_str());
-	
+
 	alloc(img.height() * img.width(), 2 * (img.height() - 1) * (img.width() - 1));
-	
+
 	index_t v = 0, he = 0;
 	for(int i = 0; i < img.width(); ++i)
 	for(int j = 0; j < img.height(); ++j)
@@ -49,7 +49,7 @@ void che_img::read_file(const string & file)
 			VT[he++] = (i - 1) * img.height() + j;
 			VT[he++] = (i - 1) * img.height() + j - 1;
 		}
-		
+
 		GT[v++] = vertex(i,j, img(i, j));
 	}
 

@@ -24,7 +24,7 @@ const GLint & shader::operator () (const string & name)
 {
 	if(uniform.find(name) != uniform.end())
 		uniform[name] = glGetUniformLocation(program, name.c_str());
-	
+
 	return uniform[name];
 }
 
@@ -87,7 +87,7 @@ bool shader::load(GLenum shader_type, const std::string & filename)
 	glShaderSource(shader, 1, &(source_c_str), &size);
 
 	glCompileShader(shader);
-	
+
 	GLint compile_status;
 	glGetShaderiv(shader, GL_COMPILE_STATUS, &compile_status);
 
@@ -112,7 +112,7 @@ bool shader::load(GLenum shader_type, const std::string & filename)
 
 			delete[] infoLog;
 		}
-		
+
 		glDeleteShader(shader);
 		return false;
 	}
@@ -129,12 +129,12 @@ bool shader::read_source(const std::string & filename, std::string & source)
 		return false;
 
 	source = "";
-	
+
 	string line, include;
 	while(getline(is, line))
 	{
 		stringstream ss(line);
-		
+
 		ss >> include;
 		if(include == "#include")
 		{
@@ -145,7 +145,7 @@ bool shader::read_source(const std::string & filename, std::string & source)
 		else
 			source += line + '\n';
 	}
-	
+
 	is.close();
 
 	return true;

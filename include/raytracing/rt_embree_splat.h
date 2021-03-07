@@ -52,23 +52,23 @@ class embree_splat : public embree
 				color += w * C[i];
 				sum_w += w;
 			}
-			
+
 			normal /= sum_w;
 			color /= sum_w;
 
 			return sum_w;
 		}
 	};
-	
+
 	std::vector<splat> vsplat;
 
 	public:
 		embree_splat(const std::vector<che *> & meshes, const bool & pointcloud);
-	
+
 	private:
 		index_t add_pointcloud(const che * mesh);
 		float pointcloud_hit(glm::vec3 & position, glm::vec3 & normal, glm::vec3 & color, ray_hit r);
-		
+
 		void init_splats(const che * mesh);
 };
 

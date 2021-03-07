@@ -43,7 +43,7 @@ geodesics::~geodesics()
 
 const real_t & geodesics::operator[](const index_t & i) const
 {
-	
+
 	assert(i < n_vertices);
 	return dist[i];
 }
@@ -153,7 +153,7 @@ void geodesics::run_fastmarching(che * mesh, const vector<index_t> & sources, co
 		black_i = Q.top().second;
 		color[black_i] = BLACK;
 		Q.pop();
-		
+
 		if(dist[black_i] > radio) break;
 
 		sorted_index[n_sorted++] = black_i;
@@ -179,7 +179,7 @@ void geodesics::run_fastmarching(che * mesh, const vector<index_t> & sources, co
 					if(dp < dv)
 					{
 						dv = dp;
-						
+
 						if(clusters)
 							clusters[v] = dist[mesh->vt(prev(v_he))] < dist[mesh->vt(next(he))] ? clusters[mesh->vt(prev(he))] : clusters[mesh->vt(next(he))];
 					}
@@ -201,7 +201,7 @@ void geodesics::run_parallel_toplesets_propagation_cpu(che * mesh, const vector<
 	mesh->compute_toplesets(toplesets, sorted_index, limits, sources);
 
 	double time_ptp;
-	
+
 	TIC(time_ptp)
 		parallel_toplesets_propagation_coalescence_cpu({dist, clusters}, mesh, sources, {limits, sorted_index});
 	TOC(time_ptp)

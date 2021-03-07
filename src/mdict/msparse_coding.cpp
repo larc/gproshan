@@ -48,9 +48,9 @@ msparse_coding::msparse_coding(che *const & _mesh, basis *const & _phi_basis, co
 {
 	A.eye(phi_basis->dim(), m_params.n_atoms);
 	dist = new real_t[mesh->n_vertices];
-	
+
 	m_params.n_patches = mesh->n_vertices / m_params.avg_p;
-	
+
 	key_name = mesh->name_size() + '_' + to_string(m_params.delta) + '_' + to_string(m_params.sum_thres) + '_' + to_string(m_params.area_thres);
 
 	mask = new bool[mesh->n_vertices];
@@ -73,7 +73,7 @@ void msparse_coding::load_mask()
 	string f_mask = tmp_file_path(mesh->name_size() + '_' + to_string(m_params.percent) + ".msk");
 	arma::uvec V;
 	gproshan_log(loading radial mask);
-	
+
 
 	if(V.load(f_mask))
 	{
@@ -127,7 +127,7 @@ void msparse_coding::load_mask(const std::vector<index_t> * vertices, const inde
 		size_t * percentages_size = new size_t[m_params.n_patches];
 		bool cover_cluster[m_params.n_patches];
 
-			
+
 		// create initial desired percentage sizes
 		#pragma omp for
 		for(index_t s = 0; s < m_params.n_patches; ++s)
@@ -142,9 +142,9 @@ void msparse_coding::load_mask(const std::vector<index_t> * vertices, const inde
 
 		size_t k = 0;
 		size_t rn = 0;
-		
+
 		while(k < m_params.n_patches)
-		{	
+		{
 			//gproshan_debug_var(clusters[rn]);
 
 			rn = distribution(generator);
@@ -154,21 +154,21 @@ void msparse_coding::load_mask(const std::vector<index_t> * vertices, const inde
 				mask[rn] = 1;
 				V(rn) = 1;
 				percentages_size[clusters[rn]]--;
-							
+
 			}
 			if( !cover_cluster[clusters[rn]] && percentages_size[clusters[rn]] == 0)
 			{
 				cover_cluster[clusters[rn]] = 1; // It is finished
 				++k;
-			}	
-				
+			}
+
 		}
-	
-	
+
+
 		V.save(f_mask);
 
 	}
-	
+
 }
 
 void msparse_coding::load_sampling(bool save_all)
@@ -196,16 +196,16 @@ void msparse_coding::load_sampling(bool save_all)
 			p.init_radial_disjoint(euc_radio, geo_radio, mesh, S(i), m_params.delta, m_params.sum_thres, m_params.area_thres, area_mesh);
 			patches.push_back(move(p));
 		}
-		
+
 		m_params.n_patches = n_seeds;
-		
+
 		return;
 	}
 
 	//ELSE IF !S.load(f_sample)
-	
+
 	gproshan_debug(computing sampling);
-	
+
 	// compute features will be seeds
 	patches_map.resize(mesh->n_vertices);
 
@@ -215,7 +215,7 @@ void msparse_coding::load_sampling(bool save_all)
 	#pragma omp for
 	for(index_t i = 0; i < mesh->n_vertices; ++i)
 		covered[i] = 0;
-	
+
 	real_t euc_radio;
 	real_t geo_radio;
 	vector<real_t> radios;
@@ -262,12 +262,12 @@ void msparse_coding::load_sampling(bool save_all)
 				}
 			}
 		}
-	}						
+	}
 
 	delete [] invalid_seed;
 
 	m_params.n_patches = seeds.size();
-	
+
 	gproshan_log(saving sampling);
 
 	S.resize(seeds.size());
@@ -275,7 +275,7 @@ void msparse_coding::load_sampling(bool save_all)
 	#pragma omp parallel for
 	for(index_t i = 0; i < seeds.size(); ++i)
 		S(i) = seeds[i];
-	
+
 	S.save(tmp_file_path(key_name + ".rsampl"));
 
 	gproshan_debug_var(m_params.sum_thres);
@@ -287,7 +287,7 @@ void msparse_coding::load_sampling(bool save_all)
 
 #ifndef NDEBUG
 	vector<index_t> outliers;
-	
+
 
 	for(index_t i = 0; i < mesh->n_vertices; ++i)
 		if(!covered[i])
@@ -296,7 +296,7 @@ void msparse_coding::load_sampling(bool save_all)
 	a_vec outlv(outliers.size());
 	for(index_t i = 0; i < outliers.size(); ++i)
 		outlv(i) = outliers[i];
-		
+
 	outlv.save(tmp_file_path(key_name + ".outlv"));
 #endif // NDEBUG
 }
@@ -330,13 +330,13 @@ void msparse_coding::init_radial_feature_patches()
 	//Initializing patches
 	gproshan_log(initializing patches);
 	gproshan_debug_var(m_params.n_patches);
-	
+
 	n_vertices = mesh->n_vertices;
 	patches.resize(m_params.n_patches);
 	patches_map.resize(n_vertices);
-	
+
 	bool * pmask = mask;
-	
+
 	for(index_t s = 0; s < m_params.n_patches; ++s)
 		patches[s].reset_xyz_disjoint(mesh, dist, m_params.n_patches, patches_map, s, [&pmask](const index_t & i) -> bool { return pmask[i]; });
 
@@ -351,7 +351,7 @@ void msparse_coding::init_radial_feature_patches()
 		p.compute_avg_distance(mesh, patches_map, s);
 		p.phi.set_size(p.xyz.n_cols, phi_basis->dim());
 		phi_basis->discrete(p.phi, p.xyz.row(0).t(), p.xyz.row(1).t());
-	}	
+	}
 
 	bool save_all = true;
 	if(save_all)
@@ -361,7 +361,7 @@ void msparse_coding::init_radial_feature_patches()
 		for(index_t i = 0; i < m_params.n_patches; ++i)
 		{
 			patch & p = patches[i];
-			
+
 			AS(i,0) = p.x(0);
 			AS(i,1) = p.x(1);
 			AS(i,2) = p.x(2);
@@ -376,10 +376,10 @@ void msparse_coding::init_radial_feature_patches()
 			AS(i,11) = p.T(1,2);
 			AS(i,12) = p.T(2,2);
 		}
-		
+
 		AS.save(tmp_file_path(key_name + ".smp"));
 	}
-	
+
 	gproshan_log(radial patches are ready);
 }
 
@@ -395,7 +395,7 @@ void msparse_coding::init_voronoi_patches()
 		//FPS samplif_dictng with desired number of sources
 		TIC(d_time) init_sampling(); TOC(d_time)
 		gproshan_debug_var(d_time);
-	
+
 		geodesics::params params;
 		params.cluster = 1;
 
@@ -404,7 +404,7 @@ void msparse_coding::init_voronoi_patches()
 	#ifdef GPROSHAN_CUDA
 		params.alg = geodesics::PTP_GPU;
 	#endif
-		
+
 		geodesics ptp(mesh, sampling, params);
 		TOC(d_time)
 		gproshan_log_var(d_time);
@@ -418,13 +418,13 @@ void msparse_coding::init_voronoi_patches()
 		}
 
 		for(index_t i = 0; i < mesh->n_vertices; ++i)
-			{		
+			{
 				ptp.clusters[i]--;
 				if(sample(ptp.clusters[i]) != i)
 					vertices[ptp.clusters[i]].push_back(i) ;
 			}
-	
-	
+
+
 	load_mask(vertices, ptp.clusters);
 
 	//Initializing patches
@@ -441,8 +441,8 @@ void msparse_coding::init_voronoi_patches()
 		for(index_t s = 0; s < m_params.n_patches; ++s)
 		{
 			patches[s].init_disjoint(mesh, sample(s), msparse_coding::T, vertices[s], toplevel);
-			
-		}		
+
+		}
 		#ifndef NDEBUG
 			size_t patch_avg_size = 0;
 			size_t patch_min_size = NIL;
@@ -510,7 +510,7 @@ real_t msparse_coding::execute()
 	#pragma omp parallel for
 	for(index_t i = 0; i < n_vertices; ++i)
 		patches_map[i].clear();
-	
+
 	for(index_t s = 0; s < m_params.n_patches; ++s)
 		patches[s].reset_xyz(mesh, patches_map, s, 0);
 
@@ -531,7 +531,7 @@ real_t msparse_coding::execute()
 	real_t max_error = mesh_reconstruction([&pmask](const index_t & i) -> bool { return pmask[i]; });
 	TOC(d_time)
 	gproshan_debug_var(d_time);
-	
+
 	arma::uvec non_zero = find( abs(alpha) > 0.00001);
 	gproshan_debug_var(non_zero.size());
 	real_t ratio = (m_params.n_patches * 13.0 + non_zero.size()) / (3 * mesh->n_vertices);
@@ -547,7 +547,7 @@ che * msparse_coding::point_cloud_reconstruction(real_t per, real_t fr)
 
 	S.load(tmp_file_path(key_name + ".smp"));
 	alpha.load(tmp_file_path(key_name + ".alpha"));
-	
+
 	m_params.n_patches = S.n_rows;
 	patches.resize(m_params.n_patches);
 
@@ -560,9 +560,9 @@ che * msparse_coding::point_cloud_reconstruction(real_t per, real_t fr)
 		max_radio = max(max_radio, S(i, 3));
 
 	A.eye(phi_basis->dim(), m_params.n_atoms);
-	
+
 	size_t total_points = 0;
-	
+
 	#pragma omp parallel for
 	for(index_t i = 0; i < m_params.n_patches; ++i)
 	{
@@ -576,22 +576,22 @@ che * msparse_coding::point_cloud_reconstruction(real_t per, real_t fr)
 		T(0,2) = S(i,10);
 		T(1,2) = S(i,11);
 		T(2,2) = S(i,12);
-		
+
 		patch & p = patches[i];
 
 		p.init_random({S(i, 0), S(i, 1), S(i, 2)}, T, S(i, 3), max_radio, per, fr);
 		p.phi.set_size(p.xyz.n_cols, phi_basis->dim());
 		phi_basis->discrete(p.phi, p.xyz.row(0).t(), p.xyz.row(1).t());
-		
+
 		a_vec x = p.phi * A * alpha.col(i);
 		p.xyz.row(2) = x.t();
-		
+
 		p.iscale_xyz(phi_basis->radio());
 		p.itransform();
 
 		#pragma omp atomic
 		total_points += p.xyz.n_cols;
-		
+
 		for(index_t j = 0; j < patches[i].xyz.n_cols; ++j)
 			if(patches[i].xyz(2, j) > 2)
 			{
@@ -614,7 +614,7 @@ che * msparse_coding::point_cloud_reconstruction(real_t per, real_t fr)
 
 	che * new_mesh = new che(point_cloud.data(), point_cloud.size(), nullptr, 0);
 	new_mesh->update_normals();
-	
+
 	a_vec n;
 	for(index_t v = 0, i = 0; i < m_params.n_patches; ++i)
 	{
@@ -622,7 +622,7 @@ che * msparse_coding::point_cloud_reconstruction(real_t per, real_t fr)
 
 		phi_basis->d_discrete(p.phi, p.xyz.row(0).t(), p.xyz.row(1).t(), 0);
 		a_vec dx = p.phi * A * alpha.col(i);
-		
+
 		phi_basis->d_discrete(p.phi, p.xyz.row(0).t(), p.xyz.row(1).t(), 1);
 		a_vec dy = p.phi * A * alpha.col(i);
 
@@ -631,13 +631,13 @@ che * msparse_coding::point_cloud_reconstruction(real_t per, real_t fr)
 			n = {-dx(j), -dy(j), 1};
 			n = normalise(p.T * n);
 			new_mesh->normal(v) = {n(0), n(1), n(2)};
-		}	
+		}
 	}
 
 	che_off::write_file(new_mesh, tmp_file_path(key_name + '_' + to_string(per) + '_' + to_string(fr) + "_pc"), che_off::NOFF);
-	
+
 	gproshan_debug(saved new point cloud);
-	
+
 	return new_mesh;
 }
 
@@ -703,14 +703,14 @@ void msparse_coding::learning()
 			a_mat R, E, U, V;
 			a_vec s;
 			svd(U, s, V, alpha);
-			gproshan_debug(svd done!);	
+			gproshan_debug(svd done!);
 			A = U.cols(0, m_params.n_atoms);
-			gproshan_debug(svd done!);	
+			gproshan_debug(svd done!);
 			A = normalise(A);
 			gproshan_debug_var(phi_basis->radio());
 			gproshan_debug_var(m_params.n_atoms);
 			//
-			
+
 			phi_basis->plot_atoms(A);
 			KSVD(A, patches, L, K);
 			phi_basis->plot_atoms(A);
@@ -731,7 +731,7 @@ void msparse_coding::learning()
 void msparse_coding::sparse_coding()
 {
 	gproshan_log(MDICT);
-	
+
 	vector<locval_t> locval;
 	alpha = OMP_all(patches, phi_basis, A, L);
 }
@@ -767,7 +767,7 @@ void msparse_coding::load_features(vector<index_t> & v_feat, size_t & featsize)
 	string f_feat = tmp_file_path(mesh->name() + ".int");
 	ifstream inp;
 	inp.open(f_feat.c_str(), ifstream::in);
-	
+
 	size_t tam;
 	index_t tmp;
 
@@ -778,7 +778,7 @@ void msparse_coding::load_features(vector<index_t> & v_feat, size_t & featsize)
 		// call the function using system
 		//g++ -O3 *.cpp -lgsl -lCGAL -o harris3d
 		//cmake -DCMAKE_BUILD_TYPE=Debug ..
-		
+
 		string command = "../../harris3d/harris3d " + mesh->filename + " " + f_feat + " " + tmp_file_path("example.prop");
 		gproshan_debug_var(command);
 		system(command.c_str());
@@ -824,7 +824,7 @@ void msparse_coding::init_patches(const bool & reset, const fmask_t & mask)
 				index_t v = sample(s);
 				patches[s].init(mesh, v, msparse_coding::T, phi_basis->radio(), toplevel);
 			}
-			
+
 
 			delete [] toplevel;
 		}
@@ -865,13 +865,13 @@ void msparse_coding::init_patches(const bool & reset, const fmask_t & mask)
 		p.phi = normalise(p.phi);
 	}
 
-/*	
+/*
 #ifndef NDEBUG
 	CImgList<real_t> imlist;
 	for(index_t s = 0; s < m_params.n_patches; ++s)
 		patches[s].save(phi_basis->radio(), 16, imlist);
 	imlist.save_ffmpeg_external("tmp/patches.mpg", 5);
-#endif	
+#endif
 
 */
 
@@ -908,25 +908,25 @@ real_t msparse_coding::mesh_reconstruction(const fmask_t & mask)
 	for(index_t p = 0; p < m_params.n_patches; ++p)
 	{
 		patch & rp = patches[p];
-		
+
 		a_vec x = rp.phi * A * alpha.col(p);
-			
+
 		patches_error[p] = { accu(abs(x - rp.xyz.row(2).t())) / rp.vertices.size(), p };
 
 		rp.xyz.row(2) = x.t();
 	}
 
 	sort(patches_error.begin(), patches_error.end());
-	
+
 	fprintf(stderr, "error %16s%16s\n", "best", "worst");
 	for(index_t i = 0; i < 10; ++i)
 	{
 		const index_t & best = patches_error[i].second;
 		const index_t & worst = patches_error[m_params.n_patches - i - 1].second;
-		
+
 		fprintf(stderr, "%5d:%8u>%8u%8u>%8u\n", i, best, draw_patches(best), worst, draw_patches(worst));
 	}
-	
+
 	#pragma omp parallel for
 	for(index_t p = 0; p < m_params.n_patches; ++p)
 	{
@@ -941,7 +941,7 @@ real_t msparse_coding::mesh_reconstruction(const fmask_t & mask)
 		// simple means vertex
 		if(patches_map[v].size() && (!mask || mask(v)))
 		{
-			a_vec mv = arma::zeros<a_vec>(3);		
+			a_vec mv = arma::zeros<a_vec>(3);
 			for(auto p: patches_map[v])
 				mv += patches[p.first].xyz.col(p.second);
 
@@ -969,7 +969,7 @@ real_t msparse_coding::mesh_reconstruction(const fmask_t & mask)
 		error += dist[v];
 		max_error = max(max_error, dist[v]);
 	}
-		
+
 	error /= mesh->n_vertices;
 
 	gproshan_debug_var(mesh->n_vertices);
@@ -978,7 +978,7 @@ real_t msparse_coding::mesh_reconstruction(const fmask_t & mask)
 
 	mesh->set_vertices(new_vertices, mesh->n_vertices);
 	che_off::write_file(mesh, "../tmp/recon_mesh");
-	
+
 	return max_error;
 }
 
@@ -994,10 +994,10 @@ void msparse_coding::update_alphas(a_mat & alpha, size_t threshold)
 	{
 		#pragma omp parallel for
 		for(index_t s = threshold; s < m_params.n_patches; ++s)
-		{	
+		{
 
 			if(!patches_covered[s-threshold])
-			{	
+			{
 				a_vec sum;
 				sum.zeros();
 				size_t c = 0;
@@ -1008,18 +1008,18 @@ void msparse_coding::update_alphas(a_mat & alpha, size_t threshold)
 					if(p.first < threshold || patches_covered[p.first-threshold])
 					{
 						sum += alpha.col(p.first);
-					}	
+					}
 					sum /= c;
 
 				}
 				alpha.col(s) = sum;
 				patches_covered[s-threshold] = 1;
 				++count;
-			}	
+			}
 
 		}
 	}
-	
+
 	// update alphas of choosed patches
 	// update the threshold
 	// repeat until threshold reachs all patches

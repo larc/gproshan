@@ -19,7 +19,7 @@ struct ptp_out_t
 {
 	real_t * dist;
 	index_t * clusters;
-	
+
 	ptp_out_t(real_t *const & d, index_t *const & c = nullptr);
 };
 

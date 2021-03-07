@@ -20,7 +20,7 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 		printf("./test_geodesics [data_path] [test_path] [exact_dist_path] [n_test = 10]\n");
 		return;
 	}
-	
+
 	const char * data_path = args[1];
 	const char * test_path = args[2];
 	const char * exact_dist_path = args[3];
@@ -33,7 +33,7 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 	FILE *ftable = fopen("ptp_results_double.tex", "w");
 	const char * ptime = "& %6.3lfs ";
 #endif
-	
+
 	const char * str[2] = {"", "\\bf"};
 	const char * pspeedup = "& \\bf (%.1lfx) ";
 	const char * pbtime = "& %6s %6.3lfs ";
@@ -43,18 +43,18 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 	while(cin >> filename)
 	{
 		gproshan_debug_var(filename);
-		
+
 		vector<index_t> source = { 0 };
-		
+
 		che * mesh = new che_off(data_path + filename + ".off");
 		size_t n_vertices = mesh->n_vertices;
-		
+
 		index_t * toplesets = new index_t[n_vertices];
 		index_t * sorted_index = new index_t[n_vertices];
 		vector<index_t> limits;
 		mesh->compute_toplesets(toplesets, sorted_index, limits, source);
-		
-		
+
+
 		// PERFORMANCE & ACCURACY ___________________________________________________________________
 
 		double Time[7];			// FM, PTP GPU, HEAT cholmod, HEAT cusparse
@@ -71,13 +71,13 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 #else
 		Time[2] = INFINITY;
 #endif // GPROSHAN_CUDA
-		
+
 		#ifdef SINGLE_P
 			Time[6] = Time[5] = Time[4] = Time[3] = INFINITY;
 			Error[4] = Error[3] = INFINITY;
 		#else
 			Time[4] = test_heat_method_cholmod(Error[3], Time[3], exact, mesh, source, n_test);
-			if(n_vertices < 100000)	
+			if(n_vertices < 100000)
 			{
 #ifdef GPROSHAN_CUDA
 				Time[6] = test_heat_method_gpu(Error[4], Time[5], exact, mesh, source, n_test);
@@ -92,15 +92,15 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 				Error[4] = INFINITY;
 			}
 		#endif
-		
+
 		index_t t_min = 0;
 		for(index_t i = 1; i < sizeof(Time) / sizeof(double); ++i)
 			if(Time[t_min] > Time[i]) t_min = i;
-		
+
 		index_t e_min = 0;
 		for(index_t i = 1; i < sizeof(Error) / sizeof(real_t); ++i)
 			if(Error[e_min] > Error[i]) e_min = i;
-		
+
 		fprintf(ftable, "%20s ", ("\\verb|" + filename + '|').c_str());
 		fprintf(ftable, "& %12lu ", n_vertices);
 
@@ -112,7 +112,7 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 		fprintf(ftable, pbtime, str[1 == t_min], Time[1]);
 		fprintf(ftable, pspeedup, Time[0] / Time[1]);
 		fprintf(ftable, pberror, str[1 == e_min], Error[1]);
-		
+
 		#ifndef SINGLE_P
 			fprintf(ftable, "& OpenMP ");
 		#endif
@@ -141,7 +141,7 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 			fprintf(ftable, pspeedup, Time[0] / Time[2]);
 			fprintf(ftable, pberror, str[2 == e_min], Error[2]);
 			fprintf(ftable, "& Cuda ");
-			
+
 			// HEAT FLOW cusparse
 			fprintf(ftable, ptime, Time[6]);
 			fprintf(ftable, pbtime, str[5 == t_min], Time[5]);
@@ -152,7 +152,7 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 			fprintf(ftable, "\\\\\\hline\n");
 		#endif
 
-		
+
 		// DEGREE HISTOGRAM ________________________________________________________________________
 
 		index_t dv;
@@ -168,7 +168,7 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 		for(auto & ii: deg)
 			os << ii.first << " " << ii.second << endl;
 		os.close();
-			
+
 
 		// TOPLESETS DISTRIBUTION __________________________________________________________________
 
@@ -189,7 +189,7 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 			os << i << " " << toplesets_dist[i] << endl;
 		os.close();
 
-		
+
 		// PTP ITERATION ERROR _____________________________________________________________________
 
 #ifdef GPROSHAN_CUDA	// IMPLEMENT: iter_error_parallel_toplesets_propagation_coalescence_cpu
@@ -201,7 +201,7 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 
 		#ifndef SINGLE_P
 			os.open(test_path + filename + "_error_double.iter");
-		#else	
+		#else
 			os.open(test_path + filename + "_error.iter");
 		#endif
 
@@ -213,12 +213,12 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 
 
 		// FARTHEST POINT SAMPLING _________________________________________________________________
-		
+
 #ifdef GPROSHAN_CUDA	// IMPLEMENT: times_farthest_point_sampling_ptp_cpu
 		size_t i_samples = source.size();
 		size_t n_samples = 1001;
 		double * times_fps = times_farthest_point_sampling_ptp_gpu(mesh, source, n_samples);
-		
+
 		os.open(test_path + filename + ".fps");
 		for(index_t i = i_samples; i < n_samples; ++i)
 			os << i << " " << times_fps[i] << endl;
@@ -226,7 +226,7 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 
 		delete [] times_fps;
 #endif // GPROSHAN_CUDA
-		
+
 		// FREE MEMORY
 
 		delete mesh;
@@ -235,7 +235,7 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 		delete [] exact;
 		delete [] toplesets_dist;
 	}
-	
+
 	fclose(ftable);
 }
 
@@ -259,7 +259,7 @@ double test_fast_marching(real_t & error, const real_t * exact, che * mesh, cons
 double test_ptp_cpu(real_t & error, const real_t * exact, che * mesh, const vector<index_t> & source, const toplesets_t & toplesets, const int & n_test)
 {
 	double t, seconds = INFINITY;
-	
+
 	real_t * dist = new real_t[mesh->n_vertices];
 	for(int i = 0; i < n_test; ++i)
 	{
@@ -268,7 +268,7 @@ double test_ptp_cpu(real_t & error, const real_t * exact, che * mesh, const vect
 	}
 
 	error = compute_error(dist, exact, mesh->n_vertices, source.size());
-	
+
 	delete [] dist;
 
 	return seconds;
@@ -278,7 +278,7 @@ double test_heat_method_cholmod(real_t & error, double & stime, const real_t * e
 {
 	double t, st, ptime;
 	ptime = stime = INFINITY;
-	
+
 	real_t * dist = new real_t[mesh->n_vertices];
 	for(int i = 0; i < n_test; ++i)
 	{
@@ -300,7 +300,7 @@ double test_heat_method_cholmod(real_t & error, double & stime, const real_t * e
 double test_ptp_gpu(real_t & error, const real_t * exact, che * mesh, const vector<index_t> & source, const toplesets_t & toplesets, const int & n_test)
 {
 	double t, seconds = INFINITY;
-	
+
 	real_t * dist = new real_t[mesh->n_vertices];
 	for(int i = 0; i < n_test; ++i)
 	{
@@ -311,7 +311,7 @@ double test_ptp_gpu(real_t & error, const real_t * exact, che * mesh, const vect
 	error = compute_error(dist, exact, mesh->n_vertices, source.size());
 
 	delete [] dist;
-	
+
 	return seconds;
 }
 
@@ -319,12 +319,12 @@ double test_heat_method_gpu(real_t & error, double & stime, const real_t * exact
 {
 	double t, st, ptime;
 	ptime = stime = INFINITY;
-	
+
 	real_t * dist = nullptr;
 	for(int i = 0; i < n_test; ++i)
 	{
 		if(dist) delete [] dist;
-		
+
 		TIC(t) st = heat_method(dist, mesh, source, HEAT_CUDA); TOC(t)
 		ptime = min(t - st, ptime);
 		stime = min(st, stime);
@@ -351,7 +351,7 @@ real_t * load_exact_geodesics(const string & file, const size_t & n)
 	for(index_t i = 0; i < n; ++i)
 		is >> exact[i];
 	is.close();
-	
+
 	return exact;
 }
 

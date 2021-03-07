@@ -13,7 +13,7 @@ frame::frame()
 
 	program.load_vertex(shaders_path("vertex_frame.glsl"));
 	program.load_fragment(shaders_path("fragment_frame.glsl"));
-	
+
 
 	const GLfloat vertices[] = {
 								-1, -1, 0,
@@ -27,7 +27,7 @@ frame::frame()
 	glGenTextures(1, &render_tex);
 	glGenVertexArrays(1, &vao);
 	glGenBuffers(1, &vbo);
-	
+
 
 	glBindVertexArray(vao);
 
@@ -43,7 +43,7 @@ frame::frame()
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	
+
 	glBindVertexArray(0);
 }
 
@@ -57,7 +57,7 @@ frame::~frame()
 void frame::display(const int & width, const int & height, void * buffer)
 {
 	program.enable();
-	
+
 	glBindVertexArray(vao);
 
 	glActiveTexture(GL_TEXTURE0);
@@ -70,7 +70,7 @@ void frame::display(const int & width, const int & height, void * buffer)
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindTexture(GL_TEXTURE_2D, 0);
 	glBindVertexArray(0);
-	
+
 	program.disable();
 }
 

@@ -14,7 +14,7 @@ class che_ptx : public che
 		che_ptx(const std::string & file);
 		che_ptx(const che_ptx & mesh);
 		virtual ~che_ptx();
-		
+
 		static void write_file(const che * mesh, const std::string & file);
 
 	private:

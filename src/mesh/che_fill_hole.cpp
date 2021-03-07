@@ -289,7 +289,7 @@ tuple<vector<index_t> *, che **> fill_all_holes_meshes(che * mesh, const size_t 
 	holes = new che*[n_borders];
 
 	gproshan_debug(inpainting);
-	
+
 	for(index_t b = 0; b < n_borders; ++b)
 		border_vertices[b] = mesh->boundary(bounds[b]);
 
@@ -806,7 +806,7 @@ che * fill_hole_front_angles(vector<vertex> & vertices, const real_t & length, c
 			return fill_hole_front_angles(vertices, length, -normal, max_iter, !is_grow);
 		else return nullptr;
 	}
-	
+
 	vertices.clear();
 	vertices.reserve(tmp_vertices.size());
 
