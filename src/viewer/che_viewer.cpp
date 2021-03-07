@@ -196,7 +196,7 @@ void che_viewer::log_info()
 	gproshan_log_var(mesh->n_edges);
 	gproshan_log_var(mesh->area_surface());
 	gproshan_log_var(mesh->is_manifold());
-	gproshan_log_var(mesh->n_borders);
+	gproshan_log_var(mesh->bounds().size());
 	gproshan_log_var(mesh->memory() / 1E6);
 	gproshan_log_var(mesh->quality());
 	gproshan_log_var(mesh->genus());

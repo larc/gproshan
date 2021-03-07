@@ -861,10 +861,14 @@ void viewer::draw_selected_vertices(shader & program)
 
 void viewer::select_border_vertices()
 {
-	active_mesh().selected.clear();
-	for(index_t b = 0; b < active_mesh()->n_borders; ++b)
-		for_border(he, active_mesh(), active_mesh()->bt(b))
-			active_mesh().selected.push_back(active_mesh()->vt(he));
+	che_viewer & mesh = active_mesh();
+
+	mesh.selected.clear();
+
+	vector<index_t> bounds = mesh->bounds();
+	for(const index_t & b: bounds)
+		for_boundary(he, mesh, b)
+			mesh.selected.push_back(mesh->vt(he));
 }
 
 void viewer::pick_vertex(int x, int y)

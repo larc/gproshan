@@ -57,7 +57,6 @@ che::che(const che & mesh)
 	rw(n_faces)			= mesh.n_faces;
 	rw(n_half_edges)	= mesh.n_half_edges;
 	rw(n_edges)			= mesh.n_edges;
-	rw(n_borders)		= mesh.n_borders;
 
 	GT = new vertex[n_vertices];
 	memcpy(GT, mesh.GT, n_vertices * sizeof(vertex));
@@ -77,9 +76,6 @@ che::che(const che & mesh)
 	EHT = new index_t[n_half_edges];
 	memcpy(EHT, mesh.EHT, n_half_edges * sizeof(index_t));
 
-	BT = new index_t[n_borders];
-	memcpy(BT, mesh.BT, n_borders * sizeof(index_t));
-	
 	VN = new vertex[n_vertices];
 	memcpy(VN, mesh.VN, n_vertices * sizeof(vertex));
 	
@@ -105,7 +101,7 @@ che::~che()
 	free();
 }
 
-void che::star(star_t & s, const index_t & v)
+void che::star(star_t & s, const index_t & v) const
 {
 	if(v >= n_vertices) return;
 
@@ -113,7 +109,7 @@ void che::star(star_t & s, const index_t & v)
 		s.push_back(he);
 }
 
-void che::link(link_t & l, const index_t & v)
+void che::link(link_t & l, const index_t & v) const
 {
 	if(v >= n_vertices) return;
 
@@ -125,19 +121,49 @@ void che::link(link_t & l, const index_t & v)
 	}
 }
 
-void che::border(vector<index_t> & border, const index_t & b)
+///< return a vector of indices of one vertex per boundary 
+vector<index_t> che::bounds() const
 {
-	for_border(he, this, BT[b])
-		border.push_back(VT[he]);
+	if(!n_faces) return {};
+	if(!manifold) return {};
+
+	vector<index_t> vbounds;
+
+	bool * is_bound = new bool[n_vertices];
+	memset(is_bound, 0, sizeof(bool) * n_vertices);
+
+	for(index_t v = 0; v < n_vertices; ++v)
+		if(!is_bound[v] && is_vertex_bound(v))
+		{
+			vbounds.push_back(v);
+
+			for_boundary(he, this, v)
+				is_bound[VT[he]] = true;
+		}
+
+	delete [] is_bound;
+
+	return vbounds;
 }
 
-bool che::is_border_v(const index_t & v) const
+///< return a vector of the indices of the boundary where v belongs
+vector<index_t> che::boundary(const index_t & v) const
 {
-	assert(EVT[v] < n_half_edges);
-	return OT[EVT[v]] == NIL;
+	vector<index_t> vbound;
+
+	for_boundary(he, this, v)
+		vbound.push_back(VT[he]);
+	
+	return vbound;
 }
 
-bool che::is_border_e(const index_t & e) const
+bool che::is_vertex_bound(const index_t & v) const
+{
+	assert(v < n_vertices && EVT[v] < n_half_edges);
+	return EVT[v] != NIL && OT[EVT[v]] == NIL;
+}
+
+bool che::is_edge_bound(const index_t & e) const
 {
 	return OT[ET[e]] == NIL;
 }
@@ -439,7 +465,7 @@ real_t che::mean_edge() const
 size_t che::memory() const
 {
 	return sizeof(*this) + n_vertices * (sizeof(vertex) + sizeof(index_t)) + filename.size()
-						+ sizeof(index_t) * (3 * n_half_edges + n_edges + n_borders);
+						+ sizeof(index_t) * (3 * n_half_edges + n_edges);
 }
 
 size_t che::genus() const
@@ -566,11 +592,6 @@ const index_t & che::evt(const index_t & v) const
 	return EVT[v];
 }
 
-const index_t & che::bt(const index_t & b) const
-{
-	return BT[b];
-}
-
 size_t che::max_degree() const
 {
 	size_t d, md = 0;
@@ -580,7 +601,7 @@ size_t che::max_degree() const
 	{
 		d = 0;
 		for_star(he, this, v) ++d;
-		d += is_border_v(v);
+		d += is_vertex_bound(v);
 		md = max(md, d);
 	}
 
@@ -806,8 +827,6 @@ void che::multiplicate_vertices()
 		else flip(e);
 
 	rw(n_faces) = n_half_edges / che::mtrig;
-
-	update_bt();
 }
 
 void che::remove_non_manifold_vertices()
@@ -1040,7 +1059,6 @@ gproshan_debug(fill_holes);
 	rw(n_edges)			= ne;
 
 	update_eht();
-	update_bt();
 }
 
 void che::set_head_vertices(index_t * head, const size_t & n)
@@ -1064,11 +1082,6 @@ void che::set_head_vertices(index_t * head, const size_t & n)
 			VT[he] = v;
 
 		swap(EVT[v], EVT[i]);
-		for(index_t b = 0; b < n_borders; ++b)
-		{
-			if(BT[b] == i) BT[b] = v;
-			else if(BT[b] == v) BT[b] = i;
-		}
 	}
 }
 
@@ -1132,7 +1145,7 @@ corr_t * che::edge_collapse(const index_t *const & sort_edges, const vertex *con
 
 		//is_border_v(va) && is_border_v(vb) -> is_border_e(e_d)
 		if( !faces_fixed[trig(he_d)] && (ohe_d != NIL ? !faces_fixed[trig(ohe_d)] : true) &&
-			(!(is_border_v(va) && is_border_v(vb)) || is_border_e(e_d)) )
+			(!(is_vertex_bound(va) && is_vertex_bound(vb)) || is_edge_bound(e_d)) )
 		{
 			is_collapse = link_intersect(va, vb) == (1 + (ohe_d != NIL));
 
@@ -1337,7 +1350,6 @@ void che::init(const vertex * vertices, const index_t & n_v, const index_t * fac
 
 	update_evt_ot_et();
 	update_eht();
-	update_bt();
 }
 
 void che::init(const string & file)
@@ -1347,7 +1359,6 @@ void che::init(const string & file)
 
 	update_evt_ot_et();
 	update_eht();
-	update_bt();
 }
 
 void che::alloc(const size_t & n_v, const size_t & n_f)
@@ -1356,7 +1367,6 @@ void che::alloc(const size_t & n_v, const size_t & n_f)
 	rw(n_faces)			= n_f;
 	rw(n_half_edges)	= che::mtrig * n_faces;
 	rw(n_edges)			= n_half_edges;				// max number of edges
-	rw(n_borders)		= 0;
 	
 	if(n_vertices)		GT	= new vertex[n_vertices];
 	if(n_half_edges)	VT	= new index_t[n_half_edges];
@@ -1382,20 +1392,20 @@ void che::free()
 	delete [] EVT;	EVT = nullptr;
 	delete [] ET;	ET = nullptr;
 	delete [] EHT;	EHT = nullptr;
-	delete [] BT;	BT = nullptr;
 	delete [] VN;	VN = nullptr;
 	delete [] VC;	VC = nullptr;
 	delete [] VHC;	VHC = nullptr;
 }
 
-void che::read_file(const string & ) {}		// empty
+void che::read_file(const string & ) {}		/* virtual */
 
 void che::update_evt_ot_et()
 {
 	if(!n_faces) return;
 	
 	memset(EVT, -1, sizeof(index_t) * n_vertices);
-	 
+	memset(OT, -1, sizeof(index_t) * n_half_edges);
+
 	map<index_t, index_t> * ot_he = new map<index_t, index_t>[n_vertices];
 	for(index_t he = 0; he < n_half_edges; ++he)
 	{
@@ -1417,7 +1427,8 @@ void che::update_evt_ot_et()
 			ET[ne++] = he;
 
 			OT[he] = ot_he[v][u] - 1;
-			OT[OT[he]] = he;
+			if(OT[he] != NIL)
+				OT[OT[he]] = he;
 		}
 	}
 	
@@ -1447,8 +1458,6 @@ void che::update_evt_ot_et()
 //			gproshan_debug_var(EVT[v]);
 //			assert(EVT[v] < n_half_edges);
 //		}
-
-	delete [] he_p_vertex;
 }
 
 void che::update_eht()
@@ -1460,35 +1469,6 @@ void che::update_eht()
 		if(OT[ET[e]] != NIL)
 			EHT[OT[ET[e]]] = e;
 	}
-}
-
-void che::update_bt()
-{
-	if(!n_faces) return;
-	if(!manifold) return;
-
-	bool * border = new bool[n_vertices];
-	memset(border, 0, sizeof(bool) * n_vertices);
-
-	vector<index_t> borders;
-
-	for(index_t v = 0; v < n_vertices; ++v)
-		if(!border[v] && EVT[v] != NIL && OT[EVT[v]] == NIL)
-		{
-			borders.push_back(v);
-			for_border(he, this, v)
-				border[VT[he]] = true;
-		}
-
-	rw(n_borders) = borders.size();
-	if(n_borders)
-	{
-		BT = new index_t[n_borders];
-		memcpy(BT, borders.data(), sizeof(index_t) * n_borders);
-	}
-	else BT = nullptr;
-
-	delete [] border;
 }
 
 

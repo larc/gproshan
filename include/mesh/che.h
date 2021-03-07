@@ -8,7 +8,7 @@
 #include <string>
 
 #define for_star(he, mesh, v) for(index_t stop = mesh->evt(v), he = mesh->evt(v); he != NIL; he = (he = mesh->ot(prev(he))) != stop ? he : NIL)
-#define for_border(he, mesh, v) for(index_t stop = mesh->evt(v), he = mesh->evt(v); he != NIL; he = (he = mesh->evt(mesh->vt(next(he)))) != stop ? he : NIL)
+#define for_boundary(he, mesh, v) for(index_t stop = mesh->evt(v), he = mesh->evt(v); he != NIL; he = (he = mesh->evt(mesh->vt(next(he)))) != stop ? he : NIL)
 
 
 // geometry processing and shape analysis framework
@@ -51,8 +51,6 @@ class che
 		vertex * VC		= nullptr;	///< vertex color			: v		-> color(v)
 		real_t * VHC	= nullptr;	///< vertex color heat map	: v		-> heatmap(v)
 		
-		std::vector<index_t> bounds;
-
 		bool manifold = true;
 
 	public:
@@ -61,11 +59,12 @@ class che
 		che(const vertex * vertices, const index_t & n_v, const index_t * faces, const index_t & n_f);
 		virtual ~che();
 		
-		void star(star_t & s, const index_t & v);
-		void link(link_t & l, const index_t & v);
-		void border(std::vector<index_t> & border, const index_t & b);
-		bool is_border_v(const index_t & v) const;
-		bool is_border_e(const index_t & e) const;
+		void star(star_t & s, const index_t & v) const;
+		void link(link_t & l, const index_t & v) const;
+		std::vector<index_t> bounds() const;
+		std::vector<index_t> boundary(const index_t & v) const;
+		bool is_vertex_bound(const index_t & v) const;
+		bool is_edge_bound(const index_t & e) const;
 		void flip(const index_t & e);
 		real_t pdetriq(const index_t & t) const;
 		real_t quality();
@@ -136,7 +135,6 @@ class che
 	private:
 		void update_evt_ot_et();
 		void update_eht();
-		void update_bt();
 
 	friend struct CHE;
 };

@@ -784,7 +784,7 @@ bool app_viewer::process_fill_holes_biharmonic_splines(viewer * p_view)
 	che_viewer & mesh = view->active_mesh();
 
 	size_t old_n_vertices, n_vertices = mesh->n_vertices;
-	size_t n_holes = mesh->n_borders;
+	size_t n_holes = 0; // FIX_BOUND mesh->n_borders;
 
 	vector<index_t> * border_vertices;
 	che ** holes;
