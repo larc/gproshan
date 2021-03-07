@@ -37,10 +37,10 @@ class che
 		const size_t n_half_edges	= 0;
 		const size_t n_edges		= 0;
 		const size_t n_borders		= 0;
+		
+		std::string filename;		///< get and set data member
 
 	protected:
-		std::string filename_;
-
 		vertex * GT		= nullptr;	///< geometry table			: v		-> vertex
 		index_t * VT	= nullptr;	///< vertex table (faces)	: he	-> v
 		index_t * OT	= nullptr;	///< opposite table			: he	-> he
@@ -129,10 +129,10 @@ class che
 		corr_t find_corr(const vertex & v, const vertex & n, const std::vector<index_t> & triangles);
 
 	protected:
-		void delete_me();
 		void init(const vertex * vertices, const index_t & n_v, const index_t * faces, const index_t & n_f);
 		void init(const std::string & file);
-		void init(const size_t & n_v, const size_t & n_f);
+		void free();
+		void alloc(const size_t & n_v, const size_t & n_f);
 		virtual void read_file(const std::string & file);
 
 	private:

@@ -44,7 +44,7 @@ void che_ptx::read_file(const string & file)
 		fscanf(fp, "%f", tr + i);
 	
 
-	init(n_rows * n_cols, 2 * (n_rows - 1) * (n_cols - 1));
+	alloc(n_rows * n_cols, 2 * (n_rows - 1) * (n_cols - 1));
 	
 	float x, y, z, a, r, g, b;
 	char line[128];

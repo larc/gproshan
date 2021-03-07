@@ -33,7 +33,7 @@ void che_img::read_file(const string & file)
 {
 	CImg<real_t> img(file.c_str());
 	
-	init(img.height() * img.width(), 2 * (img.height() - 1) * (img.width() - 1));
+	alloc(img.height() * img.width(), 2 * (img.height() - 1) * (img.width() - 1));
 	
 	index_t v = 0, he = 0;
 	for(int i = 0; i < img.width(); ++i)

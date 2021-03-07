@@ -36,7 +36,7 @@ void che_off::read_file(const string & file)
 	fgets(soff, sizeof(soff), fp);
 	fscanf(fp, "%lu %lu %lu", &nv, &nf, &ne);
 	
-	init(nv, nf);
+	alloc(nv, nf);
 	
 	float x, y, z, r, g, b, a;
 	for(index_t v = 0; v < n_vertices; ++v)
@@ -72,8 +72,8 @@ void che_off::read_file(const string & file)
 		{
 			vertex * tGT = GT; GT = nullptr;
 
-			delete_me();
-			init(nv, nf * (ne - che::mtrig + 1));
+			free();
+			alloc(nv, nf * (ne - che::mtrig + 1));
 
 			GT = tGT;
 		}

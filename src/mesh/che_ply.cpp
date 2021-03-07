@@ -85,7 +85,7 @@ void che_ply::read_file(const string & file)
 		if(str == "format") ss >> format;
 	}
 	
-	init(n_v, n_f);
+	alloc(n_v, n_f);
 	
 	if(format == "ascii")
 	{

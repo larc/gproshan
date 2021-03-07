@@ -92,7 +92,7 @@ che::che(const che & mesh)
 
 che::che(const size_t & n_v, const size_t & n_f)
 {
-	init(n_v, n_f);
+	alloc(n_v, n_f);
 }
 
 che::che(const vertex * vertices, const index_t & n_v, const index_t * faces, const index_t & n_f)
@@ -102,7 +102,7 @@ che::che(const vertex * vertices, const index_t & n_v, const index_t * faces, co
 
 che::~che()
 {
-	delete_me();
+	free();
 }
 
 void che::star(star_t & s, const index_t & v)
@@ -628,7 +628,7 @@ const string che::name_size() const
 
 void che::reload()
 {
-	delete_me();
+	free();
 	init(filename_);
 }
 
@@ -747,7 +747,7 @@ void che::multiplicate_vertices()
 		aEHT[ahe + 8] = aEHT[ahe + 4] = n_edges + he + 2;
 	}
 
-	delete_me();
+	free();
 	GT	= aGT;
 	VT	= aVT;
 	OT	= aOT;
@@ -873,7 +873,7 @@ void che::remove_non_manifold_vertices()
 	gproshan_debug_var(new_vertices.size());
 	gproshan_debug_var(new_faces.size());
 	gproshan_debug(removing vertex);
-	delete_me();
+	free();
 	gproshan_debug(removing vertex);
 	init(new_vertices.data(), new_vertices.size(), new_faces.data(), new_faces.size() / che::mtrig);
 	gproshan_debug(removing vertex);
@@ -941,7 +941,7 @@ void che::remove_vertices(const vector<index_t> & vertices)
 	gproshan_debug_var(new_vertices.size());
 	gproshan_debug_var(new_faces.size());
 	gproshan_debug(removing vertex);
-	delete_me();
+	free();
 	gproshan_debug(removing vertex);
 	init(new_vertices.data(), new_vertices.size(), new_faces.data(), new_faces.size() / che::mtrig);
 	gproshan_debug(removing vertex);
@@ -1034,7 +1034,7 @@ gproshan_debug(fill_holes);
 	assert(ae == ne);
 	delete [] common_edge;
 gproshan_debug(fill_holes);
-	delete_me();
+	free();
 
 gproshan_debug(fill_holes);
 	GT	= aGT;
@@ -1232,7 +1232,7 @@ corr_t * che::edge_collapse(const index_t *const & sort_edges, const vertex *con
 	for(index_t v = 0; v < n_vertices; ++v)
 		corr[v].t = trig(map_he[corr[v].t * che::mtrig]);
 
-	delete_me();
+	free();
 	init(new_vertices.data(), new_vertices.size(), new_faces.data(), new_faces.size() / che::mtrig);
 
 	delete [] faces_fixed;
@@ -1340,7 +1340,7 @@ corr_t che::find_corr(const vertex & v, const vertex & n, const vector<index_t> 
 
 void che::init(const vertex * vertices, const index_t & n_v, const index_t * faces, const index_t & n_f)
 {
-	init(n_v, n_f);
+	alloc(n_v, n_f);
 
 	memcpy(GT, vertices, n_vertices * sizeof(vertex));
 	memcpy(VT, faces, n_half_edges * sizeof(index_t));
@@ -1354,12 +1354,13 @@ void che::init(const string & file)
 {
 	filename_ = file;
 	read_file(filename_);
+
 	update_evt_ot_et();
 	update_eht();
 	update_bt();
 }
 
-void che::init(const size_t & n_v, const size_t & n_f)
+void che::alloc(const size_t & n_v, const size_t & n_f)
 {
 	rw(n_vertices)		= n_v;
 	rw(n_faces)			= n_f;
@@ -1381,6 +1382,22 @@ void che::init(const size_t & n_v, const size_t & n_f)
 	for(index_t v = 0; v < n_vertices; ++v)
 		VC[v] = vcolor;
 }
+
+void che::free()
+{
+	delete [] GT;	GT = nullptr;
+	delete [] VT;	VT = nullptr;
+	delete [] OT;	OT = nullptr;
+	delete [] EVT;	EVT = nullptr;
+	delete [] ET;	ET = nullptr;
+	delete [] EHT;	EHT = nullptr;
+	delete [] BT;	BT = nullptr;
+	delete [] VN;	VN = nullptr;
+	delete [] VC;	VC = nullptr;
+	delete [] VHC;	VHC = nullptr;
+}
+
+void che::read_file(const string & ) {}		// empty
 
 void che::update_evt_ot_et()
 {
@@ -1489,24 +1506,6 @@ void che::update_bt()
 	else BT = nullptr;
 
 	delete [] border;
-}
-
-void che::delete_me()
-{
-	delete [] GT;	GT = nullptr;
-	delete [] VT;	VT = nullptr;
-	delete [] OT;	OT = nullptr;
-	delete [] EVT;	EVT = nullptr;
-	delete [] ET;	ET = nullptr;
-	delete [] EHT;	EHT = nullptr;
-	delete [] BT;	BT = nullptr;
-	delete [] VN;	VN = nullptr;
-	delete [] VC;	VC = nullptr;
-	delete [] VHC;	VHC = nullptr;
-}
-
-void che::read_file(const string & )
-{
 }
 
 
