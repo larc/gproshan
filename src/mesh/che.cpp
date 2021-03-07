@@ -3,10 +3,10 @@
 #include "mesh/kdtree.h"
 #include "include_arma.h"
 
+#include <cassert>
 #include <cstring>
 #include <cmath>
-#include <cassert>
-#include <set>
+#include <map>
 
 using namespace std;
 
@@ -1355,14 +1355,15 @@ void che::alloc(const size_t & n_v, const size_t & n_f)
 	rw(n_vertices)		= n_v;
 	rw(n_faces)			= n_f;
 	rw(n_half_edges)	= che::mtrig * n_faces;
-	rw(n_edges)			= 0;
+	rw(n_edges)			= n_half_edges;				// max number of edges
 	rw(n_borders)		= 0;
 	
 	if(n_vertices)		GT	= new vertex[n_vertices];
 	if(n_half_edges)	VT	= new index_t[n_half_edges];
 	if(n_half_edges)	OT	= new index_t[n_half_edges];
 	if(n_vertices)		EVT	= new index_t[n_vertices];
-	if(n_vertices)		EHT	= new index_t[n_half_edges];
+	if(n_half_edges)	ET	= new index_t[n_half_edges];
+	if(n_half_edges)	EHT	= new index_t[n_half_edges];
 	
 	if(n_vertices)		VN	= new vertex[n_vertices];
 	if(n_vertices)		VC	= new vertex[n_vertices];
@@ -1391,52 +1392,44 @@ void che::read_file(const string & ) {}		// empty
 
 void che::update_evt_ot_et()
 {
-	memset(EVT, -1, sizeof(index_t) * n_vertices);
-	
 	if(!n_faces) return;
-
-	vector<index_t> * he_p_vertex = new vector<index_t>[n_vertices];
-
-	//vertex table
+	
+	memset(EVT, -1, sizeof(index_t) * n_vertices);
+	 
+	map<index_t, index_t> * ot_he = new map<index_t, index_t>[n_vertices];
 	for(index_t he = 0; he < n_half_edges; ++he)
 	{
-		EVT[VT[he]] = he;
-		he_p_vertex[VT[he]].push_back(he);
+		const index_t & u = VT[he];
+		const index_t & v = VT[next(he)];
+
+		EVT[u] = he;
+		ot_he[u][v] = he + 1;
 	}
-
-	//opposite table - edge table
-	memset(OT, -1, sizeof(index_t) * n_half_edges);
-
-	vector<index_t> et;
+	
+	size_t ne = 0;
 	for(index_t he = 0; he < n_half_edges; ++he)
 	{
+		const index_t & u = VT[he];
+		const index_t & v = VT[next(he)];
+		
 		if(OT[he] == NIL)
 		{
-			et.push_back(he);
-			for(index_t h: he_p_vertex[VT[he]])
-			{
-				if(VT[prev(h)] == VT[next(he)])
-				{
-					if(OT[he] == NIL && OT[prev(h)] == NIL)
-					{
-						OT[he] = prev(h);
-						OT[prev(h)] = he;
-					}
-				}
-			}
+			ET[ne++] = he;
+
+			OT[he] = ot_he[v][u] - 1;
+			OT[OT[he]] = he;
 		}
 	}
 	
+	delete [] ot_he;
+	
+	rw(n_edges) = ne;		
+	
+
 	// non manifold two disk
 	//for(index_t he = 0; he < n_half_edges; ++he)
 	//	if(OT[he] != NIL) assert(he == OT[OT[he]]);
 	
-	//edge table
-	rw(n_edges) = et.size();
-	ET = new index_t[n_edges];
-	memcpy(ET, et.data(), sizeof(index_t) * n_edges);
-
-
 	for(index_t he = 0; he < n_half_edges; ++he)
 		if(OT[he] == NIL && EVT[VT[he]] != NIL)
 		{

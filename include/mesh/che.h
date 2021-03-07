@@ -36,7 +36,6 @@ class che
 		const size_t n_faces		= 0;
 		const size_t n_half_edges	= 0;
 		const size_t n_edges		= 0;
-		const size_t n_borders		= 0;
 		
 		std::string filename;		///< get and set data member
 
@@ -47,11 +46,12 @@ class che
 		index_t * EVT	= nullptr;	///< extra vertex table		: v		-> he
 		index_t * ET	= nullptr;	///< edge table				: e		-> he
 		index_t * EHT	= nullptr;	///< extra half edge table	: he	-> e
-		index_t * BT	= nullptr;	///< boundary table			: b 	-> v
 		
 		vertex * VN		= nullptr;	///< vertex normals			: v		-> normal(v)
 		vertex * VC		= nullptr;	///< vertex color			: v		-> color(v)
 		real_t * VHC	= nullptr;	///< vertex color heat map	: v		-> heatmap(v)
+		
+		std::vector<index_t> bounds;
 
 		bool manifold = true;
 
