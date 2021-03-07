@@ -41,7 +41,7 @@ double heat_method(real_t * dist, const che * mesh, const std::vector<index_t> &
 	
 	switch(opt)
 	{
-		case HEAT_ARMA: 
+		case HEAT_ARMA:
 			if(!spsolve(u, A, u0)) gproshan_error(arma: no solution);
 			break;
 		case HEAT_CHOLMOD:
@@ -63,7 +63,7 @@ double heat_method(real_t * dist, const che * mesh, const std::vector<index_t> &
 
 	switch(opt)
 	{
-		case HEAT_ARMA: 
+		case HEAT_ARMA:
 			if(!spsolve(phi, L, div)) gproshan_error(arma: no solution);
 			break;
 		case HEAT_CHOLMOD:
@@ -87,7 +87,7 @@ double heat_method(real_t * dist, const che * mesh, const std::vector<index_t> &
 
 void compute_divergence(const che * mesh, const a_mat & u, a_mat & div)
 {
-	for(index_t v = 0; v < mesh->n_vertices; v++)
+	for(index_t v = 0; v < mesh->n_vertices; ++v)
 	{
 		real_t & sum = div(v);
 
@@ -95,7 +95,7 @@ void compute_divergence(const che * mesh, const a_mat & u, a_mat & div)
 		for_star(he, mesh, v)
 			sum += (
 					mesh->normal_he(he) * ( mesh->gt_vt(prev(he)) - mesh->gt_vt(next(he)) ) ,
-					- mesh->gradient_he(he, u.memptr()) 
+					- mesh->gradient_he(he, u.memptr())
 					);
 	}
 }
@@ -161,11 +161,11 @@ double solve_positive_definite_gpu(a_mat & x, const a_sp_mat & A, const a_mat & 
 	int * hA_row_indices = new int[A.n_nonzero];
 	
 	#pragma omp parallel for
-	for(index_t i = 0; i <= A.n_cols; i++)
+	for(index_t i = 0; i <= A.n_cols; ++i)
 		hA_col_ptrs[i] = A.col_ptrs[i];
 	
 	#pragma omp parallel for
-	for(index_t i = 0; i < A.n_nonzero; i++)
+	for(index_t i = 0; i < A.n_nonzero; ++i)
 		hA_row_indices[i] = A.row_indices[i];
 	
 	double solve_time = solve_positive_definite_cusolver(A.n_rows, A.n_nonzero, A.values, hA_col_ptrs, hA_row_indices, b.memptr(), x.memptr());

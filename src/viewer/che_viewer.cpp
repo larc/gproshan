@@ -51,7 +51,7 @@ void che_viewer::update()
 	vertex pmin(INFINITY, INFINITY, INFINITY);
 	vertex pmax(0, 0, 0);
 
-	for(index_t v = 0; v < mesh->n_vertices; v++)
+	for(index_t v = 0; v < mesh->n_vertices; ++v)
 	{
 		const vertex & p = mesh->gt(v);
 		
@@ -174,14 +174,14 @@ void che_viewer::translate(const vertex & p)
 	v_translate = p;
 
 	#pragma omp parallel for
-	for(index_t v = 0; v < mesh->n_vertices; v++)
+	for(index_t v = 0; v < mesh->n_vertices; ++v)
 		mesh->get_vertex(v) += v_translate;
 }
 
 void che_viewer::invert_orientation()
 {
 	#pragma omp parallel for
-	for(index_t v = 0; v < mesh->n_vertices; v++)
+	for(index_t v = 0; v < mesh->n_vertices; ++v)
 		mesh->normal(v) = -mesh->normal(v);
 }
 

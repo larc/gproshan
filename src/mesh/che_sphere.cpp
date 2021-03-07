@@ -31,9 +31,9 @@ che_sphere::che_sphere(const real_t & r, const size_t & n)
 
 	size_t v, cols = n - 1;
 	
-	for(index_t i = 0; i < 2 * n - 1; i++)
+	for(index_t i = 0; i < 2 * n - 1; ++i)
 	{
-		for(index_t j = 0; j < cols - 1; j++)
+		for(index_t j = 0; j < cols - 1; ++j)
 		{
 			v = i * cols + j;
 			
@@ -57,7 +57,7 @@ che_sphere::che_sphere(const real_t & r, const size_t & n)
 		faces.push_back(v);
 	}
 	
-	for(index_t j = 0; j < cols - 1; j++)
+	for(index_t j = 0; j < cols - 1; ++j)
 	{
 		v = (2 * n - 1) * cols + j;
 		

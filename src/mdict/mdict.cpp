@@ -24,7 +24,7 @@ bool operator < (const locval_t & a, const locval_t & b)
 
 std::ostream & operator << (std::ostream & os, const locval_t & lc)
 {
-	return os << '(' << lc.i << ',' << lc.j << ") = " << lc.val; 
+	return os << '(' << lc.i << ',' << lc.j << ") = " << lc.val;
 }
 
 void OMP(vector<locval_t> & alpha, const a_vec & x, const index_t & i, const a_mat & D, const size_t & L)
@@ -34,7 +34,7 @@ void OMP(vector<locval_t> & alpha, const a_vec & x, const index_t & i, const a_m
 
 	tie(aa, selected_atoms) = _OMP(x, D, L);
 
-	for(index_t k = 0; k < selected_atoms.size(); k++)
+	for(index_t k = 0; k < selected_atoms.size(); ++k)
 	{
 		#pragma omp critical
 		alpha.push_back({selected_atoms(k), i, aa(k)});
@@ -46,14 +46,14 @@ a_sp_mat OMP_all(vector<locval_t> & locval, const a_mat & X, const a_mat & D, co
 	locval.clear();
 
 	#pragma omp parallel for
-	for(index_t i = 0; i < X.n_cols; i++)
+	for(index_t i = 0; i < X.n_cols; ++i)
 		OMP(locval, X.col(i), i, D, L);
 
 	arma::umat DI(2, locval.size());
 	a_vec DV(locval.size());
 
 	#pragma omp parallel for
-	for(index_t k = 0; k < locval.size(); k++)
+	for(index_t k = 0; k < locval.size(); ++k)
 	{
 		DI(0, k) = locval[k].i; // row
 		DI(1, k) = locval[k].j; // column
@@ -83,7 +83,7 @@ void sp_KSVD(a_mat & D, const a_mat & X, const size_t & L, size_t k)
 		sort(locval.begin(), locval.end());
 
 		rows.push_back(0);
-		for(index_t k = 1; k < locval.size(); k++)
+		for(index_t k = 1; k < locval.size(); ++k)
 			if(locval[k].i != locval[k - 1].i)
 				rows.push_back(k);
 		
@@ -92,9 +92,9 @@ void sp_KSVD(a_mat & D, const a_mat & X, const size_t & L, size_t k)
 		R = X - D * alpha;
 
 		#pragma omp parallel for firstprivate(omega, E, U, V, s)
-		for(index_t j = 0; j < m; j++)
+		for(index_t j = 0; j < m; ++j)
 		{
-			for(index_t r = rows[j]; r < rows[j + 1]; r++)
+			for(index_t r = rows[j]; r < rows[j + 1]; ++r)
 				omega(r - rows[j]) = locval[r].j;
 
 			if(rows[j + 1] - rows[j])
@@ -129,7 +129,7 @@ tuple<a_vec, arma::uvec> _OMP(const a_vec & x, const a_mat & D, const size_t & L
 		DD = D.cols(selected_atoms.head(l + 1));
 		aa = pinv(DD) * x;
 		r = x - DD * aa;
-		l++;
+		++l;
 	}
 	return {aa, selected_atoms.head(l)};
 }
@@ -138,7 +138,7 @@ arma::uword max_index(const a_vec & V,const arma::uchar_vec & mask)
 {
 	arma::uvec indices = arma::sort_index(V, "descend");
 
-	for(size_t i=0; i< V.size(); i++)
+	for(size_t i=0; i< V.size(); ++i)
 		if(mask[indices[i]]) return indices[i];
 	
 	return NIL;
@@ -162,7 +162,7 @@ tuple<a_vec, arma::uvec> _OMP(const a_vec & x, const a_mat & D, const size_t & L
 		DD = D.cols(selected_atoms.head(l + 1));
 		aa = pinv(DD) * x;
 		r = x - DD * aa;
-		l++;
+		++l;
 	}
 	return {aa, selected_atoms.head(l)};
 }
@@ -195,7 +195,7 @@ a_mat OMP_all(const a_mat & X, const a_mat & D, const size_t & L)
 {
 	a_mat alpha(D.n_cols, X.n_cols);
 	#pragma omp parallel for
-	for(index_t i = 0; i < X.n_cols; i++)
+	for(index_t i = 0; i < X.n_cols; ++i)
 	{
 		alpha.col(i) = OMP(X.col(i), D, L);
 	}
@@ -216,7 +216,7 @@ void KSVD(a_mat & D, const a_mat & X, const size_t & L, size_t k)
 		R = X - D * alpha;
 
 		#pragma omp parallel for private(omega, E, U, V, s)
-		for(index_t j = 0; j < D.n_cols; j++)
+		for(index_t j = 0; j < D.n_cols; ++j)
 		{
 			omega = find(abs(alpha.row(j)) > 0);
 			if(omega.n_elem)
@@ -231,7 +231,7 @@ void KSVD(a_mat & D, const a_mat & X, const size_t & L, size_t k)
 }
 
 
-// MESH DENSE 
+// MESH DENSE
 
 a_vec OMP(const patch & p, const a_mat & A, const size_t & L)
 {
@@ -242,7 +242,7 @@ a_vec OMP(const patch & p, basis * phi_basis, const a_mat & A, const size_t & L)
 {
 	arma::uchar_vec mask(A.n_cols);
 	
-	for(index_t i = 0; i < A.n_cols; i++)
+	for(index_t i = 0; i < A.n_cols; ++i)
 		mask(i) = phi_basis->freq(i) >= patch::nyquist_factor * p.avg_dist;		 // 2.5* if it ismin
 	
 	return OMP(p.xyz.row(2).t(), p.phi * A, L, mask);
@@ -253,7 +253,7 @@ a_mat OMP_all(const vector<patch> & patches, basis * phi_basis, const a_mat & A,
 	a_mat alpha(A.n_cols, patches.size());
 
 	#pragma omp parallel for
-	for(index_t i = 0; i < patches.size(); i++)
+	for(index_t i = 0; i < patches.size(); ++i)
 		alpha.col(i) = OMP(patches[i],phi_basis, A, L);
 		
 	return alpha;
@@ -264,7 +264,7 @@ a_mat OMP_all(const vector<patch> & patches, const a_mat & A, const size_t & L)
 	a_mat alpha(A.n_cols, patches.size());
 
 	#pragma omp parallel for
-	for(index_t i = 0; i < patches.size(); i++)
+	for(index_t i = 0; i < patches.size(); ++i)
 		alpha.col(i) = OMP(patches[i], A, L);
 	
 	return alpha;
@@ -287,7 +287,7 @@ void KSVD(a_mat & A, const vector<patch> & patches, const size_t & L, size_t k)
 		alpha = OMP_all(patches, A, L);
 
 		#pragma omp parallel for private(omega, a, aj, D, e, sum, sum_error)
-		for(index_t j = 0; j < A.n_cols; j++)
+		for(index_t j = 0; j < A.n_cols; ++j)
 		{
 			//Taking all alphas that uses atom j
 			arma::uvec omega = find(abs(alpha.row(j)) > 0);
@@ -301,7 +301,7 @@ void KSVD(a_mat & A, const vector<patch> & patches, const size_t & L, size_t k)
 				a(j) = 0;
 
 				D = patches[i].phi * A; // fetch the discrete dictionary for the patch i
-				e = patches[i].xyz.row(2).t() - D * a; // getting the rec error for the patch i 
+				e = patches[i].xyz.row(2).t() - D * a; // getting the rec error for the patch i
 				aj = as_scalar(e.t() * D.col(j) / (D.col(j).t() * D.col(j)));
 
 				sum += aj * aj * patches[i].phi.t() * patches[i].phi;
@@ -332,14 +332,14 @@ a_sp_mat OMP_all(vector<locval_t> & locval, const vector<patch> & patches, const
 	locval.clear();
 
 	#pragma omp parallel for
-	for(index_t i = 0; i < patches.size(); i++)
+	for(index_t i = 0; i < patches.size(); ++i)
 		OMP(locval, patches[i], i, A, L);
 
 	arma::umat DI(2, locval.size());
 	a_vec DV(locval.size());
 
 	#pragma omp parallel for
-	for(index_t k = 0; k < locval.size(); k++)
+	for(index_t k = 0; k < locval.size(); ++k)
 	{
 		DI(0, k) = locval[k].i; // row
 		DI(1, k) = locval[k].j; // column
@@ -370,19 +370,19 @@ void sp_KSVD(a_mat & A, const vector<patch> & patches, const size_t & L, size_t 
 		sort(locval.begin(), locval.end());
 
 		rows.push_back(0);
-		for(index_t k = 1; k < locval.size(); k++)
+		for(index_t k = 1; k < locval.size(); ++k)
 			if(locval[k].i != locval[k - 1].i)
 				rows.push_back(k);
 		
 		rows.push_back(locval.size());
 
 		#pragma omp parallel for private(a, aj, D, e, sum, sum_error)
-		for(index_t j = 0; j < A.n_cols; j++)
+		for(index_t j = 0; j < A.n_cols; ++j)
 		{
 			sum.zeros(K, K);
 			sum_error.zeros(K);
 
-			for(index_t r = rows[j]; r < rows[j + 1]; r++)
+			for(index_t r = rows[j]; r < rows[j + 1]; ++r)
 			{
 				const index_t & i = locval[r].j;
 

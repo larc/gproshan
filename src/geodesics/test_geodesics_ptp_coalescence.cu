@@ -30,7 +30,7 @@ vector<pair<index_t, real_t> > iter_error_parallel_toplesets_propagation_coalesc
 	real_t * exact_dist_sorted = new real_t[mesh->n_vertices];
 	
 	#pragma omp parallel for
-	for(index_t i = 0; i < mesh->n_vertices; i++)
+	for(index_t i = 0; i < mesh->n_vertices; ++i)
 	{
 		V[i] = mesh->gt(sorted_index[i]);
 		inv[sorted_index[i]] = i;
@@ -38,7 +38,7 @@ vector<pair<index_t, real_t> > iter_error_parallel_toplesets_propagation_coalesc
 	}
 
 	#pragma omp parallel for
-	for(index_t he = 0; he < mesh->n_half_edges; he++)
+	for(index_t he = 0; he < mesh->n_half_edges; ++he)
 		F[he] = inv[mesh->vt(he)];
 
 	mesh = new che(V, mesh->n_vertices, F, mesh->n_faces);
@@ -148,14 +148,14 @@ double * times_farthest_point_sampling_ptp_coalescence_gpu(che * mesh, vector<in
 		// sort data by levels, must be improve the coalescence
 	
 		#pragma omp parallel for
-		for(index_t i = 0; i < mesh->n_vertices; i++)
+		for(index_t i = 0; i < mesh->n_vertices; ++i)
 		{
 			V[i] = mesh->gt(sorted_index[i]);
 			inv[sorted_index[i]] = i;
 		}
 
 		#pragma omp parallel for
-		for(index_t he = 0; he < mesh->n_half_edges; he++)
+		for(index_t he = 0; he < mesh->n_half_edges; ++he)
 			F[he] = inv[mesh->vt(he)];
 
 		che * tmp_mesh = new che(V, mesh->n_vertices, F, mesh->n_faces);
@@ -214,10 +214,10 @@ double * times_farthest_point_sampling_ptp_coalescence_gpu(che * mesh, vector<in
 vector<pair<index_t, real_t> > iter_error_run_ptp_coalescence_gpu(CHE * d_mesh, const index_t & n_vertices, real_t * h_dist, real_t ** d_dist, const vector<index_t> & sources, const vector<index_t> & limits, const index_t * inv, const real_t * exact_dist, real_t * d_error)
 {
 	#pragma omp parallel for
-	for(index_t v = 0; v < n_vertices; v++)
+	for(index_t v = 0; v < n_vertices; ++v)
 		h_dist[v] = INFINITY;
 
-	for(index_t i = 0; i < sources.size(); i++)
+	for(index_t i = 0; i < sources.size(); ++i)
 		h_dist[inv[sources[i]]] = 0;
 
 	cudaMemcpy(d_dist[0], h_dist, sizeof(real_t) * n_vertices, cudaMemcpyHostToDevice);
@@ -235,7 +235,7 @@ vector<pair<index_t, real_t> > iter_error_run_ptp_coalescence_gpu(CHE * d_mesh, 
 
 	while(i < j)
 	{
-		n_iter++;
+		++n_iter;
 		start = limits[i];
 		end = limits[j];
 		n_cond = limits[i + 1] - start;
@@ -254,8 +254,8 @@ vector<pair<index_t, real_t> > iter_error_run_ptp_coalescence_gpu(CHE * d_mesh, 
 		cudaDeviceSynchronize();
 		
 		if(n_cond == thrust::count_if(thrust::device, d_error + start, d_error + start + n_cond, is_ok()))
-			i++;
-		if(j < limits.size() - 1) j++;	
+			++i;
+		if(j < limits.size() - 1) ++j;	
 		
 		d = !d;
 	}

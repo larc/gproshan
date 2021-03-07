@@ -92,7 +92,7 @@ OptixTraversableHandle optix::build_as(const std::vector<che *> & meshes)
 	std::vector<OptixBuildInput> optix_meshes(meshes.size());
 	std::vector<uint32_t> optix_trig_flags(meshes.size());
 
-	for(index_t i = 0; i < meshes.size(); i++)
+	for(index_t i = 0; i < meshes.size(); ++i)
 		add_mesh(optix_meshes[i], optix_trig_flags[i], meshes[i]);
 
 	OptixAccelBuildOptions optix_accel_opt	= {};
@@ -180,7 +180,7 @@ void optix::add_mesh(OptixBuildInput & optix_mesh, uint32_t & optix_trig_flags, 
 	cudaMalloc(&d_vertex, mesh->n_vertices * sizeof(float) * 3);
 	
 	#pragma omp parallel for
-	for(index_t i = 0; i < mesh->n_vertices; i++)
+	for(index_t i = 0; i < mesh->n_vertices; ++i)
 		vertices[i] = glm::vec3(mesh->gt(i).x, mesh->gt(i).y, mesh->gt(i).z);
 	
 	cudaMemcpy(d_vertex, vertices, mesh->n_vertices * sizeof(vertex), cudaMemcpyHostToDevice);
@@ -195,8 +195,8 @@ void optix::add_mesh(OptixBuildInput & optix_mesh, uint32_t & optix_trig_flags, 
 	optix_mesh.type = OPTIX_BUILD_INPUT_TYPE_TRIANGLES;
 
 	optix_mesh.triangleArray.vertexFormat			= OPTIX_VERTEX_FORMAT_FLOAT3;
-	optix_mesh.triangleArray.vertexStrideInBytes	= 3 * sizeof(float); 
-	optix_mesh.triangleArray.numVertices			= mesh->n_vertices; 
+	optix_mesh.triangleArray.vertexStrideInBytes	= 3 * sizeof(float);
+	optix_mesh.triangleArray.numVertices			= mesh->n_vertices;
 	optix_mesh.triangleArray.vertexBuffers			= (CUdeviceptr *) &d_vertex;
 
 	optix_mesh.triangleArray.indexFormat			= OPTIX_INDICES_FORMAT_UNSIGNED_INT3;
@@ -208,9 +208,9 @@ void optix::add_mesh(OptixBuildInput & optix_mesh, uint32_t & optix_trig_flags, 
 	
 	optix_mesh.triangleArray.flags							= &optix_trig_flags;
 	optix_mesh.triangleArray.numSbtRecords					= 1;
-	optix_mesh.triangleArray.sbtIndexOffsetBuffer			= 0; 
-	optix_mesh.triangleArray.sbtIndexOffsetSizeInBytes		= 0; 
-	optix_mesh.triangleArray.sbtIndexOffsetStrideInBytes	= 0; 
+	optix_mesh.triangleArray.sbtIndexOffsetBuffer			= 0;
+	optix_mesh.triangleArray.sbtIndexOffsetSizeInBytes		= 0;
+	optix_mesh.triangleArray.sbtIndexOffsetStrideInBytes	= 0;
 }
 
 glm::vec4 optix::intersect_li(const glm::vec3 & org, const glm::vec3 & dir, const glm::vec3 & light, const bool & flat)

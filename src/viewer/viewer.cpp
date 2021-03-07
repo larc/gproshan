@@ -40,7 +40,7 @@ namespace gproshan {
 
 
 const int viewer::m_window_size[N_MESHES + 1][2] = {{1, 1},
-													{1, 1}, {1, 2}, {1, 3}, 
+													{1, 1}, {1, 2}, {1, 3},
 													{2, 2}, {2, 3}, {2, 3},
 													{2, 4}, {2, 4}, {2, 5},
 													{2, 5}, {3, 4}, {3, 4}
@@ -92,12 +92,12 @@ bool viewer::run()
 		
 
 		proj_mat = glm::perspective(45.f, float(viewport_width) / float(viewport_height), .01f, 1000.f);
-		view_mat = glm::lookAt(	glm::vec3(eye[1], eye[2], eye[3]), 
-								glm::vec3(center[1], center[2], center[3]), 
+		view_mat = glm::lookAt(	glm::vec3(eye[1], eye[2], eye[3]),
+								glm::vec3(center[1], center[2], center[3]),
 								glm::vec3(up[1], up[2], up[3])
 								);
 		
-		// RENDER 
+		// RENDER
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
 		switch(render_opt)
 		{
@@ -114,7 +114,7 @@ bool viewer::run()
 		{
 			if(ImGui::BeginMenu("Select"))
 			{
-				for(index_t i = 0; i < n_meshes; i++)
+				for(index_t i = 0; i < n_meshes; ++i)
 					if(ImGui::MenuItem((to_string(i) + ". " + meshes[i]->name()).c_str(), nullptr, i == idx_active_mesh, i != idx_active_mesh))
 					{
 						idx_active_mesh = i;	
@@ -127,14 +127,14 @@ bool viewer::run()
 
 			if(ImGui::BeginMenu("Colormap"))
 			{
-				for(index_t i = 0; i < colormap.size(); i++)
+				for(index_t i = 0; i < colormap.size(); ++i)
 					if(ImGui::MenuItem(colormap[i].c_str(), nullptr, i == idx_colormap, i != idx_colormap))
 						idx_colormap = i;
 
 				ImGui::EndMenu();
 			}
 
-			for(index_t i = 0; i < sub_menus.size(); i++)
+			for(index_t i = 0; i < sub_menus.size(); ++i)
 			{
 				if(ImGui::BeginMenu(sub_menus[i].c_str()))
 				{
@@ -333,14 +333,14 @@ void viewer::add_mesh(che * p_mesh)
 
 	meshes[n_meshes].init(p_mesh);
 	meshes[n_meshes].log_info();
-	n_meshes++;
+	++n_meshes;
 	
 	idx_active_mesh = n_meshes - 1;
 	glfwSetWindowTitle(window, active_mesh()->filename().c_str());
 	
 	const int & rows = m_window_size[n_meshes][0];
 	const int & cols = m_window_size[n_meshes][1];
-	for(index_t m = 0; m < n_meshes; m++)
+	for(index_t m = 0; m < n_meshes; ++m)
 	{
 		meshes[m].vx = m % cols;
 		meshes[m].vy = rows - (m / cols) - 1;
@@ -464,7 +464,7 @@ bool viewer::menu_save_load_view(viewer * view)
 
 	if(ImGui::BeginCombo("##loadfile", vfiles[select].c_str()))
 	{
-		for(index_t i = 0; i < vfiles.size(); i++)
+		for(index_t i = 0; i < vfiles.size(); ++i)
 		{
 			if(ImGui::Selectable(vfiles[i].c_str(), select == i))
 				select = i;
@@ -696,7 +696,7 @@ bool viewer::raycasting(viewer * view)
 	
 	float * frame = rc.raycaster(	glm::uvec2(view->viewport_width, view->viewport_height),
 									view->view_mat, view->proj_mat	
-									); 
+									);
 
 	std::thread([](CImg<float> img)
 	{
@@ -781,7 +781,7 @@ void viewer::render_embree()
 	}
 
 	rt_embree->pathtracing(	glm::uvec2(viewport_width, viewport_height),
-							view_mat, proj_mat, {glm::vec3(light[1], light[2], light[3])}, 
+							view_mat, proj_mat, {glm::vec3(light[1], light[2], light[3])},
 							render_flat, action );
 	
 	action = false;
@@ -826,7 +826,7 @@ void viewer::draw_meshes(shader & program, const bool & normals)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 
-	for(index_t i = 0; i < n_meshes; i++)
+	for(index_t i = 0; i < n_meshes; ++i)
 	{
 		glViewport(meshes[i].vx * viewport_width, meshes[i].vy * viewport_height, viewport_width, viewport_height);
 
@@ -845,7 +845,7 @@ void viewer::draw_selected_vertices(shader & program)
 	{
 		sphere_translations.resize(active_mesh().selected.size());
 
-		for(index_t i = 0; i < active_mesh().selected.size(); i++)
+		for(index_t i = 0; i < active_mesh().selected.size(); ++i)
 			sphere_translations[i] = active_mesh()->gt(active_mesh().selected[i]);
 
 		sphere.update_instances_translations(sphere_translations);
@@ -862,7 +862,7 @@ void viewer::draw_selected_vertices(shader & program)
 void viewer::select_border_vertices()
 {
 	active_mesh().selected.clear();
-	for(index_t b = 0; b < active_mesh()->n_borders; b++)
+	for(index_t b = 0; b < active_mesh()->n_borders; ++b)
 		for_border(he, active_mesh(), active_mesh()->bt(b))
 			active_mesh().selected.push_back(active_mesh()->vt(he));
 }

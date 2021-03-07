@@ -92,7 +92,7 @@ che * mesh_fill_hole(che * mesh, const vector<index_t> & border_vertices, const 
 	auto add_border_vertices = [&](const index_t & i, const index_t & j, const index_t & delta_v = 0) -> index_t
 	{
 		index_t end_v = j < i ? j + size : j;
-		for(index_t v = i; v <= end_v; v++)
+		for(index_t v = i; v <= end_v; ++v)
 		{
 			vmap_border[v % size] = vertices[c].size() + delta_v;
 			vertices[c].push_back(mesh->gt(border_vertices[v % size]));
@@ -214,7 +214,7 @@ void split_border(vector<pair<index_t, index_t> > & split_indices, che * mesh, c
 	a_mat means;
 
 	vertex normal;
-	for(index_t i = 0; i < n; i++)
+	for(index_t i = 0; i < n; ++i)
 	{
 		normal = mesh->normal(border_vertices[i]);
 		data(0, i) = normal.x;
@@ -235,10 +235,10 @@ void split_border(vector<pair<index_t, index_t> > & split_indices, che * mesh, c
 	//	clusters = new index_t[n];
 		index_t a, b;
 		a = NIL; b = NIL; // review this
-		for(index_t i = 0; i < n; i++)
+		for(index_t i = 0; i < n; ++i)
 		{
 			real_t d, d_min = INFINITY;
-			for(index_t c = 0; c < k; c++)
+			for(index_t c = 0; c < k; ++c)
 			{
 				d = norm(data.col(i) - means.col(c));
 				if(d < d_min)
@@ -265,7 +265,7 @@ vector<index_t> * fill_all_holes(che * mesh, const size_t & max_iter)
 	tie(border_vertices, holes) = fill_all_holes_meshes(mesh, max_iter);
 	if(holes)
 	{
-		for(index_t b = 0; b < mesh->n_borders; b++)
+		for(index_t b = 0; b < mesh->n_borders; ++b)
 			if(holes[b]) delete holes[b];
 	}
 	delete [] holes;
@@ -285,11 +285,11 @@ tuple<vector<index_t> *, che **> fill_all_holes_meshes(che * mesh, const size_t 
 
 	gproshan_debug(inpainting);
 
-	for(index_t b = 0; b < n_borders; b++)
+	for(index_t b = 0; b < n_borders; ++b)
 		mesh->border(border_vertices[b], b);
 
 	gproshan_debug(inpainting);
-	for(index_t b = 0; b < n_borders; b++)
+	for(index_t b = 0; b < n_borders; ++b)
 	{
 		gproshan_debug_var(b);
 //		vector<pair<index_t, index_t> > split_indices;
@@ -302,7 +302,7 @@ tuple<vector<index_t> *, che **> fill_all_holes_meshes(che * mesh, const size_t 
 	}
 
 	gproshan_debug(inpainting);
-	for(index_t b = 0; b < n_borders; b++)
+	for(index_t b = 0; b < n_borders; ++b)
 		if(holes[b])
 		{
 	gproshan_debug(inpainting);
@@ -333,7 +333,7 @@ che * fill_hole_front_angles_test(che * mesh, vector<index_t> & front_vertices, 
 	vector<a_vec> tmp_normals(vertices.size());
 
 	vertex normal;
-	for(index_t v = 0; v < vertices.size(); v++)
+	for(index_t v = 0; v < vertices.size(); ++v)
 	{
 		normal = mesh->normal(front_vertices[v]);
 		if(is_grow) normal = -normal;
@@ -363,7 +363,7 @@ che * fill_hole_front_angles_test(che * mesh, vector<index_t> & front_vertices, 
 	vector<array<index_t, 2> > neighbors(vertices.size());
 
 	index_t v, p_v, n_v;
-	for(v = 0; v < vertices.size(); v++)
+	for(v = 0; v < vertices.size(); ++v)
 	{
 		n_v = (v + 1) % vertices.size();
 		p_v = v > 0 ? v - 1: vertices.size() - 1;
@@ -545,7 +545,7 @@ che * fill_hole_front_angles_test(che * mesh, vector<index_t> & front_vertices, 
 	for(a_vec r: tmp_vertices)
 		vertices.push_back(vertex(r[0], r[1], r[2]));
 
-	for(index_t v = 0; false && v < tmp_vertices.size(); v++)
+	for(index_t v = 0; false && v < tmp_vertices.size(); ++v)
 		a_vec normal = tmp_vertices[v] + length * 3 * normalise(tmp_normals[v]);
 
 	gproshan_debug_var(perimeter);
@@ -567,7 +567,7 @@ che * fill_hole_front_angles(vector<vertex> & vertices, const real_t & length, c
 	// PCA --------------------------------------------------------------------------
 
 	a_mat V(3, vertices.size());
-	for(index_t v = 0; v < vertices.size(); v++)
+	for(index_t v = 0; v < vertices.size(); ++v)
 	{
 		V(0,v) = vertices[v][0];
 		V(1,v) = vertices[v][1];
@@ -595,8 +595,8 @@ che * fill_hole_front_angles(vector<vertex> & vertices, const real_t & length, c
 	//debug(E)
 
 
-	//debug(E * normalise(orientation)) 
-	//debug(dot(E.col(2), orientation)) 
+	//debug(E * normalise(orientation))
+	//debug(dot(E.col(2), orientation))
 	E.col(2) = normalise(dot(orientation, E.col(2)) * E.col(2));
 	E.col(1) = normalise(cross(E.col(2), E.col(0)));
 	//debug(E)
@@ -620,7 +620,7 @@ che * fill_hole_front_angles(vector<vertex> & vertices, const real_t & length, c
 	vector<array<index_t, 2> > neighbors(vertices.size());
 
 	index_t v, p_v, n_v;
-	for(v = 0; v < vertices.size(); v++)
+	for(v = 0; v < vertices.size(); ++v)
 		tmp_vertices[v] = V.col(v);
 
 	auto push_front = [&front](const border_t & b)
@@ -628,7 +628,7 @@ che * fill_hole_front_angles(vector<vertex> & vertices, const real_t & length, c
 		if(b.theta <= M_PI) front.push(b);
 	};
 
-	for(v = 0; v < vertices.size(); v++)
+	for(v = 0; v < vertices.size(); ++v)
 	{
 		n_v = (v + 1) % vertices.size();
 		p_v = v > 0 ? v - 1: vertices.size() - 1;
@@ -828,26 +828,25 @@ void get_real_tri(che * mesh, vector<index_t> & select_vertices, vector<vertex> 
 
 	vertex tri[3];
 
-	if(r == 2)
-		c++;
+	if(r == 2) ++c;
 
 
-	for (size_t i = 0; i < d ; i++)
+	for (size_t i = 0; i < d ; ++i)
 	{
 		if(i < b)
 		{
 			tri[0] += mesh->gt(select_vertices[i]);
-			tri_sizes[0]++;
+			++tri_sizes[0];
 		}
 		else if ( i >= b && i < c)
 		{
 			tri[1] += mesh->gt(select_vertices[i]);
-			tri_sizes[1]++;
+			++tri_sizes[1];
 		}
 		else
 		{
 			tri[2] += mesh->gt(select_vertices[i]);
-			tri_sizes[2]++;
+			++tri_sizes[2];
 		}
 	}
 
@@ -895,23 +894,23 @@ che * fill_hole_center_triangle(che * mesh, vector<index_t> & select_vertices, i
 	index_t f = 0;
 
 	i = 0;
-	for( ; i< tri_sizes[0]-1; i++)
+	for( ; i< tri_sizes[0]-1; ++i)
 	{
 		faces[f++] = i;
 		faces[f++] = tri_init;
 		faces[f++] = i + 1;
 	}
 
-	i++;
-	for( ; i < tri_sizes[0] + tri_sizes[1] - 1; i++)
+	++i;
+	for( ; i < tri_sizes[0] + tri_sizes[1] - 1; ++i)
 	{
 		faces[f++] = i;
 		faces[f++] = tri_init + 1;
 		faces[f++] = i + 1;
 	}
 
-	i++;
-	for( ; i < select_vertices.size() - 1; i++)
+	++i;
+	for( ; i < select_vertices.size() - 1; ++i)
 	{
 		faces[f++] = i;
 		faces[f++] = tri_init + 2;

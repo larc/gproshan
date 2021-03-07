@@ -17,8 +17,8 @@ void basis_cosine::discrete(a_mat & phi, const a_vec & x, const a_vec & y)
 	real_t d = 1.0 / (n_rot - 1);
 	real_t c;
 
-	for(size_t k = 0, ni = 1; ni <= n_freq; ni++ )
-	for(real_t alpha = 0; alpha <= 1; alpha += d, k++)
+	for(size_t k = 0, ni = 1; ni <= n_freq; ++ni)
+	for(real_t alpha = 0; alpha <= 1; alpha += d, ++k)
 	{
 		c = ni * M_PI / _radio;
 		phi.col(k) = cosine(x, y, c, alpha);
@@ -32,7 +32,7 @@ void basis_cosine::plot_basis(ostream & os)
 
 	os << "set multiplot layout " << n_freq << "," << n_rot << " rowsfirst scale 1.2;" << endl;
 
-	for(size_t ni = 1; ni <= n_freq; ni++ )
+	for(size_t ni = 1; ni <= n_freq; ++ni)
 	for(real_t alpha = 0; alpha <= 1; alpha += d)
 	{
 		c = ni * M_PI / _radio;
@@ -45,8 +45,8 @@ void basis_cosine::plot_atoms(ostream & os, const a_vec & A)
 	real_t d = 1.0 / (n_rot - 1);
 	real_t c;
 
-	for(size_t k = 0, ni = 1; ni <= n_freq; ni++ )
-	for(real_t alpha = 0; alpha <= 1; alpha += d, k++)
+	for(size_t k = 0, ni = 1; ni <= n_freq; ++ni)
+	for(real_t alpha = 0; alpha <= 1; alpha += d, ++k)
 	{
 		c = ni * M_PI / _radio;
 		os << " + " << A(k) << " * "; cosine(os, c, alpha);

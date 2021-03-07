@@ -110,7 +110,7 @@ bool embree::occluded(ray_hit & r)
 void embree::build_bvh(const std::vector<che *> & meshes, const bool & pointcloud)
 {
 	for(auto & m: meshes)
-		if(!m->n_faces || pointcloud) 
+		if(!m->n_faces || pointcloud)
 			geomID_mesh[add_pointcloud(m)] = {m, true};
 		else
 			geomID_mesh[add_mesh(m)] = {m, false};
@@ -181,7 +181,7 @@ index_t embree::add_pointcloud(const che * mesh)
 																);
 	
 	#pragma omp parallel for
-	for(index_t i = 0; i < mesh->n_vertices; i++)
+	for(index_t i = 0; i < mesh->n_vertices; ++i)
 	{
 		pxyzr[i] = glm::vec4(mesh->gt(i).x, mesh->gt(i).y, mesh->gt(i).z, pc_radius);
 		normal[i] = glm::vec3(mesh->normal(i).x, mesh->normal(i).y, mesh->normal(i).z);

@@ -56,7 +56,7 @@ void camera::mouse(int , int state, int x, int y, int w, int h)
 		}
 		else
 		{
-			momentum = 1.; 
+			momentum = 1.;
 		}
 
 		r_last = p_drag * p_click.conj() * r_last;

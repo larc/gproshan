@@ -133,4 +133,4 @@ MIT License
 
 ## Authors/Contributors
 - [Luciano A. Romero Calla](https://github.com/larc)
-- [Lizeth J. Fuentes Pérez](https://github.com/lishh)
+- [Lizeth J. Fuentes Pérez](https://github.com/lizonly)

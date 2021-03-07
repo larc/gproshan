@@ -6,7 +6,7 @@
 
 #include <vector>
 #include <map>
-#include <algorithm> 
+#include <algorithm>
 
 
 #include "include_arma.h"
@@ -33,7 +33,7 @@ class msparse_coding;
 typedef function<bool(const index_t &)> fmask_t;
 typedef std::map<index_t, index_t> vpatches_t;
 
-/// 
+///
 class patch
 {
 	public:
@@ -64,7 +64,7 @@ class patch
 		void init_disjoint(che * mesh,
 					const index_t & v,
 					const size_t & n_toplevels,
-					vector<index_t> & _vertices, 
+					vector<index_t> & _vertices,
 					index_t * _toplevel = nullptr);
 		
 		void init_radial_disjoint(	real_t & euc_radio,

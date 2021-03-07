@@ -34,13 +34,13 @@ void che_ptx::read_file(const string & file)
 
 	fscanf(fp, "%lu %lu", &n_rows, &n_cols);
 	
-	for(index_t i = 0; i < 12; i++)
+	for(index_t i = 0; i < 12; ++i)
 		fscanf(fp, "%f", T + i);
 
-	for(index_t i = 0; i < 12; i++)
+	for(index_t i = 0; i < 12; ++i)
 		fscanf(fp, "%f", R + i);
 	
-	for(index_t i = 0; i < 4; i++)
+	for(index_t i = 0; i < 4; ++i)
 		fscanf(fp, "%f", tr + i);
 	
 
@@ -61,7 +61,7 @@ void che_ptx::read_file(const string & file)
 		GT[0] = { x, y, z };
 		VC[0] = { r, g, b };
 
-		for(index_t v = 1; v < n_vertices; v++)
+		for(index_t v = 1; v < n_vertices; ++v)
 		{
 			fgets(line, sizeof(line), fp);
 			sscanf(line, "%f %f %f %f %f %f %f", &x, &y, &z, &a, &r, &g, &b);
@@ -74,7 +74,7 @@ void che_ptx::read_file(const string & file)
 		GT[0] = { x, y, z };
 		VC[0] = { a, a, a };
 
-		for(index_t v = 1; v < n_vertices; v++)
+		for(index_t v = 1; v < n_vertices; ++v)
 		{
 			fgets(line, sizeof(line), fp);
 			sscanf(line, "%f %f %f %f", &x, &y, &z, &a);
@@ -100,8 +100,8 @@ void che_ptx::read_file(const string & file)
 			he -= 3;
 	};
 
-	for(index_t r = 0; r < n_rows - 1; r++)
-	for(index_t c = 0; c < n_cols - 1; c++)
+	for(index_t r = 0; r < n_rows - 1; ++r)
+	for(index_t c = 0; c < n_cols - 1; ++c)
 	{
 		add_trig((c    ) + (r    ) * n_cols,
 				 (c    ) + (r + 1) * n_cols,
@@ -116,7 +116,7 @@ void che_ptx::read_file(const string & file)
 	rw(n_faces)			= he / che::mtrig;
 
 	#pragma omp parallel for
-	for(index_t i = 0; i < n_vertices; i++)
+	for(index_t i = 0; i < n_vertices; ++i)
 		VC[i] /= 255;	
 }
 

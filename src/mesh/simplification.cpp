@@ -58,7 +58,7 @@ void simplification::execute(const vertex *const & normals)
 	while(--levels)
 	{
 		#pragma omp parallel for private(he, vi)
-		for(index_t v = 0; v < n_vertices; v++)
+		for(index_t v = 0; v < n_vertices; ++v)
 		{
 			corr_v[v] = mesh->corr_vertex(corr[v]);
 			he = corr[v].t * che::mtrig;
@@ -72,7 +72,7 @@ void simplification::execute(const vertex *const & normals)
 		corr_aux = mesh->edge_collapse(sort_edges, normals);
 
 		#pragma omp parallel for private(vi, a, b, c)
-		for(index_t v = 0; v < n_vertices; v++)
+		for(index_t v = 0; v < n_vertices; ++v)
 		{
 			vi = v * che::mtrig;
 			a = mesh->corr_vertex(corr_aux[corr_i[vi]]);
@@ -102,7 +102,7 @@ void simplification::compute_quadrics()
 	vertex n;
 
 	#pragma omp parallel for private(n)
-	for(index_t v = 0; v < mesh->n_vertices; v++)
+	for(index_t v = 0; v < mesh->n_vertices; ++v)
 	{
 		Q[v].resize(4,4);
 		Q[v].zeros();
@@ -124,7 +124,7 @@ void simplification::compute_quadrics()
 void simplification::order_edges(index_t * const & sort_edges, real_t * const & error_edges)
 {
 	#pragma omp parallel for
-	for(index_t e = 0; e < mesh->n_edges; e++)
+	for(index_t e = 0; e < mesh->n_edges; ++e)
 	{
 		sort_edges[e] = e;
 		error_edges[e] = compute_error(e);

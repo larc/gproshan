@@ -19,7 +19,7 @@ key_components::key_components(che * mesh, const key_points & kps, const real_t 
 	comp_size = new size_t[n_vertices];
 
 	#pragma omp parallel for
-	for(index_t i = 0; i < n_vertices; i++)
+	for(index_t i = 0; i < n_vertices; ++i)
 	{
 		comp[i] = i;
 		comp_size[i] = 1;
@@ -53,10 +53,10 @@ void key_components::compute_kcs(che * mesh, const key_points & kps)
 	geodesics fm(mesh, vector<index_t>(&kps[0], &kps[0] + kps.size()));
 	
 	radio *= fm.radio();
-	for(index_t i = 0; i < n_vertices && fm[fm(i)] <= radio; i++)
+	for(index_t i = 0; i < n_vertices && fm[fm(i)] <= radio; ++i)
 		for_star(he, mesh, fm(i)) join(fm(i), mesh->vt(next(he)));
 	
-	for(index_t i = 0; i < n_vertices; i++)
+	for(index_t i = 0; i < n_vertices; ++i)
 		if(comp[i] == i && comp_size[i] > 1)
 			comp_idx[i] = n_comp++;
 		else if(comp[i] == i) comp[i] = NIL;

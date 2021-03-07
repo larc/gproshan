@@ -20,7 +20,7 @@ void laplacian(const che * mesh, a_sp_mat & L, a_sp_mat & A)
 	a_vec SV(n_edges);
 
 	#pragma omp parallel for
-	for(index_t e = 0; e < n_edges; e++)
+	for(index_t e = 0; e < n_edges; ++e)
 	{
 		index_t i = e << 1;
 
@@ -28,7 +28,7 @@ void laplacian(const che * mesh, a_sp_mat & L, a_sp_mat & A)
 		DI(1, i) = mesh->vt(mesh->et(e));
 		DV(i) = -1;
 
-		i++;
+		++i;
 
 		DI(0, i) = e;
 		DI(1, i) = mesh->vt(next(mesh->et(e)));
@@ -47,7 +47,7 @@ void laplacian(const che * mesh, a_sp_mat & L, a_sp_mat & A)
 	A.eye(n_vertices, n_vertices);
 
 	#pragma omp parallel for
-	for(index_t v = 0; v < n_vertices; v++)
+	for(index_t v = 0; v < n_vertices; ++v)
 		A(v, v) = mesh->area_vertex(v);
 }
 
@@ -64,7 +64,7 @@ void laplacian(const che * mesh, sp_mat_e & L, sp_mat_e & A)
 	D.reserve(VectorXi::Constant(n_edges,2));
 	S.reserve(VectorXi::Constant(n_edges,1));
 
-	for(index_t e = 0; e < n_edges; e++)
+	for(index_t e = 0; e < n_edges; ++e)
 	{
 		D.insert(e, mesh->vt(mesh->et(e))) = 1;
 		D.insert(e, mesh->vt(next(mesh->et(e)))) = -1;
@@ -76,7 +76,7 @@ void laplacian(const che * mesh, sp_mat_e & L, sp_mat_e & A)
 	L = D.transpose() * S * D;
 
 	A.reserve(VectorXi::Constant(n_vertices, 1));
-	for(index_t v = 0; v < n_vertices; v++)
+	for(index_t v = 0; v < n_vertices; ++v)
 		A.insert(v, v) = mesh->area_vertex(v);
 }
 

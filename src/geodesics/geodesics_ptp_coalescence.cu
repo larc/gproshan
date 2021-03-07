@@ -61,7 +61,7 @@ double parallel_toplesets_propagation_coalescence_gpu(const ptp_out_t & ptp_out,
 		cudaMemcpy(h_clusters, d_clusters[d], sizeof(index_t) * h_mesh->n_vertices, cudaMemcpyDeviceToHost);
 
 		#pragma omp parallel for
-		for(index_t i = 0; i < h_mesh->n_vertices; i++)
+		for(index_t i = 0; i < h_mesh->n_vertices; ++i)
 			ptp_out.clusters[toplesets.index[i]] = h_clusters[i];
 
 		cudaFree(d_clusters[0]);
@@ -82,7 +82,7 @@ double parallel_toplesets_propagation_coalescence_gpu(const ptp_out_t & ptp_out,
 	delete [] inv;
 
 	#pragma omp parallel for
-	for(index_t i = 0; i < toplesets.limits.back(); i++)
+	for(index_t i = 0; i < toplesets.limits.back(); ++i)
 		ptp_out.dist[toplesets.index[i]] = h_dist[i];
 	
 	delete [] h_dist;
@@ -102,10 +102,10 @@ double parallel_toplesets_propagation_coalescence_gpu(const ptp_out_t & ptp_out,
 index_t run_ptp_coalescence_gpu(CHE * d_mesh, const index_t & n_vertices, real_t * h_dist, real_t ** d_dist, const vector<index_t> & sources, const toplesets_t & inv, real_t * d_error, index_t * h_clusters, index_t ** d_clusters)
 {
 	#pragma omp parallel for
-	for(index_t v = 0; v < n_vertices; v++)
+	for(index_t v = 0; v < n_vertices; ++v)
 		h_dist[v] = INFINITY;
 
-	for(index_t i = 0; i < sources.size(); i++)
+	for(index_t i = 0; i < sources.size(); ++i)
 		h_dist[inv.index[sources[i]]] = 0;
 
 	cudaMemcpy(d_dist[0], h_dist, sizeof(real_t) * n_vertices, cudaMemcpyHostToDevice);
@@ -115,7 +115,7 @@ index_t run_ptp_coalescence_gpu(CHE * d_mesh, const index_t & n_vertices, real_t
 	{
 		assert(d_clusters[0]);
 
-		for(index_t i = 0; i < sources.size(); i++)
+		for(index_t i = 0; i < sources.size(); ++i)
 			h_clusters[inv.index[sources[i]]] = i + 1;
 
 		cudaMemcpy(d_clusters[0], h_clusters, sizeof(index_t) * n_vertices, cudaMemcpyHostToDevice);
@@ -149,9 +149,9 @@ index_t run_ptp_coalescence_gpu(CHE * d_mesh, const index_t & n_vertices, real_t
 		cudaDeviceSynchronize();
 		
 		if(n_cond == thrust::count_if(thrust::device, d_error + start, d_error + start + n_cond, is_ok()))
-			i++;
+			++i;
 		
-		if(j < inv.limits.size() - 1) j++;
+		if(j < inv.limits.size() - 1) ++j;
 		
 		d = !d;
 	}

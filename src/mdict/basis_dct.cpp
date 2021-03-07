@@ -14,8 +14,8 @@ void basis_dct::discrete(a_mat & phi, const a_vec & x, const a_vec & y)
 {
 	assert(phi.n_cols == _dim);
 
-	for(index_t k = 0, nx = 0; nx < n_freq; nx++)
-	for(index_t ny = 0; ny < n_freq; ny++, k++)
+	for(index_t k = 0, nx = 0; nx < n_freq; ++nx)
+	for(index_t ny = 0; ny < n_freq; ++ny, ++k)
 		phi.col(k) = dct(x, y, nx, ny);
 }
 
@@ -23,8 +23,8 @@ void basis_dct::d_discrete(a_mat & phi, const a_vec & x, const a_vec & y, const 
 {
 	assert(phi.n_cols == _dim);
 
-	for(index_t k = 0, nx = 0; nx < n_freq; nx++)
-	for(index_t ny = 0; ny < n_freq; ny++, k++)
+	for(index_t k = 0, nx = 0; nx < n_freq; ++nx)
+	for(index_t ny = 0; ny < n_freq; ++ny, ++k)
 		phi.col(k) = !b ? dct(x, y, nx, ny) : dct(y, x, ny, nx);
 }
 
@@ -32,8 +32,8 @@ void basis_dct::plot_basis(ostream & os)
 {
 	os << "set multiplot layout " << n_freq << "," << n_freq << " rowsfirst scale 1.2;" << endl;
 
-	for(index_t nx = 0; nx < n_freq; nx++)
-	for(index_t ny = 0; ny < n_freq; ny++)
+	for(index_t nx = 0; nx < n_freq; ++nx)
+	for(index_t ny = 0; ny < n_freq; ++ny)
 	{
 		os << "splot v * cos(u), v * sin(u), "; dct(os, nx, ny); os << ";" << endl;
 	}
@@ -41,8 +41,8 @@ void basis_dct::plot_basis(ostream & os)
 
 void basis_dct::plot_atoms(ostream & os, const a_vec & A)
 {
-	for(index_t k = 0, nx = 0; nx < n_freq; nx++)
-	for(index_t ny = 0; ny < n_freq; ny++, k++)
+	for(index_t k = 0, nx = 0; nx < n_freq; ++nx)
+	for(index_t ny = 0; ny < n_freq; ++ny, ++k)
 	{
 		os << " + " << A(k) << " * "; dct(os, nx, ny);
 	}

@@ -164,10 +164,10 @@ double * times_farthest_point_sampling_ptp_gpu(che * mesh, vector<index_t> & sam
 vector<pair<index_t, real_t> > iter_error_run_ptp_gpu(CHE * d_mesh, const index_t & n_vertices, real_t * h_dist, real_t ** d_dist, const vector<index_t> & sources, const vector<index_t> & limits, const index_t * h_sorted, index_t * d_sorted, const real_t * exact_dist, real_t * d_error)
 {
 	#pragma omp parallel for
-	for(index_t v = 0; v < n_vertices; v++)
+	for(index_t v = 0; v < n_vertices; ++v)
 		h_dist[v] = INFINITY;
 
-	for(index_t i = 0; i < sources.size(); i++)
+	for(index_t i = 0; i < sources.size(); ++i)
 		h_dist[sources[i]] = 0;
 
 	cudaMemcpy(d_dist[0], h_dist, sizeof(real_t) * n_vertices, cudaMemcpyHostToDevice);
@@ -184,7 +184,7 @@ vector<pair<index_t, real_t> > iter_error_run_ptp_gpu(CHE * d_mesh, const index_
 
 	while(i < j)
 	{
-		n_iter++;
+		++n_iter;
 		start = limits[i];
 		end = limits[j];
 		n_cond = limits[i + 1] - start;
@@ -201,8 +201,8 @@ vector<pair<index_t, real_t> > iter_error_run_ptp_gpu(CHE * d_mesh, const index_
 		cudaDeviceSynchronize();
 		
 		if(n_cond == thrust::count_if(thrust::device, d_error + start, d_error + start + n_cond, is_ok()))
-			i++;
-		if(j < limits.size() - 1) j++;	
+			++i;
+		if(j < limits.size() - 1) ++j;
 		
 		d = !d;
 	}

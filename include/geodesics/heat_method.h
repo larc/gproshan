@@ -35,7 +35,7 @@ cholmod_sparse * arma_2_cholmod(const a_sp_mat & m, cholmod_common * context);
 
 #ifdef GPROSHAN_CUDA
 
-/// 
+///
 double solve_positive_definite_gpu(a_mat & x, const a_sp_mat & A, const a_mat & b);
 #endif // GPROSHAN_CUDA
 
