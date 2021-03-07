@@ -40,7 +40,7 @@ index_t ** sampling_shape(vector<index_t> & points, size_t *& sizes, vertex *& n
 
 bool load_sampling(vector<index_t> & points, real_t & radio, che * mesh, size_t n)
 {
-	const string & filename = mesh->filename();
+	const string & filename = mesh->filename;
 
 	string file = filename.substr(filename.find_last_of('/'), filename.size() - filename.find_last_of('/')) + "." + to_string(n);
 

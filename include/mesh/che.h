@@ -56,9 +56,9 @@ class che
 		bool manifold = true;
 
 	public:
+		che(const che & mesh);
 		che(const size_t & n_v = 0, const size_t & n_f = 0);
 		che(const vertex * vertices, const index_t & n_v, const index_t * faces, const index_t & n_f);
-		che(const che & mesh);		
 		virtual ~che();
 		
 		void star(star_t & s, const index_t & v);
@@ -112,8 +112,6 @@ class che
 		size_t max_degree() const;
 		vertex & get_vertex(index_t v);
 		void set_vertices(const vertex *const& positions, size_t n = 0, const index_t & v_i = 0);
-		void set_filename(const std::string & f);
-		const std::string & filename() const;
 		const std::string filename_size() const;
 		const std::string name() const;
 		const std::string name_size() const;

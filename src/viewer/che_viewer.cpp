@@ -189,7 +189,7 @@ void che_viewer::log_info()
 {
 	if(!mesh) return;
 
-	gproshan_log_var(mesh->filename());
+	gproshan_log_var(mesh->filename);
 	gproshan_log_var(mesh->n_vertices);
 	gproshan_log_var(mesh->n_faces);
 	gproshan_log_var(mesh->n_half_edges);

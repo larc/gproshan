@@ -15,7 +15,7 @@ namespace gproshan {
 
 che_sphere::che_sphere(const real_t & r, const size_t & n)
 {
-	filename_ = "sphere";
+	filename = "sphere";
 
 	std::vector<vertex> vertices;
 	std::vector<index_t> faces;

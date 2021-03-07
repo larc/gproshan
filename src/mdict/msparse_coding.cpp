@@ -779,7 +779,7 @@ void msparse_coding::load_features(vector<index_t> & v_feat, size_t & featsize)
 		//g++ -O3 *.cpp -lgsl -lCGAL -o harris3d
 		//cmake -DCMAKE_BUILD_TYPE=Debug ..
 		
-		string command = "../../harris3d/harris3d " + mesh->filename() + " " + f_feat + " " + tmp_file_path("example.prop");
+		string command = "../../harris3d/harris3d " + mesh->filename + " " + f_feat + " " + tmp_file_path("example.prop");
 		gproshan_debug_var(command);
 		system(command.c_str());
 		gproshan_debug(created);

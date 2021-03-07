@@ -119,7 +119,7 @@ bool viewer::run()
 					{
 						idx_active_mesh = i;	
 						sphere_translations.clear();
-						glfwSetWindowTitle(window, active_mesh()->filename().c_str());
+						glfwSetWindowTitle(window, active_mesh()->filename.c_str());
 					}
 
 				ImGui::EndMenu();
@@ -336,7 +336,7 @@ void viewer::add_mesh(che * p_mesh)
 	++n_meshes;
 	
 	idx_active_mesh = n_meshes - 1;
-	glfwSetWindowTitle(window, active_mesh()->filename().c_str());
+	glfwSetWindowTitle(window, active_mesh()->filename.c_str());
 	
 	const int & rows = m_window_size[n_meshes][0];
 	const int & cols = m_window_size[n_meshes][1];

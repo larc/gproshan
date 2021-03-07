@@ -52,7 +52,7 @@ CHE::CHE(che * mesh)
 
 che::che(const che & mesh)
 {
-	filename_			= mesh.filename_;
+	filename			= mesh.filename;
 	rw(n_vertices)		= mesh.n_vertices;
 	rw(n_faces)			= mesh.n_faces;
 	rw(n_half_edges)	= mesh.n_half_edges;
@@ -438,7 +438,7 @@ real_t che::mean_edge() const
 
 size_t che::memory() const
 {
-	return sizeof(*this) + n_vertices * (sizeof(vertex) + sizeof(index_t)) + filename_.size()
+	return sizeof(*this) + n_vertices * (sizeof(vertex) + sizeof(index_t)) + filename.size()
 						+ sizeof(index_t) * (3 * n_half_edges + n_edges + n_borders);
 }
 
@@ -599,26 +599,16 @@ void che::set_vertices(const vertex *const& positions, size_t n, const index_t &
 	memcpy(GT + v_i, positions, sizeof(vertex) * n);
 }
 
-const string & che::filename() const
-{
-	return filename_;
-}
-
 const string che::filename_size() const
 {
-	return filename_ + "_" + to_string(n_vertices);
-}
-
-void che::set_filename(const string & f)
-{
-	filename_ = f;
+	return filename + "_" + to_string(n_vertices);
 }
 
 const string che::name() const
 {
-	index_t p = filename_.find_last_of('/');
-	index_t q = filename_.find_last_of('.');
-	return filename_.substr(p + 1, q - p - 1);
+	index_t p = filename.find_last_of('/');
+	index_t q = filename.find_last_of('.');
+	return filename.substr(p + 1, q - p - 1);
 }
 
 const string che::name_size() const
@@ -629,7 +619,7 @@ const string che::name_size() const
 void che::reload()
 {
 	free();
-	init(filename_);
+	init(filename);
 }
 
 void che::compute_toplesets(index_t *& toplesets, index_t *& sorted, vector<index_t> & limits, const vector<index_t> & sources, const index_t & k)
@@ -1352,8 +1342,8 @@ void che::init(const vertex * vertices, const index_t & n_v, const index_t * fac
 
 void che::init(const string & file)
 {
-	filename_ = file;
-	read_file(filename_);
+	filename = file;
+	read_file(filename);
 
 	update_evt_ot_et();
 	update_eht();
