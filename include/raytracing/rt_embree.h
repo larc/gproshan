@@ -34,9 +34,9 @@ class embree : public raytracing
 
 
 		RTCDevice device;
-		RTCScene scene;	
+		RTCScene scene;
 		RTCIntersectContext intersect_context;
-		
+
 	public:
 		static float pc_radius;
 
@@ -44,7 +44,7 @@ class embree : public raytracing
 		embree();
 		embree(const std::vector<che *> & meshes, const bool & pointcloud = false);
 		virtual ~embree();
-	
+
 	protected:
 		bool intersect(ray_hit & r);
 		bool occluded(ray_hit & r);
@@ -58,7 +58,7 @@ class embree : public raytracing
 
 		glm::vec4 li(const glm::vec3 & light, const glm::vec3 & position, const glm::vec3 & normal, const glm::vec3 & color, const float & near = 1e-5f);
 		glm::vec4 li(ray_hit r, const glm::vec3 & light, const bool & flat);
-		
+
 		glm::vec4 intersect_li(const glm::vec3 & org, const glm::vec3 & dir, const glm::vec3 & light, const bool & flat);
 		float intersect_depth(const glm::vec3 & org, const glm::vec3 & dir);
 };

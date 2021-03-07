@@ -29,15 +29,15 @@ void che_off::read_file(const string & file)
 {
 	char soff[32];
 	size_t nv, nf, ne;
-	
+
 	FILE * fp = fopen(file.c_str(), "r");
 	assert(fp);
 
 	fgets(soff, sizeof(soff), fp);
 	fscanf(fp, "%lu %lu %lu", &nv, &nf, &ne);
-	
-	init(nv, nf);
-	
+
+	alloc(nv, nf);
+
 	float x, y, z, r, g, b, a;
 	for(index_t v = 0; v < n_vertices; ++v)
 	{
@@ -56,7 +56,7 @@ void che_off::read_file(const string & file)
 			VN[v] = { x, y, z };
 		}
 	}
-	
+
 	if(soff[0] == 'C' || soff[1] == 'C')
 	{
 		#pragma omp parallel for
@@ -72,8 +72,8 @@ void che_off::read_file(const string & file)
 		{
 			vertex * tGT = GT; GT = nullptr;
 
-			delete_me();
-			init(nv, nf * (ne - che::mtrig + 1));
+			free();
+			alloc(nv, nf * (ne - che::mtrig + 1));
 
 			GT = tGT;
 		}
@@ -100,7 +100,7 @@ void che_off::write_file(const che * mesh, const string & file, const che_off::t
 
 	os << off << endl;
 	os << mesh->n_vertices << " " << (pointcloud ? 0 : mesh->n_faces) << " 0" << endl;
-	
+
 	for(size_t v = 0; v < mesh->n_vertices; ++v)
 	{
 		os << mesh->gt(v);
@@ -109,7 +109,7 @@ void che_off::write_file(const che * mesh, const string & file, const che_off::t
 
 		os << endl;
 	}
-	
+
 	if(!pointcloud)
 		for(index_t he = 0; he < mesh->n_half_edges; )
 		{

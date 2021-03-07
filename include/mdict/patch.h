@@ -45,7 +45,7 @@ class patch
 		double avg_dist;					///< Average distance between points.
 		real_t radio;						///< Radio.
 		size_t min_nv;						///<
-	
+
 	public:
 		static size_t expected_nv;			///< Expected number of patch vertices.
 		static real_t nyquist_factor;		///< nyquist factor
@@ -53,7 +53,7 @@ class patch
 	public:
 		patch() = default;
 		~patch() = default;
-		
+
 		void init(	che * mesh,						///< input mesh.
 					const index_t & v,				///< center vertex of the patch.
 					const size_t & n_toplevels,		///< number of toplevels to jet fitting.
@@ -66,12 +66,12 @@ class patch
 					const size_t & n_toplevels,
 					vector<index_t> & _vertices,
 					index_t * _toplevel = nullptr);
-		
+
 		void init_radial_disjoint(	real_t & euc_radio,
 									real_t & geo_radio,
 									che * mesh,
 									const index_t & v,
-									const real_t & delta,		
+									const real_t & delta,
 									const real_t & sum_thres,
 									const real_t & area_thres,
 									const real_t & area_mesh
@@ -84,9 +84,9 @@ class patch
 					const index_t & v);
 
 		void transform();
-		
+
 		void itransform();
-		
+
 		void reset_xyz(	che * mesh,
 						std::vector<vpatches_t> & vpatches,
 						const index_t & p,
@@ -120,7 +120,7 @@ class patch
 									real_t & proj_area,
 									real_t deviation
 									);
-		
+
 
 	private:
 		/// Gather the vertices needed to compute the jet_fit_directions of the patch.
@@ -129,7 +129,7 @@ class patch
 								const size_t & n_toplevels,
 								index_t * toplevel
 								);
-		
+
 		/// Gather the vertices filter by radio in the local coordinates require initialize T and x.
 		void gather_vertices(	che * mesh,
 								const index_t & v,
@@ -137,7 +137,7 @@ class patch
 								index_t * toplevel
 								);
 		bool exists(index_t idx);
-		
+
 		/// Initialize transformation matrix T and translation vector x, using CGAL jet_fitting.
 		void jet_fit_directions(che * mesh,
 								const index_t & v
@@ -150,7 +150,7 @@ class patch
 
 		void save_z(ostream & os);
 		index_t find(const index_t * indexes, size_t nc, index_t idx_global);
-		
+
 
 	friend class msparse_coding;
 };

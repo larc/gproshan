@@ -37,19 +37,19 @@ void patch::init(che * mesh, const index_t & v, const size_t & n_toplevels, cons
 {
 	radio = radio_;
 	index_t * toplevel = _toplevel ? _toplevel : new index_t[mesh->n_vertices];
-	
+
 	gather_vertices(mesh, v, n_toplevels, toplevel);
 	jet_fit_directions(mesh, v);
 	gather_vertices(mesh, v, radio_, toplevel);
 
 	if(!_toplevel) delete [] toplevel;
-}	
+}
 
 void patch::init_disjoint(che * mesh, const index_t & v, const size_t & n_toplevels, vector<index_t> & _vertices, index_t * _toplevel)
 {
 	radio = 1;
 	index_t * toplevel = _toplevel ? _toplevel : new index_t[mesh->n_vertices];
-	
+
 	gather_vertices(mesh, v, n_toplevels, toplevel);
 	jet_fit_directions(mesh, v);
 	//vertices = _vertices;
@@ -81,7 +81,7 @@ bool patch::add_vertex_by_faces(const vertex & c, vertex & n, vector<vertex> & N
 	// it needs to return both vertices
 	// it needs to filter repeated indexes.
 	// p should be the maximun
-	
+
 	index_t a, b, i = 0;
 	vertex min_he;
 	double area_face = 0, proj_area_face = 0;
@@ -108,7 +108,7 @@ bool patch::add_vertex_by_faces(const vertex & c, vertex & n, vector<vertex> & N
 				i = find(vertices.data(), vertices.size(), a);
 			else
 				i = find(vertices.data(), vertices.size(), b);
-			
+
 			tmp_angle = acos( (mesh->normal_he(he), N[i]) );
 
 			if(angle > tmp_angle && tmp_angle < thr_angle && acos( (mesh->normal_he(he), N[0]) ) < deviation) // Fullfill conditions
@@ -129,7 +129,7 @@ bool patch::add_vertex_by_faces(const vertex & c, vertex & n, vector<vertex> & N
 	//p = mesh->get_vertex(indexes[i]);
 	//p = p - c ;
 	//p = p - ((p,n)*n);
-	
+
 	area += area_face;
 	proj_area += proj_area_face;
 
@@ -138,7 +138,7 @@ bool patch::add_vertex_by_faces(const vertex & c, vertex & n, vector<vertex> & N
 		vertices.push_back(v);
 		N.push_back(min_he);
 	}
-	
+
 	return added;
 }
 
@@ -146,12 +146,12 @@ void patch::init_random(const vertex & c, const a_mat & T, const real_t & radio,
 {
 	this->radio = radio;
 	this->T = T;
-	
+
 	x.resize(3);
 	x(0) = c.x;
 	x(1) = c.y;
 	x(2) = c.z;
-	
+
 
 	std::random_device rd; //Will be used to obtain a seed for the random number engine
 	std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
@@ -171,7 +171,7 @@ void patch::init_random(const vertex & c, const a_mat & T, const real_t & radio,
 	{
 		double a = abs(dis(gen)) * 2 * M_PI;
 		double r = fr * abs(dis(gen));
-		
+
 		xyz(0, i) = r * cos(a);
 		xyz(1, i) = r * sin(a);
 		xyz(2, i) = 0;
@@ -231,7 +231,7 @@ void patch::init_radial_disjoint(	real_t & euc_radio,
 									real_t & geo_radio,
 									che * mesh,
 									const index_t & v,
-									const real_t & delta,		
+									const real_t & delta,
 									const real_t & sum_thres,
 									const real_t & area_thres,
 									const real_t & area_mesh
@@ -241,23 +241,23 @@ void patch::init_radial_disjoint(	real_t & euc_radio,
 	min_nv = 128;
 
 	euc_radio = -INFINITY;
-	
+
 	normal_fit_directions(mesh, v);
-	
+
 	a_vec vn = T.col(2);
 	vertex n = { vn(0), vn(1), vn(2) };
-	
+
 	vertices.push_back(v);
-	
+
 	vector<vertex> N;
 	N.push_back(n);
-	
+
 	real_t area = 0;
 	real_t proj_area = std::numeric_limits<real_t>::epsilon();
 	real_t ratio;
-	
+
 	vertex c = mesh->get_vertex(v);
-	
+
 	geodesics::params params;
 	params.dist_alloc = new real_t[mesh->n_vertices];
 	params.fun = [&](const index_t & u) -> bool
@@ -320,7 +320,7 @@ void patch::itransform()
 void patch::reset_xyz(che * mesh, vector<vpatches_t> & vpatches, const index_t & p, const fmask_t & mask)
 {
 	size_t m = vertices.size();
-	
+
 	if(mask)
 	{
 		m = 0;
@@ -358,18 +358,18 @@ double area_tri(double x1, double y1, double x2, double y2, double x3, double y3
 void patch::remove_extra_xyz_disjoint(size_t & max_points)
 {
 	if(vertices.size() > max_points)
-	{		
+	{
 		arma::uvec xi;
 		xi.zeros(max_points);
 		for (size_t i=1; i< max_points; ++i) xi[i] = i;
 		xi = arma::shuffle(xi);
 		xyz = xyz.cols(xi);
 	}
-	
+
 }
 void patch::add_extra_xyz_disjoint(che * mesh, vector<vpatches_t> & vpatches, const index_t & p)
 {
-	
+
 	size_t m = std::max (vertices.size(), min_nv);
 
 
@@ -382,7 +382,7 @@ void patch::add_extra_xyz_disjoint(che * mesh, vector<vpatches_t> & vpatches, co
 
 	while(j < m )
 	{
-		
+
 		// add new vertices
 		// create a random point
 		real_t a = abs(dis(gen)) * 2 * M_PI;
@@ -397,14 +397,14 @@ void patch::add_extra_xyz_disjoint(che * mesh, vector<vpatches_t> & vpatches, co
 		{
 			a_vec aux = xyz.col(vpatches[v][p]);
 			aux(2) = 0;
-			
+
 			if(norm(np - aux) < min_d)
 			{
 				min_d = norm(np - aux);
 				min_v = v;
 			}
 		}
-		
+
 		// forstar to find closest trinagle
 		a_mat abc(3,3);
 		for_star(he, mesh, min_v)
@@ -412,12 +412,12 @@ void patch::add_extra_xyz_disjoint(che * mesh, vector<vpatches_t> & vpatches, co
 			//discard triangles outside the patch
 			vpatches_t & ma = vpatches[mesh->vt(next(he))];
 			vpatches_t & mb = vpatches[mesh->vt(prev(he))];
-	
+
 			if(ma.find(p) != ma.end() && mb.find(p) != mb.end())
 			{
 				arma::uvec xi = { vpatches[min_v][p], ma[p], mb[p] };
 				abc = xyz.cols(xi);
-				
+
 				//gproshan_debug_var(np);
 				// verify if this is inside a triangle
 
@@ -425,17 +425,17 @@ void patch::add_extra_xyz_disjoint(che * mesh, vector<vpatches_t> & vpatches, co
 				double A1 = area_tri(np(0),		np(1),		abc(0,1),	abc(1,1),	abc(0,2),	abc(1,2) );
 				double A2 = area_tri(abc(0,0), 	abc(1,0),	np(0),		np(1),		abc(0,2),	abc(1,2) );
 				double A3 = area_tri(abc(0,0), 	abc(1,0),	abc(0,1),	abc(1,1),	np(0),		np(1) );
-				
-		
-				
+
+
+
 				if(abs(A - (A1 + A2 + A3)) < std::numeric_limits<real_t>::epsilon())
 				{
 					a_mat proj_abc = abc.tail_cols(2).each_col() - abc.col(0);
 					np -= abc.col(0);
-		
+
 					a_vec coef = arma::inv(proj_abc.head_rows(2)) * np.head(2);
 					np = proj_abc * coef + abc.col(0);
-					
+
 					if(!isnan(np(2)))
 					{
 						xyz(0, j) = np(0);
@@ -454,8 +454,8 @@ void patch::add_extra_xyz_disjoint(che * mesh, vector<vpatches_t> & vpatches, co
 
 				}
 			}
-			
-		}	
+
+		}
 	}
 }
 
@@ -480,10 +480,10 @@ void patch::reset_xyz_disjoint(che * mesh, real_t * dist, size_t M, vector<vpatc
 		gproshan_debug(number vertices masked);
 		gproshan_debug_var(vertices.size() - m);*/
 	}
-	
+
 	m = std::max(vertices.size(), min_nv);
 	xyz.set_size(3, m);
-	
+
 	index_t i = 0;
 	for(auto & vi: vertices)
 	{
@@ -493,7 +493,7 @@ void patch::reset_xyz_disjoint(che * mesh, real_t * dist, size_t M, vector<vpatc
 			xyz(0, i) = v.x;
 			xyz(1, i) = v.y;
 			xyz(2, i) = v.z;
-			
+
 			vpatches[vi][p] = i++;
 		}
 	}
@@ -532,11 +532,11 @@ void patch::save(const real_t & radio, const size_t & imsize, CImgList<real_t> &
 		y = floor((xyz.col(i)[1] + radio) * (imsize - 1) / (2 * radio));
 		img(x,y) = xyz.col(i)[2];
 	}
-	
+
 	img.resize(128, 128);
 	imlist.insert(img.normalize(0, 255));
 	//img.save("tmp/images/test_image.jpg");
-	
+
 }
 
 void patch::gather_vertices(che * mesh, const index_t & v, const size_t & n_toplevels, index_t * toplevel)
@@ -545,17 +545,17 @@ void patch::gather_vertices(che * mesh, const index_t & v, const size_t & n_topl
 
 	vertices.reserve(expected_nv);
 	memset(toplevel, -1, sizeof(index_t) * mesh->n_vertices);
-	
+
 	link_t link;
 	toplevel[v] = 0;
 	vertices.push_back(v);
-	
+
 	for(index_t i = 0; i < vertices.size(); ++i)
 	{
 		const index_t & v = vertices[i];
 		if(toplevel[v] == n_toplevels)
 			break;
-		
+
 		mesh->link(link, v);
 		for(const index_t & he: link)
 		{
@@ -567,21 +567,21 @@ void patch::gather_vertices(che * mesh, const index_t & v, const size_t & n_topl
 			}
 		}
 
-		link.clear();	
-	}	
+		link.clear();
+	}
 }
 
 void patch::gather_vertices(che * mesh, const index_t & v, const real_t & radio, index_t * toplevel)
 {
 	assert(x.n_elem == 3 && T.n_rows == 3 && T.n_cols == 3);
-	
+
 	if(vertices.size()) vertices.clear();
 	vertices.reserve(expected_nv);
-	
+
 	priority_queue<pair<real_t, index_t> > qvertices;
 
 	memset(toplevel, -1, sizeof(index_t) * mesh->n_vertices);
-	
+
 	a_vec p(3);
 	link_t link;
 
@@ -592,9 +592,9 @@ void patch::gather_vertices(che * mesh, const index_t & v, const real_t & radio,
 	{
 		index_t v = qvertices.top().second;
 		qvertices.pop();
-		
+
 		vertices.push_back(v);
-		
+
 		mesh->link(link, v);
 		for(const index_t & he: link)
 		{
@@ -607,13 +607,13 @@ void patch::gather_vertices(che * mesh, const index_t & v, const real_t & radio,
 				p = T.t() * (p - x);
 
 				toplevel[u] = toplevel[v] + 1;
-				
+
 				if(norm(p) < radio)
 					qvertices.push({-norm(p), u});
 			}
 			link.clear();
 		}
-	}	
+	}
 }
 
 /// Compute the principal directions of the patch, centering in the vertex \f$v\f$.
@@ -629,14 +629,14 @@ void patch::jet_fit_directions(che * mesh, const index_t & v)
 	in_points.reserve(vertices.size());
 	for(const index_t & u: vertices)
 		in_points.push_back(DPoint(mesh->gt(u).x, mesh->gt(u).y, mesh->gt(u).z));
-	
+
 	My_Monge_form monge_form;
 	My_Monge_via_jet_fitting monge_fit;
 	monge_form = monge_fit(in_points.begin(), in_points.end(), d_fitting, d_monge);
 
 	vertex normal = mesh->normal(v);
 	monge_form.comply_wrt_given_normal(DVector(normal.x, normal.y, normal.z));
-	
+
 	x.set_size(3);
 	x(0) = mesh->gt(v).x;
 	x(1) = mesh->gt(v).y;
@@ -662,7 +662,7 @@ void patch::normal_fit_directions(che * mesh, const index_t & v)
 	x(1) = mesh->gt(v).y;
 	x(2) = mesh->gt(v).z;
 
-	
+
 	vertex nz = mesh->normal(v);
 	vertex nx = mesh->gt_vt_next_evt(v);
 //	GT[VT[next(EVT[v]]]
@@ -712,7 +712,7 @@ void patch::update_heights(real_t & min, real_t & max, bool flag)
 			{
 				xyz(2, i) = (xyz(2, i) - min) / (max - min);
 			}
-	}	
+	}
 	else
 	{
 		for(index_t i = 0; i < vertices.size(); ++i)
@@ -722,7 +722,7 @@ void patch::update_heights(real_t & min, real_t & max, bool flag)
 			xyz.col(i)[2] = tmp;
 		}
 	}
-	
+
 }
 
 void patch::save_z(ostream & os)
@@ -748,7 +748,7 @@ void patch::compute_avg_distance(che * mesh, vector<vpatches_t> & vpatches, cons
 		for(const index_t & he: link)
 		{
 			const index_t & u = mesh->vt(he);
-			
+
 			for (auto itp:vpatches[u])
 			{
 				if( itp.first == p)
@@ -760,7 +760,7 @@ void patch::compute_avg_distance(che * mesh, vector<vpatches_t> & vpatches, cons
 					distances.push_back(norm(a - b));
 					break;
 				}
-			}			
+			}
 		}
 
 	}
@@ -781,9 +781,9 @@ void patch::compute_avg_distance(che * mesh, vector<vpatches_t> & vpatches, cons
 		avg_dist = (distances[n_elem/2] + distances[(n_elem/2 -1)])/2;
 	}
 	else
-	{	
+	{
 		avg_dist = distances[n_elem/2];
-	}	
+	}
 			//avg_dist = avg_dist + norm(xyz.col(i)- xyz.col(j));
 }
 
@@ -791,7 +791,7 @@ bool patch::is_covered( bool * covered)
 {
 	for(index_t i = 0; i < vertices.size(); ++i)
 		if(!covered[i]) return false;
-	
+
 	return true;
 }
 

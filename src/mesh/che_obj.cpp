@@ -27,7 +27,7 @@ void che_obj::read_file(const string & file)
 	ifstream is(file);
 
 	assert(is.good());
-	
+
 	real_t x, y, z;
 	int face[8], i;
 
@@ -54,19 +54,19 @@ void che_obj::read_file(const string & file)
 		{
 			for(i = 0; ss >> face[i]; ++i)
 				ss.ignore(256, ' ');
-			
+
 			if(i == che::mtrig)
 			{
 				if(face[0] < 0)
 				{
-					faces.push_back(vertices.size() + face[0]);	
-					faces.push_back(vertices.size() + face[1]);	
-					faces.push_back(vertices.size() + face[2]);	
+					faces.push_back(vertices.size() + face[0]);
+					faces.push_back(vertices.size() + face[1]);
+					faces.push_back(vertices.size() + face[2]);
 				}
 				else
 				{
-					faces.push_back(face[0] - 1);	
-					faces.push_back(face[1] - 1);	
+					faces.push_back(face[0] - 1);
+					faces.push_back(face[1] - 1);
 					faces.push_back(face[2] - 1);
 				}
 			}
@@ -74,30 +74,30 @@ void che_obj::read_file(const string & file)
 			{
 				if(face[0] < 0)
 				{
-					faces.push_back(vertices.size() + face[0]);	
-					faces.push_back(vertices.size() + face[1]);	
+					faces.push_back(vertices.size() + face[0]);
+					faces.push_back(vertices.size() + face[1]);
 					faces.push_back(vertices.size() + face[3]);
 
-					faces.push_back(vertices.size() + face[1]);	
-					faces.push_back(vertices.size() + face[2]);	
+					faces.push_back(vertices.size() + face[1]);
+					faces.push_back(vertices.size() + face[2]);
 					faces.push_back(vertices.size() + face[3]);
 				}
 				else
 				{
-					faces.push_back(face[0] - 1);	
-					faces.push_back(face[1] - 1);	
+					faces.push_back(face[0] - 1);
+					faces.push_back(face[1] - 1);
 					faces.push_back(face[3] - 1);
 
-					faces.push_back(face[1] - 1);	
-					faces.push_back(face[2] - 1);	
+					faces.push_back(face[1] - 1);
+					faces.push_back(face[2] - 1);
 					faces.push_back(face[3] - 1);
 				}
 			}
-		}	
+		}
 	}
 
 	is.close();
-	
+
 	init(vertices.data(), vertices.size(), faces.data(), faces.size() / che::mtrig);
 }
 

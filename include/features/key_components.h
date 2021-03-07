@@ -26,7 +26,7 @@ class key_components
 		~key_components();
 		index_t operator()(const index_t & i);
 		operator const size_t & () const;
-	
+
 	private:
 		void compute_kcs(che * mesh, const key_points & kps);
 		index_t find(const index_t & x);

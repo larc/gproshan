@@ -14,7 +14,7 @@ struct cu_spAxb
 {
 	int * A_col_ptrs, * A_row_indices;
 	real_t * A_values, * x, * b;
-	
+
 	cu_spAxb(const int m, const int nnz, const real_t * hA_values, const int * hA_col_ptrs, const int * hA_row_indices, const real_t * hb, real_t * hx)
 	{
 		cudaMalloc(&A_col_ptrs, (m + 1) * sizeof(int));
@@ -25,7 +25,7 @@ struct cu_spAxb
 
 		cudaMalloc(&A_values, nnz * sizeof(real_t));
 		cudaMemcpy(A_values, hA_values, nnz * sizeof(real_t), cudaMemcpyHostToDevice);
-		
+
 		cudaMalloc(&b, nnz * sizeof(real_t));
 		cudaMemcpy(b, hb, nnz * sizeof(real_t), cudaMemcpyHostToDevice);
 
@@ -51,11 +51,11 @@ double solve_positive_definite_cusolver(const int m, const int nnz, const real_t
 	cudaEventCreate(&start);
 	cudaEventCreate(&stop);
 	cudaEventRecord(start, 0);
-	
+
 	// solve Ax = b
 
 	int singularity;
-	
+
 	cusolverSpHandle_t handle_cusolver;
 	cusolverSpCreate(&handle_cusolver);
 
@@ -63,7 +63,7 @@ double solve_positive_definite_cusolver(const int m, const int nnz, const real_t
 	cusparseCreateMatDescr(&descr);
 	cusparseSetMatType(descr, CUSPARSE_MATRIX_TYPE_GENERAL);
 	cusparseSetMatIndexBase(descr, CUSPARSE_INDEX_BASE_ZERO);
-	
+
 	if(host)
 	{
 		#ifdef SINGLE_P
@@ -110,7 +110,7 @@ double solve_positive_definite_cusolver(const int m, const int nnz, const real_t
 double solve_positive_definite_cusparse(const int m, const int nnz, const real_t * hA_values, const int * hA_col_ptrs, const int * hA_row_indices, const real_t * hb, real_t * hx)
 {
 	cudaDeviceReset();
-	
+
 	float time;
 	cudaEvent_t start, stop;
 	cudaEventCreate(&start);
@@ -118,28 +118,28 @@ double solve_positive_definite_cusparse(const int m, const int nnz, const real_t
 
 	// allocate A, x, b into device
 	cu_spAxb data(m, nnz, hA_values, hA_col_ptrs, hA_row_indices, hb, hx);
-	
+
 	// aux vector y to device
 	real_t * dy;
 	cudaMalloc(&dy, m * sizeof(real_t));
-	
+
 	cusparseHandle_t handle;
 	cusparseCreate(&handle);
 
 	// SOLVE Ax = b
-	
+
 	cusparseMatDescr_t descr_M = 0;
 	cusparseMatDescr_t descr_L = 0;
-	
+
 	csric02Info_t info_M = 0;
 	csrsv2Info_t info_L = 0;
 	csrsv2Info_t info_Lt = 0;
-	
+
 	int buffer_size_M;
 	int buffer_size_L;
 	int buffer_size_Lt;
 	int buffer_size;
-	
+
 	void * buffer = 0;
 
 	int structural_zero;
@@ -204,7 +204,7 @@ double solve_positive_definite_cusparse(const int m, const int nnz, const real_t
 
 	// SOLVE
 	cudaEventRecord(start, 0);
-	
+
 	#ifdef SINGLE_P
 		cusparseScsrsv2_solve(handle, trans_L, m, nnz, &alpha, descr_L, data.A_values, data.A_col_ptrs, data.A_row_indices, info_L, data.b, dy, policy_L, buffer);
 		cusparseScsrsv2_solve(handle, trans_Lt, m, nnz, &alpha, descr_L, data.A_values, data.A_col_ptrs, data.A_row_indices, info_Lt, dy, data.x, policy_Lt, buffer);
@@ -212,16 +212,16 @@ double solve_positive_definite_cusparse(const int m, const int nnz, const real_t
 		cusparseDcsrsv2_solve(handle, trans_L, m, nnz, &alpha, descr_L, data.A_values, data.A_col_ptrs, data.A_row_indices, info_L, data.b, dy, policy_L, buffer);
 		cusparseDcsrsv2_solve(handle, trans_Lt, m, nnz, &alpha, descr_L, data.A_values, data.A_col_ptrs, data.A_row_indices, info_Lt, dy, data.x, policy_Lt, buffer);
 	#endif
-	
+
 	// copy sol x to host
 	cudaMemcpy(hx, data.x, m * sizeof(real_t), cudaMemcpyDeviceToHost);
-	
+
 	// END SOLVE
 	cudaEventRecord(stop, 0);
 	cudaEventSynchronize(stop);
 	cudaEventElapsedTime(&time, start, stop);
 
-	
+
 	// FREE
 	cudaFree(buffer);
 	cusparseDestroyMatDescr(descr_M);
@@ -230,7 +230,7 @@ double solve_positive_definite_cusparse(const int m, const int nnz, const real_t
 	cusparseDestroyCsrsv2Info(info_L);
 	cusparseDestroyCsrsv2Info(info_Lt);
 	cusparseDestroy(handle);
-	
+
 	cudaEventDestroy(start);
 	cudaEventDestroy(stop);
 
@@ -267,12 +267,12 @@ double solve_positive_definite_cusolver_preview(const int m, const int nnz, cons
 	cudaStreamCreate(&stream);
 	cusolverSpSetStream(cusolver_handle, stream);
 	cusparseSetStream(cusparse_handle, stream);
-*/	
+*/
 	cusparseCreateMatDescr(&descr);
 	cusparseSetMatType(descr, CUSPARSE_MATRIX_TYPE_GENERAL);
 	cusparseSetMatIndexBase(descr, CUSPARSE_INDEX_BASE_ZERO);
 
-	
+
 	if(host)
 	{
 		csrcholInfoHost_t info;
@@ -285,9 +285,9 @@ double solve_positive_definite_cusolver_preview(const int m, const int nnz, cons
 		#else
 			cusolverSpDcsrcholBufferInfoHost(cusolver_handle, m, nnz, descr, hA_values, hA_col_ptrs, hA_row_indices, info, &size_iternal, &size_chol);
 		#endif
-	
+
 		buffer = new char[size_chol];
-		
+
 		#ifdef SINGLE_P
 			cusolverSpScsrcholFactorHost(cusolver_handle, m, nnz, descr, hA_values, hA_col_ptrs, hA_row_indices, info, buffer);
 			cusolverSpScsrcholZeroPivotHost(cusolver_handle, info, 0, &singularity);
@@ -299,13 +299,13 @@ double solve_positive_definite_cusolver_preview(const int m, const int nnz, cons
 
 		// SOLVE
 		cudaEventRecord(start, 0);
-		
+
 		#ifdef SINGLE_P
 			cusolverSpScsrcholSolveHost(cusolver_handle, m, hb, hx, info, buffer);
 		#else
 			cusolverSpDcsrcholSolveHost(cusolver_handle, m, hb, hx, info, buffer);
 		#endif
-		
+
 		// END SOLVE
 		cudaEventRecord(stop, 0);
 		cudaEventSynchronize(stop);
@@ -329,7 +329,7 @@ double solve_positive_definite_cusolver_preview(const int m, const int nnz, cons
 		#else
 			cusolverSpDcsrcholBufferInfo(cusolver_handle, m, nnz, descr, data.A_values, data.A_col_ptrs, data.A_row_indices, info, &size_iternal, &size_chol);
 		#endif
-	
+
 		cudaMalloc(&buffer, size_chol);
 
 		#ifdef SINGLE_P
@@ -344,13 +344,13 @@ double solve_positive_definite_cusolver_preview(const int m, const int nnz, cons
 
 		// SOLVE
 		cudaEventRecord(start, 0);
-		
+
 		#ifdef SINGLE_P
 			cusolverSpScsrcholSolve(cusolver_handle, m, data.b, data.x, info, buffer);
 		#else
 			cusolverSpDcsrcholSolve(cusolver_handle, m, data.b, data.x, info, buffer);
 		#endif
-		
+
 		// END SOLVE
 		cudaEventRecord(stop, 0);
 		cudaEventSynchronize(stop);
@@ -370,7 +370,7 @@ double solve_positive_definite_cusolver_preview(const int m, const int nnz, cons
 
 	cudaEventDestroy(start);
 	cudaEventDestroy(stop);
-	
+
 	return (double) time / 1000;
 }
 

@@ -29,14 +29,14 @@ index_t embree_splat::add_pointcloud(const che * mesh)
 																4 * sizeof(float),
 																vsplat.size()
 																);
-	
+
 	glm::vec3 * normal = (glm::vec3 *) rtcSetNewGeometryBuffer(	geom,
 																RTC_BUFFER_TYPE_NORMAL, 0,
 																RTC_FORMAT_FLOAT3,
 																3 * sizeof(float),
 																vsplat.size()
 																);
-	
+
 	#pragma omp parallel for
 	for(index_t i = 0; i < vsplat.size(); ++i)
 	{
@@ -45,10 +45,10 @@ index_t embree_splat::add_pointcloud(const che * mesh)
 	}
 
 	rtcCommitGeometry(geom);
-	
+
 	index_t geom_id = rtcAttachGeometry(scene, geom);
 	rtcReleaseGeometry(geom);
-	
+
 	return geom_id;
 }
 
@@ -70,7 +70,7 @@ float embree_splat::pointcloud_hit(glm::vec3 & position, glm::vec3 & normal, glm
 		if(intersect(r))
 			return pointcloud_hit(position, normal, color, r);
 	}
-	
+
 	return 1e-2f;
 }
 
@@ -80,12 +80,12 @@ void embree_splat::init_splats(const che * mesh)
 	vsplat.resize((mesh->n_vertices + n - 1) / n);
 
 	gproshan_log_var(vsplat.size());
-	
+
 	#pragma omp parallel for
 	for(index_t i = 0; i < vsplat.size(); ++i)
 	{
 		const index_t v = n * i;	// random, feature aware index
-		
+
 		std::set<index_t> points;
 		std::queue<index_t> q;
 
@@ -107,10 +107,10 @@ void embree_splat::init_splats(const che * mesh)
 
 			q.pop();
 		}
-		
+
 		real_t dist, d;
 		const vertex & c = mesh->gt(v);
-		
+
 		splat & s = vsplat[i];
 		for(index_t j = 0; j < K; ++j)
 		{

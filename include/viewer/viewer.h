@@ -38,7 +38,7 @@ class viewer
 	protected:
 
 		using function_t = bool (*) (viewer *);
-		
+
 		struct process_t
 		{
 			std::string key;
@@ -46,7 +46,7 @@ class viewer
 			function_t function;
 			index_t sub_menu;
 			bool selected = false;
-			
+
 			process_t() = default;
 			process_t(const std::string & k, const std::string & n, function_t f, const index_t & sm = NIL): key(k), name(n), function(f), sub_menu(sm) {};
 		};
@@ -64,13 +64,13 @@ class viewer
 		shader shader_normals;
 		shader shader_gradient;
 		shader shader_pointcloud;
-		
+
 		camera cam;
-		
+
 		quaternion eye;
 		quaternion center;
 		quaternion up;
-		
+
 		quaternion light;
 
 		glm::mat4 view_mat;
@@ -82,14 +82,14 @@ class viewer
 
 		enum render_type: index_t { R_GL, R_EMBREE, R_OPTIX };
 		index_t render_opt = R_GL;
-		
+
 		frame * render_frame = nullptr;
 
 		rt::raytracing * rt_embree = nullptr;
 		rt::raytracing * rt_optix = nullptr;
 
 		bool action = false;
-		
+
 		bool point_normals = true;
 		unsigned int point_size = 1;
 		bool render_pointcloud = false;
@@ -107,7 +107,7 @@ class viewer
 		che_viewer sphere;
 		std::vector<vertex> sphere_translations;
 		shader shader_sphere;
-	
+
 	public:
 		std::vector<vertex> other_vertices;
 		std::vector<vertex> vectors;
@@ -116,13 +116,13 @@ class viewer
 	public:
 		viewer(int width = 1600, int height = 900);
 		virtual ~viewer();
-		
+
 		bool run();
-		
+
 		che_viewer & active_mesh();
 		void add_process(const int & key, const process_t & process);
 		void add_mesh(che * p_mesh);
-		
+
 	private:
 		void info_gl();
 		void init_gl();
@@ -165,13 +165,13 @@ class viewer
 		static bool set_render_border(viewer * view);
 		static bool set_render_lines(viewer * view);
 		static bool set_render_flat(viewer * view);
-		
+
 		static bool raycasting(viewer * view);
 
 		// draw routines
 		void draw_meshes(shader & program, const bool & normals = false);
 		void draw_selected_vertices(shader & program);
-		
+
 		void select_border_vertices();
 		void pick_vertex(int x, int y);
 };

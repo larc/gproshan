@@ -31,7 +31,7 @@ void che_viewer::init(che * mesh, const bool & normalize)
 {
 	glGenVertexArrays(1, &vao);
 	glGenBuffers(6, vbo);
-	
+
 	this->mesh = mesh;
 	this->normalize = normalize;
 
@@ -47,14 +47,14 @@ void che_viewer::reload()
 void che_viewer::update()
 {
 	if(normalize) mesh->normalize();
-	
+
 	vertex pmin(INFINITY, INFINITY, INFINITY);
 	vertex pmax(0, 0, 0);
 
 	for(index_t v = 0; v < mesh->n_vertices; ++v)
 	{
 		const vertex & p = mesh->gt(v);
-		
+
 		pmin.x = min(pmin.x, p.x);
 		pmin.y = min(pmin.y, p.y);
 		pmin.z = min(pmin.z, p.z);
@@ -63,11 +63,11 @@ void che_viewer::update()
 		pmax.y = max(pmax.y, p.y);
 		pmax.z = max(pmax.z, p.z);
 	}
-	
+
 	translate(-(pmax + pmin) / 2);
-	
+
 	factor = mesh->mean_edge();
-	
+
 	mesh->update_normals();
 	mesh->update_heatmap();
 
@@ -98,7 +98,7 @@ void che_viewer::update_vbo()
 	glEnableVertexAttribArray(2);
 	glVertexAttribPointer(2, 3, GL_REAL, GL_FALSE, 0, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	
+
 	// 3 HEAT MAP COLOR
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[3]);
 	glBufferData(GL_ARRAY_BUFFER, mesh->n_vertices * sizeof(real_t), &mesh->heatmap(0), GL_STATIC_DRAW);
@@ -113,12 +113,12 @@ void che_viewer::update_vbo()
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh->n_half_edges * sizeof(index_t), &mesh->vt(0), GL_STATIC_DRAW);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	}
-	
+
 	glBindVertexArray(0);
 }
 
 void che_viewer::update_instances_translations(const vector<vertex> & translations)
-{	
+{
 	n_instances = translations.size();
 	if(!n_instances) return;
 
@@ -147,7 +147,7 @@ void che_viewer::draw(shader & program)
 		glDrawElementsInstanced(GL_TRIANGLES, mesh->n_half_edges, GL_UNSIGNED_INT, 0, n_instances);
 	else
 		glDrawElements(GL_TRIANGLES, mesh->n_half_edges, GL_UNSIGNED_INT, 0);
-	
+
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 
@@ -160,9 +160,9 @@ void che_viewer::draw_point_cloud(shader & program)
 
 	glBindVertexArray(vao);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
-	
+
 	glDrawArrays(GL_POINTS, 0, mesh->n_vertices);
-	
+
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 
@@ -189,14 +189,14 @@ void che_viewer::log_info()
 {
 	if(!mesh) return;
 
-	gproshan_log_var(mesh->filename());
+	gproshan_log_var(mesh->filename);
 	gproshan_log_var(mesh->n_vertices);
 	gproshan_log_var(mesh->n_faces);
 	gproshan_log_var(mesh->n_half_edges);
 	gproshan_log_var(mesh->n_edges);
 	gproshan_log_var(mesh->area_surface());
 	gproshan_log_var(mesh->is_manifold());
-	gproshan_log_var(mesh->n_borders);
+	gproshan_log_var(mesh->bounds().size());
 	gproshan_log_var(mesh->memory() / 1E6);
 	gproshan_log_var(mesh->quality());
 	gproshan_log_var(mesh->genus());

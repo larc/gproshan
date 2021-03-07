@@ -33,7 +33,7 @@ class raytracing
 		size_t width;
 		size_t height;
 		size_t n_samples;
-	
+
 	public:
 		glm::vec4 * img;
 
@@ -56,13 +56,13 @@ class raytracing
 									const index_t & samples = 4
 									);
 
-	
+
 	protected:
 		virtual glm::vec4 intersect_li(	const glm::vec3 & org,
 										const glm::vec3 & dir,
 										const glm::vec3 & light,
 										const bool & flat ) = 0;
-		
+
 		virtual float intersect_depth(	const glm::vec3 & org,
 										const glm::vec3 & dir ) = 0;
 };

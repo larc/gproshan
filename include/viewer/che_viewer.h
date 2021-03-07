@@ -31,7 +31,7 @@ class che_viewer
 
 		GLuint vao;
 		GLuint vbo[6];
-	
+
 	public:
 		int vx, vy;					///< viewport positions.
 		real_t factor;

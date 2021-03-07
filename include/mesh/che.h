@@ -8,7 +8,7 @@
 #include <string>
 
 #define for_star(he, mesh, v) for(index_t stop = mesh->evt(v), he = mesh->evt(v); he != NIL; he = (he = mesh->ot(prev(he))) != stop ? he : NIL)
-#define for_border(he, mesh, v) for(index_t stop = mesh->evt(v), he = mesh->evt(v); he != NIL; he = (he = mesh->evt(mesh->vt(next(he)))) != stop ? he : NIL)
+#define for_boundary(he, mesh, v) for(index_t stop = mesh->evt(v), he = mesh->evt(v); he != NIL; he = (he = mesh->evt(mesh->vt(next(he)))) != stop ? he : NIL)
 
 
 // geometry processing and shape analysis framework
@@ -36,19 +36,17 @@ class che
 		const size_t n_faces		= 0;
 		const size_t n_half_edges	= 0;
 		const size_t n_edges		= 0;
-		const size_t n_borders		= 0;
+
+		std::string filename;		///< get and set data member
 
 	protected:
-		std::string filename_;
-
 		vertex * GT		= nullptr;	///< geometry table			: v		-> vertex
 		index_t * VT	= nullptr;	///< vertex table (faces)	: he	-> v
 		index_t * OT	= nullptr;	///< opposite table			: he	-> he
 		index_t * EVT	= nullptr;	///< extra vertex table		: v		-> he
 		index_t * ET	= nullptr;	///< edge table				: e		-> he
 		index_t * EHT	= nullptr;	///< extra half edge table	: he	-> e
-		index_t * BT	= nullptr;	///< boundary table			: b 	-> v
-		
+
 		vertex * VN		= nullptr;	///< vertex normals			: v		-> normal(v)
 		vertex * VC		= nullptr;	///< vertex color			: v		-> color(v)
 		real_t * VHC	= nullptr;	///< vertex color heat map	: v		-> heatmap(v)
@@ -56,16 +54,17 @@ class che
 		bool manifold = true;
 
 	public:
+		che(const che & mesh);
 		che(const size_t & n_v = 0, const size_t & n_f = 0);
 		che(const vertex * vertices, const index_t & n_v, const index_t * faces, const index_t & n_f);
-		che(const che & mesh);		
 		virtual ~che();
-		
-		void star(star_t & s, const index_t & v);
-		void link(link_t & l, const index_t & v);
-		void border(std::vector<index_t> & border, const index_t & b);
-		bool is_border_v(const index_t & v) const;
-		bool is_border_e(const index_t & e) const;
+
+		void star(star_t & s, const index_t & v) const;
+		void link(link_t & l, const index_t & v) const;
+		std::vector<index_t> bounds() const;
+		std::vector<index_t> boundary(const index_t & v) const;
+		bool is_vertex_bound(const index_t & v) const;
+		bool is_edge_bound(const index_t & e) const;
 		void flip(const index_t & e);
 		real_t pdetriq(const index_t & t) const;
 		real_t quality();
@@ -112,8 +111,6 @@ class che
 		size_t max_degree() const;
 		vertex & get_vertex(index_t v);
 		void set_vertices(const vertex *const& positions, size_t n = 0, const index_t & v_i = 0);
-		void set_filename(const std::string & f);
-		const std::string & filename() const;
 		const std::string filename_size() const;
 		const std::string name() const;
 		const std::string name_size() const;
@@ -129,16 +126,15 @@ class che
 		corr_t find_corr(const vertex & v, const vertex & n, const std::vector<index_t> & triangles);
 
 	protected:
-		void delete_me();
 		void init(const vertex * vertices, const index_t & n_v, const index_t * faces, const index_t & n_f);
 		void init(const std::string & file);
-		void init(const size_t & n_v, const size_t & n_f);
+		void free();
+		void alloc(const size_t & n_v, const size_t & n_f);
 		virtual void read_file(const std::string & file);
 
 	private:
 		void update_evt_ot_et();
 		void update_eht();
-		void update_bt();
 
 	friend struct CHE;
 };

@@ -83,7 +83,7 @@ void laplacian(const che * mesh, sp_mat_e & L, sp_mat_e & A)
 size_t eigs_laplacian(const che * mesh, a_vec & eigval, a_mat & eigvec, a_sp_mat & L, a_sp_mat & A, const size_t & k)
 {
 	gproshan_debug(LAPLACIAN);
-	
+
 	laplacian(mesh, L, A);
 
 	string feigval = tmp_file_path(mesh->name_size() + '_' + to_string(k) + ".L_eigval");
@@ -99,7 +99,7 @@ size_t eigs_laplacian(const che * mesh, a_vec & eigval, a_mat & eigvec, a_sp_mat
 
 		if(!eigs_sym(eigval, eigvec, L, k, "sa"))
 			return 0;
-		
+
 		eigval.save(feigval);
 		eigvec.save(feigvec);
 	}

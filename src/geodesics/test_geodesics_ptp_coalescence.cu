@@ -28,7 +28,7 @@ vector<pair<index_t, real_t> > iter_error_parallel_toplesets_propagation_coalesc
 	index_t * F = new index_t[mesh->n_faces * che::mtrig];
 	index_t * inv = new index_t[mesh->n_vertices];
 	real_t * exact_dist_sorted = new real_t[mesh->n_vertices];
-	
+
 	#pragma omp parallel for
 	for(index_t i = 0; i < mesh->n_vertices; ++i)
 	{
@@ -49,13 +49,13 @@ vector<pair<index_t, real_t> > iter_error_parallel_toplesets_propagation_coalesc
 	// ------------------------------------------------------
 
 	cudaDeviceReset();
-	
+
 	float time;
 	cudaEvent_t start, stop;
 	cudaEventCreate(&start);
 	cudaEventCreate(&stop);
 	cudaEventRecord(start, 0);
-	
+
 	// BEGIN PTP
 
 	CHE * h_mesh = new CHE(mesh);
@@ -72,7 +72,7 @@ vector<pair<index_t, real_t> > iter_error_parallel_toplesets_propagation_coalesc
 	cudaMalloc(&d_error, sizeof(real_t) * h_mesh->n_vertices);
 
 	vector<pair<index_t, real_t> > iter_error = iter_error_run_ptp_coalescence_gpu(d_mesh, h_mesh->n_vertices, h_dist, d_dist, sources, limits, inv, exact_dist_sorted, d_error);
-	
+
 	delete [] h_dist;
 	cudaFree(d_error);
 	cudaFree(d_dist[0]);
@@ -80,7 +80,7 @@ vector<pair<index_t, real_t> > iter_error_parallel_toplesets_propagation_coalesc
 	cuda_free_CHE(dd_mesh, d_mesh);
 
 	// END PTP
-	
+
 	cudaEventRecord(stop, 0);
 	cudaEventSynchronize(stop);
 	cudaEventElapsedTime(&time, start, stop);
@@ -105,7 +105,7 @@ double * times_farthest_point_sampling_ptp_coalescence_gpu(che * mesh, vector<in
 	cudaEventCreate(&stop);
 
 	// BEGIN FPS PTP
-	
+
 	vertex * V = new vertex[mesh->n_vertices];
 	index_t * F = new index_t[mesh->n_faces * che::mtrig];
 	index_t * inv = new index_t[mesh->n_vertices];
@@ -141,12 +141,12 @@ double * times_farthest_point_sampling_ptp_coalescence_gpu(che * mesh, vector<in
 	while(n-- && max_dist > radio)
 	{
 		cudaEventRecord(start, 0);
-		
+
 		limits.clear();
 		mesh->compute_toplesets(toplesets, sorted_index, limits, samples);
-		
+
 		// sort data by levels, must be improve the coalescence
-	
+
 		#pragma omp parallel for
 		for(index_t i = 0; i < mesh->n_vertices; ++i)
 		{
@@ -177,7 +177,7 @@ double * times_farthest_point_sampling_ptp_coalescence_gpu(che * mesh, vector<in
 		#else
 			cublasIdamax(handle, mesh->n_vertices, d_dist[d], 1, &f);
 		#endif
-		
+
 		cudaEventRecord(stop, 0);
 		cudaEventSynchronize(stop);
 		cudaEventElapsedTime(&time_fps, start, stop);
@@ -186,12 +186,12 @@ double * times_farthest_point_sampling_ptp_coalescence_gpu(che * mesh, vector<in
 
 		if(radio > 0 || !n)
 			cudaMemcpy(&max_dist, d_dist[d] + f - 1, sizeof(real_t), cudaMemcpyDeviceToHost);
-		
+
 		samples.push_back(sorted_index[f - 1]);
 	}
 
 	cublasDestroy(handle);
-	
+
 	delete [] V;
 	delete [] F;
 	delete [] inv;
@@ -227,7 +227,7 @@ vector<pair<index_t, real_t> > iter_error_run_ptp_coalescence_gpu(CHE * d_mesh, 
 	iter_error.reserve(limits.size());
 
 	ofstream os("band");
-	
+
 	index_t d = 0;
 	index_t start, end, n_cond;
 	index_t i = 1, j = 2;
@@ -252,11 +252,11 @@ vector<pair<index_t, real_t> > iter_error_run_ptp_coalescence_gpu(CHE * d_mesh, 
 
 		relative_error <<< NB(n_cond), NT >>> (d_error, d_dist[!d], d_dist[d], start, start + n_cond);
 		cudaDeviceSynchronize();
-		
+
 		if(n_cond == thrust::count_if(thrust::device, d_error + start, d_error + start + n_cond, is_ok()))
 			++i;
-		if(j < limits.size() - 1) ++j;	
-		
+		if(j < limits.size() - 1) ++j;
+
 		d = !d;
 	}
 

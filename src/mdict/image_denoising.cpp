@@ -18,7 +18,7 @@ void test_image_denoising(const string & file)
 
 	size_t p = 8;							// square side of each patche
 	size_t rows = image.width() - p + 1;
-	size_t cols = image.height() - p + 1;	
+	size_t cols = image.height() - p + 1;
 	size_t n = p * p;						// size of each patche
 	size_t m = 256;							// number of atoms
 	size_t M = rows * cols;					// number of patches
@@ -37,12 +37,12 @@ void test_image_denoising(const string & file)
 		for(index_t a = x; a < x + p; ++a)
 			X(k++, i) = image(a, b);
 	}
-	
+
 	a_mat D(n, m, arma::fill::randu);
 	D = normalise(D);
 
 	a_mat spD = D;
-	
+
 	CImg<real_t> imdict;
 	for(index_t i = 0; i < 16; ++i)
 	{
@@ -61,17 +61,17 @@ void test_image_denoising(const string & file)
 	TIC(time)
 	KSVD(D, X, L, K);
 	TOC(time)
-	
+
 	gproshan_log_var(time);
-	
+
 	TIC(time)
 	sp_KSVD(spD, X, L, K);
 	TOC(time)
-	
+
 	gproshan_log_var(time);
 
 	gproshan_log_var(norm(D - spD));
-	
+
 	CImg<real_t> imdictlearned;
 	for(index_t i = 0; i < 16; ++i)
 	{
@@ -89,14 +89,14 @@ void test_image_denoising(const string & file)
 	TIC(time)
 	a_mat Y = D * OMP_all(X, D, L);
 	TOC(time)
-	
+
 	gproshan_log_var(time);
-	
+
 	TIC(time)
 	vector<locval_t> locval;
 	a_mat spY = D * OMP_all(locval, X, D, L);
 	TOC(time)
-	
+
 	gproshan_log_var(time);
 
 	gproshan_log_var(norm(Y - spY));

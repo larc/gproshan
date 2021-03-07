@@ -47,7 +47,7 @@ vector<pair<index_t, real_t> > iter_error_parallel_toplesets_propagation_gpu(che
 	cudaMalloc(&d_error, sizeof(real_t) * h_mesh->n_vertices);
 
 	vector<pair<index_t, real_t> > iter_error = iter_error_run_ptp_gpu(d_mesh, h_mesh->n_vertices, h_dist, d_dist, sources, limits, sorted_index, d_sorted, exact_dist, d_error);
-	
+
 	delete [] h_dist;
 	cudaFree(d_error);
 	cudaFree(d_dist[0]);
@@ -64,7 +64,7 @@ vector<pair<index_t, real_t> > iter_error_parallel_toplesets_propagation_gpu(che
 
 	cudaEventDestroy(start);
 	cudaEventDestroy(stop);
-	
+
 	return iter_error;
 }
 
@@ -116,7 +116,7 @@ double * times_farthest_point_sampling_ptp_gpu(che * mesh, vector<index_t> & sam
 	while(n-- && max_dist > radio)
 	{
 		cudaEventRecord(start, 0);
-		
+
 		limits.clear();
 		mesh->compute_toplesets(toplesets, sorted_index, limits, samples);
 
@@ -128,7 +128,7 @@ double * times_farthest_point_sampling_ptp_gpu(che * mesh, vector<index_t> & sam
 		#else
 			cublasIdamax(handle, mesh->n_vertices, d_dist[d], 1, &f);
 		#endif
-		
+
 		cudaEventRecord(stop, 0);
 		cudaEventSynchronize(stop);
 		cudaEventElapsedTime(&time_fps, start, stop);
@@ -146,7 +146,7 @@ double * times_farthest_point_sampling_ptp_gpu(che * mesh, vector<index_t> & sam
 	delete [] h_dist;
 	delete [] toplesets;
 	delete [] sorted_index;
-	
+
 	cudaFree(d_error);
 	cudaFree(d_dist[0]);
 	cudaFree(d_dist[1]);
@@ -175,8 +175,8 @@ vector<pair<index_t, real_t> > iter_error_run_ptp_gpu(CHE * d_mesh, const index_
 	cudaMemcpy(d_sorted, h_sorted, sizeof(index_t) * n_vertices, cudaMemcpyHostToDevice);
 
 	vector<pair<index_t, real_t> > iter_error;
-	iter_error.reserve(limits.size());	
-	
+	iter_error.reserve(limits.size());
+
 	index_t d = 0;
 	index_t start, end, n_cond;
 	index_t i = 1, j = 2;
@@ -190,23 +190,23 @@ vector<pair<index_t, real_t> > iter_error_run_ptp_gpu(CHE * d_mesh, const index_
 		n_cond = limits[i + 1] - start;
 
 		relax_ptp <<< NB(end - start), NT >>> (d_mesh, d_dist[!d], d_dist[d], d_sorted, end, start);
-			
+
 		// begin calculating iteration error
 		cudaMemcpy(h_dist, d_dist[!d], sizeof(real_t) * n_vertices, cudaMemcpyDeviceToHost);
 		if(j == limits.size() - 1)
 			iter_error.push_back(make_pair(n_iter, compute_error(h_dist, exact_dist, n_vertices, sources.size())));
 		// end
-		
+
 		relative_error <<< NB(n_cond), NT >>> (d_error, d_dist[!d], d_dist[d], start, start + n_cond, d_sorted);
 		cudaDeviceSynchronize();
-		
+
 		if(n_cond == thrust::count_if(thrust::device, d_error + start, d_error + start + n_cond, is_ok()))
 			++i;
 		if(j < limits.size() - 1) ++j;
-		
+
 		d = !d;
 	}
-	
+
 	return iter_error;
 }
 

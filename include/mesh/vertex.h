@@ -26,11 +26,11 @@ class vertex
 
 		real_t & operator [] (const index_t & i);
 		const real_t & operator [] (const index_t & i) const;
-		
+
 		vertex unit() const;
 		real_t operator * () const;						// norm
 		real_t operator , (const vertex & v) const;		// dot product
-		
+
 		vertex operator * (const vertex & v) const;		// cross product
 		vertex operator / (const real_t & v) const;		// scalar division
 		vertex operator + (const vertex & v) const;
@@ -40,8 +40,8 @@ class vertex
 		void operator *= (const real_t & v);			// scalar produc
 		void operator /= (const real_t & v);
 		void operator += (const vertex & v);
-		void operator -= (const vertex & v);		
-		
+		void operator -= (const vertex & v);
+
 		bool operator < (const vertex & v);
 		bool operator == (const vertex & v);
 

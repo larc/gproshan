@@ -40,7 +40,7 @@ class msparse_coding
 
 		a_mat A;								///< dictionary continuous matrix.
 		a_mat alpha;							///< sparse coding matrix.
-		
+
 		real_t s_radio;							///< sampling geodesic radio.
 		std::vector<index_t> sampling;			///< samples, center of patches if sampling.
 		std::vector<patch> patches;				///< vector of patches.
@@ -49,15 +49,15 @@ class msparse_coding
 
 		double d_time;							///< time of operations.
 		real_t * dist;
-		
+
 		bool * mask = nullptr;
 		std::string key_name;
-	
+
 	public:
 		static size_t K;						///< number of iterations KSVD.
 		static size_t L;						///< sparsity, norm L_0, default 10.
 		static size_t T;						///< factor of patches' size, default 5 toplesets.
-	
+
 	public:
 		msparse_coding(	che *const & _mesh, 		///< pointer to input mesh.
 						basis *const &_phi_basis,	///< pointer to continuous basis.
@@ -65,7 +65,7 @@ class msparse_coding
 						);
 
 		virtual ~msparse_coding();
-		
+
 		const real_t & operator[](const index_t & i) const;
 		const index_t & draw_patches(const index_t & p);
 
@@ -95,7 +95,7 @@ class msparse_coding
 		void update_alphas(a_mat & alpha, size_t threshold);
 		void save_alpha(string file);
 
-		index_t sample(const index_t & s);	
+		index_t sample(const index_t & s);
 };
 
 

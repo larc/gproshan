@@ -30,10 +30,10 @@ class camera
 		void zoom_in();
 		void zoom_out();
 		quaternion current_rotation() const;
-	
+
 	private:
 		quaternion click_to_sphere(int x, int y, int w, int h);
-	
+
 	friend std::ostream & operator << (std::ostream & os, const camera & cam);
 	friend std::istream & operator >> (std::istream & is, camera & cam);
 };

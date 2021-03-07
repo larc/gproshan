@@ -33,7 +33,7 @@ bool raytracing::rt_restart(const size_t & w, const size_t & h)
 
 		return true;
 	}
-	
+
 	if(width != w || height != h)
 	{
 		width = w;
@@ -77,7 +77,7 @@ void raytracing::pathtracing(	const glm::uvec2 & windows_size,
 	{
 		//row major
 		glm::vec4 & color = img[j * width + i];
-		
+
 		glm::vec2 screen = glm::vec2(	(float(i) + randf(gen)) / width,
 										(float(j) + randf(gen)) / height
 										);
@@ -102,7 +102,7 @@ float * raytracing::raycaster(	const glm::uvec2 & windows_size,
 								const index_t & samples	)
 {
 	float * frame = new float[windows_size.x * windows_size.y];
-	
+
 	std::default_random_engine gen;
 	std::uniform_real_distribution<float> randf(0.f, 1.f);
 
@@ -115,7 +115,7 @@ float * raytracing::raycaster(	const glm::uvec2 & windows_size,
 	{
 		//row major
 		float & color = frame[(windows_size.y - j - 1) * windows_size.x + i] = 0;
-		
+
 		for(index_t s = 0; s < samples; ++s)
 		{
 			glm::vec2 screen = glm::vec2(	(float(i) + randf(gen)) / windows_size.x,

@@ -33,19 +33,19 @@ void che_ptx::read_file(const string & file)
 	float T[12], R[12], tr[4];
 
 	fscanf(fp, "%lu %lu", &n_rows, &n_cols);
-	
+
 	for(index_t i = 0; i < 12; ++i)
 		fscanf(fp, "%f", T + i);
 
 	for(index_t i = 0; i < 12; ++i)
 		fscanf(fp, "%f", R + i);
-	
+
 	for(index_t i = 0; i < 4; ++i)
 		fscanf(fp, "%f", tr + i);
-	
 
-	init(n_rows * n_cols, 2 * (n_rows - 1) * (n_cols - 1));
-	
+
+	alloc(n_rows * n_cols, 2 * (n_rows - 1) * (n_cols - 1));
+
 	float x, y, z, a, r, g, b;
 	char line[128];
 
@@ -55,7 +55,7 @@ void che_ptx::read_file(const string & file)
 	fgets(line, sizeof(line), fp);
 	fgets(line, sizeof(line), fp);
 	rgb = sscanf(line, "%f %f %f %f %f %f %f", &x, &y, &z, &a, &r, &g, &b) == 7;
-	
+
 	if(rgb)
 	{
 		GT[0] = { x, y, z };
@@ -91,11 +91,11 @@ void che_ptx::read_file(const string & file)
 	{
 		if(GT[i].is_zero() || GT[j].is_zero() || GT[k].is_zero())
 			return;
-		
+
 		VT[he++] = i;
 		VT[he++] = j;
 		VT[he++] = k;
-		
+
 		if(pdetriq(trig(he - 1)) < 0.1)
 			he -= 3;
 	};
@@ -106,7 +106,7 @@ void che_ptx::read_file(const string & file)
 		add_trig((c    ) + (r    ) * n_cols,
 				 (c    ) + (r + 1) * n_cols,
 				 (c + 1) + (r    ) * n_cols);
-		
+
 		add_trig((c + 1) + (r + 1) * n_cols,
 				 (c + 1) + (r    ) * n_cols,
 				 (c    ) + (r + 1) * n_cols);
@@ -117,7 +117,7 @@ void che_ptx::read_file(const string & file)
 
 	#pragma omp parallel for
 	for(index_t i = 0; i < n_vertices; ++i)
-		VC[i] /= 255;	
+		VC[i] /= 255;
 }
 
 void che_ptx::write_file(const che * mesh, const string & file)

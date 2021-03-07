@@ -16,11 +16,11 @@ ptp_out_t::ptp_out_t(real_t *const & d, index_t *const & c): dist(d), clusters(c
 che * ptp_coalescence(index_t * & inv, const che * mesh, const toplesets_t & toplesets)
 {
 	// sort data by levels, must be improve the coalescence
-	
+
 	vector<vertex> V(toplesets.limits.back());
 	vector<index_t> F;
 	F.reserve(mesh->n_half_edges);
-	
+
 	inv = !inv ? new index_t[mesh->n_vertices] : inv;
 	memset(inv, -1, sizeof(index_t) * mesh->n_vertices);
 
@@ -34,7 +34,7 @@ che * ptp_coalescence(index_t * & inv, const che * mesh, const toplesets_t & top
 	for(index_t he = 0; he < mesh->n_half_edges; ++he)
 		if(inv[mesh->vt(he)] != NIL && inv[mesh->vt(prev(he))] != NIL && inv[mesh->vt(next(he))] != NIL)
 			F.push_back(inv[mesh->vt(he)]);
-	
+
 	return new che(V.data(), toplesets.limits.back(), F.data(), F.size() / che::mtrig);
 }
 
@@ -62,7 +62,7 @@ void parallel_toplesets_propagation_coalescence_cpu(const ptp_out_t & ptp_out, c
 	index_t d = 0;
 	index_t start, end, n_cond, count;
 	index_t i = 1, j = 2;
-	
+
 	// maximum number of iterations
 	index_t iter = 0;
 	index_t max_iter = toplesets.limits.size() << 1;
@@ -74,7 +74,7 @@ void parallel_toplesets_propagation_coalescence_cpu(const ptp_out_t & ptp_out, c
 		start = toplesets.limits[i];
 		end = toplesets.limits[j];
 		n_cond = toplesets.limits[i + 1] - start;
-		
+
 		#pragma omp parallel for
 		for(index_t v = start; v < end; ++v)
 		{
@@ -108,11 +108,11 @@ void parallel_toplesets_propagation_coalescence_cpu(const ptp_out_t & ptp_out, c
 
 		d = !d;
 	}
-	
+
 	#pragma omp parallel for
 	for(index_t v = 0; v < n_vertices; ++v)
 		ptp_out.dist[v] = inv[v] != NIL ? pdist[!d][inv[v]] : INFINITY;
-	
+
 	delete [] error;
 	delete [] pdist[0];
 	delete [] pdist[1];
@@ -138,7 +138,7 @@ void parallel_toplesets_propagation_cpu(const ptp_out_t & ptp_out, che * mesh, c
 	index_t d = 0;
 	index_t start, end, n_cond, count;
 	index_t i = 1, j = 2;
-	
+
 	// maximum number of iterations
 	index_t iter = 0;
 	index_t max_iter = toplesets.limits.size() << 1;
@@ -150,7 +150,7 @@ void parallel_toplesets_propagation_cpu(const ptp_out_t & ptp_out, che * mesh, c
 		start = toplesets.limits[i];
 		end = toplesets.limits[j];
 		n_cond = toplesets.limits[i + 1] - start;
-		
+
 		#pragma omp parallel for
 		for(index_t vi = start; vi < end; ++vi)
 		{
@@ -188,9 +188,9 @@ void parallel_toplesets_propagation_cpu(const ptp_out_t & ptp_out, che * mesh, c
 
 		d = !d;
 	}
-	
+
 	delete [] error;
-	
+
 	if(ptp_out.dist != pdist[!d])
 	{
 		memcpy(ptp_out.dist, pdist[!d], mesh->n_vertices * sizeof(real_t));

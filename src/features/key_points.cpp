@@ -17,7 +17,7 @@ key_points::key_points(che * mesh, const real_t & percent)
 	n_vertices = mesh->n_vertices;
 
 	face_areas = new real_idx_t[n_faces];
-	
+
 	kps = new index_t[n_vertices];
 	is_kp = new bool[n_vertices];
 
@@ -61,7 +61,7 @@ void key_points::compute_kps(che * mesh)
 	}
 
 	sort(face_areas, face_areas + n_faces);
-	
+
 	// compute kps
 	memset(is_kp, 0, sizeof(bool) * n_vertices);
 
@@ -80,7 +80,7 @@ void key_points::compute_kps(che * mesh)
 			he = next(he);
 		}
 	}
-	
+
 	// compute kps
 	memset(is_kp, 0, sizeof(bool) * n_vertices);
 

@@ -79,16 +79,16 @@ void sp_KSVD(a_mat & D, const a_mat & X, const size_t & L, size_t k)
 	while(k--)
 	{
 		a_sp_mat alpha = OMP_all(locval, X, D, L);
-		
+
 		sort(locval.begin(), locval.end());
 
 		rows.push_back(0);
 		for(index_t k = 1; k < locval.size(); ++k)
 			if(locval[k].i != locval[k - 1].i)
 				rows.push_back(k);
-		
+
 		rows.push_back(locval.size());
-		
+
 		R = X - D * alpha;
 
 		#pragma omp parallel for firstprivate(omega, E, U, V, s)
@@ -116,16 +116,16 @@ void sp_KSVD(a_mat & D, const a_mat & X, const size_t & L, size_t k)
 tuple<a_vec, arma::uvec> _OMP(const a_vec & x, const a_mat & D, const size_t & L)
 {
 	arma::uvec selected_atoms(L);
-	real_t threshold = norm(x) * sigma;	
+	real_t threshold = norm(x) * sigma;
 
 	a_mat DD;
 	a_vec aa, r = x;
-	
+
 	index_t l = 0;
 	while(norm(r) > threshold && l < L)
 	{
 		selected_atoms(l) = index_max(abs(D.t() * r));
-		
+
 		DD = D.cols(selected_atoms.head(l + 1));
 		aa = pinv(DD) * x;
 		r = x - DD * aa;
@@ -140,7 +140,7 @@ arma::uword max_index(const a_vec & V,const arma::uchar_vec & mask)
 
 	for(size_t i=0; i< V.size(); ++i)
 		if(mask[indices[i]]) return indices[i];
-	
+
 	return NIL;
 }
 
@@ -148,17 +148,17 @@ tuple<a_vec, arma::uvec> _OMP(const a_vec & x, const a_mat & D, const size_t & L
 {
 
 	arma::uvec selected_atoms(L);
-	real_t threshold = norm(x) * sigma;	
+	real_t threshold = norm(x) * sigma;
 
 	a_mat DD;
-	a_vec aa, r = x;	
-	
+	a_vec aa, r = x;
+
 	index_t l = 0;
 	while(norm(r) > threshold && l < L)
 	{
 	//	gproshan_debug_var(D.t() * r);
 		selected_atoms(l) = max_index(abs(D.t() * r), mask);
-		
+
 		DD = D.cols(selected_atoms.head(l + 1));
 		aa = pinv(DD) * x;
 		r = x - DD * aa;
@@ -199,7 +199,7 @@ a_mat OMP_all(const a_mat & X, const a_mat & D, const size_t & L)
 	{
 		alpha.col(i) = OMP(X.col(i), D, L);
 	}
-		
+
 	return alpha;
 }
 
@@ -241,10 +241,10 @@ a_vec OMP(const patch & p, const a_mat & A, const size_t & L)
 a_vec OMP(const patch & p, basis * phi_basis, const a_mat & A, const size_t & L)
 {
 	arma::uchar_vec mask(A.n_cols);
-	
+
 	for(index_t i = 0; i < A.n_cols; ++i)
 		mask(i) = phi_basis->freq(i) >= patch::nyquist_factor * p.avg_dist;		 // 2.5* if it ismin
-	
+
 	return OMP(p.xyz.row(2).t(), p.phi * A, L, mask);
 }
 
@@ -255,7 +255,7 @@ a_mat OMP_all(const vector<patch> & patches, basis * phi_basis, const a_mat & A,
 	#pragma omp parallel for
 	for(index_t i = 0; i < patches.size(); ++i)
 		alpha.col(i) = OMP(patches[i],phi_basis, A, L);
-		
+
 	return alpha;
 }
 
@@ -266,7 +266,7 @@ a_mat OMP_all(const vector<patch> & patches, const a_mat & A, const size_t & L)
 	#pragma omp parallel for
 	for(index_t i = 0; i < patches.size(); ++i)
 		alpha.col(i) = OMP(patches[i], A, L);
-	
+
 	return alpha;
 }
 
@@ -279,7 +279,7 @@ void KSVD(a_mat & A, const vector<patch> & patches, const size_t & L, size_t k)
 	a_mat new_A = A;
 	a_mat alpha, D, sum, sum_error;
 	a_vec a, e;
-	
+
 	real_t aj;
 
 	while(k--)
@@ -308,7 +308,7 @@ void KSVD(a_mat & A, const vector<patch> & patches, const size_t & L, size_t k)
 				sum_error += aj * patches[i].phi.t() * e;
 				//concat e patches[i].phi.t() * e;
 				//apply svd to update the atom
-				
+
 			}
 
 			if(omega.size())
@@ -356,9 +356,9 @@ void sp_KSVD(a_mat & A, const vector<patch> & patches, const size_t & L, size_t 
 	a_mat new_A = A;
 	a_mat D, sum, sum_error;
 	a_vec a, e;
-	
+
 	real_t aj;
-	
+
 	vector<locval_t> locval;
 	vector<size_t> rows;
 	rows.reserve(A.n_cols + 1);
@@ -366,14 +366,14 @@ void sp_KSVD(a_mat & A, const vector<patch> & patches, const size_t & L, size_t 
 	while(k--)
 	{
 		a_sp_mat alpha = OMP_all(locval, patches, A, L);
-		
+
 		sort(locval.begin(), locval.end());
 
 		rows.push_back(0);
 		for(index_t k = 1; k < locval.size(); ++k)
 			if(locval[k].i != locval[k - 1].i)
 				rows.push_back(k);
-		
+
 		rows.push_back(locval.size());
 
 		#pragma omp parallel for private(a, aj, D, e, sum, sum_error)

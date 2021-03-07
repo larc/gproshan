@@ -23,7 +23,7 @@ void optix_log(unsigned int level, const char * tag, const char * message, void 
 optix::optix(const std::vector<che *> & meshes)
 {
 	optixInit();
-	
+
 	// create context
 	cudaStreamCreate(&stream);
 
@@ -54,11 +54,11 @@ optix::optix(const std::vector<che *> & meshes)
 	optix_pipeline_compile_opt.pipelineLaunchParamsVariableName = "optix_launch_params";
 
 	optix_pipeline_link_opt.maxTraceDepth		= 2;
-	
+
 	std::ifstream ptx_is("rt_optix.ptx");
 	const std::string str_ptx_code = std::string(std::istreambuf_iterator<char>(ptx_is), std::istreambuf_iterator<char>());
 	ptx_is.close();
-	
+
 	optixModuleCreateFromPTX(	optix_context,
 								&optix_module_compile_opt,
 								&optix_pipeline_compile_opt,
@@ -88,7 +88,7 @@ optix::~optix()
 OptixTraversableHandle optix::build_as(const std::vector<che *> & meshes)
 {
 	OptixTraversableHandle optix_as_handle = {};
-	
+
 	std::vector<OptixBuildInput> optix_meshes(meshes.size());
 	std::vector<uint32_t> optix_trig_flags(meshes.size());
 
@@ -107,7 +107,7 @@ OptixTraversableHandle optix::build_as(const std::vector<che *> & meshes)
 									optix_meshes.size(),
 									&optix_gas_buffer_size
 									);
-	
+
 	void * d_compacted_size;
 	cudaMalloc(&d_compacted_size, sizeof(uint64_t));
 
@@ -117,10 +117,10 @@ OptixTraversableHandle optix::build_as(const std::vector<che *> & meshes)
 
 	void * d_temp_buffer;
 	cudaMalloc(&d_temp_buffer, optix_gas_buffer_size.tempSizeInBytes);
-	
+
 	void * d_output_buffer;
 	cudaMalloc(&d_output_buffer, optix_gas_buffer_size.outputSizeInBytes);
-	
+
 	optixAccelBuild(	optix_context,
 						0,	// stream
 						&optix_accel_opt,
@@ -134,7 +134,7 @@ OptixTraversableHandle optix::build_as(const std::vector<che *> & meshes)
 						&optix_emit_desc,
 						1
 						);
-	
+
 	cudaDeviceSynchronize();
 
 gproshan_error_var(optix_gas_buffer_size.tempSizeInBytes);
@@ -162,7 +162,7 @@ gproshan_error_var(compacted_size);
 	cudaFree(d_output_buffer);
 	cudaFree(d_temp_buffer);
 	cudaFree(d_compacted_size);
-	
+
 	return optix_as_handle;
 }
 
@@ -178,16 +178,16 @@ void optix::add_mesh(OptixBuildInput & optix_mesh, uint32_t & optix_trig_flags, 
 #else
 	glm::vec3 * vertices = new glm::vec3[mesh->n_vertices];
 	cudaMalloc(&d_vertex, mesh->n_vertices * sizeof(float) * 3);
-	
+
 	#pragma omp parallel for
 	for(index_t i = 0; i < mesh->n_vertices; ++i)
 		vertices[i] = glm::vec3(mesh->gt(i).x, mesh->gt(i).y, mesh->gt(i).z);
-	
+
 	cudaMemcpy(d_vertex, vertices, mesh->n_vertices * sizeof(vertex), cudaMemcpyHostToDevice);
 
 	delete [] vertices;
 #endif // SINGLE_P
-	
+
 	cudaMalloc(&d_index, mesh->n_half_edges * sizeof(index_t));
 	cudaMemcpy(d_index, &mesh->vt(0), mesh->n_half_edges * sizeof(index_t), cudaMemcpyHostToDevice);
 
@@ -205,7 +205,7 @@ void optix::add_mesh(OptixBuildInput & optix_mesh, uint32_t & optix_trig_flags, 
 	optix_mesh.triangleArray.indexBuffer			= (CUdeviceptr) d_index;
 
 	optix_trig_flags = 0;
-	
+
 	optix_mesh.triangleArray.flags							= &optix_trig_flags;
 	optix_mesh.triangleArray.numSbtRecords					= 1;
 	optix_mesh.triangleArray.sbtIndexOffsetBuffer			= 0;

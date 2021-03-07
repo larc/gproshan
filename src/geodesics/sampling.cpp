@@ -17,10 +17,10 @@ index_t ** sampling_shape(vector<index_t> & points, size_t *& sizes, vertex *& n
 	normals = new vertex[n_points];
 	sizes = new size_t[n_points];
 	index_t ** indexes = new index_t * [n_points];
-	
+
 	geodesics::params params;
 	params.radio = radio;
-	
+
 	#pragma omp parallel for
 	for(index_t i = 0; i < n_points; ++i)
 	{
@@ -40,7 +40,7 @@ index_t ** sampling_shape(vector<index_t> & points, size_t *& sizes, vertex *& n
 
 bool load_sampling(vector<index_t> & points, real_t & radio, che * mesh, size_t n)
 {
-	const string & filename = mesh->filename();
+	const string & filename = mesh->filename;
 
 	string file = filename.substr(filename.find_last_of('/'), filename.size() - filename.find_last_of('/')) + "." + to_string(n);
 

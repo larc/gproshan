@@ -265,8 +265,11 @@ vector<index_t> * fill_all_holes(che * mesh, const size_t & max_iter)
 	tie(border_vertices, holes) = fill_all_holes_meshes(mesh, max_iter);
 	if(holes)
 	{
+		// FIX_BOUND
+		/*
 		for(index_t b = 0; b < mesh->n_borders; ++b)
 			if(holes[b]) delete holes[b];
+		*/
 	}
 	delete [] holes;
 	return border_vertices;
@@ -277,7 +280,9 @@ tuple<vector<index_t> *, che **> fill_all_holes_meshes(che * mesh, const size_t 
 	vector<index_t> * border_vertices = nullptr;
 	che ** holes = nullptr;
 
-	const size_t n_borders = mesh->n_borders;
+	vector<index_t> bounds = mesh->bounds();
+	const size_t n_borders = bounds.size();
+
 	if(!n_borders) return make_tuple(border_vertices, holes);
 
 	border_vertices = new vector<index_t>[n_borders];
@@ -286,7 +291,7 @@ tuple<vector<index_t> *, che **> fill_all_holes_meshes(che * mesh, const size_t 
 	gproshan_debug(inpainting);
 
 	for(index_t b = 0; b < n_borders; ++b)
-		mesh->border(border_vertices[b], b);
+		border_vertices[b] = mesh->boundary(bounds[b]);
 
 	gproshan_debug(inpainting);
 	for(index_t b = 0; b < n_borders; ++b)
@@ -311,7 +316,6 @@ tuple<vector<index_t> *, che **> fill_all_holes_meshes(che * mesh, const size_t 
 		}
 
 
-	gproshan_debug_var(mesh->n_borders);
 	return make_tuple(border_vertices, holes);
 }
 
@@ -802,7 +806,7 @@ che * fill_hole_front_angles(vector<vertex> & vertices, const real_t & length, c
 			return fill_hole_front_angles(vertices, length, -normal, max_iter, !is_grow);
 		else return nullptr;
 	}
-	
+
 	vertices.clear();
 	vertices.reserve(tmp_vertices.size());
 

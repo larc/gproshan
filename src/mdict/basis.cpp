@@ -40,7 +40,7 @@ void basis::plot_basis()
 	os.close();
 
 	file = "gnuplot -persist " + file + " &";
-	
+
 	system(file.c_str());
 }
 
