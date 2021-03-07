@@ -1406,15 +1406,7 @@ void che::update_evt_ot_et()
 	memset(EVT, -1, sizeof(index_t) * n_vertices);
 	memset(OT, -1, sizeof(index_t) * n_half_edges);
 
-	map<index_t, index_t> * ot_he = new map<index_t, index_t>[n_vertices];
-	for(index_t he = 0; he < n_half_edges; ++he)
-	{
-		const index_t & u = VT[he];
-		const index_t & v = VT[next(he)];
-
-		EVT[u] = he;
-		ot_he[u][v] = he + 1;
-	}
+	map<index_t, index_t> * medges = new map<index_t, index_t>[n_vertices];
 	
 	size_t ne = 0;
 	for(index_t he = 0; he < n_half_edges; ++he)
@@ -1422,20 +1414,24 @@ void che::update_evt_ot_et()
 		const index_t & u = VT[he];
 		const index_t & v = VT[next(he)];
 		
-		if(OT[he] == NIL)
+		EVT[u] = he;
+		
+		index_t & mhe = u < v ? medges[u][v] : medges[v][u];
+		if(!mhe)
 		{
 			ET[ne++] = he;
-
-			OT[he] = ot_he[v][u] - 1;
-			if(OT[he] != NIL)
-				OT[OT[he]] = he;
+			mhe = he + 1;
+		}
+		else
+		{
+			OT[he] = mhe - 1;
+			OT[OT[he]] = he;
 		}
 	}
 	
-	delete [] ot_he;
+	rw(n_edges) = ne;
 	
-	rw(n_edges) = ne;		
-	
+	delete [] medges;
 
 	// non manifold two disk
 	//for(index_t he = 0; he < n_half_edges; ++he)
