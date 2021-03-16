@@ -58,6 +58,14 @@ int app_viewer::main(int nargs, const char ** args)
 
 void app_viewer::init()
 {
+	sub_menus.push_back("Geometry");
+	add_process(GLFW_KEY_H, {"H", "Convex Hull", process_convex_hull});
+	add_process(GLFW_KEY_K, {"K", "Gaussian curvature", process_gaussian_curvature});
+	add_process(GLFW_KEY_9, {"9", "Edge Collapse", process_edge_collapse});
+	add_process(GLFW_KEY_M, {"M", "Multiplicate", process_multiplicate_vertices});
+	add_process(GLFW_KEY_DELETE, {"DELETE", "Delete vertices", process_delete_vertices});
+	add_process(GLFW_KEY_MINUS, {"MINUS", "Delete non-manifold vertices", process_delete_non_manifold_vertices});
+	
 	sub_menus.push_back("Fairing");
 	add_process(GLFW_KEY_T, {"T", "Fairing Taubin", process_fairing_taubin});
 	add_process(GLFW_KEY_E, {"E", "Fairing Spectral", process_fairing_spectral});
@@ -66,7 +74,6 @@ void app_viewer::init()
 	add_process(GLFW_KEY_F, {"F", "Fast Marching", process_geodesics_fm});
 	add_process(GLFW_KEY_C, {"C", "Parallel Toplesets Propagation CPU", process_geodesics_ptp_cpu});
 	add_process(GLFW_KEY_L, {"L", "Heat Method", process_geodesics_heat_method});
-
 #ifdef GPROSHAN_CUDA
 	add_process(GLFW_KEY_G, {"G", "Parallel Toplesets Propagation GPU", process_geodesics_ptp_gpu});
 	add_process(GLFW_KEY_Q, {"Q", "Heat Method GPU", process_geodesics_heat_method_gpu});
@@ -75,7 +82,7 @@ void app_viewer::init()
 	add_process(GLFW_KEY_S, {"S", "Geodesic Farthest Point Sampling", process_farthest_point_sampling});
 	add_process(GLFW_KEY_R, {"R", "Geodesic Farthest Point Sampling (radio)", process_farthest_point_sampling_radio});
 	add_process(GLFW_KEY_V, {"V", "Geodesic Voronoi", process_voronoi});
-	add_process(GLFW_KEY_P, {"P", "Toplesets", compute_toplesets});
+	add_process(GLFW_KEY_P, {"P", "Toplesets", process_compute_toplesets});
 
 	sub_menus.push_back("Sparse Coding");
 	add_process(GLFW_KEY_I, {"I", "Mesh Sparse Coding", process_msparse_coding});
@@ -83,7 +90,7 @@ void app_viewer::init()
 	add_process(GLFW_KEY_F13, {"F13", "MDICT Mask", process_mask});
 	add_process(GLFW_KEY_NUM_LOCK , {"Numlock", "PC reconstruction", process_pc_reconstruction});
 
-	sub_menus.push_back("Signatures");
+	sub_menus.push_back("Features");
 	add_process(GLFW_KEY_2, {"2", "GPS", process_gps});
 	add_process(GLFW_KEY_3, {"3", "HKS", process_hks});
 	add_process(GLFW_KEY_4, {"4", "WKS", process_wks});
@@ -99,15 +106,15 @@ void app_viewer::init()
 	add_process(GLFW_KEY_B, {"B", "Fill hole - biharmonic splines", process_fill_holes_biharmonic_splines});
 
 	sub_menus.push_back("Others");
+	add_process(GLFW_KEY_SEMICOLON, {"SEMICOLON", "Select multiple vertices", process_select_multiple});
 	add_process(GLFW_KEY_SLASH, {"SLASH", "Threshold", process_threshold});
 	add_process(GLFW_KEY_N, {"N", "Noise", process_noise});
 	add_process(GLFW_KEY_COMMA, {"COMMA", "Black noise", process_black_noise});
-	add_process(GLFW_KEY_M, {"M", "Multiplicate", process_multiplicate_vertices});
-	add_process(GLFW_KEY_DELETE, {"DELETE", "Delete vertices", process_delete_vertices});
-	add_process(GLFW_KEY_MINUS, {"MINUS", "Delete non-manifold vertices", process_delete_non_manifold_vertices});
-	add_process(GLFW_KEY_K, {"K", "Gaussian curvature", process_gaussian_curvature});
-	add_process(GLFW_KEY_9, {"9", "Edge Collapse", process_edge_collapse});
-	add_process(GLFW_KEY_SEMICOLON, {"SEMICOLON", "Select multiple vertices", select_multiple});
+}
+
+bool app_viewer::process_convex_hull(viewer * p_view)
+{
+	return true;
 }
 
 bool paint_holes_vertices(viewer * p_view)
@@ -301,7 +308,7 @@ bool app_viewer::process_functional_maps(viewer * p_view)
 	return true;
 }
 
-bool app_viewer::descriptor_heatmap(viewer * p_view, const descriptor::signature & sig)
+bool app_viewer::process_descriptor_heatmap(viewer * p_view, const descriptor::signature & sig)
 {
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
@@ -339,17 +346,17 @@ bool app_viewer::descriptor_heatmap(viewer * p_view, const descriptor::signature
 
 bool app_viewer::process_gps(viewer * p_view)
 {
-	return descriptor_heatmap(p_view, descriptor::GPS);
+	return process_descriptor_heatmap(p_view, descriptor::GPS);
 }
 
 bool app_viewer::process_hks(viewer * p_view)
 {
-	return descriptor_heatmap(p_view, descriptor::HKS);
+	return process_descriptor_heatmap(p_view, descriptor::HKS);
 }
 
 bool app_viewer::process_wks(viewer * p_view)
 {
-	return descriptor_heatmap(p_view, descriptor::WKS);
+	return process_descriptor_heatmap(p_view, descriptor::WKS);
 }
 
 bool app_viewer::process_key_points(viewer * p_view)
@@ -561,7 +568,7 @@ bool app_viewer::process_multiplicate_vertices(viewer * p_view)
 	return false;
 }
 
-bool app_viewer::compute_toplesets(viewer * p_view)
+bool app_viewer::process_compute_toplesets(viewer * p_view)
 {
 	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
@@ -883,7 +890,7 @@ bool app_viewer::process_edge_collapse(viewer * p_view)
 	return false;
 }
 
-bool app_viewer::select_multiple(viewer * p_view)
+bool app_viewer::process_select_multiple(viewer * p_view)
 {
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
