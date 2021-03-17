@@ -52,37 +52,19 @@ CHE::CHE(che * mesh)
 
 che::che(const che & mesh)
 {
-	filename			= mesh.filename;
-	rw(n_vertices)		= mesh.n_vertices;
-	rw(n_faces)			= mesh.n_faces;
-	rw(n_half_edges)	= mesh.n_half_edges;
-	rw(n_edges)			= mesh.n_edges;
+	filename = mesh.filename;
+	
+	alloc(mesh.n_vertices, mesh.n_faces);
+	rw(n_edges)	= mesh.n_edges;
 
-	GT = new vertex[n_vertices];
 	memcpy(GT, mesh.GT, n_vertices * sizeof(vertex));
-
-	VT = new index_t[n_half_edges];
 	memcpy(VT, mesh.VT, n_half_edges * sizeof(index_t));
-
-	OT = new index_t[n_half_edges];
 	memcpy(OT, mesh.OT, n_half_edges * sizeof(index_t));
-
-	EVT = new index_t[n_vertices];
 	memcpy(EVT, mesh.EVT, n_vertices * sizeof(index_t));
-
-	ET = new index_t[n_edges];
 	memcpy(ET, mesh.ET, n_edges * sizeof(index_t));
-
-	EHT = new index_t[n_half_edges];
 	memcpy(EHT, mesh.EHT, n_half_edges * sizeof(index_t));
-
-	VN = new vertex[n_vertices];
 	memcpy(VN, mesh.VN, n_vertices * sizeof(vertex));
-
-	VC = new vertex[n_vertices];
 	memcpy(VC, mesh.VC, n_vertices * sizeof(vertex));
-
-	VHC = new real_t[n_vertices];
 	memcpy(VHC, mesh.VHC, n_vertices * sizeof(real_t));
 }
 
