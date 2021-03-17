@@ -92,14 +92,14 @@ void vertex::operator -= (const vertex & v)
 	z -= v.z;
 }
 
-bool vertex::operator < (const vertex & v)
+bool vertex::operator < (const vertex & v) const
 {
 	if(x != v.x) return x < v.x;
 	if(y != v.y) return y < v.y;
 	return z < v.z;
 }
 
-bool vertex::operator == (const vertex & v)
+bool vertex::operator == (const vertex & v) const
 {
 	return x == v.x && y == v.y && z == v.z;
 }

@@ -14,15 +14,15 @@ namespace gproshan {
 class convex_hull
 {
 	private:
-		std::vector<vertex> CH;		///< convex hull points clockwise
+		std::vector<index_t> CH;		///< convex hull points clockwise
 
 	public:
-		convex_hull(std::vector<vertex> & points);
-		convex_hull(vertex * points, const size_t & n_points);
-		operator const std::vector<vertex> & ();
+		convex_hull(const std::vector<vertex> & points);
+		convex_hull(const vertex * points, const size_t & n_points);
+		operator const std::vector<index_t> & ();
 
 	private:
-		void andrew_algorithm(vertex * points, const size_t & n_points);
+		void andrew_algorithm(const vertex * points, const size_t & n_points);
 		bool ccw(const vertex & p, const vertex & q, const vertex & r);
 };
 

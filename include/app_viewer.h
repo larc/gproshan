@@ -18,6 +18,8 @@
 #include "laplacian/fairing_taubin.h"
 #include "laplacian/fairing_spectral.h"
 
+#include "geometry/convex_hull.h"
+
 #include "geodesics/dijkstra.h"
 #include "geodesics/geodesics.h"
 #include "geodesics/sampling.h"

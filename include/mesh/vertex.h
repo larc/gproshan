@@ -42,8 +42,8 @@ class vertex
 		void operator += (const vertex & v);
 		void operator -= (const vertex & v);
 
-		bool operator < (const vertex & v);
-		bool operator == (const vertex & v);
+		bool operator < (const vertex & v) const;
+		bool operator == (const vertex & v) const;
 
 		bool is_zero();
 };
