@@ -1,8 +1,8 @@
 #include "mesh/che_off.h"
 
 #include <cstring>
-#include <cassert>
 #include <cstdio>
+#include <cassert>
 #include <fstream>
 
 using namespace std;

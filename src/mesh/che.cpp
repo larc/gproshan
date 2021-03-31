@@ -1390,6 +1390,7 @@ void che::update_evt_ot_et()
 
 	map<index_t, index_t> * medges = new map<index_t, index_t>[n_vertices];
 
+	gproshan_error(OBJ);
 	size_t ne = 0;
 	for(index_t he = 0; he < n_half_edges; ++he)
 	{
@@ -1397,17 +1398,17 @@ void che::update_evt_ot_et()
 		const index_t & v = VT[next(he)];
 
 		EVT[u] = he;
-
-		index_t & mhe = u < v ? medges[u][v] : medges[v][u];
-		if(!mhe)
+		
+		if(OT[he] == NIL)
 		{
-			ET[ne++] = he;
-			mhe = he + 1;
-		}
-		else
-		{
-			OT[he] = mhe - 1;
-			OT[OT[he]] = he;
+			index_t & ohe = medges[v][u];
+			if(ohe)
+			{
+				ET[ne++] = he;
+				OT[he] = ohe - 1;
+				OT[ohe - 1] = he;
+			}
+			else medges[u][v] = he + 1;
 		}
 	}
 
@@ -1415,9 +1416,10 @@ void che::update_evt_ot_et()
 
 	delete [] medges;
 
+	gproshan_error(OBJ);
 	// non manifold two disk
-	//for(index_t he = 0; he < n_half_edges; ++he)
-	//	if(OT[he] != NIL) assert(he == OT[OT[he]]);
+//	for(index_t he = 0; he < n_half_edges; ++he)
+//		if(OT[he] != NIL && he != OT[OT[he]]) gproshan_error(OT);
 
 	for(index_t he = 0; he < n_half_edges; ++he)
 		if(OT[he] == NIL && EVT[VT[he]] != NIL)

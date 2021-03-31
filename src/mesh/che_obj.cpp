@@ -1,10 +1,9 @@
 #include "mesh/che_obj.h"
 
-#include <fstream>
-#include <sstream>
-#include <vector>
 #include <cstring>
+#include <cstdio>
 #include <cassert>
+#include <fstream>
 
 using namespace std;
 
@@ -24,81 +23,86 @@ che_obj::che_obj(const che_obj & mesh): che(mesh)
 
 void che_obj::read_file(const string & file)
 {
-	ifstream is(file);
-
-	assert(is.good());
+	FILE * fp = fopen(file.c_str(), "r");
+	assert(fp);
 
 	real_t x, y, z;
-	int face[8], i;
+	int v[16], vt[16], vn[16], f;
 
 	vector<vertex> vertices;
-	vector<index_t> faces;
+	vector<index_t> vs;
 
-	char line[256];
-	string key;
+	char line[256], key[4];
+	char * line_ptr;
+	int offset;
 
-	while(is.getline(line, sizeof(line)))
+	while(fgets(line, sizeof(line), fp))
 	{
-		stringstream ss(line);
+		key[0] = 0;
+		line_ptr = line;
+		
+		sscanf(line_ptr, "%s%n", key, &offset);
+		line_ptr += offset;
 
-		key = "";
-		ss >> key;
-
-		if(key == "v")
+		if(key[0] == 'v' && !key[1])	// v x y z
 		{
-			ss >> x >> y >> z;
+			sscanf(line_ptr, "%f %f %f%n", &x, &y, &z, &offset);
 			vertices.push_back({x, y, z});
 		}
 
-		if(key == "f")
+		if(key[0] == 'f')				// f v1/vt1/vn1 v2/vt2/vn2 v3/vt3/vn3 ...
 		{
-			for(i = 0; ss >> face[i]; ++i)
-				ss.ignore(256, ' ');
-
-			if(i == che::mtrig)
+			f = 0;
+			while(sscanf(line_ptr, "%d/%d/%d%n", v + f, vt + f, vn + f, &offset) > 0)
 			{
-				if(face[0] < 0)
+				line_ptr += offset;
+				++f;
+			}
+
+			if(f == che::mtrig)
+			{
+				if(v[0] < 0)
 				{
-					faces.push_back(vertices.size() + face[0]);
-					faces.push_back(vertices.size() + face[1]);
-					faces.push_back(vertices.size() + face[2]);
+					vs.push_back(vertices.size() + v[0]);
+					vs.push_back(vertices.size() + v[1]);
+					vs.push_back(vertices.size() + v[2]);
 				}
 				else
 				{
-					faces.push_back(face[0] - 1);
-					faces.push_back(face[1] - 1);
-					faces.push_back(face[2] - 1);
+					vs.push_back(v[0] - 1);
+					vs.push_back(v[1] - 1);
+					vs.push_back(v[2] - 1);
 				}
 			}
-			else if(i == che::mquad)
+			else if(f == che::mquad)
 			{
-				if(face[0] < 0)
+				if(v[0] < 0)
 				{
-					faces.push_back(vertices.size() + face[0]);
-					faces.push_back(vertices.size() + face[1]);
-					faces.push_back(vertices.size() + face[3]);
+					vs.push_back(vertices.size() + v[0]);
+					vs.push_back(vertices.size() + v[1]);
+					vs.push_back(vertices.size() + v[3]);
 
-					faces.push_back(vertices.size() + face[1]);
-					faces.push_back(vertices.size() + face[2]);
-					faces.push_back(vertices.size() + face[3]);
+					vs.push_back(vertices.size() + v[1]);
+					vs.push_back(vertices.size() + v[2]);
+					vs.push_back(vertices.size() + v[3]);
 				}
 				else
 				{
-					faces.push_back(face[0] - 1);
-					faces.push_back(face[1] - 1);
-					faces.push_back(face[3] - 1);
+					vs.push_back(v[0] - 1);
+					vs.push_back(v[1] - 1);
+					vs.push_back(v[3] - 1);
 
-					faces.push_back(face[1] - 1);
-					faces.push_back(face[2] - 1);
-					faces.push_back(face[3] - 1);
+					vs.push_back(v[1] - 1);
+					vs.push_back(v[2] - 1);
+					vs.push_back(v[3] - 1);
 				}
 			}
 		}
 	}
 
-	is.close();
+	fclose(fp);
 
-	init(vertices.data(), vertices.size(), faces.data(), faces.size() / che::mtrig);
+	init(vertices.data(), vertices.size(), vs.data(), vs.size() / che::mtrig);
 }
 
 void che_obj::write_file(const che * mesh, const string & file)
