@@ -8,6 +8,7 @@
 #include <cmath>
 #include <map>
 
+
 using namespace std;
 
 
@@ -1437,6 +1438,24 @@ void che::update_eht()
 		if(OT[ET[e]] != NIL)
 			EHT[OT[ET[e]]] = e;
 	}
+}
+
+
+// static
+
+vector<index_t> che::trig_convex_polygon(const index_t * P, const size_t & n)
+{
+	vector<index_t> trigs;
+
+	trigs.reserve(che::mtrig * (n - 2));
+	for(index_t i = 2; i < n; i++)
+	{
+		trigs.push_back(P[0]);
+		trigs.push_back(P[i - 1]);
+		trigs.push_back(P[i]);
+	}
+
+	return trigs;
 }
 
 

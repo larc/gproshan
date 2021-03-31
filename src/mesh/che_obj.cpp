@@ -23,15 +23,16 @@ void che_obj::read_file(const string & file)
 	FILE * fp = fopen(file.c_str(), "r");
 	assert(fp);
 
-	real_t x, y, z;
-	int v[16], vt[16], vn[16], f;
+	float x, y, z, r, g, b;
+	index_t P[16], n;
 
 	vector<vertex> vertices;
+	vector<vertex> vertices_color;
 	vector<index_t> faces;
 
 	char line[256], key[4];
 	char * line_ptr;
-	int offset;
+	index_t offset;
 
 	while(fgets(line, sizeof(line), fp))
 	{
@@ -43,57 +44,23 @@ void che_obj::read_file(const string & file)
 
 		if(key[0] == 'v' && !key[1])	// v x y z
 		{
-			sscanf(line_ptr, "%f %f %f%n", &x, &y, &z, &offset);
+			n = sscanf(line_ptr, "%f %f %f %f %f %f", &x, &y, &z, &r, &g, &b);
 			vertices.push_back({x, y, z});
+			vertices_color.push_back(n == 6 ? vertex{r, g, b} : vcolor);
 		}
 
 		if(key[0] == 'f')				// f v1/vt1/vn1 v2/vt2/vn2 v3/vt3/vn3 ...
 		{
-			f = 0;
-			while(sscanf(line_ptr, "%d/%d/%d%n", v + f, vt + f, vn + f, &offset) > 0)
+			n = 0;
+			while(sscanf(line_ptr, "%d%*s%n", P + n, &offset) > 0)
 			{
 				line_ptr += offset;
-				++f;
+				P[n] += P[n] > vertices.size() ? vertices.size() : -1;
+				++n;
 			}
 
-			if(f == che::mtrig)
-			{
-				if(v[0] < 0)
-				{
-					faces.push_back(vertices.size() + v[0]);
-					faces.push_back(vertices.size() + v[1]);
-					faces.push_back(vertices.size() + v[2]);
-				}
-				else
-				{
-					faces.push_back(v[0] - 1);
-					faces.push_back(v[1] - 1);
-					faces.push_back(v[2] - 1);
-				}
-			}
-			else if(f == che::mquad)
-			{
-				if(v[0] < 0)
-				{
-					faces.push_back(vertices.size() + v[0]);
-					faces.push_back(vertices.size() + v[1]);
-					faces.push_back(vertices.size() + v[3]);
-
-					faces.push_back(vertices.size() + v[1]);
-					faces.push_back(vertices.size() + v[2]);
-					faces.push_back(vertices.size() + v[3]);
-				}
-				else
-				{
-					faces.push_back(v[0] - 1);
-					faces.push_back(v[1] - 1);
-					faces.push_back(v[3] - 1);
-
-					faces.push_back(v[1] - 1);
-					faces.push_back(v[2] - 1);
-					faces.push_back(v[3] - 1);
-				}
-			}
+			for(const index_t & v: trig_convex_polygon(P, n))
+				faces.push_back(v);
 		}
 	}
 
@@ -102,6 +69,7 @@ void che_obj::read_file(const string & file)
 
 	alloc(vertices.size(), faces.size() / che::mtrig);
 	memcpy(GT, vertices.data(), vertices.size() * sizeof(vertex));
+	memcpy(VC, vertices_color.data(), vertices_color.size() * sizeof(vertex));
 	memcpy(VT, faces.data(), faces.size() * sizeof(index_t));
 }
 
