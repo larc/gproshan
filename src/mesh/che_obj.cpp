@@ -5,6 +5,7 @@
 #include <cassert>
 #include <fstream>
 
+
 using namespace std;
 
 
@@ -17,10 +18,6 @@ che_obj::che_obj(const string & file)
 	init(file);
 }
 
-che_obj::che_obj(const che_obj & mesh): che(mesh)
-{
-}
-
 void che_obj::read_file(const string & file)
 {
 	FILE * fp = fopen(file.c_str(), "r");
@@ -30,7 +27,7 @@ void che_obj::read_file(const string & file)
 	int v[16], vt[16], vn[16], f;
 
 	vector<vertex> vertices;
-	vector<index_t> vs;
+	vector<index_t> faces;
 
 	char line[256], key[4];
 	char * line_ptr;
@@ -40,7 +37,7 @@ void che_obj::read_file(const string & file)
 	{
 		key[0] = 0;
 		line_ptr = line;
-		
+
 		sscanf(line_ptr, "%s%n", key, &offset);
 		line_ptr += offset;
 
@@ -63,38 +60,38 @@ void che_obj::read_file(const string & file)
 			{
 				if(v[0] < 0)
 				{
-					vs.push_back(vertices.size() + v[0]);
-					vs.push_back(vertices.size() + v[1]);
-					vs.push_back(vertices.size() + v[2]);
+					faces.push_back(vertices.size() + v[0]);
+					faces.push_back(vertices.size() + v[1]);
+					faces.push_back(vertices.size() + v[2]);
 				}
 				else
 				{
-					vs.push_back(v[0] - 1);
-					vs.push_back(v[1] - 1);
-					vs.push_back(v[2] - 1);
+					faces.push_back(v[0] - 1);
+					faces.push_back(v[1] - 1);
+					faces.push_back(v[2] - 1);
 				}
 			}
 			else if(f == che::mquad)
 			{
 				if(v[0] < 0)
 				{
-					vs.push_back(vertices.size() + v[0]);
-					vs.push_back(vertices.size() + v[1]);
-					vs.push_back(vertices.size() + v[3]);
+					faces.push_back(vertices.size() + v[0]);
+					faces.push_back(vertices.size() + v[1]);
+					faces.push_back(vertices.size() + v[3]);
 
-					vs.push_back(vertices.size() + v[1]);
-					vs.push_back(vertices.size() + v[2]);
-					vs.push_back(vertices.size() + v[3]);
+					faces.push_back(vertices.size() + v[1]);
+					faces.push_back(vertices.size() + v[2]);
+					faces.push_back(vertices.size() + v[3]);
 				}
 				else
 				{
-					vs.push_back(v[0] - 1);
-					vs.push_back(v[1] - 1);
-					vs.push_back(v[3] - 1);
+					faces.push_back(v[0] - 1);
+					faces.push_back(v[1] - 1);
+					faces.push_back(v[3] - 1);
 
-					vs.push_back(v[1] - 1);
-					vs.push_back(v[2] - 1);
-					vs.push_back(v[3] - 1);
+					faces.push_back(v[1] - 1);
+					faces.push_back(v[2] - 1);
+					faces.push_back(v[3] - 1);
 				}
 			}
 		}
@@ -102,7 +99,10 @@ void che_obj::read_file(const string & file)
 
 	fclose(fp);
 
-	init(vertices.data(), vertices.size(), vs.data(), vs.size() / che::mtrig);
+
+	alloc(vertices.size(), faces.size() / che::mtrig);
+	memcpy(GT, vertices.data(), vertices.size() * sizeof(vertex));
+	memcpy(VT, faces.data(), faces.size() * sizeof(index_t));
 }
 
 void che_obj::write_file(const che * mesh, const string & file)

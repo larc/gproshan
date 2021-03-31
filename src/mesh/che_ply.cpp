@@ -7,6 +7,7 @@
 #include <cassert>
 #include <map>
 
+
 using namespace std;
 
 
@@ -19,9 +20,6 @@ che_ply::che_ply(const string & file)
 	init(file);
 }
 
-che_ply::che_ply(const che_ply & mesh): che(mesh)
-{
-}
 
 void che_ply::read_file(const string & file)
 {

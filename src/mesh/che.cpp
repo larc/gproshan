@@ -53,7 +53,7 @@ CHE::CHE(che * mesh)
 che::che(const che & mesh)
 {
 	filename = mesh.filename;
-	
+
 	alloc(mesh.n_vertices, mesh.n_faces);
 	rw(n_edges)	= mesh.n_edges;
 
@@ -1398,7 +1398,7 @@ void che::update_evt_ot_et()
 		const index_t & v = VT[next(he)];
 
 		EVT[u] = he;
-		
+
 		if(OT[he] == NIL)
 		{
 			index_t & ohe = medges[v][u];
