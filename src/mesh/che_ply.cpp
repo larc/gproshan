@@ -20,7 +20,6 @@ che_ply::che_ply(const string & file)
 	init(file);
 }
 
-
 void che_ply::read_file(const string & file)
 {
 	map<string, size_t> bytes =	{
@@ -36,7 +35,8 @@ void che_ply::read_file(const string & file)
 									{"double", 8}
 								};
 
-	size_t n_v = 0, n_f = 0, b;
+	size_t nv = 0, nf = 0, b;
+	index_t P[32];
 
 	string str, format, element;
 
@@ -56,8 +56,8 @@ void che_ply::read_file(const string & file)
 		if(str == "element")
 		{
 			ss >> element;
-			if(element == "vertex") ss >> n_v;
-			if(element == "face") ss >> n_f;
+			if(element == "vertex") ss >> nv;
+			if(element == "face") ss >> nf;
 		}
 
 		if(str == "property" && element == "vertex")
@@ -83,7 +83,10 @@ void che_ply::read_file(const string & file)
 		if(str == "format") ss >> format;
 	}
 
-	alloc(n_v, n_f);
+	alloc(nv, nf);
+
+	vector<index_t> faces;
+	faces.reserve(che::mtrig * n_faces);
 
 	if(format == "ascii")
 	{
@@ -95,15 +98,17 @@ void che_ply::read_file(const string & file)
 			ss >> GT[v];
 		}
 
-		index_t p, he = 0;
-		while(n_f--)
+		while(nf--)
 		{
 			getline(is, str);
 			stringstream ss(str);
 
-			ss >> p;
-			while(p--)
-				ss >> VT[he++];
+			ss >> nv;
+			for(index_t i = 0; i < nv; ++i)
+				ss >> P[i];
+
+			for(const index_t & v: trig_convex_polygon(P, nv))
+				faces.push_back(v);
 		}
 	}
 	else // binary_little_endian
@@ -111,7 +116,7 @@ void che_ply::read_file(const string & file)
 		bool big_endian = format == "binary_big_endian";
 		auto big_to_little = [](char * buffer, const index_t & n)
 		{
-			for(index_t i = 0, j = n - 1; i < j; i++, j--)
+			for(index_t i = 0, j = n - 1; i < j; ++i, --j)
 				swap(buffer[i], buffer[j]);
 		};
 
@@ -140,32 +145,46 @@ void che_ply::read_file(const string & file)
 			}
 		}
 
-		//char fbuffer[fbytes];	// preparing for a hexagon
-		index_t p, he = 0;
-		while(n_f--)
+		while(nf--)
 		{
 			is.read(vbuffer, fn);
 			if(big_endian) big_to_little(vbuffer, fn);
 
-			if(fn == 1) p = *((char *) vbuffer);
-			if(fn == 2) p = *((short *) vbuffer);
-			if(fn == 4) p = *((int *) vbuffer);
+			if(fn == 1) nv = *((char *) vbuffer);
+			if(fn == 2) nv = *((short *) vbuffer);
+			if(fn == 4) nv = *((int *) vbuffer);
 
-			while(p--)
+			for(index_t i = 0; i < nv; ++i)
 			{
 				is.read(vbuffer, fbytes);
 				if(big_endian) big_to_little(vbuffer, fbytes);
 
-				if(fbytes == 1) VT[he++] = *((char *) vbuffer);
-				if(fbytes == 2) VT[he++] = *((short *) vbuffer);
-				if(fbytes == 4) VT[he++] = *((int *) vbuffer);
+				if(fbytes == 1) P[i] = *((char *) vbuffer);
+				if(fbytes == 2) P[i] = *((short *) vbuffer);
+				if(fbytes == 4) P[i] = *((int *) vbuffer);
 			}
+
+			for(const index_t & v: trig_convex_polygon(P, nv))
+				faces.push_back(v);
 		}
 
 		delete [] vbuffer;
 	}
 
 	is.close();
+
+
+	if(faces.size() != che::mtrig * n_faces)
+	{
+		vertex * tGT = GT; GT = nullptr;
+
+		free();
+		alloc(nv, faces.size() / che::mtrig);
+
+		GT = tGT;
+	}
+
+	memcpy(VT, faces.data(), faces.size() * sizeof(index_t));
 }
 
 void che_ply::write_file(const che * mesh, const string & file)

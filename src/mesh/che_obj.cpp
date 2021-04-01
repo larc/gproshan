@@ -24,7 +24,7 @@ void che_obj::read_file(const string & file)
 	assert(fp);
 
 	float x, y, z, r, g, b;
-	index_t P[16], n;
+	index_t P[32], n;
 
 	vector<vertex> vertices;
 	vector<vertex> vertices_color;
