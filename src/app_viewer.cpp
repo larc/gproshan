@@ -28,6 +28,7 @@ che * app_viewer::load_mesh(const string & file_path)
 	if(extension == "obj") return new che_obj(file_path);
 	if(extension == "ply") return new che_ply(file_path);
 	if(extension == "ptx") return new che_ptx(file_path);
+	if(extension == "xyz") return new che_xyz(file_path);
 
 	return new che_img(file_path);
 }

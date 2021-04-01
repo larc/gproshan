@@ -73,7 +73,7 @@ void che_ply::read_file(const string & file)
 		if(str[0] == 'p' && element[0] == 'f')	// property face
 		{
 			sscanf(line, "%*s %s", str);
-			if(str[0] ==  'l')	// list
+			if(str[0] == 'l')	// list
 			{
 				sscanf(line, "%*s %*s %s", str);
 				fn = bytes[str];
