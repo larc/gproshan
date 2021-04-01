@@ -1448,7 +1448,7 @@ vector<index_t> che::trig_convex_polygon(const index_t * P, const size_t & n)
 	vector<index_t> trigs;
 
 	trigs.reserve(che::mtrig * (n - 2));
-	for(index_t i = 2; i < n; i++)
+	for(index_t i = 2; i < n; ++i)
 	{
 		trigs.push_back(P[0]);
 		trigs.push_back(P[i - 1]);
