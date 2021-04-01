@@ -4,6 +4,7 @@
 #include <cassert>
 #include <cstdio>
 
+
 using namespace std;
 
 
@@ -14,14 +15,6 @@ namespace gproshan {
 che_ptx::che_ptx(const string & file)
 {
 	init(file);
-}
-
-che_ptx::che_ptx(const che_ptx & mesh): che(mesh)
-{
-}
-
-che_ptx::~che_ptx()
-{
 }
 
 void che_ptx::read_file(const string & file)

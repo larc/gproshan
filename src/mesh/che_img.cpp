@@ -8,6 +8,7 @@
 
 #include <CImg.h>
 
+
 using namespace std;
 using namespace cimg_library;
 
@@ -19,14 +20,6 @@ namespace gproshan {
 che_img::che_img(const string & file)
 {
 	init(file);
-}
-
-che_img::che_img(const che_img & mesh): che(mesh)
-{
-}
-
-che_img::~che_img()
-{
 }
 
 void che_img::read_file(const string & file)

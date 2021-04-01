@@ -8,6 +8,7 @@
 #include <cmath>
 #include <map>
 
+
 using namespace std;
 
 
@@ -52,37 +53,19 @@ CHE::CHE(che * mesh)
 
 che::che(const che & mesh)
 {
-	filename			= mesh.filename;
-	rw(n_vertices)		= mesh.n_vertices;
-	rw(n_faces)			= mesh.n_faces;
-	rw(n_half_edges)	= mesh.n_half_edges;
-	rw(n_edges)			= mesh.n_edges;
+	filename = mesh.filename;
 
-	GT = new vertex[n_vertices];
+	alloc(mesh.n_vertices, mesh.n_faces);
+	rw(n_edges)	= mesh.n_edges;
+
 	memcpy(GT, mesh.GT, n_vertices * sizeof(vertex));
-
-	VT = new index_t[n_half_edges];
 	memcpy(VT, mesh.VT, n_half_edges * sizeof(index_t));
-
-	OT = new index_t[n_half_edges];
 	memcpy(OT, mesh.OT, n_half_edges * sizeof(index_t));
-
-	EVT = new index_t[n_vertices];
 	memcpy(EVT, mesh.EVT, n_vertices * sizeof(index_t));
-
-	ET = new index_t[n_edges];
 	memcpy(ET, mesh.ET, n_edges * sizeof(index_t));
-
-	EHT = new index_t[n_half_edges];
 	memcpy(EHT, mesh.EHT, n_half_edges * sizeof(index_t));
-
-	VN = new vertex[n_vertices];
 	memcpy(VN, mesh.VN, n_vertices * sizeof(vertex));
-
-	VC = new vertex[n_vertices];
 	memcpy(VC, mesh.VC, n_vertices * sizeof(vertex));
-
-	VHC = new real_t[n_vertices];
 	memcpy(VHC, mesh.VHC, n_vertices * sizeof(real_t));
 }
 
@@ -1416,16 +1399,16 @@ void che::update_evt_ot_et()
 
 		EVT[u] = he;
 
-		index_t & mhe = u < v ? medges[u][v] : medges[v][u];
-		if(!mhe)
+		if(OT[he] == NIL)
 		{
-			ET[ne++] = he;
-			mhe = he + 1;
-		}
-		else
-		{
-			OT[he] = mhe - 1;
-			OT[OT[he]] = he;
+			index_t & ohe = medges[v][u];
+			if(ohe && OT[ohe - 1] == NIL)
+			{
+				ET[ne++] = he;
+				OT[he] = ohe - 1;
+				OT[ohe - 1] = he;
+			}
+			else medges[u][v] = he + 1;
 		}
 	}
 
@@ -1433,9 +1416,6 @@ void che::update_evt_ot_et()
 
 	delete [] medges;
 
-	// non manifold two disk
-	//for(index_t he = 0; he < n_half_edges; ++he)
-	//	if(OT[he] != NIL) assert(he == OT[OT[he]]);
 
 	for(index_t he = 0; he < n_half_edges; ++he)
 		if(OT[he] == NIL && EVT[VT[he]] != NIL)
@@ -1447,13 +1427,6 @@ void che::update_evt_ot_et()
 			}
 			else EVT[VT[he]] = he;
 		}
-
-//	for(index_t v = 0; v < n_vertices; ++v)
-//		if(EVT[v] >= n_half_edges)
-//		{
-//			gproshan_debug_var(EVT[v]);
-//			assert(EVT[v] < n_half_edges);
-//		}
 }
 
 void che::update_eht()
@@ -1465,6 +1438,24 @@ void che::update_eht()
 		if(OT[ET[e]] != NIL)
 			EHT[OT[ET[e]]] = e;
 	}
+}
+
+
+// static
+
+vector<index_t> che::trig_convex_polygon(const index_t * P, const size_t & n)
+{
+	vector<index_t> trigs;
+
+	trigs.reserve(che::mtrig * (n - 2));
+	for(index_t i = 2; i < n; ++i)
+	{
+		trigs.push_back(P[0]);
+		trigs.push_back(P[i - 1]);
+		trigs.push_back(P[i]);
+	}
+
+	return trigs;
 }
 
 

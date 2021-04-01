@@ -1,10 +1,10 @@
 #include "mesh/che_obj.h"
 
-#include <fstream>
-#include <sstream>
-#include <vector>
 #include <cstring>
+#include <cstdio>
 #include <cassert>
+#include <fstream>
+
 
 using namespace std;
 
@@ -18,87 +18,59 @@ che_obj::che_obj(const string & file)
 	init(file);
 }
 
-che_obj::che_obj(const che_obj & mesh): che(mesh)
-{
-}
-
 void che_obj::read_file(const string & file)
 {
-	ifstream is(file);
+	FILE * fp = fopen(file.c_str(), "r");
+	assert(fp);
 
-	assert(is.good());
-
-	real_t x, y, z;
-	int face[8], i;
+	float x, y, z, r, g, b;
+	index_t P[32], n;
 
 	vector<vertex> vertices;
+	vector<vertex> vertices_color;
 	vector<index_t> faces;
 
-	char line[256];
-	string key;
+	char line[256], key[4];
+	char * line_ptr;
+	index_t offset;
 
-	while(is.getline(line, sizeof(line)))
+	while(fgets(line, sizeof(line), fp))
 	{
-		stringstream ss(line);
+		key[0] = 0;
+		line_ptr = line;
 
-		key = "";
-		ss >> key;
+		sscanf(line_ptr, "%s%n", key, &offset);
+		line_ptr += offset;
 
-		if(key == "v")
+		if(key[0] == 'v' && !key[1])	// v x y z
 		{
-			ss >> x >> y >> z;
+			n = sscanf(line_ptr, "%f %f %f %f %f %f", &x, &y, &z, &r, &g, &b);
 			vertices.push_back({x, y, z});
+			vertices_color.push_back(n == 6 ? vertex{r, g, b} : vcolor);
 		}
 
-		if(key == "f")
+		if(key[0] == 'f')				// f v1/vt1/vn1 v2/vt2/vn2 v3/vt3/vn3 ...
 		{
-			for(i = 0; ss >> face[i]; ++i)
-				ss.ignore(256, ' ');
-
-			if(i == che::mtrig)
+			n = 0;
+			while(sscanf(line_ptr, "%d%*s%n", P + n, &offset) > 0)
 			{
-				if(face[0] < 0)
-				{
-					faces.push_back(vertices.size() + face[0]);
-					faces.push_back(vertices.size() + face[1]);
-					faces.push_back(vertices.size() + face[2]);
-				}
-				else
-				{
-					faces.push_back(face[0] - 1);
-					faces.push_back(face[1] - 1);
-					faces.push_back(face[2] - 1);
-				}
+				line_ptr += offset;
+				P[n] += P[n] > vertices.size() ? vertices.size() : -1;
+				++n;
 			}
-			else if(i == che::mquad)
-			{
-				if(face[0] < 0)
-				{
-					faces.push_back(vertices.size() + face[0]);
-					faces.push_back(vertices.size() + face[1]);
-					faces.push_back(vertices.size() + face[3]);
 
-					faces.push_back(vertices.size() + face[1]);
-					faces.push_back(vertices.size() + face[2]);
-					faces.push_back(vertices.size() + face[3]);
-				}
-				else
-				{
-					faces.push_back(face[0] - 1);
-					faces.push_back(face[1] - 1);
-					faces.push_back(face[3] - 1);
-
-					faces.push_back(face[1] - 1);
-					faces.push_back(face[2] - 1);
-					faces.push_back(face[3] - 1);
-				}
-			}
+			for(const index_t & v: trig_convex_polygon(P, n))
+				faces.push_back(v);
 		}
 	}
 
-	is.close();
+	fclose(fp);
 
-	init(vertices.data(), vertices.size(), faces.data(), faces.size() / che::mtrig);
+
+	alloc(vertices.size(), faces.size() / che::mtrig);
+	memcpy(GT, vertices.data(), vertices.size() * sizeof(vertex));
+	memcpy(VC, vertices_color.data(), vertices_color.size() * sizeof(vertex));
+	memcpy(VT, faces.data(), faces.size() * sizeof(index_t));
 }
 
 void che_obj::write_file(const che * mesh, const string & file)

@@ -1,11 +1,11 @@
 #include "mesh/che_ply.h"
 
-#include <fstream>
-#include <sstream>
-#include <vector>
 #include <cstring>
+#include <cstdio>
 #include <cassert>
+#include <fstream>
 #include <map>
+
 
 using namespace std;
 
@@ -19,13 +19,9 @@ che_ply::che_ply(const string & file)
 	init(file);
 }
 
-che_ply::che_ply(const che_ply & mesh): che(mesh)
-{
-}
-
 void che_ply::read_file(const string & file)
 {
-	map<string, size_t> bytes =	{
+	map<string, size_t> bytes = {
 									{"char", 1},
 									{"uchar", 1},
 									{"short", 2},
@@ -38,136 +34,154 @@ void che_ply::read_file(const string & file)
 									{"double", 8}
 								};
 
-	size_t n_v = 0, n_f = 0, b;
+	FILE * fp = fopen(file.c_str(), "rb");
+	assert(fp);
 
-	string str, format, element;
-
-	ifstream is(file);
-	assert(is.good());
-
+	size_t nv = 0, nf = 0, b;
 	size_t xyz = 0, vbytes = 0;
 	size_t fn = 0, fbytes = 0;
+	index_t P[32];
 
-	while(getline(is, str) && str != "end_header")
+	char line[256], str[32], format[32], element[32];
+
+	while(fgets(line, sizeof(line), fp) && line[1] != 'n')	// end_header
 	{
-		stringstream ss(str);
+		sscanf(line, "%s", str);
 
-		str = "";
-		ss >> str;
+		if(str[0] == 'f')	// format
+			sscanf(line, "%*s %s", format);
 
-		if(str == "element")
+		if(str[0] == 'e')	// element
 		{
-			ss >> element;
-			if(element == "vertex") ss >> n_v;
-			if(element == "face") ss >> n_f;
+			sscanf(line, "%*s %s", element);
+			if(element[0] == 'v')	// vertex
+				sscanf(line, "%*s %*s %lu", &nv);
+			if(element[0] == 'f')	// face
+				sscanf(line, "%*s %*s %lu", &nf);
 		}
 
-		if(str == "property" && element == "vertex")
+		if(str[0] == 'p' && element[0] == 'v')	// property vertex
 		{
-			ss >> str;
+			sscanf(line, "%*s %s", str);
 			vbytes += b = bytes[str];
 
-			ss >> str;
-			if(str == "x" || str == "y" || str == "z")
+			sscanf(line, "%*s %*s %s", str);
+			if(str[0] == 'x' || str[0] == 'y' || str[0] == 'z')
 				xyz = b;
 		}
 
-		if(str == "property" && element == "face")
+		if(str[0] == 'p' && element[0] == 'f')	// property face
 		{
-			ss >> str;
-			if(str == "list")
+			sscanf(line, "%*s %s", str);
+			if(str[0] ==  'l')	// list
 			{
-				ss >> str; fn = bytes[str];
-				ss >> str; fbytes = bytes[str];
+				sscanf(line, "%*s %*s %s", str);
+				fn = bytes[str];
+				sscanf(line, "%*s %*s %*s %s", str);
+				fbytes = bytes[str];
 			}
 		}
-
-		if(str == "format") ss >> format;
 	}
 
-	alloc(n_v, n_f);
+	alloc(nv, nf);
 
-	if(format == "ascii")
+	vector<index_t> faces;
+	faces.reserve(che::mtrig * n_faces);
+
+	if(format[0] == 'a')	// ascii
 	{
+		float x, y, z;
 		for(index_t v = 0; v < n_vertices; ++v)
 		{
-			getline(is, str);
-			stringstream ss(str);
-
-			ss >> GT[v];
+			fscanf(fp, "%f %f %f", &x, &y, &z);
+			GT[v] = {x, y, z};
 		}
 
-		index_t p, he = 0;
-		while(n_f--)
+		while(nf--)
 		{
-			getline(is, str);
-			stringstream ss(str);
+			fscanf(fp, "%lu", &nv);
+			for(index_t i = 0; i < nv; ++i)
+				fscanf(fp, "%u", P + i);
 
-			ss >> p;
-			while(p--)
-				ss >> VT[he++];
+			for(const index_t & v: trig_convex_polygon(P, nv))
+				faces.push_back(v);
 		}
 	}
-	else // binary_little_endian
+	else // binary_little_endian or binary_big_endian
 	{
-		bool big_endian = format == "binary_big_endian";
+		bool big_endian = format[7] == 'b';
 		auto big_to_little = [](char * buffer, const index_t & n)
 		{
-			for(index_t i = 0, j = n - 1; i < j; i++, j--)
+			for(index_t i = 0, j = n - 1; i < j; ++i, --j)
 				swap(buffer[i], buffer[j]);
 		};
 
-		char * vbuffer = new char[vbytes];
+		char * buffer = new char[vbytes];
+
 		for(index_t v = 0; v < n_vertices; ++v)
 		{
-			is.read(vbuffer, vbytes);
-			if(big_endian) big_to_little(vbuffer, vbytes);
+			fread(buffer, 1, vbytes, fp);
+			if(big_endian) big_to_little(buffer, vbytes);
 
 			if(xyz == sizeof(real_t))
-				memcpy(&GT[v], vbuffer, 3 * sizeof(real_t));
+				memcpy(&GT[v], buffer, 3 * sizeof(real_t));
 			else
 			{
 				if(xyz == 4)
 				{
-					float * X = (float *) vbuffer;
+					float * X = (float *) buffer;
 					for(index_t i = 0; i < 3; ++i)
 						GT[v][i] = X[i];
 				}
 				else
 				{
-					double * X = (double *) vbuffer;
+					double * X = (double *) buffer;
 					for(index_t i = 0; i < 3; ++i)
 						GT[v][i] = (real_t) X[i];
 				}
 			}
 		}
 
-		//char fbuffer[fbytes];	// preparing for a hexagon
-		index_t p, he = 0;
-		while(n_f--)
+		while(nf--)
 		{
-			is.read(vbuffer, fn);
-			if(big_endian) big_to_little(vbuffer, fn);
+			fread(buffer, 1, fn, fp);
+			if(big_endian) big_to_little(buffer, fn);
 
-			if(fn == 1) p = *((char *) vbuffer);
-			if(fn == 2) p = *((short *) vbuffer);
-			if(fn == 4) p = *((int *) vbuffer);
+			if(fn == 1) nv = *((char *) buffer);
+			if(fn == 2) nv = *((short *) buffer);
+			if(fn == 4) nv = *((int *) buffer);
 
-			while(p--)
+			for(index_t i = 0; i < nv; ++i)
 			{
-				is.read(vbuffer, fbytes);
-				if(big_endian) big_to_little(vbuffer, fbytes);
+				fread(buffer, 1, fbytes, fp);
+				if(big_endian) big_to_little(buffer, fbytes);
 
-				if(fbytes == 1) VT[he++] = *((char *) vbuffer);
-				if(fbytes == 2) VT[he++] = *((short *) vbuffer);
-				if(fbytes == 4) VT[he++] = *((int *) vbuffer);
+				if(fbytes == 1) P[i] = *((char *) buffer);
+				if(fbytes == 2) P[i] = *((short *) buffer);
+				if(fbytes == 4) P[i] = *((int *) buffer);
 			}
+
+			for(const index_t & v: trig_convex_polygon(P, nv))
+				faces.push_back(v);
 		}
 
-		delete [] vbuffer;
+		delete [] buffer;
 	}
 
-	is.close();
+	fclose(fp);
+
+
+	if(faces.size() != che::mtrig * n_faces)
+	{
+		vertex * tGT = GT; GT = nullptr;
+
+		free();
+		alloc(nv, faces.size() / che::mtrig);
+
+		GT = tGT;
+	}
+
+	memcpy(VT, faces.data(), faces.size() * sizeof(index_t));
 }
 
 void che_ply::write_file(const che * mesh, const string & file)

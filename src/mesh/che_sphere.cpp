@@ -1,9 +1,9 @@
 #include "mesh/che_sphere.h"
 
-#include <vector>
 #include <cstring>
 #include <cmath>
 #include <cassert>
+#include <vector>
 
 
 using namespace std;
@@ -81,14 +81,6 @@ che_sphere::che_sphere(const real_t & r, const size_t & n)
 	faces.push_back(v);
 
 	init(vertices.data(), vertices.size(), faces.data(), faces.size() / 3);
-}
-
-che_sphere::che_sphere(const che_sphere & mesh): che(mesh)
-{
-}
-
-che_sphere::~che_sphere()
-{
 }
 
 

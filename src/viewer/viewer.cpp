@@ -72,6 +72,8 @@ viewer::~viewer()
 	delete rt_optix;
 
 	delete render_frame;
+
+	delete sphere;
 }
 
 bool viewer::run()

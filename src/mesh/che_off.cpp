@@ -1,9 +1,10 @@
 #include "mesh/che_off.h"
 
 #include <cstring>
-#include <cassert>
 #include <cstdio>
+#include <cassert>
 #include <fstream>
+
 
 using namespace std;
 
@@ -17,24 +18,16 @@ che_off::che_off(const string & file)
 	init(file);
 }
 
-che_off::che_off(const che_off & mesh): che(mesh)
-{
-}
-
-che_off::~che_off()
-{
-}
-
 void che_off::read_file(const string & file)
 {
 	char soff[32];
-	size_t nv, nf, ne;
+	size_t nv, nf, n;
 
 	FILE * fp = fopen(file.c_str(), "r");
 	assert(fp);
 
 	fgets(soff, sizeof(soff), fp);
-	fscanf(fp, "%lu %lu %lu", &nv, &nf, &ne);
+	fscanf(fp, "%lu %lu %lu", &nv, &nf, &n);
 
 	alloc(nv, nf);
 
@@ -64,34 +57,38 @@ void che_off::read_file(const string & file)
 			VC[i] /= 255;
 	}
 
-	index_t he = 0;
-	for(index_t i = 0; i < n_faces; ++i)
+	vector<index_t> faces;
+	faces.reserve(che::mtrig * n_faces);
+
+	index_t P[32];
+	while(nf--)
 	{
-		fscanf(fp, "%lu", &ne);
-		if(!i && ne > che::mtrig)
-		{
-			vertex * tGT = GT; GT = nullptr;
+		fscanf(fp, "%lu", &n);
+		for(index_t i = 0; i < n; ++i)
+			fscanf(fp, "%u", P + i);
 
-			free();
-			alloc(nv, nf * (ne - che::mtrig + 1));
-
-			GT = tGT;
-		}
-
-		for(index_t j = 0; j < ne; ++j)
-			fscanf(fp, "%u", VT + he++);
-
-		// divide face
-		if(ne == che::mquad)
-		{
-			VT[he] = VT[he - ne];			++he;
-			VT[he] = VT[he - che::mtrig];	++he;
-
-			++i;
-		}
+		for(const index_t & v: trig_convex_polygon(P, n))
+			faces.push_back(v);
 	}
 
 	fclose(fp);
+
+
+	if(faces.size() != che::mtrig * n_faces)
+	{
+		vertex * tGT = GT; GT = nullptr;
+		vertex * tVC = VC; VC = nullptr;
+		vertex * tVN = VN; VN = nullptr;
+
+		free();
+		alloc(nv, faces.size() / che::mtrig);
+
+		GT = tGT;
+		VC = tVC;
+		VN = tVN;
+	}
+
+	memcpy(VT, faces.data(), faces.size() * sizeof(index_t));
 }
 
 void che_off::write_file(const che * mesh, const string & file, const che_off::type & off, const bool & pointcloud)

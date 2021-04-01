@@ -27,8 +27,6 @@ struct corr_t;
 
 class che
 {
-	vertex vcolor{ 0.75, 0.85, 1.0 };
-
 	public:
 		enum mesh_type { mtrig = 3, mquad = 4 }; ///< meshes_types
 
@@ -38,6 +36,7 @@ class che
 		const size_t n_edges		= 0;
 
 		std::string filename;		///< get and set data member
+		vertex vcolor{ 0.75, 0.85, 1.0 };
 
 	protected:
 		vertex * GT		= nullptr;	///< geometry table			: v		-> vertex
@@ -135,6 +134,9 @@ class che
 	private:
 		void update_evt_ot_et();
 		void update_eht();
+
+	public:
+		static std::vector<index_t> trig_convex_polygon(const index_t * P, const size_t & n);
 
 	friend struct CHE;
 };
