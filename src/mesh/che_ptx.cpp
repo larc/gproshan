@@ -113,10 +113,6 @@ void che_ptx::read_file(const string & file)
 		VC[i] /= 255;
 }
 
-void che_ptx::write_file(const che * mesh, const string & file)
-{
-}
-
 
 } // namespace gproshan
 

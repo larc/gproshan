@@ -16,6 +16,7 @@
 #include "mesh/che_off.h"
 #include "mesh/che_obj.h"
 #include "mesh/che_ply.h"
+#include "mesh/che_xyz.h"
 #include "mesh/che_sphere.h"
 
 #ifdef GPROSHAN_EMBREE
@@ -510,17 +511,41 @@ bool viewer::menu_save_mesh(viewer * view)
 
 	static char file[128] = "copy";
 	static int format = 0;
-	static bool pc = false;
+	static int type_off = 0;
+	static bool point_cloud = false;
+	static bool vertex_color = false;
 
 	ImGui::InputText("file", file, sizeof(file));
-	ImGui::Combo("format", &format, ".off\0.obj\0.ply\0\0");
-	ImGui::Checkbox("point cloud", &pc);
+	ImGui::Combo("format", &format, ".off\0.obj\0.ply\0.xyz\0\0");
+
+	switch(format)
+	{
+		case 0:
+			ImGui::Combo("type off", &type_off, "OFF\0NOFF\0COFF\0NCOFF\0\0");
+			ImGui::Checkbox("point cloud", &point_cloud);
+			break;
+		case 1:
+			break;
+		case 2:
+			break;
+		case 3:
+			ImGui::Checkbox("vertex color", &vertex_color);
+			break;
+	}
 
 	if(ImGui::Button("Save"))
 	{
-		if(format == 0) che_off::write_file(mesh, file, che_off::NOFF, pc);
-		if(format == 1) che_obj::write_file(mesh, file);
-		if(format == 2) che_ply::write_file(mesh, file);
+		switch(format)
+		{
+			case 0: che_off::write_file(mesh, file, che_off::type(type_off), point_cloud);
+				break;
+			case 1: che_obj::write_file(mesh, file);
+				break;
+			case 2: che_ply::write_file(mesh, file);
+				break;
+			case 3: che_xyz::write_file(mesh, file, vertex_color);
+				break;
+		}
 	}
 
 	return true;

@@ -102,7 +102,10 @@ void che_off::write_file(const che * mesh, const string & file, const che_off::t
 	{
 		os << mesh->gt(v);
 
-		if(off == NOFF) os << " " << mesh->normal(v);	// NOFF file
+		if(off == COFF || off == NCOFF)
+			os << " " << 255 * mesh->color(v) << " 1";
+		if(off == NOFF || off == NCOFF)
+			os << " " << mesh->normal(v);
 
 		os << endl;
 	}
@@ -121,15 +124,8 @@ void che_off::write_file(const che * mesh, const string & file, const che_off::t
 
 ostream & operator << (ostream & os, const che_off::type & off)
 {
-	switch(off)
-	{
-		case che_off::OFF	: os << "OFF";		break;
-		case che_off::NOFF	: os << "NOFF";		break;
-		case che_off::COFF	: os << "COFF";		break;
-		case che_off::CNOFF	: os << "CNOFF";	break;
-	}
-
-	return os;
+	const char * str_off[] = {"OFF", "NOFF", "COFF", "NCOFF"};
+	return os << str_off[off];
 }
 
 
