@@ -36,12 +36,13 @@ void che_ply::read_file(const string & file)
 	FILE * fp = fopen(file.c_str(), "rb");
 	assert(fp);
 
-	size_t nv = 0, nf = 0, b;
-	size_t xyz = 0, vbytes = 0;
+	size_t nv = 0, nf = 0;
+	size_t nb, xyz = 0, rgb = 0, vbytes = 0;
+	index_t ixyz = 0, irgb = 0;
 	size_t fn = 0, fbytes = 0;
 	index_t P[32];
 
-	char line[256], str[32], format[32], element[32];
+	char line[512], type[32], str[32], format[32], element[32];
 
 	while(fgets(line, sizeof(line), fp) && line[1] != 'n')	// end_header
 	{
@@ -61,12 +62,21 @@ void che_ply::read_file(const string & file)
 
 		if(str[0] == 'p' && element[0] == 'v')	// property vertex
 		{
-			sscanf(line, "%*s %s", str);
-			vbytes += b = bytes[str];
+			sscanf(line, "%*s %s %s", type, str);
+			nb = bytes[type];
 
-			sscanf(line, "%*s %*s %s", str);
-			if(str[0] == 'x' || str[0] == 'y' || str[0] == 'z')
-				xyz = b;
+			if(str[0] == 'x')
+			{
+				xyz = nb;
+				ixyz = vbytes;
+			}
+			if(str[0] == 'r')
+			{
+				rgb = nb;
+				irgb = vbytes;
+			}
+
+			vbytes += nb;
 		}
 
 		if(str[0] == 'p' && element[0] == 'f')	// property face
@@ -74,10 +84,10 @@ void che_ply::read_file(const string & file)
 			sscanf(line, "%*s %s", str);
 			if(str[0] == 'l')	// list
 			{
-				sscanf(line, "%*s %*s %s", str);
-				fn = bytes[str];
-				sscanf(line, "%*s %*s %*s %s", str);
-				fbytes = bytes[str];
+				sscanf(line, "%*s %*s %s", type);
+				fn = bytes[type];
+				sscanf(line, "%*s %*s %*s %s", type);
+				fbytes = bytes[type];
 			}
 		}
 	}
@@ -115,34 +125,71 @@ void che_ply::read_file(const string & file)
 				swap(buffer[i], buffer[j]);
 		};
 
-		char * buffer = new char[vbytes];
+		gproshan_log_var(big_endian);
+		gproshan_log_var(vbytes);
+		gproshan_log_var(xyz);
+		gproshan_log_var(rgb);
+		gproshan_log_var(fn);
+		gproshan_log_var(fbytes);
 
-		for(index_t v = 0; v < n_vertices; ++v)
+		char * buffer = vbytes == sizeof(vertex) ? (char *) GT : new char[vbytes * n_vertices];
+
+		fread(buffer, vbytes, n_vertices, fp);
+		if(big_endian)
 		{
-			fread(buffer, 1, vbytes, fp);
-			if(big_endian) big_to_little(buffer, vbytes);
-
-			if(xyz == sizeof(real_t))
-				memcpy(&GT[v], buffer, 3 * sizeof(real_t));
-			else
+			char * pb = buffer;
+			while(nv--)
 			{
-				if(xyz == 4)
+				for(index_t i = 0; i < 3; ++i)
+					big_to_little(pb + ixyz + i * xyz, xyz);
+
+				if(rgb)
 				{
-					float * X = (float *) buffer;
 					for(index_t i = 0; i < 3; ++i)
-						GT[v][i] = X[i];
+						big_to_little(pb + irgb + i * rgb, rgb);
 				}
-				else
-				{
-					double * X = (double *) buffer;
-					for(index_t i = 0; i < 3; ++i)
-						GT[v][i] = (real_t) X[i];
-				}
+
+				pb += vbytes;
 			}
 		}
 
+		if(vbytes != sizeof(vertex))
+		{
+			char * pb = buffer;
+			for(index_t v = 0; v < n_vertices; ++v)
+			{
+				for(index_t i = 0; i < 3; ++i)
+					if(xyz == 4)
+						GT[v][i] = (real_t) *(float *) (pb + ixyz + i * xyz);
+					else
+						GT[v][i] = (real_t) *(double *) (pb + ixyz + i * xyz);
+
+				pb += vbytes;
+			}
+		}
+
+		if(rgb)
+		{
+			char * pb = buffer;
+			for(index_t v = 0; v < n_vertices; ++v)
+			{
+				for(index_t i = 0; i < 3; ++i)
+					if(rgb == 1)
+						VC[v][i] = ((real_t) *(unsigned char *) (pb + irgb + i * rgb)) / 255;
+					else
+						GT[v][i] = (real_t) *(float *) (pb + irgb + i * rgb);
+
+				pb += vbytes;
+			}
+		}
+
+		if(buffer != (char *) GT) delete [] buffer;
+
+
 		while(nf--)
 		{
+			char buffer[8];
+
 			fread(buffer, 1, fn, fp);
 			if(big_endian) big_to_little(buffer, fn);
 
@@ -163,8 +210,6 @@ void che_ply::read_file(const string & file)
 			for(const index_t & v: trig_convex_polygon(P, nv))
 				faces.push_back(v);
 		}
-
-		delete [] buffer;
 	}
 
 	fclose(fp);
@@ -173,17 +218,19 @@ void che_ply::read_file(const string & file)
 	if(faces.size() != che::mtrig * n_faces)
 	{
 		vertex * tGT = GT; GT = nullptr;
+		vertex * tVC = VC; VC = nullptr;
 
 		free();
 		alloc(nv, faces.size() / che::mtrig);
 
 		GT = tGT;
+		VC = tVC;
 	}
 
 	memcpy(VT, faces.data(), faces.size() * sizeof(index_t));
 }
 
-void che_ply::write_file(const che * mesh, const string & file)
+void che_ply::write_file(const che * mesh, const string & file, const bool & color)
 {
 	FILE * fp = fopen((file + ".ply").c_str(), "wb");
 	assert(fp);
@@ -197,11 +244,30 @@ void che_ply::write_file(const che * mesh, const string & file)
 	fprintf(fp, "property %s x\n", type);
 	fprintf(fp, "property %s y\n", type);
 	fprintf(fp, "property %s z\n", type);
+	if(color)
+	{
+		fprintf(fp, "property uchar red\n");
+		fprintf(fp, "property uchar green\n");
+		fprintf(fp, "property uchar blue\n");
+	}
 	fprintf(fp, "element face %lu\n", mesh->n_faces);
-	fprintf(fp, "property list uchar uint vertex_indices\n");
+	fprintf(fp, "property list uchar uint vertex_index\n");
 	fprintf(fp, "end_header\n");
 
-	fwrite(&mesh->gt(0), sizeof(vertex), mesh->n_vertices, fp);
+	if(color)
+	{
+		unsigned char rgb[3];
+		for(index_t v = 0; v < mesh->n_vertices; ++v)
+		{
+			fwrite(&mesh->gt(v), sizeof(vertex), 1, fp);
+
+			vertex c = 255 * mesh->color(v);
+			rgb[0] = c.x; rgb[1] = c.y; rgb[2] = c.z;
+
+			fwrite(rgb, sizeof(rgb), 1, fp);
+		}
+	}
+	else fwrite(&mesh->gt(0), sizeof(vertex), mesh->n_vertices, fp);
 
 	unsigned char mtrig = che::mtrig;
 	for(index_t he = 0; he < mesh->n_half_edges; he += che::mtrig)

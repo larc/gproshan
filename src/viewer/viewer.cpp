@@ -529,6 +529,7 @@ bool viewer::menu_save_mesh(viewer * view)
 			ImGui::Checkbox("point cloud", &point_cloud);
 			break;
 		case 2:
+			ImGui::Checkbox("vertex color", &vertex_color);
 			break;
 		case 3:
 			ImGui::Checkbox("vertex color", &vertex_color);
@@ -543,7 +544,7 @@ bool viewer::menu_save_mesh(viewer * view)
 				break;
 			case 1: che_obj::write_file(mesh, file, vertex_color, point_cloud);
 				break;
-			case 2: che_ply::write_file(mesh, file);
+			case 2: che_ply::write_file(mesh, file, vertex_color);
 				break;
 			case 3: che_xyz::write_file(mesh, file, vertex_color);
 				break;
