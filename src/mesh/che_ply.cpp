@@ -125,21 +125,18 @@ void che_ply::read_file(const string & file)
 				swap(buffer[i], buffer[j]);
 		};
 
-		gproshan_log_var(big_endian);
-		gproshan_log_var(vbytes);
-		gproshan_log_var(xyz);
-		gproshan_log_var(rgb);
-		gproshan_log_var(fn);
-		gproshan_log_var(fbytes);
-
 		char * buffer = vbytes == sizeof(vertex) ? (char *) GT : new char[vbytes * n_vertices];
 
 		fread(buffer, vbytes, n_vertices, fp);
 		if(big_endian)
 		{
-			char * pb = buffer;
-			while(nv--)
+			char * pb;
+
+			#pragma omp parallel for private(pb)
+			for(index_t v = 0; v < n_vertices; ++v)
 			{
+				pb = buffer + v * vbytes;
+
 				for(index_t i = 0; i < 3; ++i)
 					big_to_little(pb + ixyz + i * xyz, xyz);
 
@@ -148,38 +145,34 @@ void che_ply::read_file(const string & file)
 					for(index_t i = 0; i < 3; ++i)
 						big_to_little(pb + irgb + i * rgb, rgb);
 				}
-
-				pb += vbytes;
 			}
 		}
 
 		if(vbytes != sizeof(vertex))
 		{
-			char * pb = buffer;
+			char * pb;
+
+			#pragma omp parallel for private(pb)
 			for(index_t v = 0; v < n_vertices; ++v)
 			{
+				pb = buffer + v * vbytes;
+
 				for(index_t i = 0; i < 3; ++i)
+				{
 					if(xyz == 4)
 						GT[v][i] = (real_t) *(float *) (pb + ixyz + i * xyz);
 					else
 						GT[v][i] = (real_t) *(double *) (pb + ixyz + i * xyz);
+				}
 
-				pb += vbytes;
-			}
-		}
-
-		if(rgb)
-		{
-			char * pb = buffer;
-			for(index_t v = 0; v < n_vertices; ++v)
-			{
-				for(index_t i = 0; i < 3; ++i)
-					if(rgb == 1)
-						VC[v][i] = ((real_t) *(unsigned char *) (pb + irgb + i * rgb)) / 255;
-					else
-						GT[v][i] = (real_t) *(float *) (pb + irgb + i * rgb);
-
-				pb += vbytes;
+				if(rgb)
+				{
+					for(index_t i = 0; i < 3; ++i)
+						if(rgb == 1)
+							VC[v][i] = ((real_t) *(unsigned char *) (pb + irgb + i * rgb)) / 255;
+						else
+							GT[v][i] = (real_t) *(float *) (pb + irgb + i * rgb);
+				}
 			}
 		}
 
