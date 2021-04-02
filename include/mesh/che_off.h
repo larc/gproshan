@@ -20,8 +20,6 @@ class che_off : public che
 		void read_file(const std::string & file);
 };
 
-std::ostream & operator << (std::ostream & os, const che_off::type & off);
-
 
 } // namespace gproshan
 

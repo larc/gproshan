@@ -118,7 +118,7 @@ bool viewer::run()
 			if(ImGui::BeginMenu("Select"))
 			{
 				for(index_t i = 0; i < n_meshes; ++i)
-					if(ImGui::MenuItem((to_string(i) + ". " + meshes[i]->name()).c_str(), nullptr, i == idx_active_mesh, i != idx_active_mesh))
+					if(ImGui::MenuItem((to_string(i) + ". " + meshes[i]->filename).c_str(), nullptr, i == idx_active_mesh, i != idx_active_mesh))
 					{
 						idx_active_mesh = i;
 						sphere_translations.clear();

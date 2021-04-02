@@ -3,7 +3,6 @@
 #include <cstring>
 #include <cstdio>
 #include <cassert>
-#include <fstream>
 
 
 using namespace std;
@@ -56,16 +55,13 @@ void che_xyz::write_file(const che * mesh, const string & file, const bool & col
 	for(index_t i = 0; i < mesh->n_vertices; ++i)
 	{
 		const vertex & v = mesh->gt(i);
+		fprintf(fp, "%f %f %f", (float) v.x, (float) v.y, (float) v.z);
 		if(color)
 		{
 			vertex c = 255 * mesh->color(i);
-			fprintf(fp, "%f %f %f ", (float) v.x, (float) v.y, (float) v.z);
-			fprintf(fp, "%d %d %d\n", (int) c.x, (int) c.y, (int) c.z);
+			fprintf(fp, " %d %d %d", (int) c.x, (int) c.y, (int) c.z);
 		}
-		else
-		{
-			fprintf(fp, "%f %f %f\n", (float) v.x, (float) v.y, (float) v.z);
-		}
+		fprintf(fp, "\n");
 	}
 
 	fclose(fp);

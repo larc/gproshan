@@ -3,7 +3,6 @@
 #include <cstring>
 #include <cstdio>
 #include <cassert>
-#include <fstream>
 
 
 using namespace std;
@@ -93,39 +92,46 @@ void che_off::read_file(const string & file)
 
 void che_off::write_file(const che * mesh, const string & file, const che_off::type & off, const bool & pointcloud)
 {
-	ofstream os(file + ".off");
+	static const char * str_off[] = {"OFF", "NOFF", "COFF", "NCOFF"};
 
-	os << off << endl;
-	os << mesh->n_vertices << " " << (pointcloud ? 0 : mesh->n_faces) << " 0" << endl;
+	FILE * fp = fopen((file + ".off").c_str(), "w");
+	assert(fp);
 
-	for(size_t v = 0; v < mesh->n_vertices; ++v)
+	fprintf(fp, "%s\n", str_off[off]);
+	fprintf(fp, "%lu %lu 0\n", mesh->n_vertices, pointcloud ? 0 : mesh->n_faces);
+
+	for(size_t i = 0; i < mesh->n_vertices; ++i)
 	{
-		os << mesh->gt(v);
+		const vertex & v = mesh->gt(i);
+		fprintf(fp, "%f %f %f", (float) v.x, (float) v.y, (float) v.z);
 
 		if(off == COFF || off == NCOFF)
-			os << " " << 255 * mesh->color(v) << " 1";
-		if(off == NOFF || off == NCOFF)
-			os << " " << mesh->normal(v);
+		{
+			vertex c = 255 * mesh->color(i);
+			fprintf(fp, " %d %d %d 1", (int) c.x, (int) c.y, (int) c.z);
+		}
 
-		os << endl;
+		if(off == NOFF || off == NCOFF)
+		{
+			const vertex & n = mesh->normal(i);
+			fprintf(fp, " %f %f %f", (float) n.x, (float) n.y, (float) n.z);
+		}
+
+		fprintf(fp, "\n");
 	}
 
 	if(!pointcloud)
+	{
 		for(index_t he = 0; he < mesh->n_half_edges; )
 		{
-			os << che::mtrig;
+			fprintf(fp, "%u", che::mtrig);
 			for(index_t i = 0; i < che::mtrig; ++i)
-				os << " " << mesh->vt(he++);
-			os << endl;
+				fprintf(fp, " %u", mesh->vt(he++));
+			fprintf(fp, "\n");
 		}
+	}
 
-	os.close();
-}
-
-ostream & operator << (ostream & os, const che_off::type & off)
-{
-	const char * str_off[] = {"OFF", "NOFF", "COFF", "NCOFF"};
-	return os << str_off[off];
+	fclose(fp);
 }
 
 
