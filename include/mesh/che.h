@@ -28,7 +28,7 @@ struct corr_t;
 class che
 {
 	public:
-		enum mesh_type { mtrig = 3, mquad = 4 }; ///< meshes_types
+		enum mesh_type : unsigned char { mtrig = 3, mquad = 4 }; ///< meshes_types
 
 		const size_t n_vertices		= 0;
 		const size_t n_faces		= 0;
