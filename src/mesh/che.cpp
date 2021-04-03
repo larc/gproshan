@@ -6,7 +6,6 @@
 #include <cassert>
 #include <cstring>
 #include <cmath>
-#include <map>
 
 
 using namespace std;
@@ -1391,10 +1390,23 @@ void che::update_evt_ot_et()
 	memset(EVT, -1, sizeof(index_t) * n_vertices);
 	memset(OT, -1, sizeof(index_t) * n_half_edges);
 
-	map<index_t, index_t> * medges = new map<index_t, index_t>[n_vertices];
+	vector<index_t> vnhe;
+	vnhe.assign(n_vertices, 0);
+
+	for(index_t he = 0; he < n_half_edges; ++he)
+		++vnhe[VT[he]];
+
+	vector<index_t *> vhe(n_vertices);
+	vhe[0] = new index_t[n_half_edges];
+	for(index_t v = 1; v < n_vertices; ++v)
+		vhe[v] = vhe[v - 1] + vnhe[v - 1];
+
+	vnhe.assign(n_vertices, 0);
+	for(index_t he = 0; he < n_half_edges; ++he)
+		vhe[VT[he]][vnhe[VT[he]]++] = he;
 
 	size_t ne = 0;
-	for(index_t he = 0; he < n_half_edges; ++he)
+	for(index_t ohe, he = 0; he < n_half_edges; ++he)
 	{
 		const index_t & u = VT[he];
 		const index_t & v = VT[next(he)];
@@ -1403,20 +1415,29 @@ void che::update_evt_ot_et()
 
 		if(OT[he] == NIL)
 		{
-			index_t & ohe = medges[v][u];
-			if(ohe && OT[ohe - 1] == NIL)
+			ohe = NIL;
+			for(index_t j = 0; j < vnhe[v]; ++j)
+			{
+				index_t & h = vhe[v][j];
+				if(VT[next(h)] == u)
+				{
+					ohe = h;
+					break;
+				}
+			}
+
+			if(ohe != NIL && OT[ohe] == NIL)
 			{
 				ET[ne++] = he;
-				OT[he] = ohe - 1;
-				OT[ohe - 1] = he;
+				OT[he] = ohe;
+				OT[ohe] = he;
 			}
-			else medges[u][v] = he + 1;
 		}
 	}
 
-	rw(n_edges) = ne;
+	delete [] vhe[0];
 
-	delete [] medges;
+	rw(n_edges) = ne;
 
 
 	for(index_t he = 0; he < n_half_edges; ++he)
