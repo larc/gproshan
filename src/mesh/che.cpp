@@ -1365,6 +1365,8 @@ void che::alloc(const size_t & n_v, const size_t & n_f)
 	#pragma omp parallel for
 	for(index_t v = 0; v < n_vertices; ++v)
 		VC[v] = vcolor;
+
+	update_heatmap();
 }
 
 void che::free()

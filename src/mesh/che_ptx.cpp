@@ -53,6 +53,7 @@ void che_ptx::read_file(const string & file)
 	{
 		GT[0] = { x, y, z };
 		VC[0] = { r, g, b };
+		VHC[0] = a;
 
 		for(index_t v = 1; v < n_vertices; ++v)
 		{
@@ -60,19 +61,20 @@ void che_ptx::read_file(const string & file)
 			sscanf(line, "%f %f %f %f %f %f %f", &x, &y, &z, &a, &r, &g, &b);
 			GT[v] = { x, y, z };
 			VC[v] = { r, g, b };
+			VHC[v] = a;
 		}
 	}
 	else
 	{
 		GT[0] = { x, y, z };
-		VC[0] = { a, a, a };
+		VHC[0] = a;
 
 		for(index_t v = 1; v < n_vertices; ++v)
 		{
 			fgets(line, sizeof(line), fp);
 			sscanf(line, "%f %f %f %f", &x, &y, &z, &a);
 			GT[v] = { x, y, z };
-			VC[v] = { a, a, a };
+			VHC[v] = a;
 		}
 	}
 

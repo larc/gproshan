@@ -764,7 +764,7 @@ bool paint_holes_vertices(viewer * p_view)
 
 	size_t nv = mesh->n_vertices;
 
-	mesh.update();
+	// TODO
 
 	#pragma omp parallel for
 	for(index_t v = 0; v < mesh->n_vertices; ++v)
