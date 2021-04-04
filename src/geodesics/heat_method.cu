@@ -15,7 +15,7 @@ struct cu_spAxb
 	int * A_col_ptrs, * A_row_indices;
 	real_t * A_values, * x, * b;
 
-	cu_spAxb(const int m, const int nnz, const real_t * hA_values, const int * hA_col_ptrs, const int * hA_row_indices, const real_t * hb, real_t * hx)
+	cu_spAxb(const int m, const int nnz, const real_t * hA_values, const int * hA_col_ptrs, const int * hA_row_indices, const real_t * hb)
 	{
 		cudaMalloc(&A_col_ptrs, (m + 1) * sizeof(int));
 		cudaMemcpy(A_col_ptrs, hA_col_ptrs, (m + 1) * sizeof(int), cudaMemcpyHostToDevice);
@@ -75,7 +75,7 @@ double solve_positive_definite_cusolver(const int m, const int nnz, const real_t
 	else
 	{
 		// allocate A, x, b into device
-		cu_spAxb data(m, nnz, hA_values, hA_col_ptrs, hA_row_indices, hb, hx);
+		cu_spAxb data(m, nnz, hA_values, hA_col_ptrs, hA_row_indices, hb);
 
 		cusolverStatus_t status;
 		#ifdef SINGLE_P
@@ -117,7 +117,7 @@ double solve_positive_definite_cusparse(const int m, const int nnz, const real_t
 	cudaEventCreate(&stop);
 
 	// allocate A, x, b into device
-	cu_spAxb data(m, nnz, hA_values, hA_col_ptrs, hA_row_indices, hb, hx);
+	cu_spAxb data(m, nnz, hA_values, hA_col_ptrs, hA_row_indices, hb);
 
 	// aux vector y to device
 	real_t * dy;
@@ -317,7 +317,7 @@ double solve_positive_definite_cusolver_preview(const int m, const int nnz, cons
 	}
 	else
 	{
-		cu_spAxb data(m, nnz, hA_values, hA_col_ptrs, hA_row_indices, hb, hx);
+		cu_spAxb data(m, nnz, hA_values, hA_col_ptrs, hA_row_indices, hb);
 
 		csrcholInfo_t info;
 		cusolverSpCreateCsrcholInfo(&info);

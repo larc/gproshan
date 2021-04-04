@@ -368,7 +368,7 @@ void viewer::window_size_callback(GLFWwindow * window, int width, int height)
 	view->window_height = height;
 }
 
-void viewer::keyboard_callback(GLFWwindow * window, int key, int scancode, int action, int mods)
+void viewer::keyboard_callback(GLFWwindow * window, int key, int, int action, int)
 {
 	if(action == GLFW_RELEASE) return;
 
@@ -410,7 +410,7 @@ void viewer::cursor_callback(GLFWwindow * window, double x, double y)
 	}
 }
 
-void viewer::scroll_callback(GLFWwindow * window, double xoffset, double yoffset)
+void viewer::scroll_callback(GLFWwindow * window, double, double yoffset)
 {
 	viewer * view = (viewer *) glfwGetWindowUserPointer(window);
 	if(ImGui::GetIO().WantCaptureMouse) return;
@@ -901,7 +901,7 @@ void viewer::select_border_vertices()
 			mesh.selected.push_back(mesh->vt(he));
 }
 
-void viewer::pick_vertex(int x, int y)
+void viewer::pick_vertex(int, int)
 {
 	gproshan_log(VIEWER);
 }

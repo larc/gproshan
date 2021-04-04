@@ -38,7 +38,7 @@ quaternion camera::current_rotation() const
 	return (p_drag * p_click.conj()) * r_last;
 }
 
-void camera::mouse(int , int state, int x, int y, int w, int h)
+void camera::mouse(int, int state, int x, int y, int w, int h)
 {
 	quaternion momentum = 1;
 
