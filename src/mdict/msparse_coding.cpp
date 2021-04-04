@@ -171,7 +171,7 @@ void msparse_coding::load_mask(const std::vector<index_t> * vertices, const inde
 
 }
 
-void msparse_coding::load_sampling(bool save_all)
+void msparse_coding::load_sampling()
 {
 	size_t featsize;
 	vector<index_t> all_sorted_features;
@@ -303,7 +303,7 @@ void msparse_coding::load_sampling(bool save_all)
 
 void msparse_coding::init_radial_feature_patches()
 {
-	load_sampling(false);
+	load_sampling();
 	load_mask();
 
 	#ifndef NDEBUG
