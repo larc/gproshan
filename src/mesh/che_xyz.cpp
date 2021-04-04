@@ -23,27 +23,28 @@ void che_xyz::read_file(const string & file)
 	assert(fp);
 
 	char line[256], c;
-	float x, y, z, r, g, b;
+	float x, y, z;
+	unsigned char r, g, b;
 	size_t n;
 
 	vector<vertex> vertices;
-	vector<vertex> vertices_color;
+	vector<rgb_t> vertices_color;
 
 	while(fgets(line, sizeof(line), fp))
 	{
 		sscanf(line, "%c", &c);
 		if(c == '#') continue;
 
-		n = sscanf(line, "%f %f %f %f %f %f", &x, &y, &z, &r, &g, &b);
+		n = sscanf(line, "%f %f %f %hhu %hhu %hhu", &x, &y, &z, &r, &g, &b);
 		vertices.push_back({x, y, z});
-		vertices_color.push_back(n == 6 ? vertex{r, g, b} / 255 : vcolor);
+		vertices_color.push_back(n == 6 ? rgb_t{r, g, b} : rgb_t());
 	}
 
 	fclose(fp);
 
 	alloc(vertices.size(), 0);
 	memcpy(GT, vertices.data(), n_vertices * sizeof(vertex));
-	memcpy(VC, vertices_color.data(), n_vertices * sizeof(vertex));
+	memcpy(VC, vertices_color.data(), n_vertices * sizeof(rgb_t));
 }
 
 void che_xyz::write_file(const che * mesh, const string & file, const bool & color)
@@ -60,8 +61,8 @@ void che_xyz::write_file(const che * mesh, const string & file, const bool & col
 		fprintf(fp, "%f %f %f", (float) v.x, (float) v.y, (float) v.z);
 		if(color)
 		{
-			vertex c = 255 * mesh->color(i);
-			fprintf(fp, " %d %d %d", (int) c.x, (int) c.y, (int) c.z);
+			const rgb_t & c = mesh->rgb(i);
+			fprintf(fp, " %hhu %hhu %hhu", c.r, c.g, c.b);
 		}
 		fprintf(fp, "\n");
 	}

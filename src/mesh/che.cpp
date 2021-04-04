@@ -285,13 +285,13 @@ void che::update_heatmap(const real_t * hm, real_t max_color)
 		VHC[v] = hm[v] / max_color;
 }
 
-const vertex & che::color(const index_t & v) const
+const che::rgb_t & che::rgb(const index_t & v) const
 {
 	assert(VC && v < n_vertices);
 	return VC[v];
 }
 
-vertex & che::color(const index_t & v)
+vertex che::color(const index_t & v) const
 {
 	assert(VC && v < n_vertices);
 	return VC[v];
@@ -301,7 +301,7 @@ vertex che::shading_color(const index_t & f, const float & u, const float & v, c
 {
 	index_t he = f * che::mtrig;
 
-	return VC ? u * VC[VT[he]] + v * VC[VT[he + 1]] + w * VC[VT[he + 2]] : vcolor;
+	return VC ? u * color(VT[he]) + v * color(VT[he + 1]) + w * color(VT[he + 2]) : rgb_t();
 }
 
 const real_t & che::heatmap(const index_t & v) const
@@ -1358,12 +1358,12 @@ void che::alloc(const size_t & n_v, const size_t & n_f)
 	if(n_half_edges)	EHT	= new index_t[n_half_edges];
 
 	if(n_vertices)		VN	= new vertex[n_vertices];
-	if(n_vertices)		VC	= new vertex[n_vertices];
+	if(n_vertices)		VC	= new rgb_t[n_vertices];
 	if(n_vertices)		VHC	= new real_t[n_vertices];
 
 	#pragma omp parallel for
 	for(index_t v = 0; v < n_vertices; ++v)
-		VC[v] = vcolor;
+		VC[v] = rgb_t();
 
 	update_heatmap();
 }

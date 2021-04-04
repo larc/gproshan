@@ -28,7 +28,23 @@ struct corr_t;
 class che
 {
 	public:
-		enum mesh_type : unsigned char { mtrig = 3, mquad = 4 }; ///< meshes_types
+		enum mesh_type : unsigned char { mtrig = 3, mquad = 4 };	///< meshes_types
+		struct rgb_t
+		{
+			unsigned char r = 230;
+			unsigned char g = 240;
+			unsigned char b = 250;
+
+			unsigned char & operator [] (const index_t & i)
+			{
+				return (&r)[i];
+			}
+
+			operator vertex () const
+			{
+				return {float(r) / 255, float(g) / 255, float(b) / 255};
+			}
+		};
 
 		const size_t n_vertices		= 0;
 		const size_t n_faces		= 0;
@@ -36,7 +52,6 @@ class che
 		const size_t n_edges		= 0;
 
 		std::string filename;		///< get and set data member
-		vertex vcolor{ 0.75, 0.85, 1.0 };
 
 	protected:
 		vertex * GT		= nullptr;	///< geometry table			: v		-> vertex
@@ -47,7 +62,7 @@ class che
 		index_t * EHT	= nullptr;	///< extra half edge table	: he	-> e
 
 		vertex * VN		= nullptr;	///< vertex normals			: v		-> normal(v)
-		vertex * VC		= nullptr;	///< vertex color			: v		-> color(v)
+		rgb_t * VC		= nullptr;	///< vertex color			: v		-> color(v)
 		real_t * VHC	= nullptr;	///< vertex color heat map	: v		-> heatmap(v)
 
 		bool manifold = true;
@@ -71,8 +86,8 @@ class che
 		real_t area_vertex(const index_t & v) const;
 		real_t area_surface() const;
 		void update_heatmap(const real_t * hm = nullptr, real_t max_color = 0);
-		const vertex & color(const index_t & v) const;
-		vertex & color(const index_t & v);
+		const rgb_t & rgb(const index_t & v) const;
+		vertex color(const index_t & v) const;
 		vertex shading_color(const index_t & f, const float & u, const float & v, const float & w) const;
 		const real_t & heatmap(const index_t & v) const;
 		real_t & heatmap(const index_t & v);

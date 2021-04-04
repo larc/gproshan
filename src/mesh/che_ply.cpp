@@ -169,9 +169,9 @@ void che_ply::read_file(const string & file)
 				{
 					for(index_t i = 0; i < 3; ++i)
 						if(rgb == 1)
-							VC[v][i] = ((real_t) *(unsigned char *) (pb + irgb + i * rgb)) / 255;
+							VC[v][i] = *(unsigned char *) (pb + irgb + i * rgb);
 						else
-							GT[v][i] = (real_t) *(float *) (pb + irgb + i * rgb);
+							GT[v][i] = (unsigned char) (*(float *) (pb + irgb + i * rgb)) * 255;
 				}
 			}
 		}
@@ -211,7 +211,7 @@ void che_ply::read_file(const string & file)
 	if(faces.size() != che::mtrig * n_faces)
 	{
 		vertex * tGT = GT; GT = nullptr;
-		vertex * tVC = VC; VC = nullptr;
+		rgb_t * tVC = VC; VC = nullptr;
 
 		free();
 		alloc(nv, faces.size() / che::mtrig);
@@ -249,15 +249,10 @@ void che_ply::write_file(const che * mesh, const string & file, const bool & col
 
 	if(color)
 	{
-		unsigned char rgb[3];
 		for(index_t v = 0; v < mesh->n_vertices; ++v)
 		{
 			fwrite(&mesh->gt(v), sizeof(vertex), 1, fp);
-
-			vertex c = 255 * mesh->color(v);
-			rgb[0] = c.x; rgb[1] = c.y; rgb[2] = c.z;
-
-			fwrite(rgb, sizeof(rgb), 1, fp);
+			fwrite(&mesh->rgb(v), sizeof(rgb_t), 1, fp);
 		}
 	}
 	else fwrite(&mesh->gt(0), sizeof(vertex), mesh->n_vertices, fp);

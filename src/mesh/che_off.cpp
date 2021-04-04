@@ -30,7 +30,8 @@ void che_off::read_file(const string & file)
 
 	alloc(nv, nf);
 
-	float x, y, z, r, g, b, a;
+	float x, y, z;
+	unsigned char r, g, b, a;
 	for(index_t v = 0; v < n_vertices; ++v)
 	{
 		fscanf(fp, "%f %f %f", &x, &y, &z);
@@ -38,7 +39,7 @@ void che_off::read_file(const string & file)
 
 		if(soff[0] == 'C' || soff[1] == 'C')
 		{
-			fscanf(fp, "%f %f %f %f", &r, &g, &b, &a);
+			fscanf(fp, "%hhu %hhu %hhu %hhu", &r, &g, &b, &a);
 			VC[v] = { r, g, b };
 		}
 
@@ -47,13 +48,6 @@ void che_off::read_file(const string & file)
 			fscanf(fp, "%f %f %f", &x, &y, &z);
 			VN[v] = { x, y, z };
 		}
-	}
-
-	if(soff[0] == 'C' || soff[1] == 'C')
-	{
-		#pragma omp parallel for
-		for(index_t i = 0; i < n_vertices; ++i)
-			VC[i] /= 255;
 	}
 
 	vector<index_t> faces;
@@ -76,15 +70,15 @@ void che_off::read_file(const string & file)
 	if(faces.size() != che::mtrig * n_faces)
 	{
 		vertex * tGT = GT; GT = nullptr;
-		vertex * tVC = VC; VC = nullptr;
 		vertex * tVN = VN; VN = nullptr;
+		rgb_t * tVC = VC; VC = nullptr;
 
 		free();
 		alloc(nv, faces.size() / che::mtrig);
 
 		GT = tGT;
-		VC = tVC;
 		VN = tVN;
+		VC = tVC;
 	}
 
 	memcpy(VT, faces.data(), faces.size() * sizeof(index_t));
@@ -107,8 +101,8 @@ void che_off::write_file(const che * mesh, const string & file, const che_off::t
 
 		if(off == COFF || off == NCOFF)
 		{
-			vertex c = 255 * mesh->color(i);
-			fprintf(fp, " %d %d %d 1", (int) c.x, (int) c.y, (int) c.z);
+			const rgb_t & c = mesh->rgb(i);
+			fprintf(fp, " %hhu %hhu %hhu 1", c.r, c.g, c.b);
 		}
 
 		if(off == NOFF || off == NCOFF)

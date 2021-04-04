@@ -26,7 +26,7 @@ void che_obj::read_file(const string & file)
 	index_t P[32], n;
 
 	vector<vertex> vertices;
-	vector<vertex> vertices_color;
+	vector<rgb_t> vertices_color;
 	vector<index_t> faces;
 
 	char line[256], str[64];
@@ -45,7 +45,7 @@ void che_obj::read_file(const string & file)
 		{
 			n = sscanf(line_ptr, "%f %f %f %f %f %f", &x, &y, &z, &r, &g, &b);
 			vertices.push_back({x, y, z});
-			vertices_color.push_back(n == 6 ? vertex{r, g, b} : vcolor);
+			vertices_color.push_back(n == 6 ? rgb_t{(unsigned char) (r * 255), (unsigned char) (g * 255), (unsigned char) (b * 255)} : rgb_t());
 		}
 
 		if(str[0] == 'f')				// f v1/vt1/vn1 v2/vt2/vn2 v3/vt3/vn3 ...
@@ -69,7 +69,7 @@ void che_obj::read_file(const string & file)
 
 	alloc(vertices.size(), faces.size() / che::mtrig);
 	memcpy(GT, vertices.data(), vertices.size() * sizeof(vertex));
-	memcpy(VC, vertices_color.data(), vertices_color.size() * sizeof(vertex));
+	memcpy(VC, vertices_color.data(), vertices_color.size() * sizeof(rgb_t));
 	memcpy(VT, faces.data(), faces.size() * sizeof(index_t));
 }
 
