@@ -2,7 +2,8 @@
 
 int main(int nargs, const char ** args)
 {
-	gproshan::mdict::test_image_denoising(args[1]);
+	for(int i = 1; i < nargs; ++i)
+		gproshan::mdict::test_image_denoising(args[i]);
 
 	return 0;
 }

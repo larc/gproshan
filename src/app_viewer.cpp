@@ -28,6 +28,7 @@ che * app_viewer::load_mesh(const string & file_path)
 	if(extension == "obj") return new che_obj(file_path);
 	if(extension == "ply") return new che_ply(file_path);
 	if(extension == "ptx") return new che_ptx(file_path);
+	if(extension == "xyz") return new che_xyz(file_path);
 
 	return new che_img(file_path);
 }
@@ -763,7 +764,7 @@ bool paint_holes_vertices(viewer * p_view)
 
 	size_t nv = mesh->n_vertices;
 
-	mesh.update();
+	// TODO
 
 	#pragma omp parallel for
 	for(index_t v = 0; v < mesh->n_vertices; ++v)

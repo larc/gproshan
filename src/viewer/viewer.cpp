@@ -16,6 +16,7 @@
 #include "mesh/che_off.h"
 #include "mesh/che_obj.h"
 #include "mesh/che_ply.h"
+#include "mesh/che_xyz.h"
 #include "mesh/che_sphere.h"
 
 #ifdef GPROSHAN_EMBREE
@@ -117,7 +118,7 @@ bool viewer::run()
 			if(ImGui::BeginMenu("Select"))
 			{
 				for(index_t i = 0; i < n_meshes; ++i)
-					if(ImGui::MenuItem((to_string(i) + ". " + meshes[i]->name()).c_str(), nullptr, i == idx_active_mesh, i != idx_active_mesh))
+					if(ImGui::MenuItem((to_string(i) + ". " + meshes[i]->filename).c_str(), nullptr, i == idx_active_mesh, i != idx_active_mesh))
 					{
 						idx_active_mesh = i;
 						sphere_translations.clear();
@@ -367,7 +368,7 @@ void viewer::window_size_callback(GLFWwindow * window, int width, int height)
 	view->window_height = height;
 }
 
-void viewer::keyboard_callback(GLFWwindow * window, int key, int scancode, int action, int mods)
+void viewer::keyboard_callback(GLFWwindow * window, int key, int, int action, int)
 {
 	if(action == GLFW_RELEASE) return;
 
@@ -409,7 +410,7 @@ void viewer::cursor_callback(GLFWwindow * window, double x, double y)
 	}
 }
 
-void viewer::scroll_callback(GLFWwindow * window, double xoffset, double yoffset)
+void viewer::scroll_callback(GLFWwindow * window, double, double yoffset)
 {
 	viewer * view = (viewer *) glfwGetWindowUserPointer(window);
 	if(ImGui::GetIO().WantCaptureMouse) return;
@@ -510,17 +511,44 @@ bool viewer::menu_save_mesh(viewer * view)
 
 	static char file[128] = "copy";
 	static int format = 0;
-	static bool pc = false;
+	static int type_off = 0;
+	static bool point_cloud = false;
+	static bool vertex_color = false;
 
 	ImGui::InputText("file", file, sizeof(file));
-	ImGui::Combo("format", &format, ".off\0.obj\0.ply\0\0");
-	ImGui::Checkbox("point cloud", &pc);
+	ImGui::Combo("format", &format, ".off\0.obj\0.ply\0.xyz\0\0");
+
+	switch(format)
+	{
+		case 0:
+			ImGui::Combo("type off", &type_off, "OFF\0NOFF\0COFF\0NCOFF\0\0");
+			ImGui::Checkbox("point cloud", &point_cloud);
+			break;
+		case 1:
+			ImGui::Checkbox("vertex color", &vertex_color);
+			ImGui::Checkbox("point cloud", &point_cloud);
+			break;
+		case 2:
+			ImGui::Checkbox("vertex color", &vertex_color);
+			break;
+		case 3:
+			ImGui::Checkbox("vertex color", &vertex_color);
+			break;
+	}
 
 	if(ImGui::Button("Save"))
 	{
-		if(format == 0) che_off::write_file(mesh, file, che_off::NOFF, pc);
-		if(format == 1) che_obj::write_file(mesh, file);
-		if(format == 2) che_ply::write_file(mesh, file);
+		switch(format)
+		{
+			case 0: che_off::write_file(mesh, file, che_off::type(type_off), point_cloud);
+				break;
+			case 1: che_obj::write_file(mesh, file, vertex_color, point_cloud);
+				break;
+			case 2: che_ply::write_file(mesh, file, vertex_color);
+				break;
+			case 3: che_xyz::write_file(mesh, file, vertex_color);
+				break;
+		}
 	}
 
 	return true;
@@ -873,7 +901,7 @@ void viewer::select_border_vertices()
 			mesh.selected.push_back(mesh->vt(he));
 }
 
-void viewer::pick_vertex(int x, int y)
+void viewer::pick_vertex(int, int)
 {
 	gproshan_log(VIEWER);
 }

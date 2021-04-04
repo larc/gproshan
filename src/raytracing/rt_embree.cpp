@@ -68,7 +68,7 @@ glm::vec3 embree::ray_hit::position() const
 }
 
 
-void embree_error(void * ptr, RTCError error, const char * str)
+void embree_error(void *, RTCError, const char * str)
 {
 	fprintf(stderr, "EMBREE ERROR: %s\n", str);
 }

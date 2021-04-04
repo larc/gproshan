@@ -39,7 +39,8 @@ void che_ptx::read_file(const string & file)
 
 	alloc(n_rows * n_cols, 2 * (n_rows - 1) * (n_cols - 1));
 
-	float x, y, z, a, r, g, b;
+	float x, y, z, a;
+	unsigned char r, g, b;
 	char line[128];
 
 	bool rgb = false;
@@ -47,32 +48,34 @@ void che_ptx::read_file(const string & file)
 	// vertex 0: x y z a or x y z a r g b
 	fgets(line, sizeof(line), fp);
 	fgets(line, sizeof(line), fp);
-	rgb = sscanf(line, "%f %f %f %f %f %f %f", &x, &y, &z, &a, &r, &g, &b) == 7;
+	rgb = sscanf(line, "%f %f %f %f %hhu %hhu %hhu", &x, &y, &z, &a, &r, &g, &b) == 7;
 
 	if(rgb)
 	{
 		GT[0] = { x, y, z };
 		VC[0] = { r, g, b };
+		VHC[0] = a;
 
 		for(index_t v = 1; v < n_vertices; ++v)
 		{
 			fgets(line, sizeof(line), fp);
-			sscanf(line, "%f %f %f %f %f %f %f", &x, &y, &z, &a, &r, &g, &b);
+			sscanf(line, "%f %f %f %f %hhu %hhu %hhu", &x, &y, &z, &a, &r, &g, &b);
 			GT[v] = { x, y, z };
 			VC[v] = { r, g, b };
+			VHC[v] = a;
 		}
 	}
 	else
 	{
 		GT[0] = { x, y, z };
-		VC[0] = { a, a, a };
+		VHC[0] = a;
 
 		for(index_t v = 1; v < n_vertices; ++v)
 		{
 			fgets(line, sizeof(line), fp);
 			sscanf(line, "%f %f %f %f", &x, &y, &z, &a);
 			GT[v] = { x, y, z };
-			VC[v] = { a, a, a };
+			VHC[v] = a;
 		}
 	}
 
@@ -107,14 +110,6 @@ void che_ptx::read_file(const string & file)
 
 	rw(n_half_edges)	= he;
 	rw(n_faces)			= he / che::mtrig;
-
-	#pragma omp parallel for
-	for(index_t i = 0; i < n_vertices; ++i)
-		VC[i] /= 255;
-}
-
-void che_ptx::write_file(const che * mesh, const string & file)
-{
 }
 
 

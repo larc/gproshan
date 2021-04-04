@@ -98,13 +98,13 @@ void geodesics::execute(che * mesh, const vector<index_t> & sources, const param
 	{
 		case FM: run_fastmarching(mesh, sources, p.n_iter, p.radio, p.fun);
 			break;
-		case PTP_CPU: run_parallel_toplesets_propagation_cpu(mesh, sources, p.n_iter, p.radio);
+		case PTP_CPU: run_parallel_toplesets_propagation_cpu(mesh, sources);
 			break;
 		case HEAT_METHOD: run_heat_method(mesh, sources);
 			break;
 
 #ifdef GPROSHAN_CUDA
-		case PTP_GPU: run_parallel_toplesets_propagation_gpu(mesh, sources, p.n_iter, p.radio);
+		case PTP_GPU: run_parallel_toplesets_propagation_gpu(mesh, sources);
 			break;
 		case HEAT_METHOD_GPU: run_heat_method_gpu(mesh, sources);
 			break;
@@ -194,7 +194,7 @@ void geodesics::run_fastmarching(che * mesh, const vector<index_t> & sources, co
 	delete [] color;
 }
 
-void geodesics::run_parallel_toplesets_propagation_cpu(che * mesh, const vector<index_t> & sources, const size_t & n_iter, const real_t & radio)
+void geodesics::run_parallel_toplesets_propagation_cpu(che * mesh, const vector<index_t> & sources)
 {
 	index_t * toplesets = new index_t[n_vertices];
 	vector<index_t> limits;
@@ -225,7 +225,7 @@ void geodesics::run_heat_method(che * mesh, const vector<index_t> & sources)
 
 #ifdef GPROSHAN_CUDA
 
-void geodesics::run_parallel_toplesets_propagation_gpu(che * mesh, const vector<index_t> & sources, const size_t & n_iter, const real_t & radio)
+void geodesics::run_parallel_toplesets_propagation_gpu(che * mesh, const vector<index_t> & sources)
 {
 	index_t * toplesets = new index_t[n_vertices];
 	vector<index_t> limits;

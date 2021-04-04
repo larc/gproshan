@@ -6,7 +6,6 @@
 #include <cassert>
 #include <cstring>
 #include <cmath>
-#include <map>
 
 
 using namespace std;
@@ -286,13 +285,13 @@ void che::update_heatmap(const real_t * hm, real_t max_color)
 		VHC[v] = hm[v] / max_color;
 }
 
-const vertex & che::color(const index_t & v) const
+const che::rgb_t & che::rgb(const index_t & v) const
 {
 	assert(VC && v < n_vertices);
 	return VC[v];
 }
 
-vertex & che::color(const index_t & v)
+vertex che::color(const index_t & v) const
 {
 	assert(VC && v < n_vertices);
 	return VC[v];
@@ -302,7 +301,7 @@ vertex che::shading_color(const index_t & f, const float & u, const float & v, c
 {
 	index_t he = f * che::mtrig;
 
-	return VC ? u * VC[VT[he]] + v * VC[VT[he + 1]] + w * VC[VT[he + 2]] : vcolor;
+	return VC ? u * color(VT[he]) + v * color(VT[he + 1]) + w * color(VT[he + 2]) : rgb_t();
 }
 
 const real_t & che::heatmap(const index_t & v) const
@@ -1359,12 +1358,14 @@ void che::alloc(const size_t & n_v, const size_t & n_f)
 	if(n_half_edges)	EHT	= new index_t[n_half_edges];
 
 	if(n_vertices)		VN	= new vertex[n_vertices];
-	if(n_vertices)		VC	= new vertex[n_vertices];
+	if(n_vertices)		VC	= new rgb_t[n_vertices];
 	if(n_vertices)		VHC	= new real_t[n_vertices];
 
 	#pragma omp parallel for
 	for(index_t v = 0; v < n_vertices; ++v)
-		VC[v] = vcolor;
+		VC[v] = rgb_t();
+
+	update_heatmap();
 }
 
 void che::free()
@@ -1389,10 +1390,23 @@ void che::update_evt_ot_et()
 	memset(EVT, -1, sizeof(index_t) * n_vertices);
 	memset(OT, -1, sizeof(index_t) * n_half_edges);
 
-	map<index_t, index_t> * medges = new map<index_t, index_t>[n_vertices];
+	vector<index_t> vnhe;
+	vnhe.assign(n_vertices, 0);
+
+	for(index_t he = 0; he < n_half_edges; ++he)
+		++vnhe[VT[he]];
+
+	vector<index_t *> vhe(n_vertices);
+	vhe[0] = new index_t[n_half_edges];
+	for(index_t v = 1; v < n_vertices; ++v)
+		vhe[v] = vhe[v - 1] + vnhe[v - 1];
+
+	vnhe.assign(n_vertices, 0);
+	for(index_t he = 0; he < n_half_edges; ++he)
+		vhe[VT[he]][vnhe[VT[he]]++] = he;
 
 	size_t ne = 0;
-	for(index_t he = 0; he < n_half_edges; ++he)
+	for(index_t ohe, he = 0; he < n_half_edges; ++he)
 	{
 		const index_t & u = VT[he];
 		const index_t & v = VT[next(he)];
@@ -1401,20 +1415,29 @@ void che::update_evt_ot_et()
 
 		if(OT[he] == NIL)
 		{
-			index_t & ohe = medges[v][u];
-			if(ohe && OT[ohe - 1] == NIL)
+			ohe = NIL;
+			for(index_t j = 0; j < vnhe[v]; ++j)
+			{
+				index_t & h = vhe[v][j];
+				if(VT[next(h)] == u)
+				{
+					ohe = h;
+					break;
+				}
+			}
+
+			if(ohe != NIL && OT[ohe] == NIL)
 			{
 				ET[ne++] = he;
-				OT[he] = ohe - 1;
-				OT[ohe - 1] = he;
+				OT[he] = ohe;
+				OT[ohe] = he;
 			}
-			else medges[u][v] = he + 1;
 		}
 	}
 
-	rw(n_edges) = ne;
+	delete [] vhe[0];
 
-	delete [] medges;
+	rw(n_edges) = ne;
 
 
 	for(index_t he = 0; he < n_half_edges; ++he)

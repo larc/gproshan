@@ -3,7 +3,6 @@
 #include <cstring>
 #include <cstdio>
 #include <cassert>
-#include <fstream>
 
 
 using namespace std;
@@ -31,7 +30,8 @@ void che_off::read_file(const string & file)
 
 	alloc(nv, nf);
 
-	float x, y, z, r, g, b, a;
+	float x, y, z;
+	unsigned char r, g, b, a;
 	for(index_t v = 0; v < n_vertices; ++v)
 	{
 		fscanf(fp, "%f %f %f", &x, &y, &z);
@@ -39,7 +39,7 @@ void che_off::read_file(const string & file)
 
 		if(soff[0] == 'C' || soff[1] == 'C')
 		{
-			fscanf(fp, "%f %f %f %f", &r, &g, &b, &a);
+			fscanf(fp, "%hhu %hhu %hhu %hhu", &r, &g, &b, &a);
 			VC[v] = { r, g, b };
 		}
 
@@ -48,13 +48,6 @@ void che_off::read_file(const string & file)
 			fscanf(fp, "%f %f %f", &x, &y, &z);
 			VN[v] = { x, y, z };
 		}
-	}
-
-	if(soff[0] == 'C' || soff[1] == 'C')
-	{
-		#pragma omp parallel for
-		for(index_t i = 0; i < n_vertices; ++i)
-			VC[i] /= 255;
 	}
 
 	vector<index_t> faces;
@@ -77,15 +70,15 @@ void che_off::read_file(const string & file)
 	if(faces.size() != che::mtrig * n_faces)
 	{
 		vertex * tGT = GT; GT = nullptr;
-		vertex * tVC = VC; VC = nullptr;
 		vertex * tVN = VN; VN = nullptr;
+		rgb_t * tVC = VC; VC = nullptr;
 
 		free();
 		alloc(nv, faces.size() / che::mtrig);
 
 		GT = tGT;
-		VC = tVC;
 		VN = tVN;
+		VC = tVC;
 	}
 
 	memcpy(VT, faces.data(), faces.size() * sizeof(index_t));
@@ -93,43 +86,46 @@ void che_off::read_file(const string & file)
 
 void che_off::write_file(const che * mesh, const string & file, const che_off::type & off, const bool & pointcloud)
 {
-	ofstream os(file + ".off");
+	static const char * str_off[] = {"OFF", "NOFF", "COFF", "NCOFF"};
 
-	os << off << endl;
-	os << mesh->n_vertices << " " << (pointcloud ? 0 : mesh->n_faces) << " 0" << endl;
+	FILE * fp = fopen((file + ".off").c_str(), "w");
+	assert(fp);
 
-	for(size_t v = 0; v < mesh->n_vertices; ++v)
+	fprintf(fp, "%s\n", str_off[off]);
+	fprintf(fp, "%lu %lu 0\n", mesh->n_vertices, pointcloud ? 0 : mesh->n_faces);
+
+	for(size_t i = 0; i < mesh->n_vertices; ++i)
 	{
-		os << mesh->gt(v);
+		const vertex & v = mesh->gt(i);
+		fprintf(fp, "%f %f %f", (float) v.x, (float) v.y, (float) v.z);
 
-		if(off == NOFF) os << " " << mesh->normal(v);	// NOFF file
+		if(off == COFF || off == NCOFF)
+		{
+			const rgb_t & c = mesh->rgb(i);
+			fprintf(fp, " %hhu %hhu %hhu 1", c.r, c.g, c.b);
+		}
 
-		os << endl;
+		if(off == NOFF || off == NCOFF)
+		{
+			const vertex & n = mesh->normal(i);
+			fprintf(fp, " %f %f %f", (float) n.x, (float) n.y, (float) n.z);
+		}
+
+		fprintf(fp, "\n");
 	}
 
 	if(!pointcloud)
+	{
 		for(index_t he = 0; he < mesh->n_half_edges; )
 		{
-			os << che::mtrig;
+			fprintf(fp, "%u", che::mtrig);
 			for(index_t i = 0; i < che::mtrig; ++i)
-				os << " " << mesh->vt(he++);
-			os << endl;
+				fprintf(fp, " %u", mesh->vt(he++));
+			fprintf(fp, "\n");
 		}
-
-	os.close();
-}
-
-ostream & operator << (ostream & os, const che_off::type & off)
-{
-	switch(off)
-	{
-		case che_off::OFF	: os << "OFF";		break;
-		case che_off::NOFF	: os << "NOFF";		break;
-		case che_off::COFF	: os << "COFF";		break;
-		case che_off::CNOFF	: os << "CNOFF";	break;
 	}
 
-	return os;
+	fclose(fp);
 }
 
 

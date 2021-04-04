@@ -13,14 +13,12 @@ class che_off : public che
 	public:
 		che_off(const std::string & file);
 
-		enum type { OFF, NOFF, COFF, CNOFF };
+		enum type { OFF, NOFF, COFF, NCOFF };
 		static void write_file(const che * mesh, const std::string & file, const che_off::type & off = OFF, const bool & pointcloud = false);
 
 	private:
 		void read_file(const std::string & file);
 };
-
-std::ostream & operator << (std::ostream & os, const che_off::type & off);
 
 
 } // namespace gproshan

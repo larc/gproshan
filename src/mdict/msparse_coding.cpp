@@ -171,7 +171,7 @@ void msparse_coding::load_mask(const std::vector<index_t> * vertices, const inde
 
 }
 
-void msparse_coding::load_sampling(bool save_all)
+void msparse_coding::load_sampling()
 {
 	size_t featsize;
 	vector<index_t> all_sorted_features;
@@ -303,7 +303,7 @@ void msparse_coding::load_sampling(bool save_all)
 
 void msparse_coding::init_radial_feature_patches()
 {
-	load_sampling(false);
+	load_sampling();
 	load_mask();
 
 	#ifndef NDEBUG
@@ -467,7 +467,7 @@ void msparse_coding::init_voronoi_patches()
 
 	bool * pmask = mask;
 	for(index_t s = 0; s < m_params.n_patches; ++s)
-		patches[s].reset_xyz_disjoint(mesh, dist, m_params.n_patches, patches_map, s ,[&pmask](const index_t & i) -> bool { return pmask[i]; } );
+		patches[s].reset_xyz_disjoint(mesh, dist, m_params.n_patches, patches_map, s, [&pmask](const index_t & i) -> bool { return pmask[i]; });
 
 	#pragma omp parallel for
 	for(index_t s = 0; s < m_params.n_patches; ++s)

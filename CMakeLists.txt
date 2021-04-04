@@ -11,6 +11,8 @@ endif()
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+add_compile_options(-Wall -Wextra -Wno-unused-result)
+
 find_package(CUDAToolkit 11)
 if(CUDAToolkit_FOUND)
 	enable_language(CUDA)
@@ -22,12 +24,12 @@ if(CUDAToolkit_FOUND)
 	set(CMAKE_CUDA_ARCHITECTURES 52 53 60 61 62 70 72 75 80)
 
 	add_definitions(-DGPROSHAN_CUDA)
-	include_directories(${CUDAToolkit_INCLUDE_DIRS})
-	
+	include_directories(SYSTEM ${CUDAToolkit_INCLUDE_DIRS})
+
 	find_package(OptiX 7.2)
 	if(OptiX_INCLUDE)
 		add_definitions(-DGPROSHAN_OPTIX)
-		include_directories(${OptiX_INCLUDE})
+		include_directories(SYSTEM ${OptiX_INCLUDE})
 	endif(OptiX_INCLUDE)
 endif(CUDAToolkit_FOUND)
 
@@ -35,7 +37,7 @@ endif(CUDAToolkit_FOUND)
 find_package(embree 3.10)
 if(embree_FOUND)
 	add_definitions(-DGPROSHAN_EMBREE)
-	include_directories(${embree_INCLUDE_DIRS})
+	include_directories(SYSTEM ${embree_INCLUDE_DIRS})
 endif(embree_FOUND)
 
 
@@ -55,17 +57,16 @@ find_package(Boost COMPONENTS thread system)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 
 
-include_directories(${GLEW_INCLUDE_DIRS})
-include_directories(${GLFW3_INCLUDE_DIRS})
-include_directories(${X11_INCLUDE_DIR})
-include_directories(${AMADILLO_INCLUDE_DIR})
-include_directories(${EIGEN3_INCLUDE_DIR})
-include_directories(${SuiteSparse_INCLUDE_DIRS})
-include_directories(${CGAL_INCLUDE_DIRS})
+include_directories(SYSTEM ${GLEW_INCLUDE_DIRS})
+include_directories(SYSTEM ${GLFW3_INCLUDE_DIRS})
+include_directories(SYSTEM ${X11_INCLUDE_DIR})
+include_directories(SYSTEM ${AMADILLO_INCLUDE_DIR})
+include_directories(SYSTEM ${EIGEN3_INCLUDE_DIR})
+include_directories(SYSTEM ${SuiteSparse_INCLUDE_DIRS})
+include_directories(SYSTEM ${CGAL_INCLUDE_DIRS})
 
 
-include_directories(${gproshan_SOURCE_DIR}/include)
-include_directories(${gproshan_SOURCE_DIR}/imgui)
+include_directories(SYSTEM ${gproshan_SOURCE_DIR}/imgui)
 
 
 FILE(GLOB_RECURSE imgui_sources ${gproshan_SOURCE_DIR}/imgui/*.cpp)
@@ -74,7 +75,9 @@ target_link_libraries(imgui GLEW::GLEW)
 target_link_libraries(imgui glfw)
 
 
+include_directories(${gproshan_SOURCE_DIR}/include)
 add_compile_definitions(GPROSHAN_DIR="${gproshan_SOURCE_DIR}")
+
 
 FILE(GLOB_RECURSE cpp_sources ${gproshan_SOURCE_DIR}/src/*.cpp)
 if(CUDAToolkit_FOUND)
@@ -84,9 +87,6 @@ endif(CUDAToolkit_FOUND)
 
 
 add_library(gproshan SHARED ${cpp_sources} ${cu_sources})
-
-
-target_compile_options(gproshan PRIVATE -Wall -Wno-unused-result)
 
 target_link_libraries(gproshan OpenMP::OpenMP_CXX)
 target_link_libraries(gproshan GLEW::GLEW)

@@ -139,7 +139,7 @@ che * mesh_fill_hole(che * mesh, const vector<index_t> & border_vertices, const 
 			if(i != p.first)
 			{
 				merge_vertices[c].push_back(vertices[c].size() + hole->n_vertices - merge_vertices[!c].size());
-				n_v += add_border_vertices(p.first, i > 0 ? i - 1 : size - 1 , hole->n_vertices - merge_vertices[!c].size());
+				n_v += add_border_vertices(p.first, i > 0 ? i - 1 : size - 1, hole->n_vertices - merge_vertices[!c].size());
 			}
 			else merge_vertices[c].push_back(merge_vertices[!c].front());
 

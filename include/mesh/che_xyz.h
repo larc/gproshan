@@ -1,5 +1,5 @@
-#ifndef CHE_PLY_H
-#define CHE_PLY_H
+#ifndef CHE_XYZ_H
+#define CHE_XYZ_H
 
 #include "mesh/che.h"
 
@@ -8,10 +8,10 @@
 namespace gproshan {
 
 
-class che_ply : public che
+class che_xyz : public che
 {
 	public:
-		che_ply(const std::string & file);
+		che_xyz(const std::string & file);
 
 		static void write_file(const che * mesh, const std::string & file, const bool & color = false);
 
@@ -22,5 +22,5 @@ class che_ply : public che
 
 } // namespace gproshan
 
-#endif // CHE_PLY_H
+#endif // CHE_XYZ_H
 

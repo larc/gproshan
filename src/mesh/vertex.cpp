@@ -9,12 +9,7 @@ using namespace std;
 namespace gproshan {
 
 
-vertex::vertex(const real_t & x_, const real_t & y_, const real_t & z_)
-{
-	x = x_;
-	y = y_;
-	z = z_;
-}
+vertex::vertex(const real_t & x_, const real_t & y_, const real_t & z_): x(x_), y(y_), z(z_) {}
 
 real_t & vertex::operator [] (const index_t & i)
 {
@@ -43,7 +38,12 @@ real_t vertex::operator , (const vertex & v) const
 
 vertex vertex::operator * (const vertex & v) const
 {
-	return vertex(y * v.z - z * v.y, z * v.x - x * v.z, x * v.y - y * v.x);
+	return {y * v.z - z * v.y, z * v.x - x * v.z, x * v.y - y * v.x};
+}
+
+vertex vertex::operator * (const real_t & a) const
+{
+	return a * (*this);
 }
 
 vertex vertex::operator / (const real_t & a) const
@@ -53,17 +53,17 @@ vertex vertex::operator / (const real_t & a) const
 
 vertex vertex::operator + (const vertex & v) const
 {
-	return vertex(x + v.x, y + v.y, z + v.z);
+	return {x + v.x, y + v.y, z + v.z};
 }
 
 vertex vertex::operator - (const vertex & v) const
 {
-	return vertex(x - v.x, y - v.y, z - v.z);
+	return {x - v.x, y - v.y, z - v.z};
 }
 
 vertex vertex::operator - () const
 {
-	return vertex(-x, -y, -z);
+	return {-x, -y, -z};
 }
 
 void vertex::operator *= (const real_t & a)
@@ -113,7 +113,7 @@ bool vertex::is_zero()
 
 vertex operator * (const real_t & a, const vertex & v)
 {
-	return vertex(a * v.x, a * v.y, a * v.z);
+	return {a * v.x, a * v.y, a * v.z};
 }
 
 ostream & operator << (ostream & os, const vertex & v)

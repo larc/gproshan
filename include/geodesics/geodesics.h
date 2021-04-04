@@ -39,7 +39,7 @@ class geodesics
 			real_t radio		= INFINITY;				///< execute until the specific radio.
 			real_t * dist_alloc	= nullptr;				///< external dist allocation
 			bool cluster		= false;				///< to cluster vertices to closest source.
-			fm_function_t fun;							///< fun is executed inside FM loop
+			fm_function_t fun	= nullptr;				///< fun is executed inside FM loop
 		};
 
 	public:
@@ -56,7 +56,7 @@ class geodesics
 	public:
 		geodesics(	che * mesh,								///< input triangular mesh.
 					const std::vector<index_t> & sources,	///< source vertices.
-					const params & p = {FM, 0, INFINITY, nullptr, false}
+					const params & p = {FM, 0, INFINITY, nullptr, false, nullptr}
 					);
 
 		virtual ~geodesics();
@@ -71,11 +71,11 @@ class geodesics
 	private:
 		void execute(che * mesh, const std::vector<index_t> & sources, const params & p);
 		void run_fastmarching(che * mesh, const std::vector<index_t> & sources, const size_t & n_iter, const real_t & radio, const fm_function_t & fun);
-		void run_parallel_toplesets_propagation_cpu(che * mesh, const std::vector<index_t> & sources, const size_t & n_iter, const real_t & radio);
+		void run_parallel_toplesets_propagation_cpu(che * mesh, const std::vector<index_t> & sources);
 		void run_heat_method(che * mesh, const std::vector<index_t> & sources);
 
 #ifdef GPROSHAN_CUDA
-		void run_parallel_toplesets_propagation_gpu(che * mesh, const std::vector<index_t> & sources, const size_t & n_iter, const real_t & radio);
+		void run_parallel_toplesets_propagation_gpu(che * mesh, const std::vector<index_t> & sources);
 		void run_heat_method_gpu(che * mesh, const std::vector<index_t> & sources);
 #endif // GPROSHAN_CUDA
 

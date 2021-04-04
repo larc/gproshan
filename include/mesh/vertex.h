@@ -32,6 +32,7 @@ class vertex
 		real_t operator , (const vertex & v) const;		// dot product
 
 		vertex operator * (const vertex & v) const;		// cross product
+		vertex operator * (const real_t & v) const;		// scalar product
 		vertex operator / (const real_t & v) const;		// scalar division
 		vertex operator + (const vertex & v) const;
 		vertex operator - (const vertex & v) const;

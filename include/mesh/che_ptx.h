@@ -13,8 +13,6 @@ class che_ptx : public che
 	public:
 		che_ptx(const std::string & file);
 
-		static void write_file(const che * mesh, const std::string & file);
-
 	private:
 		void read_file(const std::string & file);
 };

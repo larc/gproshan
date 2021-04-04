@@ -109,8 +109,7 @@ class patch
 		void compute_avg_distance(che * mesh, vector<vpatches_t> & vpatches, const index_t & p);
 		void scale_xyz(const real_t & radio_f);
 		void iscale_xyz(const real_t & radio_f);
-		bool add_vertex_by_faces(	const vertex & c,
-									vertex & n,
+		bool add_vertex_by_faces(	vertex & n,
 									vector<vertex> & N,
 									double thr_angle,
 									const real_t * geo,

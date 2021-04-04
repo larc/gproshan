@@ -76,7 +76,7 @@ class msparse_coding
 		void load_mask();
 		void init_voronoi_patches();
 		void init_radial_feature_patches();
-		void load_sampling(bool save_all);
+		void load_sampling();
 		che * point_cloud_reconstruction(real_t per, real_t fr);
 		vector<index_t> sort_indexes(const vector<real_t> &v);
 
