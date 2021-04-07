@@ -102,8 +102,12 @@ bool viewer::run()
 		switch(render_opt)
 		{
 			case R_GL:		render_gl();		break;
+		#ifdef GPROSHAN_EMBREE
 			case R_EMBREE:	render_embree();	break;
+		#endif // GPROSHAN_EMBREE
+		#ifdef GPROSHAN_OPTIX
 			case R_OPTIX:	render_optix();		break;
+		#endif // GPROSHAN_OPTIX
 		}
 
 		ImGui_ImplOpenGL3_NewFrame();
@@ -277,11 +281,11 @@ void viewer::init_menus()
 	add_process(GLFW_KEY_F8, {"F8", "Render GL", set_render_gl});
 #ifdef GPROSHAN_EMBREE
 	add_process(GLFW_KEY_F9, {"F9", "Render Embree", set_render_embree});
+	add_process(GLFW_KEY_ENTER, {"ENTER", "Raycasting", raycasting});
 #endif // GPROSHAN_EMBREE
 #ifdef GPROSHAN_OPTIX
 	add_process(GLFW_KEY_F10, {"F10", "Render OptiX", set_render_optix});
 #endif // GPROSHAN_OPTIX
-	add_process(GLFW_KEY_ENTER, {"ENTER", "Raycasting", raycasting});
 
 	sub_menus.push_back("Mesh");
 	add_process(GLFW_KEY_BACKSPACE, {"BACKSPACE", "Reload/Reset", menu_reset_mesh});
