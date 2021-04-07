@@ -36,7 +36,7 @@ void main()
 	edge_dist = vec3(ha, 0, 0);
 	gl_Position = gl_in[0].gl_Position;
 	EmitVertex();
-	
+
 	gs_position = vs_position[1];
 	gs_normal = vs_normal[1];
 	gs_mesh_color = vs_mesh_color[1];
@@ -44,7 +44,7 @@ void main()
 	edge_dist = vec3(0, hb, 0);
 	gl_Position = gl_in[1].gl_Position;
 	EmitVertex();
-	
+
 	gs_position = vs_position[2];
 	gs_normal = vs_normal[2];
 	gs_mesh_color = vs_mesh_color[2];
@@ -52,7 +52,7 @@ void main()
 	edge_dist = vec3(0, 0, hc);
 	gl_Position = gl_in[2].gl_Position;
 	EmitVertex();
-	
+
 	EndPrimitive();
 }
 

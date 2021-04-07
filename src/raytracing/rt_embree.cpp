@@ -4,7 +4,6 @@
 
 #include "util.h"
 
-#include <iostream>
 #include <random>
 #include <cstring>
 

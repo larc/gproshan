@@ -17,7 +17,7 @@ void main()
 	vec3 xk = position[2];
 
 	vec3 n = normalize(cross(xj - xi, xk - xi));
-	
+
 	vec3 pij = cross(n, xj - xi);
 	vec3 pjk = cross(n, xk - xj);
 	vec3 pki = cross(n, xi - xk);
@@ -29,10 +29,10 @@ void main()
 
 	gl_Position = proj_mat * model_view_mat * vec4(a, 1.);
 	EmitVertex();
-	
+
 	gl_Position = proj_mat * model_view_mat * vec4(b, 1.);
 	EmitVertex();
-	
+
 	EndPrimitive();
 }
 

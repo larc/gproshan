@@ -60,7 +60,7 @@ void main()
 		N = normalize(cross(dFdx(gs_position), dFdy(gs_position)));
 	else
 		N = normalize(gs_normal);
-	
+
 	vec3 L = normalize(light - gs_position);
 	vec3 E = normalize(eye - gs_position);
 	vec3 R = 2 * dot(L, N) * N - L;

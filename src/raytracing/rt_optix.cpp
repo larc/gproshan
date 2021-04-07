@@ -3,7 +3,6 @@
 #ifdef GPROSHAN_OPTIX
 
 #include <cstring>
-#include <iostream>
 #include <fstream>
 #include <random>
 
