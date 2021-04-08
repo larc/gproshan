@@ -673,141 +673,53 @@ void che::compute_toplesets(index_t *& toplesets, index_t *& sorted, vector<inde
 
 void che::multiplicate_vertices()
 {
-	size_t nv = n_vertices + n_faces;
-	size_t nf = 3 * n_faces;
-	size_t nh = 3 * n_half_edges;
-	size_t ne = n_edges + n_faces * 3;
+	vertex * old_GT = GT;
+	index_t * old_VT = VT;
+	size_t nv = n_vertices;
+	size_t nf = n_faces;
 
-	vertex * aGT = new vertex[nv + n_edges];
-	index_t * aVT = new index_t[nh + 6 * n_edges];
-	index_t * aOT = new index_t[nh + 6 * n_edges];
-	index_t * aEVT = new index_t[nv + n_edges];
-	index_t * aET = new index_t[ne + 3 * n_edges];
-	index_t * aEHT = new index_t[nh + 6 * n_edges];
-
-	memcpy(aGT, GT, n_vertices * sizeof(vertex));
-
-	#pragma omp parallel for
-	for(index_t he = 0; he < n_half_edges; ++he)
-		aVT[3 * he] = VT[he];
-
-	#pragma omp parallel for
-	for(index_t he = 0; he < n_half_edges; ++he)
-		aOT[3 * he] = OT[he] != NIL ? OT[he] * 3 : NIL;
-
-	#pragma omp parallel for
-	for(index_t he = 0; he < n_half_edges; ++he)
-		aEHT[3 * he] = EHT[he];
-
-	#pragma omp parallel for
-	for(index_t e = 0; e < n_edges; ++e)
-		aET[e] = ET[e] * 3;
-
-	#pragma omp parallel for
-	for(index_t v = 0; v < n_vertices; ++v)
-		aEVT[v] = EVT[v] != NIL ? EVT[v] * 3 : NIL;
-
-	#pragma omp parallel for
-	for(index_t f = 0; f < n_faces; ++f)
-	{
-		index_t v = n_vertices + f;
-		index_t he = f * che::mtrig;
-		index_t ahe = f * che::mtrig * 3;
-
-		aGT[v] = (GT[VT[prev(he)]] + GT[VT[he]] + GT[VT[next(he)]]) / 3;
-
-		aVT[ahe + 7] = VT[he];
-		aVT[ahe + 1] = VT[next(he)];
-		aVT[ahe + 4] = VT[prev(he)];
-		aVT[ahe + 2] = aVT[ahe + 5] = aVT[ahe + 8] = v;
-
-		aOT[ahe + 1] = ahe + 5;
-		aOT[ahe + 2] = ahe + 7;
-		aOT[ahe + 4] = ahe + 8;
-		aOT[ahe + 5] = ahe + 1;
-		aOT[ahe + 8] = ahe + 4;
-		aOT[ahe + 7] = ahe + 2;
-
-		aEVT[v] = ahe + 2;
-
-		aET[n_edges + he] = ahe + 2;
-		aET[n_edges + he + 1] = ahe + 5;
-		aET[n_edges + he + 2] = ahe + 8;
-
-		aEHT[ahe + 2] = aEHT[ahe + 7] = n_edges + he;
-		aEHT[ahe + 5] = aEHT[ahe + 1] = n_edges + he + 1;
-		aEHT[ahe + 8] = aEHT[ahe + 4] = n_edges + he + 2;
-	}
+	GT = nullptr;
+	VT = nullptr;
 
 	free();
-	GT	= aGT;
-	VT	= aVT;
-	OT	= aOT;
-	EVT	= aEVT;
-	ET	= aET;
-	EHT = aEHT;
+	alloc(nv + nf, 3 * nf);
 
-	size_t n_flips		= n_edges;
-	rw(n_vertices)		= nv;
-	rw(n_faces)			= nf;
-	rw(n_half_edges)	= nh;
-	rw(n_edges)			= ne;
+	memcpy(GT, old_GT, nv * sizeof(vertex));
 
-
-	auto split_edge = [&](const index_t & he, const bool & split = true)
+	#pragma omp parallel for
+	for(index_t f = 0; f < nf; ++f)
 	{
-		VT[rw(n_half_edges)++] = n_vertices;
-		VT[rw(n_half_edges)++] = VT[next(he)];
-		VT[rw(n_half_edges)++] = VT[prev(he)];
+		const index_t & v = nv + f;
+		const index_t & old_he = f * che::mtrig;
+		const index_t & he = 3 * f * che::mtrig;
 
-		OT[n_half_edges - 3] = OT[he];
-		OT[n_half_edges - 2] = OT[next(he)];
-		OT[n_half_edges - 1] = next(he);
+		GT[v] = (GT[old_VT[old_he]] + GT[old_VT[old_he + 1]] + GT[old_VT[old_he + 2]]) / 3;
 
-		ET[EHT[next(he)]] = n_half_edges - 2;
-		OT[OT[next(he)]] = n_half_edges - 2;
+		VT[he] = old_VT[old_he];
+		VT[he + 1] = old_VT[old_he + 1];
+		VT[he + 2] = v;
 
-		VT[next(he)] = n_vertices;
-		OT[next(he)] = n_half_edges - 1;
+		VT[he + 3] = old_VT[old_he + 1];
+		VT[he + 4] = old_VT[old_he + 2];
+		VT[he + 5] = v;
 
-		EVT[n_vertices] = n_half_edges - 3;
+		VT[he + 6] = old_VT[old_he + 2];
+		VT[he + 7] = old_VT[old_he];
+		VT[he + 8] = v;
+	}
 
-		ET[n_edges] = next(he);
-		EHT[next(he)] = n_edges;
-		EHT[OT[next(he)]] = n_edges;
-		++rw(n_edges);
+	delete [] old_GT;
+	delete [] old_VT;
 
-		if(split)
-		{
-			ET[n_edges] = n_half_edges - 3;
-			EHT[n_half_edges - 3] = n_edges;
-			++rw(n_edges);
-		}
-	};
+	update_evt_ot_et();
+	update_eht();
 
-	for(index_t e = 0; e < n_flips; ++e)
-		if(OT[ET[e]] == NIL || (normal_he(ET[e]), normal_he(OT[ET[e]])) < 0.8)		// could be improve by quadric error
-		{
-			index_t he = ET[e];
-			GT[n_vertices] = (GT[VT[he]] + GT[VT[next(he)]]) / 2;
-
-			split_edge(he);
-			if(OT[he] != NIL)
-			{
-				split_edge(OT[he], false);
-
-				EHT[OT[he]] = EHT[n_half_edges - 6];
-				EHT[n_half_edges - 3] = e;
-
-				OT[OT[he]] = n_half_edges - 6;
-				OT[he] = n_half_edges - 3;
-			}
-
-			++rw(n_vertices);
-		}
-		else flip(e);
-
-	rw(n_faces) = n_half_edges / che::mtrig;
+	for(index_t e = 0; e < n_edges; ++e)
+	{
+		const index_t & he = ET[e];
+		if(!(he % 3) && OT[he] != NIL)
+			flip(e);
+	}
 }
 
 void che::remove_non_manifold_vertices()
