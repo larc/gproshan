@@ -20,11 +20,11 @@
 #include "imgui_impl_opengl3.h"
 
 
-#ifdef SINGLE_P
+#ifdef GPROSHAN_FLOAT
 	#define ImGui_InputReal ImGui::InputFloat
 #else
 	#define ImGui_InputReal ImGui::InputDouble
-#endif // SINGLE_P
+#endif // GPROSHAN_FLOAT
 
 #define N_MESHES 12
 

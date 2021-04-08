@@ -14,7 +14,7 @@
 namespace gproshan {
 
 
-#ifdef SINGLE_P
+#ifdef GPROSHAN_FLOAT
 	typedef arma::fmat a_mat;
 	typedef arma::fvec a_vec;
 	typedef arma::frowvec a_rowvec;

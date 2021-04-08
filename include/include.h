@@ -1,8 +1,6 @@
 #ifndef INCLUDE_H
 #define INCLUDE_H
 
-#include "config.h"
-
 #include <iostream>
 #include <iomanip>
 #include <string>
@@ -18,7 +16,7 @@ namespace gproshan {
 
 typedef unsigned int index_t;
 
-#ifdef SINGLE_P
+#ifdef GPROSHAN_FLOAT
 	typedef float real_t;
 #else
 	typedef double real_t;
@@ -28,7 +26,7 @@ typedef unsigned int index_t;
 #define tmp_file_path(file) (std::string(GPROSHAN_DIR) + "/tmp/" + file)
 #define shaders_path(file) (std::string(GPROSHAN_DIR) + "/shaders/" + file)
 
-#ifdef LOG
+#ifdef GPROSHAN_LOG
 	#define gproshan_log_var(vari) std::cerr << "\033[0;33m[LOG] " << std::setprecision(3) << std::scientific << #vari << ":\033[0m " << (vari) << std::endl
 	#define gproshan_log(message) fprintf(stderr, "\033[1;31m[LOG] %s: %s\n\033[0m", #message, __FUNCTION__)
 #else

@@ -8,7 +8,7 @@
 #include "viewer/include_opengl.h"
 
 
-#ifdef SINGLE_P
+#ifdef GPROSHAN_FLOAT
 	#define glVertex3v(x) glVertex3fv(x)
 	#define GL_REAL GL_FLOAT
 #else

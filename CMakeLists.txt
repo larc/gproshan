@@ -12,6 +12,8 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_compile_options(-Wall -Wextra -Wno-unused-result)
+add_definitions(-DGPROSHAN_FLOAT)
+add_definitions(-DGPROSHAN_LOG)
 
 find_package(CUDAToolkit 11)
 if(CUDAToolkit_FOUND)

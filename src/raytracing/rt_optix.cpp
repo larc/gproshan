@@ -176,7 +176,7 @@ void optix::add_mesh(OptixBuildInput & optix_mesh, uint32_t & optix_trig_flags, 
 	void * d_index;
 
 
-#ifdef SINGLE_P
+#ifdef GPROSHAN_FLOAT
 	cudaMalloc(&d_vertex, mesh->n_vertices * sizeof(vertex));
 	cudaMemcpy(d_vertex, &mesh->gt(0), mesh->n_vertices * sizeof(vertex), cudaMemcpyHostToDevice);
 #else
@@ -190,7 +190,7 @@ void optix::add_mesh(OptixBuildInput & optix_mesh, uint32_t & optix_trig_flags, 
 	cudaMemcpy(d_vertex, vertices, mesh->n_vertices * sizeof(vertex), cudaMemcpyHostToDevice);
 
 	delete [] vertices;
-#endif // SINGLE_P
+#endif // GPROSHAN_FLOAT
 
 	cudaMalloc(&d_index, mesh->n_half_edges * sizeof(index_t));
 	cudaMemcpy(d_index, &mesh->vt(0), mesh->n_half_edges * sizeof(index_t), cudaMemcpyHostToDevice);

@@ -172,7 +172,7 @@ double * times_farthest_point_sampling_ptp_coalescence_gpu(che * mesh, vector<in
 		delete tmp_mesh;
 
 		// 1 indexing
-		#ifdef SINGLE_P
+		#ifdef GPROSHAN_FLOAT
 			cublasIsamax(handle, mesh->n_vertices, d_dist[d], 1, &f);
 		#else
 			cublasIdamax(handle, mesh->n_vertices, d_dist[d], 1, &f);

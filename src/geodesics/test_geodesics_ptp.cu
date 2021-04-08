@@ -123,7 +123,7 @@ double * times_farthest_point_sampling_ptp_gpu(che * mesh, vector<index_t> & sam
 		d = run_ptp_gpu(d_mesh, h_mesh->n_vertices, h_dist, d_dist, samples, limits, sorted_index, d_sorted, d_error);
 
 		// 1 indexing
-		#ifdef SINGLE_P
+		#ifdef GPROSHAN_FLOAT
 			cublasIsamax(handle, mesh->n_vertices, d_dist[d], 1, &f);
 		#else
 			cublasIdamax(handle, mesh->n_vertices, d_dist[d], 1, &f);
