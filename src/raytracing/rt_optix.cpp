@@ -3,7 +3,6 @@
 #ifdef GPROSHAN_OPTIX
 
 #include <cstring>
-#include <iostream>
 #include <fstream>
 #include <random>
 
@@ -83,6 +82,11 @@ optix::optix(const std::vector<che *> & meshes)
 
 optix::~optix()
 {
+}
+
+index_t optix::cast_ray(const glm::vec3 & org, const glm::vec3 & dir)
+{
+	return NIL;
 }
 
 OptixTraversableHandle optix::build_as(const std::vector<che *> & meshes)
@@ -172,7 +176,7 @@ void optix::add_mesh(OptixBuildInput & optix_mesh, uint32_t & optix_trig_flags, 
 	void * d_index;
 
 
-#ifdef SINGLE_P
+#ifdef GPROSHAN_FLOAT
 	cudaMalloc(&d_vertex, mesh->n_vertices * sizeof(vertex));
 	cudaMemcpy(d_vertex, &mesh->gt(0), mesh->n_vertices * sizeof(vertex), cudaMemcpyHostToDevice);
 #else
@@ -186,7 +190,7 @@ void optix::add_mesh(OptixBuildInput & optix_mesh, uint32_t & optix_trig_flags, 
 	cudaMemcpy(d_vertex, vertices, mesh->n_vertices * sizeof(vertex), cudaMemcpyHostToDevice);
 
 	delete [] vertices;
-#endif // SINGLE_P
+#endif // GPROSHAN_FLOAT
 
 	cudaMalloc(&d_index, mesh->n_half_edges * sizeof(index_t));
 	cudaMemcpy(d_index, &mesh->vt(0), mesh->n_half_edges * sizeof(index_t), cudaMemcpyHostToDevice);

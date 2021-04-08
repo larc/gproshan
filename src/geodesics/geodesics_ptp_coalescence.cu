@@ -246,7 +246,7 @@ real_t cu_update_step(CHE * mesh, const real_t * dist, const index_t & he)
 
 	if(dis >= 0)
 	{
-		#ifdef SINGLE_P
+		#ifdef GPROSHAN_FLOAT
 			p = delta + sqrtf(dis);
 		#else
 			p = delta + sqrt(dis);

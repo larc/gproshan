@@ -27,7 +27,7 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 
 	int n_test = nargs == 5 ? atoi(args[4]) : 10;
 
-#ifdef SINGLE_P
+#ifdef GPROSHAN_FLOAT
 	FILE * ftable = fopen("ptp_results.tex", "w");
 #else
 	FILE *ftable = fopen("ptp_results_double.tex", "w");
@@ -72,7 +72,7 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 		Time[2] = INFINITY;
 #endif // GPROSHAN_CUDA
 
-		#ifdef SINGLE_P
+		#ifdef GPROSHAN_FLOAT
 			Time[6] = Time[5] = Time[4] = Time[3] = INFINITY;
 			Error[4] = Error[3] = INFINITY;
 		#else
@@ -113,18 +113,18 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 		fprintf(ftable, pspeedup, Time[0] / Time[1]);
 		fprintf(ftable, pberror, str[1 == e_min], Error[1]);
 
-		#ifndef SINGLE_P
+		#ifndef GPROSHAN_FLOAT
 			fprintf(ftable, "& OpenMP ");
 		#endif
 
-		#ifdef SINGLE_P
+		#ifdef GPROSHAN_FLOAT
 			// PTP GPU
 			fprintf(ftable, pbtime, str[2 == t_min], Time[2]);
 			fprintf(ftable, pspeedup, Time[0] / Time[2]);
 			fprintf(ftable, pberror, str[2 == e_min], Error[2]);
 		#endif
 
-		#ifndef SINGLE_P
+		#ifndef GPROSHAN_FLOAT
 			// HEAT FLOW cholmod
 			fprintf(ftable, ptime, Time[4]);
 			fprintf(ftable, pbtime, str[3 == t_min], Time[3]);
@@ -134,7 +134,7 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 		#endif
 		fprintf(ftable, "\\\\\n");
 
-		#ifndef SINGLE_P
+		#ifndef GPROSHAN_FLOAT
 			// PTP GPU
 			fprintf(ftable, "&&& ");
 			fprintf(ftable, pbtime, str[2 == t_min], Time[2]);
@@ -199,7 +199,7 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 
 		system(("mv band " + (test_path + filename + ".band")).c_str());
 
-		#ifndef SINGLE_P
+		#ifndef GPROSHAN_FLOAT
 			os.open(test_path + filename + "_error_double.iter");
 		#else
 			os.open(test_path + filename + "_error.iter");

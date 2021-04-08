@@ -135,7 +135,7 @@ real_t farthest_point_sampling_ptp_gpu(che * mesh, vector<index_t> & samples, do
 		d = run_ptp_gpu(d_mesh, h_mesh->n_vertices, h_dist, d_dist, samples, limits, sorted_index, d_sorted, d_error);
 
 		// 1 indexing
-		#ifdef SINGLE_P
+		#ifdef GPROSHAN_FLOAT
 			cublasIsamax(handle, mesh->n_vertices, d_dist[d], 1, &f);
 		#else
 			cublasIdamax(handle, mesh->n_vertices, d_dist[d], 1, &f);
@@ -290,7 +290,7 @@ void relative_error(real_t * error, const real_t * new_dist, const real_t * old_
 	{
 		index_t v = sorted ? sorted[i] : i;
 
-		#ifdef SINGLE_P
+		#ifdef GPROSHAN_FLOAT
 			error[i] = fabsf(new_dist[v] - old_dist[v]) / old_dist[v];
 		#else
 			error[i] = fabs(new_dist[v] - old_dist[v]) / old_dist[v];
@@ -332,7 +332,7 @@ real_t cu_update_step(CHE * mesh, const real_t * dist, const index_t & he)
 					(Q[0][0] + Q[0][1] + Q[1][0] + Q[1][1]) *
 					(t[0] * t[0] * Q[0][0] + t[0] * t[1] * (Q[1][0] + Q[0][1]) + t[1] * t[1] * Q[1][1] - 1);
 
-#ifdef SINGLE_P
+#ifdef GPROSHAN_FLOAT
 	real_t p = delta + sqrtf(dis);
 #else
 	real_t p = delta + sqrt(dis);

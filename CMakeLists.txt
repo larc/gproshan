@@ -12,6 +12,8 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_compile_options(-Wall -Wextra -Wno-unused-result)
+add_definitions(-DGPROSHAN_FLOAT)
+add_definitions(-DGPROSHAN_LOG)
 
 find_package(CUDAToolkit 11)
 if(CUDAToolkit_FOUND)
@@ -75,7 +77,7 @@ target_link_libraries(imgui GLEW::GLEW)
 target_link_libraries(imgui glfw)
 
 
-include_directories(${gproshan_SOURCE_DIR}/include)
+include_directories(${gproshan_SOURCE_DIR}/include/gproshan)
 add_compile_definitions(GPROSHAN_DIR="${gproshan_SOURCE_DIR}")
 
 

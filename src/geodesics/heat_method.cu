@@ -66,7 +66,7 @@ double solve_positive_definite_cusolver(const int m, const int nnz, const real_t
 
 	if(host)
 	{
-		#ifdef SINGLE_P
+		#ifdef GPROSHAN_FLOAT
 			cusolverSpScsrlsvcholHost(handle_cusolver, m, nnz, descr, hA_values, hA_col_ptrs, hA_row_indices, hb, 0, 0, hx, &singularity);
 		#else
 			cusolverSpDcsrlsvcholHost(handle_cusolver, m, nnz, descr, hA_values, hA_col_ptrs, hA_row_indices, hb, 0, 0, hx, &singularity);
@@ -78,7 +78,7 @@ double solve_positive_definite_cusolver(const int m, const int nnz, const real_t
 		cu_spAxb data(m, nnz, hA_values, hA_col_ptrs, hA_row_indices, hb);
 
 		cusolverStatus_t status;
-		#ifdef SINGLE_P
+		#ifdef GPROSHAN_FLOAT
 			status = cusolverSpScsrlsvchol(handle_cusolver, m, nnz, descr, data.A_values, data.A_col_ptrs, data.A_row_indices, data.b, 0, 0, data.x, &singularity);
 		#else
 			status = cusolverSpDcsrlsvchol(handle_cusolver, m, nnz, descr, data.A_values, data.A_col_ptrs, data.A_row_indices, data.b, 0, 0, data.x, &singularity);
@@ -166,7 +166,7 @@ double solve_positive_definite_cusparse(const int m, const int nnz, const real_t
 	cusparseCreateCsrsv2Info(&info_L);
 	cusparseCreateCsrsv2Info(&info_Lt);
 
-	#ifdef SINGLE_P
+	#ifdef GPROSHAN_FLOAT
 		cusparseScsric02_bufferSize(handle, m, nnz, descr_M, data.A_values, data.A_col_ptrs, data.A_row_indices, info_M, &buffer_size_M);
 		cusparseScsrsv2_bufferSize(handle, trans_L, m, nnz, descr_L, data.A_values, data.A_col_ptrs, data.A_row_indices, info_L, &buffer_size_L);
 		cusparseScsrsv2_bufferSize(handle, trans_Lt, m, nnz, descr_L, data.A_values, data.A_col_ptrs, data.A_row_indices, info_Lt, &buffer_size_Lt);
@@ -179,7 +179,7 @@ double solve_positive_definite_cusparse(const int m, const int nnz, const real_t
 	buffer_size = max(buffer_size_M, max(buffer_size_L, buffer_size_Lt));
 	cudaMalloc(&buffer, buffer_size);
 
-	#ifdef SINGLE_P
+	#ifdef GPROSHAN_FLOAT
 		cusparseScsric02_analysis(handle, m, nnz, descr_M, data.A_values, data.A_col_ptrs, data.A_row_indices, info_M, policy_M, buffer);
 	#else
 		cusparseDcsric02_analysis(handle, m, nnz, descr_M, data.A_values, data.A_col_ptrs, data.A_row_indices, info_M, policy_M, buffer);
@@ -187,7 +187,7 @@ double solve_positive_definite_cusparse(const int m, const int nnz, const real_t
 	if(CUSPARSE_STATUS_ZERO_PIVOT == cusparseXcsric02_zeroPivot(handle, info_M, &structural_zero))
 		printf("A(%d,%d) is missing\n", structural_zero, structural_zero);
 
-	#ifdef SINGLE_P
+	#ifdef GPROSHAN_FLOAT
 		cusparseScsrsv2_analysis(handle, trans_L, m, nnz, descr_L, data.A_values, data.A_col_ptrs, data.A_row_indices, info_L, policy_L, buffer);
 		cusparseScsrsv2_analysis(handle, trans_Lt, m, nnz, descr_L, data.A_values, data.A_col_ptrs, data.A_row_indices, info_Lt, policy_Lt, buffer);
 
@@ -205,7 +205,7 @@ double solve_positive_definite_cusparse(const int m, const int nnz, const real_t
 	// SOLVE
 	cudaEventRecord(start, 0);
 
-	#ifdef SINGLE_P
+	#ifdef GPROSHAN_FLOAT
 		cusparseScsrsv2_solve(handle, trans_L, m, nnz, &alpha, descr_L, data.A_values, data.A_col_ptrs, data.A_row_indices, info_L, data.b, dy, policy_L, buffer);
 		cusparseScsrsv2_solve(handle, trans_Lt, m, nnz, &alpha, descr_L, data.A_values, data.A_col_ptrs, data.A_row_indices, info_Lt, dy, data.x, policy_Lt, buffer);
 	#else
@@ -280,7 +280,7 @@ double solve_positive_definite_cusolver_preview(const int m, const int nnz, cons
 
 		cusolverSpXcsrcholAnalysisHost(cusolver_handle, m, nnz, descr, hA_col_ptrs, hA_row_indices, info);
 
-		#ifdef SINGLE_P
+		#ifdef GPROSHAN_FLOAT
 			cusolverSpScsrcholBufferInfoHost(cusolver_handle, m, nnz, descr, hA_values, hA_col_ptrs, hA_row_indices, info, &size_iternal, &size_chol);
 		#else
 			cusolverSpDcsrcholBufferInfoHost(cusolver_handle, m, nnz, descr, hA_values, hA_col_ptrs, hA_row_indices, info, &size_iternal, &size_chol);
@@ -288,7 +288,7 @@ double solve_positive_definite_cusolver_preview(const int m, const int nnz, cons
 
 		buffer = new char[size_chol];
 
-		#ifdef SINGLE_P
+		#ifdef GPROSHAN_FLOAT
 			cusolverSpScsrcholFactorHost(cusolver_handle, m, nnz, descr, hA_values, hA_col_ptrs, hA_row_indices, info, buffer);
 			cusolverSpScsrcholZeroPivotHost(cusolver_handle, info, 0, &singularity);
 		#else
@@ -300,7 +300,7 @@ double solve_positive_definite_cusolver_preview(const int m, const int nnz, cons
 		// SOLVE
 		cudaEventRecord(start, 0);
 
-		#ifdef SINGLE_P
+		#ifdef GPROSHAN_FLOAT
 			cusolverSpScsrcholSolveHost(cusolver_handle, m, hb, hx, info, buffer);
 		#else
 			cusolverSpDcsrcholSolveHost(cusolver_handle, m, hb, hx, info, buffer);
@@ -324,7 +324,7 @@ double solve_positive_definite_cusolver_preview(const int m, const int nnz, cons
 
 		cusolverSpXcsrcholAnalysis(cusolver_handle, m, nnz, descr, data.A_col_ptrs, data.A_row_indices, info);
 
-		#ifdef SINGLE_P
+		#ifdef GPROSHAN_FLOAT
 			cusolverSpScsrcholBufferInfo(cusolver_handle, m, nnz, descr, data.A_values, data.A_col_ptrs, data.A_row_indices, info, &size_iternal, &size_chol);
 		#else
 			cusolverSpDcsrcholBufferInfo(cusolver_handle, m, nnz, descr, data.A_values, data.A_col_ptrs, data.A_row_indices, info, &size_iternal, &size_chol);
@@ -332,7 +332,7 @@ double solve_positive_definite_cusolver_preview(const int m, const int nnz, cons
 
 		cudaMalloc(&buffer, size_chol);
 
-		#ifdef SINGLE_P
+		#ifdef GPROSHAN_FLOAT
 			cusolverSpScsrcholFactor(cusolver_handle, m, nnz, descr, data.A_values, data.A_col_ptrs, data.A_row_indices, info, buffer);
 			cusolverSpScsrcholZeroPivot(cusolver_handle, info, 0, &singularity);
 		#else
@@ -345,7 +345,7 @@ double solve_positive_definite_cusolver_preview(const int m, const int nnz, cons
 		// SOLVE
 		cudaEventRecord(start, 0);
 
-		#ifdef SINGLE_P
+		#ifdef GPROSHAN_FLOAT
 			cusolverSpScsrcholSolve(cusolver_handle, m, data.b, data.x, info, buffer);
 		#else
 			cusolverSpDcsrcholSolve(cusolver_handle, m, data.b, data.x, info, buffer);

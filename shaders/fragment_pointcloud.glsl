@@ -50,11 +50,11 @@ void main()
 		h = 1 - h;
 		color = vec3(0) + (1. - h) * color;
 	}
-	
+
 	if(point_normals)
 	{
  		vec3 N = normalize(vs_normal);
-	
+
 		vec3 L = normalize(light - vs_position);
 		vec3 E = normalize(eye - vs_position);
 		vec3 R = 2 * dot(L, N) * N - L;

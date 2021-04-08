@@ -20,11 +20,11 @@
 #include "imgui_impl_opengl3.h"
 
 
-#ifdef SINGLE_P
+#ifdef GPROSHAN_FLOAT
 	#define ImGui_InputReal ImGui::InputFloat
 #else
 	#define ImGui_InputReal ImGui::InputDouble
-#endif // SINGLE_P
+#endif // GPROSHAN_FLOAT
 
 #define N_MESHES 12
 
@@ -131,8 +131,12 @@ class viewer
 		void init_glsl();
 
 		void render_gl();
+	#ifdef GPROSHAN_EMBREE
 		void render_embree();
+	#endif // GPROSHAN_EMBREE
+	#ifdef GPROSHAN_OPTIX
 		void render_optix();
+	#endif // GPROSHAN_OPTIX
 
 		static void framebuffer_size_callback(GLFWwindow * window, int width, int height);
 		static void window_size_callback(GLFWwindow * window, int width, int height);
@@ -155,8 +159,12 @@ class viewer
 		// render options
 		static bool invert_orientation(viewer * view);
 		static bool set_render_gl(viewer * view);
+	#ifdef GPROSHAN_EMBREE
 		static bool set_render_embree(viewer * view);
+	#endif // GPROSHAN_EMBREE
+	#ifdef GPROSHAN_OPTIX
 		static bool set_render_optix(viewer * view);
+	#endif // GPROSHAN_OPTIX
 		static bool set_render_pointcloud(viewer * view);
 		static bool set_render_wireframe(viewer * view);
 		static bool set_render_wireframe_fill(viewer * view);
@@ -166,14 +174,16 @@ class viewer
 		static bool set_render_lines(viewer * view);
 		static bool set_render_flat(viewer * view);
 
+	#ifdef GPROSHAN_EMBREE
 		static bool raycasting(viewer * view);
+	#endif // GPROSHAN_EMBREE
 
 		// draw routines
 		void draw_meshes(shader & program, const bool & normals = false);
 		void draw_selected_vertices(shader & program);
 
 		void select_border_vertices();
-		void pick_vertex(int x, int y);
+		void pick_vertex(const real_t & x, const real_t & y);
 };
 
 

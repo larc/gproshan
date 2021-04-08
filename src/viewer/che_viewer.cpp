@@ -4,6 +4,11 @@
 #include <cmath>
 #include <numeric>
 
+#ifdef GPROSHAN_EMBREE
+	#include "raytracing/rt_embree.h"
+#endif // GPROSHAN_EMBREE
+
+
 using namespace std;
 
 
@@ -71,6 +76,12 @@ void che_viewer::update()
 	mesh->update_normals();
 
 	update_vbo();
+
+
+#ifdef GPROSHAN_EMBREE
+	delete pick_vertex;
+	pick_vertex = new rt::embree({mesh});
+#endif // GPROSHAN_EMBREE
 }
 
 void che_viewer::update_vbo()
@@ -182,6 +193,21 @@ void che_viewer::invert_orientation()
 	#pragma omp parallel for
 	for(index_t v = 0; v < mesh->n_vertices; ++v)
 		mesh->normal(v) = -mesh->normal(v);
+}
+
+void che_viewer::select(const real_t & x, const real_t & y, const glm::uvec2 & windows_size, const glm::mat4 & view_mat, const glm::mat4 & proj_mat)
+{
+	if(!pick_vertex) return;
+
+	glm::vec3 cam_pos = glm::vec3(glm::inverse(view_mat) * glm::vec4(0.f, 0.f, 0.f, 1.f));
+	glm::mat4 inv_proj_view = glm::inverse(proj_mat * view_mat);
+	glm::vec2 screen = glm::vec2(float(x) / windows_size.x, float(windows_size.y - y) / windows_size.y);
+	glm::vec4 view = glm::vec4(screen.x * 2.f - 1.f, screen.y * 2.f - 1.f, 1.f, 1.f);
+	glm::vec4 q = inv_proj_view * view;
+	glm::vec3 p = glm::vec3(q * (1.f / q.w));
+
+	index_t v = pick_vertex->cast_ray(cam_pos, glm::normalize(p - cam_pos));
+	if(v != NIL) selected.push_back(v);
 }
 
 void che_viewer::log_info()

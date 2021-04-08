@@ -58,6 +58,8 @@ void frame::display(const int & width, const int & height, void * buffer)
 {
 	program.enable();
 
+	glViewport(0, 0, width, height);
+
 	glBindVertexArray(vao);
 
 	glActiveTexture(GL_TEXTURE0);

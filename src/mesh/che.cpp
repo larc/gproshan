@@ -300,7 +300,6 @@ vertex che::color(const index_t & v) const
 vertex che::shading_color(const index_t & f, const float & u, const float & v, const float & w) const
 {
 	index_t he = f * che::mtrig;
-
 	return VC ? u * color(VT[he]) + v * color(VT[he + 1]) + w * color(VT[he + 2]) : rgb_t();
 }
 

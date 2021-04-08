@@ -1,8 +1,7 @@
 #include "raytracing/raytracing.h"
 
-#include <iostream>
-#include <random>
 #include <cstring>
+#include <random>
 
 
 // geometry processing and shape analysis framework
@@ -25,10 +24,10 @@ bool raytracing::rt_restart(const size_t & w, const size_t & h)
 {
 	if(width * height < w * h)
 	{
-		delete [] img;
-
 		width = w;
 		height = h;
+
+		delete [] img;
 		img = new glm::vec4[width * height];
 
 		return true;
