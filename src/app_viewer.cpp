@@ -193,7 +193,7 @@ bool app_viewer::process_edge_collapse(viewer * p_view)
 	index_t levels;
 	cin >> levels;
 
-	TIC(view->time) simplification sampling(mesh, &mesh->normal(0), levels); TOC(view->time)
+	TIC(view->time) simplification sampling(mesh, levels); TOC(view->time)
 	gproshan_debug_var(view->time);
 
 	//if(view->n_meshes < 2)

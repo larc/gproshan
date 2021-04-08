@@ -23,7 +23,6 @@ index_t trig(const index_t & he);
 index_t next(const index_t & he);
 index_t prev(const index_t & he);
 
-struct corr_t;
 
 class che
 {
@@ -100,7 +99,6 @@ class che
 		vertex gradient_he(const index_t & he, const real_t *const & f) const;
 		vertex gradient(const index_t & v, const real_t *const & f);
 		vertex barycenter(const index_t & t) const;
-		vertex corr_vertex(corr_t & corr) const;
 		real_t cotan(const index_t & he) const;
 		real_t mean_edge() const;
 		size_t memory() const;
@@ -136,8 +134,7 @@ class che
 		void merge(const che * mesh, const std::vector<index_t> & com_vertices);
 		void set_head_vertices(index_t * head, const size_t & n);
 		index_t link_intersect(const index_t & v_a, const index_t & v_b);
-		corr_t * edge_collapse(const index_t *const & sort_edges, const vertex *const & normals);
-		corr_t find_corr(const vertex & v, const vertex & n, const std::vector<index_t> & triangles);
+		void edge_collapse(const index_t *const & sort_edges);
 
 	protected:
 		void init(const vertex * vertices, const index_t & n_v, const index_t * faces, const index_t & n_f);
@@ -170,26 +167,6 @@ struct CHE
 	index_t * EVT;
 
 	CHE(che * mesh);
-};
-
-struct corr_t
-{
-	index_t t;
-	vertex alpha;
-
-	corr_t()
-	{
-		t = NIL;
-	}
-
-	void init(const index_t & he)
-	{
-		t = trig(he) * che::mtrig;
-		alpha[0] = he == t;
-		alpha[1] = he == next(t);
-		alpha[2] = he == prev(t);
-		t /= che::mtrig;
-	}
 };
 
 

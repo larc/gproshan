@@ -16,16 +16,14 @@ class simplification
 	private:
 		a_mat * Q;
 		che * mesh;
-		corr_t * corr;
 		index_t levels;
 
 	public:
-		simplification(che * mesh, const vertex *const & normals, const index_t & levels_ = 1);
+		simplification(che * mesh, const index_t & levels_ = 1);
 		~simplification();
-		operator const corr_t * ();
 
 	private:
-		void execute(const vertex *const & normals);
+		void execute();
 		void compute_quadrics();
 		real_t compute_error(const index_t & e);
 		void order_edges(index_t * const & sort_edges, real_t * const & error_edges);
