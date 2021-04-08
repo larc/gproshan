@@ -29,6 +29,7 @@ class embree : public raytracing
 			glm::vec3 dir() const;
 			glm::vec3 color(const rt_mesh & mesh) const;
 			glm::vec3 normal(const rt_mesh & mesh, const bool & flat = false) const;
+			index_t closest_vertex(const rt_mesh & mesh) const;
 			glm::vec3 position() const;
 		};
 

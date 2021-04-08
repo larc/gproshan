@@ -61,6 +61,28 @@ glm::vec3 embree::ray_hit::normal(const rt_mesh & mesh, const bool & flat) const
 	return glm::normalize(glm::vec3(n.x, n.y, n.z));
 }
 
+index_t embree::ray_hit::closest_vertex(const rt_mesh & mesh) const
+{
+	if(mesh.pointcloud) return hit.primID;
+
+	index_t he = che::mtrig * hit.primID;
+	float w = 1 - hit.u - hit.v;
+
+	if(w < hit.u)
+	{
+		he = che::mtrig * hit.primID + 1;
+		w = hit.u;
+	}
+
+	if(w < hit.v)
+	{
+		he = che::mtrig * hit.primID + 2;
+		w = hit.v;
+	}
+
+	return mesh->vt(he);
+}
+
 glm::vec3 embree::ray_hit::position() const
 {
 	return org() + ray.tfar * dir();
@@ -72,7 +94,7 @@ void embree_error(void *, RTCError, const char * str)
 	fprintf(stderr, "EMBREE ERROR: %s\n", str);
 }
 
-float embree::pc_radius = 0.001;
+float embree::pc_radius = 0.005;
 
 embree::embree()
 {
@@ -97,24 +119,7 @@ embree::~embree()
 index_t embree::cast_ray(const glm::vec3 & org, const glm::vec3 & dir)
 {
 	ray_hit r(org, dir);
-	if(!intersect(r)) return NIL;
-
-	index_t he = che::mtrig * r.hit.primID;
-	float w = 1 - r.hit.u - r.hit.v;
-
-	if(w < r.hit.u)
-	{
-		he = che::mtrig * r.hit.primID + 1;
-		w = r.hit.u;
-	}
-
-	if(w < r.hit.v)
-	{
-		he = che::mtrig * r.hit.primID + 2;
-		w = r.hit.v;
-	}
-
-	return geomID_mesh[r.hit.geomID]->vt(he);
+	return intersect(r) ? r.closest_vertex(geomID_mesh[r.hit.geomID]) : NIL;
 }
 
 bool embree::intersect(ray_hit & r)
