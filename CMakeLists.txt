@@ -77,7 +77,7 @@ target_link_libraries(imgui GLEW::GLEW)
 target_link_libraries(imgui glfw)
 
 
-include_directories(${gproshan_SOURCE_DIR}/include)
+include_directories(${gproshan_SOURCE_DIR}/include/gproshan)
 add_compile_definitions(GPROSHAN_DIR="${gproshan_SOURCE_DIR}")
 
 
