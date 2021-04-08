@@ -45,6 +45,8 @@ class embree : public raytracing
 		embree(const std::vector<che *> & meshes, const bool & pointcloud = false);
 		virtual ~embree();
 
+		virtual index_t cast_ray(const glm::vec3 & org, const glm::vec3 & dir);
+
 	protected:
 		bool intersect(ray_hit & r);
 		bool occluded(ray_hit & r);

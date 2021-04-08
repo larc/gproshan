@@ -183,7 +183,7 @@ class viewer
 		void draw_selected_vertices(shader & program);
 
 		void select_border_vertices();
-		void pick_vertex(int x, int y);
+		void pick_vertex(const real_t & x, const real_t & y);
 };
 
 

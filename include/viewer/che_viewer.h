@@ -3,6 +3,7 @@
 
 #include "mesh/che.h"
 #include "viewer/shader.h"
+#include "raytracing/raytracing.h"
 
 #include "viewer/include_opengl.h"
 
@@ -24,6 +25,7 @@ class che_viewer
 {
 	protected:
 		che * mesh = nullptr;
+		rt::raytracing * pick_vertex = nullptr;
 
 		size_t n_instances = 0;
 		bool normalize = false;
@@ -52,6 +54,7 @@ class che_viewer
 
 		void translate(const vertex & p);
 		void invert_orientation();
+		void select(const real_t & x, const real_t & y, const glm::uvec2 & windows_size, const glm::mat4 & view_mat, const glm::mat4 & proj_mat);
 
 		void log_info();
 };

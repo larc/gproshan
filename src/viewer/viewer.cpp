@@ -899,9 +899,9 @@ void viewer::select_border_vertices()
 			mesh.selected.push_back(mesh->vt(he));
 }
 
-void viewer::pick_vertex(int, int)
+void viewer::pick_vertex(const real_t & x, const real_t & y)
 {
-	gproshan_log(VIEWER);
+	active_mesh().select(x, y, {viewport_width, viewport_height}, view_mat, proj_mat);
 }
 
 

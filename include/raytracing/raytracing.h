@@ -56,6 +56,7 @@ class raytracing
 									const index_t & samples = 4
 									);
 
+		virtual index_t cast_ray(const glm::vec3 & org, const glm::vec3 & dir) = 0;
 
 	protected:
 		virtual glm::vec4 intersect_li(	const glm::vec3 & org,

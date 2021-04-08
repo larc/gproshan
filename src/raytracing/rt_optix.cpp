@@ -84,6 +84,11 @@ optix::~optix()
 {
 }
 
+index_t optix::cast_ray(const glm::vec3 & org, const glm::vec3 & dir)
+{
+	return NIL;
+}
+
 OptixTraversableHandle optix::build_as(const std::vector<che *> & meshes)
 {
 	OptixTraversableHandle optix_as_handle = {};

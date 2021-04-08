@@ -94,6 +94,29 @@ embree::~embree()
 	rtcReleaseDevice(device);
 }
 
+index_t embree::cast_ray(const glm::vec3 & org, const glm::vec3 & dir)
+{
+	ray_hit r(org, dir);
+	if(!intersect(r)) return NIL;
+
+	index_t he = che::mtrig * r.hit.primID;
+	float w = 1 - r.hit.u - r.hit.v;
+
+	if(w < r.hit.u)
+	{
+		he = che::mtrig * r.hit.primID + 1;
+		w = r.hit.u;
+	}
+
+	if(w < r.hit.v)
+	{
+		he = che::mtrig * r.hit.primID + 2;
+		w = r.hit.v;
+	}
+
+	return geomID_mesh[r.hit.geomID]->vt(he);
+}
+
 bool embree::intersect(ray_hit & r)
 {
 	rtcIntersect1(scene, &intersect_context, &r);

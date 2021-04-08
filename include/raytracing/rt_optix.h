@@ -30,6 +30,8 @@ class optix : public raytracing
 		optix(const std::vector<che *> & meshes);
 		~optix();
 
+		virtual index_t cast_ray(const glm::vec3 & org, const glm::vec3 & dir);
+
 	private:
 		glm::vec4 intersect_li(const glm::vec3 & org, const glm::vec3 & dir, const glm::vec3 & light, const bool & flat);
 		float intersect_depth(const glm::vec3 & org, const glm::vec3 & dir);
