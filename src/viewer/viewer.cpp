@@ -20,6 +20,7 @@
 #ifdef GPROSHAN_EMBREE
 	#include "raytracing/rt_embree.h"
 	#include "raytracing/rt_embree_splat.h"
+	#include "raytracing/rt_embree_splat_ch.h"
 #endif // GPROSHAN_EMBREE
 
 #ifdef GPROSHAN_OPTIX
@@ -629,7 +630,7 @@ bool viewer::set_render_embree(viewer * view)
 
 	if(!view->rt_embree)
 	{
-		ImGui::Combo("rt opt", &rt_opt, "Mesh\0Splat\0\0");
+		ImGui::Combo("rt opt", &rt_opt, "Mesh\0Splat\0Splat Convex Hull\0\0");
 		ImGui::InputFloat("pc radius", &rt::embree::pc_radius, 0, 0, "%.4f");
 
 		if(ImGui::Button("Start"))
@@ -639,9 +640,11 @@ bool viewer::set_render_embree(viewer * view)
 			TIC(time);
 			switch(rt_opt)
 			{
-				case 0: view->rt_embree = new rt::embree({view->active_mesh()});
+				case 0: view->rt_embree = new rt::embree({view->active_mesh()}, view->render_pointcloud);
 						break;
 				case 1: view->rt_embree = new rt::embree_splat({view->active_mesh()}, true);
+						break;
+				case 2: view->rt_embree = new rt::embree_splat_ch({view->active_mesh()}, true);
 						break;
 			}
 			TOC(time);
