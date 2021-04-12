@@ -11,6 +11,10 @@
 // raytracing approach
 namespace gproshan::rt {
 
+inline glm::vec3 glm_vec3(const vertex & v)
+{
+	return glm::vec3(v.x, v.y, v.z);
+}
 
 class embree_splat_ch : public embree
 {
@@ -18,39 +22,26 @@ class embree_splat_ch : public embree
 
 	struct splat
 	{
-		glm::vec3 P[K];
-		glm::vec3 N[K];
-		glm::vec3 C[K];
-		float radio;
+		std::vector<index_t> points;
 
-		const glm::vec4 xyzr()
+		operator std::vector<index_t> & ()
 		{
-			return glm::vec4(P[0], radio);
+			return points;
 		}
 
-		const glm::vec3 & normal()
-		{
-			return N[0];
-		}
-
-		const glm::vec3 & color()
-		{
-			return C[0];
-		}
-
-		float shading(const glm::vec3 & p, glm::vec3 & normal, glm::vec3 & color)
+		float shading(const rt_mesh & mesh, const glm::vec3 & p, glm::vec3 & normal, glm::vec3 & color)
 		{
 			normal = glm::vec3(0);
 			color = glm::vec3(0);
 
-			float w, sum_w = 0, sigma = radio * pc_radius;
+			float w, sum_w = 0, sigma = pc_radius;
 
-			for(index_t i = 0; i < K; ++i)
+			for(index_t & v: points)
 			{
-				w = glm::length(p - P[i]);
+				w = glm::length(p - glm_vec3(mesh->gt(v)));
 				w = exp(-0.5 * w * w / (sigma * sigma));
-				normal += w * N[i];
-				color += w * C[i];
+				normal += w * glm_vec3(mesh->normal(v));
+				color += w * glm_vec3(mesh->color(v));
 				sum_w += w;
 			}
 
@@ -62,6 +53,7 @@ class embree_splat_ch : public embree
 	};
 
 	std::vector<splat> vsplat;
+	che * ch_mesh = nullptr;
 
 	public:
 		embree_splat_ch(const std::vector<che *> & meshes, const bool & pointcloud);
