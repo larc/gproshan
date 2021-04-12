@@ -18,7 +18,7 @@ inline glm::vec3 glm_vec3(const vertex & v)
 
 class embree_splat_ch : public embree
 {
-	static const size_t K = 32;
+	static const size_t K = 1024;
 
 	struct splat
 	{
@@ -53,6 +53,8 @@ class embree_splat_ch : public embree
 	};
 
 	std::vector<splat> vsplat;
+	std::vector<index_t> primID_splat;
+
 
 	public:
 		embree_splat_ch(const std::vector<che *> & meshes, const bool & pointcloud);
