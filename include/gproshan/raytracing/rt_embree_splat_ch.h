@@ -53,7 +53,6 @@ class embree_splat_ch : public embree
 	};
 
 	std::vector<splat> vsplat;
-	che * ch_mesh = nullptr;
 
 	public:
 		embree_splat_ch(const std::vector<che *> & meshes, const bool & pointcloud);

@@ -2,7 +2,9 @@
 
 #ifdef GPROSHAN_EMBREE
 
+#include "mesh/che_off.h"
 
+#include <cstring>
 #include <set>
 #include <queue>
 
@@ -15,27 +17,100 @@ namespace gproshan::rt {
 embree_splat_ch::embree_splat_ch(const std::vector<che *> & meshes, const bool & pointcloud)
 {
 	build_bvh(meshes, pointcloud);
+
+	for(auto & p: geomID_mesh)
+		p.second.pointcloud = false;
 }
 
 index_t embree_splat_ch::add_pointcloud(const che * mesh)
 {
 	init_splats(mesh);
 
-	return add_mesh(mesh);
+	std::vector<index_t> vstart(vsplat.size() + 1);
+	std::vector<index_t> fstart(vsplat.size() + 1);
+	std::vector<convex_hull *> vch(vsplat.size());
+
+	vstart[0] = 0;
+	for(index_t i = 1; i < vstart.size(); ++i)
+		vstart[i] = vstart[i - 1] + vsplat[i - 1].points.size();
+
+	std::vector<vertex> vertices(vstart.back());
+
+	#pragma omp parallel for
+	for(index_t i = 0; i < vsplat.size(); ++i)
+	{
+		const index_t & begin = vstart[i];
+		const index_t & end = vstart[i + 1];
+
+		std::vector<index_t> & points = vsplat[i];
+
+		vertex c, t, b, n = 0;
+
+		for(index_t j = 0; j < points.size(); ++j)
+		{
+			index_t & v = points[j];
+			vertices[j + begin] = mesh->gt(v);
+			n += mesh->normal(v);
+			v = j + begin;
+		}
+
+		n = n.unit();
+		c = vertices[begin];
+		t = vertices[end - 1] - c;
+		t = (t - ((t, n) * n)).unit();
+		b = (n * t).unit();
+
+		for(index_t j = begin; j < end; ++j)
+		{
+			vertex & v = vertices[j];
+			v -= c;
+			v = {(t, v), (b, v), (n, b)};
+		}
+
+		vch[i] = new convex_hull(vertices.data() + begin, points.size());
+
+		for(index_t j = begin; j < end; ++j)
+		{
+			vertex & v = vertices[j];
+			v = vertex{	(vertex{t.x, b.x, n.x}, v),
+						(vertex{t.y, b.y, n.y}, v),
+						(vertex{t.z, b.z, n.z}, v)
+						} + c;
+		}
+	}
+
+
+	fstart[0] = 0;
+	for(index_t i = 1; i < fstart.size(); ++i)
+		fstart[i] = fstart[i - 1] + (((std::vector<index_t> &)*vch[i - 1]).size() - 2) *3;
+
+	std::vector<index_t> faces(fstart.back());
+
+	#pragma omp parallel for
+	for(index_t i = 0; i < vsplat.size(); ++i)
+	{
+		const std::vector<index_t> & trigs = *vch[i];
+
+		const index_t & tj = fstart[i];
+		index_t j = 0;
+		for(index_t & v: che::trig_convex_polygon(trigs.data(), trigs.size()))
+		{
+			faces[j + tj] = v + vstart[i];
+			++j;
+		}
+	}
+
+	for(convex_hull * ch: vch)
+		delete ch;
+
+	return add_mesh(new che(vertices.data(), vertices.size(), faces.data(), faces.size() / 3));
 }
 
 float embree_splat_ch::pointcloud_hit(glm::vec3 & position, glm::vec3 & normal, glm::vec3 & color, ray_hit r)
 {
 	position = r.position();
 	float w = vsplat[r.hit.primID].shading(geomID_mesh[r.hit.geomID], position, normal, color);
-	// normal = vsplat[r.hit.primID].normal();
-	// color = vsplat[r.hit.primID].color();
-/*	if(w < 1e-2f)
-	{
-		normal = glm::vec3(0);
-		color = glm::vec3(0);
-	}
-*/
+
 	if(w < 1e-5f)
 	{
 		r = ray_hit(r.position(), r.dir());
@@ -80,9 +155,13 @@ void embree_splat_ch::init_splats(const che * mesh)
 			q.pop();
 		}
 
+		const vertex & n = mesh->normal(*points.begin());
+
 		std::vector<index_t> & s = vsplat[i];
 		for(const index_t & p: points)
-			s.push_back(p);
+			if((n, mesh->normal(p)) > 0.75)
+				s.push_back(p);
+			else break;
 	}
 }
 
