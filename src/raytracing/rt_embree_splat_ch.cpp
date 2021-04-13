@@ -118,15 +118,21 @@ float embree_splat_ch::pointcloud_hit(glm::vec3 & position, glm::vec3 & normal, 
 
 void embree_splat_ch::init_splats(const che * mesh)
 {
-	const size_t n = 100;
-	vsplat.resize((mesh->n_vertices + n - 1) / n);
+	vsplat.reserve(mesh->n_vertices);
 
-	gproshan_log_var(vsplat.size());
+	std::vector<bool> visited;
+	visited.assign(mesh->n_vertices, 0);
 
-	#pragma omp parallel for
-	for(index_t i = 0; i < vsplat.size(); ++i)
+	const real_t r_threshold = 0.95;
+	const real_t n_threshold = 0.65;
+	const size_t max_neigs = 1024;
+
+	real_t radio;
+	for(index_t v = 0; v < mesh->n_vertices; ++v)
 	{
-		const index_t v = n * i;	// random, feature aware index
+		if(visited[v]) continue;
+
+		vsplat.push_back(splat());
 
 		std::set<index_t> points;
 		std::queue<index_t> q;
@@ -135,7 +141,7 @@ void embree_splat_ch::init_splats(const che * mesh)
 		points.insert(v);
 
 		index_t u;
-		while(!q.empty() && points.size() < K)
+		while(!q.empty() && points.size() < max_neigs)
 		{
 			for_star(he, mesh, q.front())
 			{
@@ -150,14 +156,27 @@ void embree_splat_ch::init_splats(const che * mesh)
 			q.pop();
 		}
 
-		const vertex & n = mesh->normal(*points.begin());
+		const vertex & n = mesh->normal(v);
+		const vertex & c = mesh->gt(v);
 
-		std::vector<index_t> & s = vsplat[i];
+		radio = 0;
+
+		std::vector<index_t> & splat_points = vsplat.back();
 		for(const index_t & p: points)
-			if((n, mesh->normal(p)) > 0.85)
-				s.push_back(p);
+			if((n, mesh->normal(p)) > n_threshold)
+			{
+				splat_points.push_back(p);
+				radio = std::max(radio, *(mesh->gt(p) - c));
+			}
 			else break;
+
+		radio *= r_threshold;
+		for(const index_t & p: splat_points)
+			visited[p] = *(mesh->gt(p) - c) < radio;
+
 	}
+
+	gproshan_error_var(float(vsplat.size()) / mesh->n_vertices);
 }
 
 

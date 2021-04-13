@@ -18,8 +18,6 @@ inline glm::vec3 glm_vec3(const vertex & v)
 
 class embree_splat_ch : public embree
 {
-	static const size_t K = 1024;
-
 	struct splat
 	{
 		std::vector<index_t> points;
