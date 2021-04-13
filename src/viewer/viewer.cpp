@@ -145,9 +145,9 @@ bool viewer::run()
 					for(auto & p: processes)
 					{
 						process_t & pro = p.second;
-
 						if(pro.function != nullptr && pro.sub_menu == i)
-							ImGui::MenuItem(pro.name.c_str(), ('[' + pro.key + ']').c_str(), &pro.selected);
+							if(ImGui::MenuItem(pro.name.c_str(), ('[' + pro.key + ']').c_str(), &pro.selected))
+								sprintf(status_message, "%s", pro.selected ? pro.name.c_str() : "");
 					}
 
 					ImGui::EndMenu();
