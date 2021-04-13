@@ -128,9 +128,9 @@ void embree_splat::init_splats(const che * mesh)
 
 			points.erase(u);
 
-			s.P[j] = glm::vec3(mesh->gt(u).x, mesh->gt(u).y, mesh->gt(u).z);
-			s.N[j] = glm::vec3(mesh->normal(u).x, mesh->normal(u).y, mesh->normal(u).z);
-			s.C[j] = glm::vec3(mesh->color(u).x, mesh->color(u).y, mesh->color(u).z);
+			s.P[j] = glm_vec3(mesh->gt(u));
+			s.N[j] = glm_vec3(mesh->normal(u));
+			s.C[j] = glm_vec3(mesh->color(u));
 		}
 
 		s.radio = glm::length(s.P[K - 1] - s.P[0]);
