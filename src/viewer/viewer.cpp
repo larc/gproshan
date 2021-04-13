@@ -120,7 +120,7 @@ bool viewer::run()
 			if(ImGui::BeginMenu("Select"))
 			{
 				for(index_t i = 0; i < n_meshes; ++i)
-					if(ImGui::MenuItem((to_string(i) + ". " + meshes[i]->filename).c_str(), nullptr, i == idx_active_mesh, i != idx_active_mesh))
+					if(ImGui::MenuItem((to_string(i) + ": " + meshes[i]->filename).c_str(), nullptr, i == idx_active_mesh, i != idx_active_mesh))
 					{
 						idx_active_mesh = i;
 						sphere_translations.clear();
@@ -158,9 +158,22 @@ bool viewer::run()
 			ImGui::EndMainMenuBar();
 		}
 
+		ImGui::SetNextWindowSize(ImVec2(window_width, -1));
+		ImGui::SetNextWindowPos(ImVec2(0, window_height - 32));
+		ImGui::Begin("status gproshan", nullptr, ImGuiWindowFlags_NoTitleBar);
+		ImGui::Text("github.com/larc/gproshan");
+		ImGui::End();
+
 		ImGui::SetNextWindowSize(ImVec2(320, -1));
-		ImGui::SetNextWindowPos(ImVec2(0, 20), ImGuiCond_Once);
+		ImGui::SetNextWindowPos(ImVec2(20, 60), ImGuiCond_Once);
 		ImGui::Begin("gproshan");
+
+		ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.5);
+
+		che_viewer & mesh = active_mesh();
+		ImGui::Text("%s", mesh->filename.c_str());
+		ImGui::Text("%16s: %10lu", "n_vertices", mesh->n_vertices);
+		ImGui::Text("%16s: %10lu", "n_faces", mesh->n_faces);
 
 		if(render_pointcloud)
 		{
@@ -634,7 +647,7 @@ bool viewer::set_render_embree(viewer * view)
 	{
 		case 0:
 		case 1:
-			ImGui::InputFloat("pc radius", &rt::embree::pc_radius, 0, 0, "%.4f");
+			ImGui::InputFloat("pc_radius", &rt::embree::pc_radius, 0, 0, "%.4f");
 			break;
 		case 2:
 			ImGui::SliderFloat("r_threshold", &rt::embree_splat_ch::r_threshold, 0.01, 1, "%.2f");
@@ -645,7 +658,6 @@ bool viewer::set_render_embree(viewer * view)
 
 	if(!view->rt_embree)
 	{
-
 		if(ImGui::Button("Start"))
 		{
 			view->render_opt = R_EMBREE;
