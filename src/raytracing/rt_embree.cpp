@@ -49,7 +49,7 @@ glm::vec3 embree::ray_hit::color(const rt_mesh & mesh) const
 {
 	const vertex & c = mesh.pointcloud ? mesh->color(hit.primID) :
 										 mesh->shading_color(hit.primID, 1.0 - hit.u - hit.v, hit.u, hit.v);
-	return glm::vec3(c.x, c.y, c.z);
+	return glm_vec3(c);
 }
 
 glm::vec3 embree::ray_hit::normal(const rt_mesh & mesh, const bool & flat) const
@@ -58,7 +58,7 @@ glm::vec3 embree::ray_hit::normal(const rt_mesh & mesh, const bool & flat) const
 		return glm::normalize(glm::vec3(hit.Ng_x, hit.Ng_y, hit.Ng_z));
 
 	const vertex & n = mesh->shading_normal(hit.primID, 1.0 - hit.u - hit.v, hit.u, hit.v);
-	return glm::normalize(glm::vec3(n.x, n.y, n.z));
+	return glm::normalize(glm_vec3(n));
 }
 
 index_t embree::ray_hit::closest_vertex(const rt_mesh & mesh) const
@@ -210,8 +210,8 @@ index_t embree::add_pointcloud(const che * mesh)
 	#pragma omp parallel for
 	for(index_t i = 0; i < mesh->n_vertices; ++i)
 	{
-		pxyzr[i] = glm::vec4(mesh->gt(i).x, mesh->gt(i).y, mesh->gt(i).z, pc_radius);
-		normal[i] = glm::vec3(mesh->normal(i).x, mesh->normal(i).y, mesh->normal(i).z);
+		pxyzr[i] = glm::vec4(glm_vec3(mesh->gt(i)), pc_radius);
+		normal[i] = glm_vec3(mesh->normal(i));
 	}
 
 	rtcCommitGeometry(geom);
