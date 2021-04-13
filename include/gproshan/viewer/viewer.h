@@ -113,6 +113,8 @@ class viewer
 		std::vector<vertex> vectors;
 		std::vector<std::string> sub_menus;
 
+		char status_message[1024] = {};
+
 	public:
 		viewer(int width = 1600, int height = 900);
 		virtual ~viewer();

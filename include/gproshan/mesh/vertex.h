@@ -6,6 +6,9 @@
 #include <iostream>
 
 
+#define glm_vec3(v) glm::vec3((v)[0], (v)[1], (v)[2])
+
+
 // geometry processing and shape analysis framework
 namespace gproshan {
 
