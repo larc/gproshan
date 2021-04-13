@@ -129,7 +129,7 @@ bool viewer::run()
 				ImGui::EndMenu();
 			}
 
-			if(ImGui::BeginMenu("Colormap"))
+			if(ImGui::BeginMenu("Color"))
 			{
 				for(index_t i = 0; i < colormap.size(); ++i)
 					if(ImGui::MenuItem(colormap[i].c_str(), nullptr, i == idx_colormap, i != idx_colormap))
@@ -160,6 +160,8 @@ bool viewer::run()
 		ImGui::SetNextWindowSize(ImVec2(window_width, -1));
 		ImGui::SetNextWindowPos(ImVec2(0, window_height - 32));
 		ImGui::Begin("status gproshan", nullptr, ImGuiWindowFlags_NoTitleBar);
+		ImGui::Text("[] %s", status_message);
+		ImGui::SameLine(window_width - 180);
 		ImGui::Text("github.com/larc/gproshan");
 		ImGui::End();
 
@@ -194,6 +196,7 @@ bool viewer::run()
 			}
 		}
 
+		ImGui::PopItemWidth();
 		ImGui::End();
 
 		ImGui::Render();
@@ -398,8 +401,12 @@ void viewer::keyboard_callback(GLFWwindow * window, int key, int, int action, in
 	viewer * view = (viewer *) glfwGetWindowUserPointer(window);
 	if(ImGui::GetIO().WantCaptureKeyboard) return;
 
-	if(view->processes[key].function)
-		view->processes[key].selected = !view->processes[key].selected;
+	process_t & pro = view->processes[key];
+	if(pro.function)
+	{
+		pro.selected = !pro.selected;
+		sprintf(view->status_message, "%s", pro.selected ? pro.name.c_str() : "");
+	}
 }
 
 void viewer::mouse_callback(GLFWwindow * window, int button, int action, int mods)
@@ -458,11 +465,9 @@ bool viewer::menu_save_load_view(viewer * view)
 {
 	filesystem::create_directory(tmp_file_path("views/"));
 
-
 	static char file[128] = "new_view";
 
 	ImGui::InputText("##savefile", file, sizeof(file));
-
 	ImGui::SameLine();
 
 	if(ImGui::Button("Save"))
@@ -471,7 +476,6 @@ bool viewer::menu_save_load_view(viewer * view)
 		os << view->cam;
 		os.close();
 	}
-
 
 	static index_t select = 0;
 	static vector<string> vfiles;
@@ -504,7 +508,6 @@ bool viewer::menu_save_load_view(viewer * view)
 		is >> view->cam;
 		is.close();
 	}
-
 
 	return true;
 }
@@ -565,6 +568,8 @@ bool viewer::menu_save_mesh(viewer * view)
 			case 3: che_xyz::write_file(mesh, file, vertex_color);
 				break;
 		}
+
+		sprintf(view->status_message, "file '%s' saved.", file);
 	}
 
 	return true;
