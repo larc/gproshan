@@ -83,7 +83,7 @@ bool viewer::run()
 		center	= vertex(0., 0., 0.);
 		up		= vertex(0., 1., 0.);
 
-		light = vertex(-1., 1., -2.);
+		light	= vertex(-1., 1., -2.);
 
 		quaternion r = cam.current_rotation();
 
@@ -93,10 +93,7 @@ bool viewer::run()
 
 
 		proj_mat = glm::perspective(45.f, float(viewport_width) / float(viewport_height), .01f, 1000.f);
-		view_mat = glm::lookAt(	glm::vec3(eye[1], eye[2], eye[3]),
-								glm::vec3(center[1], center[2], center[3]),
-								glm::vec3(up[1], up[2], up[3])
-								);
+		view_mat = glm::lookAt(glm_vec3(eye), glm_vec3(center), glm_vec3(up));
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		switch(render_opt)
@@ -775,15 +772,15 @@ bool viewer::raycasting(viewer * view)
 
 void viewer::render_gl()
 {
-	glProgramUniform3f(shader_sphere, shader_sphere("eye"), eye[1], eye[2], eye[3]);
-	glProgramUniform3f(shader_sphere, shader_sphere("light"), light[1], light[2], light[3]);
+	glProgramUniform3f(shader_sphere, shader_sphere("eye"), eye[0], eye[1], eye[2]);
+	glProgramUniform3f(shader_sphere, shader_sphere("light"), light[0], light[1], light[2]);
 	glProgramUniformMatrix4fv(shader_sphere, shader_sphere("model_view_mat"), 1, 0, &view_mat[0][0]);
 	glProgramUniformMatrix4fv(shader_sphere, shader_sphere("proj_mat"), 1, 0, &proj_mat[0][0]);
 	glProgramUniform1f(shader_sphere, shader_sphere("scale"), cam.zoom);
 
 	glProgramUniform1ui(shader_triangles, shader_triangles("idx_colormap"), idx_colormap);
-	glProgramUniform3f(shader_triangles, shader_triangles("eye"), eye[1], eye[2], eye[3]);
-	glProgramUniform3f(shader_triangles, shader_triangles("light"), light[1], light[2], light[3]);
+	glProgramUniform3f(shader_triangles, shader_triangles("eye"), eye[0], eye[1], eye[2]);
+	glProgramUniform3f(shader_triangles, shader_triangles("light"), light[0], light[1], light[2]);
 	glProgramUniform1i(shader_triangles, shader_triangles("render_flat"), render_flat);
 	glProgramUniform1i(shader_triangles, shader_triangles("render_lines"), render_lines);
 	glProgramUniform1i(shader_triangles, shader_triangles("render_wireframe"), render_wireframe_fill);
@@ -791,8 +788,8 @@ void viewer::render_gl()
 	glProgramUniformMatrix4fv(shader_triangles, shader_triangles("proj_mat"), 1, 0, &proj_mat[0][0]);
 
 	glProgramUniform1ui(shader_pointcloud, shader_pointcloud("idx_colormap"), idx_colormap);
-	glProgramUniform3f(shader_pointcloud, shader_pointcloud("eye"), eye[1], eye[2], eye[3]);
-	glProgramUniform3f(shader_pointcloud, shader_pointcloud("light"), light[1], light[2], light[3]);
+	glProgramUniform3f(shader_pointcloud, shader_pointcloud("eye"), eye[0], eye[1], eye[2]);
+	glProgramUniform3f(shader_pointcloud, shader_pointcloud("light"), light[0], light[1], light[2]);
 	glProgramUniformMatrix4fv(shader_pointcloud, shader_pointcloud("model_view_mat"), 1, 0, &view_mat[0][0]);
 	glProgramUniformMatrix4fv(shader_pointcloud, shader_pointcloud("proj_mat"), 1, 0, &proj_mat[0][0]);
 	glProgramUniform1i(shader_pointcloud, shader_pointcloud("point_normals"), point_normals);
@@ -831,7 +828,7 @@ void viewer::render_gl()
 void viewer::render_embree()
 {
 	rt_embree->pathtracing(	glm::uvec2(viewport_width, viewport_height),
-							view_mat, proj_mat, {glm::vec3(light[1], light[2], light[3])},
+							view_mat, proj_mat, {glm_vec3(light)},
 							render_flat, action
 							);
 
@@ -855,7 +852,7 @@ void viewer::render_optix()
 	}
 
 	rt_optix->pathtracing(	glm::uvec2(viewport_width, viewport_height),
-							view_mat, proj_mat, {glm::vec3(light[1], light[2], light[3])}, action);
+							view_mat, proj_mat, {glm_vec3(light)}, action);
 
 	action = false;
 	render_frame->display(viewport_width, viewport_height, rt_optix->img);
