@@ -50,9 +50,14 @@ class embree_splat_ch : public embree
 		}
 	};
 
-	std::vector<splat> vsplat;
-	std::vector<index_t> primID_splat;
+	public:
+		static float r_threshold;
+		static float n_threshold;
+		static size_t max_neigs;
 
+	private:
+		std::vector<splat> vsplat;
+		std::vector<index_t> primID_splat;
 
 	public:
 		embree_splat_ch(const std::vector<che *> & meshes, const bool & pointcloud);

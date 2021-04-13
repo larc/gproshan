@@ -628,10 +628,23 @@ bool viewer::set_render_embree(viewer * view)
 	static int rt_opt = 0;
 	static double time = 0;
 
+	ImGui::Combo("rt_opt", &rt_opt, "Mesh\0Splat\0Splat Convex Hull\0\0");
+
+	switch(rt_opt)
+	{
+		case 0:
+		case 1:
+			ImGui::InputFloat("pc radius", &rt::embree::pc_radius, 0, 0, "%.4f");
+			break;
+		case 2:
+			ImGui::SliderFloat("r_threshold", &rt::embree_splat_ch::r_threshold, 0.01, 1, "%.2f");
+			ImGui::SliderFloat("n_threshold", &rt::embree_splat_ch::n_threshold, 0.01, 1, "%.2f");
+			ImGui::InputScalar("max_neigs", ImGuiDataType_U64, &rt::embree_splat_ch::max_neigs);
+			break;
+	}
+
 	if(!view->rt_embree)
 	{
-		ImGui::Combo("rt opt", &rt_opt, "Mesh\0Splat\0Splat Convex Hull\0\0");
-		ImGui::InputFloat("pc radius", &rt::embree::pc_radius, 0, 0, "%.4f");
 
 		if(ImGui::Button("Start"))
 		{
@@ -656,8 +669,6 @@ bool viewer::set_render_embree(viewer * view)
 	else
 	{
 		view->render_opt = R_EMBREE;
-
-		ImGui::LabelText("disk radius", "%.4f", rt::embree::pc_radius);
 
 		if(ImGui::Button("Restart"))
 		{

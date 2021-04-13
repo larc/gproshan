@@ -14,6 +14,10 @@
 namespace gproshan::rt {
 
 
+float embree_splat_ch::r_threshold = 0.85;
+float embree_splat_ch::n_threshold = 0.85;
+size_t embree_splat_ch::max_neigs = 64;
+
 embree_splat_ch::embree_splat_ch(const std::vector<che *> & meshes, const bool & pointcloud)
 {
 	build_bvh(meshes, pointcloud);
@@ -123,9 +127,6 @@ void embree_splat_ch::init_splats(const che * mesh)
 	std::vector<bool> visited;
 	visited.assign(mesh->n_vertices, 0);
 
-	const real_t r_threshold = 0.95;
-	const real_t n_threshold = 0.65;
-	const size_t max_neigs = 1024;
 
 	real_t radio;
 	for(index_t v = 0; v < mesh->n_vertices; ++v)
