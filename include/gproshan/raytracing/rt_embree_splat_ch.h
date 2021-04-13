@@ -11,10 +11,6 @@
 // raytracing approach
 namespace gproshan::rt {
 
-inline glm::vec3 glm_vec3(const vertex & v)
-{
-	return glm::vec3(v.x, v.y, v.z);
-}
 
 class embree_splat_ch : public embree
 {
