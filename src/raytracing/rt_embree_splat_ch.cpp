@@ -14,8 +14,8 @@
 namespace gproshan::rt {
 
 
-float embree_splat_ch::r_threshold = 0.85;
-float embree_splat_ch::n_threshold = 0.85;
+float embree_splat_ch::r_threshold = 0.95;
+float embree_splat_ch::n_threshold = 0.45;
 size_t embree_splat_ch::max_neigs = 64;
 
 embree_splat_ch::embree_splat_ch(const std::vector<che *> & meshes, const bool & pointcloud)
@@ -53,7 +53,7 @@ index_t embree_splat_ch::add_pointcloud(const che * mesh)
 			vertices[j + begin] = mesh->gt(v);
 			n += mesh->normal(v);
 		}
-
+		
 		n = n.unit();
 		c = vertices[begin];
 		t = vertices[end - 1] - c;
@@ -101,23 +101,25 @@ index_t embree_splat_ch::add_pointcloud(const che * mesh)
 		delete ch;
 
 	che ch_mesh(vertices.data(), vertices.size(), faces.data(), faces.size() / 3);
-
+	che_off::write_file(&ch_mesh, "ch_splats");
 	return add_mesh(&ch_mesh);
 }
 
 float embree_splat_ch::pointcloud_hit(glm::vec3 & position, glm::vec3 & normal, glm::vec3 & color, ray_hit r)
 {
 	position = r.position();
-	float w = vsplat[primID_splat[r.hit.primID]].shading(geomID_mesh[r.hit.geomID], position, normal, color);
-
+//	float w = vsplat[primID_splat[r.hit.primID]].shading(geomID_mesh[r.hit.geomID], position, normal, color);
+	color = 0.5f * position + glm::vec3(0.5f); 
+	normal = r.normal(geomID_mesh[r.hit.geomID], true);
+/*
 	if(w < 1e-5f)
 	{
 		r = ray_hit(r.position(), r.dir());
 		if(intersect(r))
 			return pointcloud_hit(position, normal, color, r);
 	}
-
-	return 1e-2f;
+*/
+	return 1;
 }
 
 void embree_splat_ch::init_splats(const che * mesh)
@@ -132,8 +134,6 @@ void embree_splat_ch::init_splats(const che * mesh)
 	for(index_t v = 0; v < mesh->n_vertices; ++v)
 	{
 		if(visited[v]) continue;
-
-		vsplat.push_back(splat());
 
 		std::set<index_t> points;
 		std::queue<index_t> q;
@@ -156,12 +156,13 @@ void embree_splat_ch::init_splats(const che * mesh)
 
 			q.pop();
 		}
-
+		
 		const vertex & n = mesh->normal(v);
 		const vertex & c = mesh->gt(v);
 
 		radio = 0;
 
+		vsplat.push_back(splat());
 		std::vector<index_t> & splat_points = vsplat.back();
 		for(const index_t & p: points)
 			if((n, mesh->normal(p)) > n_threshold)
@@ -174,7 +175,9 @@ void embree_splat_ch::init_splats(const che * mesh)
 		radio *= r_threshold;
 		for(const index_t & p: splat_points)
 			visited[p] = *(mesh->gt(p) - c) < radio;
-
+		
+		if(splat_points.size() < 3)
+			vsplat.pop_back();
 	}
 
 	gproshan_error_var(float(vsplat.size()) / mesh->n_vertices);

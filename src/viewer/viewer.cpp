@@ -642,6 +642,8 @@ bool viewer::set_render_embree(viewer * view)
 {
 	static int rt_opt = 0;
 	static double time = 0;
+	static const size_t min_neigs = 1 << 3;
+	static const size_t max_neigs = 1 << 10;
 
 	ImGui::Combo("rt_opt", &rt_opt, "Mesh\0Splat\0Splat Convex Hull\0\0");
 
@@ -654,7 +656,7 @@ bool viewer::set_render_embree(viewer * view)
 		case 2:
 			ImGui::SliderFloat("r_threshold", &rt::embree_splat_ch::r_threshold, 0.01, 1, "%.2f");
 			ImGui::SliderFloat("n_threshold", &rt::embree_splat_ch::n_threshold, 0.01, 1, "%.2f");
-			ImGui::InputScalar("max_neigs", ImGuiDataType_U64, &rt::embree_splat_ch::max_neigs);
+			ImGui::SliderScalar("max_neigs", ImGuiDataType_U64, &rt::embree_splat_ch::max_neigs, &min_neigs, &max_neigs, "%lu");
 			break;
 	}
 
