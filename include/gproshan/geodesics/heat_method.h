@@ -45,7 +45,7 @@ double solve_positive_definite_cusolver(const int m, const int nnz, const real_t
 
 /// device only, incomplete cholesky factorization
 /// https://docs.nvidia.com/cuda/cusparse/index.html#cusparse-lt-t-gt-csric02
-double solve_positive_definite_cusparse(const int m, const int nnz, const real_t * hA_values, const int * hA_col_ptrs, const int * hA_row_indices, const real_t * hb, real_t * hx);
+// REMOVED double solve_positive_definite_cusparse(const int m, const int nnz, const real_t * hA_values, const int * hA_col_ptrs, const int * hA_row_indices, const real_t * hb, real_t * hx);
 
 /// host and device support
 /// using cusolverSp_LOWLEVEL_PREVIEW.h library
