@@ -289,39 +289,33 @@ bool app_viewer::process_geodesics(viewer * p_view)
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
-	if(!mesh.selected.size())
-		mesh.selected.push_back(0);
-
-
 	static vector<real_t> dist;
-
-	if(dist.size() != mesh->n_vertices)
-		dist.resize(mesh->n_vertices);
-	
-	static size_t n_iter_min = 0;
-	static size_t n_iter_max;
-
 	static geodesics::params params;
-	
+
 #ifdef GPROSHAN_CUDA
 	ImGui::Combo("alg", (int *) &params.alg, "FM\0PTP_CPU\0HEAT_METHOD\0PTP_GPU\0HEAT_METHOD_GPU\0\0");
 #else
 	ImGui::Combo("alg", (int *) &params.alg, "FM\0PTP_CPU\0HEAT_METHOD\0\0");
 #endif // GPROSHAN_CUDA
-	
-	if(params.alg == geodesics::FM)
-	{
 
-	}
+	if(params.alg == geodesics::FM)
+		ImGui_InputReal("radio", &params.radio);
 
 	if(ImGui::Button("Run"))
 	{
+		if(!mesh.selected.size())
+			mesh.selected.push_back(0);
+
+		if(dist.size() < mesh->n_vertices)
+			dist.resize(mesh->n_vertices);
+
 		params.dist_alloc	= dist.data();
-		
+
 		TIC(view->time)
-		geodesics G(mesh, mesh.selected, params);
+			geodesics G(mesh, mesh.selected, params);
 		TOC(view->time)
-		
+
+		params.radio = G.radio();
 		mesh->update_heatmap(&G[0]);
 	}
 
