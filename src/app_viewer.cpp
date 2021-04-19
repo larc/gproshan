@@ -62,26 +62,20 @@ void app_viewer::init()
 	sub_menus.push_back("Geometry");
 	add_process(GLFW_KEY_H, {"H", "2D Convex Hull", process_convex_hull});
 	add_process(GLFW_KEY_K, {"K", "Gaussian curvature", process_gaussian_curvature});
-	add_process(GLFW_KEY_8, {"8", "Edge Collapse", process_edge_collapse});
-	add_process(GLFW_KEY_9, {"9", "Multiplicate", process_multiplicate_vertices});
+	add_process(GLFW_KEY_Q, {"Q", "Edge Collapse", process_edge_collapse});
+	add_process(GLFW_KEY_M, {"M", "Multiplicate", process_multiplicate_vertices});
 	add_process(GLFW_KEY_DELETE, {"DELETE", "Delete vertices", process_delete_vertices});
 	add_process(GLFW_KEY_MINUS, {"MINUS", "Delete non-manifold vertices", process_delete_non_manifold_vertices});
 
 	sub_menus.push_back("Fairing");
-	add_process(GLFW_KEY_T, {"T", "Fairing Taubin", process_fairing_taubin});
+	add_process(GLFW_KEY_F, {"F", "Fairing Taubin", process_fairing_taubin});
 	add_process(GLFW_KEY_E, {"E", "Fairing Spectral", process_fairing_spectral});
 
 	sub_menus.push_back("Geodesics");
-	add_process(GLFW_KEY_F, {"F", "Fast Marching", process_geodesics_fm});
-	add_process(GLFW_KEY_C, {"C", "Parallel Toplesets Propagation CPU", process_geodesics_ptp_cpu});
-	add_process(GLFW_KEY_M, {"M", "Heat Method", process_geodesics_heat_method});
-#ifdef GPROSHAN_CUDA
-	add_process(GLFW_KEY_G, {"G", "Parallel Toplesets Propagation GPU", process_geodesics_ptp_gpu});
-	add_process(GLFW_KEY_Q, {"Q", "Heat Method GPU", process_geodesics_heat_method_gpu});
-#endif // GPROSHAN_CUDA
+	add_process(GLFW_KEY_G, {"G", "Geodesics", process_geodesics});
 	add_process(GLFW_KEY_S, {"S", "Geodesic Farthest Point Sampling", process_farthest_point_sampling});
 	add_process(GLFW_KEY_V, {"V", "Geodesic Voronoi", process_voronoi});
-	add_process(GLFW_KEY_P, {"P", "Toplesets", process_compute_toplesets});
+	add_process(GLFW_KEY_T, {"T", "Toplesets", process_compute_toplesets});
 
 	sub_menus.push_back("Sparse Coding");
 	add_process(GLFW_KEY_I, {"I", "Mesh Sparse Coding", process_msparse_coding});
@@ -98,17 +92,17 @@ void app_viewer::init()
 	add_process(GLFW_KEY_7, {"7", "Key Components", process_key_components});
 
 	sub_menus.push_back("Hole Filling");
-	add_process(GLFW_KEY_X, {"X", "Poisson Membrane surface", process_poisson_laplacian_1});
-	add_process(GLFW_KEY_Y, {"Y", "Poisson Thin-plate surface", process_poisson_laplacian_2});
-	add_process(GLFW_KEY_Z, {"Z", "Poisson Minimum variation surface", process_poisson_laplacian_3});
-	add_process(GLFW_KEY_A, {"A", "Fill hole - planar mesh", process_fill_holes});
-	add_process(GLFW_KEY_B, {"B", "Fill hole - biharmonic splines", process_fill_holes_biharmonic_splines});
+	add_process(GLFW_KEY_X, {"X", "Poisson: Membrane surface", process_poisson_laplacian_1});
+	add_process(GLFW_KEY_Y, {"Y", "Poisson: Thin-plate surface", process_poisson_laplacian_2});
+	add_process(GLFW_KEY_Z, {"Z", "Poisson: Minimum variation surface", process_poisson_laplacian_3});
+	add_process(GLFW_KEY_8, {"8", "Fill hole: planar mesh", process_fill_holes});
+	add_process(GLFW_KEY_9, {"0", "Fill hole: biharmonic splines", process_fill_holes_biharmonic_splines});
 
 	sub_menus.push_back("Others");
 	add_process(GLFW_KEY_SEMICOLON, {"SEMICOLON", "Select multiple vertices", process_select_multiple});
 	add_process(GLFW_KEY_SLASH, {"SLASH", "Threshold", process_threshold});
 	add_process(GLFW_KEY_N, {"N", "Noise", process_noise});
-	add_process(GLFW_KEY_COMMA, {"COMMA", "Black noise", process_black_noise});
+	add_process(GLFW_KEY_B, {"B", "Black noise", process_black_noise});
 }
 
 
@@ -290,7 +284,7 @@ bool app_viewer::process_fairing_taubin(viewer * p_view)
 
 // Geodesics
 
-bool app_viewer::process_geodesics(viewer * p_view, const geodesics::algorithm & alg)
+bool app_viewer::process_geodesics(viewer * p_view)
 {
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
@@ -303,13 +297,27 @@ bool app_viewer::process_geodesics(viewer * p_view, const geodesics::algorithm &
 
 	if(dist.size() != mesh->n_vertices)
 		dist.resize(mesh->n_vertices);
+	
+	static size_t n_iter_min = 0;
+	static size_t n_iter_max;
 
 	static geodesics::params params;
-	params.alg			= alg;
-	params.dist_alloc	= dist.data();
 	
+#ifdef GPROSHAN_CUDA
+	ImGui::Combo("alg", (int *) &params.alg, "FM\0PTP_CPU\0HEAT_METHOD\0PTP_GPU\0HEAT_METHOD_GPU\0\0");
+#else
+	ImGui::Combo("alg", (int *) &params.alg, "FM\0PTP_CPU\0HEAT_METHOD\0\0");
+#endif // GPROSHAN_CUDA
+	
+	if(params.alg == geodesics::FM)
+	{
+
+	}
+
 	if(ImGui::Button("Run"))
 	{
+		params.dist_alloc	= dist.data();
+		
 		TIC(view->time)
 		geodesics G(mesh, mesh.selected, params);
 		TOC(view->time)
@@ -319,35 +327,6 @@ bool app_viewer::process_geodesics(viewer * p_view, const geodesics::algorithm &
 
 	return true;
 }
-
-bool app_viewer::process_geodesics_fm(viewer * p_view)
-{
-	return process_geodesics(p_view, geodesics::FM);
-}
-
-bool app_viewer::process_geodesics_ptp_cpu(viewer * p_view)
-{
-	return process_geodesics(p_view, geodesics::PTP_CPU);
-}
-
-bool app_viewer::process_geodesics_heat_method(viewer * p_view)
-{
-	return process_geodesics(p_view, geodesics::HEAT_METHOD);
-}
-
-#ifdef GPROSHAN_CUDA
-
-bool app_viewer::process_geodesics_ptp_gpu(viewer * p_view)
-{
-	return process_geodesics(p_view, geodesics::PTP_GPU);
-}
-
-bool app_viewer::process_geodesics_heat_method_gpu(viewer * p_view)
-{
-	return process_geodesics(p_view, geodesics::HEAT_METHOD_GPU);
-}
-
-#endif // GPROSHAN_CUDA
 
 bool app_viewer::process_farthest_point_sampling(viewer * p_view)
 {

@@ -67,14 +67,7 @@ class app_viewer : public viewer
 		static bool process_fairing_spectral(viewer * p_view);
 
 		// Geodesics
-		static bool process_geodesics(viewer * p_view, const geodesics::algorithm & alg);
-		static bool process_geodesics_fm(viewer * p_view);
-		static bool process_geodesics_ptp_cpu(viewer * p_view);
-		static bool process_geodesics_heat_method(viewer * p_view);
-	#ifdef GPROSHAN_CUDA
-		static bool process_geodesics_ptp_gpu(viewer * p_view);
-		static bool process_geodesics_heat_method_gpu(viewer * p_view);
-	#endif // GPROSHAN_CUDA
+		static bool process_geodesics(viewer * p_view);
 		static bool process_farthest_point_sampling(viewer * p_view);
 		static bool process_voronoi(viewer * p_view);
 		static bool process_compute_toplesets(viewer * p_view);
