@@ -80,7 +80,6 @@ void app_viewer::init()
 	add_process(GLFW_KEY_Q, {"Q", "Heat Method GPU", process_geodesics_heat_method_gpu});
 #endif // GPROSHAN_CUDA
 	add_process(GLFW_KEY_S, {"S", "Geodesic Farthest Point Sampling", process_farthest_point_sampling});
-	add_process(GLFW_KEY_R, {"R", "Geodesic Farthest Point Sampling (radio)", process_farthest_point_sampling_radio});
 	add_process(GLFW_KEY_V, {"V", "Geodesic Voronoi", process_voronoi});
 	add_process(GLFW_KEY_P, {"P", "Toplesets", process_compute_toplesets});
 
@@ -305,35 +304,34 @@ bool app_viewer::process_geodesics(viewer * p_view, const geodesics::algorithm &
 	if(dist.size() != mesh->n_vertices)
 		dist.resize(mesh->n_vertices);
 
-	geodesics::params params;
+	static geodesics::params params;
 	params.alg			= alg;
 	params.dist_alloc	= dist.data();
-
-	TIC(view->time)
+	
+	if(ImGui::Button("Run"))
+	{
+		TIC(view->time)
 		geodesics G(mesh, mesh.selected, params);
-	TOC(view->time)
-	gproshan_log_var(view->time);
+		TOC(view->time)
+		
+		mesh->update_heatmap(&G[0]);
+	}
 
-	mesh->update_heatmap(&G[0]);
-
-	return false;
+	return true;
 }
 
 bool app_viewer::process_geodesics_fm(viewer * p_view)
 {
-	gproshan_log(APP_VIEWER);
 	return process_geodesics(p_view, geodesics::FM);
 }
 
 bool app_viewer::process_geodesics_ptp_cpu(viewer * p_view)
 {
-	gproshan_log(APP_VIEWER);
 	return process_geodesics(p_view, geodesics::PTP_CPU);
 }
 
 bool app_viewer::process_geodesics_heat_method(viewer * p_view)
 {
-	gproshan_log(APP_VIEWER);
 	return process_geodesics(p_view, geodesics::HEAT_METHOD);
 }
 
@@ -341,13 +339,11 @@ bool app_viewer::process_geodesics_heat_method(viewer * p_view)
 
 bool app_viewer::process_geodesics_ptp_gpu(viewer * p_view)
 {
-	gproshan_log(APP_VIEWER);
 	return process_geodesics(p_view, geodesics::PTP_GPU);
 }
 
 bool app_viewer::process_geodesics_heat_method_gpu(viewer * p_view)
 {
-	gproshan_log(APP_VIEWER);
 	return process_geodesics(p_view, geodesics::HEAT_METHOD_GPU);
 }
 
@@ -373,31 +369,6 @@ bool app_viewer::process_farthest_point_sampling(viewer * p_view)
 	}
 
 	return true;
-}
-
-bool app_viewer::process_farthest_point_sampling_radio(viewer * p_view)
-{
-	gproshan_log(APP_VIEWER);
-	app_viewer * view = (app_viewer *) p_view;
-	che_viewer & mesh = view->active_mesh();
-
-	gproshan_input(radio);
-	real_t radio; cin >> radio;
-
-#ifdef GPROSHAN_CUDA	// IMPLEMENT/REVIEW
-	double time_fps;
-
-	TIC(view->time)
-	radio = farthest_point_sampling_ptp_gpu(mesh, mesh.selected, time_fps, NIL, radio);
-	TOC(view->time)
-	gproshan_log_var(time_fps);
-#endif // GPROSHAN_CUDA
-
-	gproshan_log_var(radio);
-	gproshan_log_var(mesh.selected.size());
-	gproshan_log_var(view->time);
-
-	return false;
 }
 
 bool app_viewer::process_voronoi(viewer * p_view)

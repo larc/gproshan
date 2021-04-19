@@ -76,7 +76,6 @@ class app_viewer : public viewer
 		static bool process_geodesics_heat_method_gpu(viewer * p_view);
 	#endif // GPROSHAN_CUDA
 		static bool process_farthest_point_sampling(viewer * p_view);
-		static bool process_farthest_point_sampling_radio(viewer * p_view);
 		static bool process_voronoi(viewer * p_view);
 		static bool process_compute_toplesets(viewer * p_view);
 
