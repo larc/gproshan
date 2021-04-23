@@ -866,7 +866,6 @@ void viewer::draw_meshes(shader & program, const bool & normals)
 	else
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-
 	for(index_t i = 0; i < n_meshes; ++i)
 	{
 		glViewport(meshes[i].vx * viewport_width, meshes[i].vy * viewport_height, viewport_width, viewport_height);
