@@ -79,10 +79,8 @@ bool viewer::run()
 {
 	while(!glfwWindowShouldClose(window))
 	{
-		eye		= vertex(0., 0., -2. * cam.zoom);
-		center	= vertex(0., 0., 0.);
+		eye		= vertex(0., 0., -cam.zoom);
 		up		= vertex(0., 1., 0.);
-
 		light	= vertex(-1., 1., -2.);
 
 		quaternion r = cam.current_rotation();
@@ -415,7 +413,11 @@ void viewer::mouse_callback(GLFWwindow * window, int button, int action, int mod
 
 	if(mods == GLFW_MOD_SHIFT && action == GLFW_RELEASE)
 		view->pick_vertex(xpos, ypos);
-	else view->cam.mouse(button, action, xpos, ypos, view->window_width, view->window_height);
+	else if(button == GLFW_MOUSE_BUTTON_RIGHT)
+	{
+	}
+	else
+		view->cam.mouse(action == GLFW_PRESS, xpos, ypos, view->window_width, view->window_height);
 }
 
 void viewer::cursor_callback(GLFWwindow * window, double x, double y)
