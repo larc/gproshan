@@ -101,6 +101,8 @@ embree::embree()
 	device = rtcNewDevice(NULL);
 	scene = rtcNewScene(device);
 
+	rtcSetSceneFlags(scene, RTC_SCENE_FLAG_COMPACT);
+
 	rtcInitIntersectContext(&intersect_context);
 	rtcSetDeviceErrorFunction(device, embree_error, NULL);
 }

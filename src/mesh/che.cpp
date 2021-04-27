@@ -64,7 +64,7 @@ che::che(const che & mesh)
 	memcpy(ET, mesh.ET, n_edges * sizeof(index_t));
 	memcpy(EHT, mesh.EHT, n_half_edges * sizeof(index_t));
 	memcpy(VN, mesh.VN, n_vertices * sizeof(vertex));
-	memcpy(VC, mesh.VC, n_vertices * sizeof(vertex));
+	memcpy(VC, mesh.VC, n_vertices * sizeof(rgb_t));
 	memcpy(VHC, mesh.VHC, n_vertices * sizeof(real_t));
 }
 
