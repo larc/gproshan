@@ -4,6 +4,7 @@
 #include "mesh/che.h"
 
 
+#include <cmath>
 #include <functional>
 
 
