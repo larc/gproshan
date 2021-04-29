@@ -2,7 +2,6 @@
 #define GEODESICS_H
 
 #include "mesh/che.h"
-#include "include_arma.h"
 
 
 #include <functional>
@@ -79,8 +78,6 @@ class geodesics
 		void run_heat_method_gpu(che * mesh, const std::vector<index_t> & sources);
 #endif // GPROSHAN_CUDA
 
-		real_t update(index_t & d, che * mesh, const index_t & he, vertex & vx);
-		real_t planar_update(index_t & d, a_mat & X, index_t * x, vertex & vx);
 };
 
 
