@@ -28,11 +28,11 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 	int n_test = nargs == 5 ? atoi(args[4]) : 10;
 
 #ifdef GPROSHAN_FLOAT
-	FILE * ftable = fopen("test_geodesics_float.md", "w");
+	FILE * ftable = fopen("test_geodesics_float.tex", "w");
 #else
-	FILE *ftable = fopen("test_geodesics_double.md", "w");
+	FILE * ftable = fopen("test_geodesics_double.tex", "w");
 	const char * ptime = "& %6.3lfs ";
-#endif // GPROSHAN_FLOAT
+#endif
 
 	const char * str[2] = {"", "\\bf"};
 	const char * pspeedup = "& \\bf (%.1lfx) ";
