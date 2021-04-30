@@ -2,9 +2,9 @@
 #define GEODESICS_H
 
 #include "mesh/che.h"
-#include "include_arma.h"
 
 
+#include <cmath>
 #include <functional>
 
 
@@ -24,12 +24,12 @@ class geodesics
 
 	public:
 		enum algorithm {	FM,				///< Execute Fast Marching algorithm
+							PTP_CPU,		///< Execute Parallel Toplesets Propagation CPU algorithm
+							HEAT_METHOD,	///< Execute Heat Method - cholmod (CPU)
 						#ifdef GPROSHAN_CUDA
 							PTP_GPU,		///< Execute Parallel Toplesets Propagation GPU algorithm
-							HEAT_METHOD_GPU,	///< Execute Heat Method - cusparse (GPU)
+							HEAT_METHOD_GPU	///< Execute Heat Method - cusparse (GPU)
 						#endif // GPROSHAN_CUDA
-							PTP_CPU,		///< Execute Parallel Toplesets Propagation CPU algorithm
-							HEAT_METHOD		///< Execute Heat Method - cholmod (CPU)
 						};
 
 		struct params
@@ -79,8 +79,6 @@ class geodesics
 		void run_heat_method_gpu(che * mesh, const std::vector<index_t> & sources);
 #endif // GPROSHAN_CUDA
 
-		real_t update(index_t & d, che * mesh, const index_t & he, vertex & vx);
-		real_t planar_update(index_t & d, a_mat & X, index_t * x, vertex & vx);
 };
 
 

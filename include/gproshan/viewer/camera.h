@@ -3,8 +3,6 @@
 
 #include "mesh/quaternion.h"
 
-#include "viewer/include_opengl.h"
-
 
 // geometry processing and shape analysis framework
 namespace gproshan {
@@ -17,22 +15,20 @@ class camera
 		quaternion p_drag;
 		quaternion p_last;
 		quaternion r_last;
-		int t_last;
 
 	public:
 		double zoom;
 
 	public:
 		camera();
-		void mouse(int button, int state, int x, int y, int w, int h);
-		void motion(int x, int y, int w, int h);
-		void idle();
+		void mouse(const bool & press, const double & x, const double & y, const int & w, const int & h);
+		void motion(const double & x, const double & y, const int & w, const int & h);
 		void zoom_in();
 		void zoom_out();
 		quaternion current_rotation() const;
 
 	private:
-		quaternion click_to_sphere(int x, int y, int w, int h);
+		quaternion click_to_sphere(const double & x, const double & y, const int & w, const int & h);
 
 	friend std::ostream & operator << (std::ostream & os, const camera & cam);
 	friend std::istream & operator >> (std::istream & is, camera & cam);
