@@ -128,7 +128,6 @@ void geodesics::run_fastmarching(che * mesh, const vector<index_t> & sources, co
 			greater<pair<real_t, size_t> > > Q;
 
 	real_t dv, dp;
-	index_t dir; // dir propagation
 	vertex vx;
 
 	size_t black_i, v;
@@ -174,8 +173,7 @@ void geodesics::run_fastmarching(che * mesh, const vector<index_t> & sources, co
 				dv = dist[v];
 				for_star(v_he, mesh, v)
 				{
-					dp = update(dir, mesh, v_he, vx);
-					//dp = update_step(mesh, dist, v_he);
+					dp = update_step(mesh, dist, v_he);
 					if(dp < dv)
 					{
 						dv = dp;
@@ -254,91 +252,6 @@ void geodesics::run_heat_method_gpu(che * mesh, const vector<index_t> & sources)
 }
 
 #endif // GPROSHAN_CUDA
-
-
-//d = {NIL, 0, 1} cross edge, next, prev
-real_t geodesics::update(index_t & d, che * mesh, const index_t & he, vertex & vx)
-{
-	d = NIL;
-
-	a_mat X(3,2);
-	index_t x[3];
-
-	x[0] = mesh->vt(next(he));
-	x[1] = mesh->vt(prev(he));
-	x[2] = mesh->vt(he);				//update x[2]
-
-	vx = mesh->gt(x[2]);
-
-	vertex v[2];
-	v[0] = mesh->gt(x[0]) - vx;
-	v[1] = mesh->gt(x[1]) - vx;
-
-	X(0, 0) = v[0][0];
-	X(1, 0) = v[0][1];
-	X(2, 0) = v[0][2];
-
-	X(0, 1) = v[1][0];
-	X(1, 1) = v[1][1];
-	X(2, 1) = v[1][2];
-
-	return planar_update(d, X, x, vx);
-}
-
-real_t geodesics::planar_update(index_t & d, a_mat & X, index_t * x, vertex & vx)
-{
-	a_mat ones(2,1);
-	ones.ones(2,1);
-
-	a_mat Q;
-	if(!inv_sympd(Q, X.t() * X))
-		return INFINITY;
-
-	a_mat t(2,1);
-
-	t(0) = dist[x[0]];
-	t(1) = dist[x[1]];
-
-	real_t p;
-	a_mat delta = ones.t() * Q * t;
-	real_t dis = as_scalar(delta * delta - (ones.t() * Q * ones) * (as_scalar(t.t() * Q * t) - 1));
-
-	if(dis >= 0)
-	{
-		p = delta(0) + sqrt(dis);
-		p /= as_scalar(ones.t() * Q * ones);
-	}
-	else p = INFINITY;
-
-	a_mat n = X * Q * (t - p * ones);
-	a_mat cond = Q * X.t() * n;
-
-	a_vec v(3);
-
-	if(t(0) == INFINITY || t(1) == INFINITY || dis < 0 || (cond(0) >= 0 || cond(1) >= 0))
-	{
-		real_t dp[2];
-		dp[0] = dist[x[0]] + norm(X.col(0));
-		dp[1] = dist[x[1]] + norm(X.col(1));
-
-		d = dp[1] < dp[0];
-		v = X.col(d);
-		p = dp[d];
-	}
-	else
-	{
-		a_mat A(3,2);
-		A.col(0) = -n;
-		A.col(1) = X.col(1) - X.col(0);
-		a_vec b = -X.col(0);
-		a_mat l =	solve(A, b);
-		v = l(1) * A.col(1) + X.col(0);
-	}
-
-	vx += *((vertex *) v.memptr());
-
-	return p;
-}
 
 
 } // namespace gproshan

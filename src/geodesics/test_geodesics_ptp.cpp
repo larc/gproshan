@@ -28,9 +28,9 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 	int n_test = nargs == 5 ? atoi(args[4]) : 10;
 
 #ifdef GPROSHAN_FLOAT
-	FILE * ftable = fopen("ptp_results.tex", "w");
+	FILE * ftable = fopen("test_geodesics_float.tex", "w");
 #else
-	FILE *ftable = fopen("ptp_results_double.tex", "w");
+	FILE * ftable = fopen("test_geodesics_double.tex", "w");
 	const char * ptime = "& %6.3lfs ";
 #endif
 
