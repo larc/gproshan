@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.18)
+cmake_minimum_required(VERSION 3.20)
 
 project(gproshan VERSION 3.0)
 
@@ -15,7 +15,7 @@ add_compile_options(-Wall -Wextra -Wno-unused-result)
 add_definitions(-DGPROSHAN_FLOAT)
 add_definitions(-DGPROSHAN_LOG)
 
-find_package(CUDAToolkit 11)
+find_package(CUDAToolkit 11.3)
 if(CUDAToolkit_FOUND)
 	enable_language(CUDA)
 	set(CMAKE_CUDA_STANDARD 17)
@@ -28,7 +28,7 @@ if(CUDAToolkit_FOUND)
 	add_definitions(-DGPROSHAN_CUDA)
 	include_directories(SYSTEM ${CUDAToolkit_INCLUDE_DIRS})
 
-	find_package(OptiX 7.2)
+	find_package(OptiX 7.3)
 	if(OptiX_INCLUDE)
 		add_definitions(-DGPROSHAN_OPTIX)
 		include_directories(SYSTEM ${OptiX_INCLUDE})
@@ -36,7 +36,7 @@ if(CUDAToolkit_FOUND)
 endif(CUDAToolkit_FOUND)
 
 
-find_package(embree 3.10)
+find_package(embree 3.12)
 if(embree_FOUND)
 	add_definitions(-DGPROSHAN_EMBREE)
 	include_directories(SYSTEM ${embree_INCLUDE_DIRS})
@@ -120,7 +120,7 @@ target_link_libraries(test_gproshan gproshan)
 if(OptiX_INCLUDE)
 	add_library(ptx_sources OBJECT ${gproshan_SOURCE_DIR}/src/raytracing/rt_optix.cu)
 	set_property(TARGET ptx_sources PROPERTY CUDA_PTX_COMPILATION ON)
-	add_custom_target(ptx_cp_sources COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_OBJECTS:ptx_sources> $<TARGET_FILE_DIR:gproshan>)
+	add_custom_target(ptx_cp_sources DEPENDS ptx_sources COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_OBJECTS:ptx_sources> $<TARGET_FILE_DIR:gproshan>)
 	add_dependencies(test_gproshan ptx_cp_sources)
 endif(OptiX_INCLUDE)
 
