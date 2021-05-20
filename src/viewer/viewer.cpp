@@ -648,13 +648,12 @@ bool viewer::set_render_embree(viewer * view)
 	static const size_t max_neigs = 1 << 10;
 
 	ImGui::Combo("rt_opt", &rt_opt, "Mesh\0Splat\0Splat Convex Hull\0\0");
+	ImGui::InputFloat("pc_radius", &rt::embree::pc_radius, 0, 0, "%.4f");
 
 	switch(rt_opt)
 	{
-		case 0:
-		case 1:
-			ImGui::InputFloat("pc_radius", &rt::embree::pc_radius, 0, 0, "%.4f");
-			break;
+		case 0: break;
+		case 1: break;
 		case 2:
 			ImGui::SliderFloat("r_threshold", &rt::embree_splat_ch::r_threshold, 0.01, 1, "%.2f");
 			ImGui::SliderFloat("n_threshold", &rt::embree_splat_ch::n_threshold, 0.01, 1, "%.2f");

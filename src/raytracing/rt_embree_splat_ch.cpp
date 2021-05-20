@@ -108,18 +108,18 @@ index_t embree_splat_ch::add_pointcloud(const che * mesh)
 float embree_splat_ch::pointcloud_hit(glm::vec3 & position, glm::vec3 & normal, glm::vec3 & color, ray_hit r)
 {
 	position = r.position();
-//	float w = vsplat[primID_splat[r.hit.primID]].shading(geomID_mesh[r.hit.geomID], position, normal, color);
-	color = 0.5f * position + glm::vec3(0.5f); 
-	normal = r.normal(geomID_mesh[r.hit.geomID], true);
-/*
+	float w = vsplat[primID_splat[r.hit.primID]].shading(geomID_mesh[r.hit.geomID], position, normal, color);
+//	color = 0.5f * position + glm::vec3(0.5f); 
+//	normal = r.normal(geomID_mesh[r.hit.geomID], true);
+
 	if(w < 1e-5f)
 	{
 		r = ray_hit(r.position(), r.dir());
 		if(intersect(r))
 			return pointcloud_hit(position, normal, color, r);
 	}
-*/
-	return 1;
+
+	return 1e-2;
 }
 
 void embree_splat_ch::init_splats(const che * mesh)
