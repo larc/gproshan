@@ -97,7 +97,7 @@ size_t eigs_laplacian(const che * mesh, a_vec & eigval, a_mat & eigvec, a_sp_mat
 	//	a_sp_mat D = sqrt(A);
 	//	D.for_each([](a_sp_mat::elem_type & val) { val = 1. / val; });
 
-		if(!eigs_sym(eigval, eigvec, L, k, "sa"))
+		if(!eigs_sym(eigval, eigvec, L, k, "sm"))
 			return 0;
 
 		eigval.save(feigval);
