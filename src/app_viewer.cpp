@@ -635,18 +635,19 @@ bool app_viewer::process_descriptor_heatmap(viewer * p_view, const descriptor::s
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
-	static int K = 50;
+	static int n_eigs = 50;
 	static bool status = true;
-	ImGui::InputInt("eigenvectors", &K);
+	ImGui::InputInt("n_eigs", &n_eigs);
 	if(!status) ImGui::TextColored({1, 0, 0, 1}, "Error computing features.");
 
 	if(ImGui::Button("Run"))
 	{
-		descriptor features(sig, mesh, K);
+		descriptor features(sig, mesh, n_eigs);
 
 		if(features)
 		{
 			status = true;
+			n_eigs = features.n_eigs();
 
 			real_t max_s = 0;
 			#pragma omp parallel for reduction(max: max_s)

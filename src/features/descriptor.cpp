@@ -12,12 +12,23 @@ descriptor::descriptor(const signature & sig, const che * mesh, const size_t & n
 	if(!eigs_laplacian(mesh, eigval, eigvec, L, A, n_eigs))
 		return;
 
+	if(eigval.size() > n_eigs)
+	{
+		eigval = eigval.head(n_eigs);
+		eigvec = eigvec.head_cols(n_eigs);
+	}
+
 	switch(sig)
 	{
 		case GPS: compute_gps(); break;
 		case HKS: compute_hks(); break;
 		case WKS: compute_wks(); break;
 	}
+}
+
+size_t descriptor::n_eigs()
+{
+	return eigval.n_elem;
 }
 
 descriptor::operator bool () const
