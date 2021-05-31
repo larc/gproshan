@@ -10,11 +10,11 @@ namespace gproshan {
 
 class fairing_spectral : public fairing
 {
-	private:
-		size_t k;
+	public:
+		size_t n_eigs;
 
 	public:
-		fairing_spectral(const size_t & k_ = 10);
+		fairing_spectral(const size_t & n_eigs_ = 100);
 		virtual ~fairing_spectral() = default;
 
 	private:

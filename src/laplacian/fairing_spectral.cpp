@@ -7,7 +7,7 @@
 namespace gproshan {
 
 
-fairing_spectral::fairing_spectral(const size_t & k_): fairing(), k(k_) {}
+fairing_spectral::fairing_spectral(const size_t & n_eigs_): n_eigs(n_eigs_) {}
 
 void fairing_spectral::compute(che * mesh)
 {
@@ -21,8 +21,9 @@ void fairing_spectral::compute(che * mesh)
 	a_vec eigval;
 	a_mat eigvec;
 
-	k = eigs_laplacian(mesh, eigval, eigvec, L, A, k);
+	n_eigs = eigs_laplacian(mesh, eigval, eigvec, L, A, n_eigs);
 
+	eigvec = eigvec.head_cols(n_eigs);
 	X = X * eigvec * eigvec.t();
 }
 

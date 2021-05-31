@@ -246,12 +246,19 @@ bool app_viewer::process_fairing_spectral(viewer * p_view)
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
-	static int k = 100;
-	ImGui::SliderInt("eigenvectors", &k, 1, mesh->n_vertices);
+	static vector<vertex> vertices;
+	static fairing_spectral fair;
+	static size_t min_neigs = 1;
 
-	if(ImGui::Button("Run"))
+	if(ImGui::SliderScalar("n_eigs", ImGuiDataType_U64, &fair.n_eigs, &min_neigs, &mesh->n_vertices))
 	{
-		fairing_spectral fair(k);
+		if(!vertices.size())
+		{
+			vertices.resize(mesh->n_vertices);
+			memcpy(vertices.data(), &mesh->gt(0), mesh->n_vertices * sizeof(vertex));
+		}
+		else mesh->set_vertices(vertices.data());
+
 		fair.run(mesh);
 
 		mesh->set_vertices(fair.new_vertices());
