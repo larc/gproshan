@@ -273,12 +273,19 @@ bool app_viewer::process_fairing_taubin(viewer * p_view)
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
-	static float step = 0.001; //cin >> step;
-	ImGui::InputFloat("step", &step, 0.001, 1, "%.3f");
+	static vector<vertex> vertices;
+	static fairing_taubin fair;
+	ImGui_InputReal("step", &fair.step, 0.001);
 
 	if(ImGui::Button("Run"))
 	{
-		fairing_taubin fair(step);
+		if(!vertices.size())
+		{
+			vertices.resize(mesh->n_vertices);
+			memcpy(vertices.data(), &mesh->gt(0), mesh->n_vertices * sizeof(vertex));
+		}
+		else mesh->set_vertices(vertices.data());
+
 		fair.run(mesh);
 
 		mesh->set_vertices(fair.new_vertices());
