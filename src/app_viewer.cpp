@@ -249,8 +249,12 @@ bool app_viewer::process_fairing_spectral(viewer * p_view)
 	static vector<vertex> vertices;
 	static fairing_spectral fair;
 	static size_t min_neigs = 1;
+	static size_t max_neigs = 2000;
 
-	if(ImGui::SliderScalar("n_eigs", ImGuiDataType_U64, &fair.n_eigs, &min_neigs, &mesh->n_vertices))
+	if(max_neigs > mesh->n_vertices)
+		max_neigs = mesh->n_vertices;
+
+	if(ImGui::SliderScalar("n_eigs", ImGuiDataType_U64, &fair.n_eigs, &min_neigs, &max_neigs))
 	{
 		if(!vertices.size())
 		{
