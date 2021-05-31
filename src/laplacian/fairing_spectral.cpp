@@ -22,8 +22,8 @@ void fairing_spectral::compute(che * mesh)
 	a_mat eigvec;
 
 	n_eigs = eigs_laplacian(mesh, eigval, eigvec, L, A, n_eigs);
+	if(!n_eigs) return;
 
-	eigvec = eigvec.head_cols(n_eigs);
 	X = X * eigvec * eigvec.t();
 }
 
