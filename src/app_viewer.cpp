@@ -247,14 +247,14 @@ bool app_viewer::process_fairing_spectral(viewer * p_view)
 	che_viewer & mesh = view->active_mesh();
 
 	static int k = 100;
-	ImGui::SliderInt("eigenvectors", &k, 1, mesh->n_vertices / 6);
+	ImGui::SliderInt("eigenvectors", &k, 1, mesh->n_vertices);
 
 	if(ImGui::Button("Run"))
 	{
 		fairing_spectral fair(k);
 		fair.run(mesh);
 
-		mesh->set_vertices(fair.get_postions());
+		mesh->set_vertices(fair.new_vertices());
 		mesh->update_normals();
 	}
 
@@ -274,7 +274,7 @@ bool app_viewer::process_fairing_taubin(viewer * p_view)
 		fairing_taubin fair(step);
 		fair.run(mesh);
 
-		mesh->set_vertices(fair.get_postions());
+		mesh->set_vertices(fair.new_vertices());
 		mesh->update_normals();
 	}
 

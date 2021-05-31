@@ -86,13 +86,13 @@ size_t eigs_laplacian(const che * mesh, a_vec & eigval, a_mat & eigvec, a_sp_mat
 
 	laplacian(mesh, L, A);
 
-	string feigval = tmp_file_path(mesh->name_size() + '_' + to_string(k) + ".L_eigval");
-	string feigvec = tmp_file_path(mesh->name_size() + '_' + to_string(k) + ".L_eigvec");
+	string feigval = tmp_file_path(mesh->name_size() + ".eigval");
+	string feigvec = tmp_file_path(mesh->name_size() + ".eigvec");
 
 	gproshan_debug_var(feigval);
 	gproshan_debug_var(feigvec);
 
-	if(!eigval.load(feigval) || !eigvec.load(feigvec))
+	if(!eigval.load(feigval) || !eigvec.load(feigvec) || eigval.n_elem < k)
 	{
 	//	a_sp_mat D = sqrt(A);
 	//	D.for_each([](a_sp_mat::elem_type & val) { val = 1. / val; });
@@ -104,7 +104,7 @@ size_t eigs_laplacian(const che * mesh, a_vec & eigval, a_mat & eigvec, a_sp_mat
 		eigvec.save(feigvec);
 	}
 
-	return eigval.n_elem;
+	return k < eigval.n_elem ? k : eigval.n_elem;
 }
 
 

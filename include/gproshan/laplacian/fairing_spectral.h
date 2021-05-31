@@ -15,7 +15,7 @@ class fairing_spectral : public fairing
 
 	public:
 		fairing_spectral(const size_t & k_ = 10);
-		virtual ~fairing_spectral();
+		virtual ~fairing_spectral() = default;
 
 	private:
 		void compute(che * mesh);
@@ -25,3 +25,4 @@ class fairing_spectral : public fairing
 } // namespace gproshan
 
 #endif // FAIRING_SPECTRAL_H
+

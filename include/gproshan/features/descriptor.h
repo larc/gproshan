@@ -19,10 +19,15 @@ class descriptor
 		a_vec eigval;
 		a_mat eigvec;
 		a_mat features;
+		size_t n_eigs;
 
 	public:
 		descriptor(const signature & sig, const che * mesh, const size_t & n_eigs);
-		operator bool () const;		///< return true if the features were computed
+
+		///< return true if the features were computed
+		operator bool () const;
+
+		///< return norm of the descriptor for the vertex v
 		real_t operator () (const index_t & v) const;
 
 	private:

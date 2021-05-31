@@ -15,7 +15,7 @@ class fairing_taubin : public fairing
 
 	public:
 		fairing_taubin(const real_t & step_ = 0.01);
-		virtual ~fairing_taubin();
+		virtual ~fairing_taubin() = default;
 
 	private:
 		void compute(che * mesh);
