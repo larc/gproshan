@@ -84,7 +84,7 @@ void app_viewer::init()
 	add_process(GLFW_KEY_L, {"L", "PC reconstruction", process_pc_reconstruction});
 
 	sub_menus.push_back("Features");
-	add_process(GLFW_KEY_2, {"2", "Functional Maps", process_functional_maps});
+	add_process(GLFW_KEY_2, {"2", "Eigenfunctions", process_eigenfuntions});
 	add_process(GLFW_KEY_3, {"3", "GPS", process_gps});
 	add_process(GLFW_KEY_4, {"4", "HKS", process_hks});
 	add_process(GLFW_KEY_5, {"5", "WKS", process_wks});
@@ -588,7 +588,7 @@ bool app_viewer::process_pc_reconstruction(viewer * p_view)
 
 // Features
 
-bool app_viewer::process_functional_maps(viewer * p_view)
+bool app_viewer::process_eigenfuntions(viewer * p_view)
 {
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
