@@ -11,13 +11,13 @@ namespace gproshan {
 class fairing
 {
 	protected:
-		vertex * positions;
+		vertex * vertices = nullptr;
 
 	public:
-		fairing();
+		fairing() = default;
 		virtual ~fairing();
 		void run(che * mesh);
-		vertex * get_postions();
+		const vertex * new_vertices();
 
 	protected:
 		virtual void compute(che * mesh) = 0;

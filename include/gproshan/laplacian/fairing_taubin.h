@@ -10,12 +10,12 @@ namespace gproshan {
 
 class fairing_taubin : public fairing
 {
-	private:
+	public:
 		real_t step;
 
 	public:
-		fairing_taubin(const real_t & step_ = 0.01);
-		virtual ~fairing_taubin();
+		fairing_taubin(const real_t & step_ = 0.001);
+		virtual ~fairing_taubin() = default;
 
 	private:
 		void compute(che * mesh);

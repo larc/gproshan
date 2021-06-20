@@ -84,7 +84,7 @@ void app_viewer::init()
 	add_process(GLFW_KEY_L, {"L", "PC reconstruction", process_pc_reconstruction});
 
 	sub_menus.push_back("Features");
-	add_process(GLFW_KEY_2, {"2", "Functional Maps", process_functional_maps});
+	add_process(GLFW_KEY_2, {"2", "Eigenfunctions", process_eigenfuntions});
 	add_process(GLFW_KEY_3, {"3", "GPS", process_gps});
 	add_process(GLFW_KEY_4, {"4", "HKS", process_hks});
 	add_process(GLFW_KEY_5, {"5", "WKS", process_wks});
@@ -246,15 +246,26 @@ bool app_viewer::process_fairing_spectral(viewer * p_view)
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
-	static int k = 100;
-	ImGui::SliderInt("eigenvectors", &k, 1, mesh->n_vertices / 6);
+	static vector<vertex> vertices;
+	static fairing_spectral fair;
+	static size_t min_neigs = 1;
+	static size_t max_neigs = 2000;
 
-	if(ImGui::Button("Run"))
+	if(max_neigs > mesh->n_vertices)
+		max_neigs = mesh->n_vertices;
+
+	if(ImGui::SliderScalar("n_eigs", ImGuiDataType_U64, &fair.n_eigs, &min_neigs, &max_neigs))
 	{
-		fairing_spectral fair(k);
+		if(!vertices.size())
+		{
+			vertices.resize(mesh->n_vertices);
+			memcpy(vertices.data(), &mesh->gt(0), mesh->n_vertices * sizeof(vertex));
+		}
+		else mesh->set_vertices(vertices.data());
+
 		fair.run(mesh);
 
-		mesh->set_vertices(fair.get_postions());
+		mesh->set_vertices(fair.new_vertices());
 		mesh->update_normals();
 	}
 
@@ -266,15 +277,22 @@ bool app_viewer::process_fairing_taubin(viewer * p_view)
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
-	static float step = 0.001; //cin >> step;
-	ImGui::InputFloat("step", &step, 0.001, 1, "%.3f");
+	static vector<vertex> vertices;
+	static fairing_taubin fair;
+	ImGui_InputReal("step", &fair.step, 0.001);
 
 	if(ImGui::Button("Run"))
 	{
-		fairing_taubin fair(step);
+		if(!vertices.size())
+		{
+			vertices.resize(mesh->n_vertices);
+			memcpy(vertices.data(), &mesh->gt(0), mesh->n_vertices * sizeof(vertex));
+		}
+		else mesh->set_vertices(vertices.data());
+
 		fair.run(mesh);
 
-		mesh->set_vertices(fair.get_postions());
+		mesh->set_vertices(fair.new_vertices());
 		mesh->update_normals();
 	}
 
@@ -570,7 +588,7 @@ bool app_viewer::process_pc_reconstruction(viewer * p_view)
 
 // Features
 
-bool app_viewer::process_functional_maps(viewer * p_view)
+bool app_viewer::process_eigenfuntions(viewer * p_view)
 {
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
@@ -617,18 +635,19 @@ bool app_viewer::process_descriptor_heatmap(viewer * p_view, const descriptor::s
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
-	static int K = 50;
+	static int n_eigs = 50;
 	static bool status = true;
-	ImGui::InputInt("eigenvectors", &K);
+	ImGui::InputInt("n_eigs", &n_eigs);
 	if(!status) ImGui::TextColored({1, 0, 0, 1}, "Error computing features.");
 
 	if(ImGui::Button("Run"))
 	{
-		descriptor features(sig, mesh, K);
+		descriptor features(sig, mesh, n_eigs);
 
 		if(features)
 		{
 			status = true;
+			n_eigs = features.n_eigs();
 
 			real_t max_s = 0;
 			#pragma omp parallel for reduction(max: max_s)
