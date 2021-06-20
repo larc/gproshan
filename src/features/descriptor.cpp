@@ -2,6 +2,7 @@
 
 #include "laplacian/laplacian.h"
 
+
 // geometry processing and shape analysis framework
 namespace gproshan {
 
@@ -17,6 +18,11 @@ descriptor::descriptor(const signature & sig, const che * mesh, const size_t & n
 		case HKS: compute_hks(); break;
 		case WKS: compute_wks(); break;
 	}
+}
+
+size_t descriptor::n_eigs()
+{
+	return eigval.n_elem;
 }
 
 descriptor::operator bool () const

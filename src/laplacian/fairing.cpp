@@ -5,14 +5,9 @@
 namespace gproshan {
 
 
-fairing::fairing()
-{
-	positions = nullptr;
-}
-
 fairing::~fairing()
 {
-	if(positions) delete [] positions;
+	delete [] vertices;
 }
 
 void fairing::run(che * mesh)
@@ -20,9 +15,9 @@ void fairing::run(che * mesh)
 	compute(mesh);
 }
 
-vertex * fairing::get_postions()
+const vertex * fairing::new_vertices()
 {
-	return positions;
+	return vertices;
 }
 
 
