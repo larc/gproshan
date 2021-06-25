@@ -20,7 +20,9 @@ glm::mat4 camera::look_at(const quaternion & r)
 	center	= vertex(0, 0, 0);
 	up		= vertex(0, 1, 0);
 
-	return glm::lookAt( glm_vec3(r.conj() * eye * r),
+	eye = r.conj() * eye * r;
+
+	return glm::lookAt( glm_vec3(eye),
 						glm_vec3(r.conj() * center * r),
 						glm_vec3(r.conj() * up * r));
 }

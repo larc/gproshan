@@ -80,11 +80,11 @@ bool viewer::run()
 	while(!glfwWindowShouldClose(window))
 	{
 		light	= vertex(-1, 1, -2);
-	
+
 		quaternion r = cam.current_rotation();
-		
+
 		light = r.conj() * light * r;
-		
+
 		view_mat = cam.look_at(r);
 		proj_mat = glm::perspective(45.f, float(viewport_width) / float(viewport_height), .01f, 1000.f);
 
