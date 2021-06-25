@@ -3,6 +3,8 @@
 
 #include "mesh/quaternion.h"
 
+#include <glm/glm.hpp>
+
 
 // geometry processing and shape analysis framework
 namespace gproshan {
@@ -17,15 +19,19 @@ class camera
 		quaternion r_last;
 
 	public:
+		quaternion eye;
+		quaternion center;
+		quaternion up;
 		double zoom;
 
 	public:
 		camera();
+		glm::mat4 look_at(const quaternion & r);
+		quaternion current_rotation() const;
 		void mouse(const bool & press, const double & x, const double & y, const int & w, const int & h);
 		void motion(const double & x, const double & y, const int & w, const int & h);
 		void zoom_in();
 		void zoom_out();
-		quaternion current_rotation() const;
 
 	private:
 		quaternion click_to_sphere(const double & x, const double & y, const int & w, const int & h);

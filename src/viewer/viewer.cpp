@@ -79,19 +79,14 @@ bool viewer::run()
 {
 	while(!glfwWindowShouldClose(window))
 	{
-		eye		= vertex(0., 0., -cam.zoom);
-		up		= vertex(0., 1., 0.);
-		light	= vertex(-1., 1., -2.);
-
+		light	= vertex(-1, 1, -2);
+	
 		quaternion r = cam.current_rotation();
-
-		eye = r.conj() * eye * r;
+		
 		light = r.conj() * light * r;
-		up = r.conj() * up * r;
-
-
+		
+		view_mat = cam.look_at(r);
 		proj_mat = glm::perspective(45.f, float(viewport_width) / float(viewport_height), .01f, 1000.f);
-		view_mat = glm::lookAt(glm_vec3(eye), glm_vec3(center), glm_vec3(up));
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		switch(render_opt)
@@ -774,14 +769,14 @@ bool viewer::raycasting(viewer * view)
 
 void viewer::render_gl()
 {
-	glProgramUniform3f(shader_sphere, shader_sphere("eye"), eye[0], eye[1], eye[2]);
+	glProgramUniform3f(shader_sphere, shader_sphere("eye"), cam.eye[0], cam.eye[1], cam.eye[2]);
 	glProgramUniform3f(shader_sphere, shader_sphere("light"), light[0], light[1], light[2]);
 	glProgramUniformMatrix4fv(shader_sphere, shader_sphere("model_view_mat"), 1, 0, &view_mat[0][0]);
 	glProgramUniformMatrix4fv(shader_sphere, shader_sphere("proj_mat"), 1, 0, &proj_mat[0][0]);
 	glProgramUniform1f(shader_sphere, shader_sphere("scale"), cam.zoom);
 
 	glProgramUniform1ui(shader_triangles, shader_triangles("idx_colormap"), idx_colormap);
-	glProgramUniform3f(shader_triangles, shader_triangles("eye"), eye[0], eye[1], eye[2]);
+	glProgramUniform3f(shader_triangles, shader_triangles("eye"), cam.eye[0], cam.eye[1], cam.eye[2]);
 	glProgramUniform3f(shader_triangles, shader_triangles("light"), light[0], light[1], light[2]);
 	glProgramUniform1i(shader_triangles, shader_triangles("render_flat"), render_flat);
 	glProgramUniform1i(shader_triangles, shader_triangles("render_lines"), render_lines);
@@ -790,7 +785,7 @@ void viewer::render_gl()
 	glProgramUniformMatrix4fv(shader_triangles, shader_triangles("proj_mat"), 1, 0, &proj_mat[0][0]);
 
 	glProgramUniform1ui(shader_pointcloud, shader_pointcloud("idx_colormap"), idx_colormap);
-	glProgramUniform3f(shader_pointcloud, shader_pointcloud("eye"), eye[0], eye[1], eye[2]);
+	glProgramUniform3f(shader_pointcloud, shader_pointcloud("eye"), cam.eye[0], cam.eye[1], cam.eye[2]);
 	glProgramUniform3f(shader_pointcloud, shader_pointcloud("light"), light[0], light[1], light[2]);
 	glProgramUniformMatrix4fv(shader_pointcloud, shader_pointcloud("model_view_mat"), 1, 0, &view_mat[0][0]);
 	glProgramUniformMatrix4fv(shader_pointcloud, shader_pointcloud("proj_mat"), 1, 0, &proj_mat[0][0]);
