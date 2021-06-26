@@ -12,14 +12,9 @@ using namespace std;
 namespace gproshan {
 
 
-camera::camera(): p_click(1), p_drag(1), p_last(1), r_last(1), zoom(2) {}
-
 glm::mat4 camera::look_at(const quaternion & r)
 {
-	eye		= vertex(0, 0, -zoom);
-	center	= vertex(0, 0, 0);
-	up		= vertex(0, 1, 0);
-
+	eye = vertex(0, 0, -zoom);
 	eye = r.conj() * eye * r;
 
 	return glm::lookAt( glm_vec3(eye),

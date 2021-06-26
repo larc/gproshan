@@ -13,19 +13,18 @@ namespace gproshan {
 class camera
 {
 	private:
-		quaternion p_click;
-		quaternion p_drag;
-		quaternion p_last;
-		quaternion r_last;
+		quaternion p_click	= 1;
+		quaternion p_drag	= 1;
+		quaternion p_last	= 1;
+		quaternion r_last	= 1;
 
 	public:
-		quaternion eye;
-		quaternion center;
-		quaternion up;
-		double zoom;
+		quaternion eye		= vertex(0, 0, 2);
+		quaternion center	= vertex(0, 0, 0);
+		quaternion up		= vertex(0, 1, 0);
+		double zoom			= 2;
 
 	public:
-		camera();
 		glm::mat4 look_at(const quaternion & r);
 		quaternion current_rotation() const;
 		void mouse(const bool & press, const double & x, const double & y, const int & w, const int & h);
