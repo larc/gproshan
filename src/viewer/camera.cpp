@@ -2,6 +2,8 @@
 
 #include <cmath>
 
+#include <glm/gtc/matrix_transform.hpp>
+
 
 using namespace std;
 
@@ -10,7 +12,15 @@ using namespace std;
 namespace gproshan {
 
 
-camera::camera(): p_click(1), p_drag(1), p_last(1), r_last(1), zoom(2) {}
+glm::mat4 camera::look_at(const quaternion & r)
+{
+	eye = vertex(0, 0, -zoom);
+	eye = r.conj() * eye * r;
+
+	return glm::lookAt( glm_vec3(eye),
+						glm_vec3(r.conj() * center * r),
+						glm_vec3(r.conj() * up * r));
+}
 
 quaternion camera::click_to_sphere(const double & x, const double & y, const int & w, const int & h)
 {

@@ -69,10 +69,6 @@ class viewer
 
 		camera cam;
 
-		quaternion eye;
-		quaternion center;
-		quaternion up;
-
 		quaternion light;
 
 		glm::mat4 view_mat;
