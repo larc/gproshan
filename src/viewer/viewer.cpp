@@ -180,7 +180,6 @@ bool viewer::run()
 				ImGui::PushID(pro.name.c_str());
 				ImGui::Indent();
 				pro.selected = pro.selected && p.second.function(this);
-				active_mesh().update_vbo();
 				ImGui::Unindent();
 				ImGui::PopID();
 			}
