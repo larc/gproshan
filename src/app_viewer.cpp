@@ -269,6 +269,9 @@ bool app_viewer::process_fairing_spectral(viewer * p_view)
 		mesh->update_normals();
 	}
 
+	mesh.update_vbo_geometry();
+	mesh.update_vbo_normal();
+
 	return true;
 }
 
@@ -295,6 +298,9 @@ bool app_viewer::process_fairing_taubin(viewer * p_view)
 		mesh->set_vertices(fair.new_vertices());
 		mesh->update_normals();
 	}
+
+	mesh.update_vbo_geometry();
+	mesh.update_vbo_normal();
 
 	return true;
 }
@@ -335,6 +341,7 @@ bool app_viewer::process_geodesics(viewer * p_view)
 
 		params.radio = G.radio();
 		mesh->update_heatmap(&G[0]);
+		mesh.update_vbo_heatmap();
 	}
 
 	return true;
@@ -388,6 +395,8 @@ bool app_viewer::process_voronoi(viewer * p_view)
 		mesh->heatmap(i) /= mesh.selected.size() + 1;
 	}
 
+	mesh.update_vbo_heatmap();
+
 	return false;
 }
 
@@ -413,6 +422,8 @@ bool app_viewer::process_compute_toplesets(viewer * p_view)
 		if(toplesets[v] < n_toplesets)
 			mesh->heatmap(v) = real_t(toplesets[v]) / (n_toplesets);
 	}
+
+	mesh.update_vbo_heatmap();
 
 	gproshan_debug_var(n_toplesets);
 
