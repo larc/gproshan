@@ -86,6 +86,14 @@ void che_viewer::update()
 
 void che_viewer::update_vbo()
 {
+	update_vbo_geometry();
+	update_vbo_normal();
+	update_vbo_color();
+	update_vbo_heatmap();
+}
+
+void che_viewer::update_vbo_geometry()
+{
 	glBindVertexArray(vao);
 
 	// 0 VERTEX
@@ -95,12 +103,34 @@ void che_viewer::update_vbo()
 	glVertexAttribPointer(0, 3, GL_REAL, GL_FALSE, 0, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
+	// 4 INDEXES
+	if(!mesh->is_pointcloud())
+	{
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[4]);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh->n_half_edges * sizeof(index_t), &mesh->vt(0), GL_STATIC_DRAW);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	}
+
+	glBindVertexArray(0);
+}
+
+void che_viewer::update_vbo_normal()
+{
+	glBindVertexArray(vao);
+
 	// 1 NORMAL
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
 	glBufferData(GL_ARRAY_BUFFER, mesh->n_vertices * sizeof(vertex), &mesh->normal(0), GL_STATIC_DRAW);
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 3, GL_REAL, GL_FALSE, 0, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	glBindVertexArray(0);
+}
+
+void che_viewer::update_vbo_color()
+{
+	glBindVertexArray(vao);
 
 	// 2 COLOR
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[2]);
@@ -109,20 +139,19 @@ void che_viewer::update_vbo()
 	glVertexAttribPointer(2, 3, GL_UNSIGNED_BYTE, GL_TRUE, 0, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
+	glBindVertexArray(0);
+}
+
+void che_viewer::update_vbo_heatmap()
+{
+	glBindVertexArray(vao);
+
 	// 3 HEAT MAP
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[3]);
 	glBufferData(GL_ARRAY_BUFFER, mesh->n_vertices * sizeof(real_t), &mesh->heatmap(0), GL_STATIC_DRAW);
 	glEnableVertexAttribArray(3);
 	glVertexAttribPointer(3, 1, GL_REAL, GL_FALSE, 0, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-	// 3 INDEXES
-	if(!mesh->is_pointcloud())
-	{
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[4]);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh->n_half_edges * sizeof(index_t), &mesh->vt(0), GL_STATIC_DRAW);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-	}
 
 	glBindVertexArray(0);
 }
