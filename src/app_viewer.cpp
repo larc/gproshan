@@ -85,18 +85,16 @@ void app_viewer::init()
 
 	sub_menus.push_back("Features");
 	add_process(GLFW_KEY_2, {"2", "Eigenfunctions", process_eigenfuntions});
-	add_process(GLFW_KEY_3, {"3", "GPS", process_gps});
-	add_process(GLFW_KEY_4, {"4", "HKS", process_hks});
-	add_process(GLFW_KEY_5, {"5", "WKS", process_wks});
-	add_process(GLFW_KEY_6, {"6", "Key Points", process_key_points});
-	add_process(GLFW_KEY_7, {"7", "Key Components", process_key_components});
+	add_process(GLFW_KEY_3, {"3", "Descriptors", process_descriptor_heatmap});
+	add_process(GLFW_KEY_4, {"4", "Key Points", process_key_points});
+	add_process(GLFW_KEY_5, {"5", "Key Components", process_key_components});
 
 	sub_menus.push_back("Hole Filling");
 	add_process(GLFW_KEY_X, {"X", "Poisson: Membrane surface", process_poisson_laplacian_1});
 	add_process(GLFW_KEY_Y, {"Y", "Poisson: Thin-plate surface", process_poisson_laplacian_2});
 	add_process(GLFW_KEY_Z, {"Z", "Poisson: Minimum variation surface", process_poisson_laplacian_3});
-	add_process(GLFW_KEY_8, {"8", "Fill hole: planar mesh", process_fill_holes});
-	add_process(GLFW_KEY_9, {"0", "Fill hole: biharmonic splines", process_fill_holes_biharmonic_splines});
+	add_process(GLFW_KEY_6, {"6", "Fill hole: planar mesh", process_fill_holes});
+	add_process(GLFW_KEY_7, {"7", "Fill hole: biharmonic splines", process_fill_holes_biharmonic_splines});
 
 	sub_menus.push_back("Others");
 	add_process(GLFW_KEY_SEMICOLON, {"SEMICOLON", "Select multiple vertices", process_select_multiple});
@@ -641,13 +639,16 @@ bool app_viewer::process_eigenfuntions(viewer * p_view)
 	return true;
 }
 
-bool app_viewer::process_descriptor_heatmap(viewer * p_view, const descriptor::signature & sig)
+bool app_viewer::process_descriptor_heatmap(viewer * p_view)
 {
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
 	static int n_eigs = 50;
 	static bool status = true;
+	static descriptor::signature sig = descriptor::GPS;
+
+	ImGui::Combo("descriptor", (int *) &sig, "GPS\0HKS\0WKS\0\0");
 	ImGui::InputInt("n_eigs", &n_eigs);
 	if(!status) ImGui::TextColored({1, 0, 0, 1}, "Error computing features.");
 
@@ -671,26 +672,13 @@ bool app_viewer::process_descriptor_heatmap(viewer * p_view, const descriptor::s
 			#pragma omp parallel for
 			for(index_t v = 0; v < mesh->n_vertices; ++v)
 				mesh->heatmap(v) /= max_s;
+
+			mesh.update_vbo_heatmap();
 		}
 		else status = false;
 	}
 
 	return true;
-}
-
-bool app_viewer::process_gps(viewer * p_view)
-{
-	return process_descriptor_heatmap(p_view, descriptor::GPS);
-}
-
-bool app_viewer::process_hks(viewer * p_view)
-{
-	return process_descriptor_heatmap(p_view, descriptor::HKS);
-}
-
-bool app_viewer::process_wks(viewer * p_view)
-{
-	return process_descriptor_heatmap(p_view, descriptor::WKS);
 }
 
 bool app_viewer::process_key_points(viewer * p_view)
