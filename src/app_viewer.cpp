@@ -713,6 +713,8 @@ bool app_viewer::process_key_components(viewer * p_view)
 	for(index_t v = 0; v < mesh->n_vertices; ++v)
 		mesh->heatmap(v) = (real_t) kcs(v) / kcs;
 
+	mesh.update_vbo_heatmap();
+
 	return false;
 }
 
