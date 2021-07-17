@@ -50,7 +50,7 @@ key_components::operator const size_t & () const
 
 void key_components::compute_kcs(che * mesh, const key_points & kps)
 {
-	geodesics fm(mesh, vector<index_t>(&kps[0], &kps[0] + kps.size()));
+	geodesics fm(mesh, kps);
 
 	radio *= fm.radio();
 	for(index_t i = 0; i < n_vertices && fm[fm(i)] <= radio; ++i)

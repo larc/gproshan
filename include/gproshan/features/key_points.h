@@ -16,9 +16,7 @@ class key_points
 
 	public:
 		key_points(che * mesh, const real_t & percent = 0.10);
-		const index_t & operator[](const index_t & i) const;
-		const bool & operator()(const index_t & i) const;
-		const size_t & size() const;
+		operator const std::vector<index_t> & () const;
 
 	private:
 		void compute_kps_areas(che * mesh, const real_t & percent);

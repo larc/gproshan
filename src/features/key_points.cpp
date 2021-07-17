@@ -16,43 +16,30 @@ key_points::key_points(che * mesh, const real_t & percent)
 	compute_kps_areas(mesh, percent);
 }
 
-const index_t & key_points::operator[](const index_t & i) const
+key_points::operator const std::vector<index_t> & () const
 {
-	assert(i < n_vertices);
-	return kps[i];
+	return kps;
 }
 
-const bool & key_points::operator()(const index_t & i) const
-{
-	assert(i < n_vertices);
-	return is_kp[i];
-}
-
-const size_t & key_points::size() const
-{
-	return kps.size();
-}
-
-/// 
+/// Efficient approach for interest points detection in non-rigid shapes
+/// Cristian Jose Lopez Del Alamo; Luciano Arnaldo Romero Calla; Lizeth Joseline Fuentes Perez
+/// DOI: 10.1109/CLEI.2015.7359459
 void key_points::compute_kps_areas(che * mesh, const real_t & percent)
 {
-	std::pair<real_t, index_t> face_areas;
+	std::vector<std::pair<real_t, index_t> > face_areas(mesh->n_faces);
 
 	#pragma omp parallel for
-	for(index_t t = 0; t < mesh->n_faces; ++t)
-	{
-//		face_areas[t].first = mesh->area_trig(t);
-//		face_areas[t].second = t;
-	}
+	for(index_t f = 0; f < mesh->n_faces; ++f)
+		face_areas[f] = { mesh->area_trig(f), f };
 
-//	sort(face_areas, face_areas + n_faces);
+	sort(face_areas.begin(), face_areas.end());
 
-	is_kp.assign(false, mesh->n_vertices);
+	is_kp.assign(mesh->n_vertices, false);
 	kps.reserve(mesh->n_vertices);
-	
-	for(index_t t = 0; t < mesh->n_faces; ++t)
+
+	for(index_t he, t = 0; t < mesh->n_faces; ++t)
 	{
-		index_t he = che::mtrig;// * face_areas[t].second;
+		he = che::mtrig * face_areas[t].second;
 		for(index_t i = 0; i < che::mtrig; ++i)
 		{
 			const index_t & v = mesh->vt(he);
@@ -65,8 +52,9 @@ void key_points::compute_kps_areas(che * mesh, const real_t & percent)
 		}
 	}
 
-	is_kp.assign(false, mesh->n_vertices);
-	
+	kps.resize(percent * kps.size());
+	is_kp.assign(mesh->n_vertices, false);
+
 	#pragma omp parallel for
 	for(const index_t & v: kps)
 		is_kp[v] = true;

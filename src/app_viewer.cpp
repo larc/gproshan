@@ -683,19 +683,19 @@ bool app_viewer::process_descriptor_heatmap(viewer * p_view)
 
 bool app_viewer::process_key_points(viewer * p_view)
 {
-	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
-	key_points kps(mesh);
+	static real_t percent = 0.1;
+	ImGui_InputReal("percent", &percent, 0.01, 0.1, "%.2f");
 
-	mesh.selected.clear();
-	mesh.selected.reserve(kps.size());
+	if(ImGui::Button("Run"))
+	{
+		key_points kps(mesh);
+		mesh.selected = kps;
+	}
 
-	for(index_t i = 0; i < kps.size(); ++i)
-		mesh.selected.push_back(kps[i]);
-
-	return false;
+	return true;
 }
 
 bool app_viewer::process_key_components(viewer * p_view)
