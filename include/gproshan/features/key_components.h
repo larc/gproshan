@@ -2,7 +2,6 @@
 #define KEY_COMPONENTS_H
 
 #include "mesh/che.h"
-#include "features/key_points.h"
 
 #include <map>
 
@@ -14,21 +13,21 @@ namespace gproshan {
 class key_components
 {
 	private:
-		real_t radio;
-		size_t n_vertices;
-		size_t n_comp;
-		index_t * comp;
-		size_t * comp_size;
+		real_t radio		= 0;
+		size_t n_vertices	= 0;
+		size_t n_comp		= 0;
+		index_t * comp		= nullptr;
+		size_t * comp_size	= nullptr;
 		std::map<index_t, index_t> comp_idx;
 
 	public:
-		key_components(che * mesh, const key_points & kps, const real_t & r);
+		key_components(che * mesh, const std::vector<index_t> & kps, const real_t & r);
 		~key_components();
 		index_t operator()(const index_t & i);
 		operator const size_t & () const;
 
 	private:
-		void compute_kcs(che * mesh, const key_points & kps);
+		void compute_kcs(che * mesh, const std::vector<index_t> & kps);
 		index_t find(const index_t & x);
 		bool join(index_t x, index_t y);
 };

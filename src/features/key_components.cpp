@@ -11,7 +11,7 @@ using namespace std;
 namespace gproshan {
 
 
-key_components::key_components(che * mesh, const key_points & kps, const real_t & r): radio(r)
+key_components::key_components(che * mesh, const std::vector<index_t> & kps, const real_t & r): radio(r)
 {
 	n_vertices = mesh->n_vertices;
 
@@ -48,13 +48,14 @@ key_components::operator const size_t & () const
 	return n_comp;
 }
 
-void key_components::compute_kcs(che * mesh, const key_points & kps)
+void key_components::compute_kcs(che * mesh, const std::vector<index_t> & kps)
 {
 	geodesics fm(mesh, kps);
 
 	radio *= fm.radio();
 	for(index_t i = 0; i < n_vertices && fm[fm(i)] <= radio; ++i)
-		for_star(he, mesh, fm(i)) join(fm(i), mesh->vt(next(he)));
+		for_star(he, mesh, fm(i))
+			join(fm(i), mesh->vt(next(he)));
 
 	for(index_t i = 0; i < n_vertices; ++i)
 		if(comp[i] == i && comp_size[i] > 1)

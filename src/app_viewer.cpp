@@ -687,11 +687,9 @@ bool app_viewer::process_key_points(viewer * p_view)
 	che_viewer & mesh = view->active_mesh();
 
 	static real_t percent = 0.1;
-	ImGui_InputReal("percent", &percent, 0.01, 0.1, "%.2f");
-
-	if(ImGui::Button("Run"))
+	if(ImGui_InputReal("percent", &percent, 0.01, 0.1, "%.2f"))
 	{
-		key_points kps(mesh);
+		key_points kps(mesh, percent);
 		mesh.selected = kps;
 	}
 
@@ -700,22 +698,23 @@ bool app_viewer::process_key_points(viewer * p_view)
 
 bool app_viewer::process_key_components(viewer * p_view)
 {
-	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
-	key_points kps(mesh);
-	key_components kcs(mesh, kps, .25);
+	static real_t radio = 0.25;
+	if(ImGui_InputReal("radio", &radio, 0.01, 0.1, "%.2f"))
+	{
+		// use the mesh selected points as key points.
+		key_components kcs(mesh, mesh.selected, radio);
 
-	gproshan_debug_var(kcs);
+		#pragma omp parallel for
+		for(index_t v = 0; v < mesh->n_vertices; ++v)
+			mesh->heatmap(v) = (real_t) kcs(v) / kcs;
 
-	#pragma omp parallel for
-	for(index_t v = 0; v < mesh->n_vertices; ++v)
-		mesh->heatmap(v) = (real_t) kcs(v) / kcs;
+		mesh.update_vbo_heatmap();
+	}
 
-	mesh.update_vbo_heatmap();
-
-	return false;
+	return true;
 }
 
 
