@@ -13,60 +13,31 @@ namespace gproshan {
 
 key_points::key_points(che * mesh, const real_t & percent)
 {
-	n_faces = mesh->n_faces;
-	n_vertices = mesh->n_vertices;
-
-	face_areas = new real_idx_t[n_faces];
-
-	kps = new index_t[n_vertices];
-	is_kp = new bool[n_vertices];
-
-	n_kps = percent * n_vertices;
-	compute_kps(mesh);
+	compute_kps_areas(mesh, percent);
 }
 
-key_points::~key_points()
+key_points::operator const std::vector<index_t> & () const
 {
-	delete [] face_areas;
-	delete [] kps;
-	delete [] is_kp;
+	return kps;
 }
 
-const index_t & key_points::operator[](const index_t & i) const
+/// Efficient approach for interest points detection in non-rigid shapes
+/// Cristian Jose Lopez Del Alamo; Luciano Arnaldo Romero Calla; Lizeth Joseline Fuentes Perez
+/// DOI: 10.1109/CLEI.2015.7359459
+void key_points::compute_kps_areas(che * mesh, const real_t & percent)
 {
-	assert(i < n_vertices);
-	return kps[i];
-}
-
-const bool & key_points::operator()(const index_t & i) const
-{
-	assert(i < n_vertices);
-	return is_kp[i];
-}
-
-const size_t & key_points::size() const
-{
-	return n_kps;
-}
-
-void key_points::compute_kps(che * mesh)
-{
-	// compute faces areas
+	std::vector<std::pair<real_t, index_t> > face_areas(mesh->n_faces);
 
 	#pragma omp parallel for
-	for(index_t t = 0; t < n_faces; ++t)
-	{
-		face_areas[t].first = mesh->area_trig(t);
-		face_areas[t].second = t;
-	}
+	for(index_t f = 0; f < mesh->n_faces; ++f)
+		face_areas[f] = { mesh->area_trig(f), f };
 
-	sort(face_areas, face_areas + n_faces);
+	sort(face_areas.begin(), face_areas.end());
 
-	// compute kps
-	memset(is_kp, 0, sizeof(bool) * n_vertices);
+	is_kp.assign(mesh->n_vertices, false);
+	kps.reserve(mesh->n_vertices);
 
-	index_t he, k = 0;
-	for(index_t t = 0; t < n_faces; ++t)
+	for(index_t he, t = 0; t < mesh->n_faces; ++t)
 	{
 		he = che::mtrig * face_areas[t].second;
 		for(index_t i = 0; i < che::mtrig; ++i)
@@ -74,19 +45,19 @@ void key_points::compute_kps(che * mesh)
 			const index_t & v = mesh->vt(he);
 			if(!is_kp[v])
 			{
-				kps[k++] = v;
-				is_kp[v] = 1;
+				kps.push_back(v);
+				is_kp[v] = true;
 			}
 			he = next(he);
 		}
 	}
 
-	// compute kps
-	memset(is_kp, 0, sizeof(bool) * n_vertices);
+	kps.resize(percent * kps.size());
+	is_kp.assign(mesh->n_vertices, false);
 
 	#pragma omp parallel for
-	for(index_t i = 0; i < n_kps; ++i)
-		is_kp[kps[i]] = 1;
+	for(const index_t & v: kps)
+		is_kp[v] = true;
 }
 
 
