@@ -85,18 +85,16 @@ void app_viewer::init()
 
 	sub_menus.push_back("Features");
 	add_process(GLFW_KEY_2, {"2", "Eigenfunctions", process_eigenfuntions});
-	add_process(GLFW_KEY_3, {"3", "GPS", process_gps});
-	add_process(GLFW_KEY_4, {"4", "HKS", process_hks});
-	add_process(GLFW_KEY_5, {"5", "WKS", process_wks});
-	add_process(GLFW_KEY_6, {"6", "Key Points", process_key_points});
-	add_process(GLFW_KEY_7, {"7", "Key Components", process_key_components});
+	add_process(GLFW_KEY_3, {"3", "Descriptors", process_descriptor_heatmap});
+	add_process(GLFW_KEY_4, {"4", "Key Points", process_key_points});
+	add_process(GLFW_KEY_5, {"5", "Key Components", process_key_components});
 
 	sub_menus.push_back("Hole Filling");
 	add_process(GLFW_KEY_X, {"X", "Poisson: Membrane surface", process_poisson_laplacian_1});
 	add_process(GLFW_KEY_Y, {"Y", "Poisson: Thin-plate surface", process_poisson_laplacian_2});
 	add_process(GLFW_KEY_Z, {"Z", "Poisson: Minimum variation surface", process_poisson_laplacian_3});
-	add_process(GLFW_KEY_8, {"8", "Fill hole: planar mesh", process_fill_holes});
-	add_process(GLFW_KEY_9, {"0", "Fill hole: biharmonic splines", process_fill_holes_biharmonic_splines});
+	add_process(GLFW_KEY_6, {"6", "Fill hole: planar mesh", process_fill_holes});
+	add_process(GLFW_KEY_7, {"7", "Fill hole: biharmonic splines", process_fill_holes_biharmonic_splines});
 
 	sub_menus.push_back("Others");
 	add_process(GLFW_KEY_SEMICOLON, {"SEMICOLON", "Select multiple vertices", process_select_multiple});
@@ -269,6 +267,9 @@ bool app_viewer::process_fairing_spectral(viewer * p_view)
 		mesh->update_normals();
 	}
 
+	mesh.update_vbo_geometry();
+	mesh.update_vbo_normal();
+
 	return true;
 }
 
@@ -295,6 +296,9 @@ bool app_viewer::process_fairing_taubin(viewer * p_view)
 		mesh->set_vertices(fair.new_vertices());
 		mesh->update_normals();
 	}
+
+	mesh.update_vbo_geometry();
+	mesh.update_vbo_normal();
 
 	return true;
 }
@@ -335,6 +339,7 @@ bool app_viewer::process_geodesics(viewer * p_view)
 
 		params.radio = G.radio();
 		mesh->update_heatmap(&G[0]);
+		mesh.update_vbo_heatmap();
 	}
 
 	return true;
@@ -388,6 +393,8 @@ bool app_viewer::process_voronoi(viewer * p_view)
 		mesh->heatmap(i) /= mesh.selected.size() + 1;
 	}
 
+	mesh.update_vbo_heatmap();
+
 	return false;
 }
 
@@ -413,6 +420,8 @@ bool app_viewer::process_compute_toplesets(viewer * p_view)
 		if(toplesets[v] < n_toplesets)
 			mesh->heatmap(v) = real_t(toplesets[v]) / (n_toplesets);
 	}
+
+	mesh.update_vbo_heatmap();
 
 	gproshan_debug_var(n_toplesets);
 
@@ -630,13 +639,16 @@ bool app_viewer::process_eigenfuntions(viewer * p_view)
 	return true;
 }
 
-bool app_viewer::process_descriptor_heatmap(viewer * p_view, const descriptor::signature & sig)
+bool app_viewer::process_descriptor_heatmap(viewer * p_view)
 {
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
 	static int n_eigs = 50;
 	static bool status = true;
+	static descriptor::signature sig = descriptor::GPS;
+
+	ImGui::Combo("descriptor", (int *) &sig, "GPS\0HKS\0WKS\0\0");
 	ImGui::InputInt("n_eigs", &n_eigs);
 	if(!status) ImGui::TextColored({1, 0, 0, 1}, "Error computing features.");
 
@@ -660,6 +672,8 @@ bool app_viewer::process_descriptor_heatmap(viewer * p_view, const descriptor::s
 			#pragma omp parallel for
 			for(index_t v = 0; v < mesh->n_vertices; ++v)
 				mesh->heatmap(v) /= max_s;
+
+			mesh.update_vbo_heatmap();
 		}
 		else status = false;
 	}
@@ -667,54 +681,40 @@ bool app_viewer::process_descriptor_heatmap(viewer * p_view, const descriptor::s
 	return true;
 }
 
-bool app_viewer::process_gps(viewer * p_view)
-{
-	return process_descriptor_heatmap(p_view, descriptor::GPS);
-}
-
-bool app_viewer::process_hks(viewer * p_view)
-{
-	return process_descriptor_heatmap(p_view, descriptor::HKS);
-}
-
-bool app_viewer::process_wks(viewer * p_view)
-{
-	return process_descriptor_heatmap(p_view, descriptor::WKS);
-}
-
 bool app_viewer::process_key_points(viewer * p_view)
 {
-	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
-	key_points kps(mesh);
+	static real_t percent = 0.1;
+	if(ImGui_InputReal("percent", &percent, 0.01, 0.1, "%.2f"))
+	{
+		key_points kps(mesh, percent);
+		mesh.selected = kps;
+	}
 
-	mesh.selected.clear();
-	mesh.selected.reserve(kps.size());
-
-	for(index_t i = 0; i < kps.size(); ++i)
-		mesh.selected.push_back(kps[i]);
-
-	return false;
+	return true;
 }
 
 bool app_viewer::process_key_components(viewer * p_view)
 {
-	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
-	key_points kps(mesh);
-	key_components kcs(mesh, kps, .25);
+	static real_t radio = 0.25;
+	if(ImGui_InputReal("radio", &radio, 0.01, 0.1, "%.2f"))
+	{
+		// use the mesh selected points as key points.
+		key_components kcs(mesh, mesh.selected, radio);
 
-	gproshan_debug_var(kcs);
+		#pragma omp parallel for
+		for(index_t v = 0; v < mesh->n_vertices; ++v)
+			mesh->heatmap(v) = (real_t) kcs(v) / kcs;
 
-	#pragma omp parallel for
-	for(index_t v = 0; v < mesh->n_vertices; ++v)
-		mesh->heatmap(v) = (real_t) kcs(v) / kcs;
+		mesh.update_vbo_heatmap();
+	}
 
-	return false;
+	return true;
 }
 
 

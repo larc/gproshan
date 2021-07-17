@@ -80,10 +80,7 @@ class app_viewer : public viewer
 
 		// Features
 		static bool process_eigenfuntions(viewer * p_view);
-		static bool process_descriptor_heatmap(viewer * p_view, const descriptor::signature & sig);
-		static bool process_gps(viewer * p_view);
-		static bool process_hks(viewer * p_view);
-		static bool process_wks(viewer * p_view);
+		static bool process_descriptor_heatmap(viewer * p_view);
 		static bool process_key_points(viewer * p_view);
 		static bool process_key_components(viewer * p_view);
 

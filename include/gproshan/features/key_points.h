@@ -3,34 +3,23 @@
 
 #include "mesh/che.h"
 
-#include <utility>
-
 
 // geometry processing and shape analysis framework
 namespace gproshan {
 
 
-typedef std::pair<real_t, index_t> real_idx_t;
-
 class key_points
 {
 	private:
-		size_t n_faces;
-		size_t n_vertices;
-		real_idx_t * face_areas;
-		index_t * kps;
-		bool * is_kp;
-		size_t n_kps;
+		std::vector<index_t> kps;
+		std::vector<bool> is_kp;
 
 	public:
 		key_points(che * mesh, const real_t & percent = 0.10);
-		~key_points();
-		const index_t & operator[](const index_t & i) const;
-		const bool & operator()(const index_t & i) const;
-		const size_t & size() const;
+		operator const std::vector<index_t> & () const;
 
 	private:
-		void compute_kps(che * mesh);
+		void compute_kps_areas(che * mesh, const real_t & percent);
 };
 
 

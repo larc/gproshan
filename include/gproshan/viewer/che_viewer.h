@@ -48,6 +48,10 @@ class che_viewer
 		void reload();
 		void update();
 		void update_vbo();
+		void update_vbo_geometry();
+		void update_vbo_normal();
+		void update_vbo_color();
+		void update_vbo_heatmap();
 		void update_instances_translations(const std::vector<vertex> & translations);
 		void draw(shader & program);
 		void draw_point_cloud(shader & program);
