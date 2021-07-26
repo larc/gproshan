@@ -69,10 +69,10 @@ void che_ptx::read_file(const string & file)
 		}
 
 		CImg<unsigned char> img((unsigned char *) VC, 3, n_cols, n_rows);
-		img.permute_axes("yzcx");
-		img.save((file+".jpg").c_str());
+		img.permute_axes("zycx");
+		img.save((file + ".jpg").c_str());
 
-		thread([](CImg<real_t> img) { img.display(); }, img).detach();
+		thread([](CImg<real_t> img) { img.mirror("y").display(); }, img).detach();
 	}
 	else
 	{
