@@ -40,32 +40,28 @@ index_t embree_splat_ch::add_pointcloud(const che * mesh)
 	#pragma omp parallel for
 	for(index_t i = 0; i < vsplat.size(); ++i)
 	{
+		splat & is = vsplat[i];
 		const index_t & begin = vstart[i];
 		const index_t & end = vstart[i + 1];
 
-		std::vector<index_t> & points = vsplat[i];
+		std::vector<index_t> & points = is;
 
-		vertex c, t, b, n = 0;
-
+		is.n = 0;
 		for(index_t j = 0; j < points.size(); ++j)
 		{
 			index_t & v = points[j];
 			vertices[j + begin] = mesh->gt(v);
-			n += mesh->normal(v);
+			is.n += mesh->normal(v);
 		}
 
-		n = n.unit();
-		c = vertices[begin];
-		t = vertices[end - 1] - c;
-		t = (t - ((t, n) * n)).unit();
-		b = (n * t).unit();
+		is.n = is.n.unit();
+		is.c = vertices[begin];
+		is.t = vertices[end - 1] - is.c;
+		is.t = (is.t - ((is.t, is.n) * is.n)).unit();
+		is.b = (is.n * is.t).unit();
 
 		for(index_t j = begin; j < end; ++j)
-		{
-			vertex & v = vertices[j];
-			v -= c;
-			v = {(t, v), (b, v), (n, b)};
-		}
+			is.to2d(vertices[j]);
 
 		if(points.size() >= 3)
 			vch[i] = new convex_hull(vertices.data() + begin, points.size());
@@ -73,13 +69,7 @@ index_t embree_splat_ch::add_pointcloud(const che * mesh)
 			vch[i] = nullptr;
 
 		for(index_t j = begin; j < end; ++j)
-		{
-			vertex & v = vertices[j];
-			v = vertex{	(vertex{t.x, b.x, n.x}, v),
-						(vertex{t.y, b.y, n.y}, v),
-						(vertex{t.z, b.z, n.z}, v)
-						} + c;
-		}
+			is.to3d(vertices[j]);
 	}
 
 	for(index_t i = 0; i < vsplat.size(); ++i)

@@ -17,6 +17,7 @@ class embree_splat_ch : public embree
 	struct splat
 	{
 		std::vector<index_t> points;
+		vertex c, t, b, n;				// center, tbn matrix
 
 		operator std::vector<index_t> & ()
 		{
@@ -43,6 +44,20 @@ class embree_splat_ch : public embree
 			color /= sum_w;
 
 			return sum_w;
+		}
+
+		void to2d(vertex & v) const
+		{
+			v -= c;
+			v = {(t, v), (b, v), (n, b)};
+		}
+
+		void to3d(vertex & v) const
+		{
+			v = vertex{	(vertex{t.x, b.x, n.x}, v),
+						(vertex{t.y, b.y, n.y}, v),
+						(vertex{t.z, b.z, n.z}, v)
+						} + c;
 		}
 	};
 
