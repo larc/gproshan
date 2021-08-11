@@ -6,11 +6,16 @@
 #include "raytracing/rt_embree.h"
 #include "geometry/convex_hull.h"
 
+#include <algorithm>
+
 
 // geometry processing and shape analysis framework
 // raytracing approach
 namespace gproshan::rt {
 
+
+unsigned int expand_bits(unsigned int v);
+unsigned int morton_2d(float x, float y);
 
 class embree_splat_ch : public embree
 {

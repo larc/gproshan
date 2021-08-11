@@ -165,6 +165,32 @@ void embree_splat_ch::init_splats(const che * mesh)
 }
 
 
+// FROM: https://developer.nvidia.com/blog/thinking-parallel-part-iii-tree-construction-gpu/
+
+// Expands a 10-bit integer into 30 bits
+// by inserting 2 zeros after each bit.
+unsigned int expand_bits(unsigned int v)
+{
+    v = (v * 0x00010001u) & 0xFF0000FFu;
+    v = (v * 0x00000101u) & 0x0F00F00Fu;
+    v = (v * 0x00000011u) & 0xC30C30C3u;
+    v = (v * 0x00000005u) & 0x49249249u;
+    return v;
+}
+
+// Calculates a 30-bit Morton code for the
+// given 3D point located within the unit cube [0,1].
+// UPDATED ONLY 2D
+unsigned int morton_2d(float x, float y)
+{
+    x = std::min(std::max(x * 1024.0f, 0.0f), 1023.0f);
+    y = std::min(std::max(y * 1024.0f, 0.0f), 1023.0f);
+    unsigned int xx = expand_bits(x);
+    unsigned int yy = expand_bits(y);
+    return (xx >> 2) + (yy >> 1);
+}
+
+
 } // namespace gproshan
 
 #endif // GPROSHAN_EMBREE
