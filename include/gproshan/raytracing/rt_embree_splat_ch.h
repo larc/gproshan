@@ -58,17 +58,19 @@ class embree_splat_ch : public embree
 			normal = glm::vec3(0);
 			color = glm::vec3(0);
 
-			float w, sum_w = 0, sigma = pc_radius;
+			float w, sum_w = 0;
+			float & sigma = pc_radius;
 			
 			vertex h(p.x, p.y, p.z);
 			to2d(h);
 			int k = std::lower_bound(ipoints.begin(), ipoints.end(),
 										ipoint_code{0, morton_2d((h.x + 1) / 2, (h.y + 1) / 2)}) - ipoints.begin();
 
-			const int nk = 4;
+			const int nk = 8;
 			int begin = std::max(k - nk, 0);
 			int end = std::min(k + nk, (int) ipoints.size());
 			for(int i = begin; i < end; ++i)
+//			for(auto & i: ipoints)
 			{
 				const index_t & v = ipoints[i].p;
 				w = glm::length(p - glm_vec3(mesh->gt(v)));
