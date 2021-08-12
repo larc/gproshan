@@ -71,10 +71,8 @@ index_t embree_splat_ch::add_pointcloud(const che * mesh)
 			is.code(j - begin) = morton_2d((v.x + 1) / 2, (v.y + 1) / 2);
 		}
 		
-		std::sort(is.ipoints.begin(), is.ipoints.end(), [](const auto & i, const auto & j)
-			{
-				return i.code < j.code;
-			});
+		// sorting point by its morton code
+		std::sort(is.ipoints.begin(), is.ipoints.end());
 
 		vch[i] = new convex_hull(vertices.data() + begin, is.size());
 
