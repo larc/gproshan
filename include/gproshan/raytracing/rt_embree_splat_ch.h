@@ -21,12 +21,28 @@ class embree_splat_ch : public embree
 {
 	struct splat
 	{
-		std::vector<index_t> points;
+		struct ipoint_code { index_t p, code; };		// index point and 2d morton code
+		std::vector<ipoint_code> ipoints;
 		vertex c, t, b, n;				// center, tbn matrix
 
-		operator std::vector<index_t> & ()
+		index_t & operator [] (const index_t & i)
 		{
-			return points;
+			return ipoints[i].p;
+		}
+
+		index_t & code(const index_t & i)
+		{
+			return ipoints[i].code;
+		}
+
+		size_t size() const
+		{
+			return ipoints.size();
+		}
+
+		void push_back(const index_t & p)
+		{
+			ipoints.push_back({p, 0});
 		}
 
 		float shading(const rt_mesh & mesh, const glm::vec3 & p, glm::vec3 & normal, glm::vec3 & color)
@@ -36,8 +52,9 @@ class embree_splat_ch : public embree
 
 			float w, sum_w = 0, sigma = pc_radius;
 
-			for(index_t & v: points)
+			for(auto & i: ipoints)
 			{
+				const index_t & v = i.p;
 				w = glm::length(p - glm_vec3(mesh->gt(v)));
 				w = exp(-0.5 * w * w / (sigma * sigma));
 				normal += w * glm_vec3(mesh->normal(v));

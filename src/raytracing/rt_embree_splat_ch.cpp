@@ -7,6 +7,8 @@
 #include <cstring>
 #include <set>
 #include <queue>
+#include <algorithm>
+#include <numeric>
 
 
 // geometry processing and shape analysis framework
@@ -32,7 +34,7 @@ index_t embree_splat_ch::add_pointcloud(const che * mesh)
 
 	vstart[0] = 0;
 	for(index_t i = 1; i < vstart.size(); ++i)
-		vstart[i] = vstart[i - 1] + vsplat[i - 1].points.size();
+		vstart[i] = vstart[i - 1] + vsplat[i - 1].size();
 
 	std::vector<vertex> vertices(vstart.back());
 	std::vector<index_t> faces;
@@ -41,15 +43,17 @@ index_t embree_splat_ch::add_pointcloud(const che * mesh)
 	for(index_t i = 0; i < vsplat.size(); ++i)
 	{
 		splat & is = vsplat[i];
+		
+		vch[i] = nullptr;
+		if(is.size() < 3) continue;
+	
 		const index_t & begin = vstart[i];
 		const index_t & end = vstart[i + 1];
 
-		std::vector<index_t> & points = is;
-
 		is.n = 0;
-		for(index_t j = 0; j < points.size(); ++j)
+		for(index_t j = 0; j < is.size(); ++j)
 		{
-			index_t & v = points[j];
+			index_t & v = is[j];
 			vertices[j + begin] = mesh->gt(v);
 			is.n += mesh->normal(v);
 		}
@@ -61,12 +65,18 @@ index_t embree_splat_ch::add_pointcloud(const che * mesh)
 		is.b = (is.n * is.t).unit();
 
 		for(index_t j = begin; j < end; ++j)
+		{
+			vertex & v = vertices[j];
 			is.to2d(vertices[j]);
+			is.code(j - begin) = morton_2d((v.x + 1) / 2, (v.y + 1) / 2);
+		}
+		
+		std::sort(is.ipoints.begin(), is.ipoints.end(), [](const auto & i, const auto & j)
+			{
+				return i.code < j.code;
+			});
 
-		if(points.size() >= 3)
-			vch[i] = new convex_hull(vertices.data() + begin, points.size());
-		else
-			vch[i] = nullptr;
+		vch[i] = new convex_hull(vertices.data() + begin, is.size());
 
 		for(index_t j = begin; j < end; ++j)
 			is.to3d(vertices[j]);
@@ -92,6 +102,7 @@ index_t embree_splat_ch::add_pointcloud(const che * mesh)
 
 	che ch_mesh(vertices.data(), vertices.size(), faces.data(), faces.size() / 3);
 	che_off::write_file(&ch_mesh, "ch_splats");
+
 	return add_mesh(&ch_mesh);
 }
 
@@ -144,20 +155,24 @@ void embree_splat_ch::init_splats(const che * mesh)
 		radio = 0;
 
 		vsplat.push_back(splat());
-		std::vector<index_t> & splat_points = vsplat.back();
+
+		splat & s = vsplat.back();
 		for(const index_t & p: points)
 			if((n, mesh->normal(p)) > n_threshold)
 			{
-				splat_points.push_back(p);
+				s.push_back(p);
 				radio = std::max(radio, *(mesh->gt(p) - c));
 			}
 			else break;
 
 		radio *= r_threshold;
-		for(const index_t & p: splat_points)
+		for(index_t i = 0; i < s.size(); ++i)
+		{
+			const index_t & p = s[i];
 			visited[p] = *(mesh->gt(p) - c) < radio;
+		}
 
-		if(splat_points.size() < 3)
+		if(s.size() < 3)
 			vsplat.pop_back();
 	}
 
