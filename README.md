@@ -1,5 +1,9 @@
 ## [gproshan](https://github.com/larc/gproshan): a geometry processing and shape analysis framework 
 
+[![Build](https://github.com/larc/gproshan/actions/workflows/build.yml/badge.svg?branch=alpha)](https://github.com/larc/gproshan/actions/workflows/build.yml)
+[![DOI](https://zenodo.org/badge/88686093.svg)](https://zenodo.org/badge/latestdoi/88686093)
+
+
 ![](https://raw.githubusercontent.com/larc/gproshan/master/gproshan.png) 
 
 
@@ -8,7 +12,6 @@ This framework integrates some algorithms and contributions focus on the areas o
 
 ## Build and Run
 
-![Build](https://github.com/larc/gproshan/workflows/Build/badge.svg?branch=alpha)
 
 Install all dependencies and run:
 
