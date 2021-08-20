@@ -17,8 +17,21 @@ namespace gproshan::rt {
 
 
 float embree_splat_ch::r_threshold = 0.95;
-float embree_splat_ch::n_threshold = 0.45;
+float embree_splat_ch::n_threshold = 0.86;	// 30 degrees
 size_t embree_splat_ch::max_neigs = 64;
+
+
+glm::vec3 colormap(const float & x)
+{
+	float r = x < 0.75 ? 1012.0 * x - 389.0 : -1.11322769567548E+03 * x + 1.24461193212872E+03;
+	float g = x < 0.50 ? 1012.0 * x - 129.0 : -1012.0 * x + 899.0;
+	float b = x < 0.25 ? 1012.0 * x + 131.0 : -1012.0 * x + 643.0;
+	r = std::min(std::max(r / 255.0, 0.0), 1.0);
+	g = std::min(std::max(g / 255.0, 0.0), 1.0);
+	b = std::min(std::max(b / 255.0, 0.0), 1.0);
+	return glm::vec3(r, g, b);
+}
+
 
 embree_splat_ch::embree_splat_ch(const std::vector<che *> & meshes, const bool & pointcloud)
 {
@@ -107,8 +120,11 @@ index_t embree_splat_ch::add_pointcloud(const che * mesh)
 float embree_splat_ch::pointcloud_hit(glm::vec3 & position, glm::vec3 & normal, glm::vec3 & color, ray_hit r)
 {
 	position = r.position();
-	float w = vsplat[primID_splat[r.hit.primID]].shading(geomID_mesh[r.hit.geomID], position, normal, color);
-
+//	float w = vsplat[primID_splat[r.hit.primID]].shading(geomID_mesh[r.hit.geomID], position, normal, color);
+	normal = glm::normalize(glm::vec3(r.hit.Ng_x, r.hit.Ng_y, r.hit.Ng_z));
+	float fcolor = float(primID_splat[r.hit.primID]) / vsplat.size();
+	color = colormap(fcolor); 
+	
 	return 1e-2;
 }
 
@@ -125,21 +141,21 @@ void embree_splat_ch::init_splats(const che * mesh)
 	{
 		if(visited[v]) continue;
 
-		std::set<index_t> points;
+		std::set<index_t> neigs;
 		std::queue<index_t> q;
 
 		q.push(v);
-		points.insert(v);
+		neigs.insert(v);
 
 		index_t u;
-		while(!q.empty() && points.size() < max_neigs)
+		while(!q.empty() && neigs.size() < max_neigs)
 		{
 			for_star(he, mesh, q.front())
 			{
 				u = mesh->vt(prev(he));
-				if(points.find(u) == points.end())
+				if(neigs.find(u) == neigs.end())
 				{
-					points.insert(u);
+					neigs.insert(u);
 					q.push(u);
 				}
 			}
@@ -155,7 +171,7 @@ void embree_splat_ch::init_splats(const che * mesh)
 		vsplat.push_back(splat());
 
 		splat & s = vsplat.back();
-		for(const index_t & p: points)
+		for(const index_t & p: neigs)
 			if((n, mesh->normal(p)) > n_threshold)
 			{
 				s.push_back(p);
