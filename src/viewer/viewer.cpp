@@ -638,8 +638,9 @@ bool viewer::set_render_embree(viewer * view)
 {
 	static int rt_opt = 0;
 	static double time = 0;
-	static const size_t min_neigs = 1 << 3;
-	static const size_t max_neigs = 1 << 10;
+	static float angle = acos(rt::embree_splat_ch::n_threshold) * 180 / M_PI;
+	static const size_t min_neighbors = 1 << 3;
+	static const size_t max_neighbors = 1 << 10;
 
 	ImGui::Combo("rt_opt", &rt_opt, "Mesh\0Splat\0Splat Convex Hull\0\0");
 	ImGui::InputFloat("pc_radius", &rt::embree::pc_radius, 0, 0, "%.4f");
@@ -650,8 +651,8 @@ bool viewer::set_render_embree(viewer * view)
 		case 1: break;
 		case 2:
 			ImGui::SliderFloat("r_threshold", &rt::embree_splat_ch::r_threshold, 0.01, 1, "%.2f");
-			ImGui::SliderFloat("n_threshold", &rt::embree_splat_ch::n_threshold, 0.01, 1, "%.2f");
-			ImGui::SliderScalar("max_neigs", ImGuiDataType_U64, &rt::embree_splat_ch::max_neigs, &min_neigs, &max_neigs, "%lu");
+			ImGui::SliderFloat("n_threshold", &angle, 0, 90, "%.2f");
+			ImGui::SliderScalar("max_neighbors", ImGuiDataType_U64, &rt::embree_splat_ch::max_neighbors, &min_neighbors, &max_neighbors, "%lu");
 			break;
 	}
 
@@ -660,6 +661,7 @@ bool viewer::set_render_embree(viewer * view)
 		if(ImGui::Button("Start"))
 		{
 			view->render_opt = R_EMBREE;
+			rt::embree_splat_ch::n_threshold = cos(angle * M_PI / 180);
 
 			TIC(time);
 			switch(rt_opt)

@@ -29,7 +29,7 @@ class embree_splat_ch : public embree
 				return code < ipc.code;
 			}
 		};
-		
+
 		std::vector<ipoint_code> ipoints;
 		vertex c, t, b, n;				// center, tbn matrix
 
@@ -60,7 +60,7 @@ class embree_splat_ch : public embree
 
 			float w, sum_w = 0;
 			float & sigma = pc_radius;
-			
+
 			vertex h(p.x, p.y, p.z);
 			to2d(h);
 			int k = std::lower_bound(ipoints.begin(), ipoints.end(),
@@ -104,7 +104,7 @@ class embree_splat_ch : public embree
 	public:
 		static float r_threshold;
 		static float n_threshold;
-		static size_t max_neigs;
+		static size_t max_neighbors;
 
 	private:
 		std::vector<splat> vsplat;

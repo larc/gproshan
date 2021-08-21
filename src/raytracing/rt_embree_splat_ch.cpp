@@ -16,9 +16,9 @@
 namespace gproshan::rt {
 
 
-float embree_splat_ch::r_threshold = 0.95;
-float embree_splat_ch::n_threshold = 0.86;	// 30 degrees
-size_t embree_splat_ch::max_neigs = 64;
+float embree_splat_ch::r_threshold = 0.81;	// cos overlapping radius
+float embree_splat_ch::n_threshold = 0.86;	// 30 degrees angle normals
+size_t embree_splat_ch::max_neighbors = 256;	// max neighbors per splat
 
 
 glm::vec3 colormap(const float & x)
@@ -56,10 +56,10 @@ index_t embree_splat_ch::add_pointcloud(const che * mesh)
 	for(index_t i = 0; i < vsplat.size(); ++i)
 	{
 		splat & is = vsplat[i];
-		
+
 		vch[i] = nullptr;
 		if(is.size() < 3) continue;
-	
+
 		const index_t & begin = vstart[i];
 		const index_t & end = vstart[i + 1];
 
@@ -83,7 +83,7 @@ index_t embree_splat_ch::add_pointcloud(const che * mesh)
 			is.to2d(vertices[j]);
 			is.code(j - begin) = morton_2d((v.x + 1) / 2, (v.y + 1) / 2);
 		}
-		
+
 		// sorting point by its morton code
 		std::sort(is.ipoints.begin(), is.ipoints.end());
 
@@ -124,7 +124,7 @@ float embree_splat_ch::pointcloud_hit(glm::vec3 & position, glm::vec3 & normal, 
 	normal = glm::normalize(glm::vec3(r.hit.Ng_x, r.hit.Ng_y, r.hit.Ng_z));
 	float fcolor = float(primID_splat[r.hit.primID]) / vsplat.size();
 	color = colormap(fcolor); 
-	
+
 	return 1e-2;
 }
 
@@ -148,12 +148,12 @@ void embree_splat_ch::init_splats(const che * mesh)
 		neigs.insert(v);
 
 		index_t u;
-		while(!q.empty() && neigs.size() < max_neigs)
+		while(!q.empty() && neigs.size() < max_neighbors)
 		{
 			for_star(he, mesh, q.front())
 			{
 				u = mesh->vt(prev(he));
-				if(neigs.find(u) == neigs.end())
+				if(!visited[u] && neigs.find(u) == neigs.end())
 				{
 					neigs.insert(u);
 					q.push(u);
@@ -163,8 +163,8 @@ void embree_splat_ch::init_splats(const che * mesh)
 			q.pop();
 		}
 
-		const vertex & n = mesh->normal(v);
-		const vertex & c = mesh->gt(v);
+		vertex n = mesh->normal(v);
+		vertex c = mesh->gt(v);
 
 		radio = 0;
 
@@ -174,6 +174,8 @@ void embree_splat_ch::init_splats(const che * mesh)
 		for(const index_t & p: neigs)
 			if((n, mesh->normal(p)) > n_threshold)
 			{
+				c = (s.size() * c + mesh->gt(p)) / (s.size() + 1);
+				n = (s.size() * n + mesh->normal(p)) / (s.size() + 1);
 				s.push_back(p);
 				radio = std::max(radio, *(mesh->gt(p) - c));
 			}
