@@ -108,6 +108,7 @@ class embree_splat_ch : public embree
 
 	private:
 		std::vector<splat> vsplat;
+		std::vector<float> csplat;
 		std::vector<index_t> primID_splat;
 
 	public:

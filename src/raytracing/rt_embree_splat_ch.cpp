@@ -16,8 +16,8 @@
 namespace gproshan::rt {
 
 
-float embree_splat_ch::r_threshold = 0.81;	// cos overlapping radius
-float embree_splat_ch::n_threshold = 0.86;	// 30 degrees angle normals
+float embree_splat_ch::r_threshold = 0.50;	// cos overlapping radius
+float embree_splat_ch::n_threshold = 0.81;	// 30 degrees angle normals
 size_t embree_splat_ch::max_neighbors = 256;	// max neighbors per splat
 
 
@@ -63,16 +63,17 @@ index_t embree_splat_ch::add_pointcloud(const che * mesh)
 		const index_t & begin = vstart[i];
 		const index_t & end = vstart[i + 1];
 
-		is.n = 0;
+		is.c = is.n = 0;
 		for(index_t j = 0; j < is.size(); ++j)
 		{
 			index_t & v = is[j];
 			vertices[j + begin] = mesh->gt(v);
 			is.n += mesh->normal(v);
+			is.c += mesh->gt(v);
 		}
-
+	
+		is.c /= is.size();
 		is.n = is.n.unit();
-		is.c = vertices[begin];
 		is.t = vertices[end - 1] - is.c;
 		is.t = (is.t - ((is.t, is.n) * is.n)).unit();
 		is.b = (is.n * is.t).unit();
@@ -93,8 +94,10 @@ index_t embree_splat_ch::add_pointcloud(const che * mesh)
 			is.to3d(vertices[j]);
 	}
 
+	csplat.resize(vsplat.size());
 	for(index_t i = 0; i < vsplat.size(); ++i)
 	{
+		csplat[i] = float(i) / (vsplat.size() - 1);
 		if(!vch[i]) continue;
 
 		const std::vector<index_t> & ch = *vch[i];
@@ -107,6 +110,8 @@ index_t embree_splat_ch::add_pointcloud(const che * mesh)
 			++f;
 		}
 	}
+
+	std::random_shuffle(csplat.begin(), csplat.end());
 
 	for(convex_hull * ch: vch)
 		delete ch;
@@ -122,8 +127,7 @@ float embree_splat_ch::pointcloud_hit(glm::vec3 & position, glm::vec3 & normal, 
 	position = r.position();
 //	float w = vsplat[primID_splat[r.hit.primID]].shading(geomID_mesh[r.hit.geomID], position, normal, color);
 	normal = glm::normalize(glm::vec3(r.hit.Ng_x, r.hit.Ng_y, r.hit.Ng_z));
-	float fcolor = float(primID_splat[r.hit.primID]) / vsplat.size();
-	color = colormap(fcolor); 
+	color = colormap(csplat[primID_splat[r.hit.primID]]); 
 
 	return 1e-2;
 }
