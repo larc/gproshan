@@ -657,6 +657,7 @@ bool viewer::set_render_embree(viewer * view)
 						break;
 			}
 			TOC(time);
+			sprintf(view->status_message, "build embree in %.3fs", time);
 
 			if(!view->render_frame)
 				view->render_frame = new frame;

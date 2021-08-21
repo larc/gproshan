@@ -45,7 +45,7 @@ int app_viewer::main(int nargs, const char ** args)
 	for(int i = 1; i < nargs; ++i)
 		add_mesh(load_mesh(args[i]));
 	TOC(time)
-	sprintf(status_message, "meshes loaded in %.2fs", time);
+	sprintf(status_message, "meshes loaded in %.3fs", time);
 
 	init();
 	run();
