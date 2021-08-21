@@ -71,7 +71,7 @@ index_t embree_splat_ch::add_pointcloud(const che * mesh)
 			is.n += mesh->normal(v);
 			is.c += mesh->gt(v);
 		}
-	
+
 		is.c /= is.size();
 		is.n = is.n.unit();
 		is.t = vertices[end - 1] - is.c;
@@ -125,9 +125,9 @@ index_t embree_splat_ch::add_pointcloud(const che * mesh)
 float embree_splat_ch::pointcloud_hit(glm::vec3 & position, glm::vec3 & normal, glm::vec3 & color, ray_hit r)
 {
 	position = r.position();
-//	float w = vsplat[primID_splat[r.hit.primID]].shading(geomID_mesh[r.hit.geomID], position, normal, color);
-	normal = glm::normalize(glm::vec3(r.hit.Ng_x, r.hit.Ng_y, r.hit.Ng_z));
-	color = colormap(csplat[primID_splat[r.hit.primID]]); 
+	float w = vsplat[primID_splat[r.hit.primID]].shading(geomID_mesh[r.hit.geomID], position, normal, color);
+//	normal = glm::normalize(glm::vec3(r.hit.Ng_x, r.hit.Ng_y, r.hit.Ng_z));
+//	color = colormap(csplat[primID_splat[r.hit.primID]]); 
 
 	return 1e-2;
 }
@@ -150,50 +150,34 @@ void embree_splat_ch::init_splats(const che * mesh)
 
 		q.push(v);
 		neigs.insert(v);
+		vertex n = mesh->normal(v);
 
-		index_t u;
 		while(!q.empty() && neigs.size() < max_neighbors)
 		{
 			for_star(he, mesh, q.front())
 			{
-				u = mesh->vt(prev(he));
+				const index_t & u = mesh->vt(prev(he));
 				if(!visited[u] && neigs.find(u) == neigs.end())
 				{
+					if((n.unit(), mesh->normal(u)) > n_threshold)
+					{
+						q.push(u);
+						n += mesh->normal(u);
+						visited[u] = true;
+					}
 					neigs.insert(u);
-					q.push(u);
 				}
 			}
-
 			q.pop();
 		}
 
-		vertex n = mesh->normal(v);
-		vertex c = mesh->gt(v);
-
-		radio = 0;
+		if(neigs.size() < 3) continue;
 
 		vsplat.push_back(splat());
-
 		splat & s = vsplat.back();
+
 		for(const index_t & p: neigs)
-			if((n, mesh->normal(p)) > n_threshold)
-			{
-				c = (s.size() * c + mesh->gt(p)) / (s.size() + 1);
-				n = (s.size() * n + mesh->normal(p)) / (s.size() + 1);
-				s.push_back(p);
-				radio = std::max(radio, *(mesh->gt(p) - c));
-			}
-			else break;
-
-		radio *= r_threshold;
-		for(index_t i = 0; i < s.size(); ++i)
-		{
-			const index_t & p = s[i];
-			visited[p] = *(mesh->gt(p) - c) < radio;
-		}
-
-		if(s.size() < 3)
-			vsplat.pop_back();
+			s.push_back(p);
 	}
 
 	gproshan_error_var(float(vsplat.size()) / mesh->n_vertices);
