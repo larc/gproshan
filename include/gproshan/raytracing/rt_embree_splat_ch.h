@@ -101,6 +101,7 @@ class embree_splat_ch : public embree
 	};
 
 	public:
+		static bool show_chsplats;
 		static float r_threshold;
 		static float n_threshold;
 		static size_t max_neighbors;

@@ -16,6 +16,7 @@
 namespace gproshan::rt {
 
 
+bool embree_splat_ch::show_chsplats = true;
 float embree_splat_ch::r_threshold = 0.50;	// cos overlapping radius
 float embree_splat_ch::n_threshold = 0.81;	// 30 degrees angle normals
 size_t embree_splat_ch::max_neighbors = 256;	// max neighbors per splat
@@ -125,9 +126,15 @@ index_t embree_splat_ch::add_pointcloud(const che * mesh)
 float embree_splat_ch::pointcloud_hit(glm::vec3 & position, glm::vec3 & normal, glm::vec3 & color, ray_hit r)
 {
 	position = r.position();
-	float w = vsplat[primID_splat[r.hit.primID]].shading(geomID_mesh[r.hit.geomID], position, normal, color);
-//	normal = glm::normalize(glm::vec3(r.hit.Ng_x, r.hit.Ng_y, r.hit.Ng_z));
-//	color = colormap(csplat[primID_splat[r.hit.primID]]); 
+	if(show_chsplats)
+	{
+		normal = glm::normalize(glm::vec3(r.hit.Ng_x, r.hit.Ng_y, r.hit.Ng_z));
+		color = colormap(csplat[primID_splat[r.hit.primID]]);
+	}
+	else
+	{
+		vsplat[primID_splat[r.hit.primID]].shading(geomID_mesh[r.hit.geomID], position, normal, color);
+	}
 
 	return 1e-2;
 }

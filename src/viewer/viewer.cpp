@@ -651,6 +651,7 @@ bool viewer::set_render_embree(viewer * view)
 		case 0: break;
 		case 1: break;
 		case 2:
+			ImGui::Checkbox("show_chsplats", &rt::embree_splat_ch::show_chsplats);
 			ImGui::SliderFloat("r_threshold", &rt::embree_splat_ch::r_threshold, 0.01, 1, "%.2f");
 			ImGui::SliderFloat("n_threshold", &angle, 0, 90, "%.2f");
 			ImGui::SliderScalar("max_neighbors", ImGuiDataType_U64, &rt::embree_splat_ch::max_neighbors, &min_neighbors, &max_neighbors, "%lu");
