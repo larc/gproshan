@@ -54,6 +54,7 @@ viewer::viewer(int width, int height): window_width(width), window_height(height
 	init_menus();
 
 	info_gl();
+	gproshan_log_var(sizeof(real_t));
 
 	sphere.init(new che_sphere(0.01), false);
 }
