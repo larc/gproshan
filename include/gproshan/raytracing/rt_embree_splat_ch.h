@@ -58,17 +58,16 @@ class embree_splat_ch : public embree
 			normal = glm::vec3(0);
 			color = glm::vec3(0);
 
+			vertex h(p.x, p.y, p.z); to2d(h);
+			int k = std::lower_bound(ipoints.begin(), ipoints.end(), ipoint_code{0, morton_2d((h.x + 1) / 2, (h.y + 1) / 2)}) - ipoints.begin();
+
 			float w, sum_w = 0;
-			float & sigma = pc_radius;
+			float sigma = k < ipoints.size() ? glm::length(p - glm_vec3(mesh->gt(ipoints[k].p))) :
+											glm::length(p - glm_vec3(mesh->gt(ipoints[k - 1].p)));
+			int begin = std::max(k - k_neighbors, 0);
+			int end = std::min(k + k_neighbors, (int) ipoints.size());
 
-			vertex h(p.x, p.y, p.z);
-			to2d(h);
-			int k = std::lower_bound(ipoints.begin(), ipoints.end(),
-										ipoint_code{0, morton_2d((h.x + 1) / 2, (h.y + 1) / 2)}) - ipoints.begin();
-
-			const int nk = 4;
-			int begin = std::max(k - nk, 0);
-			int end = std::min(k + nk, (int) ipoints.size());
+			sigma /= 2;
 			for(int i = begin; i < end; ++i)
 			{
 				const index_t & v = ipoints[i].p;
@@ -102,6 +101,7 @@ class embree_splat_ch : public embree
 
 	public:
 		static bool show_chsplats;
+		static int k_neighbors;
 		static float r_threshold;
 		static float n_threshold;
 		static size_t max_neighbors;

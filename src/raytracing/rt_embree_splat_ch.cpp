@@ -17,6 +17,7 @@ namespace gproshan::rt {
 
 
 bool embree_splat_ch::show_chsplats = true;
+int embree_splat_ch::k_neighbors = 4;
 float embree_splat_ch::r_threshold = 0.50;	// cos overlapping radius
 float embree_splat_ch::n_threshold = 0.81;	// 30 degrees angle normals
 size_t embree_splat_ch::max_neighbors = 256;	// max neighbors per splat
@@ -213,7 +214,7 @@ unsigned int morton_2d(float x, float y)
     y = std::min(std::max(y * 1024.0f, 0.0f), 1023.0f);
     unsigned int xx = expand_bits(x);
     unsigned int yy = expand_bits(y);
-    return (xx >> 2) + (yy >> 1);
+    return (xx >> 1) + yy;
 }
 
 
