@@ -68,13 +68,8 @@ include_directories(SYSTEM ${SuiteSparse_INCLUDE_DIRS})
 include_directories(SYSTEM ${CGAL_INCLUDE_DIRS})
 
 
+add_subdirectory(imgui)
 include_directories(SYSTEM ${gproshan_SOURCE_DIR}/imgui)
-
-
-FILE(GLOB_RECURSE imgui_sources ${gproshan_SOURCE_DIR}/imgui/*.cpp)
-add_library(imgui SHARED ${imgui_sources})
-target_link_libraries(imgui GLEW::GLEW)
-target_link_libraries(imgui glfw)
 
 
 include_directories(${gproshan_SOURCE_DIR}/include/gproshan)
