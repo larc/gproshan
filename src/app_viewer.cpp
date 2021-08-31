@@ -42,14 +42,10 @@ int app_viewer::main(int nargs, const char ** args)
 	}
 
 	TIC(time)
-
 	for(int i = 1; i < nargs; ++i)
 		add_mesh(load_mesh(args[i]));
-
 	TOC(time)
-
-	gproshan_log_var(sizeof(real_t));
-	gproshan_log_var(time);
+	sprintf(status_message, "meshes loaded in %.3fs", time);
 
 	init();
 	run();

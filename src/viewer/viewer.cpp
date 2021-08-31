@@ -54,6 +54,7 @@ viewer::viewer(int width, int height): window_width(width), window_height(height
 	init_menus();
 
 	info_gl();
+	gproshan_log_var(sizeof(real_t));
 
 	sphere.init(new che_sphere(0.01), false);
 }
@@ -656,6 +657,7 @@ bool viewer::set_render_embree(viewer * view)
 						break;
 			}
 			TOC(time);
+			sprintf(view->status_message, "build embree in %.3fs", time);
 
 			if(!view->render_frame)
 				view->render_frame = new frame;

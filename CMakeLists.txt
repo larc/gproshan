@@ -68,13 +68,8 @@ include_directories(SYSTEM ${SuiteSparse_INCLUDE_DIRS})
 include_directories(SYSTEM ${CGAL_INCLUDE_DIRS})
 
 
+add_subdirectory(imgui)
 include_directories(SYSTEM ${gproshan_SOURCE_DIR}/imgui)
-
-
-FILE(GLOB_RECURSE imgui_sources ${gproshan_SOURCE_DIR}/imgui/*.cpp)
-add_library(imgui SHARED ${imgui_sources})
-target_link_libraries(imgui GLEW::GLEW)
-target_link_libraries(imgui glfw)
 
 
 include_directories(${gproshan_SOURCE_DIR}/include/gproshan)
@@ -113,31 +108,11 @@ if(CUDAToolkit_FOUND)
 endif(CUDAToolkit_FOUND)
 
 
-add_executable(test_gproshan gproshan.cpp)
-set_target_properties(test_gproshan PROPERTIES OUTPUT_NAME gproshan)
-target_link_libraries(test_gproshan gproshan)
-
-if(OptiX_INCLUDE)
-	add_library(ptx_sources OBJECT ${gproshan_SOURCE_DIR}/src/raytracing/rt_optix.cu)
-	set_property(TARGET ptx_sources PROPERTY CUDA_PTX_COMPILATION ON)
-	add_custom_target(ptx_cp_sources DEPENDS ptx_sources COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_OBJECTS:ptx_sources> $<TARGET_FILE_DIR:gproshan>)
-	add_dependencies(test_gproshan ptx_cp_sources)
-endif(OptiX_INCLUDE)
-
-
-add_executable(test_geodesics test_geodesics.cpp)
-target_link_libraries(test_geodesics gproshan)
-
-
-add_executable(test_image_denoising test_image_denoising.cpp)
-target_link_libraries(test_image_denoising gproshan)
+add_subdirectory(apps)
 
 
 install(TARGETS gproshan imgui test_gproshan test_geodesics test_image_denoising
 		ARCHIVE DESTINATION ${gproshan_SOURCE_DIR}/lib
 		LIBRARY DESTINATION ${gproshan_SOURCE_DIR}/lib
 		RUNTIME DESTINATION ${gproshan_SOURCE_DIR}/bin)
-
-
-file(MAKE_DIRECTORY tmp)
 
