@@ -166,7 +166,9 @@ bool app_viewer::process_gaussian_curvature(viewer * p_view)
 
 	#pragma omp parallel for
 	for(index_t v = 0; v < mesh->n_vertices; ++v)
-		mesh->heatmap(v) = f(gv(v));
+		gv(v) = f(gv(v));
+
+	mesh.update_vbo_heatmap(gv.memptr());
 
 	return false;
 }
@@ -258,10 +260,10 @@ bool app_viewer::process_fairing_spectral(viewer * p_view)
 
 		mesh->set_vertices(fair.new_vertices());
 		mesh->update_normals();
-	}
 
-	mesh.update_vbo_geometry();
-	mesh.update_vbo_normal();
+		mesh.update_vbo_geometry();
+		mesh.update_vbo_normal();
+	}
 
 	return true;
 }
@@ -288,10 +290,10 @@ bool app_viewer::process_fairing_taubin(viewer * p_view)
 
 		mesh->set_vertices(fair.new_vertices());
 		mesh->update_normals();
-	}
 
-	mesh.update_vbo_geometry();
-	mesh.update_vbo_normal();
+		mesh.update_vbo_geometry();
+		mesh.update_vbo_normal();
+	}
 
 	return true;
 }
@@ -304,7 +306,6 @@ bool app_viewer::process_geodesics(viewer * p_view)
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
-	static vector<real_t> dist;
 	static geodesics::params params;
 
 #ifdef GPROSHAN_CUDA
@@ -321,17 +322,13 @@ bool app_viewer::process_geodesics(viewer * p_view)
 		if(!mesh.selected.size())
 			mesh.selected.push_back(0);
 
-		if(dist.size() < mesh->n_vertices)
-			dist.resize(mesh->n_vertices);
-
-		params.dist_alloc	= dist.data();
+		params.dist_alloc = &mesh->heatmap(0);
 
 		TIC(view->time)
 			geodesics G(mesh, mesh.selected, params);
 		TOC(view->time)
 
 		params.radio = G.radio();
-		mesh->update_heatmap(&G[0]);
 		mesh.update_vbo_heatmap();
 	}
 
