@@ -291,6 +291,12 @@ const che::rgb_t & che::rgb(const index_t & v) const
 	return VC[v];
 }
 
+che::rgb_t & che::rgb(const index_t & v)
+{
+	assert(VC && v < n_vertices);
+	return VC[v];
+}
+
 vertex che::color(const index_t & v) const
 {
 	assert(VC && v < n_vertices);

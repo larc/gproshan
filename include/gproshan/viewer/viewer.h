@@ -54,6 +54,7 @@ class viewer
 		};
 
 		static const int m_window_size[N_MESHES + 1][2];
+		static const std::vector<std::string> colormap;
 
 
 		GLFWwindow * window = nullptr;
@@ -61,7 +62,6 @@ class viewer
 		int viewport_width, viewport_height;
 
 		unsigned int idx_colormap = 1;		// colormap index defined in shaders/colormap.glsl
-		const std::vector<std::string> colormap = {"vertex color", "blue", "red", "blue/read"};
 		shader shader_triangles;
 		shader shader_normals;
 		shader shader_gradient;
