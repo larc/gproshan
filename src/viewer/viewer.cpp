@@ -45,6 +45,12 @@ const int viewer::m_window_size[N_MESHES + 1][2] = {{1, 1},
 													{2, 5}, {3, 4}, {3, 4}
 													};
 
+const std::vector<std::string> viewer::colormap = { "vertex color",
+													"blue",
+													"red",
+													"blue/read",
+													"set"
+													};
 
 viewer::viewer(int width, int height): window_width(width), window_height(height)
 {
