@@ -628,6 +628,7 @@ bool viewer::menu_bgc_black(viewer * view)
 bool viewer::invert_orientation(viewer * view)
 {
 	view->active_mesh().invert_orientation();
+	view->active_mesh().update_vbo_normal();
 
 	return false;
 }
