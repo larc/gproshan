@@ -329,6 +329,8 @@ bool app_viewer::process_geodesics(viewer * p_view)
 		TOC(view->time)
 
 		params.radio = G.radio();
+
+		G.normalize();
 		mesh.update_vbo_heatmap();
 	}
 
