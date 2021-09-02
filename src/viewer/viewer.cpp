@@ -629,6 +629,7 @@ bool viewer::menu_bgc_black(viewer * view)
 bool viewer::invert_orientation(viewer * view)
 {
 	view->active_mesh().invert_orientation();
+	view->active_mesh().update_vbo_normal();
 
 	return false;
 }
@@ -815,6 +816,7 @@ void viewer::render_gl()
 	glProgramUniform1ui(shader_pointcloud, shader_pointcloud("idx_colormap"), idx_colormap);
 	glProgramUniform3f(shader_pointcloud, shader_pointcloud("eye"), cam.eye[0], cam.eye[1], cam.eye[2]);
 	glProgramUniform3f(shader_pointcloud, shader_pointcloud("light"), light[0], light[1], light[2]);
+	glProgramUniform1i(shader_pointcloud, shader_pointcloud("render_lines"), render_lines);
 	glProgramUniformMatrix4fv(shader_pointcloud, shader_pointcloud("model_view_mat"), 1, 0, &view_mat[0][0]);
 	glProgramUniformMatrix4fv(shader_pointcloud, shader_pointcloud("proj_mat"), 1, 0, &proj_mat[0][0]);
 	glProgramUniform1i(shader_pointcloud, shader_pointcloud("point_normals"), point_normals);
