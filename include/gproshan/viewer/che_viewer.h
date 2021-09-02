@@ -35,8 +35,9 @@ class che_viewer
 		GLuint vbo[6];
 
 	public:
-		int vx, vy;					///< viewport positions.
+		int vx, vy;							///< viewport positions.
 		real_t factor;
+		index_t idx_colormap = 1;		// colormap index defined in shaders/colormap.glsl
 		std::vector<index_t> selected;
 
 	public:

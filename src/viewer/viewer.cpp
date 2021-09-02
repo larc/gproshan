@@ -111,6 +111,8 @@ bool viewer::run()
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
+		che_viewer & mesh = active_mesh();
+
 		if(ImGui::BeginMainMenuBar())
 		{
 			if(ImGui::BeginMenu("Select"))
@@ -120,7 +122,7 @@ bool viewer::run()
 					{
 						idx_active_mesh = i;
 						sphere_translations.clear();
-						glfwSetWindowTitle(window, active_mesh()->filename.c_str());
+						glfwSetWindowTitle(window, mesh->filename.c_str());
 					}
 
 				ImGui::EndMenu();
@@ -129,8 +131,8 @@ bool viewer::run()
 			if(ImGui::BeginMenu("Color"))
 			{
 				for(index_t i = 0; i < colormap.size(); ++i)
-					if(ImGui::MenuItem(colormap[i].c_str(), nullptr, i == idx_colormap, i != idx_colormap))
-						idx_colormap = i;
+					if(ImGui::MenuItem(colormap[i].c_str(), nullptr, i == mesh.idx_colormap, i != mesh.idx_colormap))
+						mesh.idx_colormap = i;
 
 				ImGui::EndMenu();
 			}
@@ -168,7 +170,6 @@ bool viewer::run()
 
 		ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.5);
 
-		che_viewer & mesh = active_mesh();
 		ImGui::Text("%s", mesh->filename.c_str());
 		ImGui::Text("%16s: %10lu", "n_vertices", mesh->n_vertices);
 		ImGui::Text("%16s: %10lu", "n_faces", mesh->n_faces);
@@ -783,7 +784,6 @@ void viewer::render_gl()
 	glProgramUniformMatrix4fv(shader_sphere, shader_sphere("proj_mat"), 1, 0, &proj_mat[0][0]);
 	glProgramUniform1f(shader_sphere, shader_sphere("scale"), cam.zoom);
 
-	glProgramUniform1ui(shader_triangles, shader_triangles("idx_colormap"), idx_colormap);
 	glProgramUniform3f(shader_triangles, shader_triangles("eye"), cam.eye[0], cam.eye[1], cam.eye[2]);
 	glProgramUniform3f(shader_triangles, shader_triangles("light"), light[0], light[1], light[2]);
 	glProgramUniform1i(shader_triangles, shader_triangles("render_flat"), render_flat);
@@ -792,7 +792,6 @@ void viewer::render_gl()
 	glProgramUniformMatrix4fv(shader_triangles, shader_triangles("model_view_mat"), 1, 0, &view_mat[0][0]);
 	glProgramUniformMatrix4fv(shader_triangles, shader_triangles("proj_mat"), 1, 0, &proj_mat[0][0]);
 
-	glProgramUniform1ui(shader_pointcloud, shader_pointcloud("idx_colormap"), idx_colormap);
 	glProgramUniform3f(shader_pointcloud, shader_pointcloud("eye"), cam.eye[0], cam.eye[1], cam.eye[2]);
 	glProgramUniform3f(shader_pointcloud, shader_pointcloud("light"), light[0], light[1], light[2]);
 	glProgramUniform1i(shader_pointcloud, shader_pointcloud("render_lines"), render_lines);
@@ -874,6 +873,9 @@ void viewer::draw_meshes(shader & program, const bool & normals)
 
 	for(index_t i = 0; i < n_meshes; ++i)
 	{
+		glProgramUniform1ui(shader_triangles, shader_triangles("idx_colormap"), meshes[i].idx_colormap);
+		glProgramUniform1ui(shader_pointcloud, shader_pointcloud("idx_colormap"), meshes[i].idx_colormap);
+
 		glViewport(meshes[i].vx * viewport_width, meshes[i].vy * viewport_height, viewport_width, viewport_height);
 
 		if(normals)

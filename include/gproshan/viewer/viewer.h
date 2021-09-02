@@ -61,7 +61,6 @@ class viewer
 		int window_width, window_height;
 		int viewport_width, viewport_height;
 
-		unsigned int idx_colormap = 1;		// colormap index defined in shaders/colormap.glsl
 		shader shader_triangles;
 		shader shader_normals;
 		shader shader_gradient;
