@@ -37,13 +37,25 @@ class che_viewer
 	public:
 		int vx, vy;							///< viewport positions.
 		real_t factor;
-		index_t idx_colormap = 1;		// colormap index defined in shaders/colormap.glsl
 		std::vector<index_t> selected;
+
+		index_t idx_colormap	= 1;		// colormap index defined in shaders/colormap.glsl
+		index_t point_size		= 1;
+		bool point_normals		= true;
+		bool render_pointcloud	= false;
+		bool render_wireframe	= false;
+		bool render_triangles	= false;
+		bool render_gradients	= false;
+		bool render_normals		= false;
+		bool render_border		= false;
+		bool render_lines		= false;
+		bool render_flat		= false;
 
 	public:
 		che_viewer() = default;
 		virtual ~che_viewer();
 		che *& operator -> ();
+		che *const & operator -> () const;
 		operator che *& ();
 		void init(che * mesh, const bool & normalize = true);
 		void reload();

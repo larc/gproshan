@@ -87,16 +87,6 @@ class viewer
 
 		bool action = false;
 
-		bool point_normals = true;
-		unsigned int point_size = 1;
-		bool render_pointcloud = false;
-		bool render_wireframe = false;
-		bool render_wireframe_fill = false;
-		bool render_gradient_field = false;
-		bool render_normal_field = false;
-		bool render_border = false;
-		bool render_lines = false;
-		bool render_flat = false;
 		float bgc = 0;
 
 		std::map<int, process_t> processes;
@@ -166,9 +156,9 @@ class viewer
 	#endif // GPROSHAN_OPTIX
 		static bool set_render_pointcloud(viewer * view);
 		static bool set_render_wireframe(viewer * view);
-		static bool set_render_wireframe_fill(viewer * view);
-		static bool set_render_gradient_field(viewer * view);
-		static bool set_render_normal_field(viewer * view);
+		static bool set_render_triangles(viewer * view);
+		static bool set_render_gradients(viewer * view);
+		static bool set_render_normals(viewer * view);
 		static bool set_render_border(viewer * view);
 		static bool set_render_lines(viewer * view);
 		static bool set_render_flat(viewer * view);
@@ -178,10 +168,9 @@ class viewer
 	#endif // GPROSHAN_EMBREE
 
 		// draw routines
-		void draw_meshes(shader & program, const bool & normals = false);
-		void draw_selected_vertices(shader & program);
+		void draw_selected_vertices(shader & program, const che_viewer & mesh);
 
-		void select_border_vertices();
+		void select_border_vertices(che_viewer & mesh);
 		void pick_vertex(const real_t & x, const real_t & y);
 };
 
