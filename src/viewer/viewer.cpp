@@ -111,6 +111,8 @@ bool viewer::run()
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
+		che_viewer & mesh = active_mesh();
+
 		if(ImGui::BeginMainMenuBar())
 		{
 			if(ImGui::BeginMenu("Select"))
@@ -120,7 +122,7 @@ bool viewer::run()
 					{
 						idx_active_mesh = i;
 						sphere_translations.clear();
-						glfwSetWindowTitle(window, active_mesh()->filename.c_str());
+						glfwSetWindowTitle(window, mesh->filename.c_str());
 					}
 
 				ImGui::EndMenu();
@@ -129,8 +131,8 @@ bool viewer::run()
 			if(ImGui::BeginMenu("Color"))
 			{
 				for(index_t i = 0; i < colormap.size(); ++i)
-					if(ImGui::MenuItem(colormap[i].c_str(), nullptr, i == idx_colormap, i != idx_colormap))
-						idx_colormap = i;
+					if(ImGui::MenuItem(colormap[i].c_str(), nullptr, i == mesh.idx_colormap, i != mesh.idx_colormap))
+						mesh.idx_colormap = i;
 
 				ImGui::EndMenu();
 			}
@@ -168,15 +170,14 @@ bool viewer::run()
 
 		ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.5);
 
-		che_viewer & mesh = active_mesh();
 		ImGui::Text("%s", mesh->filename.c_str());
 		ImGui::Text("%16s: %10lu", "n_vertices", mesh->n_vertices);
 		ImGui::Text("%16s: %10lu", "n_faces", mesh->n_faces);
 
-		if(render_pointcloud)
+		if(mesh.render_pointcloud)
 		{
-			ImGui::Checkbox("point_normals", &point_normals);
-			ImGui::SliderInt("point_size", (int *) &point_size, 1, 32);
+			ImGui::Checkbox("point_normals", &mesh.point_normals);
+			ImGui::SliderInt("point_size", (int *) &mesh.point_size, 1, 32);
 		}
 
 		for(auto & p: processes)
@@ -289,7 +290,7 @@ void viewer::init_menus()
 	sub_menus.push_back("Render");
 	add_process(GLFW_KEY_F5, {"F5", "Render Point Cloud", set_render_pointcloud});
 	add_process(GLFW_KEY_F6, {"F6", "Render Wireframe", set_render_wireframe});
-	add_process(GLFW_KEY_F7, {"F7", "Render Wireframe Fill", set_render_wireframe_fill});
+	add_process(GLFW_KEY_F7, {"F7", "Render Triangles", set_render_triangles});
 	add_process(GLFW_KEY_F8, {"F8", "Render GL", set_render_gl});
 #ifdef GPROSHAN_EMBREE
 	add_process(GLFW_KEY_F9, {"F9", "Render Embree", set_render_embree});
@@ -304,8 +305,8 @@ void viewer::init_menus()
 	add_process(GLFW_KEY_TAB, {"TAB", "Render Flat", set_render_flat});
 	add_process(GLFW_KEY_SPACE, {"SPACE", "Level Curves", set_render_lines});
 	add_process(GLFW_KEY_F2, {"F2", "Invert Orientation", invert_orientation});
-	add_process(GLFW_KEY_F3, {"F3", "Gradient Field", set_render_gradient_field});
-	add_process(GLFW_KEY_F4, {"F4", "Normal Field", set_render_normal_field});
+	add_process(GLFW_KEY_F3, {"F3", "Gradient Field", set_render_gradients});
+	add_process(GLFW_KEY_F4, {"F4", "Normal Field", set_render_normals});
 	add_process(GLFW_KEY_APOSTROPHE, {"APOSTROPHE", "Select Border Vertices", set_render_border});
 	add_process(GLFW_KEY_W, {"W", "Save Mesh", menu_save_mesh});
 }
@@ -698,57 +699,66 @@ bool viewer::set_render_optix(viewer * view)
 
 bool viewer::set_render_pointcloud(viewer * view)
 {
-	view->render_pointcloud = !view->render_pointcloud;
+	che_viewer & mesh = view->active_mesh();
+	mesh.render_pointcloud = !mesh.render_pointcloud;
 
 	return false;
 }
 
 bool viewer::set_render_wireframe(viewer * view)
 {
-	view->render_wireframe = !view->render_wireframe;
+	che_viewer & mesh = view->active_mesh();
+	mesh.render_wireframe = !mesh.render_wireframe;
 
 	return false;
 }
 
-bool viewer::set_render_wireframe_fill(viewer * view)
+bool viewer::set_render_triangles(viewer * view)
 {
-	view->render_wireframe_fill = !view->render_wireframe_fill;
+	che_viewer & mesh = view->active_mesh();
+	mesh.render_triangles = !mesh.render_triangles;
 
 	return false;
 }
 
-bool viewer::set_render_gradient_field(viewer * view)
+bool viewer::set_render_gradients(viewer * view)
 {
-	view->render_gradient_field = !view->render_gradient_field;
+	che_viewer & mesh = view->active_mesh();
+	mesh.render_gradients = !mesh.render_gradients;
 
 	return false;
 }
 
-bool viewer::set_render_normal_field(viewer * view)
+bool viewer::set_render_normals(viewer * view)
 {
-	view->render_normal_field = !view->render_normal_field;
+	che_viewer & mesh = view->active_mesh();
+	mesh.render_normals = !mesh.render_normals;
 
 	return false;
 }
 
 bool viewer::set_render_border(viewer * view)
 {
-	view->render_border = !view->render_border;
-	if(!view->render_border) view->active_mesh().selected.clear();
+	che_viewer & mesh = view->active_mesh();
+	mesh.render_border = !mesh.render_border;
+	if(!mesh.render_border)
+		mesh.selected.clear();
 
 	return false;
 }
 
 bool viewer::set_render_lines(viewer * view)
 {
-	view->render_lines = !view->render_lines;
+	che_viewer & mesh = view->active_mesh();
+	mesh.render_lines = !mesh.render_lines;
 
 	return false;
 }
 
 bool viewer::set_render_flat(viewer * view)
 {
-	view->render_flat = !view->render_flat;
+	che_viewer & mesh = view->active_mesh();
+	mesh.render_flat = !mesh.render_flat;
 	view->action = true;
 
 	return false;
@@ -783,51 +793,46 @@ void viewer::render_gl()
 	glProgramUniformMatrix4fv(shader_sphere, shader_sphere("proj_mat"), 1, 0, &proj_mat[0][0]);
 	glProgramUniform1f(shader_sphere, shader_sphere("scale"), cam.zoom);
 
-	glProgramUniform1ui(shader_triangles, shader_triangles("idx_colormap"), idx_colormap);
 	glProgramUniform3f(shader_triangles, shader_triangles("eye"), cam.eye[0], cam.eye[1], cam.eye[2]);
 	glProgramUniform3f(shader_triangles, shader_triangles("light"), light[0], light[1], light[2]);
-	glProgramUniform1i(shader_triangles, shader_triangles("render_flat"), render_flat);
-	glProgramUniform1i(shader_triangles, shader_triangles("render_lines"), render_lines);
-	glProgramUniform1i(shader_triangles, shader_triangles("render_wireframe"), render_wireframe_fill);
 	glProgramUniformMatrix4fv(shader_triangles, shader_triangles("model_view_mat"), 1, 0, &view_mat[0][0]);
 	glProgramUniformMatrix4fv(shader_triangles, shader_triangles("proj_mat"), 1, 0, &proj_mat[0][0]);
 
-	glProgramUniform1ui(shader_pointcloud, shader_pointcloud("idx_colormap"), idx_colormap);
 	glProgramUniform3f(shader_pointcloud, shader_pointcloud("eye"), cam.eye[0], cam.eye[1], cam.eye[2]);
 	glProgramUniform3f(shader_pointcloud, shader_pointcloud("light"), light[0], light[1], light[2]);
-	glProgramUniform1i(shader_pointcloud, shader_pointcloud("render_lines"), render_lines);
 	glProgramUniformMatrix4fv(shader_pointcloud, shader_pointcloud("model_view_mat"), 1, 0, &view_mat[0][0]);
 	glProgramUniformMatrix4fv(shader_pointcloud, shader_pointcloud("proj_mat"), 1, 0, &proj_mat[0][0]);
-	glProgramUniform1i(shader_pointcloud, shader_pointcloud("point_normals"), point_normals);
-	glProgramUniform1ui(shader_pointcloud, shader_pointcloud("point_size"), point_size);
+
+	glProgramUniform1f(shader_normals, shader_normals("length"), cam.zoom * 0.02);
+	glProgramUniformMatrix4fv(shader_normals, shader_normals("model_view_mat"), 1, 0, &view_mat[0][0]);
+	glProgramUniformMatrix4fv(shader_normals, shader_normals("proj_mat"), 1, 0, &proj_mat[0][0]);
+
+	glProgramUniform1f(shader_gradient, shader_gradient("length"), cam.zoom * 0.02);
+	glProgramUniformMatrix4fv(shader_gradient, shader_gradient("model_view_mat"), 1, 0, &view_mat[0][0]);
+	glProgramUniformMatrix4fv(shader_gradient, shader_gradient("proj_mat"), 1, 0, &proj_mat[0][0]);
 
 
-	draw_meshes(shader_triangles);
-
-
-	if(render_normal_field)
+	for(index_t i = 0; i < n_meshes; ++i)
 	{
-		glProgramUniform1f(shader_normals, shader_normals("length"), cam.zoom * 0.02);
-		glProgramUniformMatrix4fv(shader_normals, shader_normals("model_view_mat"), 1, 0, &view_mat[0][0]);
-		glProgramUniformMatrix4fv(shader_normals, shader_normals("proj_mat"), 1, 0, &proj_mat[0][0]);
+		che_viewer & mesh = meshes[i];
 
-		draw_meshes(shader_normals, true);
+		glViewport(mesh.vx * viewport_width, mesh.vy * viewport_height, viewport_width, viewport_height);
+		if(mesh->is_pointcloud() || mesh.render_pointcloud)
+			mesh.draw_point_cloud(shader_pointcloud);
+		else
+			mesh.draw(shader_triangles);
+
+		if(mesh.render_normals)
+			mesh.draw_point_cloud(shader_normals);
+
+		if(mesh.render_gradients)
+			mesh.draw(shader_gradient);
+
+		if(mesh.render_border)
+			select_border_vertices(mesh);
+
+		draw_selected_vertices(shader_sphere, mesh);
 	}
-
-
-	if(render_gradient_field)
-	{
-		glProgramUniform1f(shader_gradient, shader_gradient("length"), cam.zoom * 0.02);
-		glProgramUniformMatrix4fv(shader_gradient, shader_gradient("model_view_mat"), 1, 0, &view_mat[0][0]);
-		glProgramUniformMatrix4fv(shader_gradient, shader_gradient("proj_mat"), 1, 0, &proj_mat[0][0]);
-
-		draw_meshes(shader_gradient);
-	}
-
-
-	if(render_border) select_border_vertices();
-
-	draw_selected_vertices(shader_sphere);
 }
 
 #ifdef GPROSHAN_EMBREE
@@ -835,7 +840,7 @@ void viewer::render_embree()
 {
 	rt_embree->pathtracing(	glm::uvec2(viewport_width, viewport_height),
 							view_mat, proj_mat, {glm_vec3(light)},
-							render_flat, action
+							active_mesh().render_flat, action
 							);
 
 	action = false;
@@ -865,50 +870,24 @@ void viewer::render_optix()
 }
 #endif // GPROSHAN_OPTIX
 
-void viewer::draw_meshes(shader & program, const bool & normals)
+void viewer::draw_selected_vertices(shader & program, const che_viewer & mesh)
 {
-	if(render_wireframe)
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	else
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-	for(index_t i = 0; i < n_meshes; ++i)
+	if(sphere_translations.size() != mesh.selected.size())
 	{
-		glViewport(meshes[i].vx * viewport_width, meshes[i].vy * viewport_height, viewport_width, viewport_height);
+		sphere_translations.resize(mesh.selected.size());
 
-		if(normals)
-			meshes[i].draw_point_cloud(program);
-		else if(meshes[i]->is_pointcloud() || render_pointcloud)
-			meshes[i].draw_point_cloud(shader_pointcloud);
-		else
-			meshes[i].draw(program);
-	}
-}
-
-void viewer::draw_selected_vertices(shader & program)
-{
-	if(sphere_translations.size() != active_mesh().selected.size())
-	{
-		sphere_translations.resize(active_mesh().selected.size());
-
-		for(index_t i = 0; i < active_mesh().selected.size(); ++i)
-			sphere_translations[i] = active_mesh()->gt(active_mesh().selected[i]);
+		for(index_t i = 0; i < mesh.selected.size(); ++i)
+			sphere_translations[i] = mesh->gt(mesh.selected[i]);
 
 		sphere.update_instances_translations(sphere_translations);
 	}
 
-
 	if(sphere_translations.size())
-	{
-		glViewport(active_mesh().vx * viewport_width, active_mesh().vy * viewport_height, viewport_width, viewport_height);
 		sphere.draw(program);
-	}
 }
 
-void viewer::select_border_vertices()
+void viewer::select_border_vertices(che_viewer & mesh)
 {
-	che_viewer & mesh = active_mesh();
-
 	mesh.selected.clear();
 
 	vector<index_t> bounds = mesh->bounds();
