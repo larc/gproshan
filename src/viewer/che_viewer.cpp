@@ -27,6 +27,11 @@ che *& che_viewer::operator -> ()
 	return mesh;
 }
 
+che *const & che_viewer::operator -> () const
+{
+	return mesh;
+}
+
 che_viewer::operator che *& ()
 {
 	return mesh;
@@ -183,6 +188,13 @@ void che_viewer::update_instances_translations(const vector<vertex> & translatio
 
 void che_viewer::draw(shader & program)
 {
+	glProgramUniform1ui(program, program("idx_colormap"), idx_colormap);
+	glProgramUniform1i(program, program("render_flat"), render_flat);
+	glProgramUniform1i(program, program("render_lines"), render_lines);
+	glProgramUniform1i(program, program("render_wireframe"), render_triangles);
+
+	glPolygonMode(GL_FRONT_AND_BACK, render_wireframe ? GL_LINE : GL_FILL);
+
 	program.enable();
 
 	glBindVertexArray(vao);
@@ -201,6 +213,11 @@ void che_viewer::draw(shader & program)
 
 void che_viewer::draw_point_cloud(shader & program)
 {
+	glProgramUniform1ui(program, program("idx_colormap"), idx_colormap);
+	glProgramUniform1i(program, program("render_lines"), render_lines);
+	glProgramUniform1i(program, program("point_normals"), point_normals);
+	glProgramUniform1ui(program, program("point_size"), point_size);
+
 	program.enable();
 
 	glBindVertexArray(vao);
