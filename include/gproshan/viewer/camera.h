@@ -19,10 +19,10 @@ class camera
 		quaternion r_last	= 1;
 
 	public:
-		quaternion eye		= vertex(0, 0, 2);
+		quaternion pos		= vertex(0, 0, -2);
+		quaternion eye		= vertex(0, 0, -2);
 		quaternion center	= vertex(0, 0, 0);
 		quaternion up		= vertex(0, 1, 0);
-		double zoom			= 2;
 
 	public:
 		glm::mat4 look_at(const quaternion & r);
@@ -31,6 +31,7 @@ class camera
 		void motion(const double & x, const double & y, const int & w, const int & h);
 		void zoom_in();
 		void zoom_out();
+		const real_t & zoom() const;
 
 	private:
 		quaternion click_to_sphere(const double & x, const double & y, const int & w, const int & h);

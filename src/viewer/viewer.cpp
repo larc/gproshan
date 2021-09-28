@@ -791,7 +791,7 @@ void viewer::render_gl()
 	glProgramUniform3f(shader_sphere, shader_sphere("light"), light[0], light[1], light[2]);
 	glProgramUniformMatrix4fv(shader_sphere, shader_sphere("model_view_mat"), 1, 0, &view_mat[0][0]);
 	glProgramUniformMatrix4fv(shader_sphere, shader_sphere("proj_mat"), 1, 0, &proj_mat[0][0]);
-	glProgramUniform1f(shader_sphere, shader_sphere("scale"), cam.zoom);
+	glProgramUniform1f(shader_sphere, shader_sphere("scale"), cam.zoom());
 
 	glProgramUniform3f(shader_triangles, shader_triangles("eye"), cam.eye[0], cam.eye[1], cam.eye[2]);
 	glProgramUniform3f(shader_triangles, shader_triangles("light"), light[0], light[1], light[2]);
@@ -803,11 +803,11 @@ void viewer::render_gl()
 	glProgramUniformMatrix4fv(shader_pointcloud, shader_pointcloud("model_view_mat"), 1, 0, &view_mat[0][0]);
 	glProgramUniformMatrix4fv(shader_pointcloud, shader_pointcloud("proj_mat"), 1, 0, &proj_mat[0][0]);
 
-	glProgramUniform1f(shader_normals, shader_normals("length"), cam.zoom * 0.02);
+	glProgramUniform1f(shader_normals, shader_normals("length"), cam.zoom() * 0.02);
 	glProgramUniformMatrix4fv(shader_normals, shader_normals("model_view_mat"), 1, 0, &view_mat[0][0]);
 	glProgramUniformMatrix4fv(shader_normals, shader_normals("proj_mat"), 1, 0, &proj_mat[0][0]);
 
-	glProgramUniform1f(shader_gradient, shader_gradient("length"), cam.zoom * 0.02);
+	glProgramUniform1f(shader_gradient, shader_gradient("length"), cam.zoom() * 0.02);
 	glProgramUniformMatrix4fv(shader_gradient, shader_gradient("model_view_mat"), 1, 0, &view_mat[0][0]);
 	glProgramUniformMatrix4fv(shader_gradient, shader_gradient("proj_mat"), 1, 0, &proj_mat[0][0]);
 

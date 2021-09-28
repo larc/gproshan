@@ -14,8 +14,7 @@ namespace gproshan {
 
 glm::mat4 camera::look_at(const quaternion & r)
 {
-	eye = vertex(0, 0, -zoom);
-	eye = r.conj() * eye * r;
+	eye = r.conj() * pos * r;
 
 	return glm::lookAt( glm_vec3(eye),
 						glm_vec3(r.conj() * center * r),
@@ -65,12 +64,17 @@ void camera::motion(const double & x, const double & y, const int & w, const int
 
 void camera::zoom_in()
 {
-	zoom -= 0.02;
+	pos.v.z -= 0.02;
 }
 
 void camera::zoom_out()
 {
-	zoom += 0.02;
+	pos.v.z += 0.02;
+}
+
+const real_t & camera::zoom() const
+{
+	return pos.v.z;
 }
 
 ostream & operator << (ostream & os, const camera & cam)
@@ -79,7 +83,7 @@ ostream & operator << (ostream & os, const camera & cam)
 			<< cam.p_drag << "\n"
 			<< cam.p_last << "\n"
 			<< cam.r_last << "\n"
-			<< cam.zoom << "\n";
+			<< cam.pos << "\n";
 }
 
 istream & operator >> (istream & is, camera & cam)
@@ -88,7 +92,7 @@ istream & operator >> (istream & is, camera & cam)
 			>> cam.p_drag
 			>> cam.p_last
 			>> cam.r_last
-			>> cam.zoom;
+			>> cam.pos;
 }
 
 
