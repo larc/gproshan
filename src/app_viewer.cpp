@@ -57,6 +57,7 @@ void app_viewer::init()
 {
 	sub_menus.push_back("Geometry");
 	add_process(GLFW_KEY_H, {"H", "2D Convex Hull", process_convex_hull});
+	add_process(GLFW_KEY_C, {"C", "Connected Components", process_connected_components});
 	add_process(GLFW_KEY_K, {"K", "Gaussian curvature", process_gaussian_curvature});
 	add_process(GLFW_KEY_Q, {"Q", "Edge Collapse", process_edge_collapse});
 	add_process(GLFW_KEY_M, {"M", "Multiplicate", process_multiplicate_vertices});
@@ -110,6 +111,16 @@ bool app_viewer::process_convex_hull(viewer * p_view)
 
 	convex_hull ch(&mesh->gt(0), mesh->n_vertices);
 	mesh.selected = ch;
+
+	return false;
+}
+
+bool app_viewer::process_connected_components(viewer * p_view)
+{
+	gproshan_log(APP_VIEWER);
+	app_viewer * view = (app_viewer *) p_view;
+	che_viewer & mesh = view->active_mesh();
+
 
 	return false;
 }
