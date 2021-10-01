@@ -64,17 +64,17 @@ void camera::motion(const double & x, const double & y, const int & w, const int
 
 void camera::zoom_in()
 {
-	pos.v.z -= 0.02;
+	pos.v.z += 0.02;
 }
 
 void camera::zoom_out()
 {
-	pos.v.z += 0.02;
+	pos.v.z -= 0.02;
 }
 
-const real_t & camera::zoom() const
+real_t camera::zoom() const
 {
-	return pos.v.z;
+	return -pos.v.z;
 }
 
 ostream & operator << (ostream & os, const camera & cam)

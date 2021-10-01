@@ -31,7 +31,7 @@ class camera
 		void motion(const double & x, const double & y, const int & w, const int & h);
 		void zoom_in();
 		void zoom_out();
-		const real_t & zoom() const;
+		real_t zoom() const;
 
 	private:
 		quaternion click_to_sphere(const double & x, const double & y, const int & w, const int & h);
