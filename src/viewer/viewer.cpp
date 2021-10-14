@@ -644,6 +644,8 @@ bool viewer::set_render_gl(viewer * view)
 #ifdef GPROSHAN_EMBREE
 bool viewer::set_render_embree(viewer * view)
 {
+	che_viewer & mesh = view->active_mesh();
+
 	static int rt_opt = 0;
 	static double time = 0;
 
@@ -659,9 +661,9 @@ bool viewer::set_render_embree(viewer * view)
 			TIC(time);
 			switch(rt_opt)
 			{
-				case 0: view->rt_embree = new rt::embree({view->active_mesh()});
+				case 0: view->rt_embree = new rt::embree({mesh});
 						break;
-				case 1: view->rt_embree = new rt::embree_splat({view->active_mesh()}, true);
+				case 1: view->rt_embree = new rt::embree_splat({mesh}, true);
 						break;
 			}
 			TOC(time);

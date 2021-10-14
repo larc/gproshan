@@ -121,6 +121,11 @@ bool app_viewer::process_connected_components(viewer * p_view)
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
+	real_t * label = &mesh->heatmap(0);
+
+	#pragma omp parallel for
+	for(index_t v = 0; v < mesh->n_vertices; ++v)
+		label[v] = -1;
 
 	return false;
 }
