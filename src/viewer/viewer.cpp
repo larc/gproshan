@@ -898,7 +898,9 @@ void viewer::select_border_vertices(che_viewer & mesh)
 
 void viewer::pick_vertex(const real_t & x, const real_t & y)
 {
-	active_mesh().select(x, y, {viewport_width, viewport_height}, view_mat, proj_mat);
+	active_mesh().select(	x * viewport_width / window_width,
+							y * viewport_height / window_height,
+							{viewport_width, viewport_height}, view_mat, proj_mat);
 }
 
 
