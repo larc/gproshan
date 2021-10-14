@@ -61,7 +61,6 @@ set(THREADS_PREFER_PTHREAD_FLAG ON)
 
 include_directories(SYSTEM ${GLEW_INCLUDE_DIRS})
 include_directories(SYSTEM ${GLFW3_INCLUDE_DIRS})
-include_directories(SYSTEM ${X11_INCLUDE_DIR})
 include_directories(SYSTEM ${AMADILLO_INCLUDE_DIR})
 include_directories(SYSTEM ${EIGEN3_INCLUDE_DIR})
 include_directories(SYSTEM ${SuiteSparse_INCLUDE_DIRS})

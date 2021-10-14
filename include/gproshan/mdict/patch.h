@@ -11,14 +11,11 @@
 
 #include "include_arma.h"
 
-#include <CImg.h>
-
 
 #ifdef Success
 	#undef Success
 #endif
 
-using namespace cimg_library;
 
 using namespace std;
 
@@ -104,7 +101,7 @@ class patch
 		const a_vec normal();
 		bool is_covered( bool * covered);
 
-		void save(const real_t & radio, const size_t & imsize, CImgList<real_t> & imlist);
+//		void save(const real_t & radio, const size_t & imsize, CImgList<real_t> & imlist);
 		void update_heights(real_t & min, real_t & max, bool flag);
 		void compute_avg_distance(che * mesh, vector<vpatches_t> & vpatches, const index_t & p);
 		void scale_xyz(const real_t & radio_f);

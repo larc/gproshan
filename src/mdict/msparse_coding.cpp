@@ -9,7 +9,6 @@
 #include "viewer/viewer.h"
 
 #include <cassert>
-#include <CImg.h>
 #include <fstream>
 
 #ifndef CGAL_PATCH_DEFS
@@ -22,9 +21,6 @@
 
 #include <CGAL/Simple_cartesian.h>
 #include <CGAL/Monge_via_jet_fitting.h>
-
-
-using namespace cimg_library;
 
 
 // geometry processing and shape analysis framework

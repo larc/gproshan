@@ -517,28 +517,6 @@ const a_vec patch::normal()
 	return T.col(2);
 }
 
-void patch::save(const real_t & radio, const size_t & imsize, CImgList<real_t> & imlist)
-{
-	// Create images with the patches info
-
-	//building the grid
-	CImg<real_t> img(imsize, imsize);
-	size_t x, y;
-	img.fill(0);
-	// for each x y plus 1, multiply by delta and floor, get i and j
-	for(index_t i = 0; i < vertices.size(); ++i)
-	{
-		x = floor((xyz.col(i)[0] + radio) * (imsize - 1) / (2 * radio));
-		y = floor((xyz.col(i)[1] + radio) * (imsize - 1) / (2 * radio));
-		img(x,y) = xyz.col(i)[2];
-	}
-
-	img.resize(128, 128);
-	imlist.insert(img.normalize(0, 255));
-	//img.save("tmp/images/test_image.jpg");
-
-}
-
 void patch::gather_vertices(che * mesh, const index_t & v, const size_t & n_toplevels, index_t * toplevel)
 {
 	if(vertices.size()) vertices.clear();
