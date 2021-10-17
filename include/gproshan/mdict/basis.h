@@ -3,8 +3,10 @@
 
 #include "include.h"
 
-#include "include_arma.h"
 #include <fstream>
+
+#include "include_arma.h"
+
 
 using namespace std;
 

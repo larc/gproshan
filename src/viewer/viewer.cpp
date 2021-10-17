@@ -644,6 +644,8 @@ bool viewer::set_render_gl(viewer * view)
 #ifdef GPROSHAN_EMBREE
 bool viewer::set_render_embree(viewer * view)
 {
+	che_viewer & mesh = view->active_mesh();
+
 	static int rt_opt = 0;
 	static double time = 0;
 
@@ -659,9 +661,9 @@ bool viewer::set_render_embree(viewer * view)
 			TIC(time);
 			switch(rt_opt)
 			{
-				case 0: view->rt_embree = new rt::embree({view->active_mesh()});
+				case 0: view->rt_embree = new rt::embree({mesh});
 						break;
-				case 1: view->rt_embree = new rt::embree_splat({view->active_mesh()}, true);
+				case 1: view->rt_embree = new rt::embree_splat({mesh}, true);
 						break;
 			}
 			TOC(time);
@@ -791,7 +793,7 @@ void viewer::render_gl()
 	glProgramUniform3f(shader_sphere, shader_sphere("light"), light[0], light[1], light[2]);
 	glProgramUniformMatrix4fv(shader_sphere, shader_sphere("model_view_mat"), 1, 0, &view_mat[0][0]);
 	glProgramUniformMatrix4fv(shader_sphere, shader_sphere("proj_mat"), 1, 0, &proj_mat[0][0]);
-	glProgramUniform1f(shader_sphere, shader_sphere("scale"), cam.zoom);
+	glProgramUniform1f(shader_sphere, shader_sphere("scale"), cam.zoom());
 
 	glProgramUniform3f(shader_triangles, shader_triangles("eye"), cam.eye[0], cam.eye[1], cam.eye[2]);
 	glProgramUniform3f(shader_triangles, shader_triangles("light"), light[0], light[1], light[2]);
@@ -803,11 +805,11 @@ void viewer::render_gl()
 	glProgramUniformMatrix4fv(shader_pointcloud, shader_pointcloud("model_view_mat"), 1, 0, &view_mat[0][0]);
 	glProgramUniformMatrix4fv(shader_pointcloud, shader_pointcloud("proj_mat"), 1, 0, &proj_mat[0][0]);
 
-	glProgramUniform1f(shader_normals, shader_normals("length"), cam.zoom * 0.02);
+	glProgramUniform1f(shader_normals, shader_normals("length"), cam.zoom() * 0.02);
 	glProgramUniformMatrix4fv(shader_normals, shader_normals("model_view_mat"), 1, 0, &view_mat[0][0]);
 	glProgramUniformMatrix4fv(shader_normals, shader_normals("proj_mat"), 1, 0, &proj_mat[0][0]);
 
-	glProgramUniform1f(shader_gradient, shader_gradient("length"), cam.zoom * 0.02);
+	glProgramUniform1f(shader_gradient, shader_gradient("length"), cam.zoom() * 0.02);
 	glProgramUniformMatrix4fv(shader_gradient, shader_gradient("model_view_mat"), 1, 0, &view_mat[0][0]);
 	glProgramUniformMatrix4fv(shader_gradient, shader_gradient("proj_mat"), 1, 0, &proj_mat[0][0]);
 
@@ -898,7 +900,9 @@ void viewer::select_border_vertices(che_viewer & mesh)
 
 void viewer::pick_vertex(const real_t & x, const real_t & y)
 {
-	active_mesh().select(x, y, {viewport_width, viewport_height}, view_mat, proj_mat);
+	active_mesh().select(	x * viewport_width / window_width,
+							y * viewport_height / window_height,
+							{viewport_width, viewport_height}, view_mat, proj_mat);
 }
 
 
