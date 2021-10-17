@@ -12,7 +12,7 @@ namespace gproshan {
 
 class quaternion
 {
-	protected:
+	public:
 		real_t s;
 		vertex v;
 

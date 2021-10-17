@@ -56,6 +56,7 @@ class app_viewer : public viewer
 
 		// Geometry
 		static bool process_convex_hull(viewer * p_view);
+		static bool process_connected_components(viewer * p_view);
 		static bool process_gaussian_curvature(viewer * p_view);
 		static bool process_edge_collapse(viewer * p_view);
 		static bool process_multiplicate_vertices(viewer * p_view);

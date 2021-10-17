@@ -19,7 +19,13 @@
 // geometry processing and shape analysis framework
 namespace gproshan {
 
-enum heat_method_opt { HEAT_ARMA, HEAT_CHOLMOD, HEAT_CUDA };
+enum heat_method_opt {
+			HEAT_ARMA,
+			HEAT_CHOLMOD,
+		#ifdef GPROSHAN_CUDA
+			HEAT_CUDA
+		#endif // GPROSHAN_CUDA
+			};
 
 double heat_method(real_t * dist, const che * mesh, const std::vector<index_t> & sources, const heat_method_opt & opt);
 
