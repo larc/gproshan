@@ -23,7 +23,7 @@ if(CUDAToolkit_FOUND)
 
 	set(CMAKE_CUDA_FLAGS "-Xcompiler -fopenmp")
 	set(CMAKE_CUDA_SEPARABLE_COMPILATION ON)
-	set(CMAKE_CUDA_ARCHITECTURES 52 53 60 61 62 70 72 75 80)
+	set(CMAKE_CUDA_ARCHITECTURES 52 60 61 70 75 80 86)
 
 	add_definitions(-DGPROSHAN_CUDA)
 	include_directories(SYSTEM ${CUDAToolkit_INCLUDE_DIRS})
@@ -56,9 +56,6 @@ find_package(SuiteSparse REQUIRED)
 find_package(Boost COMPONENTS thread system)
 
 
-set(THREADS_PREFER_PTHREAD_FLAG ON)
-
-
 include_directories(SYSTEM ${GLEW_INCLUDE_DIRS})
 include_directories(SYSTEM ${GLFW3_INCLUDE_DIRS})
 include_directories(SYSTEM ${AMADILLO_INCLUDE_DIR})
@@ -76,13 +73,8 @@ add_compile_definitions(GPROSHAN_DIR="${gproshan_SOURCE_DIR}")
 
 
 FILE(GLOB_RECURSE cpp_sources ${gproshan_SOURCE_DIR}/src/*.cpp)
-if(CUDAToolkit_FOUND)
-	FILE(GLOB_RECURSE cu_sources ${gproshan_SOURCE_DIR}/src/*.cu)
-	list(REMOVE_ITEM cu_sources ${gproshan_SOURCE_DIR}/src/raytracing/rt_optix.cu)
-endif(CUDAToolkit_FOUND)
 
-
-add_library(gproshan SHARED ${cpp_sources} ${cu_sources})
+add_library(gproshan SHARED ${cpp_sources})
 
 target_link_libraries(gproshan OpenMP::OpenMP_CXX)
 target_link_libraries(gproshan GLEW::GLEW)
@@ -99,11 +91,17 @@ if(embree_FOUND)
 endif(embree_FOUND)
 
 if(CUDAToolkit_FOUND)
-	target_link_libraries(gproshan CUDA::cudart)
-	target_link_libraries(gproshan CUDA::cuda_driver)
-	target_link_libraries(gproshan CUDA::cublas)
-	target_link_libraries(gproshan CUDA::cusolver)
-	target_link_libraries(gproshan CUDA::cusparse)
+	FILE(GLOB_RECURSE cu_sources ${gproshan_SOURCE_DIR}/src/*.cu)
+	list(REMOVE_ITEM cu_sources ${gproshan_SOURCE_DIR}/src/raytracing/rt_optix.cu)
+
+	add_library(gproshan_cuda SHARED ${cu_sources})
+
+	target_link_libraries(gproshan_cuda CUDA::cudart)
+	target_link_libraries(gproshan_cuda CUDA::cublas)
+	target_link_libraries(gproshan_cuda CUDA::cusolver)
+	target_link_libraries(gproshan_cuda CUDA::cusparse)
+	
+	target_link_libraries(gproshan gproshan_cuda)
 endif(CUDAToolkit_FOUND)
 
 
