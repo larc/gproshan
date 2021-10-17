@@ -97,10 +97,11 @@ if(CUDAToolkit_FOUND)
 	add_library(gproshan_cuda SHARED ${cu_sources})
 
 	target_link_libraries(gproshan_cuda CUDA::cudart)
+	target_link_libraries(gproshan_cuda CUDA::cuda_driver)
 	target_link_libraries(gproshan_cuda CUDA::cublas)
 	target_link_libraries(gproshan_cuda CUDA::cusolver)
 	target_link_libraries(gproshan_cuda CUDA::cusparse)
-	
+
 	target_link_libraries(gproshan gproshan_cuda)
 endif(CUDAToolkit_FOUND)
 

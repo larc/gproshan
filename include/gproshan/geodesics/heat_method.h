@@ -19,7 +19,7 @@
 // geometry processing and shape analysis framework
 namespace gproshan {
 
-enum heat_method_opt { 
+enum heat_method_opt {
 			HEAT_ARMA,
 			HEAT_CHOLMOD,
 		#ifdef GPROSHAN_CUDA
