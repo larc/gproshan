@@ -1,6 +1,7 @@
 #include "app_viewer.h"
 
 #include <random>
+#include <queue>
 
 
 using namespace std;
@@ -126,6 +127,36 @@ bool app_viewer::process_connected_components(viewer * p_view)
 	#pragma omp parallel for
 	for(index_t v = 0; v < mesh->n_vertices; ++v)
 		label[v] = -1;
+
+	int nc = 0;
+	for(index_t v = 0; v < mesh->n_vertices; ++v)
+	{
+		if(label[v] < 0)
+		{
+			++nc;
+
+			std::queue<index_t> q;
+			q.push(v);
+			label[v] = nc;
+
+			while(!q.empty())
+			{
+				for_star(he, mesh, q.front())
+					if(label[mesh->vt(he)] < 0)
+					{
+						label[mesh->vt(he)] = nc;
+						q.push(mesh->vt(he));
+					}
+				q.pop();
+			}
+		}
+	}
+	
+	#pragma omp parallel for
+	for(index_t v = 0; v < mesh->n_vertices; ++v)
+		label[v] /= nc + 1;
+
+	mesh.update_vbo_heatmap();
 
 	return false;
 }
