@@ -52,7 +52,7 @@ const std::vector<std::string> viewer::colormap = { "vertex color",
 													"set"
 													};
 
-viewer::viewer(int width, int height): window_width(width), window_height(height)
+viewer::viewer(const int & width, const int & height): window_width(width), window_height(height)
 {
 	init_gl();
 	init_glsl();

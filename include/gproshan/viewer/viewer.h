@@ -103,7 +103,7 @@ class viewer
 		char status_message[1024] = {};
 
 	public:
-		viewer(int width = 1600, int height = 900);
+		viewer(const int & width = 1920, const int & height = 1080);
 		virtual ~viewer();
 
 		bool run();
