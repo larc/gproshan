@@ -15,9 +15,6 @@
 namespace gproshan {
 
 
-typedef std::vector<index_t> star_t;		// star (vector of he)
-typedef std::vector<index_t> link_t;		// link (vector of he)
-
 size_t & rw(const size_t & n);
 index_t trig(const index_t & he);
 index_t next(const index_t & he);
@@ -72,8 +69,8 @@ class che
 		che(const vertex * vertices, const index_t & n_v, const index_t * faces, const index_t & n_f);
 		virtual ~che();
 
-		void star(star_t & s, const index_t & v) const;
-		void link(link_t & l, const index_t & v) const;
+		std::vector<index_t> star(const index_t & v) const;
+		std::vector<index_t> link(const index_t & v) const;
 		std::vector<index_t> bounds() const;
 		std::vector<index_t> boundary(const index_t & v) const;
 		bool is_vertex_bound(const index_t & v) const;

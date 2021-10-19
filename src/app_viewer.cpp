@@ -141,20 +141,18 @@ bool app_viewer::process_connected_components(viewer * p_view)
 
 			while(!q.empty())
 			{
-				//for_star(he, mesh, q.front())
-				link_t ll;
-				mesh->link(ll, q.front());
-				for(const index_t & he: ll)
-					if(label[mesh->vt(he)] < 0)
+				for(const index_t & v: mesh->link(q.front()))
+					if(label[v] < 0)
 					{
-						label[mesh->vt(he)] = nc;
-						q.push(mesh->vt(he));
+						label[v] = nc;
+						q.push(v);
 					}
+
 				q.pop();
 			}
 		}
 	}
-	
+
 	#pragma omp parallel for
 	for(index_t v = 0; v < mesh->n_vertices; ++v)
 		label[v] /= nc;
