@@ -141,7 +141,10 @@ bool app_viewer::process_connected_components(viewer * p_view)
 
 			while(!q.empty())
 			{
-				for_star(he, mesh, q.front())
+				//for_star(he, mesh, q.front())
+				link_t ll;
+				mesh->link(ll, q.front());
+				for(const index_t & he: ll)
 					if(label[mesh->vt(he)] < 0)
 					{
 						label[mesh->vt(he)] = nc;
@@ -154,8 +157,9 @@ bool app_viewer::process_connected_components(viewer * p_view)
 	
 	#pragma omp parallel for
 	for(index_t v = 0; v < mesh->n_vertices; ++v)
-		label[v] /= nc + 1;
+		label[v] /= nc;
 
+	sprintf(view->status_message, "found %d connected components", nc);
 	mesh.update_vbo_heatmap();
 
 	return false;
@@ -374,6 +378,7 @@ bool app_viewer::process_geodesics(viewer * p_view)
 		TIC(view->time)
 			geodesics G(mesh, mesh.selected, params);
 		TOC(view->time)
+		sprintf(view->status_message, "geodesics time: %.3fs", view->time);
 
 		params.radio = G.radio();
 
