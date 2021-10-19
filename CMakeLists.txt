@@ -15,7 +15,8 @@ add_compile_options(-Wall -Wextra -Wno-unused-result)
 add_definitions(-DGPROSHAN_FLOAT)
 add_definitions(-DGPROSHAN_LOG)
 
-find_package(CUDAToolkit 11.3)
+
+find_package(CUDAToolkit 11.4)
 if(CUDAToolkit_FOUND)
 	enable_language(CUDA)
 	set(CMAKE_CUDA_STANDARD 17)
@@ -36,7 +37,7 @@ if(CUDAToolkit_FOUND)
 endif(CUDAToolkit_FOUND)
 
 
-find_package(embree 3.12)
+find_package(embree 3.13)
 if(embree_FOUND)
 	add_definitions(-DGPROSHAN_EMBREE)
 	include_directories(SYSTEM ${embree_INCLUDE_DIRS})
@@ -107,10 +108,4 @@ endif(CUDAToolkit_FOUND)
 
 
 add_subdirectory(apps)
-
-
-install(TARGETS gproshan imgui test_gproshan test_geodesics test_image_denoising
-		ARCHIVE DESTINATION ${gproshan_SOURCE_DIR}/lib
-		LIBRARY DESTINATION ${gproshan_SOURCE_DIR}/lib
-		RUNTIME DESTINATION ${gproshan_SOURCE_DIR}/bin)
 
