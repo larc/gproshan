@@ -173,6 +173,7 @@ bool viewer::run()
 		ImGui::Text("%s", mesh->filename.c_str());
 		ImGui::Text("%16s: %10lu", "n_vertices", mesh->n_vertices);
 		ImGui::Text("%16s: %10lu", "n_faces", mesh->n_faces);
+		ImGui::DragFloat4("camera center", (float *) &cam.pos, 0.2);
 
 		if(mesh.render_pointcloud)
 		{

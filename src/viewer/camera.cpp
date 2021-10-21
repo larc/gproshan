@@ -14,11 +14,9 @@ namespace gproshan {
 
 glm::mat4 camera::look_at(const quaternion & r)
 {
-	eye = r.conj() * pos * r;
+	eye = r.conj() * (pos + front) * r;
 
-	return glm::lookAt( glm_vec3(eye),
-						glm_vec3(r.conj() * center * r),
-						glm_vec3(r.conj() * up * r));
+	return glm::lookAt(glm_vec3(r.conj() * pos * r), glm_vec3(eye), glm_vec3(r.conj() * up * r));
 }
 
 quaternion camera::click_to_sphere(const double & x, const double & y, const int & w, const int & h)
