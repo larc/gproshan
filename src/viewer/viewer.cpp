@@ -901,9 +901,10 @@ void viewer::select_border_vertices(che_viewer & mesh)
 
 void viewer::pick_vertex(const real_t & x, const real_t & y)
 {
-	active_mesh().select(	x * viewport_width / window_width,
-							y * viewport_height / window_height,
-							{viewport_width, viewport_height}, view_mat, proj_mat);
+	float xscale, yscale;
+	glfwGetWindowContentScale(window, &xscale, &yscale);
+
+	active_mesh().select(x * xscale, y * yscale, {viewport_width, viewport_height}, view_mat, proj_mat);
 }
 
 
