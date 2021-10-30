@@ -54,7 +54,7 @@ optix::optix(const std::vector<che *> & meshes)
 
 	optix_pipeline_link_opt.maxTraceDepth		= 2;
 
-	std::ifstream ptx_is("rt_optix.ptx");
+	std::ifstream ptx_is(tmp_file_path("rt_optix.ptx"));
 	const std::string str_ptx_code = std::string(std::istreambuf_iterator<char>(ptx_is), std::istreambuf_iterator<char>());
 	ptx_is.close();
 
