@@ -868,6 +868,9 @@ void viewer::render_optix()
 	rt_optix->pathtracing(	glm::uvec2(viewport_width, viewport_height),
 							view_mat, proj_mat, {glm_vec3(light)}, action);
 
+	if(!render_frame)
+		render_frame = new frame;
+	
 	action = false;
 	render_frame->display(viewport_width, viewport_height, rt_optix->img);
 }
