@@ -94,10 +94,11 @@ OptixTraversableHandle optix::build_as(const std::vector<che *> & meshes)
 	OptixTraversableHandle optix_as_handle = {};
 
 	std::vector<OptixBuildInput> optix_meshes(meshes.size());
+	std::vector<CUdeviceptr> optix_vertex_ptr(meshes.size());
 	std::vector<uint32_t> optix_trig_flags(meshes.size());
 
 	for(index_t i = 0; i < meshes.size(); ++i)
-		add_mesh(optix_meshes[i], optix_trig_flags[i], meshes[i]);
+		add_mesh(optix_meshes[i], optix_vertex_ptr[i], optix_trig_flags[i], meshes[i]);
 
 	OptixAccelBuildOptions optix_accel_opt	= {};
 	optix_accel_opt.buildFlags 				= OPTIX_BUILD_FLAG_NONE | OPTIX_BUILD_FLAG_ALLOW_COMPACTION;
@@ -105,13 +106,17 @@ OptixTraversableHandle optix::build_as(const std::vector<che *> & meshes)
 	optix_accel_opt.operation				= OPTIX_BUILD_OPERATION_BUILD;
 
 	OptixAccelBufferSizes optix_gas_buffer_size;
-	optixAccelComputeMemoryUsage(	optix_context,
+	OptixResult rab = optixAccelComputeMemoryUsage(	optix_context,
 									&optix_accel_opt,
 									optix_meshes.data(),
 									optix_meshes.size(),
 									&optix_gas_buffer_size
 									);
+gproshan_error_var(optixGetErrorName(rab));
+gproshan_error_var(optixGetErrorString(rab));
 
+gproshan_error_var(optix_gas_buffer_size.tempSizeInBytes);
+gproshan_error_var(optix_gas_buffer_size.outputSizeInBytes);
 	void * d_compacted_size;
 	cudaMalloc(&d_compacted_size, sizeof(uint64_t));
 
@@ -125,14 +130,16 @@ OptixTraversableHandle optix::build_as(const std::vector<che *> & meshes)
 	void * d_output_buffer;
 	cudaMalloc(&d_output_buffer, optix_gas_buffer_size.outputSizeInBytes);
 
-	optixAccelBuild(	optix_context,
+gproshan_error_var(optix_meshes.size());
+
+	rab = optixAccelBuild(	optix_context,
 						0,	// stream
 						&optix_accel_opt,
 						optix_meshes.data(),
 						optix_meshes.size(),
-						(CUdeviceptr) d_temp_buffer,
+						(CUdeviceptr) (uintptr_t) d_temp_buffer,
 						optix_gas_buffer_size.tempSizeInBytes,
-						(CUdeviceptr) d_output_buffer,
+						(CUdeviceptr) (uintptr_t) d_output_buffer,
 						optix_gas_buffer_size.outputSizeInBytes,
 						&optix_as_handle,
 						&optix_emit_desc,
@@ -140,9 +147,13 @@ OptixTraversableHandle optix::build_as(const std::vector<che *> & meshes)
 						);
 
 	cudaDeviceSynchronize();
-
-gproshan_error_var(optix_gas_buffer_size.tempSizeInBytes);
-gproshan_error_var(optix_gas_buffer_size.outputSizeInBytes);
+cudaError_t error = cudaGetLastError();                             \
+    if( error != cudaSuccess )                                          \
+      {                                                                 \
+        fprintf( stderr, "error (%s: line %d): %s\n", __FILE__, __LINE__, cudaGetErrorString( error ) ); \
+      }   
+gproshan_error_var(optixGetErrorName(rab));
+gproshan_error_var(optixGetErrorString(rab));
 
 	uint64_t compacted_size;
 	cudaMemcpy(&compacted_size, d_compacted_size, sizeof(uint64_t), cudaMemcpyDeviceToHost);
@@ -152,7 +163,7 @@ gproshan_error_var(compacted_size);
 	void * d_as;
 	cudaMalloc(&d_as, compacted_size);
 
-	optixAccelCompact(	optix_context,
+	rab = optixAccelCompact(	optix_context,
 						0,	// stream
 						optix_as_handle,
 						(CUdeviceptr) d_as,
@@ -162,6 +173,8 @@ gproshan_error_var(compacted_size);
 
 	cudaDeviceSynchronize();
 gproshan_error_var(compacted_size);
+gproshan_error_var(optixGetErrorName(rab));
+gproshan_error_var(optixGetErrorString(rab));
 
 	cudaFree(d_output_buffer);
 	cudaFree(d_temp_buffer);
@@ -170,10 +183,10 @@ gproshan_error_var(compacted_size);
 	return optix_as_handle;
 }
 
-void optix::add_mesh(OptixBuildInput & optix_mesh, uint32_t & optix_trig_flags, const che * mesh)
+void optix::add_mesh(OptixBuildInput & optix_mesh, CUdeviceptr & d_vertex_ptr, uint32_t & optix_trig_flags, const che * mesh)
 {
-	void * d_vertex;
-	void * d_index;
+	void * d_vertex = nullptr;
+	void * d_index = nullptr;
 
 
 #ifdef GPROSHAN_FLOAT
@@ -195,13 +208,15 @@ void optix::add_mesh(OptixBuildInput & optix_mesh, uint32_t & optix_trig_flags, 
 	cudaMalloc(&d_index, mesh->n_half_edges * sizeof(index_t));
 	cudaMemcpy(d_index, &mesh->vt(0), mesh->n_half_edges * sizeof(index_t), cudaMemcpyHostToDevice);
 
+	d_vertex_ptr = (CUdeviceptr) d_vertex;
+
 	optix_mesh = {};
 	optix_mesh.type = OPTIX_BUILD_INPUT_TYPE_TRIANGLES;
 
 	optix_mesh.triangleArray.vertexFormat			= OPTIX_VERTEX_FORMAT_FLOAT3;
 	optix_mesh.triangleArray.vertexStrideInBytes	= 3 * sizeof(float);
 	optix_mesh.triangleArray.numVertices			= mesh->n_vertices;
-	optix_mesh.triangleArray.vertexBuffers			= (CUdeviceptr *) &d_vertex;
+	optix_mesh.triangleArray.vertexBuffers			= &d_vertex_ptr;
 
 	optix_mesh.triangleArray.indexFormat			= OPTIX_INDICES_FORMAT_UNSIGNED_INT3;
 	optix_mesh.triangleArray.indexStrideInBytes		= 3 * sizeof(index_t);
@@ -215,6 +230,9 @@ void optix::add_mesh(OptixBuildInput & optix_mesh, uint32_t & optix_trig_flags, 
 	optix_mesh.triangleArray.sbtIndexOffsetBuffer			= 0;
 	optix_mesh.triangleArray.sbtIndexOffsetSizeInBytes		= 0;
 	optix_mesh.triangleArray.sbtIndexOffsetStrideInBytes	= 0;
+
+gproshan_error_var(sizeof(float3) == 3 * sizeof(float));
+gproshan_error_var(sizeof(float3) == sizeof(vertex));
 }
 
 glm::vec4 optix::intersect_li(const glm::vec3 & org, const glm::vec3 & dir, const glm::vec3 & light, const bool & flat)
