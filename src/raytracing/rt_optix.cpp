@@ -14,6 +14,32 @@
 namespace gproshan::rt {
 
 
+/*! SBT record for a raygen program */
+struct __align__( OPTIX_SBT_RECORD_ALIGNMENT ) RaygenRecord
+{
+	__align__( OPTIX_SBT_RECORD_ALIGNMENT ) char header[OPTIX_SBT_RECORD_HEADER_SIZE];
+	// just a dummy value - later examples will use more interesting
+	// data here
+	void * data;
+};
+
+/*! SBT record for a miss program */
+struct __align__( OPTIX_SBT_RECORD_ALIGNMENT ) MissRecord
+{
+	__align__( OPTIX_SBT_RECORD_ALIGNMENT ) char header[OPTIX_SBT_RECORD_HEADER_SIZE];
+	// just a dummy value - later examples will use more interesting
+	// data here
+	void * data;
+};
+
+/*! SBT record for a hitgroup program */
+struct __align__( OPTIX_SBT_RECORD_ALIGNMENT ) HitgroupRecord
+{
+	__align__( OPTIX_SBT_RECORD_ALIGNMENT ) char header[OPTIX_SBT_RECORD_HEADER_SIZE];
+//	TriangleMeshSBTData data;
+};
+
+
 void optix_log(unsigned int level, const char * tag, const char * message, void *)
 {
 	fprintf(stderr, "OptiX [%2u][%12s]: %s\n", level, tag, message);
@@ -33,7 +59,6 @@ optix::optix(const std::vector<che *> & meshes)
 
 	// create module
 
-	OptixModule optix_module;
 	OptixModuleCompileOptions optix_module_compile_opt;
 
 	OptixPipeline optix_pipeline;
@@ -69,7 +94,9 @@ optix::optix(const std::vector<che *> & meshes)
 
 	// create programs
 
-
+	create_raygen_programs();
+	create_miss_programs();
+	create_hitgroup_programs();
 
 	// build as
 
@@ -87,6 +114,105 @@ optix::~optix()
 index_t optix::cast_ray(const glm::vec3 & org, const glm::vec3 & dir)
 {
 	return NIL;
+}
+
+void optix::create_raygen_programs()
+{
+	char log[2048];
+	size_t sizeof_log = sizeof(log);
+
+	OptixProgramGroupOptions pg_options	= {};
+	OptixProgramGroupDesc pg_desc		= {};
+	pg_desc.kind						= OPTIX_PROGRAM_GROUP_KIND_RAYGEN;
+	pg_desc.raygen.module				= optix_module;
+	pg_desc.raygen.entryFunctionName	= "__raygen__render_frame";
+
+	optixProgramGroupCreate(optix_context,
+							&pg_desc,
+							1,
+							&pg_options,
+							log, &sizeof_log,
+							&raygen_programs[0]
+							);
+
+	if(sizeof_log > 1) gproshan_log_var(log);
+}
+
+void optix::create_miss_programs()
+{
+	char log[2048];
+	size_t sizeof_log = sizeof(log);
+
+	OptixProgramGroupOptions pg_options	= {};
+	OptixProgramGroupDesc pg_desc		= {};
+	pg_desc.kind						= OPTIX_PROGRAM_GROUP_KIND_MISS;
+	pg_desc.miss.module					= optix_module;
+
+
+	pg_desc.miss.entryFunctionName = "__miss__radiance";
+
+	optixProgramGroupCreate(optix_context,
+							&pg_desc,
+							1,
+							&pg_options,
+							log, &sizeof_log,
+							&miss_programs[0]
+							);
+
+	if(sizeof_log > 1) gproshan_log_var(log);
+
+
+	pg_desc.miss.entryFunctionName = "__miss__shadow";
+
+	optixProgramGroupCreate(optix_context,
+							&pg_desc,
+							1,
+							&pg_options,
+							log, &sizeof_log,
+							&miss_programs[1]
+							);
+
+	if(sizeof_log > 1) gproshan_log_var(log);
+}
+
+void optix::create_hitgroup_programs()
+{
+	char log[2048];
+	size_t sizeof_log = sizeof(log);
+
+	OptixProgramGroupOptions pg_options	= {};
+	OptixProgramGroupDesc pg_desc		= {};
+	pg_desc.kind						= OPTIX_PROGRAM_GROUP_KIND_HITGROUP;
+	pg_desc.hitgroup.moduleCH			= optix_module;
+	pg_desc.hitgroup.moduleAH			= optix_module;
+
+
+	pg_desc.hitgroup.entryFunctionNameCH = "__closesthit__radiance";
+	pg_desc.hitgroup.entryFunctionNameAH = "__anyhit__radiance";
+
+	optixProgramGroupCreate(optix_context,
+							&pg_desc,
+							1,
+							&pg_options,
+							log, &sizeof_log,
+							&hitgroup_programs[0]
+							);
+
+	if(sizeof_log > 1) gproshan_log_var(log);
+
+
+	pg_desc.hitgroup.entryFunctionNameCH = "__closesthit__shadow";
+	pg_desc.hitgroup.entryFunctionNameAH = "__anyhit__shadow";
+
+	optixProgramGroupCreate(optix_context,
+							&pg_desc,
+							1,
+							&pg_options,
+							log, &sizeof_log,
+							&hitgroup_programs[1]
+							);
+
+	if(sizeof_log > 1) gproshan_log_var(log);
 }
 
 OptixTraversableHandle optix::build_as(const std::vector<che *> & meshes)
@@ -159,6 +285,7 @@ OptixTraversableHandle optix::build_as(const std::vector<che *> & meshes)
 						);
 
 	cudaDeviceSynchronize();
+
 
 	cudaFree(d_output_buffer);
 	cudaFree(d_temp_buffer);

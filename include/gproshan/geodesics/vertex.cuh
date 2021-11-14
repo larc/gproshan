@@ -30,19 +30,12 @@ struct vertex_cu
 
 	}
 
-
-	/**
-		doc product
-	*/
 	__host__ __device__
 	vertex_cu operator*(const vertex_cu & v) const
 	{
 		return vertex_cu(y * v.z - z * v.y, -(x * v.z - z * v.x), x * v.y - y * v.x);
 	}
 
-	/**
-		Norma
-	*/
 	__host__ __device__
 	real_t operator*()
 	{
@@ -63,9 +56,6 @@ struct vertex_cu
 		z /= v;
 	}
 
-	/**
-	cross product
-	*/
 	__host__ __device__
 	real_t operator,(const vertex_cu & v) const
 	{
