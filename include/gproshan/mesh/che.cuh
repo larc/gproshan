@@ -1,7 +1,7 @@
 #ifndef CHE_CUH
 #define CHE_CUH
 
-#include "geodesics/vertex.cuh"
+#include "mesh/vertex.cuh"
 #include "../mesh/che.h"
 
 

@@ -1,7 +1,7 @@
 #ifndef GEODESICS_PTP_COALESCENCE_CUH
 #define GEODESICS_PTP_COALESCENCE_CUH
 
-#include "geodesics/che.cuh"
+#include "mesh/che.cuh"
 #include "geodesics/geodesics_ptp.cuh"
 #include "geodesics/geodesics_ptp.h"
 

@@ -4,10 +4,10 @@
 #define RT_OPTIX_PARAMS_H
 
 
-#include "geodesics/vertex.cuh"
+#include "mesh/vertex.cuh"
 
 
-// geometry processing and shape analysis framework                            
+// geometry processing and shape analysis framework
 namespace gproshan::rt {
 
 

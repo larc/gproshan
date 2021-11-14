@@ -7,7 +7,7 @@
 #include <optix_device.h>
 
 
-// geometry processing and shape analysis framework                            
+// geometry processing and shape analysis framework
 namespace gproshan::rt {
 
 

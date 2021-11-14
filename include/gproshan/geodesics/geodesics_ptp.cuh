@@ -1,7 +1,7 @@
 #ifndef GEODESICS_PTP_CUH
 #define GEODESICS_PTP_CUH
 
-#include "geodesics/che.cuh"
+#include "mesh/che.cuh"
 
 
 #define NT 64

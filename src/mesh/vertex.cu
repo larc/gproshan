@@ -1,4 +1,4 @@
-#include "geodesics/vertex.cuh"
+#include "mesh/vertex.cuh"
 
 
 // geometry processing and shape analysis framework

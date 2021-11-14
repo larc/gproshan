@@ -1,4 +1,4 @@
-#include "geodesics/che.cuh"
+#include "mesh/che.cuh"
 
 
 // geometry processing and shape analysis framework
