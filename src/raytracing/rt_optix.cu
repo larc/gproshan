@@ -14,6 +14,19 @@
 namespace gproshan::rt {
 
 
+__host__ __device__
+vertex_cu operator * (const real_t & a, const vertex_cu & v)
+{
+	return vertex_cu(a * v.x, a * v.y, a * v.z);
+}
+
+__host__ __device__
+vertex_cu operator + (const real_t & a, const vertex_cu & v)
+{
+	return vertex_cu(a + v.x, a + v.y, a + v.z);
+}
+
+
 extern "C" __constant__ launch_params params;
 
 static __forceinline__ __device__
@@ -50,10 +63,7 @@ static __forceinline__ __device__ T * getPRD()
 // one group of them to set up the SBT)
 //------------------------------------------------------------------------------
 
-extern "C" __global__ void __closesthit__shadow()
-{
-	/* not going to be used ... */
-}
+extern "C" __global__ void __closesthit__shadow() {}
 
 extern "C" __global__ void __closesthit__radiance()
 {
@@ -77,7 +87,7 @@ extern "C" __global__ void __closesthit__radiance()
 
 	vertex_cu Ng = (B - A) * (C - A);
 	vertex_cu Ns = (sbtData.VN)
-		? ((1.f-u-v) * sbtData.VN[sbtData.VT[he]]
+		? ((1.f - u - v) * sbtData.VN[sbtData.VT[he]]
 			 +			 u * sbtData.VN[sbtData.VT[he + 1]]
 			 +			 v * sbtData.VN[sbtData.VT[he + 2]])
 		: Ng;

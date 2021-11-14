@@ -110,12 +110,6 @@ struct vertex_cu
 	}
 };
 
-__host__ __device__
-vertex_cu operator * (const real_t & a, const vertex_cu & v);
-
-__host__ __device__
-vertex_cu operator + (const real_t & a, const vertex_cu & v);
-
 
 } // namespace gproshan
 

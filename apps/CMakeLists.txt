@@ -3,13 +3,12 @@ set_target_properties(test_gproshan PROPERTIES OUTPUT_NAME gproshan)
 target_link_libraries(test_gproshan gproshan)
 
 if(OptiX_INCLUDE)
-	add_library(ptx_sources OBJECT ${gproshan_SOURCE_DIR}/src/raytracing/rt_optix.cu)
-	set_property(TARGET ptx_sources PROPERTY CUDA_PTX_COMPILATION ON)
-	set_property(TARGET ptx_sources PROPERTY CUDA_ARCHITECTURES OFF)
-	target_compile_options(ptx_sources PRIVATE "--keep")
-	add_custom_target(	ptx_tmp DEPENDS ptx_sources
+	find_package(CUDA)
+	cuda_compile_ptx(ptx_sources ${gproshan_SOURCE_DIR}/src/raytracing/rt_optix.cu)
+	list(GET ptx_sources 0 ptx_file)
+	add_custom_target(	ptx_tmp DEPENDS ${ptx_file}
 						COMMAND ${CMAKE_COMMAND} -E copy
-						${gproshan_BINARY_DIR}/apps/rt_optix.ptx
+						${ptx_file}
 						${gproshan_SOURCE_DIR}/tmp/rt_optix.ptx
 						)
 	add_dependencies(test_gproshan ptx_tmp)
