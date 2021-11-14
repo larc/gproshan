@@ -4,23 +4,32 @@
 #define RT_OPTIX_PARAMS_H
 
 
+#include "mesh/vertex.h"
+
+#include <optix.h>
+
+
 // geometry processing and shape analysis framework
 namespace gproshan::rt {
 
 
 struct launch_params
 {
-};
+	struct
+	{
+		uint32_t * colorBuffer = nullptr;
+		uint32_t width, height;
+	} frame;
 
+	struct
+	{
+		vertex_cu position;
+		vertex_cu direction;
+		vertex_cu horizontal;
+		vertex_cu vertical;
+	} camera;
 
-struct vertex_cu;
-
-struct mesh_sbt_data
-{
-	vertex_cu * vertex;
-	vertex_cu * normal;
-	vertex_cu * color;
-	vertex_cu * index;
+	OptixTraversableHandle traversable;
 };
 
 

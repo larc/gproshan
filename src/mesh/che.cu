@@ -33,7 +33,7 @@ void cuda_create_CHE(CHE * h_che, CHE *& dd_che, CHE *& d_che, const bool & norm
 
 	cudaMalloc(&dd_che->GT, sizeof(vertex_cu) * h_che->n_vertices);
 	cudaMemcpy(dd_che->GT, h_che->GT, sizeof(vertex_cu) * h_che->n_vertices, cudaMemcpyHostToDevice);
-	
+
 	if(normal)
 	{
 		cudaMalloc(&dd_che->VN, sizeof(vertex_cu) * h_che->n_vertices);

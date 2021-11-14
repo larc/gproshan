@@ -1,10 +1,13 @@
 #ifdef GPROSHAN_OPTIX_FAIL
 
 
+#include "mesh/che.h"
+#include "mesh/vertex.cuh"
 #include "raytracing/rt_optix_params.h"
 
 
 #include <optix_device.h>
+#include <cuda_runtime.h>
 
 
 // geometry processing and shape analysis framework
@@ -54,13 +57,13 @@ extern "C" __global__ void __closesthit__shadow()
 
 extern "C" __global__ void __closesthit__radiance()
 {
-	const TriangleMeshSBTData & sbtData = *(const TriangleMeshSBTData *) optixGetSbtDataPointer();
+	const CHE & sbtData = *(const CHE *) optixGetSbtDataPointer();
 
 	// ------------------------------------------------------------------
 	// gather some basic hit information
 	// ------------------------------------------------------------------
 	const int primID = optixGetPrimitiveIndex();
-	const vec3i index = sbtData.index[primID];
+	const index_t he = primID * che::mtrig;
 	const float u = optixGetTriangleBarycentrics().x;
 	const float v = optixGetTriangleBarycentrics().y;
 
@@ -68,14 +71,15 @@ extern "C" __global__ void __closesthit__radiance()
 	// compute normal, using either shading normal (if avail), or
 	// geometry normal (fallback)
 	// ------------------------------------------------------------------
-	const vertex_cu & A = sbtData.vertex[index.x];
-	const vertex_cu & B = sbtData.vertex[index.y];
-	const vertex_cu & C = sbtData.vertex[index.z];
+	const vertex_cu & A = sbtData.GT[sbtData.VT[he]];
+	const vertex_cu & B = sbtData.GT[sbtData.VT[he + 1]];
+	const vertex_cu & C = sbtData.GT[sbtData.VT[he + 2]];
+
 	vertex_cu Ng = (B - A) * (C - A);
-	vertex_cu Ns = (sbtData.normal)
-		? ((1.f-u-v) * sbtData.normal[index.x]
-			 +			 u * sbtData.normal[index.y]
-			 +			 v * sbtData.normal[index.z])
+	vertex_cu Ns = (sbtData.VN)
+		? ((1.f-u-v) * sbtData.VN[sbtData.VT[he]]
+			 +			 u * sbtData.VN[sbtData.VT[he + 1]]
+			 +			 v * sbtData.VN[sbtData.VT[he + 2]])
 		: Ng;
 
 	// ------------------------------------------------------------------
@@ -94,15 +98,12 @@ extern "C" __global__ void __closesthit__radiance()
 	// compute diffuse material color, including diffuse texture, if
 	// available
 	// ------------------------------------------------------------------
-	vertex_cu diffuseColor = sbtData.color;
+	vertex_cu diffuseColor(230.0/255, 240.0/255, 250.0/255);
 
 	// ------------------------------------------------------------------
 	// compute shadow
 	// ------------------------------------------------------------------
-	const vertex_cu surfPos
-		= (1.f-u-v) * sbtData.vertex[index.x]
-		+				 u * sbtData.vertex[index.y]
-		+				 v * sbtData.vertex[index.z];
+	const vertex_cu surfPos = (1.f - u - v) * A + u * B + v * C;
 	const vertex_cu lightPos(-907.108f, 2205.875f, -400.0267f);
 	const vertex_cu lightDir = lightPos - surfPos;
 
@@ -135,7 +136,7 @@ extern "C" __global__ void __closesthit__radiance()
 	// ------------------------------------------------------------------
 	const float cosDN = 0.1f + .8f * fabsf((rayDir , Ns));
 
-	vertex_cu &prd = *(vertex_cu * ) getPRD<vertex_cu>();
+	vertex_cu & prd = *(vertex_cu * ) getPRD<vertex_cu>();
 	prd = (.1f + (.2f + .8f * lightVisibility) * cosDN) * diffuseColor;
 }
 
@@ -186,13 +187,12 @@ extern "C" __global__ void __raygen__render_frame()
 	packPointer(&pixelColorPRD, u0, u1);
 
 	// normalized screen plane position, in [0,1]^2
-	const vec2f screen(vec2f(ix+.5f,iy+.5f)
-										 / vec2f(params.frame.size));
+	const float xscreen = (ix + .5f) / params.frame.width;
+	const float yscreen = (iy + .5f) / params.frame.height;
 
 	// generate ray direction
-	vertex_cu rayDir = normalize(camera.direction
-													 + (screen.x - 0.5f) * camera.horizontal
-													 + (screen.y - 0.5f) * camera.vertical);
+	vertex_cu rayDir = camera.direction + (xscreen - 0.5f) * camera.horizontal + (yscreen - 0.5f) * camera.vertical;
+	rayDir /= *rayDir;
 
 	optixTrace(params.traversable,
 						 camera.position,
@@ -217,7 +217,7 @@ extern "C" __global__ void __raygen__render_frame()
 		| (r<<0) | (g<<8) | (b<<16);
 
 	// and write to frame buffer ...
-	const uint32_t fbIndex = ix+iy*params.frame.size.x;
+	const uint32_t fbIndex = ix + iy * params.frame.width;
 	params.frame.colorBuffer[fbIndex] = rgba;
 }
 

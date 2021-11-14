@@ -24,31 +24,39 @@ struct vertex_cu
 	}
 
 	__host__ __device__
-	~vertex_cu()
+	vertex_cu(const float3 & v)
 	{
-
+		x = v.x;
+		y = v.y;
+		z = v.z;
 	}
 
 	__host__ __device__
-	vertex_cu operator*(const vertex_cu & v) const
+	operator float3() const
+	{
+		return make_float3(x, y, z);
+	}
+
+	__host__ __device__
+	vertex_cu operator * (const vertex_cu & v) const
 	{
 		return vertex_cu(y * v.z - z * v.y, -(x * v.z - z * v.x), x * v.y - y * v.x);
 	}
 
 	__host__ __device__
-	real_t operator*()
+	real_t operator * ()
 	{
 		return sqrt(x * x + y * y + z * z);
 	}
 
 	__host__ __device__
-	vertex_cu operator/(const real_t & a) const
+	vertex_cu operator / (const real_t & a) const
 	{
 		return vertex_cu(x / a, y / a, z / a);
 	}
 
 	__host__ __device__
-	void operator/=(const real_t & v)
+	void operator /= (const real_t & v)
 	{
 		x /= v;
 		y /= v;
@@ -56,19 +64,19 @@ struct vertex_cu
 	}
 
 	__host__ __device__
-	real_t operator,(const vertex_cu & v) const
+	real_t operator , (const vertex_cu & v) const
 	{
 		return x * v.x + y * v.y + z * v.z;
 	}
 
 	__host__ __device__
-	vertex_cu operator+(const vertex_cu & v) const
+	vertex_cu operator + (const vertex_cu & v) const
 	{
 		return vertex_cu(x+v.x, y+v.y, z+v.z);
 	}
 
 	__host__ __device__
-	void operator+=(const vertex_cu & v)
+	void operator += (const vertex_cu & v)
 	{
 		x += v.x;
 		y += v.y;
@@ -76,13 +84,13 @@ struct vertex_cu
 	}
 
 	__host__ __device__
-	vertex_cu operator-(const vertex_cu & v) const
+	vertex_cu operator - (const vertex_cu & v) const
 	{
 		return vertex_cu(x - v.x, y - v.y, z - v.z);
 	}
 
 	__host__ __device__
-	void operator-=(const vertex_cu & v)
+	void operator -= (const vertex_cu & v)
 	{
 		x -= v.x;
 		y -= v.y;
@@ -90,20 +98,23 @@ struct vertex_cu
 	}
 
 	__host__ __device__
-	vertex_cu operator-() const
+	vertex_cu operator - () const
 	{
 		return vertex_cu(-x, -y, -z);
 	}
 
 	__host__ __device__
-	real_t & operator[](const int & i)
+	real_t & operator [] (const int & i)
 	{
 		return (&x)[i];
 	}
 };
 
 __host__ __device__
-vertex_cu operator*(const real_t & a, const vertex_cu & v);
+vertex_cu operator * (const real_t & a, const vertex_cu & v);
+
+__host__ __device__
+vertex_cu operator + (const real_t & a, const vertex_cu & v);
 
 
 } // namespace gproshan

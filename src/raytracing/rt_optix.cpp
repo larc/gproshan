@@ -38,7 +38,7 @@ struct __align__(OPTIX_SBT_RECORD_ALIGNMENT) MissRecord
 struct __align__(OPTIX_SBT_RECORD_ALIGNMENT) HitgroupRecord
 {
 	__align__(OPTIX_SBT_RECORD_ALIGNMENT) char header[OPTIX_SBT_RECORD_HEADER_SIZE];
-	mesh_sbt_data mesh;
+	CHE * mesh;
 };
 
 
@@ -95,14 +95,13 @@ optix::optix(const std::vector<che *> & meshes)
 	create_hitgroup_programs();
 
 	// build as
-	build_as(meshes);
+	params.traversable = build_as(meshes);
 
 	// create pipeline
 	create_pipeline();
-	
+
 	// build sbt
-
-
+	build_sbt();
 }
 
 optix::~optix()
@@ -226,7 +225,7 @@ void optix::create_pipeline()
 
 	char log[2048];
 	size_t sizeof_log = sizeof(log);
-	
+
 	optixPipelineCreate(optix_context,
 						&optix_pipeline_compile_opt,
 						&optix_pipeline_link_opt,
@@ -235,12 +234,17 @@ void optix::create_pipeline()
 						log, &sizeof_log,
 						&optix_pipeline
 						);
-	
+
 	if(sizeof_log > 1) gproshan_log_var(log);
 
 	optixPipelineSetStackSize(optix_pipeline, 2 * 1024, 2 * 1024, 2 * 1024, 1);
-	
+
 	if(sizeof_log > 1) gproshan_log_var(log);
+}
+
+void optix::build_sbt()
+{
+
 }
 
 OptixTraversableHandle optix::build_as(const std::vector<che *> & meshes)
@@ -330,7 +334,7 @@ void optix::add_mesh(OptixBuildInput & optix_mesh, CUdeviceptr & d_vertex_ptr, u
 	dd_mesh.push_back(dd_m);
 	d_mesh.push_back(d_m);
 
-	
+
 	d_vertex_ptr = (CUdeviceptr) dd_m->GT;
 
 	optix_mesh = {};

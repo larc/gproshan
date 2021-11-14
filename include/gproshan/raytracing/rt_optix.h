@@ -28,14 +28,16 @@ class optix : public raytracing
 
 	OptixModule optix_module;
 	OptixModuleCompileOptions optix_module_compile_opt = {};
-	
+
 	OptixPipeline optix_pipeline;
 	OptixPipelineCompileOptions optix_pipeline_compile_opt = {};
 	OptixPipelineLinkOptions optix_pipeline_link_opt = {};
-	
+
 	OptixProgramGroup raygen_programs[1];
 	OptixProgramGroup miss_programs[2];
 	OptixProgramGroup hitgroup_programs[2];
+
+	OptixShaderBindingTable sbt = {};
 
 	launch_params params;
 
@@ -56,6 +58,7 @@ class optix : public raytracing
 		void create_miss_programs();
 		void create_hitgroup_programs();
 		void create_pipeline();
+		void build_sbt();
 		OptixTraversableHandle build_as(const std::vector<che *> & meshes);
 		void add_mesh(OptixBuildInput & optix_mesh, CUdeviceptr & d_vertex_ptr, uint32_t & optix_trig_flags, const che * mesh);
 };
