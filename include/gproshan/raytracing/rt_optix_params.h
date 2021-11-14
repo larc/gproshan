@@ -4,8 +4,6 @@
 #define RT_OPTIX_PARAMS_H
 
 
-#include "mesh/vertex.h"
-
 #include <optix.h>
 
 
@@ -23,10 +21,7 @@ struct launch_params
 
 	struct
 	{
-		vertex_cu position;
-		vertex_cu direction;
-		vertex_cu horizontal;
-		vertex_cu vertical;
+		void * data;
 	} camera;
 
 	OptixTraversableHandle traversable;

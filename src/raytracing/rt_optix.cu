@@ -1,4 +1,4 @@
-#ifdef GPROSHAN_OPTIX_FAIL
+#ifdef GPROSHAN_OPTIX
 
 
 #include "mesh/che.h"
@@ -190,26 +190,32 @@ extern "C" __global__ void __raygen__render_frame()
 	const float xscreen = (ix + .5f) / params.frame.width;
 	const float yscreen = (iy + .5f) / params.frame.height;
 
+	vertex_cu * cam_data	= (vertex_cu *)camera.data;
+	vertex_cu & position	= cam_data[0];
+	vertex_cu & direction	= cam_data[1];
+	vertex_cu & horizontal	= cam_data[2];
+	vertex_cu & vertical	= cam_data[3];
+
 	// generate ray direction
-	vertex_cu rayDir = camera.direction + (xscreen - 0.5f) * camera.horizontal + (yscreen - 0.5f) * camera.vertical;
+	vertex_cu rayDir = direction + (xscreen - 0.5f) * horizontal + (yscreen - 0.5f) * vertical;
 	rayDir /= *rayDir;
 
-	optixTrace(params.traversable,
-						 camera.position,
-						 rayDir,
-						 0.f,		// tmin
-						 1e20f,	// tmax
-						 0.0f,	 // rayTime
-						 OptixVisibilityMask(255),
-						 OPTIX_RAY_FLAG_DISABLE_ANYHIT,//OPTIX_RAY_FLAG_NONE,
-						 0,						// SBT offset
-						 2,							 // SBT stride
-						 0,						// missSBTIndex
-						 u0, u1);
+	optixTrace(	params.traversable,
+				position,
+				rayDir,
+				0.f,	// tmin
+				1e20f,	// tmax
+				0.0f,	 // rayTime
+				OptixVisibilityMask(255),
+				OPTIX_RAY_FLAG_DISABLE_ANYHIT, //OPTIX_RAY_FLAG_NONE,
+				0,						// SBT offset
+				2,							 // SBT stride
+				0,						// missSBTIndex
+				u0, u1);
 
-	const int r = int(255.99f*pixelColorPRD.x);
-	const int g = int(255.99f*pixelColorPRD.y);
-	const int b = int(255.99f*pixelColorPRD.z);
+	const int r = int(255.99f * pixelColorPRD.x);
+	const int g = int(255.99f * pixelColorPRD.y);
+	const int b = int(255.99f * pixelColorPRD.z);
 
 	// convert to 32-bit rgba value (we explicitly set alpha to 0xff
 	// to make stb_image_write happy ...
