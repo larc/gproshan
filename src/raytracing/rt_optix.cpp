@@ -1,6 +1,8 @@
+#ifdef GPROSHAN_OPTIX
+
 #include "raytracing/rt_optix.h"
 
-#ifdef GPROSHAN_OPTIX
+#include "mesh/che.cuh"
 
 #include <cstring>
 #include <fstream>
@@ -15,28 +17,28 @@ namespace gproshan::rt {
 
 
 /*! SBT record for a raygen program */
-struct __align__( OPTIX_SBT_RECORD_ALIGNMENT ) RaygenRecord
+struct __align__(OPTIX_SBT_RECORD_ALIGNMENT) RaygenRecord
 {
-	__align__( OPTIX_SBT_RECORD_ALIGNMENT ) char header[OPTIX_SBT_RECORD_HEADER_SIZE];
+	__align__(OPTIX_SBT_RECORD_ALIGNMENT) char header[OPTIX_SBT_RECORD_HEADER_SIZE];
 	// just a dummy value - later examples will use more interesting
 	// data here
 	void * data;
 };
 
 /*! SBT record for a miss program */
-struct __align__( OPTIX_SBT_RECORD_ALIGNMENT ) MissRecord
+struct __align__(OPTIX_SBT_RECORD_ALIGNMENT) MissRecord
 {
-	__align__( OPTIX_SBT_RECORD_ALIGNMENT ) char header[OPTIX_SBT_RECORD_HEADER_SIZE];
+	__align__(OPTIX_SBT_RECORD_ALIGNMENT) char header[OPTIX_SBT_RECORD_HEADER_SIZE];
 	// just a dummy value - later examples will use more interesting
 	// data here
 	void * data;
 };
 
 /*! SBT record for a hitgroup program */
-struct __align__( OPTIX_SBT_RECORD_ALIGNMENT ) HitgroupRecord
+struct __align__(OPTIX_SBT_RECORD_ALIGNMENT) HitgroupRecord
 {
-	__align__( OPTIX_SBT_RECORD_ALIGNMENT ) char header[OPTIX_SBT_RECORD_HEADER_SIZE];
-//	TriangleMeshSBTData data;
+	__align__(OPTIX_SBT_RECORD_ALIGNMENT) char header[OPTIX_SBT_RECORD_HEADER_SIZE];
+	mesh_sbt_data mesh;
 };
 
 
@@ -59,12 +61,6 @@ optix::optix(const std::vector<che *> & meshes)
 
 	// create module
 
-	OptixModuleCompileOptions optix_module_compile_opt;
-
-	OptixPipeline optix_pipeline;
-	OptixPipelineCompileOptions optix_pipeline_compile_opt;
-	OptixPipelineLinkOptions optix_pipeline_link_opt;
-
 	optix_module_compile_opt.maxRegisterCount	= 50;
 	optix_module_compile_opt.optLevel			= OPTIX_COMPILE_OPTIMIZATION_DEFAULT;
 	optix_module_compile_opt.debugLevel			= OPTIX_COMPILE_DEBUG_LEVEL_NONE;
@@ -75,7 +71,7 @@ optix::optix(const std::vector<che *> & meshes)
 	optix_pipeline_compile_opt.numPayloadValues			= 2;
 	optix_pipeline_compile_opt.numAttributeValues		= 2;
 	optix_pipeline_compile_opt.exceptionFlags			= OPTIX_EXCEPTION_FLAG_NONE;
-	optix_pipeline_compile_opt.pipelineLaunchParamsVariableName = "optix_launch_params";
+	optix_pipeline_compile_opt.pipelineLaunchParamsVariableName = "params";
 
 	optix_pipeline_link_opt.maxTraceDepth		= 2;
 
@@ -92,23 +88,27 @@ optix::optix(const std::vector<che *> & meshes)
 								&optix_module
 								);
 
-	// create programs
 
+	// create programs
 	create_raygen_programs();
 	create_miss_programs();
 	create_hitgroup_programs();
 
 	// build as
-
 	build_as(meshes);
 
 	// create pipeline
-
+	create_pipeline();
+	
 	// build sbt
+
+
 }
 
 optix::~optix()
 {
+	for(index_t i = 0; i < dd_mesh.size(); ++i)
+		cuda_free_CHE(dd_mesh[i], d_mesh[i]);
 }
 
 index_t optix::cast_ray(const glm::vec3 & org, const glm::vec3 & dir)
@@ -215,6 +215,34 @@ void optix::create_hitgroup_programs()
 	if(sizeof_log > 1) gproshan_log_var(log);
 }
 
+void optix::create_pipeline()
+{
+	std::vector<OptixProgramGroup> program_groups;
+	program_groups.push_back(raygen_programs[0]);
+	program_groups.push_back(hitgroup_programs[0]);
+	program_groups.push_back(hitgroup_programs[1]);
+	program_groups.push_back(miss_programs[0]);
+	program_groups.push_back(miss_programs[1]);
+
+	char log[2048];
+	size_t sizeof_log = sizeof(log);
+	
+	optixPipelineCreate(optix_context,
+						&optix_pipeline_compile_opt,
+						&optix_pipeline_link_opt,
+						program_groups.data(),
+						program_groups.size(),
+						log, &sizeof_log,
+						&optix_pipeline
+						);
+	
+	if(sizeof_log > 1) gproshan_log_var(log);
+
+	optixPipelineSetStackSize(optix_pipeline, 2 * 1024, 2 * 1024, 2 * 1024, 1);
+	
+	if(sizeof_log > 1) gproshan_log_var(log);
+}
+
 OptixTraversableHandle optix::build_as(const std::vector<che *> & meshes)
 {
 	OptixTraversableHandle optix_as_handle = {};
@@ -286,7 +314,6 @@ OptixTraversableHandle optix::build_as(const std::vector<che *> & meshes)
 
 	cudaDeviceSynchronize();
 
-
 	cudaFree(d_output_buffer);
 	cudaFree(d_temp_buffer);
 	cudaFree(d_compacted_size);
@@ -296,42 +323,28 @@ OptixTraversableHandle optix::build_as(const std::vector<che *> & meshes)
 
 void optix::add_mesh(OptixBuildInput & optix_mesh, CUdeviceptr & d_vertex_ptr, uint32_t & optix_trig_flags, const che * mesh)
 {
-	void * d_vertex = nullptr;
-	void * d_index = nullptr;
+	CHE * dd_m, * d_m;
+	CHE h_m(mesh);
 
-#ifdef GPROSHAN_FLOAT
-	cudaMalloc(&d_vertex, mesh->n_vertices * sizeof(vertex));
-	cudaMemcpy(d_vertex, &mesh->gt(0), mesh->n_vertices * sizeof(vertex), cudaMemcpyHostToDevice);
-#else
-	glm::vec3 * vertices = new glm::vec3[mesh->n_vertices];
-	cudaMalloc(&d_vertex, mesh->n_vertices * sizeof(float) * 3);
+	cuda_create_CHE(&h_m, dd_m, d_m);
+	dd_mesh.push_back(dd_m);
+	d_mesh.push_back(d_m);
 
-	#pragma omp parallel for
-	for(index_t i = 0; i < mesh->n_vertices; ++i)
-		vertices[i] = glm_vec3(mesh->gt(i));
-
-	cudaMemcpy(d_vertex, vertices, mesh->n_vertices * sizeof(vertex), cudaMemcpyHostToDevice);
-
-	delete [] vertices;
-#endif // GPROSHAN_FLOAT
-
-	cudaMalloc(&d_index, mesh->n_half_edges * sizeof(index_t));
-	cudaMemcpy(d_index, &mesh->vt(0), mesh->n_half_edges * sizeof(index_t), cudaMemcpyHostToDevice);
-
-	d_vertex_ptr = (CUdeviceptr) d_vertex;
+	
+	d_vertex_ptr = (CUdeviceptr) dd_m->GT;
 
 	optix_mesh = {};
 	optix_mesh.type = OPTIX_BUILD_INPUT_TYPE_TRIANGLES;
 
 	optix_mesh.triangleArray.vertexFormat			= OPTIX_VERTEX_FORMAT_FLOAT3;
-	optix_mesh.triangleArray.vertexStrideInBytes	= 3 * sizeof(float);
+	optix_mesh.triangleArray.vertexStrideInBytes	= sizeof(vertex);
 	optix_mesh.triangleArray.numVertices			= mesh->n_vertices;
 	optix_mesh.triangleArray.vertexBuffers			= &d_vertex_ptr;
 
 	optix_mesh.triangleArray.indexFormat			= OPTIX_INDICES_FORMAT_UNSIGNED_INT3;
 	optix_mesh.triangleArray.indexStrideInBytes		= 3 * sizeof(index_t);
 	optix_mesh.triangleArray.numIndexTriplets		= mesh->n_faces;
-	optix_mesh.triangleArray.indexBuffer			= (CUdeviceptr) d_index;
+	optix_mesh.triangleArray.indexBuffer			= (CUdeviceptr) dd_m->VT;
 
 	optix_trig_flags = 0;
 

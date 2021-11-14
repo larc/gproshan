@@ -1,9 +1,8 @@
 #ifndef VERTEX_CUH
 #define VERTEX_CUH
 
-#include <cmath>
 
-#include "../include.h"
+#include "include.h"
 
 
 // geometry processing and shape analysis framework

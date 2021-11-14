@@ -159,12 +159,13 @@ struct CHE
 	size_t n_faces;
 	size_t n_half_edges;
 
-	vertex_cu * GT;
-	index_t * VT;
-	index_t * OT;
-	index_t * EVT;
+	vertex_cu * GT	= nullptr;
+	vertex_cu * VN	= nullptr;
+	index_t * VT	= nullptr;
+	index_t * OT	= nullptr;
+	index_t * EVT	= nullptr;
 
-	CHE(che * mesh);
+	CHE(const che * mesh);
 };
 
 

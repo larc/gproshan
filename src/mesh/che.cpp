@@ -38,13 +38,14 @@ index_t prev(const index_t & he)
 	return che::mtrig * trig(he) + (he + che::mtrig - 1) % che::mtrig;
 }
 
-CHE::CHE(che * mesh)
+CHE::CHE(const che * mesh)
 {
 	n_vertices = mesh->n_vertices;
 	n_faces = mesh->n_faces;
 	n_half_edges = mesh->n_half_edges;
 
 	GT = (vertex_cu *) mesh->GT;
+	VN = (vertex_cu *) mesh->VN;
 	VT = mesh->VT;
 	OT = mesh->OT;
 	EVT = mesh->EVT;
