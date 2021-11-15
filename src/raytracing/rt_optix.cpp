@@ -42,7 +42,7 @@ struct __align__(OPTIX_SBT_RECORD_ALIGNMENT) MissRecord
 struct __align__(OPTIX_SBT_RECORD_ALIGNMENT) HitgroupRecord
 {
 	__align__(OPTIX_SBT_RECORD_ALIGNMENT) char header[OPTIX_SBT_RECORD_HEADER_SIZE];
-	CHE * mesh;
+	CHE * data;
 };
 
 
@@ -329,7 +329,7 @@ void optix::build_sbt()
 	{
 		HitgroupRecord rec;
 		optixSbtRecordPackHeader(hitgroup_programs[r], &rec);
-		rec.mesh = d_mesh[i];
+		rec.data = d_mesh[i];
 		hitgroup_records.push_back(rec);
 	}
 
@@ -423,7 +423,7 @@ void optix::add_mesh(OptixBuildInput & optix_mesh, CUdeviceptr & d_vertex_ptr, u
 	CHE * dd_m, * d_m;
 	CHE h_m(mesh);
 
-	cuda_create_CHE(&h_m, dd_m, d_m);
+	cuda_create_CHE(&h_m, dd_m, d_m, true);
 	dd_mesh.push_back(dd_m);
 	d_mesh.push_back(d_m);
 

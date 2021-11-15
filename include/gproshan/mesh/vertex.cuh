@@ -44,7 +44,7 @@ struct vertex_cu
 	}
 
 	__host__ __device__
-	real_t operator * ()
+	real_t operator * () const
 	{
 		return sqrt(x * x + y * y + z * z);
 	}

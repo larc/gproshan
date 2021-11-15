@@ -26,6 +26,12 @@ vertex_cu operator + (const real_t & a, const vertex_cu & v)
 	return vertex_cu(a + v.x, a + v.y, a + v.z);
 }
 
+__host__ __device__
+vertex_cu normalize (const vertex_cu & v)
+{
+	return v / *v;
+}
+
 
 extern "C" __constant__ launch_params optixLaunchParams;
 
@@ -53,132 +59,87 @@ static __forceinline__ __device__ T * getPRD()
 	return reinterpret_cast<T*>(unpackPointer(u0, u1));
 }
 
-//------------------------------------------------------------------------------
-// closest hit and anyhit programs for radiance-type rays.
-//
-// Note eventually we will have to create one pair of those for each
-// ray type and each geometry type we want to render; but this
-// simple example doesn't use any actual geometries yet, so we only
-// create a single, dummy, set of them (we do have to have at least
-// one group of them to set up the SBT)
-//------------------------------------------------------------------------------
 
 extern "C" __global__ void __closesthit__shadow() {}
 
 extern "C" __global__ void __closesthit__radiance()
 {
-	const CHE & sbtData = **(const CHE **) optixGetSbtDataPointer();
+	const CHE & mesh = **(const CHE **) optixGetSbtDataPointer();
 
-	// ------------------------------------------------------------------
-	// gather some basic hit information
-	// ------------------------------------------------------------------
 	const int primID = optixGetPrimitiveIndex();
-	const index_t he = primID * che::mtrig;
+	const int he = primID * che::mtrig;
 	const float u = optixGetTriangleBarycentrics().x;
 	const float v = optixGetTriangleBarycentrics().y;
 
-	// ------------------------------------------------------------------
-	// compute normal, using either shading normal (if avail), or
-	// geometry normal (fallback)
-	// ------------------------------------------------------------------
-	const vertex_cu & A = sbtData.GT[sbtData.VT[he]];
-	const vertex_cu & B = sbtData.GT[sbtData.VT[he + 1]];
-	const vertex_cu & C = sbtData.GT[sbtData.VT[he + 2]];
+	const int a = mesh.VT[he];
+	const int b = mesh.VT[he + 1];
+	const int c = mesh.VT[he + 2];
 
-	vertex_cu Ng = (B - A) * (C - A);
-	vertex_cu Ns = (sbtData.VN)
-		? ((1.f - u - v) * sbtData.VN[sbtData.VT[he]]
-			 +			 u * sbtData.VN[sbtData.VT[he + 1]]
-			 +			 v * sbtData.VN[sbtData.VT[he + 2]])
-		: Ng;
+	const vertex_cu & A = mesh.GT[a];
+	const vertex_cu & B = mesh.GT[b];
+	const vertex_cu & C = mesh.GT[c];
 
-	// ------------------------------------------------------------------
-	// face-forward and normalize normals
-	// ------------------------------------------------------------------
-	const vertex_cu rayDir = (vertex_cu) optixGetWorldRayDirection();
+	const vertex_cu Ng = (B - A) * (C - A);
+	const vertex_cu normal = mesh.VN ? (1.f - u - v) * mesh.VN[a] + u * mesh.VN[b] + v * mesh.VN[c] : Ng;
 
-	if((rayDir , Ng) > 0.f) Ng = -Ng;
-	Ng /= *Ng;
+	const vertex_cu color(230.0f/255, 240.0f/255, 250.0f/255);
+	const vertex_cu & light = *(vertex_cu *) optixLaunchParams.light;
+	const vertex_cu position = (1.f - u - v) * A + u * B + v * C;
+	const vertex_cu wi = normalize(light - position);
+	const float dot_wi_normal = (wi, normal);
 
-	if((Ng , Ns) < 0.f)
-		Ns -= 2.f * (Ng , Ns) * Ng;
-	Ns /= *Ns;
-
-	// ------------------------------------------------------------------
-	// compute diffuse material color, including diffuse texture, if
-	// available
-	// ------------------------------------------------------------------
-	vertex_cu diffuseColor(230.0/255, 240.0/255, 250.0/255);
-
-	// ------------------------------------------------------------------
-	// compute shadow
-	// ------------------------------------------------------------------
-	const vertex_cu surfPos = (1.f - u - v) * A + u * B + v * C;
-	const vertex_cu lightPos = { optixLaunchParams.light[0], optixLaunchParams.light[1], optixLaunchParams.light[2] };
-	const vertex_cu lightDir = lightPos - surfPos;
+	vertex_cu & L = *(vertex_cu *) getPRD<vertex_cu>();
+	L = (dot_wi_normal < 0 ? -dot_wi_normal : dot_wi_normal) * color;
 
 	// trace shadow ray:
-	vertex_cu lightVisibility;
+	vertex_cu lightVisibility;/*
 	// the values we store the PRD pointer in:
+
 	uint32_t u0, u1;
 	packPointer(&lightVisibility, u0, u1);
-	optixTrace(optixLaunchParams.traversable,
-						 surfPos + 1e-3f * Ng,
-						 lightDir,
-						 1e-3f,			// tmin
-						 1.f-1e-3f,	// tmax
-						 0.0f,			 // rayTime
-						 OptixVisibilityMask(255),
-						 // For shadow rays: skip any/closest hit shaders and terminate on first
-						 // intersection with anything. The miss shader is used to mark if the
-						 // light was visible.
-						 OPTIX_RAY_FLAG_DISABLE_ANYHIT
-						 | OPTIX_RAY_FLAG_TERMINATE_ON_FIRST_HIT
-						 | OPTIX_RAY_FLAG_DISABLE_CLOSESTHIT,
-						 1,						// SBT offset
-						 2,							 // SBT stride
-						 1,						// missSBTIndex
-						 u0, u1);
-
+	optixTrace( optixLaunchParams.traversable,
+				surfPos + 1e-3f * Ng,
+				lightDir,
+				1e-3f,		// tmin
+				1.f-1e-3f,	// tmax
+				0.0f,		// rayTime
+				OptixVisibilityMask(255),
+				// For shadow rays: skip any/closest hit shaders and terminate on first
+				// intersection with anything. The miss shader is used to mark if the
+				// light was visible.
+				OPTIX_RAY_FLAG_DISABLE_ANYHIT
+				| OPTIX_RAY_FLAG_TERMINATE_ON_FIRST_HIT
+				| OPTIX_RAY_FLAG_DISABLE_CLOSESTHIT,
+				1,	// SBT offset
+				2,	// SBT stride
+				1,	// missSBTIndex
+				u0, u1);
+*/
 	// ------------------------------------------------------------------
 	// final shading: a bit of ambient, a bit of directional ambient,
 	// and directional component based on shadowing
 	// ------------------------------------------------------------------
-	const float cosDN = 0.1f + .8f * fabsf((rayDir , Ns));
-
-	vertex_cu & prd = *(vertex_cu * ) getPRD<vertex_cu>();
-	prd = (.1f + (.2f + .8f * lightVisibility) * cosDN) * diffuseColor;
 }
+
 
 extern "C" __global__ void __anyhit__radiance() {}
 
 extern "C" __global__ void __anyhit__shadow() {}
 
-//------------------------------------------------------------------------------
-// miss program that gets called for any ray that did not have a
-// valid intersection
-//
-// as with the anyhit/closest hit programs, in this example we only
-// need to have _some_ dummy function to set up a valid SBT
-// ------------------------------------------------------------------------------
 
 extern "C" __global__ void __miss__radiance()
 {
-	vertex_cu &prd = *(vertex_cu *) getPRD<vertex_cu>();
-	// set to constant white as background color
-//	prd = {0, 0, 0};
+	vertex_cu & prd = *(vertex_cu *) getPRD<vertex_cu>();
+	prd = {0, 0, 0};
 }
 
 extern "C" __global__ void __miss__shadow()
 {
-	// we didn't hit anything, so the light is visible
-	vertex_cu &prd = *(vertex_cu *) getPRD<vertex_cu>();
-//	prd = {1, 1, 1};
+	vertex_cu & prd = *(vertex_cu *) getPRD<vertex_cu>();
+	prd = {1, 1, 1};
 }
 
-//------------------------------------------------------------------------------
-// ray gen program - the actual rendering happens in here
-//------------------------------------------------------------------------------
+
 extern "C" __global__ void __raygen__render_frame()
 {
 	const int ix = optixGetLaunchIndex().x;
@@ -216,20 +177,17 @@ extern "C" __global__ void __raygen__render_frame()
 	vertex_cu ray_dir = p - cam_pos;
 	ray_dir /= *ray_dir;
 
-	if(ix + iy == 0)printf("cam_pos %f %f %f\n", cam_pos.x, cam_pos.y, cam_pos.z);
-	if(ix + iy == 0)printf("p %f %f %f\n", p.x, p.y, p.z);
-
 	optixTrace(	optixLaunchParams.traversable,
 				cam_pos,
 				ray_dir,
 				0.f,	// tmin
 				1e20f,	// tmax
-				0.0f,	 // rayTime
+				0.0f,	// rayTime
 				OptixVisibilityMask(255),
 				OPTIX_RAY_FLAG_DISABLE_ANYHIT, //OPTIX_RAY_FLAG_NONE,
-				0,						// SBT offset
-				2,							 // SBT stride
-				0,						// missSBTIndex
+				0,	// SBT offset
+				2,	// SBT stride
+				0,	// missSBTIndex
 				u0, u1);
 
 	const uint32_t fbIndex = ix + iy * optixLaunchParams.frame.width;
