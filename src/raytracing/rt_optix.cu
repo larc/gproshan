@@ -79,29 +79,31 @@ extern "C" __global__ void __closesthit__radiance()
 	const vertex_cu & B = mesh.GT[b];
 	const vertex_cu & C = mesh.GT[c];
 
-	const vertex_cu Ng = (B - A) * (C - A);
+	const vertex_cu Ng = normalize((B - A) * (C - A));
 	const vertex_cu normal = mesh.VN ? (1.f - u - v) * mesh.VN[a] + u * mesh.VN[b] + v * mesh.VN[c] : Ng;
 
-	const vertex_cu color(230.0f/255, 240.0f/255, 250.0f/255);
+	const vertex_cu ca(mesh.VC[a].r, mesh.VC[a].g, mesh.VC[a].b);
+	const vertex_cu cb(mesh.VC[b].r, mesh.VC[b].g, mesh.VC[b].b);
+	const vertex_cu cc(mesh.VC[c].r, mesh.VC[c].g, mesh.VC[c].b);
+
+	const vertex_cu color = ((1.f - u - v) * ca + u * cb + v * cc) / 255;
+
 	const vertex_cu & light = *(vertex_cu *) optixLaunchParams.light;
 	const vertex_cu position = (1.f - u - v) * A + u * B + v * C;
 	const vertex_cu wi = normalize(light - position);
 	const float dot_wi_normal = (wi, normal);
 
-	vertex_cu & L = *(vertex_cu *) getPRD<vertex_cu>();
+	vertex_cu & L = *getPRD<vertex_cu>();
 	L = (dot_wi_normal < 0 ? -dot_wi_normal : dot_wi_normal) * color;
 
-	// trace shadow ray:
-	vertex_cu lightVisibility;/*
-	// the values we store the PRD pointer in:
-
+	bool occluded = true;
 	uint32_t u0, u1;
-	packPointer(&lightVisibility, u0, u1);
+	packPointer(&occluded, u0, u1);
 	optixTrace( optixLaunchParams.traversable,
-				surfPos + 1e-3f * Ng,
-				lightDir,
-				1e-3f,		// tmin
-				1.f-1e-3f,	// tmax
+				position + 1e-5f * Ng,
+				wi,
+				1e-5f,		// tmin
+				1e20f,		// tmax
 				0.0f,		// rayTime
 				OptixVisibilityMask(255),
 				// For shadow rays: skip any/closest hit shaders and terminate on first
@@ -114,11 +116,8 @@ extern "C" __global__ void __closesthit__radiance()
 				2,	// SBT stride
 				1,	// missSBTIndex
 				u0, u1);
-*/
-	// ------------------------------------------------------------------
-	// final shading: a bit of ambient, a bit of directional ambient,
-	// and directional component based on shadowing
-	// ------------------------------------------------------------------
+
+	if(occluded) L = 0.6 * L;
 }
 
 
@@ -129,14 +128,14 @@ extern "C" __global__ void __anyhit__shadow() {}
 
 extern "C" __global__ void __miss__radiance()
 {
-	vertex_cu & prd = *(vertex_cu *) getPRD<vertex_cu>();
-	prd = {0, 0, 0};
+	bool & prd = *getPRD<bool>();
+	prd = false;
 }
 
 extern "C" __global__ void __miss__shadow()
 {
-	vertex_cu & prd = *(vertex_cu *) getPRD<vertex_cu>();
-	prd = {1, 1, 1};
+	bool & prd = *getPRD<bool>();
+	prd = false;
 }
 
 
@@ -144,11 +143,6 @@ extern "C" __global__ void __raygen__render_frame()
 {
 	const int ix = optixGetLaunchIndex().x;
 	const int iy = optixGetLaunchIndex().y;
-
-	vertex_cu pixelColorPRD;
-
-	uint32_t u0, u1;
-	packPointer(&pixelColorPRD, u0, u1);
 
 	const float sx = (float(ix) + .5f) / optixLaunchParams.frame.width;
 	const float sy = (float(iy) + .5f) / optixLaunchParams.frame.height;
@@ -177,6 +171,9 @@ extern "C" __global__ void __raygen__render_frame()
 	vertex_cu ray_dir = p - cam_pos;
 	ray_dir /= *ray_dir;
 
+	vertex_cu pixelColorPRD;
+	uint32_t u0, u1;
+	packPointer(&pixelColorPRD, u0, u1);
 	optixTrace(	optixLaunchParams.traversable,
 				cam_pos,
 				ray_dir,

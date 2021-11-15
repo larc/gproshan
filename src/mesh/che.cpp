@@ -46,6 +46,7 @@ CHE::CHE(const che * mesh)
 
 	GT = (vertex_cu *) mesh->GT;
 	VN = (vertex_cu *) mesh->VN;
+	VC = mesh->VC;
 	VT = mesh->VT;
 	OT = mesh->OT;
 	EVT = mesh->EVT;

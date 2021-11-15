@@ -26,10 +26,12 @@ index_t cu_prev(index_t he)
 	return che::mtrig * cu_trig(he) + (he + che::mtrig - 1) % che::mtrig;
 }
 
-void cuda_create_CHE(CHE * h_che, CHE *& dd_che, CHE *& d_che, const bool & normal)
+void cuda_create_CHE(CHE * h_che, CHE *& dd_che, CHE *& d_che, const bool & normal, const bool & color)
 {
-	dd_che = (CHE *) malloc(sizeof(CHE));
-	memcpy(dd_che, h_che, sizeof(CHE));
+	dd_che = new CHE;
+	dd_che->n_vertices = h_che->n_vertices;
+	dd_che->n_faces = h_che->n_faces;
+	dd_che->n_half_edges = h_che->n_half_edges;
 
 	cudaMalloc(&dd_che->GT, sizeof(vertex_cu) * h_che->n_vertices);
 	cudaMemcpy(dd_che->GT, h_che->GT, sizeof(vertex_cu) * h_che->n_vertices, cudaMemcpyHostToDevice);
@@ -38,6 +40,12 @@ void cuda_create_CHE(CHE * h_che, CHE *& dd_che, CHE *& d_che, const bool & norm
 	{
 		cudaMalloc(&dd_che->VN, sizeof(vertex_cu) * h_che->n_vertices);
 		cudaMemcpy(dd_che->VN, h_che->VN, sizeof(vertex_cu) * h_che->n_vertices, cudaMemcpyHostToDevice);
+	}
+
+	if(color)
+	{
+		cudaMalloc(&dd_che->VC, sizeof(che::rgb_t) * h_che->n_vertices);
+		cudaMemcpy(dd_che->VC, h_che->VC, sizeof(che::rgb_t) * h_che->n_vertices, cudaMemcpyHostToDevice);
 	}
 
 	cudaMalloc(&dd_che->VT, sizeof(index_t) * h_che->n_half_edges);
@@ -55,11 +63,12 @@ void cuda_create_CHE(CHE * h_che, CHE *& dd_che, CHE *& d_che, const bool & norm
 
 void cuda_free_CHE(CHE *& dd_che, CHE *& d_che)
 {
-	if(dd_che->GT) cudaFree(dd_che->GT);
-	if(dd_che->VN) cudaFree(dd_che->VN);
-	if(dd_che->VT) cudaFree(dd_che->VT);
-	if(dd_che->OT) cudaFree(dd_che->OT);
-	if(dd_che->EVT) cudaFree(dd_che->EVT);
+	cudaFree(dd_che->GT);
+	cudaFree(dd_che->VN);
+	cudaFree(dd_che->VC);
+	cudaFree(dd_che->VT);
+	cudaFree(dd_che->OT);
+	cudaFree(dd_che->EVT);
 
 	free(dd_che);
 	cudaFree(d_che);

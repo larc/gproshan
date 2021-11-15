@@ -423,7 +423,7 @@ void optix::add_mesh(OptixBuildInput & optix_mesh, CUdeviceptr & d_vertex_ptr, u
 	CHE * dd_m, * d_m;
 	CHE h_m(mesh);
 
-	cuda_create_CHE(&h_m, dd_m, d_m, true);
+	cuda_create_CHE(&h_m, dd_m, d_m, true, true);
 	dd_mesh.push_back(dd_m);
 	d_mesh.push_back(d_m);
 
