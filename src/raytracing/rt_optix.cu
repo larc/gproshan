@@ -9,6 +9,8 @@
 #include <optix_device.h>
 #include <cuda_runtime.h>
 
+#include <glm/glm.hpp>
+
 
 // geometry processing and shape analysis framework
 namespace gproshan::rt {
@@ -114,7 +116,7 @@ extern "C" __global__ void __closesthit__radiance()
 	// compute shadow
 	// ------------------------------------------------------------------
 	const vertex_cu surfPos = (1.f - u - v) * A + u * B + v * C;
-	const vertex_cu lightPos(-907.108f, 2205.875f, -400.0267f);
+	const vertex_cu lightPos = { optixLaunchParams.light[0], optixLaunchParams.light[1], optixLaunchParams.light[2] };
 	const vertex_cu lightDir = lightPos - surfPos;
 
 	// trace shadow ray:
@@ -166,14 +168,14 @@ extern "C" __global__ void __miss__radiance()
 {
 	vertex_cu &prd = *(vertex_cu *) getPRD<vertex_cu>();
 	// set to constant white as background color
-	prd = vertex_cu(1.f);
+//	prd = {0, 0, 0};
 }
 
 extern "C" __global__ void __miss__shadow()
 {
 	// we didn't hit anything, so the light is visible
-	vertex_cu &prd = *(vertex_cu *)getPRD<vertex_cu>();
-	prd = vertex_cu(1.f);
+	vertex_cu &prd = *(vertex_cu *) getPRD<vertex_cu>();
+//	prd = {1, 1, 1};
 }
 
 //------------------------------------------------------------------------------
@@ -181,36 +183,41 @@ extern "C" __global__ void __miss__shadow()
 //------------------------------------------------------------------------------
 extern "C" __global__ void __raygen__render_frame()
 {
-	// compute a test pattern based on pixel ID
 	const int ix = optixGetLaunchIndex().x;
 	const int iy = optixGetLaunchIndex().y;
 
-	// our per-ray data for this example. what we initialize it to
-	// won't matter, since this value will be overwritten by either
-	// the miss or hit program, anyway
-	vertex_cu pixelColorPRD = vertex_cu(0.f);
+	vertex_cu pixelColorPRD;
 
-	// the values we store the PRD pointer in:
 	uint32_t u0, u1;
 	packPointer(&pixelColorPRD, u0, u1);
 
-	// normalized screen plane position, in [0,1]^2
-	const float xscreen = (ix + .5f) / optixLaunchParams.frame.width;
-	const float yscreen = (iy + .5f) / optixLaunchParams.frame.height;
+	//const float xscreen = (ix + .5f) / optixLaunchParams.frame.width;
+	//const float yscreen = (iy + .5f) / optixLaunchParams.frame.height;
+	glm::vec2 screen = glm::vec2(	(ix + .5f) / optixLaunchParams.frame.width,
+									(iy + .5f) / optixLaunchParams.frame.height
+									);
 
-	vertex_cu * cam_data = (vertex_cu *) optixLaunchParams.camera;
-	vertex_cu & position	= cam_data[0];
-	vertex_cu & direction	= cam_data[1];
-	vertex_cu & horizontal	= cam_data[2];
-	vertex_cu & vertical	= cam_data[3];
+	glm::vec3 cam_pos = glm::vec3(	optixLaunchParams.cam_pos[0],
+									optixLaunchParams.cam_pos[1],
+									optixLaunchParams.cam_pos[2]
+									);
+	glm::mat4 inv_proj_view;
+	for(int i = 0; i < 4; ++i)
+	for(int j = 0; j < 4; ++j)
+		inv_proj_view[i][j] = optixLaunchParams.inv_proj_view[i * 4 + j];
 
-	// generate ray direction
-	vertex_cu rayDir = direction + (xscreen - 0.5f) * horizontal + (yscreen - 0.5f) * vertical;
-	rayDir /= *rayDir;
+	glm::vec4 view = glm::vec4(screen.x * 2.f - 1.f, screen.y * 2.f - 1.f, 1.f, 1.f);
+	glm::vec4 q = inv_proj_view * view;
+	glm::vec3 p = glm::vec3(q * (1.f / q.w));
+	glm::vec3 r = p - cam_pos;
+
+	vertex_cu position = {cam_pos.x, cam_pos.y, cam_pos.z}; 
+	vertex_cu ray_dir = {r.x, r.y, r.z};
+	ray_dir /= *ray_dir;
 
 	optixTrace(	optixLaunchParams.traversable,
 				position,
-				rayDir,
+				ray_dir,
 				0.f,	// tmin
 				1e20f,	// tmax
 				0.0f,	 // rayTime

@@ -10,6 +10,9 @@
 
 #include <optix_function_table_definition.h>
 
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 
 // geometry processing and shape analysis framework
 // raytracing approach
@@ -71,7 +74,7 @@ optix::optix(const std::vector<che *> & meshes)
 	optix_pipeline_compile_opt.numPayloadValues			= 2;
 	optix_pipeline_compile_opt.numAttributeValues		= 2;
 	optix_pipeline_compile_opt.exceptionFlags			= OPTIX_EXCEPTION_FLAG_NONE;
-	optix_pipeline_compile_opt.pipelineLaunchParamsVariableName = "params";
+	optix_pipeline_compile_opt.pipelineLaunchParamsVariableName = "optixLaunchParams";
 
 	optix_pipeline_link_opt.maxTraceDepth		= 2;
 
@@ -105,7 +108,6 @@ optix::optix(const std::vector<che *> & meshes)
 
 	// launch params
 	cudaMalloc(&launch_params_buffer, sizeof(launch_params));
-	cudaMalloc(&render_params.camera, 4 * sizeof(vertex));
 }
 
 optix::~optix()
@@ -131,7 +133,7 @@ void optix::pathtracing(	const glm::uvec2 & windows_size,
 	{
 		n_samples = 0;
 
-		if(!render_params.frame.color_buffer)
+		if(render_params.frame.color_buffer)
 			cudaFree(render_params.frame.color_buffer);
 		
 		render_params.frame.width = windows_size.x;
@@ -139,10 +141,13 @@ void optix::pathtracing(	const glm::uvec2 & windows_size,
 		cudaMalloc(&render_params.frame.color_buffer, windows_size.x * windows_size.y * sizeof(glm::vec4));
 	}
 
-	vertex camera[4];
+	glm::vec3 cam_pos = glm::vec3(glm::inverse(view_mat) * glm::vec4(0.f, 0.f, 0.f, 1.f));
+	glm::mat4 inv_proj_view = glm::inverse(proj_mat * view_mat);
 
-
-	cudaMemcpy(render_params.camera, camera, sizeof(camera), cudaMemcpyHostToDevice);
+	memcpy(render_params.light, glm::value_ptr(light[0]), sizeof(render_params.light));
+	memcpy(render_params.cam_pos, glm::value_ptr(cam_pos), sizeof(render_params.cam_pos));
+	memcpy(render_params.inv_proj_view, glm::value_ptr(inv_proj_view), sizeof(render_params.inv_proj_view));
+	
 	cudaMemcpy(launch_params_buffer, &render_params, sizeof(launch_params), cudaMemcpyHostToDevice);
 
 	optixLaunch(optix_pipeline,
