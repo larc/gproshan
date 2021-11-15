@@ -55,9 +55,9 @@ void raytracing::pathtracing(	const glm::uvec2 & windows_size,
 		n_samples = 0;
 
 	std::default_random_engine gen;
-	std::uniform_real_distribution<float> randf(0.f, 1.f);
+	std::uniform_real_distribution<float> randf(0, 1);
 
-	glm::vec3 cam_pos = glm::vec3(glm::inverse(view_mat) * glm::vec4(0.f, 0.f, 0.f, 1.f));
+	glm::vec3 cam_pos = glm::vec3(glm::inverse(view_mat) * glm::vec4(0, 0, 0, 1));
 	glm::mat4 inv_proj_view = glm::inverse(proj_mat * view_mat);
 
 	glm::vec4 li;
@@ -81,11 +81,11 @@ void raytracing::pathtracing(	const glm::uvec2 & windows_size,
 										(float(j) + randf(gen)) / height
 										);
 
-		glm::vec4 view = glm::vec4(screen.x * 2.f - 1.f, screen.y * 2.f - 1.f, 1.f, 1.f);
+		glm::vec4 view = glm::vec4(screen.x * 2 - 1, screen.y * 2 - 1, 1, 1);
 		glm::vec4 q = inv_proj_view * view;
 		glm::vec3 p = glm::vec3(q * (1.f / q.w));
 
-		li = glm::vec4(0.f);
+		li = glm::vec4(0);
 		for(auto & l: light)
 			li += intersect_li(cam_pos, glm::normalize(p - cam_pos), l, flat);
 

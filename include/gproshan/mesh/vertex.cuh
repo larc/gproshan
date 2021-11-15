@@ -72,7 +72,7 @@ struct vertex_cu
 	__host__ __device__
 	vertex_cu operator + (const vertex_cu & v) const
 	{
-		return vertex_cu(x+v.x, y+v.y, z+v.z);
+		return vertex_cu(x + v.x, y + v.y, z + v.z);
 	}
 
 	__host__ __device__

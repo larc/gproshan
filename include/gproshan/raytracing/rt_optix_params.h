@@ -18,7 +18,7 @@ struct launch_params
 		void * color_buffer = nullptr;
 		uint32_t width, height;
 	} frame;
-	
+
 	float light[3];
 	float cam_pos[3];
 	float inv_proj_view[16];

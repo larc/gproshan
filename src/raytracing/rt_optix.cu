@@ -9,8 +9,6 @@
 #include <optix_device.h>
 #include <cuda_runtime.h>
 
-#include <glm/glm.hpp>
-
 
 // geometry processing and shape analysis framework
 namespace gproshan::rt {
@@ -120,7 +118,7 @@ extern "C" __global__ void __closesthit__radiance()
 	const vertex_cu lightDir = lightPos - surfPos;
 
 	// trace shadow ray:
-	vertex_cu lightVisibility = 0.f;
+	vertex_cu lightVisibility;
 	// the values we store the PRD pointer in:
 	uint32_t u0, u1;
 	packPointer(&lightVisibility, u0, u1);
@@ -191,34 +189,38 @@ extern "C" __global__ void __raygen__render_frame()
 	uint32_t u0, u1;
 	packPointer(&pixelColorPRD, u0, u1);
 
-	glm::vec2 screen = glm::vec2(	(float(ix) + .5f) / optixLaunchParams.frame.width,
-									(float(iy) + .5f) / optixLaunchParams.frame.height
-									);
+	const float sx = (float(ix) + .5f) / optixLaunchParams.frame.width;
+	const float sy = (float(iy) + .5f) / optixLaunchParams.frame.height;
 
-	glm::vec3 cam_pos = glm::vec3(	optixLaunchParams.cam_pos[0],
-									optixLaunchParams.cam_pos[1],
-									optixLaunchParams.cam_pos[2]
-									);
-	glm::mat4 inv_proj_view;
-	for(int i = 0; i < 4; ++i)
-	for(int j = 0; j < 4; ++j)
-		//if(ix + iy == 0)printf("m %f\n", optixLaunchParams.inv_proj_view[i * 4 + j]);
-		inv_proj_view[i][j] = optixLaunchParams.inv_proj_view[i * 4 + j];
+	vertex_cu & cam_pos = *(vertex_cu *) optixLaunchParams.cam_pos;
 
-	glm::vec4 view = glm::vec4(screen.x * 2.f - 1.f, screen.y * 2.f - 1.f, 1.f, 1.f);
-	glm::vec4 q = inv_proj_view * view;
-	glm::vec3 p = glm::vec3(q * (1.f / q.w));
-	glm::vec3 r = p - cam_pos;
+	vertex_cu ipv[3];
+	for(int i = 0; i < 3; ++i)
+	for(int j = 0; j < 3; ++j)
+		ipv[i][j] = optixLaunchParams.inv_proj_view[i + j * 4];
 
-	vertex_cu position = {cam_pos.x, cam_pos.y, cam_pos.z}; 
-	vertex_cu ray_dir = {r.x, r.y, r.z};
+	vertex_cu d = { optixLaunchParams.inv_proj_view[0 * 4 + 3],
+					optixLaunchParams.inv_proj_view[1 * 4 + 3],
+					optixLaunchParams.inv_proj_view[2 * 4 + 3]
+					};
+	vertex_cu e = { optixLaunchParams.inv_proj_view[3 * 4 + 0],
+					optixLaunchParams.inv_proj_view[3 * 4 + 1],
+					optixLaunchParams.inv_proj_view[3 * 4 + 2]
+					};
+
+	float & de = optixLaunchParams.inv_proj_view[15];
+
+	vertex_cu view = {sx * 2 - 1, sy * 2 - 1, 1};
+	vertex_cu q = vertex_cu{(ipv[0], view), (ipv[1], view), (ipv[2], view)} + e;
+	vertex_cu p = (1.f / ((d, view) + de)) * q;
+	vertex_cu ray_dir = p - cam_pos;
 	ray_dir /= *ray_dir;
 
-	if(ix + iy == 0)
-		printf("%f %f %f\n", position.x, position.y, position.z);
+	if(ix + iy == 0)printf("cam_pos %f %f %f\n", cam_pos.x, cam_pos.y, cam_pos.z);
+	if(ix + iy == 0)printf("p %f %f %f\n", p.x, p.y, p.z);
 
 	optixTrace(	optixLaunchParams.traversable,
-				position,
+				cam_pos,
 				ray_dir,
 				0.f,	// tmin
 				1e20f,	// tmax

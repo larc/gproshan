@@ -129,14 +129,14 @@ void optix::pathtracing(	const glm::uvec2 & windows_size,
 							const bool & flat,
 							const bool & restart
 							)
-{	
+{
 	if(rt_restart(windows_size.x, windows_size.y) || restart)
 	{
 		n_samples = 0;
 
 		if(render_params.frame.color_buffer)
 			cudaFree(render_params.frame.color_buffer);
-		
+
 		render_params.frame.width = windows_size.x;
 		render_params.frame.height = windows_size.y;
 		cudaMalloc(&render_params.frame.color_buffer, windows_size.x * windows_size.y * sizeof(glm::vec4));
@@ -144,15 +144,10 @@ void optix::pathtracing(	const glm::uvec2 & windows_size,
 
 	glm::vec3 cam_pos = glm::vec3(glm::inverse(view_mat) * glm::vec4(0.f, 0.f, 0.f, 1.f));
 	glm::mat4 inv_proj_view = glm::inverse(proj_mat * view_mat);
-gproshan_log_var(glm::to_string(cam_pos));
-gproshan_log_var(glm::to_string(inv_proj_view));
+
 	memcpy(render_params.light, glm::value_ptr(light[0]), sizeof(render_params.light));
 	memcpy(render_params.cam_pos, glm::value_ptr(cam_pos), sizeof(render_params.cam_pos));
 	memcpy(render_params.inv_proj_view, glm::value_ptr(inv_proj_view), sizeof(render_params.inv_proj_view));
-
-
-	for(int i = 0; i < 16; ++i)
-		gproshan_log_var(render_params.inv_proj_view[i]);
 
 	cudaMemcpy(launch_params_buffer, &render_params, sizeof(launch_params), cudaMemcpyHostToDevice);
 
@@ -190,7 +185,7 @@ void optix::create_raygen_programs()
 							&raygen_programs[0]
 							);
 
-	if(sizeof_log > 1) gproshan_log_var(log);
+	if(sizeof_log > 1) gproshan_error_var(log);
 }
 
 void optix::create_miss_programs()
@@ -214,7 +209,7 @@ void optix::create_miss_programs()
 							&miss_programs[0]
 							);
 
-	if(sizeof_log > 1) gproshan_log_var(log);
+	if(sizeof_log > 1) gproshan_error_var(log);
 
 
 	pg_desc.miss.entryFunctionName = "__miss__shadow";
@@ -227,7 +222,7 @@ void optix::create_miss_programs()
 							&miss_programs[1]
 							);
 
-	if(sizeof_log > 1) gproshan_log_var(log);
+	if(sizeof_log > 1) gproshan_error_var(log);
 }
 
 void optix::create_hitgroup_programs()
@@ -253,7 +248,7 @@ void optix::create_hitgroup_programs()
 							&hitgroup_programs[0]
 							);
 
-	if(sizeof_log > 1) gproshan_log_var(log);
+	if(sizeof_log > 1) gproshan_error_var(log);
 
 
 	pg_desc.hitgroup.entryFunctionNameCH = "__closesthit__shadow";
@@ -267,7 +262,7 @@ void optix::create_hitgroup_programs()
 							&hitgroup_programs[1]
 							);
 
-	if(sizeof_log > 1) gproshan_log_var(log);
+	if(sizeof_log > 1) gproshan_error_var(log);
 }
 
 void optix::create_pipeline()
@@ -291,11 +286,11 @@ void optix::create_pipeline()
 						&optix_pipeline
 						);
 
-	if(sizeof_log > 1) gproshan_log_var(log);
+	if(sizeof_log > 1) gproshan_error_var(log);
 
 	optixPipelineSetStackSize(optix_pipeline, 2 * 1024, 2 * 1024, 2 * 1024, 1);
 
-	if(sizeof_log > 1) gproshan_log_var(log);
+	if(sizeof_log > 1) gproshan_error_var(log);
 }
 
 void optix::build_sbt()
@@ -327,7 +322,7 @@ void optix::build_sbt()
 	sbt.missRecordStrideInBytes	= sizeof(MissRecord);
 	sbt.missRecordCount			= 2;
 
-	
+
 	std::vector<HitgroupRecord> hitgroup_records;
 	for(index_t i = 0; i < d_mesh.size(); ++i)
 	for(index_t r = 0; r < 2; ++r)
@@ -337,7 +332,7 @@ void optix::build_sbt()
 		rec.mesh = d_mesh[i];
 		hitgroup_records.push_back(rec);
 	}
-	
+
 	cudaMalloc(&hitgroup_records_buffer, 2 * sizeof(HitgroupRecord));
 	cudaMemcpy(hitgroup_records_buffer, hitgroup_records.data(), hitgroup_records.size() * sizeof(HitgroupRecord), cudaMemcpyHostToDevice);
 	sbt.hitgroupRecordBase			= (CUdeviceptr) hitgroup_records_buffer;
