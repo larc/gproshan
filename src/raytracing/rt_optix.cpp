@@ -136,7 +136,7 @@ void optix::pathtracing(	const glm::uvec2 & windows_size,
 		
 		render_params.frame.width = windows_size.x;
 		render_params.frame.height = windows_size.y;
-		cudaMalloc(&render_params.frame.color_buffer, windows_size.x * windows_size.y * sizeof(vertex));
+		cudaMalloc(&render_params.frame.color_buffer, windows_size.x * windows_size.y * sizeof(glm::vec4));
 	}
 
 	vertex camera[4];
@@ -156,6 +156,8 @@ void optix::pathtracing(	const glm::uvec2 & windows_size,
 				);
 
 	cudaDeviceSynchronize();
+
+	cudaMemcpy(img, render_params.frame.color_buffer, windows_size.x * windows_size.y * sizeof(glm::vec4), cudaMemcpyDeviceToHost);
 }
 
 void optix::create_raygen_programs()

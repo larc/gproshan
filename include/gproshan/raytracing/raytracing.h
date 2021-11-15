@@ -35,7 +35,7 @@ class raytracing
 		size_t n_samples;
 
 	public:
-		glm::vec4 * img;
+		glm::vec4 * img = nullptr;
 
 	public:
 		raytracing();

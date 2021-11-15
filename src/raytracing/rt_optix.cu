@@ -198,7 +198,7 @@ extern "C" __global__ void __raygen__render_frame()
 	const float xscreen = (ix + .5f) / optixLaunchParams.frame.width;
 	const float yscreen = (iy + .5f) / optixLaunchParams.frame.height;
 
-	vertex_cu * cam_data	= (vertex_cu *) optixLaunchParams.camera;
+	vertex_cu * cam_data = (vertex_cu *) optixLaunchParams.camera;
 	vertex_cu & position	= cam_data[0];
 	vertex_cu & direction	= cam_data[1];
 	vertex_cu & horizontal	= cam_data[2];
@@ -223,8 +223,11 @@ extern "C" __global__ void __raygen__render_frame()
 
 	const uint32_t fbIndex = ix + iy * optixLaunchParams.frame.width;
 
-	vertex_cu * frame = (vertex_cu *) optixLaunchParams.frame.color_buffer;
-	frame[fbIndex] = pixelColorPRD;
+	float4 * frame = (float4 *) optixLaunchParams.frame.color_buffer;
+	frame[fbIndex].x = pixelColorPRD.x;
+	frame[fbIndex].y = pixelColorPRD.y;
+	frame[fbIndex].z = pixelColorPRD.z;
+	frame[fbIndex].w = 1;
 }
 
 
