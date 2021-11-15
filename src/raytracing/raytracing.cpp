@@ -44,7 +44,7 @@ bool raytracing::rt_restart(const size_t & w, const size_t & h)
 	return false;
 }
 
-void raytracing::pathtracing(	const glm::uvec2 & windows_size,
+void raytracing::render(	const glm::uvec2 & windows_size,
 								const glm::mat4 & view_mat,
 								const glm::mat4 & proj_mat,
 								const std::vector<glm::vec3> & light,

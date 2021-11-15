@@ -841,7 +841,7 @@ void viewer::render_gl()
 #ifdef GPROSHAN_EMBREE
 void viewer::render_embree()
 {
-	rt_embree->pathtracing(	glm::uvec2(viewport_width, viewport_height),
+	rt_embree->render(	glm::uvec2(viewport_width, viewport_height),
 							view_mat, proj_mat, {glm_vec3(light)},
 							active_mesh().render_flat, action
 							);
@@ -865,12 +865,13 @@ void viewer::render_optix()
 		gproshan_log_var(time_build_optix);
 	}
 
-	rt_optix->pathtracing(	glm::uvec2(viewport_width, viewport_height),
-							view_mat, proj_mat, {glm_vec3(light)}, action);
+	rt_optix->render(	glm::uvec2(viewport_width, viewport_height),
+							view_mat, proj_mat, {glm_vec3(light)},
+							active_mesh().render_flat, action);
 
 	if(!render_frame)
 		render_frame = new frame;
-	
+
 	action = false;
 	render_frame->display(viewport_width, viewport_height, rt_optix->img);
 }

@@ -42,7 +42,7 @@ class raytracing
 		virtual ~raytracing();
 
 		virtual bool rt_restart(const size_t & w, const size_t & h);
-		virtual void pathtracing(	const glm::uvec2 & windows_size,
+		virtual void render(	const glm::uvec2 & windows_size,
 							const glm::mat4 & view_mat,
 							const glm::mat4 & proj_mat,
 							const std::vector<glm::vec3> & light,

@@ -53,7 +53,7 @@ class optix : public raytracing
 		optix(const std::vector<che *> & meshes);
 		~optix();
 
-		void pathtracing(	const glm::uvec2 & windows_size,
+		void render(	const glm::uvec2 & windows_size,
 							const glm::mat4 & view_mat,
 							const glm::mat4 & proj_mat,
 							const std::vector<glm::vec3> & light,
