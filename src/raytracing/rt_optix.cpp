@@ -95,13 +95,17 @@ optix::optix(const std::vector<che *> & meshes)
 	create_hitgroup_programs();
 
 	// build as
-	params.traversable = build_as(meshes);
+	render_params.traversable = build_as(meshes);
 
 	// create pipeline
 	create_pipeline();
 
 	// build sbt
 	build_sbt();
+
+	// launch params
+	cudaMalloc(&launch_params_buffer, sizeof(launch_params));
+	cudaMalloc(&render_params.camera, 4 * sizeof(vertex));
 }
 
 optix::~optix()
@@ -113,6 +117,45 @@ optix::~optix()
 index_t optix::cast_ray(const glm::vec3 & org, const glm::vec3 & dir)
 {
 	return NIL;
+}
+
+void optix::pathtracing(	const glm::uvec2 & windows_size,
+							const glm::mat4 & view_mat,
+							const glm::mat4 & proj_mat,
+							const std::vector<glm::vec3> & light,
+							const bool & flat,
+							const bool & restart
+							)
+{	
+	if(rt_restart(windows_size.x, windows_size.y) || restart)
+	{
+		n_samples = 0;
+
+		if(!render_params.frame.color_buffer)
+			cudaFree(render_params.frame.color_buffer);
+		
+		render_params.frame.width = windows_size.x;
+		render_params.frame.height = windows_size.y;
+		cudaMalloc(&render_params.frame.color_buffer, windows_size.x * windows_size.y * sizeof(vertex));
+	}
+
+	vertex camera[4];
+
+
+	cudaMemcpy(render_params.camera, camera, sizeof(camera), cudaMemcpyHostToDevice);
+	cudaMemcpy(launch_params_buffer, &render_params, sizeof(launch_params), cudaMemcpyHostToDevice);
+
+	optixLaunch(optix_pipeline,
+				stream,
+				(CUdeviceptr) launch_params_buffer,
+				sizeof(launch_params),
+				&sbt,
+				render_params.frame.width,
+				render_params.frame.height,
+				1
+				);
+
+	cudaDeviceSynchronize();
 }
 
 void optix::create_raygen_programs()
@@ -244,7 +287,49 @@ void optix::create_pipeline()
 
 void optix::build_sbt()
 {
+	RaygenRecord raygen_records[1];
+	for(int i = 0; i < 1; ++i)
+	{
+		RaygenRecord & rec = raygen_records[i];
+		optixSbtRecordPackHeader(raygen_programs[i], &rec);
+		rec.data = nullptr;
+	}
 
+	cudaMalloc(&raygen_records_buffer, sizeof(RaygenRecord));
+	cudaMemcpy(raygen_records_buffer, raygen_records, sizeof(RaygenRecord), cudaMemcpyHostToDevice);
+	sbt.raygenRecord = (CUdeviceptr) raygen_records_buffer;
+
+
+	MissRecord miss_records[2];
+	for(int i = 0; i < 2; ++i)
+	{
+		MissRecord & rec = miss_records[i];
+		optixSbtRecordPackHeader(miss_programs[i], &rec);
+		rec.data = nullptr;
+	}
+
+	cudaMalloc(&miss_records_buffer, 2 * sizeof(MissRecord));
+	cudaMemcpy(miss_records_buffer, miss_records, sizeof(MissRecord), cudaMemcpyHostToDevice);
+	sbt.missRecordBase			= (CUdeviceptr) miss_records_buffer;
+	sbt.missRecordStrideInBytes	= sizeof(MissRecord);
+	sbt.missRecordCount			= 2;
+
+	
+	std::vector<HitgroupRecord> hitgroup_records;
+	for(index_t i = 0; i < d_mesh.size(); ++i)
+	for(index_t r = 0; r < 2; ++r)
+	{
+		HitgroupRecord rec;
+		optixSbtRecordPackHeader(hitgroup_programs[r], &rec);
+		rec.mesh = d_mesh[i];
+		hitgroup_records.push_back(rec);
+	}
+	
+	cudaMalloc(&hitgroup_records_buffer, 2 * sizeof(HitgroupRecord));
+	cudaMemcpy(hitgroup_records_buffer, hitgroup_records.data(), hitgroup_records.size() * sizeof(HitgroupRecord), cudaMemcpyHostToDevice);
+	sbt.hitgroupRecordBase			= (CUdeviceptr) hitgroup_records_buffer;
+	sbt.hitgroupRecordStrideInBytes	= sizeof(HitgroupRecord);
+	sbt.hitgroupRecordCount			= hitgroup_records.size();
 }
 
 OptixTraversableHandle optix::build_as(const std::vector<che *> & meshes)

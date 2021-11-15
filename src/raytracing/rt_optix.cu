@@ -27,7 +27,7 @@ vertex_cu operator + (const real_t & a, const vertex_cu & v)
 }
 
 
-extern "C" __constant__ launch_params params;
+extern "C" __constant__ launch_params optixLaunchParams;
 
 static __forceinline__ __device__
 void * unpackPointer(uint32_t i0, uint32_t i1)
@@ -67,7 +67,7 @@ extern "C" __global__ void __closesthit__shadow() {}
 
 extern "C" __global__ void __closesthit__radiance()
 {
-	const CHE & sbtData = *(const CHE *) optixGetSbtDataPointer();
+	const CHE & sbtData = **(const CHE **) optixGetSbtDataPointer();
 
 	// ------------------------------------------------------------------
 	// gather some basic hit information
@@ -122,7 +122,7 @@ extern "C" __global__ void __closesthit__radiance()
 	// the values we store the PRD pointer in:
 	uint32_t u0, u1;
 	packPointer(&lightVisibility, u0, u1);
-	optixTrace(params.traversable,
+	optixTrace(optixLaunchParams.traversable,
 						 surfPos + 1e-3f * Ng,
 						 lightDir,
 						 1e-3f,			// tmin
@@ -185,8 +185,6 @@ extern "C" __global__ void __raygen__render_frame()
 	const int ix = optixGetLaunchIndex().x;
 	const int iy = optixGetLaunchIndex().y;
 
-	const auto &camera = params.camera;
-
 	// our per-ray data for this example. what we initialize it to
 	// won't matter, since this value will be overwritten by either
 	// the miss or hit program, anyway
@@ -197,10 +195,10 @@ extern "C" __global__ void __raygen__render_frame()
 	packPointer(&pixelColorPRD, u0, u1);
 
 	// normalized screen plane position, in [0,1]^2
-	const float xscreen = (ix + .5f) / params.frame.width;
-	const float yscreen = (iy + .5f) / params.frame.height;
+	const float xscreen = (ix + .5f) / optixLaunchParams.frame.width;
+	const float yscreen = (iy + .5f) / optixLaunchParams.frame.height;
 
-	vertex_cu * cam_data	= (vertex_cu *)camera.data;
+	vertex_cu * cam_data	= (vertex_cu *) optixLaunchParams.camera;
 	vertex_cu & position	= cam_data[0];
 	vertex_cu & direction	= cam_data[1];
 	vertex_cu & horizontal	= cam_data[2];
@@ -210,7 +208,7 @@ extern "C" __global__ void __raygen__render_frame()
 	vertex_cu rayDir = direction + (xscreen - 0.5f) * horizontal + (yscreen - 0.5f) * vertical;
 	rayDir /= *rayDir;
 
-	optixTrace(	params.traversable,
+	optixTrace(	optixLaunchParams.traversable,
 				position,
 				rayDir,
 				0.f,	// tmin
@@ -223,18 +221,10 @@ extern "C" __global__ void __raygen__render_frame()
 				0,						// missSBTIndex
 				u0, u1);
 
-	const int r = int(255.99f * pixelColorPRD.x);
-	const int g = int(255.99f * pixelColorPRD.y);
-	const int b = int(255.99f * pixelColorPRD.z);
+	const uint32_t fbIndex = ix + iy * optixLaunchParams.frame.width;
 
-	// convert to 32-bit rgba value (we explicitly set alpha to 0xff
-	// to make stb_image_write happy ...
-	const uint32_t rgba = 0xff000000
-		| (r<<0) | (g<<8) | (b<<16);
-
-	// and write to frame buffer ...
-	const uint32_t fbIndex = ix + iy * params.frame.width;
-	params.frame.colorBuffer[fbIndex] = rgba;
+	vertex_cu * frame = (vertex_cu *) optixLaunchParams.frame.color_buffer;
+	frame[fbIndex] = pixelColorPRD;
 }
 
 

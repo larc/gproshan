@@ -15,14 +15,11 @@ struct launch_params
 {
 	struct
 	{
-		uint32_t * colorBuffer = nullptr;
+		void * color_buffer = nullptr;
 		uint32_t width, height;
 	} frame;
 
-	struct
-	{
-		void * data;
-	} camera;
+	void * camera = nullptr;
 
 	OptixTraversableHandle traversable;
 };

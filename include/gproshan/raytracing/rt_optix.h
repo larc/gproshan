@@ -39,21 +39,35 @@ class optix : public raytracing
 
 	OptixShaderBindingTable sbt = {};
 
-	launch_params params;
+	launch_params render_params;
+	void * launch_params_buffer = nullptr;
 
 	std::vector<CHE *> dd_mesh;
 	std::vector<CHE *> d_mesh;
+
+	void * raygen_records_buffer = nullptr;
+	void * miss_records_buffer = nullptr;
+	void * hitgroup_records_buffer = nullptr;
 
 	public:
 		optix(const std::vector<che *> & meshes);
 		~optix();
 
 		virtual index_t cast_ray(const glm::vec3 & org, const glm::vec3 & dir);
+		
+		void pathtracing(	const glm::uvec2 & windows_size,
+							const glm::mat4 & view_mat,
+							const glm::mat4 & proj_mat,
+							const std::vector<glm::vec3> & light,
+							const bool & flat,
+							const bool & restart = false
+							);
+		
 
 	private:
 		glm::vec4 intersect_li(const glm::vec3 & org, const glm::vec3 & dir, const glm::vec3 & light, const bool & flat);
 		float intersect_depth(const glm::vec3 & org, const glm::vec3 & dir);
-
+		
 		void create_raygen_programs();
 		void create_miss_programs();
 		void create_hitgroup_programs();
