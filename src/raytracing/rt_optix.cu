@@ -80,7 +80,7 @@ extern "C" __global__ void __closesthit__radiance()
 	const vertex_cu & C = mesh.GT[c];
 
 	const vertex_cu Ng = normalize((B - A) * (C - A));
-	const vertex_cu normal = mesh.VN ? (1.f - u - v) * mesh.VN[a] + u * mesh.VN[b] + v * mesh.VN[c] : Ng;
+	const vertex_cu normal = optixLaunchParams.flat ? Ng : (1.f - u - v) * mesh.VN[a] + u * mesh.VN[b] + v * mesh.VN[c];
 
 	const vertex_cu ca(mesh.VC[a].r, mesh.VC[a].g, mesh.VC[a].b);
 	const vertex_cu cb(mesh.VC[b].r, mesh.VC[b].g, mesh.VC[b].b);
@@ -95,7 +95,7 @@ extern "C" __global__ void __closesthit__radiance()
 
 	vertex_cu & L = *getPRD<vertex_cu>();
 	L = (dot_wi_normal < 0 ? -dot_wi_normal : dot_wi_normal) * color;
-
+/*
 	bool occluded = true;
 	uint32_t u0, u1;
 	packPointer(&occluded, u0, u1);
@@ -118,6 +118,7 @@ extern "C" __global__ void __closesthit__radiance()
 				u0, u1);
 
 	if(occluded) L = 0.6 * L;
+*/
 }
 
 
@@ -128,8 +129,8 @@ extern "C" __global__ void __anyhit__shadow() {}
 
 extern "C" __global__ void __miss__radiance()
 {
-	bool & prd = *getPRD<bool>();
-	prd = false;
+	vertex_cu & prd = *getPRD<vertex_cu>();
+	prd = {0, 0,0};
 }
 
 extern "C" __global__ void __miss__shadow()

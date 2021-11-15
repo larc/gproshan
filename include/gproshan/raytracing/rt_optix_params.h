@@ -19,6 +19,7 @@ struct launch_params
 		uint32_t width, height;
 	} frame;
 
+	bool flat;
 	float light[3];
 	float cam_pos[3];
 	float inv_proj_view[16];

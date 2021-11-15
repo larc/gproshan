@@ -56,16 +56,20 @@ class raytracing
 									const index_t & samples = 4
 									);
 
-		virtual index_t cast_ray(const glm::vec3 & org, const glm::vec3 & dir) = 0;
+		virtual index_t cast_ray(	const glm::vec3 &,// org,
+									const glm::vec3 &// dir
+									) { return NIL; };
 
 	protected:
-		virtual glm::vec4 intersect_li(	const glm::vec3 & org,
-										const glm::vec3 & dir,
-										const glm::vec3 & light,
-										const bool & flat ) = 0;
+		virtual glm::vec4 intersect_li(	const glm::vec3 &,// org,
+										const glm::vec3 &,// dir,
+										const glm::vec3 &,// light,
+										const bool &// flat
+										) { return glm::vec4(0); };
 
-		virtual float intersect_depth(	const glm::vec3 & org,
-										const glm::vec3 & dir ) = 0;
+		virtual float intersect_depth(	const glm::vec3 &,// org,
+										const glm::vec3 &// dir
+										) { return 0; };
 };
 
 

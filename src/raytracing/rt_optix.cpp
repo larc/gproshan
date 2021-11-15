@@ -117,11 +117,6 @@ optix::~optix()
 		cuda_free_CHE(dd_mesh[i], d_mesh[i]);
 }
 
-index_t optix::cast_ray(const glm::vec3 & org, const glm::vec3 & dir)
-{
-	return NIL;
-}
-
 void optix::pathtracing(	const glm::uvec2 & windows_size,
 							const glm::mat4 & view_mat,
 							const glm::mat4 & proj_mat,
@@ -145,6 +140,7 @@ void optix::pathtracing(	const glm::uvec2 & windows_size,
 	glm::vec3 cam_pos = glm::vec3(glm::inverse(view_mat) * glm::vec4(0.f, 0.f, 0.f, 1.f));
 	glm::mat4 inv_proj_view = glm::inverse(proj_mat * view_mat);
 
+	render_params.flat = flat;
 	memcpy(render_params.light, glm::value_ptr(light[0]), sizeof(render_params.light));
 	memcpy(render_params.cam_pos, glm::value_ptr(cam_pos), sizeof(render_params.cam_pos));
 	memcpy(render_params.inv_proj_view, glm::value_ptr(inv_proj_view), sizeof(render_params.inv_proj_view));
@@ -450,16 +446,6 @@ void optix::add_mesh(OptixBuildInput & optix_mesh, CUdeviceptr & d_vertex_ptr, u
 	optix_mesh.triangleArray.sbtIndexOffsetBuffer			= 0;
 	optix_mesh.triangleArray.sbtIndexOffsetSizeInBytes		= 0;
 	optix_mesh.triangleArray.sbtIndexOffsetStrideInBytes	= 0;
-}
-
-glm::vec4 optix::intersect_li(const glm::vec3 & org, const glm::vec3 & dir, const glm::vec3 & light, const bool & flat)
-{
-	return glm::vec4(0.f);
-}
-
-float optix::intersect_depth(const glm::vec3 & org, const glm::vec3 & dir)
-{
-	return 0;
 }
 
 
