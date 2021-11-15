@@ -11,6 +11,7 @@
 #include <optix_function_table_definition.h>
 
 #include <glm/glm.hpp>
+#include <glm/gtx/string_cast.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
 
@@ -143,11 +144,16 @@ void optix::pathtracing(	const glm::uvec2 & windows_size,
 
 	glm::vec3 cam_pos = glm::vec3(glm::inverse(view_mat) * glm::vec4(0.f, 0.f, 0.f, 1.f));
 	glm::mat4 inv_proj_view = glm::inverse(proj_mat * view_mat);
-
+gproshan_log_var(glm::to_string(cam_pos));
+gproshan_log_var(glm::to_string(inv_proj_view));
 	memcpy(render_params.light, glm::value_ptr(light[0]), sizeof(render_params.light));
 	memcpy(render_params.cam_pos, glm::value_ptr(cam_pos), sizeof(render_params.cam_pos));
 	memcpy(render_params.inv_proj_view, glm::value_ptr(inv_proj_view), sizeof(render_params.inv_proj_view));
-	
+
+
+	for(int i = 0; i < 16; ++i)
+		gproshan_log_var(render_params.inv_proj_view[i]);
+
 	cudaMemcpy(launch_params_buffer, &render_params, sizeof(launch_params), cudaMemcpyHostToDevice);
 
 	optixLaunch(optix_pipeline,

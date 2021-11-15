@@ -20,7 +20,7 @@ class camera
 
 	public:
 		quaternion eye;
-		quaternion pos		= vertex(0, 0, -3);
+		quaternion pos		= vertex(0, 0, -2);
 		quaternion front	= vertex(0, 0, 1);
 		quaternion up		= vertex(0, 1, 0);
 

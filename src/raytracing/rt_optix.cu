@@ -191,10 +191,8 @@ extern "C" __global__ void __raygen__render_frame()
 	uint32_t u0, u1;
 	packPointer(&pixelColorPRD, u0, u1);
 
-	//const float xscreen = (ix + .5f) / optixLaunchParams.frame.width;
-	//const float yscreen = (iy + .5f) / optixLaunchParams.frame.height;
-	glm::vec2 screen = glm::vec2(	(ix + .5f) / optixLaunchParams.frame.width,
-									(iy + .5f) / optixLaunchParams.frame.height
+	glm::vec2 screen = glm::vec2(	(float(ix) + .5f) / optixLaunchParams.frame.width,
+									(float(iy) + .5f) / optixLaunchParams.frame.height
 									);
 
 	glm::vec3 cam_pos = glm::vec3(	optixLaunchParams.cam_pos[0],
@@ -204,6 +202,7 @@ extern "C" __global__ void __raygen__render_frame()
 	glm::mat4 inv_proj_view;
 	for(int i = 0; i < 4; ++i)
 	for(int j = 0; j < 4; ++j)
+		//if(ix + iy == 0)printf("m %f\n", optixLaunchParams.inv_proj_view[i * 4 + j]);
 		inv_proj_view[i][j] = optixLaunchParams.inv_proj_view[i * 4 + j];
 
 	glm::vec4 view = glm::vec4(screen.x * 2.f - 1.f, screen.y * 2.f - 1.f, 1.f, 1.f);
@@ -214,6 +213,9 @@ extern "C" __global__ void __raygen__render_frame()
 	vertex_cu position = {cam_pos.x, cam_pos.y, cam_pos.z}; 
 	vertex_cu ray_dir = {r.x, r.y, r.z};
 	ray_dir /= *ray_dir;
+
+	if(ix + iy == 0)
+		printf("%f %f %f\n", position.x, position.y, position.z);
 
 	optixTrace(	optixLaunchParams.traversable,
 				position,
