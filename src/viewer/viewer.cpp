@@ -856,13 +856,13 @@ void viewer::render_optix()
 {
 	if(!rt_optix)
 	{
-		double time_build_optix;
-		TIC(time_build_optix);
+		static double time;
+		TIC(time);
 
 			rt_optix = new rt::optix({active_mesh()});
 
-		TOC(time_build_optix);
-		gproshan_log_var(time_build_optix);
+		TOC(time);
+		sprintf(status_message, "build optix in %.3fs", time);
 	}
 
 	rt_optix->render(	glm::uvec2(viewport_width, viewport_height),

@@ -83,7 +83,7 @@ extern "C" __global__ void __closesthit__radiance()
 	const vertex_cu & light = *(vertex_cu *) optixLaunchParams.light;
 	const vertex_cu color = ((1.f - u - v) * ca + u * cb + v * cc) / 255;
 	const vertex_cu position = (1.f - u - v) * A + u * B + v * C;
-	
+
 	const vertex_cu wi = normalize(light - position);
 	const float dot_wi_normal = (wi, normal);
 
