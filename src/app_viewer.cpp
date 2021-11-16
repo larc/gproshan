@@ -1,6 +1,7 @@
 #include "app_viewer.h"
 
 #include <random>
+#include <queue>
 
 
 using namespace std;
@@ -126,6 +127,38 @@ bool app_viewer::process_connected_components(viewer * p_view)
 	#pragma omp parallel for
 	for(index_t v = 0; v < mesh->n_vertices; ++v)
 		label[v] = -1;
+
+	int nc = 0;
+	for(index_t v = 0; v < mesh->n_vertices; ++v)
+	{
+		if(label[v] < 0)
+		{
+			++nc;
+
+			std::queue<index_t> q;
+			q.push(v);
+			label[v] = nc;
+
+			while(!q.empty())
+			{
+				for(const index_t & v: mesh->link(q.front()))
+					if(label[v] < 0)
+					{
+						label[v] = nc;
+						q.push(v);
+					}
+
+				q.pop();
+			}
+		}
+	}
+
+	#pragma omp parallel for
+	for(index_t v = 0; v < mesh->n_vertices; ++v)
+		label[v] /= nc;
+
+	sprintf(view->status_message, "found %d connected components", nc);
+	mesh.update_vbo_heatmap();
 
 	return false;
 }
@@ -343,6 +376,7 @@ bool app_viewer::process_geodesics(viewer * p_view)
 		TIC(view->time)
 			geodesics G(mesh, mesh.selected, params);
 		TOC(view->time)
+		sprintf(view->status_message, "geodesics time: %.3fs", view->time);
 
 		params.radio = G.radio();
 

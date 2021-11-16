@@ -15,9 +15,6 @@
 namespace gproshan {
 
 
-typedef std::vector<index_t> star_t;		// star (vector of he)
-typedef std::vector<index_t> link_t;		// link (vector of he)
-
 size_t & rw(const size_t & n);
 index_t trig(const index_t & he);
 index_t next(const index_t & he);
@@ -72,8 +69,8 @@ class che
 		che(const vertex * vertices, const index_t & n_v, const index_t * faces, const index_t & n_f);
 		virtual ~che();
 
-		void star(star_t & s, const index_t & v) const;
-		void link(link_t & l, const index_t & v) const;
+		std::vector<index_t> star(const index_t & v) const;
+		std::vector<index_t> link(const index_t & v) const;
 		std::vector<index_t> bounds() const;
 		std::vector<index_t> boundary(const index_t & v) const;
 		bool is_vertex_bound(const index_t & v) const;
@@ -158,16 +155,19 @@ struct vertex_cu;
 
 struct CHE
 {
-	size_t n_vertices;
-	size_t n_faces;
-	size_t n_half_edges;
+	size_t n_vertices = 0;
+	size_t n_faces = 0;
+	size_t n_half_edges = 0;
 
-	vertex_cu * GT;
-	index_t * VT;
-	index_t * OT;
-	index_t * EVT;
+	vertex_cu * GT	= nullptr;
+	vertex_cu * VN	= nullptr;
+	che::rgb_t * VC	= nullptr;
+	index_t * VT	= nullptr;
+	index_t * OT	= nullptr;
+	index_t * EVT	= nullptr;
 
-	CHE(che * mesh);
+	CHE() = default;
+	CHE(const che * mesh);
 };
 
 

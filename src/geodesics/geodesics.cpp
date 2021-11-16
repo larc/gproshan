@@ -130,7 +130,7 @@ void geodesics::run_fastmarching(che * mesh, const vector<index_t> & sources, co
 	real_t dv, dp;
 	vertex vx;
 
-	size_t black_i, v;
+	size_t black_i;
 
 	index_t c = 0;
 	n_sorted = 0;
@@ -159,27 +159,23 @@ void geodesics::run_fastmarching(che * mesh, const vector<index_t> & sources, co
 
 		if(fun && !fun(black_i)) break;
 
-		link_t black_link;
-		mesh->link(black_link, black_i);
-		for(const index_t & he: black_link)
+		for(const index_t & v: mesh->link(black_i))
 		{
-			v = mesh->vt(he);
-
 			if(color[v] == GREEN)
 				color[v] = RED;
 
 			if(color[v] == RED)
 			{
 				dv = dist[v];
-				for_star(v_he, mesh, v)
+				for_star(he, mesh, v)
 				{
-					dp = update_step(mesh, dist, v_he);
+					dp = update_step(mesh, dist, he);
 					if(dp < dv)
 					{
 						dv = dp;
 
 						if(clusters)
-							clusters[v] = dist[mesh->vt(prev(v_he))] < dist[mesh->vt(next(he))] ? clusters[mesh->vt(prev(he))] : clusters[mesh->vt(next(he))];
+							clusters[v] = clusters[mesh->vt(prev(he))] ? clusters[mesh->vt(prev(he))] : clusters[mesh->vt(next(he))];
 					}
 				}
 

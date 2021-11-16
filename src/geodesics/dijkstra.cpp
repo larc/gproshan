@@ -51,7 +51,7 @@ void dijkstra::print(ostream & os)
 void dijkstra::run(che * mesh)
 {
 	bool * visited = new bool[n_vertices];
-	memset(visited, 0, sizeof(bool)*n_vertices);
+	memset(visited, 0, sizeof(bool) * n_vertices);
 
 	visited[source] = true;
 	weights[source] = 0;
@@ -68,17 +68,11 @@ void dijkstra::run(che * mesh)
 		for(index_t v = 0; v < n_vertices; ++v)
 		{
 			real_t w;
-			index_t nv;
 
 			if(!visited[v])
 			{
-				link_t link_he;
-				mesh->link(link_he, v);
-
-				for(index_t he: link_he)
+				for(const index_t & nv: mesh->link(v))
 				{
-					nv = mesh->vt(next(he));
-
 					if(visited[nv])
 					{
 						w = weights[nv] + *(mesh->get_vertex(nv) - mesh->get_vertex(v));

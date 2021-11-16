@@ -38,13 +38,15 @@ index_t prev(const index_t & he)
 	return che::mtrig * trig(he) + (he + che::mtrig - 1) % che::mtrig;
 }
 
-CHE::CHE(che * mesh)
+CHE::CHE(const che * mesh)
 {
 	n_vertices = mesh->n_vertices;
 	n_faces = mesh->n_faces;
 	n_half_edges = mesh->n_half_edges;
 
 	GT = (vertex_cu *) mesh->GT;
+	VN = (vertex_cu *) mesh->VN;
+	VC = mesh->VC;
 	VT = mesh->VT;
 	OT = mesh->OT;
 	EVT = mesh->EVT;
@@ -83,24 +85,30 @@ che::~che()
 	free();
 }
 
-void che::star(star_t & s, const index_t & v) const
+vector<index_t> che::star(const index_t & v) const
 {
-	if(v >= n_vertices) return;
+	assert(v >= n_vertices);
 
+	vector<index_t> vstar;
 	for_star(he, this, v)
-		s.push_back(he);
+		vstar.push_back(he);
+
+	return vstar;
 }
 
-void che::link(link_t & l, const index_t & v) const
+vector<index_t> che::link(const index_t & v) const
 {
-	if(v >= n_vertices) return;
+	assert(v >= n_vertices);
+
+	vector<index_t> vlink;
+
+	if(is_vertex_bound(v))
+		vlink.push_back(VT[next(EVT[v])]);
 
 	for_star(he, this, v)
-	{
-		l.push_back(next(he));
-		if(OT[prev(he)] == NIL)
-			l.push_back(prev(he));
-	}
+		vlink.push_back(VT[prev(he)]);
+
+	return vlink;
 }
 
 ///< return a vector of indices of one vertex per boundary
@@ -652,12 +660,8 @@ void che::compute_toplesets(index_t *& toplesets, index_t *& sorted, vector<inde
 			limits.push_back(i);
 		}
 
-		link_t v_link;
-		link(v_link, v);
-		for(const index_t & he: v_link)
+		for(const index_t & u: link(v))
 		{
-			const index_t & u = VT[he];
-
 			if(toplesets[u] == NIL)
 			{
 				toplesets[u] = toplesets[v] + 1;
@@ -981,14 +985,9 @@ index_t che::link_intersect(const index_t & v_a, const index_t & v_b)
 {
 	index_t intersect = 0;
 
-	link_t link_a, link_b;
-	link(link_a, v_a);
-	link(link_b, v_b);
-
-	for(index_t & he_a: link_a)
-	for(index_t & he_b: link_b)
-		if(VT[he_a] == VT[he_b])
-			++intersect;
+	for(index_t & a: link(v_a))
+	for(index_t & b: link(v_b))
+		if(a == b) ++intersect;
 
 	return intersect;
 }

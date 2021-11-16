@@ -524,7 +524,6 @@ void patch::gather_vertices(che * mesh, const index_t & v, const size_t & n_topl
 	vertices.reserve(expected_nv);
 	memset(toplevel, -1, sizeof(index_t) * mesh->n_vertices);
 
-	link_t link;
 	toplevel[v] = 0;
 	vertices.push_back(v);
 
@@ -534,18 +533,12 @@ void patch::gather_vertices(che * mesh, const index_t & v, const size_t & n_topl
 		if(toplevel[v] == n_toplevels)
 			break;
 
-		mesh->link(link, v);
-		for(const index_t & he: link)
-		{
-			const index_t & u = mesh->vt(he);
+		for(const index_t & u: mesh->link(v))
 			if(toplevel[u] == NIL)
 			{
 				vertices.push_back(u);
 				toplevel[u] = toplevel[v] + 1;
 			}
-		}
-
-		link.clear();
 	}
 }
 
@@ -561,7 +554,6 @@ void patch::gather_vertices(che * mesh, const index_t & v, const real_t & radio,
 	memset(toplevel, -1, sizeof(index_t) * mesh->n_vertices);
 
 	a_vec p(3);
-	link_t link;
 
 	toplevel[v] = 0;
 	qvertices.push({0, v});
@@ -573,10 +565,8 @@ void patch::gather_vertices(che * mesh, const index_t & v, const real_t & radio,
 
 		vertices.push_back(v);
 
-		mesh->link(link, v);
-		for(const index_t & he: link)
+		for(const index_t & u: mesh->link(v))
 		{
-			const index_t & u = mesh->vt(he);
 			if(toplevel[u] == NIL)
 			{
 				p(0) = mesh->gt(u).x;
@@ -589,7 +579,6 @@ void patch::gather_vertices(che * mesh, const index_t & v, const real_t & radio,
 				if(norm(p) < radio)
 					qvertices.push({-norm(p), u});
 			}
-			link.clear();
 		}
 	}
 }
@@ -717,19 +706,14 @@ void patch::compute_avg_distance(che * mesh, vector<vpatches_t> & vpatches, cons
 {
 	avg_dist = INFINITY;
 	vector<double> distances;
-	link_t link;
 
 	for(size_t i = 0; i < vertices.size(); ++i)
 	{
-		const index_t & v = vertices[i];
-		mesh->link(link, v);
-		for(const index_t & he: link)
+		for(const index_t & u: mesh->link(vertices[i]))
 		{
-			const index_t & u = mesh->vt(he);
-
-			for (auto itp:vpatches[u])
+			for(auto itp: vpatches[u])
 			{
-				if( itp.first == p)
+				if(itp.first == p)
 				{
 					a_vec a = xyz.col(i);
 					a_vec b = xyz.col(itp.second);
@@ -740,7 +724,6 @@ void patch::compute_avg_distance(che * mesh, vector<vpatches_t> & vpatches, cons
 				}
 			}
 		}
-
 	}
 	/*
 		for(size_t j = i+1; j < vertices.size(); ++j) // replace for 1 ring

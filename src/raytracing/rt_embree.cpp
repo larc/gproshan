@@ -255,10 +255,10 @@ glm::vec4 embree::li(const glm::vec3 & light, const glm::vec3 & position, const 
 {
 	const glm::vec3 wi = normalize(light - position);
 	const float dot_wi_normal = glm::dot(wi, normal);
-	const glm::vec4 L = glm::vec4((dot_wi_normal < 0 ? -dot_wi_normal : dot_wi_normal) * color, 1);
+	const glm::vec3 L = (dot_wi_normal < 0 ? -dot_wi_normal : dot_wi_normal) * color;
 
 	ray_hit r(position, wi, near);
-	return (occluded(r) ? 0.6f : 1.f) * L;
+	return glm::vec4((occluded(r) ? 0.4f : 1.f) * L, 1);
 }
 
 glm::vec4 embree::li(ray_hit r, const glm::vec3 & light, const bool & flat)

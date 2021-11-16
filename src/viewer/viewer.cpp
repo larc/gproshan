@@ -53,7 +53,7 @@ const std::vector<std::string> viewer::colormap = { "vertex color",
 													"set"
 													};
 
-viewer::viewer(int width, int height): window_width(width), window_height(height)
+viewer::viewer(const int & width, const int & height): window_width(width), window_height(height)
 {
 	init_gl();
 	init_glsl();
@@ -174,6 +174,7 @@ bool viewer::run()
 		ImGui::Text("%s", mesh->filename.c_str());
 		ImGui::Text("%16s: %10lu", "n_vertices", mesh->n_vertices);
 		ImGui::Text("%16s: %10lu", "n_faces", mesh->n_faces);
+		ImGui::DragFloat4("camera center", (float *) &cam.pos, 0.2);
 
 		if(mesh.render_pointcloud)
 		{
@@ -861,7 +862,7 @@ void viewer::render_gl()
 #ifdef GPROSHAN_EMBREE
 void viewer::render_embree()
 {
-	rt_embree->pathtracing(	glm::uvec2(viewport_width, viewport_height),
+	rt_embree->render(	glm::uvec2(viewport_width, viewport_height),
 							view_mat, proj_mat, {glm_vec3(light)},
 							active_mesh().render_flat, action
 							);
@@ -885,8 +886,12 @@ void viewer::render_optix()
 		gproshan_log_var(time_build_optix);
 	}
 
-	rt_optix->pathtracing(	glm::uvec2(viewport_width, viewport_height),
-							view_mat, proj_mat, {glm_vec3(light)}, action);
+	rt_optix->render(	glm::uvec2(viewport_width, viewport_height),
+							view_mat, proj_mat, {glm_vec3(light)},
+							active_mesh().render_flat, action);
+
+	if(!render_frame)
+		render_frame = new frame;
 
 	action = false;
 	render_frame->display(viewport_width, viewport_height, rt_optix->img);
@@ -921,9 +926,10 @@ void viewer::select_border_vertices(che_viewer & mesh)
 
 void viewer::pick_vertex(const real_t & x, const real_t & y)
 {
-	active_mesh().select(	x * viewport_width / window_width,
-							y * viewport_height / window_height,
-							{viewport_width, viewport_height}, view_mat, proj_mat);
+	float xscale, yscale;
+	glfwGetWindowContentScale(window, &xscale, &yscale);
+
+	active_mesh().select(x * xscale, y * yscale, {viewport_width, viewport_height}, view_mat, proj_mat);
 }
 
 
