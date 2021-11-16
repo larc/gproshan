@@ -80,39 +80,33 @@ extern "C" __global__ void __closesthit__radiance()
 	const vertex_cu cb(mesh.VC[b].r, mesh.VC[b].g, mesh.VC[b].b);
 	const vertex_cu cc(mesh.VC[c].r, mesh.VC[c].g, mesh.VC[c].b);
 
-	const vertex_cu color = ((1.f - u - v) * ca + u * cb + v * cc) / 255;
-
 	const vertex_cu & light = *(vertex_cu *) optixLaunchParams.light;
+	const vertex_cu color = ((1.f - u - v) * ca + u * cb + v * cc) / 255;
 	const vertex_cu position = (1.f - u - v) * A + u * B + v * C;
+	
 	const vertex_cu wi = normalize(light - position);
 	const float dot_wi_normal = (wi, normal);
 
 	vertex_cu & L = *getPRD<vertex_cu>();
 	L = (dot_wi_normal < 0 ? -dot_wi_normal : dot_wi_normal) * color;
-/*
-	bool occluded = true;
-	uint32_t u0, u1;
-	packPointer(&occluded, u0, u1);
+
+	unsigned int occluded = 1;
 	optixTrace( optixLaunchParams.traversable,
-				position + 1e-5f * Ng,
+				position,
 				wi,
 				1e-5f,		// tmin
 				1e20f,		// tmax
 				0.0f,		// rayTime
 				OptixVisibilityMask(255),
-				// For shadow rays: skip any/closest hit shaders and terminate on first
-				// intersection with anything. The miss shader is used to mark if the
-				// light was visible.
 				OPTIX_RAY_FLAG_DISABLE_ANYHIT
-				| OPTIX_RAY_FLAG_TERMINATE_ON_FIRST_HIT
-				| OPTIX_RAY_FLAG_DISABLE_CLOSESTHIT,
+				| OPTIX_RAY_FLAG_DISABLE_CLOSESTHIT
+				| OPTIX_RAY_FLAG_TERMINATE_ON_FIRST_HIT,
 				1,	// SBT offset
 				2,	// SBT stride
 				1,	// missSBTIndex
-				u0, u1);
+				occluded);
 
-	if(occluded) L = 0.6 * L;
-*/
+	if(occluded) L = 0.4 * L;
 }
 
 
@@ -129,8 +123,7 @@ extern "C" __global__ void __miss__radiance()
 
 extern "C" __global__ void __miss__shadow()
 {
-	bool & prd = *getPRD<bool>();
-	prd = false;
+	optixSetPayload_0(0);
 }
 
 

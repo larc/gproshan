@@ -20,21 +20,15 @@
 namespace gproshan::rt {
 
 
-/*! SBT record for a raygen program */
 struct __align__(OPTIX_SBT_RECORD_ALIGNMENT) RaygenRecord
 {
 	__align__(OPTIX_SBT_RECORD_ALIGNMENT) char header[OPTIX_SBT_RECORD_HEADER_SIZE];
-	// just a dummy value - later examples will use more interesting
-	// data here
 	void * data;
 };
 
-/*! SBT record for a miss program */
 struct __align__(OPTIX_SBT_RECORD_ALIGNMENT) MissRecord
 {
 	__align__(OPTIX_SBT_RECORD_ALIGNMENT) char header[OPTIX_SBT_RECORD_HEADER_SIZE];
-	// just a dummy value - later examples will use more interesting
-	// data here
 	void * data;
 };
 
@@ -313,7 +307,7 @@ void optix::build_sbt()
 	}
 
 	cudaMalloc(&miss_records_buffer, 2 * sizeof(MissRecord));
-	cudaMemcpy(miss_records_buffer, miss_records, sizeof(MissRecord), cudaMemcpyHostToDevice);
+	cudaMemcpy(miss_records_buffer, miss_records, 2 * sizeof(MissRecord), cudaMemcpyHostToDevice);
 	sbt.missRecordBase			= (CUdeviceptr) miss_records_buffer;
 	sbt.missRecordStrideInBytes	= sizeof(MissRecord);
 	sbt.missRecordCount			= 2;
@@ -329,7 +323,7 @@ void optix::build_sbt()
 		hitgroup_records.push_back(rec);
 	}
 
-	cudaMalloc(&hitgroup_records_buffer, 2 * sizeof(HitgroupRecord));
+	cudaMalloc(&hitgroup_records_buffer, hitgroup_records.size() * sizeof(HitgroupRecord));
 	cudaMemcpy(hitgroup_records_buffer, hitgroup_records.data(), hitgroup_records.size() * sizeof(HitgroupRecord), cudaMemcpyHostToDevice);
 	sbt.hitgroupRecordBase			= (CUdeviceptr) hitgroup_records_buffer;
 	sbt.hitgroupRecordStrideInBytes	= sizeof(HitgroupRecord);
