@@ -120,12 +120,7 @@ class viewer
 		void init_glsl();
 
 		void render_gl();
-	#ifdef GPROSHAN_EMBREE
-		void render_embree();
-	#endif // GPROSHAN_EMBREE
-	#ifdef GPROSHAN_OPTIX
-		void render_optix();
-	#endif // GPROSHAN_OPTIX
+		void render_rt(rt::raytracing * rt);
 
 		static void framebuffer_size_callback(GLFWwindow * window, int width, int height);
 		static void window_size_callback(GLFWwindow * window, int width, int height);

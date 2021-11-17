@@ -98,13 +98,15 @@ bool viewer::run()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		switch(render_opt)
 		{
-			case R_GL:		render_gl();		break;
-		#ifdef GPROSHAN_EMBREE
-			case R_EMBREE:	render_embree();	break;
-		#endif // GPROSHAN_EMBREE
-		#ifdef GPROSHAN_OPTIX
-			case R_OPTIX:	render_optix();		break;
-		#endif // GPROSHAN_OPTIX
+			case R_GL:
+					render_gl();
+					break;
+			case R_EMBREE:
+					render_rt(rt_embree);
+					break;
+			case R_OPTIX:
+					render_rt(rt_optix);
+					break;
 		}
 
 		ImGui_ImplOpenGL3_NewFrame();
@@ -694,7 +696,23 @@ bool viewer::set_render_embree(viewer * view)
 #ifdef GPROSHAN_OPTIX
 bool viewer::set_render_optix(viewer * view)
 {
-	view->render_opt = 2;
+	che_viewer & mesh = view->active_mesh();
+
+	view->render_opt = R_OPTIX;
+
+	if(!view->rt_optix)
+	{
+		static double time;
+		TIC(time);
+
+			view->rt_optix = new rt::optix({mesh});
+
+		TOC(time);
+		sprintf(view->status_message, "build optix in %.3fs", time);
+	}
+
+	if(!view->render_frame)
+		view->render_frame = new frame;
 
 	return false;
 }
@@ -838,44 +856,16 @@ void viewer::render_gl()
 	}
 }
 
-#ifdef GPROSHAN_EMBREE
-void viewer::render_embree()
+void viewer::render_rt(rt::raytracing * rt)
 {
-	rt_embree->render(	glm::uvec2(viewport_width, viewport_height),
-							view_mat, proj_mat, {glm_vec3(light)},
-							active_mesh().render_flat, action
-							);
+	rt->render(	glm::uvec2(viewport_width, viewport_height),
+				view_mat, proj_mat, {glm_vec3(light)},
+				active_mesh().render_flat, action
+				);
 
 	action = false;
-	render_frame->display(viewport_width, viewport_height, rt_embree->img);
+	render_frame->display(viewport_width, viewport_height, rt->img);
 }
-#endif // GPROSHAN_EMBREE
-
-#ifdef GPROSHAN_OPTIX
-void viewer::render_optix()
-{
-	if(!rt_optix)
-	{
-		static double time;
-		TIC(time);
-
-			rt_optix = new rt::optix({active_mesh()});
-
-		TOC(time);
-		sprintf(status_message, "build optix in %.3fs", time);
-	}
-
-	rt_optix->render(	glm::uvec2(viewport_width, viewport_height),
-							view_mat, proj_mat, {glm_vec3(light)},
-							active_mesh().render_flat, action);
-
-	if(!render_frame)
-		render_frame = new frame;
-
-	action = false;
-	render_frame->display(viewport_width, viewport_height, rt_optix->img);
-}
-#endif // GPROSHAN_OPTIX
 
 void viewer::draw_selected_vertices(shader & program, const che_viewer & mesh)
 {
