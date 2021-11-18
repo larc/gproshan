@@ -295,6 +295,7 @@ void viewer::init_menus()
 	add_process(GLFW_KEY_F6, {"F6", "Render Wireframe", set_render_wireframe});
 	add_process(GLFW_KEY_F7, {"F7", "Render Triangles", set_render_triangles});
 	add_process(GLFW_KEY_F8, {"F8", "Render GL", set_render_gl});
+	add_process(GLFW_KEY_R, {"R", "Setup Raytracing", setup_raytracing});
 #ifdef GPROSHAN_EMBREE
 	add_process(GLFW_KEY_F9, {"F9", "Render Embree", set_render_embree});
 	add_process(GLFW_KEY_ENTER, {"ENTER", "Raycasting", raycasting});
@@ -629,6 +630,80 @@ bool viewer::menu_bgc_black(viewer * view)
 	return false;
 }
 
+bool viewer::setup_raytracing(viewer * view)
+{
+	che_viewer & mesh = view->active_mesh();
+
+	static int rt = 0;
+	static int rt_opt = 0;
+	static double time = 0;
+
+	ImGui::Combo("rt", &rt, "Select\0Embree\0OptiX\0\0");
+
+	if(rt != 0)
+	{
+		ImGui::Combo("rt_opt", &rt_opt, "Mesh\0Splat\0\0");
+		ImGui::InputFloat("pc_radius", &rt::embree::pc_radius, 0, 0, "%.3f");
+	}
+
+	if(ImGui::Button("Build"))
+	{
+		if(!view->render_frame)
+			view->render_frame = new frame;
+
+		switch(rt)
+		{
+			case R_GL: break;
+
+			case R_EMBREE:
+			#ifdef GPROSHAN_EMBREE
+				delete view->rt_embree;
+				TIC(time);
+				switch(rt_opt)
+				{
+					case 0: view->rt_embree = new rt::embree({mesh});
+							break;
+					case 1: view->rt_embree = new rt::embree_splat({mesh}, true);
+							break;
+				}
+				TOC(time);
+				sprintf(view->status_message, "build embree in %.3fs", time);
+			#endif // GPROSHAN_EMBREE
+				break;
+
+			case R_OPTIX:
+			#ifdef GPROSHAN_OPTIX
+				delete view->rt_optix;
+				TIC(time);
+				view->rt_optix = new rt::optix({mesh});
+				TOC(time);
+				sprintf(view->status_message, "build optix in %.3fs", time);
+			#endif // GPROSHAN_OPTIX
+				break;
+		}
+	}
+
+	return true;
+}
+
+bool viewer::set_render_gl(viewer * view)
+{
+	view->render_opt = R_GL;
+	return false;
+}
+
+bool viewer::set_render_embree(viewer * view)
+{
+	view->render_opt = R_EMBREE;
+	return false;
+}
+
+bool viewer::set_render_optix(viewer * view)
+{
+	view->render_opt = R_OPTIX;
+	return false;
+}
+
 bool viewer::invert_orientation(viewer * view)
 {
 	view->active_mesh().invert_orientation();
@@ -636,87 +711,6 @@ bool viewer::invert_orientation(viewer * view)
 
 	return false;
 }
-
-bool viewer::set_render_gl(viewer * view)
-{
-	view->render_opt = R_GL;
-
-	return false;
-}
-
-#ifdef GPROSHAN_EMBREE
-bool viewer::set_render_embree(viewer * view)
-{
-	che_viewer & mesh = view->active_mesh();
-
-	static int rt_opt = 0;
-	static double time = 0;
-
-	ImGui::Combo("rt_opt", &rt_opt, "Mesh\0Splat\0\0");
-	ImGui::InputFloat("pc_radius", &rt::embree::pc_radius, 0, 0, "%.3f");
-
-	if(!view->rt_embree)
-	{
-		if(ImGui::Button("Start"))
-		{
-			view->render_opt = R_EMBREE;
-
-			TIC(time);
-			switch(rt_opt)
-			{
-				case 0: view->rt_embree = new rt::embree({mesh});
-						break;
-				case 1: view->rt_embree = new rt::embree_splat({mesh}, true);
-						break;
-			}
-			TOC(time);
-			sprintf(view->status_message, "build embree in %.3fs", time);
-
-			if(!view->render_frame)
-				view->render_frame = new frame;
-		}
-	}
-	else
-	{
-		view->render_opt = R_EMBREE;
-
-		if(ImGui::Button("Restart"))
-		{
-			delete view->rt_embree;
-			view->rt_embree = nullptr;
-
-			view->render_opt = R_GL;
-		}
-	}
-
-	return true;
-}
-#endif // GPROSHAN_EMBREE
-
-#ifdef GPROSHAN_OPTIX
-bool viewer::set_render_optix(viewer * view)
-{
-	che_viewer & mesh = view->active_mesh();
-
-	view->render_opt = R_OPTIX;
-
-	if(!view->rt_optix)
-	{
-		static double time;
-		TIC(time);
-
-			view->rt_optix = new rt::optix({mesh});
-
-		TOC(time);
-		sprintf(view->status_message, "build optix in %.3fs", time);
-	}
-
-	if(!view->render_frame)
-		view->render_frame = new frame;
-
-	return false;
-}
-#endif // GPROSHAN_OPTIX
 
 bool viewer::set_render_pointcloud(viewer * view)
 {
@@ -858,6 +852,8 @@ void viewer::render_gl()
 
 void viewer::render_rt(rt::raytracing * rt)
 {
+	if(!rt) return;
+
 	rt->render(	glm::uvec2(viewport_width, viewport_height),
 				view_mat, proj_mat, {glm_vec3(light)},
 				active_mesh().render_flat, action
