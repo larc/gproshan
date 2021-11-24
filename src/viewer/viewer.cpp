@@ -643,7 +643,8 @@ bool viewer::setup_raytracing(viewer * view)
 	if(rt != 0)
 	{
 		ImGui::Combo("rt_opt", &rt_opt, "Mesh\0Splat\0\0");
-		ImGui::InputFloat("pc_radius", &rt::embree::pc_radius, 0, 0, "%.3f");
+
+		if(rt_opt) ImGui::InputFloat("pc_radius", &rt::embree::pc_radius, 0, 0, "%.3f");
 	}
 
 	if(ImGui::Button("Build"))
@@ -694,12 +695,14 @@ bool viewer::set_render_gl(viewer * view)
 
 bool viewer::set_render_embree(viewer * view)
 {
+	view->action = true;
 	view->render_opt = R_EMBREE;
 	return false;
 }
 
 bool viewer::set_render_optix(viewer * view)
 {
+	view->action = true;
 	view->render_opt = R_OPTIX;
 	return false;
 }
