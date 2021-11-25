@@ -84,12 +84,15 @@ viewer::~viewer()
 
 bool viewer::run()
 {
+	double render_time = 0;
+
 	while(!glfwWindowShouldClose(window))
 	{
-		light	= vertex(-1, 1, -2);
+		TIC(render_time)
 
 		quaternion r = cam.current_rotation();
 
+		light = vertex(-1, 1, -2);
 		light = r.conj() * light * r;
 
 		view_mat = cam.look_at(r);
@@ -108,6 +111,9 @@ bool viewer::run()
 					render_rt(rt_optix);
 					break;
 		}
+		
+		TOC(render_time);
+
 
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
@@ -173,6 +179,7 @@ bool viewer::run()
 		ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.5);
 
 		ImGui::Text("%s", mesh->filename.c_str());
+		ImGui::Text("%16s: %.3f", "FPS", 1.0 / render_time);
 		ImGui::Text("%16s: %10lu", "n_vertices", mesh->n_vertices);
 		ImGui::Text("%16s: %10lu", "n_faces", mesh->n_faces);
 		ImGui::DragFloat4("camera center", (float *) &cam.pos, 0.2);
