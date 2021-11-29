@@ -42,7 +42,7 @@ class embree_splat : public embree
 			normal = glm::vec3(0);
 			color = glm::vec3(0);
 
-			float w, sum_w = 0, sigma = radio * pc_radius;
+			float w, sum_w = 0, sigma = radio;// * pc_radius;
 
 			for(index_t i = 0; i < K; ++i)
 			{

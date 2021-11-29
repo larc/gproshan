@@ -30,19 +30,14 @@ class raytracing
 
 		std::map<index_t, rt_mesh> geomID_mesh;
 
-		size_t width;
-		size_t height;
-		size_t n_samples;
+		size_t n_samples = 0;
 
 	public:
-		glm::vec4 * img;
+		raytracing() = default;
+		virtual ~raytracing() = default;
 
-	public:
-		raytracing();
-		virtual ~raytracing();
-
-		virtual bool rt_restart(const size_t & w, const size_t & h);
-		virtual void pathtracing(	const glm::uvec2 & windows_size,
+		virtual void render(glm::vec4 * img,
+							const glm::uvec2 & windows_size,
 							const glm::mat4 & view_mat,
 							const glm::mat4 & proj_mat,
 							const std::vector<glm::vec3> & light,
@@ -56,16 +51,20 @@ class raytracing
 									const index_t & samples = 4
 									);
 
-		virtual index_t cast_ray(const glm::vec3 & org, const glm::vec3 & dir) = 0;
+		virtual index_t cast_ray(	const glm::vec3 &,// org,
+									const glm::vec3 &// dir
+									) { return NIL; };
 
 	protected:
-		virtual glm::vec4 intersect_li(	const glm::vec3 & org,
-										const glm::vec3 & dir,
-										const glm::vec3 & light,
-										const bool & flat ) = 0;
+		virtual glm::vec4 intersect_li(	const glm::vec3 &,// org,
+										const glm::vec3 &,// dir,
+										const glm::vec3 &,// light,
+										const bool &// flat
+										) { return glm::vec4(0); };
 
-		virtual float intersect_depth(	const glm::vec3 & org,
-										const glm::vec3 & dir ) = 0;
+		virtual float intersect_depth(	const glm::vec3 &,// org,
+										const glm::vec3 &// dir
+										) { return 0; };
 };
 
 

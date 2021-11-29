@@ -14,8 +14,13 @@ namespace gproshan {
 class frame
 {
 	private:
-		GLuint render_tex;
-		GLuint vao, vbo;
+		GLuint render_tex = 0;
+		GLuint vao = 0;
+		GLuint vbo = 0;
+		GLuint pbo = 0;
+
+		size_t width = 0;
+		size_t height = 0;
 
 		shader program;
 
@@ -23,7 +28,10 @@ class frame
 		frame();
 		~frame();
 
-		void display(const int & width, const int & height, void * buffer);
+		operator const GLuint & () const;
+
+		bool resize(const size_t & w, const size_t & h);
+		void display();
 };
 
 

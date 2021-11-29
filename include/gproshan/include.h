@@ -36,12 +36,12 @@ typedef unsigned int index_t;
 
 #define gproshan_input(input) fprintf(stderr, "\033[38;5;210m[INPUT] %s: \033[0m", #input)
 
-#define gproshan_error_var(vari) std::cerr << "\033[0;33m[ERROR] " << std::setprecision(3) << std::scientific << #vari << ":\033[0m " << (vari) << "\t\033[38;5;210m" << __FILE__ ":" << __LINE__ << " > " << __FUNCTION__ << "\033[0m" << std::endl
-#define gproshan_error(message) fprintf(stderr, "\033[1;31m[ERROR] %s: %s (%s:%d)\n\033[0m", #message, __FUNCTION__, __FILE__, __LINE__)
+#define gproshan_error_var(vari) std::cerr << "\033[1;31m[ERROR] " << std::setprecision(3) << std::scientific << #vari << ":\033[0m " << (vari) << "\t\033[38;5;210m" << __FILE__ ":" << __LINE__ << " > " << __FUNCTION__ << "\033[0m" << std::endl
+#define gproshan_error(message) fprintf(stderr, "\033[1;31m[ERROR]\033[0m %s\033[38;5;210m\t%s:%d > %s\n\033[0m", #message, __FILE__, __LINE__, __FUNCTION__)
 
 #ifndef NDEBUG
-	#define gproshan_debug_var(vari) std::cerr << "\033[0;33m[DEBUG] " << std::setprecision(3) << std::scientific << #vari << ":\033[0m " << (vari) << "\t\033[38;5;210m" << __FILE__ ":" << __LINE__ << " > " << __FUNCTION__ << "\033[0m" << std::endl
-	#define gproshan_debug(message) fprintf(stderr, "\033[1;31m[DEBUG] %s: %s (%s:%d)\n\033[0m", #message, __FUNCTION__, __FILE__, __LINE__)
+	#define gproshan_debug_var(vari) std::cerr << "\033[1;31m[DEBUG] " << std::setprecision(3) << std::scientific << #vari << ":\033[0m " << (vari) << "\t\033[38;5;210m" << __FILE__ ":" << __LINE__ << " > " << __FUNCTION__ << "\033[0m" << std::endl
+	#define gproshan_debug(message) fprintf(stderr, "\033[1;31m[DEBUG]\033[0m %s\033[38;5;210m\t%s:%d > %s\n\033[0m", #message, __FILE__, __LINE__, __FUNCTION__)
 #else
 	#define gproshan_debug_var(vari)
 	#define gproshan_debug(message)

@@ -52,7 +52,7 @@ const std::vector<std::string> viewer::colormap = { "vertex color",
 													"set"
 													};
 
-viewer::viewer(int width, int height): window_width(width), window_height(height)
+viewer::viewer(const int & width, const int & height): window_width(width), window_height(height)
 {
 	init_gl();
 	init_glsl();
@@ -77,19 +77,22 @@ viewer::~viewer()
 	delete rt_embree;
 	delete rt_optix;
 
-	delete render_frame;
+	delete rt_frame;
 
 	delete sphere;
 }
 
 bool viewer::run()
 {
+	double render_time = 0;
+
 	while(!glfwWindowShouldClose(window))
 	{
-		light	= vertex(-1, 1, -2);
+		TIC(render_time)
 
 		quaternion r = cam.current_rotation();
 
+		light = vertex(-1, 1, -2);
 		light = r.conj() * light * r;
 
 		view_mat = cam.look_at(r);
@@ -98,14 +101,19 @@ bool viewer::run()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		switch(render_opt)
 		{
-			case R_GL:		render_gl();		break;
-		#ifdef GPROSHAN_EMBREE
-			case R_EMBREE:	render_embree();	break;
-		#endif // GPROSHAN_EMBREE
-		#ifdef GPROSHAN_OPTIX
-			case R_OPTIX:	render_optix();		break;
-		#endif // GPROSHAN_OPTIX
+			case R_GL:
+					render_gl();
+					break;
+			case R_EMBREE:
+					render_rt(rt_embree);
+					break;
+			case R_OPTIX:
+					render_rt(rt_optix);
+					break;
 		}
+
+		TOC(render_time);
+
 
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
@@ -171,8 +179,10 @@ bool viewer::run()
 		ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.5);
 
 		ImGui::Text("%s", mesh->filename.c_str());
+		ImGui::Text("%16s: %.3f", "FPS", 1.0 / render_time);
 		ImGui::Text("%16s: %10lu", "n_vertices", mesh->n_vertices);
 		ImGui::Text("%16s: %10lu", "n_faces", mesh->n_faces);
+		ImGui::DragFloat4("camera center", (float *) &cam.pos, 0.2);
 
 		if(mesh.render_pointcloud)
 		{
@@ -292,6 +302,7 @@ void viewer::init_menus()
 	add_process(GLFW_KEY_F6, {"F6", "Render Wireframe", set_render_wireframe});
 	add_process(GLFW_KEY_F7, {"F7", "Render Triangles", set_render_triangles});
 	add_process(GLFW_KEY_F8, {"F8", "Render GL", set_render_gl});
+	add_process(GLFW_KEY_R, {"R", "Setup Raytracing", setup_raytracing});
 #ifdef GPROSHAN_EMBREE
 	add_process(GLFW_KEY_F9, {"F9", "Render Embree", set_render_embree});
 	add_process(GLFW_KEY_ENTER, {"ENTER", "Raycasting", raycasting});
@@ -431,7 +442,7 @@ void viewer::cursor_callback(GLFWwindow * window, double x, double y)
 		if(ImGui::GetIO().WantCaptureMouse) return;
 
 		view->cam.motion(x, y, view->window_width, view->window_height);
-		view->action = true;
+		view->rt_restart = true;
 	}
 }
 
@@ -443,13 +454,13 @@ void viewer::scroll_callback(GLFWwindow * window, double, double yoffset)
 	if(yoffset > 0)
 	{
 		view->cam.zoom_in();
-		view->action = true;
+		view->rt_restart = true;
 	}
 
 	if(yoffset < 0)
 	{
 		view->cam.zoom_out();
-		view->action = true;
+		view->rt_restart = true;
 	}
 }
 
@@ -626,6 +637,83 @@ bool viewer::menu_bgc_black(viewer * view)
 	return false;
 }
 
+bool viewer::setup_raytracing(viewer * view)
+{
+	che_viewer & mesh = view->active_mesh();
+
+	static int rt = 0;
+	static int rt_opt = 0;
+	static double time = 0;
+	static float pc_radius = 0.01;
+
+	ImGui::Combo("rt", &rt, "Select\0Embree\0OptiX\0\0");
+
+	if(rt != 0)
+	{
+		ImGui::Combo("rt_opt", &rt_opt, "Mesh\0Splat\0\0");
+		ImGui::InputFloat("pc_radius (if render_pointcloud)", &pc_radius, 0, 0, "%.3f");
+	}
+
+	if(ImGui::Button("Build"))
+	{
+		if(!view->rt_frame)
+			view->rt_frame = new frame;
+
+		switch(rt)
+		{
+			case R_GL: break;
+
+			case R_EMBREE:
+			#ifdef GPROSHAN_EMBREE
+				delete view->rt_embree;
+				TIC(time);
+				switch(rt_opt)
+				{
+					case 0: view->rt_embree = new rt::embree({mesh}, mesh.render_pointcloud, pc_radius);
+							break;
+					case 1: view->rt_embree = new rt::embree_splat({mesh}, true);
+							break;
+				}
+				TOC(time);
+				sprintf(view->status_message, "build embree in %.3fs", time);
+			#endif // GPROSHAN_EMBREE
+				break;
+
+			case R_OPTIX:
+			#ifdef GPROSHAN_OPTIX
+				delete view->rt_optix;
+				TIC(time);
+				view->rt_optix = new rt::optix({mesh});
+				TOC(time);
+				sprintf(view->status_message, "build optix in %.3fs", time);
+			#endif // GPROSHAN_OPTIX
+				break;
+		}
+	}
+
+	return true;
+}
+
+bool viewer::set_render_gl(viewer * view)
+{
+	view->render_opt = R_GL;
+	return false;
+}
+
+bool viewer::set_render_embree(viewer * view)
+{
+	view->rt_restart = true;
+	view->render_opt = R_EMBREE;
+	return false;
+}
+
+bool viewer::set_render_optix(viewer * view)
+{
+	view->rt_restart = true;
+	view->render_opt = R_OPTIX;
+	return false;
+}
+
 bool viewer::invert_orientation(viewer * view)
 {
 	view->active_mesh().invert_orientation();
@@ -633,71 +721,6 @@ bool viewer::invert_orientation(viewer * view)
 
 	return false;
 }
-
-bool viewer::set_render_gl(viewer * view)
-{
-	view->render_opt = R_GL;
-
-	return false;
-}
-
-#ifdef GPROSHAN_EMBREE
-bool viewer::set_render_embree(viewer * view)
-{
-	che_viewer & mesh = view->active_mesh();
-
-	static int rt_opt = 0;
-	static double time = 0;
-
-	ImGui::Combo("rt_opt", &rt_opt, "Mesh\0Splat\0\0");
-	ImGui::InputFloat("pc_radius", &rt::embree::pc_radius, 0, 0, "%.3f");
-
-	if(!view->rt_embree)
-	{
-		if(ImGui::Button("Start"))
-		{
-			view->render_opt = R_EMBREE;
-
-			TIC(time);
-			switch(rt_opt)
-			{
-				case 0: view->rt_embree = new rt::embree({mesh});
-						break;
-				case 1: view->rt_embree = new rt::embree_splat({mesh}, true);
-						break;
-			}
-			TOC(time);
-			sprintf(view->status_message, "build embree in %.3fs", time);
-
-			if(!view->render_frame)
-				view->render_frame = new frame;
-		}
-	}
-	else
-	{
-		view->render_opt = R_EMBREE;
-
-		if(ImGui::Button("Restart"))
-		{
-			delete view->rt_embree;
-			view->rt_embree = nullptr;
-
-			view->render_opt = R_GL;
-		}
-	}
-
-	return true;
-}
-#endif // GPROSHAN_EMBREE
-
-#ifdef GPROSHAN_OPTIX
-bool viewer::set_render_optix(viewer * view)
-{
-	view->render_opt = 2;
-
-	return false;
-}
-#endif // GPROSHAN_OPTIX
 
 bool viewer::set_render_pointcloud(viewer * view)
 {
@@ -761,7 +784,7 @@ bool viewer::set_render_flat(viewer * view)
 {
 	che_viewer & mesh = view->active_mesh();
 	mesh.render_flat = !mesh.render_flat;
-	view->action = true;
+	view->rt_restart = true;
 
 	return false;
 }
@@ -837,40 +860,26 @@ void viewer::render_gl()
 	}
 }
 
-#ifdef GPROSHAN_EMBREE
-void viewer::render_embree()
+void viewer::render_rt(rt::raytracing * rt)
 {
-	rt_embree->pathtracing(	glm::uvec2(viewport_width, viewport_height),
-							view_mat, proj_mat, {glm_vec3(light)},
-							active_mesh().render_flat, action
-							);
+	if(!rt) return;
 
-	action = false;
-	render_frame->display(viewport_width, viewport_height, rt_embree->img);
+	rt_restart = rt_frame->resize(viewport_width, viewport_height) || rt_restart;
+
+	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, *rt_frame);
+	glm::vec4 * img = (glm::vec4 *) glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_READ_WRITE);
+
+	rt->render(	img, glm::uvec2(viewport_width, viewport_height),
+				view_mat, proj_mat, {glm_vec3(light)},
+				active_mesh().render_flat, rt_restart
+				);
+
+	glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
+	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+
+	rt_restart = false;
+	rt_frame->display();
 }
-#endif // GPROSHAN_EMBREE
-
-#ifdef GPROSHAN_OPTIX
-void viewer::render_optix()
-{
-	if(!rt_optix)
-	{
-		double time_build_optix;
-		TIC(time_build_optix);
-
-			rt_optix = new rt::optix({active_mesh()});
-
-		TOC(time_build_optix);
-		gproshan_log_var(time_build_optix);
-	}
-
-	rt_optix->pathtracing(	glm::uvec2(viewport_width, viewport_height),
-							view_mat, proj_mat, {glm_vec3(light)}, action);
-
-	action = false;
-	render_frame->display(viewport_width, viewport_height, rt_optix->img);
-}
-#endif // GPROSHAN_OPTIX
 
 void viewer::draw_selected_vertices(shader & program, const che_viewer & mesh)
 {
@@ -900,9 +909,10 @@ void viewer::select_border_vertices(che_viewer & mesh)
 
 void viewer::pick_vertex(const real_t & x, const real_t & y)
 {
-	active_mesh().select(	x * viewport_width / window_width,
-							y * viewport_height / window_height,
-							{viewport_width, viewport_height}, view_mat, proj_mat);
+	float xscale, yscale;
+	glfwGetWindowContentScale(window, &xscale, &yscale);
+
+	active_mesh().select(x * xscale, y * yscale, {viewport_width, viewport_height}, view_mat, proj_mat);
 }
 
 

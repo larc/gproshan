@@ -16,9 +16,7 @@ glm::mat4 camera::look_at(const quaternion & r)
 {
 	eye = r.conj() * pos * r;
 
-	return glm::lookAt( glm_vec3(eye),
-						glm_vec3(r.conj() * center * r),
-						glm_vec3(r.conj() * up * r));
+	return glm::lookAt(glm_vec3(eye), glm_vec3(r.conj() * (pos + front) * r), glm_vec3(r.conj() * up * r));
 }
 
 quaternion camera::click_to_sphere(const double & x, const double & y, const int & w, const int & h)
@@ -40,7 +38,7 @@ quaternion camera::click_to_sphere(const double & x, const double & y, const int
 
 quaternion camera::current_rotation() const
 {
-	return (p_drag * p_click.conj()) * r_last;
+	return p_drag * p_click.conj() * r_last;
 }
 
 void camera::mouse(const bool & press, const double & x, const double & y, const int & w, const int & h)
