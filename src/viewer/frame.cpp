@@ -9,7 +9,7 @@
 namespace gproshan {
 
 
-frame::frame(const size_t & width, const size_t & height)
+frame::frame()
 {
 	program.load_vertex(shaders_path("vertex_frame.glsl"));
 	program.load_fragment(shaders_path("fragment_frame.glsl"));
@@ -36,12 +36,7 @@ frame::frame(const size_t & width, const size_t & height)
 	glBindVertexArray(0);
 
 
-	pbo_size = 4 * sizeof(float) * width * height;
-
 	glGenBuffers(1, &pbo);
-	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
-	glBufferData(GL_PIXEL_UNPACK_BUFFER, pbo_size, 0, GL_DYNAMIC_COPY);
-
 
 	glGenTextures(1, &render_tex);
 	glBindTexture(GL_TEXTURE_2D, render_tex);
@@ -50,12 +45,6 @@ frame::frame(const size_t & width, const size_t & height)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glBindTexture(GL_TEXTURE_2D, 0);
-	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
-}
-
-frame::operator const GLuint & () const
-{
-	return pbo;
 }
 
 frame::~frame()
@@ -66,7 +55,30 @@ frame::~frame()
 	glDeleteBuffers(1, &pbo);
 }
 
-void frame::display(const int & width, const int & height)
+frame::operator const GLuint & () const
+{
+	return pbo;
+}
+
+bool frame::resize(const size_t & w, const size_t & h)
+{
+	if(w == width && height == h)
+		return false;
+
+	if(w * h > width * height)
+	{
+		glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
+		glBufferData(GL_PIXEL_UNPACK_BUFFER, 4 * sizeof(float) * w * h, 0, GL_DYNAMIC_COPY);
+		glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+	}
+
+	width = w;
+	height = h;
+
+	return true;
+}
+
+void frame::display()
 {
 	program.enable();
 

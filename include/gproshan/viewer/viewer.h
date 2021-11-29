@@ -80,12 +80,12 @@ class viewer
 		enum render_type: index_t { R_GL, R_EMBREE, R_OPTIX };
 		index_t render_opt = R_GL;
 
-		frame * render_frame = nullptr;
+		frame * rt_frame = nullptr;
 
 		rt::raytracing * rt_embree = nullptr;
 		rt::raytracing * rt_optix = nullptr;
 
-		bool action = false;
+		bool rt_restart = false;
 
 		float bgc = 0;
 

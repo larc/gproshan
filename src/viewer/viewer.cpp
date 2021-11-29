@@ -77,7 +77,7 @@ viewer::~viewer()
 	delete rt_embree;
 	delete rt_optix;
 
-	delete render_frame;
+	delete rt_frame;
 
 	delete sphere;
 }
@@ -442,7 +442,7 @@ void viewer::cursor_callback(GLFWwindow * window, double x, double y)
 		if(ImGui::GetIO().WantCaptureMouse) return;
 
 		view->cam.motion(x, y, view->window_width, view->window_height);
-		view->action = true;
+		view->rt_restart = true;
 	}
 }
 
@@ -454,13 +454,13 @@ void viewer::scroll_callback(GLFWwindow * window, double, double yoffset)
 	if(yoffset > 0)
 	{
 		view->cam.zoom_in();
-		view->action = true;
+		view->rt_restart = true;
 	}
 
 	if(yoffset < 0)
 	{
 		view->cam.zoom_out();
-		view->action = true;
+		view->rt_restart = true;
 	}
 }
 
@@ -656,8 +656,8 @@ bool viewer::setup_raytracing(viewer * view)
 
 	if(ImGui::Button("Build"))
 	{
-		if(!view->render_frame)
-			view->render_frame = new frame(view->viewport_width, view->viewport_height);
+		if(!view->rt_frame)
+			view->rt_frame = new frame;
 
 		switch(rt)
 		{
@@ -702,14 +702,14 @@ bool viewer::set_render_gl(viewer * view)
 
 bool viewer::set_render_embree(viewer * view)
 {
-	view->action = true;
+	view->rt_restart = true;
 	view->render_opt = R_EMBREE;
 	return false;
 }
 
 bool viewer::set_render_optix(viewer * view)
 {
-	view->action = true;
+	view->rt_restart = true;
 	view->render_opt = R_OPTIX;
 	return false;
 }
@@ -784,7 +784,7 @@ bool viewer::set_render_flat(viewer * view)
 {
 	che_viewer & mesh = view->active_mesh();
 	mesh.render_flat = !mesh.render_flat;
-	view->action = true;
+	view->rt_restart = true;
 
 	return false;
 }
@@ -864,19 +864,21 @@ void viewer::render_rt(rt::raytracing * rt)
 {
 	if(!rt) return;
 
-	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, *render_frame);
+	rt_restart = rt_frame->resize(viewport_width, viewport_height) || rt_restart;
+
+	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, *rt_frame);
 	glm::vec4 * img = (glm::vec4 *) glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
 
 	rt->render(	img, glm::uvec2(viewport_width, viewport_height),
 				view_mat, proj_mat, {glm_vec3(light)},
-				active_mesh().render_flat, action
+				active_mesh().render_flat, rt_restart
 				);
 
 	glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
 	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 
-	action = false;
-	render_frame->display(viewport_width, viewport_height);
+	rt_restart = false;
+	rt_frame->display();
 }
 
 void viewer::draw_selected_vertices(shader & program, const che_viewer & mesh)

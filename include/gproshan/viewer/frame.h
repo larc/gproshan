@@ -19,17 +19,19 @@ class frame
 		GLuint vbo = 0;
 		GLuint pbo = 0;
 
-		size_t pbo_size = 0;
+		size_t width = 0;
+		size_t height = 0;
 
 		shader program;
 
 	public:
-		frame(const size_t & width, const size_t & height);
+		frame();
 		~frame();
 
 		operator const GLuint & () const;
 
-		void display(const int & width, const int & height);
+		bool resize(const size_t & w, const size_t & h);
+		void display();
 };
 
 
