@@ -657,7 +657,7 @@ bool viewer::setup_raytracing(viewer * view)
 	if(ImGui::Button("Build"))
 	{
 		if(!view->render_frame)
-			view->render_frame = new frame;
+			view->render_frame = new frame(view->viewport_width, view->viewport_height);
 
 		switch(rt)
 		{
