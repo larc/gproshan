@@ -864,13 +864,19 @@ void viewer::render_rt(rt::raytracing * rt)
 {
 	if(!rt) return;
 
-	rt->render(	glm::uvec2(viewport_width, viewport_height),
+	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, *render_frame);
+	glm::vec4 * img = (glm::vec4 *) glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
+
+	rt->render(	img, glm::uvec2(viewport_width, viewport_height),
 				view_mat, proj_mat, {glm_vec3(light)},
 				active_mesh().render_flat, action
 				);
 
+	glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
+	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+
 	action = false;
-	render_frame->display(viewport_width, viewport_height, rt->img);
+	render_frame->display(viewport_width, viewport_height);
 }
 
 void viewer::draw_selected_vertices(shader & program, const che_viewer & mesh)

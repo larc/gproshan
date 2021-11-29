@@ -9,50 +9,15 @@
 namespace gproshan::rt {
 
 
-raytracing::raytracing()
+void raytracing::render(glm::vec4 * img,
+						const glm::uvec2 & windows_size,
+						const glm::mat4 & view_mat,
+						const glm::mat4 & proj_mat,
+						const std::vector<glm::vec3> & light,
+						const bool & flat,
+						const bool & restart )
 {
-	width = height = n_samples = 0;
-	img = nullptr;
-}
-
-raytracing::~raytracing()
-{
-	if(img) delete [] img;
-}
-
-bool raytracing::rt_restart(const size_t & w, const size_t & h)
-{
-	if(width * height < w * h)
-	{
-		width = w;
-		height = h;
-
-		delete [] img;
-		img = new glm::vec4[width * height];
-
-		return true;
-	}
-
-	if(width != w || height != h)
-	{
-		width = w;
-		height = h;
-
-		return true;
-	}
-
-	return false;
-}
-
-void raytracing::render(	const glm::uvec2 & windows_size,
-								const glm::mat4 & view_mat,
-								const glm::mat4 & proj_mat,
-								const std::vector<glm::vec3> & light,
-								const bool & flat,
-								const bool & restart )
-{
-	if(rt_restart(windows_size.x, windows_size.y) || restart)
-		n_samples = 0;
+	if(restart) n_samples = 0;
 
 	std::default_random_engine gen;
 	std::uniform_real_distribution<float> randf(0, 1);
@@ -62,23 +27,15 @@ void raytracing::render(	const glm::uvec2 & windows_size,
 
 	glm::vec4 li;
 
-	if(!n_samples)
-	{
-		#pragma omp parallel for
-		for(index_t i = 0; i < width; ++i)
-		for(index_t j = 0; j < height; ++j)
-			img[j * width + i] = glm::vec4(0);
-	}
-
 	#pragma omp parallel for private(li)
-	for(index_t i = 0; i < width; ++i)
-	for(index_t j = 0; j < height; ++j)
+	for(index_t i = 0; i < windows_size.x; ++i)
+	for(index_t j = 0; j < windows_size.y; ++j)
 	{
 		//row major
-		glm::vec4 & color = img[j * width + i];
+		glm::vec4 & color = img[j * windows_size.x + i];
 
-		glm::vec2 screen = glm::vec2(	(float(i) + randf(gen)) / width,
-										(float(j) + randf(gen)) / height
+		glm::vec2 screen = glm::vec2(	(float(i) + randf(gen)) / windows_size.x,
+										(float(j) + randf(gen)) / windows_size.y
 										);
 
 		glm::vec4 view = glm::vec4(screen.x * 2 - 1, screen.y * 2 - 1, 1, 1);

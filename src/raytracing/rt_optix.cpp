@@ -111,15 +111,16 @@ optix::~optix()
 		cuda_free_CHE(dd_mesh[i], d_mesh[i]);
 }
 
-void optix::render(	const glm::uvec2 & windows_size,
-							const glm::mat4 & view_mat,
-							const glm::mat4 & proj_mat,
-							const std::vector<glm::vec3> & light,
-							const bool & flat,
-							const bool & restart
-							)
+void optix::render(	glm::vec4 * img,
+					const glm::uvec2 & windows_size,
+					const glm::mat4 & view_mat,
+					const glm::mat4 & proj_mat,
+					const std::vector<glm::vec3> & light,
+					const bool & flat,
+					const bool & restart
+					)
 {
-	if(rt_restart(windows_size.x, windows_size.y) || restart)
+	if(restart)
 	{
 		n_samples = 0;
 

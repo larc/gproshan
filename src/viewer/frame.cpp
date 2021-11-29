@@ -24,7 +24,7 @@ frame::frame(const size_t & width, const size_t & height)
 								1, 1, 0,
 								};
 
-	
+
 	glGenVertexArrays(1, &vao);
 	glGenBuffers(1, &vbo);
 	glBindVertexArray(vao);
@@ -49,8 +49,13 @@ frame::frame(const size_t & width, const size_t & height)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glBindTexture(GL_TEXTURE_2D, 0);	
+	glBindTexture(GL_TEXTURE_2D, 0);
 	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+}
+
+frame::operator const GLuint & () const
+{
+	return pbo;
 }
 
 frame::~frame()
@@ -61,15 +66,8 @@ frame::~frame()
 	glDeleteBuffers(1, &pbo);
 }
 
-void frame::display(const int & width, const int & height, void * buffer)
+void frame::display(const int & width, const int & height)
 {
-	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
-	void * ptr = glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
-	memcpy(ptr, buffer, pbo_size);
-	glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
-	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
-	
-
 	program.enable();
 
 	glViewport(0, 0, width, height);
