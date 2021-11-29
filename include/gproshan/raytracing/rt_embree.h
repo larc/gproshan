@@ -38,12 +38,12 @@ class embree : public raytracing
 		RTCScene scene;
 		RTCIntersectContext intersect_context;
 
-	public:
-		static float pc_radius;
+	protected:
+		float pc_radius = 1;
 
 	public:
 		embree();
-		embree(const std::vector<che *> & meshes, const bool & pointcloud = false);
+		embree(const std::vector<che *> & meshes, const bool & pointcloud = false, const float & pcr = 1);
 		virtual ~embree();
 
 		virtual index_t cast_ray(const glm::vec3 & org, const glm::vec3 & dir);
