@@ -107,6 +107,13 @@ optix::optix(const std::vector<che *> & meshes)
 
 optix::~optix()
 {
+	cudaFree(render_params.frame.color_buffer);
+	cudaFree(launch_params_buffer);
+	cudaFree(raygen_records_buffer);
+	cudaFree(miss_records_buffer);
+	cudaFree(hitgroup_records_buffer);
+	cudaFree(as_buffer);
+
 	for(index_t i = 0; i < dd_mesh.size(); ++i)
 		cuda_free_CHE(dd_mesh[i], d_mesh[i]);
 }
@@ -389,13 +396,12 @@ OptixTraversableHandle optix::build_as(const std::vector<che *> & meshes)
 	uint64_t compacted_size;
 	cudaMemcpy(&compacted_size, d_compacted_size, sizeof(uint64_t), cudaMemcpyDeviceToHost);
 
-	void * d_as;
-	cudaMalloc(&d_as, compacted_size);
+	cudaMalloc(&as_buffer, compacted_size);
 
 	optixAccelCompact(	optix_context,
 						0,	// stream
 						optix_as_handle,
-						(CUdeviceptr) d_as,
+						(CUdeviceptr) as_buffer,
 						compacted_size,
 						&optix_as_handle
 						);

@@ -48,6 +48,7 @@ class optix : public raytracing
 	void * raygen_records_buffer = nullptr;
 	void * miss_records_buffer = nullptr;
 	void * hitgroup_records_buffer = nullptr;
+	void * as_buffer = nullptr;
 
 	public:
 		optix(const std::vector<che *> & meshes);

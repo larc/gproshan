@@ -867,7 +867,7 @@ void viewer::render_rt(rt::raytracing * rt)
 	rt_restart = rt_frame->resize(viewport_width, viewport_height) || rt_restart;
 
 	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, *rt_frame);
-	glm::vec4 * img = (glm::vec4 *) glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
+	glm::vec4 * img = (glm::vec4 *) glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_READ_WRITE);
 
 	rt->render(	img, glm::uvec2(viewport_width, viewport_height),
 				view_mat, proj_mat, {glm_vec3(light)},
