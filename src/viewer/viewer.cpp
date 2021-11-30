@@ -19,6 +19,7 @@
 
 #ifdef GPROSHAN_EMBREE
 	#include "raytracing/rt_embree.h"
+	#include "raytracing/rt_embree_splat_ch.h"
 #endif // GPROSHAN_EMBREE
 
 #ifdef GPROSHAN_OPTIX
@@ -647,6 +648,21 @@ bool viewer::setup_raytracing(viewer * view)
 	ImGui::Combo("rt", &rt, "Select\0Embree\0OptiX\0\0");
 	ImGui::InputFloat("pc_radius (if render_pointcloud)", &pc_radius, 0, 0, "%.3f");
 
+	static int rt_opt = 0;
+	static float angle = acos(rt::embree_splat_ch::n_threshold) * 180 / M_PI;
+	static const size_t min_neighbors = 1 << 3;
+	static const size_t max_neighbors = 1 << 10;
+
+	ImGui::Combo("splat_opt", &rt_opt, "Mesh\0Splat\0\0");
+	if(rt_opt)
+	{
+		ImGui::Checkbox("show_chsplats", &rt::embree_splat_ch::show_chsplats);
+		// ImGui::SliderFloat("r_threshold", &rt::embree_splat_ch::r_threshold, 0.01, 1, "%.2f");
+		ImGui::SliderFloat("n_threshold", &angle, 0, 90, "%.2f");
+		ImGui::SliderScalar("max_neighbors", ImGuiDataType_U64, &rt::embree_splat_ch::max_neighbors, &min_neighbors, &max_neighbors, "%lu");
+		ImGui::SliderInt("k_neighbors", &rt::embree_splat_ch::k_neighbors, 1 << 2, 1 << 5);
+	}
+
 	if(ImGui::Button("Build"))
 	{
 		if(!view->rt_frame)
@@ -660,7 +676,13 @@ bool viewer::setup_raytracing(viewer * view)
 			#ifdef GPROSHAN_EMBREE
 				delete view->rt_embree;
 				TIC(time);
+				if(!rt_opt)
 					view->rt_embree = new rt::embree({mesh}, mesh.render_pointcloud, pc_radius);
+				else
+				{
+					rt::embree_splat_ch::n_threshold = cos(angle * M_PI / 180);
+					view->rt_embree = new rt::embree_splat_ch({view->active_mesh()}, true);
+				}
 				TOC(time);
 				sprintf(view->status_message, "build embree in %.3fs", time);
 			#endif // GPROSHAN_EMBREE
