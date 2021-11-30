@@ -30,19 +30,14 @@ class raytracing
 
 		std::map<index_t, rt_mesh> geomID_mesh;
 
-		size_t width;
-		size_t height;
-		size_t n_samples;
+		size_t n_samples = 0;
 
 	public:
-		glm::vec4 * img = nullptr;
+		raytracing() = default;
+		virtual ~raytracing() = default;
 
-	public:
-		raytracing();
-		virtual ~raytracing();
-
-		virtual bool rt_restart(const size_t & w, const size_t & h);
-		virtual void render(	const glm::uvec2 & windows_size,
+		virtual void render(glm::vec4 * img,
+							const glm::uvec2 & windows_size,
 							const glm::mat4 & view_mat,
 							const glm::mat4 & proj_mat,
 							const std::vector<glm::vec3> & light,

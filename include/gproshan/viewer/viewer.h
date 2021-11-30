@@ -75,17 +75,17 @@ class viewer
 
 		che_viewer meshes[N_MESHES];
 		size_t n_meshes	= 0;
-		index_t idx_active_mesh = 0; // idx_active_mesh mesh
+		index_t idx_active_mesh = 0;
 
 		enum render_type: index_t { R_GL, R_EMBREE, R_OPTIX };
 		index_t render_opt = R_GL;
 
-		frame * render_frame = nullptr;
+		frame * rt_frame = nullptr;
 
 		rt::raytracing * rt_embree = nullptr;
 		rt::raytracing * rt_optix = nullptr;
 
-		bool action = false;
+		bool rt_restart = false;
 
 		float bgc = 0;
 
@@ -120,12 +120,7 @@ class viewer
 		void init_glsl();
 
 		void render_gl();
-	#ifdef GPROSHAN_EMBREE
-		void render_embree();
-	#endif // GPROSHAN_EMBREE
-	#ifdef GPROSHAN_OPTIX
-		void render_optix();
-	#endif // GPROSHAN_OPTIX
+		void render_rt(rt::raytracing * rt);
 
 		static void framebuffer_size_callback(GLFWwindow * window, int width, int height);
 		static void window_size_callback(GLFWwindow * window, int width, int height);
@@ -145,15 +140,12 @@ class viewer
 		static bool menu_bgc_white(viewer * view);
 		static bool menu_bgc_black(viewer * view);
 
-		// render options
-		static bool invert_orientation(viewer * view);
+		static bool setup_raytracing(viewer * view);
 		static bool set_render_gl(viewer * view);
-	#ifdef GPROSHAN_EMBREE
 		static bool set_render_embree(viewer * view);
-	#endif // GPROSHAN_EMBREE
-	#ifdef GPROSHAN_OPTIX
 		static bool set_render_optix(viewer * view);
-	#endif // GPROSHAN_OPTIX
+
+		static bool invert_orientation(viewer * view);
 		static bool set_render_pointcloud(viewer * view);
 		static bool set_render_wireframe(viewer * view);
 		static bool set_render_triangles(viewer * view);

@@ -48,18 +48,20 @@ class optix : public raytracing
 	void * raygen_records_buffer = nullptr;
 	void * miss_records_buffer = nullptr;
 	void * hitgroup_records_buffer = nullptr;
+	void * as_buffer = nullptr;
 
 	public:
 		optix(const std::vector<che *> & meshes);
 		~optix();
 
-		void render(	const glm::uvec2 & windows_size,
-							const glm::mat4 & view_mat,
-							const glm::mat4 & proj_mat,
-							const std::vector<glm::vec3> & light,
-							const bool & flat,
-							const bool & restart = false
-							);
+		void render(glm::vec4 * img,
+					const glm::uvec2 & windows_size,
+					const glm::mat4 & view_mat,
+					const glm::mat4 & proj_mat,
+					const std::vector<glm::vec3> & light,
+					const bool & flat,
+					const bool & restart = false
+					);
 
 
 	private:

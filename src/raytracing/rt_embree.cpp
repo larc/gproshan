@@ -94,7 +94,6 @@ void embree_error(void *, RTCError, const char * str)
 	fprintf(stderr, "EMBREE ERROR: %s\n", str);
 }
 
-float embree::pc_radius = 0.005;
 
 embree::embree()
 {
@@ -107,8 +106,9 @@ embree::embree()
 	rtcSetDeviceErrorFunction(device, embree_error, NULL);
 }
 
-embree::embree(const std::vector<che *> & meshes, const bool & pointcloud): embree()
+embree::embree(const std::vector<che *> & meshes, const bool & pointcloud, const float & pcr): embree()
 {
+	pc_radius = pcr;
 	build_bvh(meshes, pointcloud);
 }
 
