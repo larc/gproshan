@@ -19,7 +19,6 @@
 
 #ifdef GPROSHAN_EMBREE
 	#include "raytracing/rt_embree.h"
-	#include "raytracing/rt_embree_splat.h"
 #endif // GPROSHAN_EMBREE
 
 #ifdef GPROSHAN_OPTIX
@@ -642,17 +641,11 @@ bool viewer::setup_raytracing(viewer * view)
 	che_viewer & mesh = view->active_mesh();
 
 	static int rt = 0;
-	static int rt_opt = 0;
 	static double time = 0;
 	static float pc_radius = 0.01;
 
 	ImGui::Combo("rt", &rt, "Select\0Embree\0OptiX\0\0");
-
-	if(rt != 0)
-	{
-		ImGui::Combo("rt_opt", &rt_opt, "Mesh\0Splat\0\0");
-		ImGui::InputFloat("pc_radius (if render_pointcloud)", &pc_radius, 0, 0, "%.3f");
-	}
+	ImGui::InputFloat("pc_radius (if render_pointcloud)", &pc_radius, 0, 0, "%.3f");
 
 	if(ImGui::Button("Build"))
 	{
@@ -667,13 +660,7 @@ bool viewer::setup_raytracing(viewer * view)
 			#ifdef GPROSHAN_EMBREE
 				delete view->rt_embree;
 				TIC(time);
-				switch(rt_opt)
-				{
-					case 0: view->rt_embree = new rt::embree({mesh}, mesh.render_pointcloud, pc_radius);
-							break;
-					case 1: view->rt_embree = new rt::embree_splat({mesh}, true);
-							break;
-				}
+					view->rt_embree = new rt::embree({mesh}, mesh.render_pointcloud, pc_radius);
 				TOC(time);
 				sprintf(view->status_message, "build embree in %.3fs", time);
 			#endif // GPROSHAN_EMBREE
@@ -683,7 +670,7 @@ bool viewer::setup_raytracing(viewer * view)
 			#ifdef GPROSHAN_OPTIX
 				delete view->rt_optix;
 				TIC(time);
-				view->rt_optix = new rt::optix({mesh});
+					view->rt_optix = new rt::optix({mesh});
 				TOC(time);
 				sprintf(view->status_message, "build optix in %.3fs", time);
 			#endif // GPROSHAN_OPTIX
