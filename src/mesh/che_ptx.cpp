@@ -42,7 +42,7 @@ void che_ptx::read_file(const string & file)
 
 	alloc(n_rows * n_cols, 2 * (n_rows - 1) * (n_cols - 1));
 
-	float x, y, z, a;
+	float x, y, z, intensity;
 	unsigned char r, g, b;
 	char line[128];
 
@@ -51,21 +51,21 @@ void che_ptx::read_file(const string & file)
 	// vertex 0: x y z a or x y z a r g b
 	fgets(line, sizeof(line), fp);
 	fgets(line, sizeof(line), fp);
-	rgb = sscanf(line, "%f %f %f %f %hhu %hhu %hhu", &x, &y, &z, &a, &r, &g, &b) == 7;
+	rgb = sscanf(line, "%f %f %f %f %hhu %hhu %hhu", &x, &y, &z, &intensity, &r, &g, &b) == 7;
 
 	if(rgb)
 	{
 		GT[0] = { x, y, z };
 		VC[0] = { r, g, b };
-		VHC[0] = a;
+		VHC[0] = intensity;
 
 		for(index_t v = 1; v < n_vertices; ++v)
 		{
 			fgets(line, sizeof(line), fp);
-			sscanf(line, "%f %f %f %f %hhu %hhu %hhu", &x, &y, &z, &a, &r, &g, &b);
+			sscanf(line, "%f %f %f %f %hhu %hhu %hhu", &x, &y, &z, &intensity, &r, &g, &b);
 			GT[v] = { x, y, z };
 			VC[v] = { r, g, b };
-			VHC[v] = a;
+			VHC[v] = intensity;
 		}
 
 		CImg<unsigned char> img((unsigned char *) VC, 3, n_cols, n_rows);
@@ -77,14 +77,14 @@ void che_ptx::read_file(const string & file)
 	else
 	{
 		GT[0] = { x, y, z };
-		VHC[0] = a;
+		VHC[0] = intensity;
 
 		for(index_t v = 1; v < n_vertices; ++v)
 		{
 			fgets(line, sizeof(line), fp);
-			sscanf(line, "%f %f %f %f", &x, &y, &z, &a);
+			sscanf(line, "%f %f %f %f", &x, &y, &z, &intensity);
 			GT[v] = { x, y, z };
-			VHC[v] = a;
+			VHC[v] = intensity;
 		}
 	}
 

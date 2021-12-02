@@ -58,6 +58,8 @@ void che_viewer::update()
 {
 	if(normalize) mesh->normalize();
 
+	render_pointcloud = mesh->is_pointcloud();
+
 	vertex pmin(INFINITY, INFINITY, INFINITY);
 	vertex pmax(0, 0, 0);
 

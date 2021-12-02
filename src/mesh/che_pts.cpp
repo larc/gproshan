@@ -30,15 +30,15 @@ void che_pts::read_file(const string & file)
 	fscanf(fp, "%lu", &n);
 
 	alloc(n, 0);
-	
+
 	for(index_t v = 0; v < n_vertices; ++v)
 	{
 		n = fscanf(fp, "%f %f %f %d %hhu %hhu %hhu", &x, &y, &z, &intensity, &r, &g, &b);
 
-		GT[v] = {x, y, z};
+		GT[v] = { x, y, z };
 		if(n == 7)
 		{
-			VC[v] = {r, g, b};
+			VC[v] = { r, g, b };
 			VHC[v] = float(intensity + 2048) / 4095;
 		}
 	}
