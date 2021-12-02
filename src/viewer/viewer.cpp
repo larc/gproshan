@@ -15,6 +15,7 @@
 #include "mesh/che_obj.h"
 #include "mesh/che_ply.h"
 #include "mesh/che_xyz.h"
+#include "mesh/che_pts.h"
 #include "mesh/che_sphere.h"
 
 #ifdef GPROSHAN_EMBREE
@@ -546,7 +547,7 @@ bool viewer::menu_save_mesh(viewer * view)
 	static bool vertex_color = false;
 
 	ImGui::InputText("file", file, sizeof(file));
-	ImGui::Combo("format", &format, ".off\0.obj\0.ply\0.xyz\0\0");
+	ImGui::Combo("format", &format, ".off\0.obj\0.ply\0.xyz\0.pts\0");
 
 	switch(format)
 	{
@@ -577,6 +578,8 @@ bool viewer::menu_save_mesh(viewer * view)
 			case 2: che_ply::write_file(mesh, file, vertex_color);
 				break;
 			case 3: che_xyz::write_file(mesh, file, vertex_color);
+				break;
+			case 4: che_pts::write_file(mesh, file);
 				break;
 		}
 

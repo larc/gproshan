@@ -9,6 +9,7 @@
 #include "mesh/che_ply.h"
 #include "mesh/che_ptx.h"
 #include "mesh/che_xyz.h"
+#include "mesh/che_pts.h"
 #include "mesh/che_img.h"
 #include "mesh/che_sphere.h"
 #include "mesh/che_fill_hole.h"
