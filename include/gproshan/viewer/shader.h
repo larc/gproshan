@@ -13,9 +13,9 @@ namespace gproshan {
 class shader
 {
 	protected:
-		GLuint program {0};
+		GLuint program = 0;
 		std::map<std::string, GLint> uniform;
-		bool linked;
+		bool linked = false;
 
 	public:
 		shader() = default;

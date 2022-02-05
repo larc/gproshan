@@ -92,8 +92,8 @@ bool viewer::run()
 
 		quaternion r = cam.current_rotation();
 
-		light = vertex(-1, 1, -2);
-		light = r.conj() * light * r;
+		cam_light = vertex(-1, 1, -2);
+		cam_light = r.conj() * cam_light * r;
 
 		view_mat = cam.look_at(r);
 		proj_mat = glm::perspective(45.f, float(viewport_width) / float(viewport_height), .01f, 1000.f);
@@ -182,7 +182,6 @@ bool viewer::run()
 		ImGui::Text("%16s: %.3f", "FPS", 1.0 / render_time);
 		ImGui::Text("%16s: %10lu", "n_vertices", mesh->n_vertices);
 		ImGui::Text("%16s: %10lu", "n_faces", mesh->n_faces);
-		ImGui::DragFloat4("camera center", (float *) &cam.pos, 0.2);
 
 		if(mesh.render_pointcloud)
 		{
@@ -426,22 +425,26 @@ void viewer::mouse_callback(GLFWwindow * window, int button, int action, int mod
 
 	if(mods == GLFW_MOD_SHIFT && action == GLFW_RELEASE)
 		view->pick_vertex(xpos, ypos);
-	else if(button == GLFW_MOUSE_BUTTON_RIGHT)
-	{
-	}
-	else
+	else if(button == GLFW_MOUSE_BUTTON_LEFT)
 		view->cam.mouse(action == GLFW_PRESS, xpos, ypos, view->window_width, view->window_height);
 }
 
 void viewer::cursor_callback(GLFWwindow * window, double x, double y)
 {
-	int state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
-	if(state == GLFW_PRESS)
-	{
-		viewer * view = (viewer *) glfwGetWindowUserPointer(window);
-		if(ImGui::GetIO().WantCaptureMouse) return;
+	if(ImGui::GetIO().WantCaptureMouse) return;
 
+	viewer * view = (viewer *) glfwGetWindowUserPointer(window);
+
+	if(GLFW_PRESS == glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT))
+	{
 		view->cam.motion(x, y, view->window_width, view->window_height);
+		view->rt_restart = true;
+	}
+
+	if(GLFW_PRESS == glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT))
+	{
+		view->cam.pos.im().x = 2 * x / view->window_width - 1;
+		view->cam.pos.im().y = 2 * y / view->window_height - 1;
 		view->rt_restart = true;
 	}
 }
@@ -592,14 +595,12 @@ bool viewer::menu_save_mesh(viewer * view)
 bool viewer::menu_zoom_in(viewer * view)
 {
 	view->cam.zoom_in();
-
 	return false;
 }
 
 bool viewer::menu_zoom_out(viewer * view)
 {
 	view->cam.zoom_out();
-
 	return false;
 }
 
@@ -706,8 +707,10 @@ bool viewer::set_render_optix(viewer * view)
 
 bool viewer::invert_orientation(viewer * view)
 {
-	view->active_mesh().invert_orientation();
-	view->active_mesh().update_vbo_normal();
+	che_viewer & mesh = view->active_mesh();
+
+	mesh.invert_orientation();
+	mesh.update_vbo_normal();
 
 	return false;
 }
@@ -803,18 +806,18 @@ bool viewer::raycasting(viewer * view)
 void viewer::render_gl()
 {
 	glProgramUniform3f(shader_sphere, shader_sphere("eye"), cam.eye[0], cam.eye[1], cam.eye[2]);
-	glProgramUniform3f(shader_sphere, shader_sphere("light"), light[0], light[1], light[2]);
+	glProgramUniform3f(shader_sphere, shader_sphere("cam_light"), cam_light[0], cam_light[1], cam_light[2]);
 	glProgramUniformMatrix4fv(shader_sphere, shader_sphere("model_view_mat"), 1, 0, &view_mat[0][0]);
 	glProgramUniformMatrix4fv(shader_sphere, shader_sphere("proj_mat"), 1, 0, &proj_mat[0][0]);
 	glProgramUniform1f(shader_sphere, shader_sphere("scale"), cam.zoom());
 
 	glProgramUniform3f(shader_triangles, shader_triangles("eye"), cam.eye[0], cam.eye[1], cam.eye[2]);
-	glProgramUniform3f(shader_triangles, shader_triangles("light"), light[0], light[1], light[2]);
+	glProgramUniform3f(shader_triangles, shader_triangles("cam_light"), cam_light[0], cam_light[1], cam_light[2]);
 	glProgramUniformMatrix4fv(shader_triangles, shader_triangles("model_view_mat"), 1, 0, &view_mat[0][0]);
 	glProgramUniformMatrix4fv(shader_triangles, shader_triangles("proj_mat"), 1, 0, &proj_mat[0][0]);
 
 	glProgramUniform3f(shader_pointcloud, shader_pointcloud("eye"), cam.eye[0], cam.eye[1], cam.eye[2]);
-	glProgramUniform3f(shader_pointcloud, shader_pointcloud("light"), light[0], light[1], light[2]);
+	glProgramUniform3f(shader_pointcloud, shader_pointcloud("cam_light"), cam_light[0], cam_light[1], cam_light[2]);
 	glProgramUniformMatrix4fv(shader_pointcloud, shader_pointcloud("model_view_mat"), 1, 0, &view_mat[0][0]);
 	glProgramUniformMatrix4fv(shader_pointcloud, shader_pointcloud("proj_mat"), 1, 0, &proj_mat[0][0]);
 
@@ -859,9 +862,18 @@ void viewer::render_rt(rt::raytracing * rt)
 	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, *rt_frame);
 	glm::vec4 * img = (glm::vec4 *) glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_READ_WRITE);
 
+	scene_lights.clear();
+
+	che_viewer & mesh = active_mesh();
+	for(const index_t & v: mesh.selected)
+		scene_lights.push_back(glm_vec3(mesh->gt(v)));
+
+	if(!scene_lights.size())
+		scene_lights = {glm_vec3(cam_light)};
+
 	rt->render(	img, glm::uvec2(viewport_width, viewport_height),
-				view_mat, proj_mat, {glm_vec3(light)},
-				active_mesh().render_flat, rt_restart
+				view_mat, proj_mat, scene_lights,
+				mesh.render_flat, rt_restart
 				);
 
 	glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);

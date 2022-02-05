@@ -16,7 +16,7 @@ namespace gproshan {
 
 shader::~shader()
 {
-	if(program) glDeleteProgram(program);
+	glDeleteProgram(program);
 }
 
 const GLint & shader::operator () (const string & name)
@@ -73,7 +73,7 @@ bool shader::load(GLenum shader_type, const std::string & filename)
 		return false;
 	}
 
-	if(program == 0)
+	if(!program)
 		program = glCreateProgram();
 
 	// glDetachShader(program, shader); when/where can we need this?
