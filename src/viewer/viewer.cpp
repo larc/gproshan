@@ -287,38 +287,38 @@ void viewer::init_imgui()
 void viewer::init_menus()
 {
 	sub_menus.push_back("Viewer");
-	add_process(GLFW_KEY_F1, {"F1", "Help", menu_help});
-	add_process(GLFW_KEY_PERIOD, {"PERIOD", "Save/Load view", menu_save_load_view});
-	add_process(GLFW_KEY_UP, {"UP", "Zoom in", menu_zoom_in});
-	add_process(GLFW_KEY_DOWN, {"DOWN", "Zoom out", menu_zoom_out});
-	add_process(GLFW_KEY_RIGHT, {"RIGHT", "Background color inc", menu_bgc_inc});
-	add_process(GLFW_KEY_LEFT, {"LEFT", "Background color dec", menu_bgc_dec});
-	add_process(GLFW_KEY_1, {"1", "Background color white", menu_bgc_white});
-	add_process(GLFW_KEY_0, {"0", "Background color black", menu_bgc_black});
+	add_process(GLFW_KEY_F1, "F1", "Help", menu_help);
+	add_process(GLFW_KEY_PERIOD, "PERIOD", "Save/Load view", menu_save_load_view);
+	add_process(GLFW_KEY_UP, "UP", "Zoom in", menu_zoom_in);
+	add_process(GLFW_KEY_DOWN, "DOWN", "Zoom out", menu_zoom_out);
+	add_process(GLFW_KEY_RIGHT, "RIGHT", "Background color inc", menu_bgc_inc);
+	add_process(GLFW_KEY_LEFT, "LEFT", "Background color dec", menu_bgc_dec);
+	add_process(GLFW_KEY_1, "1", "Background color white", menu_bgc_white);
+	add_process(GLFW_KEY_0, "0", "Background color black", menu_bgc_black);
 
 	sub_menus.push_back("Render");
-	add_process(GLFW_KEY_F5, {"F5", "Render Point Cloud", set_render_pointcloud});
-	add_process(GLFW_KEY_F6, {"F6", "Render Wireframe", set_render_wireframe});
-	add_process(GLFW_KEY_F7, {"F7", "Render Triangles", set_render_triangles});
-	add_process(GLFW_KEY_F8, {"F8", "Render GL", set_render_gl});
-	add_process(GLFW_KEY_R, {"R", "Setup Raytracing", setup_raytracing});
+	add_process(GLFW_KEY_F5, "F5", "Render Point Cloud", set_render_pointcloud);
+	add_process(GLFW_KEY_F6, "F6", "Render Wireframe", set_render_wireframe);
+	add_process(GLFW_KEY_F7, "F7", "Render Triangles", set_render_triangles);
+	add_process(GLFW_KEY_F8, "F8", "Render GL", set_render_gl);
+	add_process(GLFW_KEY_R, "R", "Setup Raytracing", setup_raytracing);
 #ifdef GPROSHAN_EMBREE
-	add_process(GLFW_KEY_F9, {"F9", "Render Embree", set_render_embree});
-	add_process(GLFW_KEY_ENTER, {"ENTER", "Raycasting", raycasting});
+	add_process(GLFW_KEY_F9, "F9", "Render Embree", set_render_embree);
+	add_process(GLFW_KEY_ENTER, "ENTER", "Raycasting", raycasting);
 #endif // GPROSHAN_EMBREE
 #ifdef GPROSHAN_OPTIX
-	add_process(GLFW_KEY_F10, {"F10", "Render OptiX", set_render_optix});
+	add_process(GLFW_KEY_F10, "F10", "Render OptiX", set_render_optix);
 #endif // GPROSHAN_OPTIX
 
 	sub_menus.push_back("Mesh");
-	add_process(GLFW_KEY_BACKSPACE, {"BACKSPACE", "Reload/Reset", menu_reset_mesh});
-	add_process(GLFW_KEY_TAB, {"TAB", "Render Flat", set_render_flat});
-	add_process(GLFW_KEY_SPACE, {"SPACE", "Level Curves", set_render_lines});
-	add_process(GLFW_KEY_F2, {"F2", "Invert Orientation", invert_orientation});
-	add_process(GLFW_KEY_F3, {"F3", "Gradient Field", set_render_gradients});
-	add_process(GLFW_KEY_F4, {"F4", "Normal Field", set_render_normals});
-	add_process(GLFW_KEY_APOSTROPHE, {"APOSTROPHE", "Select Border Vertices", set_render_border});
-	add_process(GLFW_KEY_W, {"W", "Save Mesh", menu_save_mesh});
+	add_process(GLFW_KEY_BACKSPACE, "BACKSPACE", "Reload/Reset", menu_reset_mesh);
+	add_process(GLFW_KEY_TAB, "TAB", "Render Flat", set_render_flat);
+	add_process(GLFW_KEY_SPACE, "SPACE", "Level Curves", set_render_lines);
+	add_process(GLFW_KEY_F2, "F2", "Invert Orientation", invert_orientation);
+	add_process(GLFW_KEY_F3, "F3", "Gradient Field", set_render_gradients);
+	add_process(GLFW_KEY_F4, "F4", "Normal Field", set_render_normals);
+	add_process(GLFW_KEY_APOSTROPHE, "APOSTROPHE", "Select Border Vertices", set_render_border);
+	add_process(GLFW_KEY_W, "W", "Save Mesh", menu_save_mesh);
 }
 
 void viewer::init_glsl()
@@ -342,11 +342,11 @@ void viewer::init_glsl()
 	shader_pointcloud.load_fragment(shaders_path("fragment_pointcloud.glsl"));
 }
 
-void viewer::add_process(const int & key, const process_t & process)
+void viewer::add_process(const int & key, const string & skey, const string & name, const function_t & f)
 {
 	if(processes.find(key) == processes.end())
 	{
-		processes[key] = process;
+		processes[key] = {skey, name, f};
 		processes[key].sub_menu = sub_menus.size() - 1;
 	}
 	else cerr << "Repeat key: " << key << endl;

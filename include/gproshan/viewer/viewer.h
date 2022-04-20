@@ -110,7 +110,7 @@ class viewer
 		bool run();
 
 		che_viewer & active_mesh();
-		void add_process(const int & key, const process_t & process);
+		void add_process(const int & key, const std::string & skey, const std::string & name, const function_t & f);
 		void add_mesh(che * p_mesh);
 
 	private:
