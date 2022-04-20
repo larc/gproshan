@@ -57,6 +57,10 @@ int app_viewer::main(int nargs, const char ** args)
 
 void app_viewer::init()
 {
+	sub_menus.push_back("Scenes");
+	add_process(1001, "", "Compute Normals", process_compute_normals);
+	add_process(1002, "", "Scan Scene", process_simulate_scanner);
+
 	sub_menus.push_back("Geometry");
 	add_process(GLFW_KEY_H, "H", "2D Convex Hull", process_convex_hull);
 	add_process(GLFW_KEY_C, "C", "Connected Components", process_connected_components);
@@ -100,6 +104,36 @@ void app_viewer::init()
 	add_process(GLFW_KEY_SLASH, "SLASH", "Threshold", process_threshold);
 	add_process(GLFW_KEY_N, "N", "Noise", process_noise);
 	add_process(GLFW_KEY_B, "B", "Black noise", process_black_noise);
+}
+
+
+// Scenes
+
+bool app_viewer::process_compute_normals(viewer * p_view)
+{
+	app_viewer * view = (app_viewer *) p_view;
+	che_viewer & mesh = view->active_mesh();
+}
+
+bool app_viewer::process_simulate_scanner(viewer * p_view)
+{
+	app_viewer * view = (app_viewer *) p_view;
+	che_viewer & mesh = view->active_mesh();
+	
+	static size_t n_rows = 2000;
+	static size_t n_cols = 4000;
+	static const size_t n_min = 1000;
+	static const size_t n_max = 1000000;
+
+	ImGui::SliderScalar("n_rows", ImGuiDataType_U64, &n_rows, &n_min, &n_max);
+	ImGui::SliderScalar("n_cols", ImGuiDataType_U64, &n_cols, &n_min, &n_max);
+
+	if(ImGui::Button("Scan"))
+	{
+		view->add_mesh(scanner_ptx(view->rt_embree, n_rows, n_cols, {0, 0, 0}));
+	}
+
+	return true;
 }
 
 
