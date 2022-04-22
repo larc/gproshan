@@ -68,4 +68,6 @@ jobs:
     - name: Build
       working-directory: ${{runner.workspace}}/build
       shell: bash
-      run: cmake --build . --config ${{matrix.config}}
+      run: |
+        source /opt/intel/oneapi/setvars.sh
+        cmake --build . --config ${{matrix.config}}
