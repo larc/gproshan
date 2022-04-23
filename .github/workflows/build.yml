@@ -9,7 +9,7 @@ jobs:
   build:
     name: ${{ matrix.os }} (${{ matrix.config }}) ${{ matrix.cuda }}
     runs-on: ${{ matrix.os }}
-    
+
     strategy:
       fail-fast: false
       matrix:
@@ -19,7 +19,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    
+
     - name: Install Dependencies
       run: |
         sudo apt remove --purge cmake
@@ -35,7 +35,7 @@ jobs:
                           libglfw3-dev \
                           libglm-dev \
                           cimg-dev
-                          
+
     - name: Install Cuda
       if: matrix.cuda == 'cuda'
       run: |
@@ -45,7 +45,15 @@ jobs:
         sudo add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/ /"
         sudo apt update
         sudo apt -y install cuda
-      
+
+    - name: Install Embree
+      run: |
+        wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB \
+        | gpg --dearmor | sudo tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
+        echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
+        sudo apt update
+        sudo apt -y install intel-renderkit
+
     - name: Create Build Environment
       run: cmake -E make_directory ${{runner.workspace}}/build
 
@@ -54,10 +62,12 @@ jobs:
       working-directory: ${{runner.workspace}}/build
       run: |
         export PATH=${CUDA_BIN}:${PATH}
-        cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{ matrix.config }}
+        source /opt/intel/oneapi/setvars.sh
+        cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{matrix.config}}
 
     - name: Build
       working-directory: ${{runner.workspace}}/build
       shell: bash
-      run: cmake --build . --config ${{ matrix.config }}
-
+      run: |
+        source /opt/intel/oneapi/setvars.sh
+        cmake --build . --config ${{matrix.config}}
