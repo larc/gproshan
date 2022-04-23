@@ -37,13 +37,7 @@ if(CUDAToolkit_FOUND)
 endif(CUDAToolkit_FOUND)
 
 
-find_package(embree 3.13)
-if(embree_FOUND)
-	add_definitions(-DGPROSHAN_EMBREE)
-	include_directories(SYSTEM ${embree_INCLUDE_DIRS})
-endif(embree_FOUND)
-
-
+find_package(embree 3.13 REQUIRED)
 find_package(Threads REQUIRED)
 find_package(OpenMP REQUIRED)
 find_package(GLEW REQUIRED)
@@ -57,6 +51,7 @@ find_package(SuiteSparse REQUIRED)
 find_package(Boost COMPONENTS thread system)
 
 
+include_directories(SYSTEM ${embree_INCLUDE_DIRS})
 include_directories(SYSTEM ${GLEW_INCLUDE_DIRS})
 include_directories(SYSTEM ${GLFW3_INCLUDE_DIRS})
 include_directories(SYSTEM ${AMADILLO_INCLUDE_DIR})
@@ -77,6 +72,7 @@ FILE(GLOB_RECURSE cpp_sources ${gproshan_SOURCE_DIR}/src/*.cpp)
 
 add_library(gproshan SHARED ${cpp_sources})
 
+target_link_libraries(gproshan embree)
 target_link_libraries(gproshan OpenMP::OpenMP_CXX)
 target_link_libraries(gproshan GLEW::GLEW)
 target_link_libraries(gproshan glfw)
@@ -86,10 +82,6 @@ target_link_libraries(gproshan ${SuiteSparse_LIBRARIES})
 target_link_libraries(gproshan CGAL::CGAL)
 target_link_libraries(gproshan ${OptiX_LIBRARY})
 target_link_libraries(gproshan imgui)
-
-if(embree_FOUND)
-	target_link_libraries(gproshan embree)
-endif(embree_FOUND)
 
 if(CUDAToolkit_FOUND)
 	FILE(GLOB_RECURSE cu_sources ${gproshan_SOURCE_DIR}/src/*.cu)

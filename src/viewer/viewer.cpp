@@ -18,9 +18,7 @@
 #include "mesh/che_pts.h"
 #include "mesh/che_sphere.h"
 
-#ifdef GPROSHAN_EMBREE
-	#include "raytracing/rt_embree.h"
-#endif // GPROSHAN_EMBREE
+#include "raytracing/rt_embree.h"
 
 #ifdef GPROSHAN_OPTIX
 	#include "raytracing/rt_optix.h"
@@ -302,10 +300,9 @@ void viewer::init_menus()
 	add_process(GLFW_KEY_F7, "F7", "Render Triangles", set_render_triangles);
 	add_process(GLFW_KEY_F8, "F8", "Render GL", set_render_gl);
 	add_process(GLFW_KEY_R, "R", "Setup Raytracing", setup_raytracing);
-#ifdef GPROSHAN_EMBREE
 	add_process(GLFW_KEY_F9, "F9", "Render Embree", set_render_embree);
 	add_process(GLFW_KEY_ENTER, "ENTER", "Raycasting", raycasting);
-#endif // GPROSHAN_EMBREE
+
 #ifdef GPROSHAN_OPTIX
 	add_process(GLFW_KEY_F10, "F10", "Render OptiX", set_render_optix);
 #endif // GPROSHAN_OPTIX
@@ -661,13 +658,11 @@ bool viewer::setup_raytracing(viewer * view)
 			case R_GL: break;
 
 			case R_EMBREE:
-			#ifdef GPROSHAN_EMBREE
 				delete view->rt_embree;
 				TIC(time);
 					view->rt_embree = new rt::embree({mesh}, mesh.render_pointcloud, pc_radius);
 				TOC(time);
 				sprintf(view->status_message, "build embree in %.3fs", time);
-			#endif // GPROSHAN_EMBREE
 				break;
 
 			case R_OPTIX:
@@ -782,7 +777,6 @@ bool viewer::set_render_flat(viewer * view)
 	return false;
 }
 
-#ifdef GPROSHAN_EMBREE
 bool viewer::raycasting(viewer * view)
 {
 	rt::embree rc({view->active_mesh()});
@@ -801,7 +795,6 @@ bool viewer::raycasting(viewer * view)
 
 	return false;
 }
-#endif // GPROSHAN_EMBREE
 
 void viewer::render_gl()
 {

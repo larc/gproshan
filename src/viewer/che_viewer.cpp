@@ -4,9 +4,7 @@
 #include <cmath>
 #include <numeric>
 
-#ifdef GPROSHAN_EMBREE
-	#include "raytracing/rt_embree.h"
-#endif // GPROSHAN_EMBREE
+#include "raytracing/rt_embree.h"
 
 
 using namespace std;
@@ -84,11 +82,8 @@ void che_viewer::update()
 
 	update_vbo();
 
-
-#ifdef GPROSHAN_EMBREE
 	delete pick_vertex;
 	pick_vertex = new rt::embree({mesh});
-#endif // GPROSHAN_EMBREE
 }
 
 void che_viewer::update_vbo()

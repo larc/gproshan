@@ -156,9 +156,7 @@ class viewer
 		static bool set_render_lines(viewer * view);
 		static bool set_render_flat(viewer * view);
 
-	#ifdef GPROSHAN_EMBREE
 		static bool raycasting(viewer * view);
-	#endif // GPROSHAN_EMBREE
 
 		// draw routines
 		void draw_selected_vertices(shader & program, const che_viewer & mesh);

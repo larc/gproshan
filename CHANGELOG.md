@@ -2,6 +2,7 @@ Version History
 ---------------
 
 ### gproshan 3.0.0
+- Added Intel Embree as default ray tracing library, for ray casting operations and as rendering option with shadows.
 - Adding Scenes module, virtual point cloud scanners and point cloud normals computation for 3D scenes.
 - Added render option using [OptiX](https://developer.nvidia.com/optix) ray tracing mesh, shadows.
 - Add module geometry, including a 2D convex hull algorithm implementation and connected components detection.
