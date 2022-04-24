@@ -158,7 +158,7 @@ void che_viewer::update_vbo_heatmap(const real_t * vheatmap)
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[3]);
 	glBufferData(GL_ARRAY_BUFFER, mesh->n_vertices * sizeof(real_t), vheatmap, GL_STATIC_DRAW);
 	glEnableVertexAttribArray(3);
-	glVertexAttribPointer(3, 1, GL_REAL, GL_FALSE, 0, 0);
+	glVertexAttribPointer(3, 1, GL_REAL, GL_TRUE, 0, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	glBindVertexArray(0);

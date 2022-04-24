@@ -119,7 +119,7 @@ bool app_viewer::process_simulate_scanner(viewer * p_view)
 {
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
-	
+
 	static size_t n_rows = 2000;
 	static size_t n_cols = 4000;
 	static const size_t n_min = 1000;
