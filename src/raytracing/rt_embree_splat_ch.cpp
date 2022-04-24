@@ -1,6 +1,5 @@
 #include "raytracing/rt_embree_splat_ch.h"
 
-#ifdef GPROSHAN_EMBREE
 
 #include "mesh/che_off.h"
 
@@ -219,6 +218,4 @@ unsigned int morton_2d(float x, float y)
 
 
 } // namespace gproshan
-
-#endif // GPROSHAN_EMBREE
 

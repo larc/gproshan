@@ -69,7 +69,7 @@ optix::optix(const std::vector<che *> & meshes)
 	optix_pipeline_compile_opt.numPayloadValues			= 2;
 	optix_pipeline_compile_opt.numAttributeValues		= 2;
 	optix_pipeline_compile_opt.exceptionFlags			= OPTIX_EXCEPTION_FLAG_NONE;
-	optix_pipeline_compile_opt.pipelineLaunchParamsVariableName = "optixLaunchParams";
+	optix_pipeline_compile_opt.pipelineLaunchParamsVariableName = "render_params";
 
 	optix_pipeline_link_opt.maxTraceDepth		= 2;
 

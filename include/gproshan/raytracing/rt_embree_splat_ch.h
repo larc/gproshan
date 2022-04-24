@@ -1,5 +1,3 @@
-#ifdef GPROSHAN_EMBREE
-
 #ifndef RT_EMBREE_SPLAT_CH_H
 #define RT_EMBREE_SPLAT_CH_H
 
@@ -125,6 +123,4 @@ class embree_splat_ch : public embree
 } // namespace gproshan
 
 #endif // RT_EMBREE_SPLAT_CH_H
-
-#endif // GPROSHAN_EMBREE
 

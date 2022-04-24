@@ -9,6 +9,7 @@
 #include "mesh/che_ply.h"
 #include "mesh/che_ptx.h"
 #include "mesh/che_xyz.h"
+#include "mesh/che_pts.h"
 #include "mesh/che_img.h"
 #include "mesh/che_sphere.h"
 #include "mesh/che_fill_hole.h"
@@ -18,6 +19,8 @@
 #include "laplacian/laplacian.h"
 #include "laplacian/fairing_taubin.h"
 #include "laplacian/fairing_spectral.h"
+
+#include "scenes/scanner.h"
 
 #include "geometry/convex_hull.h"
 
@@ -53,6 +56,10 @@ class app_viewer : public viewer
 		virtual void init();
 
 		che * load_mesh(const string & file_path);
+
+		// Scenes
+		static bool process_compute_normals(viewer * p_view);
+		static bool process_simulate_scanner(viewer * p_view);
 
 		// Geometry
 		static bool process_convex_hull(viewer * p_view);

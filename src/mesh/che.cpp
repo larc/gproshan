@@ -269,28 +269,18 @@ real_t che::area_surface() const
 	return area;
 }
 
-void che::update_heatmap(const real_t * hm, real_t max_color)
+void che::update_heatmap(const real_t * hm)
 {
 	if(!hm)
 	{
 		#pragma omp parallel for
 		for(index_t v = 0; v < n_vertices; ++v)
-			VHC[v] = 0.45;
+			VHC[v] = 0.45;	// default heatmap value
 
 		return;
 	}
 
-	if(max_color < numeric_limits<real_t>::epsilon())
-	{
-		#pragma omp parallel for reduction(max: max_color)
-		for(index_t v = 0; v < n_vertices; ++v)
-			if(hm[v] < INFINITY)
-				max_color = max(hm[v], max_color);
-	}
-
-	#pragma omp parallel for
-	for(index_t v = 0; v < n_vertices; ++v)
-		VHC[v] = hm[v] / max_color;
+	memcpy(VHC, hm, n_vertices * sizeof(real_t));
 }
 
 const che::rgb_t & che::rgb(const index_t & v) const
@@ -313,8 +303,8 @@ vertex che::color(const index_t & v) const
 
 vertex che::shading_color(const index_t & f, const float & u, const float & v, const float & w) const
 {
-	index_t he = f * che::mtrig;
-	return VC ? u * color(VT[he]) + v * color(VT[he + 1]) + w * color(VT[he + 2]) : rgb_t();
+	const index_t & he = f * che::mtrig;
+	return u * color(VT[he]) + v * color(VT[he + 1]) + w * color(VT[he + 2]);
 }
 
 const real_t & che::heatmap(const index_t & v) const
@@ -360,9 +350,8 @@ vertex & che::normal(const index_t & v)
 
 vertex che::shading_normal(const index_t & f, const float & u, const float & v, const float & w) const
 {
-	index_t he = f * che::mtrig;
-
-	return {u * VN[VT[he]] + v * VN[VT[he + 1]] + w * VN[VT[he + 2]]};
+	const index_t & he = f * che::mtrig;
+	return u * VN[VT[he]] + v * VN[VT[he + 1]] + w * VN[VT[he + 2]];
 }
 
 vertex che::normal_trig(const index_t & f) const
@@ -1033,10 +1022,6 @@ void che::alloc(const size_t & n_v, const size_t & n_f)
 	if(n_vertices)		VN	= new vertex[n_vertices];
 	if(n_vertices)		VC	= new rgb_t[n_vertices];
 	if(n_vertices)		VHC	= new real_t[n_vertices];
-
-	#pragma omp parallel for
-	for(index_t v = 0; v < n_vertices; ++v)
-		VC[v] = rgb_t();
 
 	update_heatmap();
 }

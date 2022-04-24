@@ -13,7 +13,7 @@ layout(location = 0) out vec4 frag_color;
 
 
 uniform vec3 eye;
-uniform vec3 light;
+uniform vec3 cam_light;
 uniform bool render_flat;
 uniform bool render_wireframe;
 
@@ -31,7 +31,7 @@ void main()
 		color = mix(vec3(.2), color, d);
 	}
 
-	color = shading(N, normalize(light - gs_position), normalize(eye - gs_position), color);
+	color = shading(N, normalize(cam_light - gs_position), normalize(eye - gs_position), color);
 	frag_color = vec4(color, 1);
 }
 

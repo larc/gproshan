@@ -1,5 +1,3 @@
-#ifdef GPROSHAN_EMBREE
-
 #ifndef RT_EMBREE_H
 #define RT_EMBREE_H
 
@@ -70,6 +68,4 @@ class embree : public raytracing
 } // namespace gproshan
 
 #endif // RT_EMBREE_H
-
-#endif // GPROSHAN_EMBREE
 

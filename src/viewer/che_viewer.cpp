@@ -4,9 +4,7 @@
 #include <cmath>
 #include <numeric>
 
-#ifdef GPROSHAN_EMBREE
-	#include "raytracing/rt_embree.h"
-#endif // GPROSHAN_EMBREE
+#include "raytracing/rt_embree.h"
 
 
 using namespace std;
@@ -58,6 +56,8 @@ void che_viewer::update()
 {
 	if(normalize) mesh->normalize();
 
+	render_pointcloud = mesh->is_pointcloud();
+
 	vertex pmin(INFINITY, INFINITY, INFINITY);
 	vertex pmax(0, 0, 0);
 
@@ -82,11 +82,8 @@ void che_viewer::update()
 
 	update_vbo();
 
-
-#ifdef GPROSHAN_EMBREE
 	delete pick_vertex;
 	pick_vertex = new rt::embree({mesh});
-#endif // GPROSHAN_EMBREE
 }
 
 void che_viewer::update_vbo()
@@ -161,7 +158,7 @@ void che_viewer::update_vbo_heatmap(const real_t * vheatmap)
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[3]);
 	glBufferData(GL_ARRAY_BUFFER, mesh->n_vertices * sizeof(real_t), vheatmap, GL_STATIC_DRAW);
 	glEnableVertexAttribArray(3);
-	glVertexAttribPointer(3, 1, GL_REAL, GL_FALSE, 0, 0);
+	glVertexAttribPointer(3, 1, GL_REAL, GL_TRUE, 0, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	glBindVertexArray(0);

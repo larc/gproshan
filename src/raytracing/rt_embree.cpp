@@ -1,6 +1,5 @@
 #include "raytracing/rt_embree.h"
 
-#ifdef GPROSHAN_EMBREE
 
 #include "util.h"
 
@@ -305,6 +304,4 @@ float embree::intersect_depth(const glm::vec3 & org, const glm::vec3 & dir)
 
 
 } // namespace gproshan
-
-#endif // GPROSHAN_EMBREE
 

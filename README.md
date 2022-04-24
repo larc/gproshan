@@ -25,11 +25,33 @@ finally execute:
 	./gproshan [mesh_paths.(off,obj,ply)]
 
 ### Dependencies (Linux)
-g++ >= 9.3, cuda >= 11.0, cmake >= 3.18, armadillo, eigen, cgal, suitesparse, openblas, glew, glfw3, glm, cimg, gnuplot
+g++ >= 9.3, cuda >= 11.0, cmake >= 3.18, armadillo, eigen, cgal, suitesparse, openblas, glew, glfw3, glm, cimg, gnuplot, embree >= 3.13
 
 In Ubuntu you can install them with:
 
 	sudo apt install cmake libarmadillo-dev libeigen3-dev libcgal-dev libsuitesparse-dev libopenblas-dev libglew-dev libglfw3-dev libglm-dev cimg-dev gnuplot
+
+#### Installing Intel Embree
+
+Intel Embree is a collection of high performance ray tracing kernels that helps graphics application engineers to improve the performance of their photorealistic rendering application ([https://www.embree.org/](https://www.embree.org/)).
+
+##### Ubuntu (Linux)
+
+	# download the key to system keyring
+	wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB \
+	| gpg --dearmor | sudo tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
+
+	# add signed entry to apt sources and configure the APT client to use Intel repository:
+	echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
+
+	sudo apt install intel-basekit
+
+	# configure the enviroment variables
+	source /opt/intel/oneapi/setvars.sh
+
+##### MacOS
+
+	brew install embree
 
 
 ## Contributions

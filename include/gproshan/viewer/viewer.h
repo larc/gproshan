@@ -68,7 +68,8 @@ class viewer
 
 		camera cam;
 
-		quaternion light;
+		quaternion cam_light;
+		std::vector<glm::vec3> scene_lights;
 
 		glm::mat4 view_mat;
 		glm::mat4 proj_mat;
@@ -109,7 +110,7 @@ class viewer
 		bool run();
 
 		che_viewer & active_mesh();
-		void add_process(const int & key, const process_t & process);
+		void add_process(const int & key, const std::string & skey, const std::string & name, const function_t & f);
 		void add_mesh(che * p_mesh);
 
 	private:
@@ -155,9 +156,7 @@ class viewer
 		static bool set_render_lines(viewer * view);
 		static bool set_render_flat(viewer * view);
 
-	#ifdef GPROSHAN_EMBREE
 		static bool raycasting(viewer * view);
-	#endif // GPROSHAN_EMBREE
 
 		// draw routines
 		void draw_selected_vertices(shader & program, const che_viewer & mesh);
