@@ -1127,13 +1127,18 @@ void che::update_eht()
 vector<index_t> che::trig_convex_polygon(const index_t * P, const size_t & n)
 {
 	vector<index_t> trigs;
-
 	trigs.reserve(che::mtrig * (n - 2));
-	for(index_t i = 2; i < n; ++i)
+
+	index_t a = n - 1;
+	index_t b = 0;
+	index_t c = 1;
+	while(a > c)
 	{
-		trigs.push_back(P[0]);
-		trigs.push_back(P[i - 1]);
-		trigs.push_back(P[i]);
+		trigs.push_back(P[a]);
+		trigs.push_back(P[b]);
+		trigs.push_back(P[c]);
+
+		b = (b + 1 == c) ? a-- : c++;
 	}
 
 	return trigs;
