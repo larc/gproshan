@@ -44,7 +44,8 @@ Intel Embree is a collection of high performance ray tracing kernels that helps 
 	# add signed entry to apt sources and configure the APT client to use Intel repository:
 	echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
 
-	sudo apt install intel-basekit
+	sudo apt update
+	sudo apt install intel-renderkit
 
 	# configure the enviroment variables
 	source /opt/intel/oneapi/setvars.sh
