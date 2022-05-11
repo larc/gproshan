@@ -130,7 +130,7 @@ bool app_viewer::process_simulate_scanner(viewer * p_view)
 
 	if(ImGui::Button("Scan"))
 	{
-		view->add_mesh(scanner_ptx(view->rt_embree, n_rows, n_cols, {0, 0, 0}));
+		view->add_mesh(scanner_ptx(mesh, view->rt_embree, n_rows, n_cols, {0, 0, 0}));
 	}
 
 	return true;
