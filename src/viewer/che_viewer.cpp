@@ -86,7 +86,7 @@ void che_viewer::update()
 	update_vbo();
 
 	delete pick_vertex;
-	pick_vertex = new rt::embree({mesh});
+	pick_vertex = new rt::embree({mesh}, {model_mat});
 }
 
 void che_viewer::update_vbo()

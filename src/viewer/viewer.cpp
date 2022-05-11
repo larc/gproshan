@@ -660,7 +660,7 @@ bool viewer::setup_raytracing(viewer * view)
 			case R_EMBREE:
 				delete view->rt_embree;
 				TIC(time);
-					view->rt_embree = new rt::embree({mesh}, mesh.render_pointcloud, pc_radius);
+					view->rt_embree = new rt::embree({mesh}, {mesh.model_mat}, mesh.render_pointcloud, pc_radius);
 				TOC(time);
 				sprintf(view->status_message, "build embree in %.3fs", time);
 				break;
@@ -779,7 +779,9 @@ bool viewer::set_render_flat(viewer * view)
 
 bool viewer::raycasting(viewer * view)
 {
-	rt::embree rc({view->active_mesh()});
+	che_viewer & mesh = view->active_mesh();
+
+	rt::embree rc({mesh}, {mesh.model_mat});
 
 	float * frame = rc.raycaster(	glm::uvec2(view->viewport_width, view->viewport_height),
 									view->proj_view_mat, glm_vec3(view->cam.eye)
