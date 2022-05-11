@@ -55,7 +55,7 @@ class raytracing
 									const index_t & samples = 4
 									);
 
-		glm::vec3 ray_view_dir(	const real_t & x, const real_t & y,
+		glm::vec3 ray_view_dir(	const index_t & x, const index_t & y,
 								const glm::vec2 & windows_size,
 								const glm::mat4 & inv_proj_view,
 								const glm::vec3 & cam_pos

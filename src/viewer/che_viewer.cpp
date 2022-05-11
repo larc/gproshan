@@ -235,7 +235,7 @@ void che_viewer::scale(const real_t & s)
 	model_mat = glm::scale(model_mat, {s, s, s});
 }
 
-void che_viewer::select(const real_t & x, const real_t & y, const glm::uvec2 & windows_size, const glm::mat4 & proj_view_mat, const glm::vec3 & cam_pos)
+void che_viewer::select(const index_t & x, const index_t & y, const glm::uvec2 & windows_size, const glm::mat4 & proj_view_mat, const glm::vec3 & cam_pos)
 {
 	glm::vec3 dir = pick_vertex->ray_view_dir(x, windows_size.y - y, windows_size, glm::inverse(proj_view_mat), cam_pos);
 	index_t v = pick_vertex->cast_ray(cam_pos, dir);

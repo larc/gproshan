@@ -908,7 +908,13 @@ void viewer::pick_vertex(const real_t & x, const real_t & y)
 	float xscale, yscale;
 	glfwGetWindowContentScale(window, &xscale, &yscale);
 
-	active_mesh().select(x * xscale, y * yscale, {viewport_width, viewport_height}, proj_view_mat, glm_vec3(cam.eye));
+	index_t ix = x * xscale;
+	index_t iy = y * yscale;
+	const int & cols = m_window_size[n_meshes][1];
+
+	che_viewer & mesh = meshes[cols * (iy / viewport_height) + ix / viewport_width];
+
+	mesh.select(ix % viewport_width, iy % viewport_height, {viewport_width, viewport_height}, proj_view_mat, glm_vec3(cam.eye));
 }
 
 
