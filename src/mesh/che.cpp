@@ -229,7 +229,7 @@ real_t che::pdetriq(const index_t & t) const
 	return (4 * sqrt(3) * area_trig(t)) / (h[0] * h[0] + h[1] * h[1] + h[2] * h[2]);
 }
 
-real_t che::quality()
+real_t che::quality() const
 {
 	real_t q = 0;
 

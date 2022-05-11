@@ -28,7 +28,7 @@ class che_viewer
 		rt::raytracing * pick_vertex = nullptr;
 
 		size_t n_instances = 0;
-		bool normalize = false;
+		bool center_mesh = false;
 		vertex v_translate;
 
 		GLuint vao;
@@ -38,6 +38,8 @@ class che_viewer
 		int vx, vy;							///< viewport positions.
 		real_t factor;
 		std::vector<index_t> selected;
+
+		glm::mat4 model_mat		= glm::mat4(1);
 
 		index_t idx_colormap	= 1;		// colormap index defined in shaders/colormap.glsl
 		index_t point_size		= 1;
@@ -57,19 +59,19 @@ class che_viewer
 		che *& operator -> ();
 		che *const & operator -> () const;
 		operator che *& ();
-		void init(che * mesh, const bool & normalize = true);
-		void reload();
+		void init(che * m, const bool & center = true);
 		void update();
 		void update_vbo();
 		void update_vbo_geometry();
 		void update_vbo_normal(const vertex * vnormal = nullptr);
 		void update_vbo_color(const che::rgb_t * vcolor = nullptr);
 		void update_vbo_heatmap(const real_t * vheatmap = nullptr);
-		void update_instances_translations(const std::vector<vertex> & translations);
+		void update_instances_positions(const std::vector<vertex> & translations);
 		void draw(shader & program);
 		void draw_point_cloud(shader & program);
 
 		void translate(const vertex & p);
+		void scale(const real_t & s);
 		void invert_orientation();
 		void select(const real_t & x, const real_t & y, const glm::uvec2 & windows_size, const glm::mat4 & proj_view_mat, const glm::vec3 & cam_pos);
 

@@ -77,7 +77,7 @@ class che
 		bool is_edge_bound(const index_t & e) const;
 		void flip(const index_t & e);
 		real_t pdetriq(const index_t & t) const;
-		real_t quality();
+		real_t quality() const;
 		real_t area_trig(const index_t & t) const;
 		real_t area_vertex(const index_t & v) const;
 		real_t area_surface() const;

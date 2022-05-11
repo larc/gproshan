@@ -357,6 +357,7 @@ void viewer::add_mesh(che * p_mesh)
 		return;
 	}
 
+	p_mesh->update_normals();
 	meshes[n_meshes].init(p_mesh);
 	meshes[n_meshes].log_info();
 	++n_meshes;
@@ -529,8 +530,8 @@ bool viewer::menu_reset_mesh(viewer * view)
 	view->other_vertices.clear();
 	view->vectors.clear();
 
-	view->active_mesh().reload();
-	view->active_mesh().update_vbo();
+	view->active_mesh()->reload();
+	view->active_mesh().update();
 
 	return false;
 }
@@ -822,6 +823,7 @@ void viewer::render_gl()
 		che_viewer & mesh = meshes[i];
 
 		glViewport(mesh.vx * viewport_width, mesh.vy * viewport_height, viewport_width, viewport_height);
+
 		if(mesh->is_pointcloud() || mesh.render_pointcloud)
 			mesh.draw_point_cloud(shader_pointcloud);
 		else
@@ -879,7 +881,7 @@ void viewer::draw_selected_vertices(shader & program, const che_viewer & mesh)
 		for(index_t i = 0; i < mesh.selected.size(); ++i)
 			sphere_translations[i] = mesh->gt(mesh.selected[i]);
 
-		sphere.update_instances_translations(sphere_translations);
+		sphere.update_instances_positions(sphere_translations);
 	}
 
 	if(sphere_translations.size())

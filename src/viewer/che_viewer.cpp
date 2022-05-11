@@ -4,6 +4,8 @@
 #include <cmath>
 #include <numeric>
 
+#include <glm/gtc/matrix_transform.hpp>
+
 #include "raytracing/rt_embree.h"
 
 
@@ -35,50 +37,51 @@ che_viewer::operator che *& ()
 	return mesh;
 }
 
-void che_viewer::init(che * mesh, const bool & normalize)
+void che_viewer::init(che * m, const bool & center)
 {
 	glGenVertexArrays(1, &vao);
 	glGenBuffers(6, vbo);
 
-	this->mesh = mesh;
-	this->normalize = normalize;
+	mesh = m;
+	center_mesh = center;
 
-	update();
-}
-
-void che_viewer::reload()
-{
-	mesh->reload();
 	update();
 }
 
 void che_viewer::update()
 {
-	if(normalize) mesh->normalize();
+	factor = 1;
 
-	render_pointcloud = mesh->is_pointcloud();
-
-	vertex pmin(INFINITY, INFINITY, INFINITY);
-	vertex pmax(0, 0, 0);
-
-	for(index_t v = 0; v < mesh->n_vertices; ++v)
+	if(center_mesh)
 	{
-		const vertex & p = mesh->gt(v);
+		vertex pmin(INFINITY, INFINITY, INFINITY);
+		vertex pmax(0, 0, 0);
 
-		pmin.x = min(pmin.x, p.x);
-		pmin.y = min(pmin.y, p.y);
-		pmin.z = min(pmin.z, p.z);
+		for(index_t v = 0; v < mesh->n_vertices; ++v)
+		{
+			const vertex & p = mesh->gt(v);
 
-		pmax.x = max(pmax.x, p.x);
-		pmax.y = max(pmax.y, p.y);
-		pmax.z = max(pmax.z, p.z);
+			pmin.x = min(pmin.x, p.x);
+			pmin.y = min(pmin.y, p.y);
+			pmin.z = min(pmin.z, p.z);
+
+			pmax.x = max(pmax.x, p.x);
+			pmax.y = max(pmax.y, p.y);
+			pmax.z = max(pmax.z, p.z);
+		}
+
+		factor = pmax.x - pmin.x;
+		factor = std::max(factor, pmax.y - pmin.y);
+		factor = std::max(factor, pmax.z - pmin.z);
+		factor = 2.0 / factor;
+
+		translate(- factor * (pmax + pmin) / 2);
+		scale(factor);
 	}
 
-	translate(-(pmax + pmin) / 2);
+	factor *= mesh->mean_edge();
 
-	factor = mesh->mean_edge();
-
-	mesh->update_normals();
+	render_pointcloud = mesh->is_pointcloud();
 
 	update_vbo();
 
@@ -164,7 +167,7 @@ void che_viewer::update_vbo_heatmap(const real_t * vheatmap)
 	glBindVertexArray(0);
 }
 
-void che_viewer::update_instances_translations(const vector<vertex> & translations)
+void che_viewer::update_instances_positions(const vector<vertex> & translations)
 {
 	n_instances = translations.size();
 	if(!n_instances) return;
@@ -185,6 +188,7 @@ void che_viewer::update_instances_translations(const vector<vertex> & translatio
 
 void che_viewer::draw(shader & program)
 {
+	glProgramUniformMatrix4fv(program, program("model_mat"), 1, 0, &model_mat[0][0]);
 	glProgramUniform1ui(program, program("idx_colormap"), idx_colormap);
 	glProgramUniform1i(program, program("render_flat"), render_flat);
 	glProgramUniform1i(program, program("render_lines"), render_lines);
@@ -210,6 +214,7 @@ void che_viewer::draw(shader & program)
 
 void che_viewer::draw_point_cloud(shader & program)
 {
+	glProgramUniformMatrix4fv(program, program("model_mat"), 1, 0, &model_mat[0][0]);
 	glProgramUniform1ui(program, program("idx_colormap"), idx_colormap);
 	glProgramUniform1i(program, program("render_lines"), render_lines);
 	glProgramUniform1i(program, program("point_normals"), point_normals);
@@ -230,18 +235,19 @@ void che_viewer::draw_point_cloud(shader & program)
 
 void che_viewer::translate(const vertex & p)
 {
-	v_translate = p;
+	model_mat = glm::translate(model_mat, glm_vec3(p));
+}
 
-	#pragma omp parallel for
-	for(index_t v = 0; v < mesh->n_vertices; ++v)
-		mesh->get_vertex(v) += v_translate;
+void che_viewer::scale(const real_t & s)
+{
+	model_mat = glm::scale(model_mat, {s, s, s});
 }
 
 void che_viewer::invert_orientation()
 {
-	#pragma omp parallel for
-	for(index_t v = 0; v < mesh->n_vertices; ++v)
-		mesh->normal(v) = -mesh->normal(v);
+//	#pragma omp parallel for
+//	for(index_t v = 0; v < mesh->n_vertices; ++v)
+//		mesh->normal(v) = -mesh->normal(v);
 }
 
 void che_viewer::select(const real_t & x, const real_t & y, const glm::uvec2 & windows_size, const glm::mat4 & proj_view_mat, const glm::vec3 & cam_pos)

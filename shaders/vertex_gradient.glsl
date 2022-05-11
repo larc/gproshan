@@ -7,11 +7,12 @@ out float color;
 out vec3 position;
 
 uniform mat4 proj_view_mat;
+uniform mat4 model_mat;
 
 void main()
 {
 	color = in_color;
 	position = in_position;
-	gl_Position = proj_view_mat * vec4(in_position, 1.);
+	gl_Position = proj_view_mat * model_mat * vec4(in_position, 1.);
 }
 

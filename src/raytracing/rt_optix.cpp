@@ -283,11 +283,11 @@ void optix::create_pipeline()
 						&optix_pipeline
 						);
 
-	if(sizeof_log > 1) gproshan_error_var(log);
+	if(sizeof_log > 1) gproshan_log_var(log);
 
 	optixPipelineSetStackSize(optix_pipeline, 2 * 1024, 2 * 1024, 2 * 1024, 1);
 
-	if(sizeof_log > 1) gproshan_error_var(log);
+	if(sizeof_log > 1) gproshan_log_var(log);
 }
 
 void optix::build_sbt()
