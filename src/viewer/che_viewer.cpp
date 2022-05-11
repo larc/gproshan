@@ -244,12 +244,11 @@ void che_viewer::invert_orientation()
 		mesh->normal(v) = -mesh->normal(v);
 }
 
-void che_viewer::select(const real_t & x, const real_t & y, const glm::uvec2 & windows_size, const glm::mat4 & view_mat, const glm::mat4 & proj_mat)
+void che_viewer::select(const real_t & x, const real_t & y, const glm::uvec2 & windows_size, const glm::mat4 & proj_view_mat, const glm::vec3 & cam_pos)
 {
 	if(!pick_vertex) return;
 
-	glm::vec3 cam_pos = glm::vec3(glm::inverse(view_mat) * glm::vec4(0.f, 0.f, 0.f, 1.f));
-	glm::mat4 inv_proj_view = glm::inverse(proj_mat * view_mat);
+	glm::mat4 inv_proj_view = glm::inverse(proj_view_mat);
 	glm::vec2 screen = glm::vec2(float(x) / windows_size.x, float(windows_size.y - y) / windows_size.y);
 	glm::vec4 view = glm::vec4(screen.x * 2.f - 1.f, screen.y * 2.f - 1.f, 1.f, 1.f);
 	glm::vec4 q = inv_proj_view * view;

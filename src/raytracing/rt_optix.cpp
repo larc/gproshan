@@ -120,8 +120,8 @@ optix::~optix()
 
 void optix::render(	glm::vec4 * img,
 					const glm::uvec2 & windows_size,
-					const glm::mat4 & view_mat,
-					const glm::mat4 & proj_mat,
+					const glm::mat4 & proj_view_mat,
+					const glm::vec3 & cam_pos,
 					const std::vector<glm::vec3> & light,
 					const bool & flat,
 					const bool & restart
@@ -139,8 +139,7 @@ void optix::render(	glm::vec4 * img,
 		cudaMalloc(&render_params.frame.color_buffer, windows_size.x * windows_size.y * sizeof(glm::vec4));
 	}
 
-	glm::vec3 cam_pos = glm::vec3(glm::inverse(view_mat) * glm::vec4(0.f, 0.f, 0.f, 1.f));
-	glm::mat4 inv_proj_view = glm::inverse(proj_mat * view_mat);
+	glm::mat4 inv_proj_view = glm::inverse(proj_view_mat);
 
 	render_params.flat = flat;
 	memcpy(render_params.light, glm::value_ptr(light[0]), sizeof(render_params.light));

@@ -71,8 +71,7 @@ class viewer
 		quaternion cam_light;
 		std::vector<glm::vec3> scene_lights;
 
-		glm::mat4 view_mat;
-		glm::mat4 proj_mat;
+		glm::mat4 proj_view_mat;
 
 		che_viewer meshes[N_MESHES];
 		size_t n_meshes	= 0;

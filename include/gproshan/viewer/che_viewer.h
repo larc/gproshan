@@ -71,7 +71,7 @@ class che_viewer
 
 		void translate(const vertex & p);
 		void invert_orientation();
-		void select(const real_t & x, const real_t & y, const glm::uvec2 & windows_size, const glm::mat4 & view_mat, const glm::mat4 & proj_mat);
+		void select(const real_t & x, const real_t & y, const glm::uvec2 & windows_size, const glm::mat4 & proj_view_mat, const glm::vec3 & cam_pos);
 
 		void log_info();
 };

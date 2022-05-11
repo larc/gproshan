@@ -38,16 +38,16 @@ class raytracing
 
 		virtual void render(glm::vec4 * img,
 							const glm::uvec2 & windows_size,
-							const glm::mat4 & view_mat,
-							const glm::mat4 & proj_mat,
+							const glm::mat4 & proj_view_mat,
+							const glm::vec3 & cam_pos,
 							const std::vector<glm::vec3> & light,
 							const bool & flat,
 							const bool & restart = false
 							);
 
 		virtual float * raycaster(	const glm::uvec2 & windows_size,
-									const glm::mat4 & view_mat,
-									const glm::mat4 & proj_mat,
+									const glm::mat4 & proj_view_mat,
+									const glm::vec3 & cam_pos,
 									const index_t & samples = 4
 									);
 

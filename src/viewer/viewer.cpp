@@ -93,8 +93,7 @@ bool viewer::run()
 		cam_light = vertex(-1, 1, -2);
 		cam_light = r.conj() * cam_light * r;
 
-		view_mat = cam.look_at(r);
-		proj_mat = glm::perspective(45.f, float(viewport_width) / float(viewport_height), .01f, 1000.f);
+		proj_view_mat = glm::perspective(45.0f, float(viewport_width) / float(viewport_height), 0.01f, 1000.0f) * cam.look_at(r);
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		switch(render_opt)
@@ -782,7 +781,7 @@ bool viewer::raycasting(viewer * view)
 	rt::embree rc({view->active_mesh()});
 
 	float * frame = rc.raycaster(	glm::uvec2(view->viewport_width, view->viewport_height),
-									view->view_mat, view->proj_mat
+									view->proj_view_mat, glm_vec3(view->cam.eye)
 									);
 
 	std::thread([](CImg<float> img)
@@ -799,28 +798,23 @@ bool viewer::raycasting(viewer * view)
 void viewer::render_gl()
 {
 	glProgramUniform3f(shader_sphere, shader_sphere("eye"), cam.eye[0], cam.eye[1], cam.eye[2]);
-	glProgramUniform3f(shader_sphere, shader_sphere("cam_light"), cam_light[0], cam_light[1], cam_light[2]);
-	glProgramUniformMatrix4fv(shader_sphere, shader_sphere("model_view_mat"), 1, 0, &view_mat[0][0]);
-	glProgramUniformMatrix4fv(shader_sphere, shader_sphere("proj_mat"), 1, 0, &proj_mat[0][0]);
-	glProgramUniform1f(shader_sphere, shader_sphere("scale"), cam.zoom());
-
 	glProgramUniform3f(shader_triangles, shader_triangles("eye"), cam.eye[0], cam.eye[1], cam.eye[2]);
-	glProgramUniform3f(shader_triangles, shader_triangles("cam_light"), cam_light[0], cam_light[1], cam_light[2]);
-	glProgramUniformMatrix4fv(shader_triangles, shader_triangles("model_view_mat"), 1, 0, &view_mat[0][0]);
-	glProgramUniformMatrix4fv(shader_triangles, shader_triangles("proj_mat"), 1, 0, &proj_mat[0][0]);
-
 	glProgramUniform3f(shader_pointcloud, shader_pointcloud("eye"), cam.eye[0], cam.eye[1], cam.eye[2]);
+
+	glProgramUniform3f(shader_sphere, shader_sphere("cam_light"), cam_light[0], cam_light[1], cam_light[2]);
+	glProgramUniform3f(shader_triangles, shader_triangles("cam_light"), cam_light[0], cam_light[1], cam_light[2]);
 	glProgramUniform3f(shader_pointcloud, shader_pointcloud("cam_light"), cam_light[0], cam_light[1], cam_light[2]);
-	glProgramUniformMatrix4fv(shader_pointcloud, shader_pointcloud("model_view_mat"), 1, 0, &view_mat[0][0]);
-	glProgramUniformMatrix4fv(shader_pointcloud, shader_pointcloud("proj_mat"), 1, 0, &proj_mat[0][0]);
+
+	glProgramUniformMatrix4fv(shader_sphere, shader_sphere("proj_view_mat"), 1, 0, &proj_view_mat[0][0]);
+	glProgramUniformMatrix4fv(shader_triangles, shader_triangles("proj_view_mat"), 1, 0, &proj_view_mat[0][0]);
+	glProgramUniformMatrix4fv(shader_pointcloud, shader_pointcloud("proj_view_mat"), 1, 0, &proj_view_mat[0][0]);
+	glProgramUniformMatrix4fv(shader_normals, shader_normals("proj_view_mat"), 1, 0, &proj_view_mat[0][0]);
+	glProgramUniformMatrix4fv(shader_gradient, shader_gradient("proj_view_mat"), 1, 0, &proj_view_mat[0][0]);
 
 	glProgramUniform1f(shader_normals, shader_normals("length"), cam.zoom() * 0.02);
-	glProgramUniformMatrix4fv(shader_normals, shader_normals("model_view_mat"), 1, 0, &view_mat[0][0]);
-	glProgramUniformMatrix4fv(shader_normals, shader_normals("proj_mat"), 1, 0, &proj_mat[0][0]);
-
 	glProgramUniform1f(shader_gradient, shader_gradient("length"), cam.zoom() * 0.02);
-	glProgramUniformMatrix4fv(shader_gradient, shader_gradient("model_view_mat"), 1, 0, &view_mat[0][0]);
-	glProgramUniformMatrix4fv(shader_gradient, shader_gradient("proj_mat"), 1, 0, &proj_mat[0][0]);
+
+	glProgramUniform1f(shader_sphere, shader_sphere("scale"), cam.zoom());
 
 
 	for(index_t i = 0; i < n_meshes; ++i)
@@ -865,7 +859,7 @@ void viewer::render_rt(rt::raytracing * rt)
 		scene_lights = {glm_vec3(cam_light)};
 
 	rt->render(	img, glm::uvec2(viewport_width, viewport_height),
-				view_mat, proj_mat, scene_lights,
+				proj_view_mat, glm_vec3(cam.eye), scene_lights,
 				mesh.render_flat, rt_restart
 				);
 
@@ -907,7 +901,7 @@ void viewer::pick_vertex(const real_t & x, const real_t & y)
 	float xscale, yscale;
 	glfwGetWindowContentScale(window, &xscale, &yscale);
 
-	active_mesh().select(x * xscale, y * yscale, {viewport_width, viewport_height}, view_mat, proj_mat);
+	active_mesh().select(x * xscale, y * yscale, {viewport_width, viewport_height}, proj_view_mat, glm_vec3(cam.eye));
 }
 
 

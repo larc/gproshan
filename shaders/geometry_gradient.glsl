@@ -6,8 +6,7 @@ layout (line_strip, max_vertices = 2) out;
 in float color[];
 in vec3 position[];
 
-uniform mat4 model_view_mat;
-uniform mat4 proj_mat;
+uniform mat4 proj_view_mat;
 
 void main()
 {
@@ -26,10 +25,10 @@ void main()
 	vec3 a = (xi + xj + xk) / 3.0;
 	vec3 b = a + g * 50;
 
-	gl_Position = proj_mat * model_view_mat * vec4(a, 1.);
+	gl_Position = proj_view_mat * vec4(a, 1.);
 	EmitVertex();
 
-	gl_Position = proj_mat * model_view_mat * vec4(b, 1.);
+	gl_Position = proj_view_mat * vec4(b, 1.);
 	EmitVertex();
 
 	EndPrimitive();
