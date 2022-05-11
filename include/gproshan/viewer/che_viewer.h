@@ -36,7 +36,6 @@ class che_viewer
 
 	public:
 		int vx, vy;							///< viewport positions.
-		real_t factor;
 		std::vector<index_t> selected;
 
 		glm::mat4 model_mat		= glm::mat4(1);

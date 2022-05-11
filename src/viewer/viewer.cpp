@@ -60,7 +60,9 @@ viewer::viewer(const int & width, const int & height): window_width(width), wind
 	info_gl();
 	gproshan_log_var(sizeof(real_t));
 
-	sphere.init(new che_sphere(0.01), false);
+	che * s = new che_sphere(0.01);
+	s->update_normals();
+	sphere.init(s, false);
 }
 
 viewer::~viewer()
@@ -817,7 +819,7 @@ void viewer::render_gl()
 	glProgramUniform1f(shader_normals, shader_normals("length"), cam.zoom() * 0.02);
 	glProgramUniform1f(shader_gradient, shader_gradient("length"), cam.zoom() * 0.02);
 
-	glProgramUniform1f(shader_sphere, shader_sphere("scale"), cam.zoom());
+	glProgramUniform1f(shader_sphere, shader_sphere("scale"), cam.zoom() * 0.02);
 
 
 	for(index_t i = 0; i < n_meshes; ++i)
@@ -886,6 +888,7 @@ void viewer::draw_selected_vertices(shader & program, const che_viewer & mesh)
 		sphere.update_instances_positions(sphere_translations);
 	}
 
+	sphere.model_mat = mesh.model_mat;
 	if(sphere_translations.size())
 		sphere.draw(program);
 }

@@ -5,6 +5,7 @@
 
 #include <vector>
 #include <map>
+#include <random>
 
 #include <glm/glm.hpp>
 
@@ -32,6 +33,9 @@ class raytracing
 
 		size_t n_samples = 0;
 
+		static std::default_random_engine gen;
+		static std::uniform_real_distribution<float> randf;
+
 	public:
 		raytracing() = default;
 		virtual ~raytracing() = default;
@@ -50,6 +54,12 @@ class raytracing
 									const glm::vec3 & cam_pos,
 									const index_t & samples = 4
 									);
+
+		glm::vec3 ray_view_dir(	const real_t & x, const real_t & y,
+								const glm::vec2 & windows_size,
+								const glm::mat4 & inv_proj_view,
+								const glm::vec3 & cam_pos
+								);
 
 		virtual index_t cast_ray(	const glm::vec3 &,// org,
 									const glm::vec3 &// dir

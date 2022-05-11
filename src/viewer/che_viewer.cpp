@@ -3,6 +3,7 @@
 #include <cassert>
 #include <cmath>
 #include <numeric>
+#include <algorithm>
 
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -50,8 +51,6 @@ void che_viewer::init(che * m, const bool & center)
 
 void che_viewer::update()
 {
-	factor = 1;
-
 	if(center_mesh)
 	{
 		vertex pmin(INFINITY, INFINITY, INFINITY);
@@ -70,16 +69,9 @@ void che_viewer::update()
 			pmax.z = max(pmax.z, p.z);
 		}
 
-		factor = pmax.x - pmin.x;
-		factor = std::max(factor, pmax.y - pmin.y);
-		factor = std::max(factor, pmax.z - pmin.z);
-		factor = 2.0 / factor;
-
-		translate(- factor * (pmax + pmin) / 2);
-		scale(factor);
+		scale(2.0 / std::max({pmax.x - pmin.x, pmax.y - pmin.y, pmax.z - pmin.z}));
+		translate(- (pmax + pmin) / 2);
 	}
-
-	factor *= mesh->mean_edge();
 
 	render_pointcloud = mesh->is_pointcloud();
 
@@ -245,15 +237,8 @@ void che_viewer::scale(const real_t & s)
 
 void che_viewer::select(const real_t & x, const real_t & y, const glm::uvec2 & windows_size, const glm::mat4 & proj_view_mat, const glm::vec3 & cam_pos)
 {
-	if(!pick_vertex) return;
-
-	glm::mat4 inv_proj_view = glm::inverse(proj_view_mat);
-	glm::vec2 screen = glm::vec2(float(x) / windows_size.x, float(windows_size.y - y) / windows_size.y);
-	glm::vec4 view = glm::vec4(screen.x * 2.f - 1.f, screen.y * 2.f - 1.f, 1.f, 1.f);
-	glm::vec4 q = inv_proj_view * view;
-	glm::vec3 p = glm::vec3(q * (1.f / q.w));
-
-	index_t v = pick_vertex->cast_ray(cam_pos, glm::normalize(p - cam_pos));
+	glm::vec3 dir = pick_vertex->ray_view_dir(x, windows_size.y - y, windows_size, glm::inverse(proj_view_mat), cam_pos);
+	index_t v = pick_vertex->cast_ray(cam_pos, dir);
 	if(v != NIL) selected.push_back(v);
 }
 
