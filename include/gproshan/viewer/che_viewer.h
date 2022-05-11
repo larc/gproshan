@@ -56,9 +56,11 @@ class che_viewer
 	public:
 		che_viewer() = default;
 		virtual ~che_viewer();
+
 		che *& operator -> ();
 		che *const & operator -> () const;
 		operator che *& ();
+
 		void init(che * m, const bool & center = true);
 		void update();
 		void update_vbo();
@@ -67,12 +69,13 @@ class che_viewer
 		void update_vbo_color(const che::rgb_t * vcolor = nullptr);
 		void update_vbo_heatmap(const real_t * vheatmap = nullptr);
 		void update_instances_positions(const std::vector<vertex> & translations);
+
 		void draw(shader & program);
 		void draw_point_cloud(shader & program);
 
 		void translate(const vertex & p);
 		void scale(const real_t & s);
-		void invert_orientation();
+
 		void select(const real_t & x, const real_t & y, const glm::uvec2 & windows_size, const glm::mat4 & proj_view_mat, const glm::vec3 & cam_pos);
 
 		void log_info();

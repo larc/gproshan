@@ -145,7 +145,7 @@ class viewer
 		static bool set_render_embree(viewer * view);
 		static bool set_render_optix(viewer * view);
 
-		static bool invert_orientation(viewer * view);
+		static bool invert_normals(viewer * view);
 		static bool set_render_pointcloud(viewer * view);
 		static bool set_render_wireframe(viewer * view);
 		static bool set_render_triangles(viewer * view);

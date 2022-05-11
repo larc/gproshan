@@ -310,7 +310,7 @@ void viewer::init_menus()
 	add_process(GLFW_KEY_BACKSPACE, "BACKSPACE", "Reload/Reset", menu_reset_mesh);
 	add_process(GLFW_KEY_TAB, "TAB", "Render Flat", set_render_flat);
 	add_process(GLFW_KEY_SPACE, "SPACE", "Level Curves", set_render_lines);
-	add_process(GLFW_KEY_F2, "F2", "Invert Orientation", invert_orientation);
+	add_process(GLFW_KEY_F2, "F2", "Invert Normals", invert_normals);
 	add_process(GLFW_KEY_F3, "F3", "Gradient Field", set_render_gradients);
 	add_process(GLFW_KEY_F4, "F4", "Normal Field", set_render_normals);
 	add_process(GLFW_KEY_APOSTROPHE, "APOSTROPHE", "Select Border Vertices", set_render_border);
@@ -700,11 +700,11 @@ bool viewer::set_render_optix(viewer * view)
 	return false;
 }
 
-bool viewer::invert_orientation(viewer * view)
+bool viewer::invert_normals(viewer * view)
 {
 	che_viewer & mesh = view->active_mesh();
 
-	mesh.invert_orientation();
+	mesh->invert_normals();
 	mesh.update_vbo_normal();
 
 	return false;

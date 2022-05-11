@@ -336,6 +336,13 @@ void che::update_normals()
 	}
 }
 
+void che::invert_normals()
+{
+	#pragma omp parallel for
+	for(index_t v = 0; v < n_vertices; ++v)
+		VN[v] = - VN[v];
+}
+
 const vertex & che::normal(const index_t & v) const
 {
 	assert(VN && v < n_vertices);

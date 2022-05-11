@@ -243,13 +243,6 @@ void che_viewer::scale(const real_t & s)
 	model_mat = glm::scale(model_mat, {s, s, s});
 }
 
-void che_viewer::invert_orientation()
-{
-//	#pragma omp parallel for
-//	for(index_t v = 0; v < mesh->n_vertices; ++v)
-//		mesh->normal(v) = -mesh->normal(v);
-}
-
 void che_viewer::select(const real_t & x, const real_t & y, const glm::uvec2 & windows_size, const glm::mat4 & proj_view_mat, const glm::vec3 & cam_pos)
 {
 	if(!pick_vertex) return;
