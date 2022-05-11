@@ -819,7 +819,7 @@ void viewer::render_gl()
 	glProgramUniform1f(shader_normals, shader_normals("length"), cam.zoom() * 0.02);
 	glProgramUniform1f(shader_gradient, shader_gradient("length"), cam.zoom() * 0.02);
 
-	glProgramUniform1f(shader_sphere, shader_sphere("scale"), cam.zoom() * 0.02);
+	glProgramUniform1f(shader_sphere, shader_sphere("scale"), cam.zoom());
 
 
 	for(index_t i = 0; i < n_meshes; ++i)

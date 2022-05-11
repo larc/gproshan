@@ -13,9 +13,9 @@ uniform float scale;
 
 void main()
 {
-	vs_position = in_position + in_translation;
+	vs_position = scale * in_position + vec3(model_mat * vec4(in_translation, 1));
 	vs_normal = in_normal;
 
-	gl_Position = scale * proj_view_mat * model_mat * vec4(vs_position, 1);
+	gl_Position = proj_view_mat * vec4(vs_position, 1);
 }
 
