@@ -1,4 +1,8 @@
 #include "scenes/scanner.h"
+#include <CImg.h>
+#include <thread>
+
+using namespace cimg_library;
 
 
 // geometry processing and shape analysis framework
@@ -15,18 +19,14 @@ che * scanner_ptx(const raytracing * rt, const size_t & n_rows, const size_t & n
 
 che * scanner_ptx(const che * mesh, raytracing * rt, const size_t & n_rows, const size_t & n_cols, const vertex & cam)
 {
-	std::vector<vertex> ptx;
-	ptx.reserve(n_cols * n_rows);
-	//index_t v = rt->cast_ray(cam_pos, glm::normalize(p - cam_pos));
-	//cast_ray_intersect_depth
-
-	// use the raytracing to find the hit points
-	// save them in ptx.data
+	std::vector<vertex> vertices;
+	std::vector<che::rgb_t> vertices_color;
+	vertices.reserve(n_cols * n_rows);
+	vertices_color.reserve(n_cols * n_rows);
 
 	glm::vec3 cam_pos = glm_vec3(cam);
 	glm::vec3 p, n_v;
 
-	std::vector<vertex> vertices;
 	const real_t  r = 1;
 	index_t v_idx;
 	float distance;
@@ -39,21 +39,42 @@ che * scanner_ptx(const che * mesh, raytracing * rt, const size_t & n_rows, cons
 	for(real_t phi = 0; phi < 2 * M_PI - 0.5 * delta_phi; phi += delta_phi)
 	for(real_t theta = delta_theta; theta < M_PI - 0.5 * delta_theta; theta += delta_theta)
 	{
-		gproshan_log_var(phi);
-		gproshan_log_var(theta);
+		//gproshan_log_var(phi);
+		//gproshan_log_var(theta);
 		// p is the direction of the ray
 		p = glm::vec3( r * sin(theta) * cos(phi), r * sin(theta) * sin(phi), r * cos(theta) ) - cam_pos;
-		gproshan_log("quering");
 		// quering the closest point in the mesh to the hit point and the distance 
 		auto [v_idx, distance] = rt->cast_ray_intersect_depth(cam_pos, glm::normalize(p - cam_pos));
-		gproshan_log("passed");
-		// new vertex position
-		n_v = cam_pos + p * distance;
 		
-		ptx.push_back( vertex(n_v.x, n_v.y, n_v.z) );
+
+		if(v_idx == NIL)
+		{
+			vertices.push_back( {0, 0, 0} );
+			vertices_color.push_back({0,0,0});
+		}
+		else
+		{
+			n_v = cam_pos + p * distance;
+			vertices.push_back( vertex(n_v.x, n_v.y, n_v.z) );
+			vertices_color.push_back( mesh->rgb(v_idx) );
+		}
 	}
 
-	return new che(ptx.data(), ptx.size(), nullptr, 0);
+	gproshan_log_var(n_cols * n_cols == vertices.size());
+
+	che * mesh_ptx = new che(vertices.data(), vertices.size(), nullptr, 0);
+	memcpy(&mesh_ptx->rgb(0), vertices_color.data(), vertices_color.size() * sizeof(che::rgb_t));
+
+
+	CImg<unsigned char> img((unsigned char *) vertices_color.data(), 3, n_cols, n_rows);
+	img.permute_axes("zycx");
+	//img.save((mesh->name() + ".jpg").c_str());
+
+	std::thread([](CImg<real_t> img) { img.mirror("y").display(); }, img).detach();
+
+	
+	return mesh_ptx;
+	//return new che(ptx.data(), ptx.size(), nullptr, 0);
 }
 
 

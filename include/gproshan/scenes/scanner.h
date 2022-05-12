@@ -3,6 +3,8 @@
 
 #include "raytracing/raytracing.h"
 
+#include "mesh/che.h"
+
 
 // geometry processing and shape analysis framework
 // raytracing approach
