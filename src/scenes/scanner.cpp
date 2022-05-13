@@ -33,11 +33,17 @@ che * scanner_ptx(const che * mesh, raytracing * rt, const size_t & n_rows, cons
 	
 	gproshan_log("init");
 
-	const real_t delta_phi = M_PI / n_rows;
-	const real_t delta_theta = (2 * M_PI) / n_cols;
+	const real_t delta_phi = (2 * M_PI) / n_rows;
+	const real_t delta_theta = M_PI / n_cols;
+	/*gproshan_log_var(n_rows); 
+	gproshan_log_var(n_cols);
+	gproshan_log_var(delta_phi);
+	gproshan_log_var(delta_theta);
+	gproshan_log_var( (2 * M_PI - 0.5 * delta_phi)/ delta_phi);
+	gproshan_log_var((M_PI - 0.5 * delta_theta)/ delta_theta);*/
 
 	for(real_t phi = 0; phi < 2 * M_PI - 0.5 * delta_phi; phi += delta_phi)
-	for(real_t theta = delta_theta; theta < M_PI - 0.5 * delta_theta; theta += delta_theta)
+	for(real_t theta = delta_theta; theta < M_PI - 0.5 * delta_theta + delta_theta; theta += delta_theta)
 	{
 		//gproshan_log_var(phi);
 		//gproshan_log_var(theta);
@@ -46,7 +52,6 @@ che * scanner_ptx(const che * mesh, raytracing * rt, const size_t & n_rows, cons
 		// quering the closest point in the mesh to the hit point and the distance 
 		auto [v_idx, distance] = rt->cast_ray_intersect_depth(cam_pos, glm::normalize(p - cam_pos));
 		
-
 		if(v_idx == NIL)
 		{
 			vertices.push_back( {0, 0, 0} );
@@ -60,7 +65,10 @@ che * scanner_ptx(const che * mesh, raytracing * rt, const size_t & n_rows, cons
 		}
 	}
 
-	gproshan_log_var(n_cols * n_cols == vertices.size());
+	gproshan_log_var(n_cols * n_rows);
+	gproshan_log_var(vertices.size());
+
+	gproshan_log_var(n_cols * n_rows == vertices.size());
 
 	che * mesh_ptx = new che(vertices.data(), vertices.size(), nullptr, 0);
 	memcpy(&mesh_ptx->rgb(0), vertices_color.data(), vertices_color.size() * sizeof(che::rgb_t));
