@@ -30,23 +30,18 @@ che * scanner_ptx(const che * mesh, raytracing * rt, const size_t & n_rows, cons
 	const real_t  r = 1;
 	index_t v_idx;
 	float distance;
+
 	
 	gproshan_log("init");
 
 	const real_t delta_phi = (2 * M_PI) / n_rows;
 	const real_t delta_theta = M_PI / n_cols;
-	/*gproshan_log_var(n_rows); 
-	gproshan_log_var(n_cols);
-	gproshan_log_var(delta_phi);
-	gproshan_log_var(delta_theta);
-	gproshan_log_var( (2 * M_PI - 0.5 * delta_phi)/ delta_phi);
-	gproshan_log_var((M_PI - 0.5 * delta_theta)/ delta_theta);*/
+
 
 	for(real_t phi = 0; phi < 2 * M_PI - 0.5 * delta_phi; phi += delta_phi)
 	for(real_t theta = delta_theta; theta < M_PI - 0.5 * delta_theta + delta_theta; theta += delta_theta)
+	//for(real_t phi = 0; phi < 2 * M_PI - 0.5 * delta_phi; phi += delta_phi)
 	{
-		//gproshan_log_var(phi);
-		//gproshan_log_var(theta);
 		// p is the direction of the ray
 		p = glm::vec3( r * sin(theta) * cos(phi), r * sin(theta) * sin(phi), r * cos(theta) ) - cam_pos;
 		// quering the closest point in the mesh to the hit point and the distance 
@@ -76,9 +71,14 @@ che * scanner_ptx(const che * mesh, raytracing * rt, const size_t & n_rows, cons
 
 	CImg<unsigned char> img((unsigned char *) vertices_color.data(), 3, n_cols, n_rows);
 	img.permute_axes("zycx");
-	//img.save((mesh->name() + ".jpg").c_str());
+	img.save((mesh->name() + ".jpg").c_str());
 
-	std::thread([](CImg<real_t> img) { img.mirror("y").display(); }, img).detach();
+	CImg<unsigned char> img2((unsigned char *) vertices_color.data(), 3, n_rows, n_cols);
+	img2.permute_axes("zycx");
+	img2.save((mesh->name() + "2.jpg").c_str());
+
+
+	std::thread([](CImg<real_t> img) { img.display(); }, img).detach();
 
 	
 	return mesh_ptx;

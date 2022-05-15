@@ -25,7 +25,6 @@ class che_viewer
 {
 	protected:
 		che * mesh = nullptr;
-		rt::raytracing * pick_vertex = nullptr;
 
 		size_t n_instances = 0;
 		bool normalize = false;
@@ -38,6 +37,7 @@ class che_viewer
 		int vx, vy;							///< viewport positions.
 		real_t factor;
 		std::vector<index_t> selected;
+		rt::raytracing * pick_vertex = nullptr;
 
 		index_t idx_colormap	= 1;		// colormap index defined in shaders/colormap.glsl
 		index_t point_size		= 1;

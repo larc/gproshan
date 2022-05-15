@@ -120,8 +120,8 @@ bool app_viewer::process_simulate_scanner(viewer * p_view)
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
-	static size_t n_rows = 2000;
-	static size_t n_cols = 4000;
+	static size_t n_rows = 4000;
+	static size_t n_cols = 2000;
 	static const size_t n_min = 1000;
 	static const size_t n_max = 1000000;
 
@@ -130,8 +130,11 @@ bool app_viewer::process_simulate_scanner(viewer * p_view)
 
 	if(ImGui::Button("Scan"))
 	{
-		view->add_mesh(scanner_ptx(mesh, view->rt_embree, n_rows, n_cols, {0, 0, 0}));
+		che * ptx_mesh = scanner_ptx(mesh, mesh.pick_vertex, n_rows, n_cols, {0, 0, 0});
+		view->add_mesh(ptx_mesh);
+		che_ptx::write_file(ptx_mesh, mesh->filename, n_rows, n_cols);
 	}
+
 
 	return true;
 }
