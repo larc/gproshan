@@ -310,13 +310,14 @@ void viewer::init_menus()
 
 	sub_menus.push_back("Mesh");
 	add_process(GLFW_KEY_BACKSPACE, "BACKSPACE", "Reload/Reset", menu_reset_mesh);
+	add_process(GLFW_KEY_W, "W", "Save Mesh", menu_save_mesh);
 	add_process(GLFW_KEY_TAB, "TAB", "Render Flat", set_render_flat);
 	add_process(GLFW_KEY_SPACE, "SPACE", "Level Curves", set_render_lines);
 	add_process(GLFW_KEY_F2, "F2", "Invert Normals", invert_normals);
 	add_process(GLFW_KEY_F3, "F3", "Gradient Field", set_render_gradients);
 	add_process(GLFW_KEY_F4, "F4", "Normal Field", set_render_normals);
-	add_process(GLFW_KEY_APOSTROPHE, "APOSTROPHE", "Select Border Vertices", set_render_border);
-	add_process(GLFW_KEY_W, "W", "Save Mesh", menu_save_mesh);
+	add_process(GLFW_KEY_B, "B", "Select Border Vertices", select_border_vertices);
+	add_process(GLFW_KEY_C, "C", "Clean Selected Vertices", clean_selected_vertices);
 }
 
 void viewer::init_glsl()
@@ -528,12 +529,14 @@ bool viewer::menu_save_load_view(viewer * view)
 
 bool viewer::menu_reset_mesh(viewer * view)
 {
-	view->active_mesh().selected.clear();
 	view->other_vertices.clear();
 	view->vectors.clear();
 
-	view->active_mesh()->reload();
-	view->active_mesh().update();
+	che_viewer & mesh = view->active_mesh();
+	mesh.selected.clear();
+	mesh->reload();
+	mesh->update_normals();
+	mesh.update();
 
 	return false;
 }
@@ -712,6 +715,24 @@ bool viewer::invert_normals(viewer * view)
 	return false;
 }
 
+bool viewer::select_border_vertices(viewer * view)
+{
+	che_viewer & mesh = view->active_mesh();
+	for(const index_t & b: mesh->bounds())
+		for_boundary(he, mesh, b)
+			mesh.selected.push_back(mesh->vt(he));
+
+	return false;
+}
+
+bool viewer::clean_selected_vertices(viewer * view)
+{
+	che_viewer & mesh = view->active_mesh();
+	mesh.selected.clear();
+
+	return false;
+}
+
 bool viewer::set_render_pointcloud(viewer * view)
 {
 	che_viewer & mesh = view->active_mesh();
@@ -748,16 +769,6 @@ bool viewer::set_render_normals(viewer * view)
 {
 	che_viewer & mesh = view->active_mesh();
 	mesh.render_normals = !mesh.render_normals;
-
-	return false;
-}
-
-bool viewer::set_render_border(viewer * view)
-{
-	che_viewer & mesh = view->active_mesh();
-	mesh.render_border = !mesh.render_border;
-	if(!mesh.render_border)
-		mesh.selected.clear();
 
 	return false;
 }
@@ -839,9 +850,6 @@ void viewer::render_gl()
 		if(mesh.render_gradients)
 			mesh.draw(shader_gradient);
 
-		if(mesh.render_border)
-			select_border_vertices(mesh);
-
 		draw_selected_vertices(shader_sphere, mesh);
 	}
 }
@@ -891,16 +899,6 @@ void viewer::draw_selected_vertices(shader & program, const che_viewer & mesh)
 	sphere.model_mat = mesh.model_mat;
 	if(sphere_translations.size())
 		sphere.draw(program);
-}
-
-void viewer::select_border_vertices(che_viewer & mesh)
-{
-	mesh.selected.clear();
-
-	vector<index_t> bounds = mesh->bounds();
-	for(const index_t & b: bounds)
-		for_boundary(he, mesh, b)
-			mesh.selected.push_back(mesh->vt(he));
 }
 
 void viewer::pick_vertex(const real_t & x, const real_t & y)

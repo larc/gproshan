@@ -51,6 +51,7 @@ void che_viewer::init(che * m, const bool & center)
 
 void che_viewer::update()
 {
+	model_mat = glm::mat4(1);
 	if(center_mesh)
 	{
 		vertex pmin(INFINITY, INFINITY, INFINITY);

@@ -63,7 +63,7 @@ void app_viewer::init()
 
 	sub_menus.push_back("Geometry");
 	add_process(GLFW_KEY_H, "H", "2D Convex Hull", process_convex_hull);
-	add_process(GLFW_KEY_C, "C", "Connected Components", process_connected_components);
+	add_process(GLFW_KEY_O, "O", "Connected Components", process_connected_components);
 	add_process(GLFW_KEY_K, "K", "Gaussian curvature", process_gaussian_curvature);
 	add_process(GLFW_KEY_Q, "Q", "Edge Collapse", process_edge_collapse);
 	add_process(GLFW_KEY_M, "M", "Multiplicate", process_multiplicate_vertices);
@@ -103,7 +103,7 @@ void app_viewer::init()
 	add_process(GLFW_KEY_SEMICOLON, "SEMICOLON", "Select multiple vertices", process_select_multiple);
 	add_process(GLFW_KEY_SLASH, "SLASH", "Threshold", process_threshold);
 	add_process(GLFW_KEY_N, "N", "Noise", process_noise);
-	add_process(GLFW_KEY_B, "B", "Black noise", process_black_noise);
+	add_process(GLFW_KEY_P, "P", "Black noise", process_black_noise);
 }
 
 

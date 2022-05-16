@@ -48,7 +48,7 @@ void laplacian(const che * mesh, a_sp_mat & L, a_sp_mat & A)
 
 	#pragma omp parallel for
 	for(index_t v = 0; v < n_vertices; ++v)
-		A(v, v) = 1.0 / sqrt(mesh->area_vertex(v));
+		A(v, v) = mesh->area_vertex(v);
 }
 
 void laplacian(const che * mesh, sp_mat_e & L, sp_mat_e & A)
@@ -77,7 +77,8 @@ void laplacian(const che * mesh, sp_mat_e & L, sp_mat_e & A)
 
 	A.reserve(VectorXi::Constant(n_vertices, 1));
 	for(index_t v = 0; v < n_vertices; ++v)
-		A.insert(v, v) = 1.0 / sqrt(mesh->area_vertex(v));
+		A.insert(v, v) = mesh->area_vertex(v);
+		//A.insert(v, v) = 1.0 / sqrt(mesh->area_vertex(v));
 }
 
 size_t eigs_laplacian(const che * mesh, a_vec & eigval, a_mat & eigvec, a_sp_mat & L, a_sp_mat & A, const size_t & k)

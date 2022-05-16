@@ -146,21 +146,20 @@ class viewer
 		static bool set_render_optix(viewer * view);
 
 		static bool invert_normals(viewer * view);
+		static bool select_border_vertices(viewer * view);
+		static bool clean_selected_vertices(viewer * view);
 		static bool set_render_pointcloud(viewer * view);
 		static bool set_render_wireframe(viewer * view);
 		static bool set_render_triangles(viewer * view);
 		static bool set_render_gradients(viewer * view);
 		static bool set_render_normals(viewer * view);
-		static bool set_render_border(viewer * view);
 		static bool set_render_lines(viewer * view);
 		static bool set_render_flat(viewer * view);
 
 		static bool raycasting(viewer * view);
 
-		// draw routines
 		void draw_selected_vertices(shader & program, const che_viewer & mesh);
 
-		void select_border_vertices(che_viewer & mesh);
 		void pick_vertex(const real_t & x, const real_t & y);
 };
 

@@ -48,7 +48,6 @@ class che_viewer
 		bool render_triangles	= false;
 		bool render_gradients	= false;
 		bool render_normals		= false;
-		bool render_border		= false;
 		bool render_lines		= false;
 		bool render_flat		= false;
 
