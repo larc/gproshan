@@ -92,7 +92,6 @@ class viewer
 		std::map<int, process_t> processes;
 
 		che_viewer sphere;
-		std::vector<vertex> sphere_translations;
 		shader shader_sphere;
 
 	public:
@@ -159,7 +158,6 @@ class viewer
 
 		static bool m_raycasting(viewer * view);
 
-		void draw_selected_vertices(shader & program, const che_viewer & mesh);
 		void pick_vertex(const real_t & x, const real_t & y);
 };
 

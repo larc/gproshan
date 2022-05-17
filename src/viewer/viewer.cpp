@@ -128,7 +128,6 @@ bool viewer::run()
 					if(ImGui::MenuItem((to_string(i) + ": " + meshes[i]->filename).c_str(), nullptr, i == idx_active_mesh, i != idx_active_mesh))
 					{
 						idx_active_mesh = i;
-						sphere_translations.clear();
 						glfwSetWindowTitle(window, mesh->filename.c_str());
 					}
 
@@ -601,8 +600,6 @@ bool viewer::m_normalize_mesh(viewer * view)
 	mesh->normalize();
 	mesh.update();
 
-	view->sphere_translations.clear();
-
 	return false;
 }
 
@@ -862,7 +859,7 @@ void viewer::render_gl()
 		if(mesh.render_gradients)
 			mesh.draw(shader_gradient);
 
-		draw_selected_vertices(shader_sphere, mesh);
+		mesh.draw_selected_vertices(sphere, shader_sphere);
 	}
 }
 
@@ -894,23 +891,6 @@ void viewer::render_rt(rt::raytracing * rt)
 
 	rt_restart = false;
 	rt_frame->display();
-}
-
-void viewer::draw_selected_vertices(shader & program, const che_viewer & mesh)
-{
-	if(sphere_translations.size() != mesh.selected.size())
-	{
-		sphere_translations.resize(mesh.selected.size());
-
-		for(index_t i = 0; i < mesh.selected.size(); ++i)
-			sphere_translations[i] = mesh->gt(mesh.selected[i]);
-
-		sphere.update_instances_positions(sphere_translations);
-	}
-
-	sphere.model_mat = mesh.model_mat;
-	if(sphere_translations.size())
-		sphere.draw(program);
 }
 
 void viewer::pick_vertex(const real_t & x, const real_t & y)

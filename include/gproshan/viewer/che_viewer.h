@@ -37,6 +37,7 @@ class che_viewer
 	public:
 		int vx, vy;							///< viewport positions.
 		std::vector<index_t> selected;
+		std::vector<vertex> selected_xyz;
 
 		glm::mat4 model_mat		= glm::mat4(1);
 
@@ -70,6 +71,7 @@ class che_viewer
 
 		void draw(shader & program);
 		void draw_point_cloud(shader & program);
+		void draw_selected_vertices(che_viewer & sphere, shader & program);
 
 		void translate(const vertex & p);
 		void scale(const real_t & s);

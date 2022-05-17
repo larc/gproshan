@@ -75,7 +75,7 @@ void che_viewer::update()
 	}
 
 	render_pointcloud = mesh->is_pointcloud();
-
+	selected_xyz.clear();
 	update_vbo();
 
 	delete pick_vertex;
@@ -224,6 +224,25 @@ void che_viewer::draw_point_cloud(shader & program)
 	glBindVertexArray(0);
 
 	program.disable();
+}
+
+void che_viewer::draw_selected_vertices(che_viewer & sphere, shader & program)
+{
+	if(selected_xyz.size() != selected.size())
+	{
+		selected_xyz.clear();
+		selected_xyz.reserve(selected.size());
+
+		for(const index_t & v: selected)
+			selected_xyz.push_back(mesh->gt(v));
+	}
+
+	if(selected_xyz.size())
+	{
+		sphere.model_mat = model_mat;
+		sphere.update_instances_positions(selected_xyz);
+		sphere.draw(program);
+	}
 }
 
 void che_viewer::translate(const vertex & p)
