@@ -286,38 +286,39 @@ void viewer::init_imgui()
 void viewer::init_menus()
 {
 	sub_menus.push_back("Viewer");
-	add_process(GLFW_KEY_F1, "F1", "Help", menu_help);
-	add_process(GLFW_KEY_PERIOD, "PERIOD", "Save/Load view", menu_save_load_view);
-	add_process(GLFW_KEY_UP, "UP", "Zoom in", menu_zoom_in);
-	add_process(GLFW_KEY_DOWN, "DOWN", "Zoom out", menu_zoom_out);
-	add_process(GLFW_KEY_RIGHT, "RIGHT", "Background color inc", menu_bgc_inc);
-	add_process(GLFW_KEY_LEFT, "LEFT", "Background color dec", menu_bgc_dec);
-	add_process(GLFW_KEY_1, "1", "Background color white", menu_bgc_white);
-	add_process(GLFW_KEY_0, "0", "Background color black", menu_bgc_black);
+	add_process(GLFW_KEY_F1, "F1", "Help", m_help);
+	add_process(GLFW_KEY_PERIOD, "PERIOD", "Save/Load view", m_save_load_view);
+	add_process(GLFW_KEY_UP, "UP", "Zoom in", m_zoom_in);
+	add_process(GLFW_KEY_DOWN, "DOWN", "Zoom out", m_zoom_out);
+	add_process(GLFW_KEY_RIGHT, "RIGHT", "Background color inc", m_bgc_inc);
+	add_process(GLFW_KEY_LEFT, "LEFT", "Background color dec", m_bgc_dec);
+	add_process(GLFW_KEY_1, "1", "Background color white", m_bgc_white);
+	add_process(GLFW_KEY_0, "0", "Background color black", m_bgc_black);
 
 	sub_menus.push_back("Render");
-	add_process(GLFW_KEY_F5, "F5", "Render Point Cloud", set_render_pointcloud);
-	add_process(GLFW_KEY_F6, "F6", "Render Wireframe", set_render_wireframe);
-	add_process(GLFW_KEY_F7, "F7", "Render Triangles", set_render_triangles);
-	add_process(GLFW_KEY_F8, "F8", "Render GL", set_render_gl);
-	add_process(GLFW_KEY_R, "R", "Setup Raytracing", setup_raytracing);
-	add_process(GLFW_KEY_F9, "F9", "Render Embree", set_render_embree);
-	add_process(GLFW_KEY_ENTER, "ENTER", "Raycasting", raycasting);
+	add_process(GLFW_KEY_F5, "F5", "Render Point Cloud", m_render_pointcloud);
+	add_process(GLFW_KEY_F6, "F6", "Render Wireframe", m_render_wireframe);
+	add_process(GLFW_KEY_F7, "F7", "Render Triangles", m_render_triangles);
+	add_process(GLFW_KEY_F8, "F8", "Render GL", m_render_gl);
+	add_process(GLFW_KEY_SPACE, "SPACE", "Level Curves", m_render_lines);
+	add_process(GLFW_KEY_TAB, "TAB", "Render Flat", m_render_flat);
+	add_process(GLFW_KEY_R, "R", "Setup Raytracing", m_setup_raytracing);
+	add_process(GLFW_KEY_F9, "F9", "Render Embree", m_render_embree);
+	add_process(GLFW_KEY_ENTER, "ENTER", "Raycasting", m_raycasting);
 
 #ifdef GPROSHAN_OPTIX
-	add_process(GLFW_KEY_F10, "F10", "Render OptiX", set_render_optix);
+	add_process(GLFW_KEY_F10, "F10", "Render OptiX", m_render_optix);
 #endif // GPROSHAN_OPTIX
 
 	sub_menus.push_back("Mesh");
-	add_process(GLFW_KEY_BACKSPACE, "BACKSPACE", "Reload/Reset", menu_reset_mesh);
-	add_process(GLFW_KEY_W, "W", "Save Mesh", menu_save_mesh);
-	add_process(GLFW_KEY_TAB, "TAB", "Render Flat", set_render_flat);
-	add_process(GLFW_KEY_SPACE, "SPACE", "Level Curves", set_render_lines);
-	add_process(GLFW_KEY_F2, "F2", "Invert Normals", invert_normals);
-	add_process(GLFW_KEY_F3, "F3", "Gradient Field", set_render_gradients);
-	add_process(GLFW_KEY_F4, "F4", "Normal Field", set_render_normals);
-	add_process(GLFW_KEY_B, "B", "Select Border Vertices", select_border_vertices);
-	add_process(GLFW_KEY_C, "C", "Clean Selected Vertices", clean_selected_vertices);
+	add_process(GLFW_KEY_BACKSPACE, "BACKSPACE", "Reload/Reset", m_reset_mesh);
+	add_process(GLFW_KEY_W, "W", "Save Mesh", m_save_mesh);
+	add_process(0, "", "Normalize Mesh", m_normalize_mesh);
+	add_process(GLFW_KEY_F2, "F2", "Invert Normals", m_invert_normals);
+	add_process(GLFW_KEY_F3, "F3", "Gradient Field", m_render_gradients);
+	add_process(GLFW_KEY_F4, "F4", "Normal Field", m_render_normals);
+	add_process(GLFW_KEY_B, "B", "Select Border Vertices", m_select_border_vertices);
+	add_process(GLFW_KEY_C, "C", "Clean Selected Vertices", m_clean_selected_vertices);
 }
 
 void viewer::init_glsl()
@@ -467,7 +468,7 @@ void viewer::scroll_callback(GLFWwindow * window, double, double yoffset)
 	}
 }
 
-bool viewer::menu_help(viewer * view)
+bool viewer::m_help(viewer * view)
 {
 	for(auto & p: view->processes)
 		if(p.second.function != nullptr)
@@ -476,7 +477,7 @@ bool viewer::menu_help(viewer * view)
 	return false;
 }
 
-bool viewer::menu_save_load_view(viewer * view)
+bool viewer::m_save_load_view(viewer * view)
 {
 	filesystem::create_directory(tmp_file_path("views/"));
 
@@ -527,7 +528,7 @@ bool viewer::menu_save_load_view(viewer * view)
 	return true;
 }
 
-bool viewer::menu_reset_mesh(viewer * view)
+bool viewer::m_reset_mesh(viewer * view)
 {
 	view->other_vertices.clear();
 	view->vectors.clear();
@@ -541,7 +542,7 @@ bool viewer::menu_reset_mesh(viewer * view)
 	return false;
 }
 
-bool viewer::menu_save_mesh(viewer * view)
+bool viewer::m_save_mesh(viewer * view)
 {
 	const che * mesh = view->active_mesh();
 
@@ -594,19 +595,30 @@ bool viewer::menu_save_mesh(viewer * view)
 	return true;
 }
 
-bool viewer::menu_zoom_in(viewer * view)
+bool viewer::m_normalize_mesh(viewer * view)
+{
+	che_viewer & mesh = view->active_mesh();
+	mesh->normalize();
+	mesh.update();
+
+	view->sphere_translations.clear();
+
+	return false;
+}
+
+bool viewer::m_zoom_in(viewer * view)
 {
 	view->cam.zoom_in();
 	return false;
 }
 
-bool viewer::menu_zoom_out(viewer * view)
+bool viewer::m_zoom_out(viewer * view)
 {
 	view->cam.zoom_out();
 	return false;
 }
 
-bool viewer::menu_bgc_inc(viewer * view)
+bool viewer::m_bgc_inc(viewer * view)
 {
 	if(view->bgc < 1) view->bgc += 0.05;
 	else view->bgc = 1;
@@ -616,7 +628,7 @@ bool viewer::menu_bgc_inc(viewer * view)
 	return false;
 }
 
-bool viewer::menu_bgc_dec(viewer * view)
+bool viewer::m_bgc_dec(viewer * view)
 {
 	if(view->bgc > 0) view->bgc -= 0.05;
 	else view->bgc = 0;
@@ -626,7 +638,7 @@ bool viewer::menu_bgc_dec(viewer * view)
 	return false;
 }
 
-bool viewer::menu_bgc_white(viewer * view)
+bool viewer::m_bgc_white(viewer * view)
 {
 	view->bgc = 1;
 	glClearColor(view->bgc, view->bgc, view->bgc, 1.);
@@ -634,7 +646,7 @@ bool viewer::menu_bgc_white(viewer * view)
 	return false;
 }
 
-bool viewer::menu_bgc_black(viewer * view)
+bool viewer::m_bgc_black(viewer * view)
 {
 	view->bgc = 0;
 	glClearColor(view->bgc, view->bgc, view->bgc, 1.);
@@ -642,7 +654,7 @@ bool viewer::menu_bgc_black(viewer * view)
 	return false;
 }
 
-bool viewer::setup_raytracing(viewer * view)
+bool viewer::m_setup_raytracing(viewer * view)
 {
 	che_viewer & mesh = view->active_mesh();
 
@@ -685,27 +697,27 @@ bool viewer::setup_raytracing(viewer * view)
 	return true;
 }
 
-bool viewer::set_render_gl(viewer * view)
+bool viewer::m_render_gl(viewer * view)
 {
 	view->render_opt = R_GL;
 	return false;
 }
 
-bool viewer::set_render_embree(viewer * view)
+bool viewer::m_render_embree(viewer * view)
 {
 	view->rt_restart = true;
 	view->render_opt = R_EMBREE;
 	return false;
 }
 
-bool viewer::set_render_optix(viewer * view)
+bool viewer::m_render_optix(viewer * view)
 {
 	view->rt_restart = true;
 	view->render_opt = R_OPTIX;
 	return false;
 }
 
-bool viewer::invert_normals(viewer * view)
+bool viewer::m_invert_normals(viewer * view)
 {
 	che_viewer & mesh = view->active_mesh();
 
@@ -715,7 +727,7 @@ bool viewer::invert_normals(viewer * view)
 	return false;
 }
 
-bool viewer::select_border_vertices(viewer * view)
+bool viewer::m_select_border_vertices(viewer * view)
 {
 	che_viewer & mesh = view->active_mesh();
 	for(const index_t & b: mesh->bounds())
@@ -725,7 +737,7 @@ bool viewer::select_border_vertices(viewer * view)
 	return false;
 }
 
-bool viewer::clean_selected_vertices(viewer * view)
+bool viewer::m_clean_selected_vertices(viewer * view)
 {
 	che_viewer & mesh = view->active_mesh();
 	mesh.selected.clear();
@@ -733,7 +745,7 @@ bool viewer::clean_selected_vertices(viewer * view)
 	return false;
 }
 
-bool viewer::set_render_pointcloud(viewer * view)
+bool viewer::m_render_pointcloud(viewer * view)
 {
 	che_viewer & mesh = view->active_mesh();
 	mesh.render_pointcloud = !mesh.render_pointcloud;
@@ -741,7 +753,7 @@ bool viewer::set_render_pointcloud(viewer * view)
 	return false;
 }
 
-bool viewer::set_render_wireframe(viewer * view)
+bool viewer::m_render_wireframe(viewer * view)
 {
 	che_viewer & mesh = view->active_mesh();
 	mesh.render_wireframe = !mesh.render_wireframe;
@@ -749,7 +761,7 @@ bool viewer::set_render_wireframe(viewer * view)
 	return false;
 }
 
-bool viewer::set_render_triangles(viewer * view)
+bool viewer::m_render_triangles(viewer * view)
 {
 	che_viewer & mesh = view->active_mesh();
 	mesh.render_triangles = !mesh.render_triangles;
@@ -757,7 +769,7 @@ bool viewer::set_render_triangles(viewer * view)
 	return false;
 }
 
-bool viewer::set_render_gradients(viewer * view)
+bool viewer::m_render_gradients(viewer * view)
 {
 	che_viewer & mesh = view->active_mesh();
 	mesh.render_gradients = !mesh.render_gradients;
@@ -765,7 +777,7 @@ bool viewer::set_render_gradients(viewer * view)
 	return false;
 }
 
-bool viewer::set_render_normals(viewer * view)
+bool viewer::m_render_normals(viewer * view)
 {
 	che_viewer & mesh = view->active_mesh();
 	mesh.render_normals = !mesh.render_normals;
@@ -773,7 +785,7 @@ bool viewer::set_render_normals(viewer * view)
 	return false;
 }
 
-bool viewer::set_render_lines(viewer * view)
+bool viewer::m_render_lines(viewer * view)
 {
 	che_viewer & mesh = view->active_mesh();
 	mesh.render_lines = !mesh.render_lines;
@@ -781,7 +793,7 @@ bool viewer::set_render_lines(viewer * view)
 	return false;
 }
 
-bool viewer::set_render_flat(viewer * view)
+bool viewer::m_render_flat(viewer * view)
 {
 	che_viewer & mesh = view->active_mesh();
 	mesh.render_flat = !mesh.render_flat;
@@ -790,7 +802,7 @@ bool viewer::set_render_flat(viewer * view)
 	return false;
 }
 
-bool viewer::raycasting(viewer * view)
+bool viewer::m_raycasting(viewer * view)
 {
 	che_viewer & mesh = view->active_mesh();
 

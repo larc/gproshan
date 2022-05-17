@@ -398,9 +398,6 @@ bool app_viewer::process_geodesics(viewer * p_view)
 	ImGui::Combo("alg", (int *) &params.alg, "FM\0PTP_CPU\0HEAT_METHOD\0\0");
 #endif // GPROSHAN_CUDA
 
-	if(params.alg == geodesics::FM)
-		ImGui_InputReal("radio", &params.radio);
-
 	if(ImGui::Button("Run"))
 	{
 		if(!mesh.selected.size())
@@ -409,13 +406,11 @@ bool app_viewer::process_geodesics(viewer * p_view)
 		params.dist_alloc = &mesh->heatmap(0);
 
 		TIC(view->time)
-			geodesics G(mesh, mesh.selected, params);
+			geodesics dm(mesh, mesh.selected, params);
 		TOC(view->time)
 		sprintf(view->status_message, "geodesics time: %.3fs", view->time);
 
-		params.radio = G.radio();
-
-		G.normalize();
+		dm.normalize();
 		mesh.update_vbo_heatmap();
 	}
 
