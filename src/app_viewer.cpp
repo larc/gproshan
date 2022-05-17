@@ -358,10 +358,9 @@ bool app_viewer::process_fairing_taubin(viewer * p_view)
 	che_viewer & mesh = view->active_mesh();
 
 	static vector<vertex> vertices;
-	static fairing_taubin fair;
-	ImGui_InputReal("step", &fair.step, 0.001);
+	static fairing_taubin fair(0);
 
-	if(ImGui::Button("Run"))
+	if(ImGui_InputReal("step", &fair.step, 0.001))
 	{
 		if(!vertices.size())
 		{
