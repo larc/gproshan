@@ -105,10 +105,10 @@ embree::embree()
 	rtcSetDeviceErrorFunction(device, embree_error, NULL);
 }
 
-embree::embree(const std::vector<che *> & meshes, const bool & pointcloud, const float & pcr): embree()
+embree::embree(const std::vector<che *> & meshes, const std::vector<glm::mat4> & model_mats, const bool & pointcloud, const float & pcr): embree()
 {
 	pc_radius = pcr;
-	build_bvh(meshes, pointcloud);
+	build_bvh(meshes, model_mats, pointcloud);
 }
 
 embree::~embree()
@@ -135,13 +135,18 @@ bool embree::occluded(ray_hit & r)
 	return r.hit.geomID != RTC_INVALID_GEOMETRY_ID;
 }
 
-void embree::build_bvh(const std::vector<che *> & meshes, const bool & pointcloud)
+void embree::build_bvh(const std::vector<che *> & meshes, const std::vector<glm::mat4> & model_mats, const bool & pointcloud)
 {
-	for(auto & m: meshes)
-		if(!m->n_faces || pointcloud)
-			geomID_mesh[add_pointcloud(m)] = {m, true};
+	for(index_t i = 0; i < meshes.size(); ++i)
+	{
+		che * mesh = meshes[i];
+		const glm::mat4 & model_mat = model_mats[i];
+
+		if(mesh->is_pointcloud() || pointcloud)
+			geomID_mesh[add_pointcloud(mesh)] = {mesh, true};
 		else
-			geomID_mesh[add_mesh(m)] = {m, false};
+			geomID_mesh[add_mesh(mesh, model_mat)] = {mesh, false};
+	}
 
 	rtcCommitScene(scene);
 }
@@ -163,7 +168,7 @@ index_t embree::add_sphere(const glm::vec4 & xyzr)
 	return geom_id;
 }
 
-index_t embree::add_mesh(const che * mesh)
+index_t embree::add_mesh(const che * mesh, const glm::mat4 & model_mat)
 {
 	RTCGeometry geom = rtcNewGeometry(device, RTC_GEOMETRY_TYPE_TRIANGLE);
 
@@ -179,7 +184,10 @@ index_t embree::add_mesh(const che * mesh)
 																mesh->n_faces
 																);
 
-	copy_real_t_array((float *) vertices, (real_t *) &mesh->gt(0), 3 * mesh->n_vertices);
+	#pragma omp parallel for
+	for(index_t i = 0; i < mesh->n_vertices; ++i)
+		vertices[i] = glm::vec3(model_mat * glm::vec4(glm_vec3(mesh->gt(i)), 1));
+
 	memcpy(tri_idxs, &mesh->vt(0), mesh->n_half_edges * sizeof(index_t));
 
 	rtcCommitGeometry(geom);

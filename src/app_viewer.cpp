@@ -63,7 +63,7 @@ void app_viewer::init()
 
 	sub_menus.push_back("Geometry");
 	add_process(GLFW_KEY_H, "H", "2D Convex Hull", process_convex_hull);
-	add_process(GLFW_KEY_C, "C", "Connected Components", process_connected_components);
+	add_process(GLFW_KEY_O, "O", "Connected Components", process_connected_components);
 	add_process(GLFW_KEY_K, "K", "Gaussian curvature", process_gaussian_curvature);
 	add_process(GLFW_KEY_Q, "Q", "Edge Collapse", process_edge_collapse);
 	add_process(GLFW_KEY_M, "M", "Multiplicate", process_multiplicate_vertices);
@@ -103,7 +103,7 @@ void app_viewer::init()
 	add_process(GLFW_KEY_SEMICOLON, "SEMICOLON", "Select multiple vertices", process_select_multiple);
 	add_process(GLFW_KEY_SLASH, "SLASH", "Threshold", process_threshold);
 	add_process(GLFW_KEY_N, "N", "Noise", process_noise);
-	add_process(GLFW_KEY_B, "B", "Black noise", process_black_noise);
+	add_process(GLFW_KEY_P, "P", "Black noise", process_black_noise);
 }
 
 
@@ -361,10 +361,9 @@ bool app_viewer::process_fairing_taubin(viewer * p_view)
 	che_viewer & mesh = view->active_mesh();
 
 	static vector<vertex> vertices;
-	static fairing_taubin fair;
-	ImGui_InputReal("step", &fair.step, 0.001);
+	static fairing_taubin fair(0);
 
-	if(ImGui::Button("Run"))
+	if(ImGui_InputReal("step", &fair.step, 0.001))
 	{
 		if(!vertices.size())
 		{
@@ -401,9 +400,6 @@ bool app_viewer::process_geodesics(viewer * p_view)
 	ImGui::Combo("alg", (int *) &params.alg, "FM\0PTP_CPU\0HEAT_METHOD\0\0");
 #endif // GPROSHAN_CUDA
 
-	if(params.alg == geodesics::FM)
-		ImGui_InputReal("radio", &params.radio);
-
 	if(ImGui::Button("Run"))
 	{
 		if(!mesh.selected.size())
@@ -412,13 +408,11 @@ bool app_viewer::process_geodesics(viewer * p_view)
 		params.dist_alloc = &mesh->heatmap(0);
 
 		TIC(view->time)
-			geodesics G(mesh, mesh.selected, params);
+			geodesics dm(mesh, mesh.selected, params);
 		TOC(view->time)
 		sprintf(view->status_message, "geodesics time: %.3fs", view->time);
 
-		params.radio = G.radio();
-
-		G.normalize();
+		dm.normalize();
 		mesh.update_vbo_heatmap();
 	}
 

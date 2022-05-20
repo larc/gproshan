@@ -229,7 +229,7 @@ real_t che::pdetriq(const index_t & t) const
 	return (4 * sqrt(3) * area_trig(t)) / (h[0] * h[0] + h[1] * h[1] + h[2] * h[2]);
 }
 
-real_t che::quality()
+real_t che::quality() const
 {
 	real_t q = 0;
 
@@ -334,6 +334,13 @@ void che::update_normals()
 
 		n /= *n;
 	}
+}
+
+void che::invert_normals()
+{
+	#pragma omp parallel for
+	for(index_t v = 0; v < n_vertices; ++v)
+		VN[v] = - VN[v];
 }
 
 const vertex & che::normal(const index_t & v) const

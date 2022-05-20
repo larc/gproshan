@@ -3,6 +3,9 @@
 #include <cassert>
 #include <cmath>
 #include <numeric>
+#include <algorithm>
+
+#include <glm/gtc/matrix_transform.hpp>
 
 #include "raytracing/rt_embree.h"
 
@@ -35,55 +38,48 @@ che_viewer::operator che *& ()
 	return mesh;
 }
 
-void che_viewer::init(che * mesh, const bool & normalize)
+void che_viewer::init(che * m, const bool & center)
 {
 	glGenVertexArrays(1, &vao);
 	glGenBuffers(6, vbo);
 
-	this->mesh = mesh;
-	this->normalize = normalize;
+	mesh = m;
+	center_mesh = center;
 
-	update();
-}
-
-void che_viewer::reload()
-{
-	mesh->reload();
 	update();
 }
 
 void che_viewer::update()
 {
-	if(normalize) mesh->normalize();
-
-	render_pointcloud = mesh->is_pointcloud();
-
-	vertex pmin(INFINITY, INFINITY, INFINITY);
-	vertex pmax(0, 0, 0);
-
-	for(index_t v = 0; v < mesh->n_vertices; ++v)
+	model_mat = glm::mat4(1);
+	if(center_mesh)
 	{
-		const vertex & p = mesh->gt(v);
+		vertex pmin(INFINITY, INFINITY, INFINITY);
+		vertex pmax(0, 0, 0);
 
-		pmin.x = min(pmin.x, p.x);
-		pmin.y = min(pmin.y, p.y);
-		pmin.z = min(pmin.z, p.z);
+		for(index_t v = 0; v < mesh->n_vertices; ++v)
+		{
+			const vertex & p = mesh->gt(v);
 
-		pmax.x = max(pmax.x, p.x);
-		pmax.y = max(pmax.y, p.y);
-		pmax.z = max(pmax.z, p.z);
+			pmin.x = min(pmin.x, p.x);
+			pmin.y = min(pmin.y, p.y);
+			pmin.z = min(pmin.z, p.z);
+
+			pmax.x = max(pmax.x, p.x);
+			pmax.y = max(pmax.y, p.y);
+			pmax.z = max(pmax.z, p.z);
+		}
+
+		scale(2.0 / std::max({pmax.x - pmin.x, pmax.y - pmin.y, pmax.z - pmin.z}));
+		translate(- (pmax + pmin) / 2);
 	}
 
-	translate(-(pmax + pmin) / 2);
-
-	factor = mesh->mean_edge();
-
-	mesh->update_normals();
-
+	render_pointcloud = mesh->is_pointcloud();
+	selected_xyz.clear();
 	update_vbo();
 
 	delete pick_vertex;
-	pick_vertex = new rt::embree({mesh});
+	pick_vertex = new rt::embree({mesh}, {model_mat});
 }
 
 void che_viewer::update_vbo()
@@ -164,7 +160,7 @@ void che_viewer::update_vbo_heatmap(const real_t * vheatmap)
 	glBindVertexArray(0);
 }
 
-void che_viewer::update_instances_translations(const vector<vertex> & translations)
+void che_viewer::update_instances_positions(const vector<vertex> & translations)
 {
 	n_instances = translations.size();
 	if(!n_instances) return;
@@ -185,6 +181,7 @@ void che_viewer::update_instances_translations(const vector<vertex> & translatio
 
 void che_viewer::draw(shader & program)
 {
+	glProgramUniformMatrix4fv(program, program("model_mat"), 1, 0, &model_mat[0][0]);
 	glProgramUniform1ui(program, program("idx_colormap"), idx_colormap);
 	glProgramUniform1i(program, program("render_flat"), render_flat);
 	glProgramUniform1i(program, program("render_lines"), render_lines);
@@ -210,6 +207,7 @@ void che_viewer::draw(shader & program)
 
 void che_viewer::draw_point_cloud(shader & program)
 {
+	glProgramUniformMatrix4fv(program, program("model_mat"), 1, 0, &model_mat[0][0]);
 	glProgramUniform1ui(program, program("idx_colormap"), idx_colormap);
 	glProgramUniform1i(program, program("render_lines"), render_lines);
 	glProgramUniform1i(program, program("point_normals"), point_normals);
@@ -228,34 +226,39 @@ void che_viewer::draw_point_cloud(shader & program)
 	program.disable();
 }
 
+void che_viewer::draw_selected_vertices(che_viewer & sphere, shader & program)
+{
+	if(selected_xyz.size() != selected.size())
+	{
+		selected_xyz.clear();
+		selected_xyz.reserve(selected.size());
+
+		for(const index_t & v: selected)
+			selected_xyz.push_back(mesh->gt(v));
+	}
+
+	if(selected_xyz.size())
+	{
+		sphere.model_mat = model_mat;
+		sphere.update_instances_positions(selected_xyz);
+		sphere.draw(program);
+	}
+}
+
 void che_viewer::translate(const vertex & p)
 {
-	v_translate = p;
-
-	#pragma omp parallel for
-	for(index_t v = 0; v < mesh->n_vertices; ++v)
-		mesh->get_vertex(v) += v_translate;
+	model_mat = glm::translate(model_mat, glm_vec3(p));
 }
 
-void che_viewer::invert_orientation()
+void che_viewer::scale(const real_t & s)
 {
-	#pragma omp parallel for
-	for(index_t v = 0; v < mesh->n_vertices; ++v)
-		mesh->normal(v) = -mesh->normal(v);
+	model_mat = glm::scale(model_mat, {s, s, s});
 }
 
-void che_viewer::select(const real_t & x, const real_t & y, const glm::uvec2 & windows_size, const glm::mat4 & view_mat, const glm::mat4 & proj_mat)
+void che_viewer::select(const index_t & x, const index_t & y, const glm::uvec2 & windows_size, const glm::mat4 & proj_view_mat, const glm::vec3 & cam_pos)
 {
-	if(!pick_vertex) return;
-
-	glm::vec3 cam_pos = glm::vec3(glm::inverse(view_mat) * glm::vec4(0.f, 0.f, 0.f, 1.f));
-	glm::mat4 inv_proj_view = glm::inverse(proj_mat * view_mat);
-	glm::vec2 screen = glm::vec2(float(x) / windows_size.x, float(windows_size.y - y) / windows_size.y);
-	glm::vec4 view = glm::vec4(screen.x * 2.f - 1.f, screen.y * 2.f - 1.f, 1.f, 1.f);
-	glm::vec4 q = inv_proj_view * view;
-	glm::vec3 p = glm::vec3(q * (1.f / q.w));
-
-	index_t v = pick_vertex->cast_ray(cam_pos, glm::normalize(p - cam_pos));
+	glm::vec3 dir = pick_vertex->ray_view_dir(x, windows_size.y - y, windows_size, glm::inverse(proj_view_mat), cam_pos);
+	index_t v = pick_vertex->cast_ray(cam_pos, dir);
 	if(v != NIL) selected.push_back(v);
 }
 
