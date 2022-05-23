@@ -130,7 +130,7 @@ bool app_viewer::process_simulate_scanner(viewer * p_view)
 
 	if(ImGui::Button("Scan"))
 	{
-		che * ptx_mesh = scanner_ptx(mesh, mesh.pick_vertex, n_rows, n_cols, {0, 0, 0});
+		che * ptx_mesh = scanner_ptx(mesh, view->rt_embree, n_rows, n_cols, {0, 0, 0});
 		view->add_mesh(ptx_mesh);
 		che_ptx::write_file(ptx_mesh, mesh->filename, n_rows, n_cols);
 	}

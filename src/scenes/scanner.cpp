@@ -71,11 +71,7 @@ che * scanner_ptx(const che * mesh, raytracing * rt, const size_t & n_rows, cons
 
 	CImg<unsigned char> img((unsigned char *) vertices_color.data(), 3, n_cols, n_rows);
 	img.permute_axes("zycx");
-	img.save((mesh->name() + ".jpg").c_str());
-
-	CImg<unsigned char> img2((unsigned char *) vertices_color.data(), 3, n_rows, n_cols);
-	img2.permute_axes("zycx");
-	img2.save((mesh->name() + "2.jpg").c_str());
+	img.save((mesh->name().substr(0, mesh->name().size()-4) + ".jpg").c_str());
 
 
 	std::thread([](CImg<real_t> img) { img.display(); }, img).detach();
