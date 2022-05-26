@@ -17,7 +17,7 @@ che * scanner_ptx(const raytracing * rt, const size_t & n_rows, const size_t & n
 	return new che(ptx.data(), ptx.size(), nullptr, 0);
 }
 
-che * scanner_ptx(const che * mesh, raytracing * rt, const size_t & n_rows, const size_t & n_cols, const vertex & cam)
+che * scanner_ptx(const che * mesh, raytracing * rt, const size_t & n_rows, const size_t & n_cols, const vertex & cam, const std::string & file_jpg)
 {
 	std::vector<vertex> vertices;
 	std::vector<che::rgb_t> vertices_color;
@@ -44,8 +44,11 @@ che * scanner_ptx(const che * mesh, raytracing * rt, const size_t & n_rows, cons
 	{
 		// p is the direction of the ray
 		p = glm::vec3( r * sin(theta) * cos(phi), r * sin(theta) * sin(phi), r * cos(theta) ) - cam_pos;
+
 		// quering the closest point in the mesh to the hit point and the distance 
 		auto [v_idx, distance] = rt->cast_ray_intersect_depth(cam_pos, glm::normalize(p - cam_pos));
+		//const vertex & c = mesh.pointcloud ? mesh->color(v_idx) :
+		//								 mesh->shading_color(v_idx, 1.0 - hit.u - hit.v, hit.u, hit.v);
 		
 		if(v_idx == NIL)
 		{
@@ -71,14 +74,13 @@ che * scanner_ptx(const che * mesh, raytracing * rt, const size_t & n_rows, cons
 
 	CImg<unsigned char> img((unsigned char *) vertices_color.data(), 3, n_cols, n_rows);
 	img.permute_axes("zycx");
-	img.save((mesh->name().substr(0, mesh->name().size()-4) + ".jpg").c_str());
-
+	std::string img_filename = file_jpg + mesh->name() + ".jpg";
+	img.save(img_filename.c_str());
 
 	std::thread([](CImg<real_t> img) { img.display(); }, img).detach();
 
 	
 	return mesh_ptx;
-	//return new che(ptx.data(), ptx.size(), nullptr, 0);
 }
 
 
