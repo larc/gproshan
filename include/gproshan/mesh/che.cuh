@@ -1,8 +1,8 @@
 #ifndef CHE_CUH
 #define CHE_CUH
 
-#include "mesh/vertex.cuh"
-#include "mesh/che.h"
+#include <gproshan/mesh/vertex.cuh>
+#include <gproshan/mesh/che.h>
 
 
 #define cu_for_star(he, mesh, v) for(index_t stop = mesh->EVT[v], he = mesh->EVT[v]; he != NIL; he = (he = mesh->OT[cu_prev(he)]) != stop ? he : NIL)

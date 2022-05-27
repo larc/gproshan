@@ -1,4 +1,4 @@
-#include "mesh/vertex.h"
+#include <gproshan/mesh/vertex.h>
 
 #include <cmath>
 

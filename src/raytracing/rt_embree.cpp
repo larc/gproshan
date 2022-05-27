@@ -1,7 +1,7 @@
-#include "raytracing/rt_embree.h"
+#include <gproshan/raytracing/rt_embree.h>
 
 
-#include "util.h"
+#include <gproshan/util.h>
 
 #include <random>
 #include <cstring>

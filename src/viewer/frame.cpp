@@ -1,6 +1,6 @@
-#include "viewer/frame.h"
+#include <gproshan/viewer/frame.h>
 
-#include "include.h"
+#include <gproshan/include.h>
 
 #include <cstring>
 

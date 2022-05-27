@@ -1,4 +1,4 @@
-#include "mdict/basis.h"
+#include <gproshan/mdict/basis.h>
 
 
 // geometry processing and shape analysis framework

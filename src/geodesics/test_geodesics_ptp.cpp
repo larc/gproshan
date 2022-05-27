@@ -1,8 +1,8 @@
-#include "geodesics/test_geodesics_ptp.h"
+#include <gproshan/geodesics/test_geodesics_ptp.h>
 
-#include "mesh/che_off.h"
-#include "geodesics/geodesics_ptp.h"
-#include "geodesics/heat_method.h"
+#include <gproshan/mesh/che_off.h>
+#include <gproshan/geodesics/geodesics_ptp.h>
+#include <gproshan/geodesics/heat_method.h>
 
 #include <cassert>
 

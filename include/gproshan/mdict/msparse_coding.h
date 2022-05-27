@@ -1,12 +1,12 @@
 #ifndef MSPARSE_CODING_H
 #define MSPARSE_CODING_H
 
-#include "mesh/che.h"
-#include "mdict/patch.h"
-#include "mdict/mdict.h"
-#include "mdict/basis.h"
+#include <gproshan/mesh/che.h>
+#include <gproshan/mdict/patch.h>
+#include <gproshan/mdict/mdict.h>
+#include <gproshan/mdict/basis.h>
 
-#include "include_arma.h"
+#include <gproshan/include_arma.h>
 
 
 // geometry processing and shape analysis framework

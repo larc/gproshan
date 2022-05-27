@@ -1,4 +1,4 @@
-#include "raytracing/raytracing.h"
+#include <gproshan/raytracing/raytracing.h>
 
 #include <cstring>
 

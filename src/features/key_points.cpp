@@ -1,4 +1,4 @@
-#include "features/key_points.h"
+#include <gproshan/features/key_points.h>
 
 #include <cassert>
 #include <cstring>

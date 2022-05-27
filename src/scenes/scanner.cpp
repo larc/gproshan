@@ -1,4 +1,4 @@
-#include "scenes/scanner.h"
+#include <gproshan/scenes/scanner.h>
 
 
 // geometry processing and shape analysis framework

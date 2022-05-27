@@ -1,7 +1,7 @@
-#include "geodesics/heat_method.h"
+#include <gproshan/geodesics/heat_method.h>
 
-#include "util.h"
-#include "laplacian/laplacian.h"
+#include <gproshan/util.h>
+#include <gproshan/laplacian/laplacian.h>
 
 #include <cassert>
 

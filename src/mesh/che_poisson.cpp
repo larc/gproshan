@@ -1,7 +1,7 @@
-#include "mesh/che_poisson.h"
+#include <gproshan/mesh/che_poisson.h>
 
-#include "laplacian/laplacian.h"
-#include "include_arma.h"
+#include <gproshan/laplacian/laplacian.h>
+#include <gproshan/include_arma.h>
 
 using namespace std;
 

@@ -1,6 +1,6 @@
-#include "laplacian/fairing_taubin.h"
+#include <gproshan/laplacian/fairing_taubin.h>
 
-#include "laplacian/laplacian.h"
+#include <gproshan/laplacian/laplacian.h>
 
 
 // geometry processing and shape analysis framework

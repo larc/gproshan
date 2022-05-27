@@ -1,4 +1,4 @@
-#include "mesh/che_sphere.h"
+#include <gproshan/mesh/che_sphere.h>
 
 #include <cstring>
 #include <cmath>

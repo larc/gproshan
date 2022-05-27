@@ -12,7 +12,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_compile_options(-Wall -Wextra -Wno-unused-result)
-add_definitions(-DGPROSHAN_FLOAT)
+#add_definitions(-DGPROSHAN_FLOAT)
 add_definitions(-DGPROSHAN_LOG)
 
 
@@ -64,40 +64,8 @@ add_subdirectory(imgui)
 include_directories(SYSTEM ${gproshan_SOURCE_DIR}/imgui)
 
 
-include_directories(${gproshan_SOURCE_DIR}/include/gproshan)
-add_compile_definitions(GPROSHAN_DIR="${gproshan_SOURCE_DIR}")
+include_directories(${gproshan_SOURCE_DIR}/include/)
 
-
-FILE(GLOB_RECURSE cpp_sources ${gproshan_SOURCE_DIR}/src/*.cpp)
-
-add_library(gproshan SHARED ${cpp_sources})
-
-target_link_libraries(gproshan embree)
-target_link_libraries(gproshan OpenMP::OpenMP_CXX)
-target_link_libraries(gproshan GLEW::GLEW)
-target_link_libraries(gproshan glfw)
-target_link_libraries(gproshan ${X11_X11_LIB})
-target_link_libraries(gproshan ${ARMADILLO_LIBRARIES})
-target_link_libraries(gproshan ${SuiteSparse_LIBRARIES})
-target_link_libraries(gproshan CGAL::CGAL)
-target_link_libraries(gproshan ${OptiX_LIBRARY})
-target_link_libraries(gproshan imgui)
-
-if(CUDAToolkit_FOUND)
-	FILE(GLOB_RECURSE cu_sources ${gproshan_SOURCE_DIR}/src/*.cu)
-	list(REMOVE_ITEM cu_sources ${gproshan_SOURCE_DIR}/src/raytracing/rt_optix.cu)
-
-	add_library(gproshan_cuda SHARED ${cu_sources})
-
-	target_link_libraries(gproshan_cuda CUDA::cudart)
-	target_link_libraries(gproshan_cuda CUDA::cuda_driver)
-	target_link_libraries(gproshan_cuda CUDA::cublas)
-	target_link_libraries(gproshan_cuda CUDA::cusolver)
-	target_link_libraries(gproshan_cuda CUDA::cusparse)
-
-	target_link_libraries(gproshan gproshan_cuda)
-endif(CUDAToolkit_FOUND)
-
-
-add_subdirectory(apps)
+add_subdirectory(src)	# gproshan library
+add_subdirectory(apps)	# gproshan executables
 

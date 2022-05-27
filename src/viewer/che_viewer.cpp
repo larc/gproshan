@@ -1,4 +1,4 @@
-#include "viewer/che_viewer.h"
+#include <gproshan/viewer/che_viewer.h>
 
 #include <cassert>
 #include <cmath>
@@ -7,7 +7,7 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "raytracing/rt_embree.h"
+#include <gproshan/raytracing/rt_embree.h>
 
 
 using namespace std;

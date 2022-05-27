@@ -1,6 +1,6 @@
-#include "features/descriptor.h"
+#include <gproshan/features/descriptor.h>
 
-#include "laplacian/laplacian.h"
+#include <gproshan/laplacian/laplacian.h>
 
 
 // geometry processing and shape analysis framework

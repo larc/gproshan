@@ -1,8 +1,8 @@
 #ifdef GPROSHAN_OPTIX
 
-#include "raytracing/rt_optix.h"
+#include <gproshan/raytracing/rt_optix.h>
 
-#include "mesh/che.cuh"
+#include <gproshan/mesh/che.cuh>
 
 #include <cstring>
 #include <fstream>

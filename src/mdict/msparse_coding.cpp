@@ -1,12 +1,12 @@
-#include "mdict/msparse_coding.h"
+#include <gproshan/mdict/msparse_coding.h>
 
-#include "mdict/mdict.h"
-#include "mesh/che_off.h"
-#include "mesh/che_poisson.h"
-#include "mesh/che_fill_hole.h"
-#include "geodesics/sampling.h"
+#include <gproshan/mdict/mdict.h>
+#include <gproshan/mesh/che_off.h>
+#include <gproshan/mesh/che_poisson.h>
+#include <gproshan/mesh/che_fill_hole.h>
+#include <gproshan/geodesics/sampling.h>
 
-#include "viewer/viewer.h"
+#include <gproshan/viewer/viewer.h>
 
 #include <cassert>
 #include <fstream>

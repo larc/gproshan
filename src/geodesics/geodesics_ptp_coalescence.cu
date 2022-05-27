@@ -1,6 +1,6 @@
-#include "geodesics/geodesics_ptp_coalescence.cuh"
+#include <gproshan/geodesics/geodesics_ptp_coalescence.cuh>
 
-#include "mesh/che_off.h"
+#include <gproshan/mesh/che_off.h>
 
 #include <cstdio>
 #include <fstream>

@@ -1,4 +1,4 @@
-#include "geodesics/geodesics_ptp.h"
+#include <gproshan/geodesics/geodesics_ptp.h>
 
 #include <cmath>
 #include <cstring>

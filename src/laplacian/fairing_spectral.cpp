@@ -1,6 +1,6 @@
-#include "laplacian/fairing_spectral.h"
+#include <gproshan/laplacian/fairing_spectral.h>
 
-#include "laplacian/laplacian.h"
+#include <gproshan/laplacian/laplacian.h>
 
 
 // geometry processing and shape analysis framework

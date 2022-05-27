@@ -1,4 +1,4 @@
-#include "mesh/che_ptx.h"
+#include <gproshan/mesh/che_ptx.h>
 
 #include <cstring>
 #include <cassert>

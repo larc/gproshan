@@ -1,4 +1,4 @@
-#include "util.h"
+#include <gproshan/util.h>
 
 #include <cstring>
 

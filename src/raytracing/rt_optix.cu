@@ -1,9 +1,9 @@
 #ifdef GPROSHAN_OPTIX
 
 
-#include "mesh/che.h"
-#include "mesh/vertex.cuh"
-#include "raytracing/rt_optix_params.h"
+#include <gproshan/mesh/che.h>
+#include <gproshan/mesh/vertex.cuh>
+#include <gproshan/raytracing/rt_optix_params.h>
 
 
 #include <optix_device.h>

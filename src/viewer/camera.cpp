@@ -1,4 +1,4 @@
-#include "viewer/camera.h"
+#include <gproshan/viewer/camera.h>
 
 #include <cmath>
 

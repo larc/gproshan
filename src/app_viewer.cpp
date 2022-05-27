@@ -1,4 +1,4 @@
-#include "app_viewer.h"
+#include <gproshan/app_viewer.h>
 
 #include <random>
 #include <queue>
@@ -333,7 +333,7 @@ bool app_viewer::process_fairing_spectral(viewer * p_view)
 
 	if(ImGui::SliderScalar("n_eigs", ImGuiDataType_U64, &fair.n_eigs, &min_neigs, &max_neigs))
 	{
-		if(!vertices.size())
+		if(vertices.size() != mesh->n_vertices)
 		{
 			vertices.resize(mesh->n_vertices);
 			memcpy(vertices.data(), &mesh->gt(0), mesh->n_vertices * sizeof(vertex));
@@ -362,7 +362,7 @@ bool app_viewer::process_fairing_taubin(viewer * p_view)
 
 	if(ImGui_InputReal("step", &fair.step, 0.001))
 	{
-		if(!vertices.size())
+		if(vertices.size() != mesh->n_vertices)
 		{
 			vertices.resize(mesh->n_vertices);
 			memcpy(vertices.data(), &mesh->gt(0), mesh->n_vertices * sizeof(vertex));

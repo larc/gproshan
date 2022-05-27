@@ -1,7 +1,7 @@
 #ifndef KDTREE_H
 #define KDTREE_H
 
-#include "mesh/vertex.h"
+#include <gproshan/mesh/vertex.h>
 
 
 // geometry processing and shape analysis framework

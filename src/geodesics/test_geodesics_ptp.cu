@@ -1,8 +1,8 @@
-#include "geodesics/test_geodesics_ptp.cuh"
-#include "geodesics/test_geodesics_ptp.h"
+#include <gproshan/geodesics/test_geodesics_ptp.cuh>
+#include <gproshan/geodesics/test_geodesics_ptp.h>
 
-#include "geodesics/geodesics_ptp.cuh"
-#include "geodesics/geodesics_ptp.h"
+#include <gproshan/geodesics/geodesics_ptp.cuh>
+#include <gproshan/geodesics/geodesics_ptp.h>
 
 #include <fstream>
 #include <cublas_v2.h>

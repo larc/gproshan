@@ -1,13 +1,13 @@
 #ifndef MDICT_H
 #define MDICT_H
 
-#include "include.h"
+#include <gproshan/include.h>
 
-#include "mdict/patch.h"
-#include "mdict/basis.h"
+#include <gproshan/mdict/patch.h>
+#include <gproshan/mdict/basis.h>
 
 
-#include "include_arma.h"
+#include <gproshan/include_arma.h>
 
 
 // geometry processing and shape analysis framework

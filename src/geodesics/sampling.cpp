@@ -1,7 +1,7 @@
-#include "geodesics/sampling.h"
+#include <gproshan/geodesics/sampling.h>
 
-#include "geodesics/geodesics_ptp.h"
-#include "mesh/che_off.h"
+#include <gproshan/geodesics/geodesics_ptp.h>
+#include <gproshan/mesh/che_off.h>
 
 #include <fstream>
 

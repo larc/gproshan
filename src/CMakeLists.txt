@@ -1,0 +1,77 @@
+add_compile_definitions(GPROSHAN_DIR="${gproshan_SOURCE_DIR}")
+
+
+FILE(GLOB_RECURSE cpp_sources ${gproshan_SOURCE_DIR}/src/*.cpp)
+
+add_library(gproshan SHARED ${cpp_sources})
+
+target_link_libraries(gproshan embree)
+target_link_libraries(gproshan OpenMP::OpenMP_CXX)
+target_link_libraries(gproshan GLEW::GLEW)
+target_link_libraries(gproshan glfw)
+target_link_libraries(gproshan ${X11_X11_LIB})
+target_link_libraries(gproshan ${ARMADILLO_LIBRARIES})
+target_link_libraries(gproshan ${SuiteSparse_LIBRARIES})
+target_link_libraries(gproshan CGAL::CGAL)
+target_link_libraries(gproshan ${OptiX_LIBRARY})
+target_link_libraries(gproshan imgui)
+
+if(CUDAToolkit_FOUND)
+	FILE(GLOB_RECURSE cu_sources ${gproshan_SOURCE_DIR}/src/*.cu)
+	list(REMOVE_ITEM cu_sources ${gproshan_SOURCE_DIR}/src/raytracing/rt_optix.cu)
+
+	add_library(gproshan_cuda SHARED ${cu_sources})
+
+	target_link_libraries(gproshan_cuda CUDA::cudart)
+	target_link_libraries(gproshan_cuda CUDA::cuda_driver)
+	target_link_libraries(gproshan_cuda CUDA::cublas)
+	target_link_libraries(gproshan_cuda CUDA::cusolver)
+	target_link_libraries(gproshan_cuda CUDA::cusparse)
+
+	target_link_libraries(gproshan gproshan_cuda)
+endif(CUDAToolkit_FOUND)
+
+
+
+set(installable_libs gproshan imgui)
+if(TARGET gproshan_cuda)
+	list(APPEND installable_libs gproshan_cuda)
+endif()
+
+install(TARGETS ${installable_libs}
+		EXPORT gproshanTargets
+		DESTINATION lib
+		)
+
+install(EXPORT gproshanTargets
+		FILE gproshanTargets.cmake
+		DESTINATION lib/cmake/gproshan
+		)
+
+set(INCLUDE_INSTALL_DIRS "${gproshan_SOURCE_DIR}/include/")
+
+include(CMakePackageConfigHelpers)
+
+configure_package_config_file(
+		${gproshan_SOURCE_DIR}/gproshanConfig.cmake.in
+		"${CMAKE_CURRENT_BINARY_DIR}/gproshanConfig.cmake"
+		INSTALL_DESTINATION "lib/cmake/gproshan"
+		PATH_VARS INCLUDE_INSTALL_DIRS
+		)
+
+write_basic_package_version_file(
+		"${CMAKE_CURRENT_BINARY_DIR}/gproshanConfigVersion.cmake"
+		VERSION "${gproshan_VERSION_MAJOR}.${gproshan_VERSION_MINOR}"
+		COMPATIBILITY AnyNewerVersion
+		)
+
+install(FILES
+		${CMAKE_CURRENT_BINARY_DIR}/gproshanConfig.cmake
+		${CMAKE_CURRENT_BINARY_DIR}/gproshanConfigVersion.cmake
+		DESTINATION lib/cmake/gproshan
+		)
+
+export(	EXPORT gproshanTargets
+		FILE "${CMAKE_CURRENT_BINARY_DIR}/gproshanTargets.cmake"
+		)
+

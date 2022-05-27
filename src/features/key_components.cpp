@@ -1,6 +1,6 @@
-#include "features/key_components.h"
+#include <gproshan/features/key_components.h>
 
-#include "geodesics/geodesics.h"
+#include <gproshan/geodesics/geodesics.h>
 
 #include <cassert>
 

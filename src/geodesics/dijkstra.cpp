@@ -1,4 +1,4 @@
-#include "geodesics/dijkstra.h"
+#include <gproshan/geodesics/dijkstra.h>
 
 #include <cstring>
 #include <cmath>

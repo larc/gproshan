@@ -1,10 +1,10 @@
-#include "geodesics/test_geodesics_ptp_coalescence.cuh"
+#include <gproshan/geodesics/test_geodesics_ptp_coalescence.cuh>
 
-#include "geodesics/geodesics_ptp_coalescence.cuh"
-#include "geodesics/geodesics_ptp.h"
-#include "geodesics/test_geodesics_ptp.h"
+#include <gproshan/geodesics/geodesics_ptp_coalescence.cuh>
+#include <gproshan/geodesics/geodesics_ptp.h>
+#include <gproshan/geodesics/test_geodesics_ptp.h>
 
-#include "mesh/che_off.h"
+#include <gproshan/mesh/che_off.h>
 
 #include <fstream>
 #include <cublas_v2.h>

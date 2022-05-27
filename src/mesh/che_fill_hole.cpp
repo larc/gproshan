@@ -1,7 +1,7 @@
-#include "mesh/che_fill_hole.h"
+#include <gproshan/mesh/che_fill_hole.h>
 
-#include "mesh/che_off.h"
-#include "laplacian/laplacian.h"
+#include <gproshan/mesh/che_off.h>
+#include <gproshan/laplacian/laplacian.h>
 
 #include <queue>
 

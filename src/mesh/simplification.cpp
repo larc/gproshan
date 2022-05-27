@@ -1,4 +1,4 @@
-#include "mesh/simplification.h"
+#include <gproshan/mesh/simplification.h>
 
 
 using namespace std;

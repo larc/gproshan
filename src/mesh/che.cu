@@ -1,4 +1,4 @@
-#include "mesh/che.cuh"
+#include <gproshan/mesh/che.cuh>
 
 
 // geometry processing and shape analysis framework

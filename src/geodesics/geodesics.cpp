@@ -1,7 +1,7 @@
-#include "geodesics/geodesics.h"
-#include "geodesics/geodesics_ptp.h"
+#include <gproshan/geodesics/geodesics.h>
+#include <gproshan/geodesics/geodesics_ptp.h>
 
-#include "geodesics/heat_method.h"
+#include <gproshan/geodesics/heat_method.h>
 
 #include <queue>
 #include <cassert>

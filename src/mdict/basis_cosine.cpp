@@ -1,4 +1,4 @@
-#include "mdict/basis_cosine.h"
+#include <gproshan/mdict/basis_cosine.h>
 
 #include <cassert>
 

@@ -1,7 +1,7 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
-#include "mesh/quaternion.h"
+#include <gproshan/mesh/quaternion.h>
 
 #include <glm/glm.hpp>
 

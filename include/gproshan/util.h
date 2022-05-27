@@ -1,7 +1,7 @@
 #ifndef UTIL_H
 #define UTIL_H
 
-#include "include.h"
+#include <gproshan/include.h>
 
 
 // geometry processing and shape analysis framework

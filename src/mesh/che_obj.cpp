@@ -1,4 +1,4 @@
-#include "mesh/che_obj.h"
+#include <gproshan/mesh/che_obj.h>
 
 #include <cstring>
 #include <cstdio>

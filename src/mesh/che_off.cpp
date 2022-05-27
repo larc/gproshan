@@ -1,4 +1,4 @@
-#include "mesh/che_off.h"
+#include <gproshan/mesh/che_off.h>
 
 #include <cstring>
 #include <cstdio>

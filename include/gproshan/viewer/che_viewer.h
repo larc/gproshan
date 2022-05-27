@@ -1,11 +1,11 @@
 #ifndef CHE_VIEWER_H
 #define CHE_VIEWER_H
 
-#include "mesh/che.h"
-#include "viewer/shader.h"
-#include "raytracing/raytracing.h"
+#include <gproshan/mesh/che.h>
+#include <gproshan/viewer/shader.h>
+#include <gproshan/raytracing/raytracing.h>
 
-#include "viewer/include_opengl.h"
+#include <gproshan/viewer/include_opengl.h>
 
 
 #ifdef GPROSHAN_FLOAT

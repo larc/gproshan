@@ -1,4 +1,4 @@
-#include "include_arma.h"
+#include <gproshan/include_arma.h>
 
 #include <cassert>
 

@@ -6,7 +6,7 @@
 	topleset: (Topological Level Set)
 */
 
-#include "mesh/che.h"
+#include <gproshan/mesh/che.h>
 
 #define PTP_TOL 1e-4
 

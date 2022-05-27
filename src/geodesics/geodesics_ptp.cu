@@ -1,5 +1,5 @@
-#include "geodesics/geodesics_ptp.cuh"
-#include "geodesics/geodesics_ptp.h"
+#include <gproshan/geodesics/geodesics_ptp.cuh>
+#include <gproshan/geodesics/geodesics_ptp.h>
 
 #include <cstdio>
 #include <fstream>

@@ -1,4 +1,4 @@
-#include "viewer/viewer.h"
+#include <gproshan/viewer/viewer.h>
 
 #include <cmath>
 #include <cstdlib>
@@ -11,17 +11,17 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "mesh/che_off.h"
-#include "mesh/che_obj.h"
-#include "mesh/che_ply.h"
-#include "mesh/che_xyz.h"
-#include "mesh/che_pts.h"
-#include "mesh/che_sphere.h"
+#include <gproshan/mesh/che_off.h>
+#include <gproshan/mesh/che_obj.h>
+#include <gproshan/mesh/che_ply.h>
+#include <gproshan/mesh/che_xyz.h>
+#include <gproshan/mesh/che_pts.h>
+#include <gproshan/mesh/che_sphere.h>
 
-#include "raytracing/rt_embree.h"
+#include <gproshan/raytracing/rt_embree.h>
 
 #ifdef GPROSHAN_OPTIX
-	#include "raytracing/rt_optix.h"
+	#include <gproshan/raytracing/rt_optix.h>
 #endif // GPROSHAN_OPTIX
 
 

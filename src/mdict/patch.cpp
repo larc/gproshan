@@ -1,7 +1,7 @@
-#include "mdict/patch.h"
+#include <gproshan/mdict/patch.h>
 
-#include "mdict/msparse_coding.h"
-#include "geodesics/geodesics.h"
+#include <gproshan/mdict/msparse_coding.h>
+#include <gproshan/geodesics/geodesics.h>
 
 #include <queue>
 #include <random>

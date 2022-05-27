@@ -1,6 +1,6 @@
-#include "viewer/shader.h"
+#include <gproshan/viewer/shader.h>
 
-#include "include.h"
+#include <gproshan/include.h>
 
 #include <cassert>
 #include <fstream>

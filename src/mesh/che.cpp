@@ -1,7 +1,7 @@
-#include "mesh/che.h"
+#include <gproshan/mesh/che.h>
 
-#include "mesh/kdtree.h"
-#include "include_arma.h"
+#include <gproshan/mesh/kdtree.h>
+#include <gproshan/include_arma.h>
 
 #include <cassert>
 #include <cstring>

@@ -1,4 +1,4 @@
-#include "mdict/basis_dct.h"
+#include <gproshan/mdict/basis_dct.h>
 
 #include <cassert>
 

@@ -1,4 +1,4 @@
-#include "mesh/che_img.h"
+#include <gproshan/mesh/che_img.h>
 
 #include <fstream>
 #include <vector>

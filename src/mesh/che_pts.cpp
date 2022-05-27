@@ -1,4 +1,4 @@
-#include "mesh/che_pts.h"
+#include <gproshan/mesh/che_pts.h>
 
 #include <cstring>
 #include <cstdio>

@@ -1,4 +1,4 @@
-#include "mesh/vertex.cuh"
+#include <gproshan/mesh/vertex.cuh>
 
 
 // geometry processing and shape analysis framework

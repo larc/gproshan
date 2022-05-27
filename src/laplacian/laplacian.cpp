@@ -1,4 +1,4 @@
-#include "laplacian/laplacian.h"
+#include <gproshan/laplacian/laplacian.h>
 
 using namespace std;
 using namespace Eigen;

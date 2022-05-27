@@ -1,4 +1,4 @@
-#include "mesh/quaternion.h"
+#include <gproshan/mesh/quaternion.h>
 
 #include <cmath>
 #include <iostream>

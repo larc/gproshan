@@ -1,7 +1,7 @@
 #ifndef RAYTRACING_H
 #define RAYTRACING_H
 
-#include "mesh/che.h"
+#include <gproshan/mesh/che.h>
 
 #include <vector>
 #include <map>
