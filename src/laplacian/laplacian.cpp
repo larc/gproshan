@@ -1,7 +1,6 @@
 #include <gproshan/laplacian/laplacian.h>
 
 using namespace std;
-using namespace Eigen;
 
 
 // geometry processing and shape analysis framework
@@ -49,36 +48,6 @@ void laplacian(const che * mesh, a_sp_mat & L, a_sp_mat & A)
 	#pragma omp parallel for
 	for(index_t v = 0; v < n_vertices; ++v)
 		A(v, v) = mesh->area_vertex(v);
-}
-
-void laplacian(const che * mesh, sp_mat_e & L, sp_mat_e & A)
-{
-	gproshan_debug(LAPLACIAN);
-
-	size_t n_edges = mesh->n_edges;
-	size_t n_vertices = mesh->n_vertices;
-
-	sp_mat_e D(n_edges, n_vertices);
-	sp_mat_e S(n_edges, n_edges);
-
-	D.reserve(VectorXi::Constant(n_edges,2));
-	S.reserve(VectorXi::Constant(n_edges,1));
-
-	for(index_t e = 0; e < n_edges; ++e)
-	{
-		D.insert(e, mesh->vt(mesh->et(e))) = 1;
-		D.insert(e, mesh->vt(next(mesh->et(e)))) = -1;
-
-		S.insert(e, e) = (mesh->cotan(mesh->et(e)) +
-					mesh->cotan(mesh->ot_et(e))) / 2;
-	}
-
-	L = D.transpose() * S * D;
-
-	A.reserve(VectorXi::Constant(n_vertices, 1));
-	for(index_t v = 0; v < n_vertices; ++v)
-		A.insert(v, v) = mesh->area_vertex(v);
-		//A.insert(v, v) = 1.0 / sqrt(mesh->area_vertex(v));
 }
 
 size_t eigs_laplacian(const che * mesh, a_vec & eigval, a_mat & eigvec, a_sp_mat & L, a_sp_mat & A, const size_t & k)
