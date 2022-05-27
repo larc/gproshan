@@ -60,7 +60,7 @@ include_directories(SYSTEM ${SuiteSparse_INCLUDE_DIRS})
 include_directories(SYSTEM ${CGAL_INCLUDE_DIRS})
 
 
-add_subdirectory(imgui)
+add_subdirectory(include/imgui)
 include_directories(SYSTEM ${gproshan_SOURCE_DIR}/imgui)
 
 

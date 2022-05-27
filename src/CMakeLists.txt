@@ -48,7 +48,7 @@ install(EXPORT gproshanTargets
 		DESTINATION lib/cmake/gproshan
 		)
 
-set(INCLUDE_INSTALL_DIRS "${gproshan_SOURCE_DIR}/include/")
+set(INCLUDE_INSTALL_DIR "${gproshan_SOURCE_DIR}/include/")
 
 include(CMakePackageConfigHelpers)
 
@@ -56,7 +56,7 @@ configure_package_config_file(
 		${gproshan_SOURCE_DIR}/gproshanConfig.cmake.in
 		"${CMAKE_CURRENT_BINARY_DIR}/gproshanConfig.cmake"
 		INSTALL_DESTINATION "lib/cmake/gproshan"
-		PATH_VARS INCLUDE_INSTALL_DIRS
+		PATH_VARS INCLUDE_INSTALL_DIR
 		)
 
 write_basic_package_version_file(
