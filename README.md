@@ -1,10 +1,10 @@
-## [gproshan](https://github.com/larc/gproshan): a geometry processing and shape analysis framework 
+## [gproshan](https://github.com/larc/gproshan): a geometry processing and shape analysis framework
 
 [![Build](https://github.com/larc/gproshan_dev/actions/workflows/build.yml/badge.svg?branch=dev)](https://github.com/larc/gproshan_dev/actions/workflows/build.yml)
 [![DOI](https://zenodo.org/badge/88686093.svg)](https://zenodo.org/badge/latestdoi/88686093)
 
 
-![](https://raw.githubusercontent.com/larc/gproshan/master/gproshan.png) 
+![](https://raw.githubusercontent.com/larc/gproshan/master/gproshan.png)
 
 
 This framework integrates some algorithms and contributions focus on the areas of computer graphics, geometry processing and computational geometry.
@@ -53,6 +53,29 @@ Intel Embree is a collection of high performance ray tracing kernels that helps 
 ##### MacOS
 
 	brew install embree
+
+
+## Using gproshan in your project
+
+To use gproshan as library in your project you need to execute the command to install it:
+
+	sudo make install
+
+then you will be able to find it in your cmake project:
+
+	find_package(gproshan REQUIRED)
+	include_directories(SYSTEM ${gproshan_INCLUDE_DIR})
+	target_link_libraries(your_target gproshan)
+
+An example of a code using gproshan:
+
+	#include <gproshan/app_viewer.h>
+
+	int main(int nargs, const char ** args)
+	{
+		gproshan::app_viewer app;
+		return app.main(nargs, args);
+	}
 
 
 ## Contributions
