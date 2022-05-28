@@ -33,6 +33,19 @@ if(CUDAToolkit_FOUND)
 endif(CUDAToolkit_FOUND)
 
 
+if(OptiX_INCLUDE)
+	find_package(CUDA)
+	cuda_compile_ptx(ptx_sources ${gproshan_SOURCE_DIR}/src/gproshan/raytracing/rt_optix.cu)
+	list(GET ptx_sources 0 ptx_file)
+	add_custom_target(	ptx_tmp DEPENDS ${ptx_file}
+						COMMAND ${CMAKE_COMMAND} -E copy
+						${ptx_file}
+						${gproshan_SOURCE_DIR}/tmp/rt_optix.ptx
+						)
+	add_dependencies(gproshan ptx_tmp)
+endif(OptiX_INCLUDE)
+
+
 
 set(installable_libs gproshan imgui)
 if(TARGET gproshan_cuda)
