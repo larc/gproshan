@@ -63,23 +63,23 @@ To use gproshan as library in your project you need to execute the command to in
 
 then you will be able to find it in your cmake project:
 
-	```cmake
-	find_package(gproshan REQUIRED)
-	include_directories(SYSTEM ${gproshan_INCLUDE_DIR})
-	target_link_libraries(your_target gproshan)
-	```
+```cmake
+find_package(gproshan REQUIRED)
+include_directories(SYSTEM ${gproshan_INCLUDE_DIR})
+target_link_libraries(your_target gproshan)
+```
 
 An example of a code using gproshan:
 
-	```cpp
-	#include <gproshan/app_viewer.h>
+```cpp
+#include <gproshan/app_viewer.h>
 
-	int main(int nargs, const char ** args)
-	{
-		gproshan::app_viewer app;
-		return app.main(nargs, args);
-	}
-	```
+int main(int nargs, const char ** args)
+{
+	gproshan::app_viewer app;
+	return app.main(nargs, args);
+}
+```
 
 
 ## Contributions
