@@ -1,6 +1,6 @@
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.22)
 
-project(gproshan VERSION 3.0)
+project(gproshan VERSION 3.14)
 
 list(APPEND CMAKE_MODULE_PATH "${gproshan_SOURCE_DIR}/cmake")
 
@@ -12,11 +12,11 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_compile_options(-Wall -Wextra -Wno-unused-result)
-#add_definitions(-DGPROSHAN_FLOAT)
+add_definitions(-DGPROSHAN_FLOAT)
 add_definitions(-DGPROSHAN_LOG)
 
 
-find_package(CUDAToolkit 11.4)
+find_package(CUDAToolkit 11.7)
 if(CUDAToolkit_FOUND)
 	enable_language(CUDA)
 	set(CMAKE_CUDA_STANDARD 17)
@@ -29,7 +29,7 @@ if(CUDAToolkit_FOUND)
 	add_definitions(-DGPROSHAN_CUDA)
 	include_directories(SYSTEM ${CUDAToolkit_INCLUDE_DIRS})
 
-	find_package(OptiX 7.3)
+	find_package(OptiX 7.4)
 	if(OptiX_INCLUDE)
 		add_definitions(-DGPROSHAN_OPTIX)
 		include_directories(SYSTEM ${OptiX_INCLUDE})
@@ -60,12 +60,6 @@ include_directories(SYSTEM ${EIGEN3_INCLUDE_DIRS})
 include_directories(SYSTEM ${CGAL_INCLUDE_DIRS})
 
 
-add_subdirectory(include/imgui)
-include_directories(SYSTEM ${gproshan_SOURCE_DIR}/imgui)
-
-
-include_directories(${gproshan_SOURCE_DIR}/include/)
-
-add_subdirectory(src)	# gproshan library
-add_subdirectory(apps)	# gproshan executables
+add_subdirectory(src)			# gproshan library
+add_subdirectory(apps)			# gproshan executables
 

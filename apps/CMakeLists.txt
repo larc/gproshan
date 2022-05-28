@@ -1,10 +1,13 @@
+include_directories(${gproshan_SOURCE_DIR}/include/)
+
+
 add_executable(test_gproshan gproshan.cpp)
 set_target_properties(test_gproshan PROPERTIES OUTPUT_NAME gproshan)
 target_link_libraries(test_gproshan gproshan)
 
 if(OptiX_INCLUDE)
 	find_package(CUDA)
-	cuda_compile_ptx(ptx_sources ${gproshan_SOURCE_DIR}/src/raytracing/rt_optix.cu)
+	cuda_compile_ptx(ptx_sources ${gproshan_SOURCE_DIR}/src/gproshan/raytracing/rt_optix.cu)
 	list(GET ptx_sources 0 ptx_file)
 	add_custom_target(	ptx_tmp DEPENDS ${ptx_file}
 						COMMAND ${CMAKE_COMMAND} -E copy
