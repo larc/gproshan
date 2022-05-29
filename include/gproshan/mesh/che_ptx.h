@@ -1,7 +1,7 @@
 #ifndef CHE_PTX_H
 #define CHE_PTX_H
 
-#include "mesh/che.h"
+#include <gproshan/mesh/che.h>
 
 
 // geometry processing and shape analysis framework

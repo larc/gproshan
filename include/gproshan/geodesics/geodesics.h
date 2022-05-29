@@ -1,7 +1,7 @@
 #ifndef GEODESICS_H
 #define GEODESICS_H
 
-#include "mesh/che.h"
+#include <gproshan/mesh/che.h>
 
 
 #include <cmath>

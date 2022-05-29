@@ -1,7 +1,7 @@
 #ifndef FAIRING_TAUBIN_H
 #define FAIRING_TAUBIN_H
 
-#include "laplacian/fairing.h"
+#include <gproshan/laplacian/fairing.h>
 
 
 // geometry processing and shape analysis framework

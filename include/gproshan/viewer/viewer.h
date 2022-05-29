@@ -6,18 +6,18 @@
 
 #include <glm/glm.hpp>
 
-#include "viewer/camera.h"
-#include "viewer/shader.h"
-#include "viewer/frame.h"
-#include "viewer/che_viewer.h"
+#include <gproshan/viewer/camera.h>
+#include <gproshan/viewer/shader.h>
+#include <gproshan/viewer/frame.h>
+#include <gproshan/viewer/che_viewer.h>
 
-#include "raytracing/raytracing.h"
+#include <gproshan/raytracing/raytracing.h>
 
-#include "viewer/include_opengl.h"
+#include <gproshan/viewer/include_opengl.h>
 
-#include <imgui.h>
-#include <imgui_impl_glfw.h>
-#include <imgui_impl_opengl3.h>
+#include <imgui/imgui.h>
+#include <imgui/imgui_impl_glfw.h>
+#include <imgui/imgui_impl_opengl3.h>
 
 
 #ifdef GPROSHAN_FLOAT

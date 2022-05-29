@@ -9,3 +9,5 @@ tmp/*
 *.vscode/*
 *.DS_Store
 
+
+include/gproshan/config.h

@@ -1,7 +1,7 @@
 #ifndef INCLUDE_ARMA_H
 #define INCLUDE_ARMA_H
 
-#include "include.h"
+#include <gproshan/include.h>
 
 #define ARMA_ALLOW_FAKE_GCC
 #include <armadillo>

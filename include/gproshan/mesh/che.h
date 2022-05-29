@@ -1,8 +1,8 @@
 #ifndef CHE_H
 #define CHE_H
 
-#include "include.h"
-#include "mesh/vertex.h"
+#include <gproshan/include.h>
+#include <gproshan/mesh/vertex.h>
 
 #include <vector>
 #include <string>

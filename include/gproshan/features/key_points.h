@@ -1,7 +1,7 @@
 #ifndef KEY_POINTS_H
 #define KEY_POINTS_H
 
-#include "mesh/che.h"
+#include <gproshan/mesh/che.h>
 
 
 // geometry processing and shape analysis framework

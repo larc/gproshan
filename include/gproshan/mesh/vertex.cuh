@@ -2,7 +2,7 @@
 #define VERTEX_CUH
 
 
-#include "include.h"
+#include <gproshan/include.h>
 
 
 // geometry processing and shape analysis framework

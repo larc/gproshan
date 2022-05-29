@@ -1,7 +1,7 @@
 #ifndef SCANNER_H
 #define SCANNER_H
 
-#include "raytracing/raytracing.h"
+#include <gproshan/raytracing/raytracing.h>
 
 #include "mesh/che.h"
 
