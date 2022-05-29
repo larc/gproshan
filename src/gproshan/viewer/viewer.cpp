@@ -683,7 +683,7 @@ bool viewer::m_setup_raytracing(viewer * view)
 			#ifdef GPROSHAN_OPTIX
 				delete view->rt_optix;
 				TIC(time);
-					view->rt_optix = new rt::optix({mesh});
+					view->rt_optix = new rt::optix({mesh}, {mesh.model_mat});
 				TOC(time);
 				sprintf(view->status_message, "build optix in %.3fs", time);
 			#endif // GPROSHAN_OPTIX

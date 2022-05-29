@@ -1,6 +1,7 @@
-#ifdef GPROSHAN_OPTIX
-
 #include <gproshan/raytracing/rt_optix.h>
+
+
+#ifdef GPROSHAN_OPTIX
 
 #include <gproshan/mesh/che.cuh>
 
@@ -45,7 +46,7 @@ void optix_log(unsigned int level, const char * tag, const char * message, void 
 	fprintf(stderr, "OptiX [%2u][%12s]: %s\n", level, tag, message);
 }
 
-optix::optix(const std::vector<che *> & meshes)
+optix::optix(const std::vector<che *> & meshes, const std::vector<glm::mat4> & model_mats)
 {
 	optixInit();
 
@@ -93,7 +94,7 @@ optix::optix(const std::vector<che *> & meshes)
 	create_hitgroup_programs();
 
 	// build as
-	render_params.traversable = build_as(meshes);
+	render_params.traversable = build_as(meshes, model_mats);
 
 	// create pipeline
 	create_pipeline();
@@ -337,7 +338,7 @@ void optix::build_sbt()
 	sbt.hitgroupRecordCount			= hitgroup_records.size();
 }
 
-OptixTraversableHandle optix::build_as(const std::vector<che *> & meshes)
+OptixTraversableHandle optix::build_as(const std::vector<che *> & meshes, const std::vector<glm::mat4> & model_mats)
 {
 	OptixTraversableHandle optix_as_handle = {};
 
@@ -346,7 +347,7 @@ OptixTraversableHandle optix::build_as(const std::vector<che *> & meshes)
 	std::vector<uint32_t> optix_trig_flags(meshes.size());
 
 	for(index_t i = 0; i < meshes.size(); ++i)
-		add_mesh(optix_meshes[i], optix_vertex_ptr[i], optix_trig_flags[i], meshes[i]);
+		add_mesh(optix_meshes[i], optix_vertex_ptr[i], optix_trig_flags[i], meshes[i], model_mats[i]);
 
 	OptixAccelBuildOptions optix_accel_opt	= {};
 	optix_accel_opt.buildFlags 				= OPTIX_BUILD_FLAG_NONE | OPTIX_BUILD_FLAG_ALLOW_COMPACTION;
@@ -414,7 +415,7 @@ OptixTraversableHandle optix::build_as(const std::vector<che *> & meshes)
 	return optix_as_handle;
 }
 
-void optix::add_mesh(OptixBuildInput & optix_mesh, CUdeviceptr & d_vertex_ptr, uint32_t & optix_trig_flags, const che * mesh)
+void optix::add_mesh(OptixBuildInput & optix_mesh, CUdeviceptr & d_vertex_ptr, uint32_t & optix_trig_flags, const che * mesh, const glm::mat4 & model_mat)
 {
 	CHE * dd_m, * d_m;
 	CHE h_m(mesh);
@@ -430,7 +431,7 @@ void optix::add_mesh(OptixBuildInput & optix_mesh, CUdeviceptr & d_vertex_ptr, u
 	optix_mesh.type = OPTIX_BUILD_INPUT_TYPE_TRIANGLES;
 
 	optix_mesh.triangleArray.vertexFormat			= OPTIX_VERTEX_FORMAT_FLOAT3;
-	optix_mesh.triangleArray.vertexStrideInBytes	= sizeof(vertex);
+	optix_mesh.triangleArray.vertexStrideInBytes	= 3 * sizeof(float);
 	optix_mesh.triangleArray.numVertices			= mesh->n_vertices;
 	optix_mesh.triangleArray.vertexBuffers			= &d_vertex_ptr;
 

@@ -1,5 +1,3 @@
-add_compile_definitions(GPROSHAN_DIR="${gproshan_SOURCE_DIR}")
-
 include_directories(${gproshan_SOURCE_DIR}/include/)
 
 FILE(GLOB_RECURSE cpp_sources ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)

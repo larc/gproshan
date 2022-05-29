@@ -12,13 +12,13 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_compile_options(-Wall -Wextra -Wno-unused-result)
-add_definitions(-DGPROSHAN_FLOAT)
-add_definitions(-DGPROSHAN_LOG)
 
 
 find_package(CUDAToolkit 11.7)
 if(CUDAToolkit_FOUND)
 	enable_language(CUDA)
+	include_directories(SYSTEM ${CUDAToolkit_INCLUDE_DIRS})
+
 	set(CMAKE_CUDA_STANDARD 17)
 	set(CMAKE_CUDA_STANDARD_REQUIRED ON)
 
@@ -26,15 +26,23 @@ if(CUDAToolkit_FOUND)
 	set(CMAKE_CUDA_SEPARABLE_COMPILATION ON)
 	set(CMAKE_CUDA_ARCHITECTURES 52 60 61 70 75 80 86)
 
-	add_definitions(-DGPROSHAN_CUDA)
-	include_directories(SYSTEM ${CUDAToolkit_INCLUDE_DIRS})
-
 	find_package(OptiX 7.4)
-	if(OptiX_INCLUDE)
-		add_definitions(-DGPROSHAN_OPTIX)
-		include_directories(SYSTEM ${OptiX_INCLUDE})
-	endif(OptiX_INCLUDE)
+	include_directories(SYSTEM ${OptiX_INCLUDE})
 endif(CUDAToolkit_FOUND)
+
+
+set(GPROSHAN_DIR "${gproshan_SOURCE_DIR}")
+
+option(GPROSHAN_LOG "Enables logging gproshan messages." ON)
+option(GPROSHAN_FLOAT "Compile gproshan with float precision." ON)
+
+set(GPROSHAN_CUDA ${CUDAToolkit_FOUND})
+set(GPROSHAN_OPTIX ${OptiX_INCLUDE})
+
+
+configure_file(	${gproshan_SOURCE_DIR}/include/gproshan/config.h.in
+				${gproshan_SOURCE_DIR}/include/gproshan/config.h
+				)
 
 
 find_package(embree 3.13 REQUIRED)
