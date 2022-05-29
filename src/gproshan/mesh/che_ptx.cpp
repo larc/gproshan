@@ -126,22 +126,8 @@ void che_ptx::write_file(const che * mesh, const std::string & file, const size_
 	FILE * fp = fopen((file + ".ptx").c_str(), "wb");
 	assert(fp);
 
-	const char * type = sizeof(real_t) == 4 ? "float" : "double";
-/*
-
-1544 nrows
-2064 ncols
-0 0 0
-1 0 0
-0 1 0
-0 0 1
-1 0 0 0
-0 1 0 0
-0 0 1 0
-0 0 0 1
-*/
-
-	fprintf(fp, "%lu \n %lu\n", n_rows, n_cols);
+	fprintf(fp, "%lu\n", n_rows);
+	fprintf(fp, "%lu\n", n_cols);
 	fprintf(fp, "0 0 0\n");
 	fprintf(fp, "1 0 0\n");
 	fprintf(fp, "0 1 0\n");
@@ -155,11 +141,12 @@ void che_ptx::write_file(const che * mesh, const std::string & file, const size_
 	{
 		const vertex & v = mesh->gt(i);
 		const rgb_t & c = mesh->rgb(i);
-		
+
 		fprintf(fp, "%f %f %f %f %hhu %hhu %hhu\n", (float) v.x, (float) v.y, (float) v.z, (float) 0, c.r, c.g, c.b );
-		
+
 	}
 }
+
 
 } // namespace gproshan
 

@@ -1,12 +1,13 @@
-#include "mesh/che_ply.h"
-#include "mesh/che_ptx.h"
-#include "scenes/scanner.h"
-#include "raytracing/rt_embree.h"
-#include "viewer/include_opengl.h"
-#include <cstdlib>
-#include "glm/glm.hpp"
-#include "glm/gtc/matrix_transform.hpp"
+#include <gproshan/mesh/che_ply.h>
+#include <gproshan/mesh/che_ptx.h>
+#include <gproshan/scenes/scanner.h>
+#include <gproshan/raytracing/rt_embree.h>
+
 #include <algorithm>
+#include <cstdlib>
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 void translate(glm::mat4 & model_mat, const gproshan::vertex & p)
 {
@@ -18,8 +19,9 @@ void scale(glm::mat4 & model_mat, const gproshan::real_t & s)
 	model_mat = glm::scale(model_mat, {s, s, s});
 }
 
-void normalize_coordinates(gproshan::che_ply * mesh, glm::mat4 & model_mat)
+glm::mat4 normalize_coordinates(gproshan::che_ply * mesh)
 {
+	glm::mat4 model_mat = glm::mat4(1);
 
 	gproshan::vertex pmin(INFINITY, INFINITY, INFINITY);
 	gproshan::vertex pmax(0, 0, 0);
@@ -39,22 +41,22 @@ void normalize_coordinates(gproshan::che_ply * mesh, glm::mat4 & model_mat)
 
 	scale(model_mat, 2.0 / std::max({pmax.x - pmin.x, pmax.y - pmin.y, pmax.z - pmin.z}));
 	translate(model_mat, - (pmax + pmin) / 2);
-	
+
+	return model_mat;
 }
 
 int main(int argc, char* argv[])
 {
-   
-	gproshan_log_var(argc);
 	if(argc < 2 || argc > 7)
 	{
 		std::cerr << "Correct usage: ./apps/test_scanner n_rows n_cols pc_radius ptx_folder jpg_folder" << std::endl;
 		return -1;
  	}
-	// Fetching the arguments
 
-	size_t n_rows = atoi(argv[2]); //512
-	size_t n_cols = atoi(argv[3]); //1024
+	size_t n_rows = atoi(argv[2]);
+	size_t n_cols = atoi(argv[3]);
+
+	float pc_radius = atof(argv[4]);
 
 	char * ptx_folder = argv[5];
 	char * jpg_folder = argv[6];
@@ -64,12 +66,9 @@ int main(int argc, char* argv[])
 
 	gproshan::che_ply * mesh_ply = new  gproshan::che_ply(argv[1]);
 
-	//Setting up the ray tracing framework
 	gproshan::rt::raytracing * rt_embree;
-	float pc_radius = atof(argv[4]); //0.01;
-	glm::mat4 model_mat = glm::mat4(1);
 
-	normalize_coordinates(mesh_ply, model_mat);
+	glm::mat4 model_mat = normalize_coordinates(mesh_ply);
 
 	rt_embree = new gproshan::rt::embree({mesh_ply},{model_mat}, false, pc_radius);
 
@@ -78,5 +77,6 @@ int main(int argc, char* argv[])
 	std::string ptx_filename = ptx_folder + mesh_ply->name();
 	gproshan::che_ptx::write_file(ptx_mesh, ptx_filename, n_rows, n_cols);
 
-    return 0;
+	return 0;
 }
+

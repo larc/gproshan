@@ -1,9 +1,8 @@
 #ifndef SCANNER_H
 #define SCANNER_H
 
+#include <gproshan/mesh/che.h>
 #include <gproshan/raytracing/raytracing.h>
-
-#include "mesh/che.h"
 
 
 // geometry processing and shape analysis framework
