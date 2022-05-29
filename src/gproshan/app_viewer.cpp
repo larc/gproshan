@@ -113,6 +113,8 @@ bool app_viewer::process_compute_normals(viewer * p_view)
 {
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
+
+	return false;
 }
 
 bool app_viewer::process_simulate_scanner(viewer * p_view)

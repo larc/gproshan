@@ -9,6 +9,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+
 void translate(glm::mat4 & model_mat, const gproshan::vertex & p)
 {
 	model_mat = glm::translate(model_mat, glm_vec3(p));

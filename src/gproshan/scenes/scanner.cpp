@@ -1,6 +1,7 @@
 #include <gproshan/scenes/scanner.h>
-#include <CImg.h>
+
 #include <thread>
+#include <CImg.h>
 
 using namespace cimg_library;
 
@@ -27,10 +28,7 @@ che * scanner_ptx(const che * mesh, raytracing * rt, const size_t & n_rows, cons
 	glm::vec3 cam_pos = glm_vec3(cam);
 	glm::vec3 p, n_v;
 
-	const real_t  r = 1;
-	index_t v_idx;
-	float distance;
-
+	const real_t r = 1;
 
 	gproshan_log("init");
 
