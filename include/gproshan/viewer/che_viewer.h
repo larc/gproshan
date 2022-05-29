@@ -25,7 +25,6 @@ class che_viewer
 {
 	protected:
 		che * mesh = nullptr;
-		rt::raytracing * pick_vertex = nullptr;
 
 		size_t n_instances = 0;
 		bool center_mesh = false;
@@ -38,6 +37,7 @@ class che_viewer
 		int vx, vy;							///< viewport positions.
 		std::vector<index_t> selected;
 		std::vector<vertex> selected_xyz;
+		rt::raytracing * pick_vertex = nullptr;
 
 		glm::mat4 model_mat		= glm::mat4(1);
 
