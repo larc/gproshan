@@ -4,7 +4,7 @@
 #include <string>
 #include <map>
 
-#include "viewer/include_opengl.h"
+#include <gproshan/viewer/include_opengl.h>
 
 // geometry processing and shape analysis framework
 namespace gproshan {
@@ -13,9 +13,9 @@ namespace gproshan {
 class shader
 {
 	protected:
-		GLuint program {0};
+		GLuint program = 0;
 		std::map<std::string, GLint> uniform;
-		bool linked;
+		bool linked = false;
 
 	public:
 		shader() = default;

@@ -1,7 +1,7 @@
 #ifndef QUATERNION_H
 #define QUATERNION_H
 
-#include "mesh/vertex.h"
+#include <gproshan/mesh/vertex.h>
 
 #include <ostream>
 

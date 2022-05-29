@@ -1,7 +1,7 @@
 #ifndef CONVEX_HULL_H
 #define CONVEX_HULL_H
 
-#include "mesh/vertex.h"
+#include <gproshan/mesh/vertex.h>
 
 #include <vector>
 

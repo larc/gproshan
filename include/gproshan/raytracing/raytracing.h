@@ -1,10 +1,11 @@
 #ifndef RAYTRACING_H
 #define RAYTRACING_H
 
-#include "mesh/che.h"
+#include <gproshan/mesh/che.h>
 
 #include <vector>
 #include <map>
+#include <random>
 
 #include <glm/glm.hpp>
 
@@ -32,28 +33,45 @@ class raytracing
 
 		size_t n_samples = 0;
 
+		static std::default_random_engine gen;
+		static std::uniform_real_distribution<float> randf;
+
 	public:
 		raytracing() = default;
 		virtual ~raytracing() = default;
 
 		virtual void render(glm::vec4 * img,
 							const glm::uvec2 & windows_size,
-							const glm::mat4 & view_mat,
-							const glm::mat4 & proj_mat,
+							const glm::mat4 & proj_view_mat,
+							const glm::vec3 & cam_pos,
 							const std::vector<glm::vec3> & light,
 							const bool & flat,
 							const bool & restart = false
 							);
 
 		virtual float * raycaster(	const glm::uvec2 & windows_size,
-									const glm::mat4 & view_mat,
-									const glm::mat4 & proj_mat,
+									const glm::mat4 & proj_view_mat,
+									const glm::vec3 & cam_pos,
 									const index_t & samples = 4
 									);
+
+		glm::vec3 ray_view_dir(	const index_t & x, const index_t & y,
+								const glm::vec2 & windows_size,
+								const glm::mat4 & inv_proj_view,
+								const glm::vec3 & cam_pos
+								);
 
 		virtual index_t cast_ray(	const glm::vec3 &,// org,
 									const glm::vec3 &// dir
 									) { return NIL; };
+
+		virtual float intersect_depth(	const glm::vec3 &,// org,
+										const glm::vec3 &// dir
+										) { return 0; };
+
+		virtual std::tuple<index_t, float> cast_ray_intersect_depth(	const glm::vec3 & origin,// org,
+													const glm::vec3 & direction// dir
+													) { return { cast_ray(origin, direction), intersect_depth( origin, direction) }; };
 
 	protected:
 		virtual glm::vec4 intersect_li(	const glm::vec3 &,// org,
@@ -62,9 +80,7 @@ class raytracing
 										const bool &// flat
 										) { return glm::vec4(0); };
 
-		virtual float intersect_depth(	const glm::vec3 &,// org,
-										const glm::vec3 &// dir
-										) { return 0; };
+
 };
 
 

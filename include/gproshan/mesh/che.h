@@ -1,8 +1,8 @@
 #ifndef CHE_H
 #define CHE_H
 
-#include "include.h"
-#include "mesh/vertex.h"
+#include <gproshan/include.h>
+#include <gproshan/mesh/vertex.h>
 
 #include <vector>
 #include <string>
@@ -77,11 +77,11 @@ class che
 		bool is_edge_bound(const index_t & e) const;
 		void flip(const index_t & e);
 		real_t pdetriq(const index_t & t) const;
-		real_t quality();
+		real_t quality() const;
 		real_t area_trig(const index_t & t) const;
 		real_t area_vertex(const index_t & v) const;
 		real_t area_surface() const;
-		void update_heatmap(const real_t * hm = nullptr, real_t max_color = 0);
+		void update_heatmap(const real_t * hm = nullptr);
 		const rgb_t & rgb(const index_t & v) const;
 		rgb_t & rgb(const index_t & v);
 		vertex color(const index_t & v) const;
@@ -89,6 +89,7 @@ class che
 		const real_t & heatmap(const index_t & v) const;
 		real_t & heatmap(const index_t & v);
 		void update_normals();
+		void invert_normals();
 		const vertex & normal(const index_t & v) const;
 		vertex & normal(const index_t & v);
 		vertex shading_normal(const index_t & f, const float & u, const float & v, const float & w) const;

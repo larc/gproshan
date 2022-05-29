@@ -1,6 +1,8 @@
 #ifndef INCLUDE_H
 #define INCLUDE_H
 
+#include <gproshan/config.h>
+
 #include <iostream>
 #include <iomanip>
 #include <string>

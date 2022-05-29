@@ -6,18 +6,18 @@
 
 #include <glm/glm.hpp>
 
-#include "viewer/camera.h"
-#include "viewer/shader.h"
-#include "viewer/frame.h"
-#include "viewer/che_viewer.h"
+#include <gproshan/viewer/camera.h>
+#include <gproshan/viewer/shader.h>
+#include <gproshan/viewer/frame.h>
+#include <gproshan/viewer/che_viewer.h>
 
-#include "raytracing/raytracing.h"
+#include <gproshan/raytracing/raytracing.h>
 
-#include "viewer/include_opengl.h"
+#include <gproshan/viewer/include_opengl.h>
 
-#include <imgui.h>
-#include <imgui_impl_glfw.h>
-#include <imgui_impl_opengl3.h>
+#include <imgui/imgui.h>
+#include <imgui/imgui_impl_glfw.h>
+#include <imgui/imgui_impl_opengl3.h>
 
 
 #ifdef GPROSHAN_FLOAT
@@ -68,10 +68,10 @@ class viewer
 
 		camera cam;
 
-		quaternion light;
+		quaternion cam_light;
+		std::vector<glm::vec3> scene_lights;
 
-		glm::mat4 view_mat;
-		glm::mat4 proj_mat;
+		glm::mat4 proj_view_mat;
 
 		che_viewer meshes[N_MESHES];
 		size_t n_meshes	= 0;
@@ -92,7 +92,6 @@ class viewer
 		std::map<int, process_t> processes;
 
 		che_viewer sphere;
-		std::vector<vertex> sphere_translations;
 		shader shader_sphere;
 
 	public:
@@ -109,7 +108,7 @@ class viewer
 		bool run();
 
 		che_viewer & active_mesh();
-		void add_process(const int & key, const process_t & process);
+		void add_process(const int & key, const std::string & skey, const std::string & name, const function_t & f);
 		void add_mesh(che * p_mesh);
 
 	private:
@@ -129,40 +128,36 @@ class viewer
 		static void cursor_callback(GLFWwindow * window, double x, double y);
 		static void scroll_callback(GLFWwindow * window, double xoffset, double yoffset);
 
-		static bool menu_help(viewer * view);
-		static bool menu_save_load_view(viewer * view);
-		static bool menu_reset_mesh(viewer * view);
-		static bool menu_save_mesh(viewer * view);
-		static bool menu_zoom_in(viewer * view);
-		static bool menu_zoom_out(viewer * view);
-		static bool menu_bgc_inc(viewer * view);
-		static bool menu_bgc_dec(viewer * view);
-		static bool menu_bgc_white(viewer * view);
-		static bool menu_bgc_black(viewer * view);
+		static bool m_help(viewer * view);
+		static bool m_save_load_view(viewer * view);
+		static bool m_reset_mesh(viewer * view);
+		static bool m_save_mesh(viewer * view);
+		static bool m_normalize_mesh(viewer * view);
+		static bool m_zoom_in(viewer * view);
+		static bool m_zoom_out(viewer * view);
+		static bool m_bgc_inc(viewer * view);
+		static bool m_bgc_dec(viewer * view);
+		static bool m_bgc_white(viewer * view);
+		static bool m_bgc_black(viewer * view);
 
-		static bool setup_raytracing(viewer * view);
-		static bool set_render_gl(viewer * view);
-		static bool set_render_embree(viewer * view);
-		static bool set_render_optix(viewer * view);
+		static bool m_setup_raytracing(viewer * view);
+		static bool m_render_gl(viewer * view);
+		static bool m_render_embree(viewer * view);
+		static bool m_render_optix(viewer * view);
 
-		static bool invert_orientation(viewer * view);
-		static bool set_render_pointcloud(viewer * view);
-		static bool set_render_wireframe(viewer * view);
-		static bool set_render_triangles(viewer * view);
-		static bool set_render_gradients(viewer * view);
-		static bool set_render_normals(viewer * view);
-		static bool set_render_border(viewer * view);
-		static bool set_render_lines(viewer * view);
-		static bool set_render_flat(viewer * view);
+		static bool m_invert_normals(viewer * view);
+		static bool m_select_border_vertices(viewer * view);
+		static bool m_clean_selected_vertices(viewer * view);
+		static bool m_render_pointcloud(viewer * view);
+		static bool m_render_wireframe(viewer * view);
+		static bool m_render_triangles(viewer * view);
+		static bool m_render_gradients(viewer * view);
+		static bool m_render_normals(viewer * view);
+		static bool m_render_lines(viewer * view);
+		static bool m_render_flat(viewer * view);
 
-	#ifdef GPROSHAN_EMBREE
-		static bool raycasting(viewer * view);
-	#endif // GPROSHAN_EMBREE
+		static bool m_raycasting(viewer * view);
 
-		// draw routines
-		void draw_selected_vertices(shader & program, const che_viewer & mesh);
-
-		void select_border_vertices(che_viewer & mesh);
 		void pick_vertex(const real_t & x, const real_t & y);
 };
 

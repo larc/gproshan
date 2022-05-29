@@ -1,37 +1,40 @@
 #ifndef APP_VIEWER_H
 #define APP_VIEWER_H
 
-#include "include.h"
-#include "viewer/viewer.h"
+#include <gproshan/include.h>
+#include <gproshan/viewer/viewer.h>
 
-#include "mesh/che_off.h"
-#include "mesh/che_obj.h"
-#include "mesh/che_ply.h"
-#include "mesh/che_ptx.h"
-#include "mesh/che_xyz.h"
-#include "mesh/che_img.h"
-#include "mesh/che_sphere.h"
-#include "mesh/che_fill_hole.h"
-#include "mesh/che_poisson.h"
-#include "mesh/simplification.h"
+#include <gproshan/mesh/che_off.h>
+#include <gproshan/mesh/che_obj.h>
+#include <gproshan/mesh/che_ply.h>
+#include <gproshan/mesh/che_ptx.h>
+#include <gproshan/mesh/che_xyz.h>
+#include <gproshan/mesh/che_pts.h>
+#include <gproshan/mesh/che_img.h>
+#include <gproshan/mesh/che_sphere.h>
+#include <gproshan/mesh/che_fill_hole.h>
+#include <gproshan/mesh/che_poisson.h>
+#include <gproshan/mesh/simplification.h>
 
-#include "laplacian/laplacian.h"
-#include "laplacian/fairing_taubin.h"
-#include "laplacian/fairing_spectral.h"
+#include <gproshan/laplacian/laplacian.h>
+#include <gproshan/laplacian/fairing_taubin.h>
+#include <gproshan/laplacian/fairing_spectral.h>
 
-#include "geometry/convex_hull.h"
+#include <gproshan/scenes/scanner.h>
 
-#include "geodesics/dijkstra.h"
-#include "geodesics/geodesics.h"
-#include "geodesics/sampling.h"
+#include <gproshan/geometry/convex_hull.h>
 
-#include "mdict/msparse_coding.h"
-#include "mdict/basis_dct.h"
-#include "mdict/patch.h"
+#include <gproshan/geodesics/dijkstra.h>
+#include <gproshan/geodesics/geodesics.h>
+#include <gproshan/geodesics/sampling.h>
 
-#include "features/descriptor.h"
-#include "features/key_points.h"
-#include "features/key_components.h"
+#include <gproshan/mdict/msparse_coding.h>
+#include <gproshan/mdict/basis_dct.h>
+#include <gproshan/mdict/patch.h>
+
+#include <gproshan/features/descriptor.h>
+#include <gproshan/features/key_points.h>
+#include <gproshan/features/key_components.h>
 
 
 // geometry processing and shape analysis framework
@@ -53,6 +56,10 @@ class app_viewer : public viewer
 		virtual void init();
 
 		che * load_mesh(const string & file_path);
+
+		// Scenes
+		static bool process_compute_normals(viewer * p_view);
+		static bool process_simulate_scanner(viewer * p_view);
 
 		// Geometry
 		static bool process_convex_hull(viewer * p_view);

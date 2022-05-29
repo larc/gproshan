@@ -2,9 +2,9 @@
 #define FRAME_H
 
 
-#include "viewer/shader.h"
+#include <gproshan/viewer/shader.h>
 
-#include "viewer/include_opengl.h"
+#include <gproshan/viewer/include_opengl.h>
 
 
 // geometry processing and shape analysis framework

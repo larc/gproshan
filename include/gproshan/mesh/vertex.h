@@ -1,7 +1,7 @@
 #ifndef VERTEX_H
 #define VERTEX_H
 
-#include "include.h"
+#include <gproshan/include.h>
 
 #include <iostream>
 

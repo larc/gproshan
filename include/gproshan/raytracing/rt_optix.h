@@ -1,11 +1,12 @@
-#ifdef GPROSHAN_OPTIX
-
 #ifndef RT_OPTIX_H
 #define RT_OPTIX_H
 
-#include "mesh/che.h"
-#include "raytracing/raytracing.h"
-#include "raytracing/rt_optix_params.h"
+#include <gproshan/mesh/che.h>
+#include <gproshan/raytracing/raytracing.h>
+#include <gproshan/raytracing/rt_optix_params.h>
+
+
+#ifdef GPROSHAN_OPTIX
 
 #include <cuda_runtime.h>
 #include <optix.h>
@@ -51,13 +52,13 @@ class optix : public raytracing
 	void * as_buffer = nullptr;
 
 	public:
-		optix(const std::vector<che *> & meshes);
+		optix(const std::vector<che *> & meshes, const std::vector<glm::mat4> & model_mats);
 		~optix();
 
 		void render(glm::vec4 * img,
 					const glm::uvec2 & windows_size,
-					const glm::mat4 & view_mat,
-					const glm::mat4 & proj_mat,
+					const glm::mat4 & proj_view_mat,
+					const glm::vec3 & cam_pos,
 					const std::vector<glm::vec3> & light,
 					const bool & flat,
 					const bool & restart = false
@@ -70,14 +71,14 @@ class optix : public raytracing
 		void create_hitgroup_programs();
 		void create_pipeline();
 		void build_sbt();
-		OptixTraversableHandle build_as(const std::vector<che *> & meshes);
-		void add_mesh(OptixBuildInput & optix_mesh, CUdeviceptr & d_vertex_ptr, uint32_t & optix_trig_flags, const che * mesh);
+		OptixTraversableHandle build_as(const std::vector<che *> & meshes, const std::vector<glm::mat4> & model_mats);
+		void add_mesh(OptixBuildInput & optix_mesh, CUdeviceptr & d_vertex_ptr, uint32_t & optix_trig_flags, const che * mesh, const glm::mat4 & model_mat);
 };
 
 
 } // namespace gproshan
 
-#endif // RT_OPTIX_H
-
 #endif // GPROSHAN_OPTIX
+
+#endif // RT_OPTIX_H
 

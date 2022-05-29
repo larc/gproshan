@@ -1,7 +1,7 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
-#include "mesh/quaternion.h"
+#include <gproshan/mesh/quaternion.h>
 
 #include <glm/glm.hpp>
 
@@ -20,7 +20,7 @@ class camera
 
 	public:
 		quaternion eye;
-		quaternion pos		= vertex(0, 0, -2);
+		quaternion pos		= vertex(0, 0, -2.5);
 		quaternion front	= vertex(0, 0, 1);
 		quaternion up		= vertex(0, 1, 0);
 

@@ -1,8 +1,8 @@
 #ifndef DESCRIPTOR_H
 #define DESCRIPTOR_H
 
-#include "mesh/che.h"
-#include "include_arma.h"
+#include <gproshan/mesh/che.h>
+#include <gproshan/include_arma.h>
 
 
 // geometry processing and shape analysis framework
