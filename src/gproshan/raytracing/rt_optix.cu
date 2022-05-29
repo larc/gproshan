@@ -1,6 +1,3 @@
-#ifdef GPROSHAN_OPTIX
-
-
 #include <gproshan/mesh/che.h>
 #include <gproshan/mesh/vertex.cuh>
 #include <gproshan/raytracing/rt_optix_params.h>
@@ -186,6 +183,4 @@ extern "C" __global__ void __raygen__render_frame()
 
 
 } // namespace gproshan
-
-#endif // GPROSHAN_OPTIX
 

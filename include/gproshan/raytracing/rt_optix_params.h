@@ -1,8 +1,11 @@
-#ifdef GPROSHAN_OPTIX
-
 #ifndef RT_OPTIX_PARAMS_H
 #define RT_OPTIX_PARAMS_H
 
+
+#include <gproshan/include.h>
+
+
+#ifdef GPROSHAN_OPTIX
 
 #include <optix.h>
 
@@ -30,7 +33,7 @@ struct launch_params
 
 } // namespace gproshan
 
-#endif // RT_OPTIX_PARAMS_H
-
 #endif // GPROSHAN_OPTIX
+
+#endif // RT_OPTIX_PARAMS_H
 
