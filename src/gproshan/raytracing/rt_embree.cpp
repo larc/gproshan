@@ -117,10 +117,29 @@ embree::~embree()
 	rtcReleaseDevice(device);
 }
 
-index_t embree::cast_ray(const glm::vec3 & org, const glm::vec3 & dir)
+index_t embree::closest_vertex(const glm::vec3 & org, const glm::vec3 & dir)
 {
 	ray_hit r(org, dir);
 	return intersect(r) ? r.closest_vertex(geomID_mesh[r.hit.geomID]) : NIL;
+}
+
+hit embree::intersect(const glm::vec3 & org, const glm::vec3 & dir)
+{
+	ray_hit r(org, dir);
+	if(intersect(r))
+	{
+		const rt_mesh & mesh = geomID_mesh[r.hit.geomID];
+		const glm::vec3 & color = r.color(mesh);
+		const glm::vec3 & normal = r.normal(mesh);
+
+		return	{	r.closest_vertex(mesh),
+					r.ray.tfar,
+					{color.x, color.y, color.z},
+					{normal.x, normal.y, normal.z}
+					};
+	}
+
+	return hit();
 }
 
 bool embree::intersect(ray_hit & r)
