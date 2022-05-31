@@ -20,63 +20,52 @@ che * scanner_ptx(const raytracing * rt, const size_t & n_rows, const size_t & n
 
 che * scanner_ptx(const che * mesh, raytracing * rt, const size_t & n_rows, const size_t & n_cols, const vertex & cam, const std::string & file_jpg)
 {
-	std::vector<vertex> vertices;
-	std::vector<che::rgb_t> vertices_color;
-	vertices.reserve(n_cols * n_rows);
-	vertices_color.reserve(n_cols * n_rows);
+	che * mesh_ptx = new che(n_cols * n_rows);
 
 	glm::vec3 cam_pos = glm_vec3(cam);
-	glm::vec3 p, n_v;
-
-	const real_t r = 1;
-
-	gproshan_log("init");
 
 	const real_t delta_phi = (2 * M_PI) / n_rows;
 	const real_t delta_theta = M_PI / n_cols;
 
-
-	for(real_t phi = 0; phi < 2 * M_PI - 0.5 * delta_phi; phi += delta_phi)
-	for(real_t theta = delta_theta; theta < M_PI - 0.5 * delta_theta + delta_theta; theta += delta_theta)
-	//for(real_t phi = 0; phi < 2 * M_PI - 0.5 * delta_phi; phi += delta_phi)
+	#pragma omp parallel for
+	for(index_t i = 0; i < n_rows; ++i)
+	for(index_t j = 0; j < n_cols; ++j)
 	{
-		// p is the direction of the ray
-		p = glm::vec3( r * sin(theta) * cos(phi), r * sin(theta) * sin(phi), r * cos(theta) ) - cam_pos;
+		const index_t & v = i * n_cols + j;
 
-		// quering the closest point in the mesh to the hit point and the distance
-		auto [v_idx, distance] = rt->cast_ray_intersect_depth(cam_pos, glm::normalize(p - cam_pos));
-		//const vertex & c = mesh.pointcloud ? mesh->color(v_idx) :
-		//								 mesh->shading_color(v_idx, 1.0 - hit.u - hit.v, hit.u, hit.v);
+		const real_t & phi = i * delta_phi;
+		const real_t & theta = j * delta_theta;
+		const glm::vec3 & dir = {	sin(theta) * cos(phi),
+									sin(theta) * sin(phi),
+									cos(theta)
+									};
 
-		if(v_idx == NIL)
+		const hit & h = rt->intersect(cam_pos, dir);
+
+		if(h.idx != NIL)
 		{
-			vertices.push_back( {0, 0, 0} );
-			vertices_color.push_back({0,0,0});
+			const glm::vec3 & pos = cam_pos + dir * h.dist;
+			mesh_ptx->get_vertex(v) = {pos.x, pos.y, pos.z};
+			mesh_ptx->normal(v) = h.normal;
+			mesh_ptx->heatmap(v) = h.dist / M_SQRT2;
+			mesh_ptx->rgb(v) = {	(unsigned char) (h.color.x * 255),
+									(unsigned char) (h.color.y * 255),
+									(unsigned char) (h.color.z * 255)
+									};
 		}
 		else
 		{
-			n_v = cam_pos + p * distance;
-			vertices.push_back( vertex(n_v.x, n_v.y, n_v.z) );
-			vertices_color.push_back( mesh->rgb(v_idx) );
+			mesh_ptx->rgb(v) = {0, 0, 0};
 		}
 	}
 
-	gproshan_log_var(n_cols * n_rows);
-	gproshan_log_var(vertices.size());
-
-	gproshan_log_var(n_cols * n_rows == vertices.size());
-
-	che * mesh_ptx = new che(vertices.data(), vertices.size(), nullptr, 0);
-	memcpy(&mesh_ptx->rgb(0), vertices_color.data(), vertices_color.size() * sizeof(che::rgb_t));
-
-
-	CImg<unsigned char> img((unsigned char *) vertices_color.data(), 3, n_cols, n_rows);
+	CImg<unsigned char> img((unsigned char *) &mesh_ptx->rgb(0), 3, n_cols, n_rows);
 	img.permute_axes("zycx");
+
 	std::string img_filename = file_jpg + mesh->name() + ".jpg";
 	img.save(img_filename.c_str());
 
 	std::thread([](CImg<real_t> img) { img.display(); }, img).detach();
-
 
 	return mesh_ptx;
 }

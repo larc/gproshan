@@ -27,8 +27,8 @@ class embree : public raytracing
 			glm::vec3 dir() const;
 			glm::vec3 color(const rt_mesh & mesh) const;
 			glm::vec3 normal(const rt_mesh & mesh, const bool & flat = false) const;
-			index_t closest_vertex(const rt_mesh & mesh) const;
 			glm::vec3 position() const;
+			index_t closest_vertex(const rt_mesh & mesh) const;
 		};
 
 
@@ -48,7 +48,9 @@ class embree : public raytracing
 				);
 		virtual ~embree();
 
-		virtual index_t cast_ray(const glm::vec3 & org, const glm::vec3 & dir);
+		virtual index_t closest_vertex(const glm::vec3 & org, const glm::vec3 & dir);
+		virtual hit intersect(const glm::vec3 & org, const glm::vec3 & dir);
+
 
 	protected:
 		bool intersect(ray_hit & r);

@@ -143,7 +143,6 @@ void che_ptx::write_file(const che * mesh, const std::string & file, const size_
 		const rgb_t & c = mesh->rgb(i);
 
 		fprintf(fp, "%f %f %f %f %hhu %hhu %hhu\n", (float) v.x, (float) v.y, (float) v.z, (float) 0, c.r, c.g, c.b );
-
 	}
 }
 

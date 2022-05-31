@@ -15,6 +15,15 @@
 namespace gproshan::rt {
 
 
+struct hit
+{
+	index_t idx = NIL;
+	real_t dist = INFINITY;
+	vertex color;
+	vertex normal;
+};
+
+
 class raytracing
 {
 	protected:
@@ -61,26 +70,24 @@ class raytracing
 								const glm::vec3 & cam_pos
 								);
 
-		virtual index_t cast_ray(	const glm::vec3 &,// org,
-									const glm::vec3 &// dir
-									) { return NIL; };
+		virtual hit intersect(	const glm::vec3 &,	// org
+								const glm::vec3 &	//dir
+								)	{ return hit(); }
 
-		virtual float intersect_depth(	const glm::vec3 &,// org,
-										const glm::vec3 &// dir
-										) { return 0; };
-
-		virtual std::tuple<index_t, float> cast_ray_intersect_depth(	const glm::vec3 & origin,// org,
-													const glm::vec3 & direction// dir
-													) { return { cast_ray(origin, direction), intersect_depth( origin, direction) }; };
+		virtual index_t closest_vertex(	const glm::vec3 &,	// org,
+										const glm::vec3 &	// dir
+										) { return NIL; };
 
 	protected:
-		virtual glm::vec4 intersect_li(	const glm::vec3 &,// org,
-										const glm::vec3 &,// dir,
-										const glm::vec3 &,// light,
-										const bool &// flat
+		virtual glm::vec4 intersect_li(	const glm::vec3 &,	// org,
+										const glm::vec3 &,	// dir,
+										const glm::vec3 &,	// light,
+										const bool &		// flat
 										) { return glm::vec4(0); };
 
-
+		virtual float intersect_depth(	const glm::vec3 &,	// org,
+										const glm::vec3 &	// dir
+										) { return 0; };
 };
 
 

@@ -258,7 +258,7 @@ void che_viewer::scale(const real_t & s)
 void che_viewer::select(const index_t & x, const index_t & y, const glm::uvec2 & windows_size, const glm::mat4 & proj_view_mat, const glm::vec3 & cam_pos)
 {
 	glm::vec3 dir = pick_vertex->ray_view_dir(x, windows_size.y - y, windows_size, glm::inverse(proj_view_mat), cam_pos);
-	index_t v = pick_vertex->cast_ray(cam_pos, dir);
+	index_t v = pick_vertex->closest_vertex(cam_pos, dir);
 	if(v != NIL) selected.push_back(v);
 }
 
