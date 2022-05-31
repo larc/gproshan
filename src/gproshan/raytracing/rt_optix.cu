@@ -57,7 +57,8 @@ extern "C" __global__ void __closesthit__radiance()
 {
 	const CHE & mesh = **(const CHE **) optixGetSbtDataPointer();
 
-	const int primID = optixGetPrimitiveIndex();
+	const unsigned int primID = optixGetPrimitiveIndex();
+
 	const int he = primID * che::mtrig;
 	const float u = optixGetTriangleBarycentrics().x;
 	const float v = optixGetTriangleBarycentrics().y;
@@ -66,9 +67,16 @@ extern "C" __global__ void __closesthit__radiance()
 	const int b = mesh.VT[he + 1];
 	const int c = mesh.VT[he + 2];
 
-	const vertex_cu & A = mesh.GT[a];
-	const vertex_cu & B = mesh.GT[b];
-	const vertex_cu & C = mesh.GT[c];
+	OptixTraversableHandle gas = optixGetGASTraversableHandle();
+	const unsigned int sbtID = optixGetSbtGASIndex();
+	const float time = optixGetRayTime();
+
+	vertex_cu data[3];
+	optixGetTriangleVertexData(gas, primID, sbtID, time, (float3 *) data);
+
+	const vertex_cu & A = data[0];
+	const vertex_cu & B = data[1];
+	const vertex_cu & C = data[2];
 
 	const vertex_cu Ng = normalize((B - A) * (C - A));
 	const vertex_cu normal = render_params.flat ? Ng : (1.f - u - v) * mesh.VN[a] + u * mesh.VN[b] + v * mesh.VN[c];

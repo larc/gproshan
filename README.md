@@ -176,7 +176,7 @@ to generate the documentation in *html* and *LaTeX*.
 
 
 ## Viewer
-The viewer is done with modern OpenGL and a GUI using Dear ImGui [https://github.com/ocornut/imgui](https://github.com/ocornut/imgui). The viewer was initially based in the viewer of [https://github.com/dgpdec/course](https://github.com/dgpdec/course).
+The viewer is done with modern OpenGL and a GUI using Dear ImGui [https://github.com/ocornut/imgui](https://github.com/ocornut/imgui).
 
 
 ## License

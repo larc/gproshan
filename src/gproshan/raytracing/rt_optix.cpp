@@ -349,10 +349,10 @@ OptixTraversableHandle optix::build_as(const std::vector<che *> & meshes, const 
 	for(index_t i = 0; i < meshes.size(); ++i)
 		add_mesh(optix_meshes[i], optix_vertex_ptr[i], optix_trig_flags[i], meshes[i], model_mats[i]);
 
-	OptixAccelBuildOptions optix_accel_opt	= {};
-	optix_accel_opt.buildFlags 				= OPTIX_BUILD_FLAG_NONE | OPTIX_BUILD_FLAG_ALLOW_COMPACTION;
-	optix_accel_opt.motionOptions.numKeys	= 1;
-	optix_accel_opt.operation				= OPTIX_BUILD_OPERATION_BUILD;
+	OptixAccelBuildOptions optix_accel_opt	=	{};
+	optix_accel_opt.buildFlags 				=	OPTIX_BUILD_FLAG_ALLOW_RANDOM_VERTEX_ACCESS |
+												OPTIX_BUILD_FLAG_ALLOW_COMPACTION;
+	optix_accel_opt.operation				=	OPTIX_BUILD_OPERATION_BUILD;
 
 	OptixAccelBufferSizes optix_gas_buffer_size;
 	optixAccelComputeMemoryUsage(	optix_context,
@@ -424,6 +424,14 @@ void optix::add_mesh(OptixBuildInput & optix_mesh, CUdeviceptr & d_vertex_ptr, u
 	dd_mesh.push_back(dd_m);
 	d_mesh.push_back(d_m);
 
+	float h_transform[12] = {	model_mat[0][0], model_mat[1][0], model_mat[2][0], model_mat[3][0],
+								model_mat[0][1], model_mat[1][1], model_mat[2][1], model_mat[3][1],
+								model_mat[0][2], model_mat[1][2], model_mat[2][2], model_mat[3][2],
+								};
+
+	float * d_transform = nullptr;
+	cudaMalloc(&d_transform, sizeof(h_transform));
+	cudaMemcpy(d_transform, h_transform, sizeof(h_transform), cudaMemcpyHostToDevice);
 
 	d_vertex_ptr = (CUdeviceptr) dd_m->GT;
 
@@ -439,6 +447,9 @@ void optix::add_mesh(OptixBuildInput & optix_mesh, CUdeviceptr & d_vertex_ptr, u
 	optix_mesh.triangleArray.indexStrideInBytes		= 3 * sizeof(index_t);
 	optix_mesh.triangleArray.numIndexTriplets		= mesh->n_faces;
 	optix_mesh.triangleArray.indexBuffer			= (CUdeviceptr) dd_m->VT;
+
+	optix_mesh.triangleArray.transformFormat		= OPTIX_TRANSFORM_FORMAT_MATRIX_FLOAT12;
+	optix_mesh.triangleArray.preTransform			= (CUdeviceptr) d_transform;
 
 	optix_trig_flags = 0;
 
