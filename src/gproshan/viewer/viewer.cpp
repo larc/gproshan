@@ -63,6 +63,8 @@ viewer::viewer(const int & width, const int & height): window_width(width), wind
 	che * s = new che_sphere(0.01);
 	s->update_normals();
 	sphere.init(s, false);
+
+	rt_frame = new frame;
 }
 
 viewer::~viewer()
@@ -74,11 +76,7 @@ viewer::~viewer()
 	glfwDestroyWindow(window);
 	glfwTerminate();
 
-	delete rt_embree;
-	delete rt_optix;
-
 	delete rt_frame;
-
 	delete sphere;
 }
 
@@ -98,18 +96,7 @@ bool viewer::run()
 		proj_view_mat = glm::perspective(45.0f, float(viewport_width) / float(viewport_height), 0.01f, 1000.0f) * cam.look_at(r);
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		switch(render_opt)
-		{
-			case R_GL:
-					render_gl();
-					break;
-			case R_EMBREE:
-					render_rt(rt_embree);
-					break;
-			case R_OPTIX:
-					render_rt(rt_optix);
-					break;
-		}
+		render_gl();
 
 		TOC(render_time);
 
@@ -664,26 +651,23 @@ bool viewer::m_setup_raytracing(viewer * view)
 
 	if(ImGui::Button("Build"))
 	{
-		if(!view->rt_frame)
-			view->rt_frame = new frame;
-
 		switch(rt)
 		{
 			case R_GL: break;
 
 			case R_EMBREE:
-				delete view->rt_embree;
+				delete mesh.rt_embree;
 				TIC(time);
-					view->rt_embree = new rt::embree({mesh}, {mesh.model_mat}, mesh.render_pointcloud, pc_radius);
+					mesh.rt_embree = new rt::embree({mesh}, {mesh.model_mat}, mesh.render_pointcloud, pc_radius);
 				TOC(time);
 				sprintf(view->status_message, "build embree in %.3fs", time);
 				break;
 
 			case R_OPTIX:
 			#ifdef GPROSHAN_OPTIX
-				delete view->rt_optix;
+				delete mesh.rt_optix;
 				TIC(time);
-					view->rt_optix = new rt::optix({mesh}, {mesh.model_mat});
+					mesh.rt_optix = new rt::optix({mesh}, {mesh.model_mat});
 				TOC(time);
 				sprintf(view->status_message, "build optix in %.3fs", time);
 			#endif // GPROSHAN_OPTIX
@@ -696,21 +680,24 @@ bool viewer::m_setup_raytracing(viewer * view)
 
 bool viewer::m_render_gl(viewer * view)
 {
-	view->render_opt = R_GL;
+	che_viewer & mesh = view->active_mesh();
+	mesh.render_opt = R_GL;
 	return false;
 }
 
 bool viewer::m_render_embree(viewer * view)
 {
+	che_viewer & mesh = view->active_mesh();
 	view->rt_restart = true;
-	view->render_opt = R_EMBREE;
+	mesh.render_opt = R_EMBREE;
 	return false;
 }
 
 bool viewer::m_render_optix(viewer * view)
 {
+	che_viewer & mesh = view->active_mesh();
 	view->rt_restart = true;
-	view->render_opt = R_OPTIX;
+	mesh.render_opt = R_OPTIX;
 	return false;
 }
 
@@ -848,6 +835,12 @@ void viewer::render_gl()
 
 		glViewport(mesh.vx * viewport_width, mesh.vy * viewport_height, viewport_width, viewport_height);
 
+		if(mesh.render_opt != R_GL)
+		{
+			render_rt(mesh);
+			continue;
+		}
+
 		if(mesh->is_pointcloud() || mesh.render_pointcloud)
 			mesh.draw_point_cloud(shader_pointcloud);
 		else
@@ -863,10 +856,8 @@ void viewer::render_gl()
 	}
 }
 
-void viewer::render_rt(rt::raytracing * rt)
+void viewer::render_rt(che_viewer & mesh)
 {
-	if(!rt) return;
-
 	rt_restart = rt_frame->resize(viewport_width, viewport_height) || rt_restart;
 
 	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, *rt_frame);
@@ -874,17 +865,20 @@ void viewer::render_rt(rt::raytracing * rt)
 
 	scene_lights.clear();
 
-	che_viewer & mesh = active_mesh();
 	for(const index_t & v: mesh.selected)
 		scene_lights.push_back(glm_vec3(mesh->gt(v)));
 
 	if(!scene_lights.size())
 		scene_lights = {glm_vec3(cam_light)};
 
-	rt->render(	img, glm::uvec2(viewport_width, viewport_height),
-				proj_view_mat, glm_vec3(cam.eye), scene_lights,
-				mesh.render_flat, rt_restart
-				);
+	rt::raytracing * rt = nullptr;
+	if(mesh.render_opt == R_EMBREE) rt = mesh.rt_embree;
+	if(mesh.render_opt == R_OPTIX) rt = mesh.rt_optix;
+
+		rt->render(	img, glm::uvec2(viewport_width, viewport_height),
+					proj_view_mat, glm_vec3(cam.eye), scene_lights,
+					mesh.render_flat, rt_restart
+					);
 
 	glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
 	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);

@@ -6,8 +6,6 @@
 #include <gproshan/mesh/che_fill_hole.h>
 #include <gproshan/geodesics/sampling.h>
 
-#include <gproshan/viewer/viewer.h>
-
 #include <cassert>
 #include <fstream>
 

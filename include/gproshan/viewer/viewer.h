@@ -11,8 +11,6 @@
 #include <gproshan/viewer/frame.h>
 #include <gproshan/viewer/che_viewer.h>
 
-#include <gproshan/raytracing/raytracing.h>
-
 #include <gproshan/viewer/include_opengl.h>
 
 #include <imgui/imgui.h>
@@ -77,13 +75,7 @@ class viewer
 		size_t n_meshes	= 0;
 		index_t idx_active_mesh = 0;
 
-		enum render_type: index_t { R_GL, R_EMBREE, R_OPTIX };
-		index_t render_opt = R_GL;
-
 		frame * rt_frame = nullptr;
-
-		rt::raytracing * rt_embree = nullptr;
-		rt::raytracing * rt_optix = nullptr;
 
 		bool rt_restart = false;
 
@@ -105,11 +97,12 @@ class viewer
 		viewer(const int & width = 1920, const int & height = 1080);
 		virtual ~viewer();
 
-		bool run();
-
 		che_viewer & active_mesh();
 		void add_process(const int & key, const std::string & skey, const std::string & name, const function_t & f);
 		void add_mesh(che * p_mesh);
+
+	protected:
+		virtual bool run();
 
 	private:
 		void info_gl();
@@ -119,7 +112,7 @@ class viewer
 		void init_glsl();
 
 		void render_gl();
-		void render_rt(rt::raytracing * rt);
+		void render_rt(che_viewer & mesh);
 
 		static void framebuffer_size_callback(GLFWwindow * window, int width, int height);
 		static void window_size_callback(GLFWwindow * window, int width, int height);

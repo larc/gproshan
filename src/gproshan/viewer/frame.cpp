@@ -82,7 +82,8 @@ void frame::display()
 {
 	program.enable();
 
-	glViewport(0, 0, width, height);
+	gproshan_debug_var(width);
+	gproshan_debug_var(height);
 
 	glBindVertexArray(vao);
 
