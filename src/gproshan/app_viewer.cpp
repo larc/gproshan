@@ -81,7 +81,7 @@ void app_viewer::init()
 	add_process(GLFW_KEY_T, "T", "Toplesets", process_compute_toplesets);
 
 	sub_menus.push_back("Sparse Coding");
-	add_process(GLFW_KEY_I, "I", "Mesh Sparse Coding", process_msparse_coding);
+	add_process(GLFW_KEY_U, "U", "Mesh Sparse Coding", process_msparse_coding);
 	add_process(GLFW_KEY_J, "J", "MDICT Patch", process_mdict_patch);
 	add_process(GLFW_KEY_D, "D", "MDICT Mask", process_mask);
 	add_process(GLFW_KEY_L, "L", "PC reconstruction", process_pc_reconstruction);

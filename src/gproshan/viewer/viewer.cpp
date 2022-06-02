@@ -64,7 +64,7 @@ viewer::viewer(const int & width, const int & height): window_width(width), wind
 	s->update_normals();
 	sphere.init(s, false);
 
-	rt_frame = new frame;
+	frames = new frame[N_MESHES];
 }
 
 viewer::~viewer()
@@ -76,14 +76,12 @@ viewer::~viewer()
 	glfwDestroyWindow(window);
 	glfwTerminate();
 
-	delete rt_frame;
 	delete sphere;
+	delete [] frames;
 }
 
 bool viewer::run()
 {
-	double render_time = 0;
-
 	while(!glfwWindowShouldClose(window))
 	{
 		TIC(render_time)
@@ -100,104 +98,110 @@ bool viewer::run()
 
 		TOC(render_time);
 
-
-		ImGui_ImplOpenGL3_NewFrame();
-		ImGui_ImplGlfw_NewFrame();
-		ImGui::NewFrame();
-
-		che_viewer & mesh = active_mesh();
-
-		if(ImGui::BeginMainMenuBar())
-		{
-			if(ImGui::BeginMenu("Select"))
-			{
-				for(index_t i = 0; i < n_meshes; ++i)
-					if(ImGui::MenuItem((to_string(i) + ": " + meshes[i]->filename).c_str(), nullptr, i == idx_active_mesh, i != idx_active_mesh))
-					{
-						idx_active_mesh = i;
-						glfwSetWindowTitle(window, mesh->filename.c_str());
-					}
-
-				ImGui::EndMenu();
-			}
-
-			if(ImGui::BeginMenu("Color"))
-			{
-				for(index_t i = 0; i < colormap.size(); ++i)
-					if(ImGui::MenuItem(colormap[i].c_str(), nullptr, i == mesh.idx_colormap, i != mesh.idx_colormap))
-						mesh.idx_colormap = i;
-
-				ImGui::EndMenu();
-			}
-
-			for(index_t i = 0; i < sub_menus.size(); ++i)
-			{
-				if(ImGui::BeginMenu(sub_menus[i].c_str()))
-				{
-					for(auto & p: processes)
-					{
-						process_t & pro = p.second;
-						if(pro.function != nullptr && pro.sub_menu == i)
-							if(ImGui::MenuItem(pro.name.c_str(), ('[' + pro.key + ']').c_str(), &pro.selected))
-								sprintf(status_message, "%s", pro.selected ? pro.name.c_str() : "");
-					}
-
-					ImGui::EndMenu();
-				}
-			}
-
-			ImGui::EndMainMenuBar();
-		}
-
-		ImGui::SetNextWindowSize(ImVec2(window_width, -1));
-		ImGui::SetNextWindowPos(ImVec2(0, window_height - 32));
-		ImGui::Begin("status gproshan", nullptr, ImGuiWindowFlags_NoTitleBar);
-		ImGui::Text("[] %s", status_message);
-		ImGui::SameLine(window_width - 180);
-		ImGui::Text("github.com/larc/gproshan");
-		ImGui::End();
-
-		ImGui::SetNextWindowSize(ImVec2(320, -1));
-		ImGui::SetNextWindowPos(ImVec2(20, 60), ImGuiCond_Once);
-		ImGui::Begin("gproshan");
-
-		ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.5);
-
-		ImGui::Text("%s", mesh->filename.c_str());
-		ImGui::Text("%16s: %.3f", "FPS", 1.0 / render_time);
-		ImGui::Text("%16s: %10lu", "n_vertices", mesh->n_vertices);
-		ImGui::Text("%16s: %10lu", "n_faces", mesh->n_faces);
-
-		if(mesh.render_pointcloud)
-		{
-			ImGui::Checkbox("point_normals", &mesh.point_normals);
-			ImGui::SliderInt("point_size", (int *) &mesh.point_size, 1, 32);
-		}
-
-		for(auto & p: processes)
-		{
-			process_t & pro = p.second;
-			if(ImGui::CollapsingHeader(("[" + pro.key + "] " + pro.name).c_str(), &pro.selected, ImGuiTreeNodeFlags_DefaultOpen))
-			{
-				ImGui::PushID(pro.name.c_str());
-				ImGui::Indent();
-				pro.selected = pro.selected && p.second.function(this);
-				ImGui::Unindent();
-				ImGui::PopID();
-			}
-		}
-
-		ImGui::PopItemWidth();
-		ImGui::End();
-
-		ImGui::Render();
-		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+		imgui();
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
 
 	return true;
+}
+
+void viewer::imgui()
+{
+	if(hide_imgui) return;
+
+	ImGui_ImplOpenGL3_NewFrame();
+	ImGui_ImplGlfw_NewFrame();
+	ImGui::NewFrame();
+
+	che_viewer & mesh = active_mesh();
+
+	if(ImGui::BeginMainMenuBar())
+	{
+		if(ImGui::BeginMenu("Select"))
+		{
+			for(index_t i = 0; i < n_meshes; ++i)
+				if(ImGui::MenuItem((to_string(i) + ": " + meshes[i]->filename).c_str(), nullptr, i == idx_active_mesh, i != idx_active_mesh))
+				{
+					idx_active_mesh = i;
+					glfwSetWindowTitle(window, mesh->filename.c_str());
+				}
+
+			ImGui::EndMenu();
+		}
+
+		if(ImGui::BeginMenu("Color"))
+		{
+			for(index_t i = 0; i < colormap.size(); ++i)
+				if(ImGui::MenuItem(colormap[i].c_str(), nullptr, i == mesh.idx_colormap, i != mesh.idx_colormap))
+					mesh.idx_colormap = i;
+
+			ImGui::EndMenu();
+		}
+
+		for(index_t i = 0; i < sub_menus.size(); ++i)
+		{
+			if(ImGui::BeginMenu(sub_menus[i].c_str()))
+			{
+				for(auto & p: processes)
+				{
+					process_t & pro = p.second;
+					if(pro.function != nullptr && pro.sub_menu == i)
+						if(ImGui::MenuItem(pro.name.c_str(), ('[' + pro.key + ']').c_str(), &pro.selected))
+							sprintf(status_message, "%s", pro.selected ? pro.name.c_str() : "");
+				}
+
+				ImGui::EndMenu();
+			}
+		}
+
+		ImGui::EndMainMenuBar();
+	}
+
+	ImGui::SetNextWindowSize(ImVec2(window_width, -1));
+	ImGui::SetNextWindowPos(ImVec2(0, window_height - 32));
+	ImGui::Begin("status gproshan", nullptr, ImGuiWindowFlags_NoTitleBar);
+	ImGui::Text("[] %s", status_message);
+	ImGui::SameLine(window_width - 180);
+	ImGui::Text("github.com/larc/gproshan");
+	ImGui::End();
+
+	ImGui::SetNextWindowSize(ImVec2(320, -1));
+	ImGui::SetNextWindowPos(ImVec2(20, 60), ImGuiCond_Once);
+	ImGui::Begin("gproshan");
+
+	ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.5);
+
+	ImGui::Text("%s", mesh->filename.c_str());
+	ImGui::Text("%16s: %.3f", "FPS", 1.0 / render_time);
+	ImGui::Text("%16s: %10lu", "n_vertices", mesh->n_vertices);
+	ImGui::Text("%16s: %10lu", "n_faces", mesh->n_faces);
+
+	if(mesh.render_pointcloud)
+	{
+		ImGui::Checkbox("point_normals", &mesh.point_normals);
+		ImGui::SliderInt("point_size", (int *) &mesh.point_size, 1, 32);
+	}
+
+	for(auto & p: processes)
+	{
+		process_t & pro = p.second;
+		if(ImGui::CollapsingHeader(("[" + pro.key + "] " + pro.name).c_str(), &pro.selected, ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			ImGui::PushID(pro.name.c_str());
+			ImGui::Indent();
+			pro.selected = pro.selected && p.second.function(this);
+			ImGui::Unindent();
+			ImGui::PopID();
+		}
+	}
+
+	ImGui::PopItemWidth();
+	ImGui::End();
+
+	ImGui::Render();
+	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
 che_viewer & viewer::active_mesh()
@@ -273,6 +277,8 @@ void viewer::init_menus()
 {
 	sub_menus.push_back("Viewer");
 	add_process(GLFW_KEY_F1, "F1", "Help", m_help);
+	add_process(GLFW_KEY_ESCAPE, "ESCAPE", "Close", m_close);
+	add_process(GLFW_KEY_I, "F1", "Hide/Show ImGui", m_hide_show_imgui);
 	add_process(GLFW_KEY_PERIOD, "PERIOD", "Save/Load view", m_save_load_view);
 	add_process(GLFW_KEY_UP, "UP", "Zoom in", m_zoom_in);
 	add_process(GLFW_KEY_DOWN, "DOWN", "Zoom out", m_zoom_out);
@@ -386,12 +392,6 @@ void viewer::keyboard_callback(GLFWwindow * window, int key, int, int action, in
 {
 	if(action == GLFW_RELEASE) return;
 
-	if(key == GLFW_KEY_ESCAPE)
-	{
-		glfwSetWindowShouldClose(window, GLFW_TRUE);
-		return;
-	}
-
 	viewer * view = (viewer *) glfwGetWindowUserPointer(window);
 	if(ImGui::GetIO().WantCaptureKeyboard) return;
 
@@ -460,6 +460,18 @@ bool viewer::m_help(viewer * view)
 		if(p.second.function != nullptr)
 			fprintf(stderr, "%16s: %s\n", ('[' + p.second.key + ']').c_str(), p.second.name.c_str());
 
+	return false;
+}
+
+bool viewer::m_close(viewer * view)
+{
+	glfwSetWindowShouldClose(view->window, GLFW_TRUE);
+	return false;
+}
+
+bool viewer::m_hide_show_imgui(viewer * view)
+{
+	view->hide_imgui = !view->hide_imgui;
 	return false;
 }
 
@@ -837,7 +849,7 @@ void viewer::render_gl()
 
 		if(mesh.render_opt != R_GL)
 		{
-			render_rt(mesh);
+			render_rt(mesh, frames[i]);
 			continue;
 		}
 
@@ -856,11 +868,11 @@ void viewer::render_gl()
 	}
 }
 
-void viewer::render_rt(che_viewer & mesh)
+void viewer::render_rt(che_viewer & mesh, frame & rt_frame)
 {
-	rt_restart = rt_frame->resize(viewport_width, viewport_height) || rt_restart;
+	rt_restart = rt_frame.resize(viewport_width, viewport_height) || rt_restart;
 
-	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, *rt_frame);
+	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, rt_frame);
 	glm::vec4 * img = (glm::vec4 *) glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_READ_WRITE);
 
 	scene_lights.clear();
@@ -884,7 +896,7 @@ void viewer::render_rt(che_viewer & mesh)
 	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 
 	rt_restart = false;
-	rt_frame->display();
+	rt_frame.display();
 }
 
 void viewer::pick_vertex(const real_t & x, const real_t & y)

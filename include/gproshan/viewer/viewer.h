@@ -59,6 +59,8 @@ class viewer
 		int window_width, window_height;
 		int viewport_width, viewport_height;
 
+		bool hide_imgui = false;
+
 		shader shader_triangles;
 		shader shader_normals;
 		shader shader_gradient;
@@ -71,11 +73,13 @@ class viewer
 
 		glm::mat4 proj_view_mat;
 
+		double render_time = 0;
+
 		che_viewer meshes[N_MESHES];
 		size_t n_meshes	= 0;
 		index_t idx_active_mesh = 0;
 
-		frame * rt_frame = nullptr;
+		frame * frames = nullptr;
 
 		bool rt_restart = false;
 
@@ -111,8 +115,10 @@ class viewer
 		void init_menus();
 		void init_glsl();
 
+		void imgui();
+
 		void render_gl();
-		void render_rt(che_viewer & mesh);
+		void render_rt(che_viewer & mesh, frame & rt_frame);
 
 		static void framebuffer_size_callback(GLFWwindow * window, int width, int height);
 		static void window_size_callback(GLFWwindow * window, int width, int height);
@@ -122,6 +128,9 @@ class viewer
 		static void scroll_callback(GLFWwindow * window, double xoffset, double yoffset);
 
 		static bool m_help(viewer * view);
+		static bool m_close(viewer * view);
+		static bool m_hide_show_imgui(viewer * view);
+
 		static bool m_save_load_view(viewer * view);
 		static bool m_reset_mesh(viewer * view);
 		static bool m_save_mesh(viewer * view);
