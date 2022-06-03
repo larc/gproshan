@@ -18,16 +18,16 @@ class embree : public raytracing
 	protected:
 		struct ray_hit : public RTCRayHit
 		{
-			ray_hit(const glm::vec3 & p_org = glm::vec3(0.0f),
-					const glm::vec3 & v_dir = glm::vec3(0.0f),
+			ray_hit(const vertex & p_org = vertex(0.0f),
+					const vertex & v_dir = vertex(0.0f),
 					float near = 1e-5f,
 					float far = FLT_MAX);
 
-			glm::vec3 org() const;
-			glm::vec3 dir() const;
-			glm::vec3 color(const rt_mesh & mesh) const;
-			glm::vec3 normal(const rt_mesh & mesh, const bool & flat = false) const;
-			glm::vec3 position() const;
+			vertex org() const;
+			vertex dir() const;
+			vertex color(const rt_mesh & mesh) const;
+			vertex normal(const rt_mesh & mesh, const bool & flat = false) const;
+			vertex position() const;
 			index_t closest_vertex(const rt_mesh & mesh) const;
 		};
 
@@ -48,8 +48,8 @@ class embree : public raytracing
 				);
 		virtual ~embree();
 
-		virtual index_t closest_vertex(const glm::vec3 & org, const glm::vec3 & dir);
-		virtual hit intersect(const glm::vec3 & org, const glm::vec3 & dir);
+		virtual index_t closest_vertex(const vertex & org, const vertex & dir);
+		virtual hit intersect(const vertex & org, const vertex & dir);
 
 
 	protected:
@@ -63,13 +63,13 @@ class embree : public raytracing
 		index_t add_mesh(const che * mesh, const glm::mat4 & model_mat);
 
 		virtual index_t add_pointcloud(const che * mesh);
-		virtual float pointcloud_hit(glm::vec3 & position, glm::vec3 & normal, glm::vec3 & color, ray_hit r);
+		virtual float pointcloud_hit(vertex & position, vertex & normal, vertex & color, ray_hit r);
 
-		glm::vec4 li(const glm::vec3 & light, const glm::vec3 & position, const glm::vec3 & normal, const glm::vec3 & color, const float & near = 1e-5f);
-		glm::vec4 li(ray_hit r, const glm::vec3 & light, const bool & flat);
+		glm::vec4 li(const vertex & light, const vertex & position, const vertex & normal, const vertex & color, const float & near = 1e-5f);
+		glm::vec4 li(ray_hit r, const vertex & light, const bool & flat);
 
-		glm::vec4 intersect_li(const glm::vec3 & org, const glm::vec3 & dir, const glm::vec3 & light, const bool & flat);
-		float intersect_depth(const glm::vec3 & org, const glm::vec3 & dir);
+		glm::vec4 intersect_li(const vertex & org, const vertex & dir, const vertex & light, const bool & flat);
+		float intersect_depth(const vertex & org, const vertex & dir);
 };
 
 

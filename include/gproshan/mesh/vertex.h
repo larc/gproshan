@@ -53,6 +53,7 @@ class vertex
 };
 
 vertex operator * (const real_t & a, const vertex & v);
+vertex normalize(const vertex & v);
 
 std::ostream & operator << (std::ostream & os, const vertex & v);
 std::istream & operator >> (std::istream & is, vertex & v);

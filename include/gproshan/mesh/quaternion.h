@@ -21,6 +21,7 @@ class quaternion
 		quaternion(real_t s, const vertex & v);
 		quaternion(const vertex & v);
 
+		operator const vertex & () const;
 		const quaternion & operator = (real_t s);
 		const quaternion & operator = (const vertex & v);
 		real_t & operator [] (int index);

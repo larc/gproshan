@@ -65,7 +65,7 @@ int main(int argc, char* argv[])
 	gproshan_log_var(ptx_folder);
 	gproshan_log_var(jpg_folder);
 
-	gproshan::che_ply * mesh_ply = new  gproshan::che_ply(argv[1]);
+	gproshan::che_ply * mesh_ply = new gproshan::che_ply(argv[1]);
 
 	gproshan::rt::raytracing * rt_embree;
 

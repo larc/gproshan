@@ -116,6 +116,11 @@ vertex operator * (const real_t & a, const vertex & v)
 	return {a * v.x, a * v.y, a * v.z};
 }
 
+vertex normalize(const vertex & v)
+{
+	return v / *v;
+}
+
 ostream & operator << (ostream & os, const vertex & v)
 {
 	os << v.x << " " << v.y << " " << v.z;

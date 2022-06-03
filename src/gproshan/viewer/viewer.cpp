@@ -809,7 +809,7 @@ bool viewer::m_raycasting(viewer * view)
 	rt::embree rc({mesh}, {mesh.model_mat});
 
 	float * frame = rc.raycaster(	glm::uvec2(view->viewport_width, view->viewport_height),
-									view->render_params.proj_view_mat, glm_vec3(view->cam.eye)
+									view->render_params.proj_view_mat, view->cam.eye
 									);
 
 	std::thread([](CImg<float> img)
@@ -888,19 +888,19 @@ void viewer::render_rt(che_viewer & mesh, frame & rt_frame)
 	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, rt_frame);
 	glm::vec4 * img = (glm::vec4 *) glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_READ_WRITE);
 
-	std::vector<glm::vec3> & scene_lights = render_params.lights;
+	std::vector<vertex> & scene_lights = render_params.lights;
 	scene_lights.clear();
 
 	for(const index_t & v: mesh.selected)
-		scene_lights.push_back(glm_vec3(mesh->gt(v)));
+		scene_lights.push_back(mesh->gt(v));
 
 	if(!scene_lights.size())
-		scene_lights = {glm_vec3(cam_light)};
+		scene_lights = {cam_light};
 
 	//render_params.viewport_x = mesh.vx * viewport_width;
 	//render_params.viewport_y = mesh.vy * viewport_height;
 	//render_params.viewport_is_window = false;
-	render_params.cam_pos = glm_vec3(cam.eye);
+	render_params.cam_pos = cam.eye;
 
 	rt->render(img, render_params, mesh.render_flat);
 
@@ -923,7 +923,7 @@ void viewer::pick_vertex(const real_t & x, const real_t & y)
 
 	mesh.select(ix % viewport_width, iy % viewport_height,
 				{viewport_width, viewport_height},
-				render_params.proj_view_mat, glm_vec3(cam.eye));
+				render_params.proj_view_mat, cam.eye);
 }
 
 

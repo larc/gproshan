@@ -148,8 +148,8 @@ void optix::render(glm::vec4 * img, const render_params & params, const bool & f
 	glm::mat4 inv_proj_view = glm::inverse(params.proj_view_mat);
 
 	optix_params.flat = flat;
-	memcpy(optix_params.light, glm::value_ptr(params.lights[0]), sizeof(optix_params.light));
-	memcpy(optix_params.cam_pos, glm::value_ptr(params.cam_pos), sizeof(optix_params.cam_pos));
+	memcpy(optix_params.light, &params.lights[0], sizeof(optix_params.light));
+	memcpy(optix_params.cam_pos, &params.cam_pos, sizeof(optix_params.cam_pos));
 	memcpy(optix_params.inv_proj_view, glm::value_ptr(inv_proj_view), sizeof(optix_params.inv_proj_view));
 
 	cudaMemcpy(launch_params_buffer, &optix_params, sizeof(launch_params), cudaMemcpyHostToDevice);

@@ -11,18 +11,16 @@ using namespace cimg_library;
 namespace gproshan::rt {
 
 
-che * scanner_ptx(const raytracing * rt, const size_t & n_rows, const size_t & n_cols, const vertex & cam)
+che * scanner_ptx(const raytracing * rt, const size_t & n_rows, const size_t & n_cols, const vertex & cam_pos)
 {
 	std::vector<vertex> ptx;
 
 	return new che(ptx.data(), ptx.size(), nullptr, 0);
 }
 
-che * scanner_ptx(const che * mesh, raytracing * rt, const size_t & n_rows, const size_t & n_cols, const vertex & cam, const std::string & file_jpg)
+che * scanner_ptx(const che * mesh, raytracing * rt, const size_t & n_rows, const size_t & n_cols, const vertex & cam_pos, const std::string & file_jpg)
 {
 	che * mesh_ptx = new che(n_cols * n_rows);
-
-	glm::vec3 cam_pos = glm_vec3(cam);
 
 	const real_t delta_phi = (2 * M_PI) / n_rows;
 	const real_t delta_theta = M_PI / n_cols;
@@ -35,7 +33,7 @@ che * scanner_ptx(const che * mesh, raytracing * rt, const size_t & n_rows, cons
 
 		const real_t & phi = i * delta_phi;
 		const real_t & theta = j * delta_theta;
-		const glm::vec3 & dir = {	sin(theta) * cos(phi),
+		const vertex & dir = {	sin(theta) * cos(phi),
 									sin(theta) * sin(phi),
 									cos(theta)
 									};
@@ -44,7 +42,7 @@ che * scanner_ptx(const che * mesh, raytracing * rt, const size_t & n_rows, cons
 
 		if(h.idx != NIL)
 		{
-			const glm::vec3 & pos = cam_pos + dir * h.dist;
+			const vertex & pos = cam_pos + dir * h.dist;
 			mesh_ptx->get_vertex(v) = {pos.x, pos.y, pos.z};
 			mesh_ptx->normal(v) = h.normal;
 			mesh_ptx->heatmap(v) = h.dist / M_SQRT2;

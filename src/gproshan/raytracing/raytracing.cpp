@@ -32,7 +32,7 @@ void raytracing::render(glm::vec4 * img, const render_params & params, const boo
 	{
 		//row major
 		glm::vec4 & color = img[j * params.viewport_width + i];
-		const glm::vec3 & dir = ray_view_dir(	i + params.viewport_x,
+		const vertex & dir = ray_view_dir(	i + params.viewport_x,
 												j + params.viewport_y,
 												{window_width, window_height},
 												inv_proj_view,
@@ -51,7 +51,7 @@ void raytracing::render(glm::vec4 * img, const render_params & params, const boo
 
 float * raytracing::raycaster(	const glm::uvec2 & windows_size,
 								const glm::mat4 & proj_view_mat,
-								const glm::vec3 & cam_pos,
+								const vertex & cam_pos,
 								const index_t & samples	)
 {
 	float * frame = new float[windows_size.x * windows_size.y];
@@ -64,7 +64,7 @@ float * raytracing::raycaster(	const glm::uvec2 & windows_size,
 	{
 		//row major
 		float & color = frame[(windows_size.y - j - 1) * windows_size.x + i] = 0;
-		glm::vec3 dir = ray_view_dir(i, j, windows_size, inv_proj_view, cam_pos);
+		vertex dir = ray_view_dir(i, j, windows_size, inv_proj_view, cam_pos);
 
 		for(index_t s = 0; s < samples; ++s)
 			color += intersect_depth(cam_pos, dir);
@@ -75,14 +75,14 @@ float * raytracing::raycaster(	const glm::uvec2 & windows_size,
 	return frame;
 }
 
-glm::vec3 raytracing::ray_view_dir(const index_t & x, const index_t & y, const glm::vec2 & windows_size, const glm::mat4 & inv_proj_view, const glm::vec3 & cam_pos)
+vertex raytracing::ray_view_dir(const index_t & x, const index_t & y, const glm::vec2 & windows_size, const glm::mat4 & inv_proj_view, const vertex & cam_pos)
 {
 	glm::vec2 screen = glm::vec2((float(x) + randf(gen)) / windows_size.x, (float(y) + randf(gen)) / windows_size.y);
 	glm::vec4 view = glm::vec4(screen.x * 2.f - 1.f, screen.y * 2.f - 1.f, 1.f, 1.f);
 	glm::vec4 q = inv_proj_view * view;
-	glm::vec3 p = glm::vec3(q * (1.f / q.w));
+	vertex p = {q.x / q.w, q.y / q.w, q.z / q.w};
 
-	return glm::normalize(p - cam_pos);
+	return normalize(p - cam_pos);
 }
 
 

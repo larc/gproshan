@@ -12,7 +12,7 @@
 namespace gproshan::rt {
 
 
-embree::ray_hit::ray_hit(const glm::vec3 & p_org, const glm::vec3 & v_dir, float near, float far)
+embree::ray_hit::ray_hit(const vertex & p_org, const vertex & v_dir, float near, float far)
 {
 	ray.org_x = p_org.x;
 	ray.org_y = p_org.y;
@@ -34,30 +34,31 @@ embree::ray_hit::ray_hit(const glm::vec3 & p_org, const glm::vec3 & v_dir, float
 	hit.instID[0] = RTC_INVALID_GEOMETRY_ID;
 }
 
-glm::vec3 embree::ray_hit::org() const
+vertex embree::ray_hit::org() const
 {
 	return {ray.org_x, ray.org_y, ray.org_z};
 }
 
-glm::vec3 embree::ray_hit::dir() const
+vertex embree::ray_hit::dir() const
 {
 	return {ray.dir_x, ray.dir_y, ray.dir_z};
 }
 
-glm::vec3 embree::ray_hit::color(const rt_mesh & mesh) const
+vertex embree::ray_hit::color(const rt_mesh & mesh) const
 {
-	const vertex & c = mesh.pointcloud ? mesh->color(hit.primID) :
-										 mesh->shading_color(hit.primID, 1.0 - hit.u - hit.v, hit.u, hit.v);
-	return glm_vec3(c);
+	if(mesh.pointcloud)
+		return mesh->color(hit.primID);
+
+	return mesh->shading_color(hit.primID, 1.0 - hit.u - hit.v, hit.u, hit.v);
 }
 
-glm::vec3 embree::ray_hit::normal(const rt_mesh & mesh, const bool & flat) const
+vertex embree::ray_hit::normal(const rt_mesh & mesh, const bool & flat) const
 {
 	if(flat || mesh.pointcloud)
-		return glm::normalize(glm::vec3(hit.Ng_x, hit.Ng_y, hit.Ng_z));
+		return normalize({hit.Ng_x, hit.Ng_y, hit.Ng_z});
 
 	const vertex & n = mesh->shading_normal(hit.primID, 1.0 - hit.u - hit.v, hit.u, hit.v);
-	return glm::normalize(glm_vec3(n));
+	return n / *n;
 }
 
 index_t embree::ray_hit::closest_vertex(const rt_mesh & mesh) const
@@ -82,7 +83,7 @@ index_t embree::ray_hit::closest_vertex(const rt_mesh & mesh) const
 	return mesh->vt(he);
 }
 
-glm::vec3 embree::ray_hit::position() const
+vertex embree::ray_hit::position() const
 {
 	return org() + ray.tfar * dir();
 }
@@ -117,20 +118,20 @@ embree::~embree()
 	rtcReleaseDevice(device);
 }
 
-index_t embree::closest_vertex(const glm::vec3 & org, const glm::vec3 & dir)
+index_t embree::closest_vertex(const vertex & org, const vertex & dir)
 {
 	ray_hit r(org, dir);
 	return intersect(r) ? r.closest_vertex(geomID_mesh[r.hit.geomID]) : NIL;
 }
 
-hit embree::intersect(const glm::vec3 & org, const glm::vec3 & dir)
+hit embree::intersect(const vertex & org, const vertex & dir)
 {
 	ray_hit r(org, dir);
 	if(intersect(r))
 	{
 		const rt_mesh & mesh = geomID_mesh[r.hit.geomID];
-		const glm::vec3 & color = r.color(mesh);
-		const glm::vec3 & normal = r.normal(mesh);
+		const vertex & color = r.color(mesh);
+		const vertex & normal = r.normal(mesh);
 
 		return	{	r.closest_vertex(mesh),
 					r.ray.tfar,
@@ -191,7 +192,7 @@ index_t embree::add_mesh(const che * mesh, const glm::mat4 & model_mat)
 {
 	RTCGeometry geom = rtcNewGeometry(device, RTC_GEOMETRY_TYPE_TRIANGLE);
 
-	glm::vec3 * vertices = (glm::vec3 *) rtcSetNewGeometryBuffer(	geom,
+	vertex * vertices = (vertex *) rtcSetNewGeometryBuffer(	geom,
 																	RTC_BUFFER_TYPE_VERTEX, 0,
 																	RTC_FORMAT_FLOAT3, 3 * sizeof(float),
 																	mesh->n_vertices
@@ -205,7 +206,10 @@ index_t embree::add_mesh(const che * mesh, const glm::mat4 & model_mat)
 
 	#pragma omp parallel for
 	for(index_t i = 0; i < mesh->n_vertices; ++i)
-		vertices[i] = glm::vec3(model_mat * glm::vec4(glm_vec3(mesh->gt(i)), 1));
+	{
+		const glm::vec4 & v = model_mat * glm::vec4(glm_vec3(mesh->gt(i)), 1);
+		vertices[i] = {v.x, v.y, v.z};
+	}
 
 	memcpy(tri_idxs, &mesh->vt(0), mesh->n_half_edges * sizeof(index_t));
 
@@ -228,7 +232,7 @@ index_t embree::add_pointcloud(const che * mesh)
 																mesh->n_vertices
 																);
 
-	glm::vec3 * normal = (glm::vec3 *) rtcSetNewGeometryBuffer(	geom,
+	vertex * normal = (vertex *) rtcSetNewGeometryBuffer(	geom,
 																RTC_BUFFER_TYPE_NORMAL, 0,
 																RTC_FORMAT_FLOAT3,
 																3 * sizeof(float),
@@ -239,7 +243,7 @@ index_t embree::add_pointcloud(const che * mesh)
 	for(index_t i = 0; i < mesh->n_vertices; ++i)
 	{
 		pxyzr[i] = glm::vec4(glm_vec3(mesh->gt(i)), pc_radius);
-		normal[i] = glm_vec3(mesh->normal(i));
+		normal[i] = mesh->normal(i);
 	}
 
 	rtcCommitGeometry(geom);
@@ -250,18 +254,18 @@ index_t embree::add_pointcloud(const che * mesh)
 	return geom_id;
 }
 
-float embree::pointcloud_hit(glm::vec3 & position, glm::vec3 & normal, glm::vec3 & color, ray_hit r)
+float embree::pointcloud_hit(vertex & position, vertex & normal, vertex & color, ray_hit r)
 {
 	float w, sum_w = 0;
-	position = glm::vec3(0);
-	normal = glm::vec3(0);
-	color = glm::vec3(0);
+	position = vertex(0);
+	normal = vertex(0);
+	color = vertex(0);
 
 	do
 	{
 		glm::vec4 * xyzr = (glm::vec4 *) rtcGetGeometryBufferData(rtcGetGeometry(scene, r.hit.geomID), RTC_BUFFER_TYPE_VERTEX, 0);
 
-		sum_w += w = pc_radius - glm::length(r.position() - glm::vec3(xyzr[r.hit.primID]));
+		sum_w += w = 1; //pc_radius - glm::length(r.position() - vertex(xyzr[r.hit.primID]));
 		position += w * r.position();
 		normal += w * r.normal(geomID_mesh[r.hit.geomID]);
 		color += w * r.color(geomID_mesh[r.hit.geomID]);
@@ -277,22 +281,22 @@ float embree::pointcloud_hit(glm::vec3 & position, glm::vec3 & normal, glm::vec3
 	return sum_w;
 }
 
-glm::vec4 embree::li(const glm::vec3 & light, const glm::vec3 & position, const glm::vec3 & normal, const glm::vec3 & color, const float & near)
+glm::vec4 embree::li(const vertex & light, const vertex & position, const vertex & normal, const vertex & color, const float & near)
 {
-	const glm::vec3 wi = normalize(light - position);
-	const float dot_wi_normal = glm::dot(wi, normal);
-	const glm::vec3 L = (dot_wi_normal < 0 ? -dot_wi_normal : dot_wi_normal) * color;
+	const vertex wi = normalize(light - position);
+	const float dot_wi_normal = (wi, normal);
+	const vertex L = (dot_wi_normal < 0 ? -dot_wi_normal : dot_wi_normal) * color;
 
 	ray_hit r(position, wi, near);
-	return glm::vec4((occluded(r) ? 0.4f : 1.f) * L, 1);
+	return glm::vec4(glm_vec3((occluded(r) ? 0.4f : 1.f) * L), 1);
 }
 
-glm::vec4 embree::li(ray_hit r, const glm::vec3 & light, const bool & flat)
+glm::vec4 embree::li(ray_hit r, const vertex & light, const bool & flat)
 {
 	float total_tfar = 0;
 
 	float near;
-	glm::vec3 position, normal, color;
+	vertex position, normal, color;
 
 	glm::vec4 L(0);
 //	while(total_tfar < 0.1)
@@ -317,13 +321,13 @@ glm::vec4 embree::li(ray_hit r, const glm::vec3 & light, const bool & flat)
 	return L / total_tfar;
 }
 
-glm::vec4 embree::intersect_li(const glm::vec3 & org, const glm::vec3 & dir, const glm::vec3 & light,const bool & flat)
+glm::vec4 embree::intersect_li(const vertex & org, const vertex & dir, const vertex & light,const bool & flat)
 {
 	ray_hit r(org, dir);
 	return intersect(r) ? li(r, light, flat) : glm::vec4(0.f);
 }
 
-float embree::intersect_depth(const glm::vec3 & org, const glm::vec3 & dir)
+float embree::intersect_depth(const vertex & org, const vertex & dir)
 {
 	ray_hit r(org, dir);
 	return intersect(r) ? r.ray.tfar : 0.f;

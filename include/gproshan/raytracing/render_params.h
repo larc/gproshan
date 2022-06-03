@@ -22,8 +22,8 @@ struct render_params
 	bool restart = false;
 	bool viewport_is_window = true;
 	glm::mat4 proj_view_mat;
-	glm::vec3 cam_pos;
-	std::vector<glm::vec3> lights;
+	vertex cam_pos;
+	std::vector<vertex> lights;
 };
 
 

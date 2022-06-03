@@ -54,33 +54,33 @@ class raytracing
 
 		virtual float * raycaster(	const glm::uvec2 & windows_size,
 									const glm::mat4 & proj_view_mat,
-									const glm::vec3 & cam_pos,
+									const vertex & cam_pos,
 									const index_t & samples = 4
 									);
 
-		glm::vec3 ray_view_dir(	const index_t & x, const index_t & y,
+		vertex ray_view_dir(	const index_t & x, const index_t & y,
 								const glm::vec2 & windows_size,
 								const glm::mat4 & inv_proj_view,
-								const glm::vec3 & cam_pos
+								const vertex & cam_pos
 								);
 
-		virtual hit intersect(	const glm::vec3 &,	// org
-								const glm::vec3 &	//dir
+		virtual hit intersect(	const vertex &,	// org
+								const vertex &	//dir
 								)	{ return hit(); }
 
-		virtual index_t closest_vertex(	const glm::vec3 &,	// org,
-										const glm::vec3 &	// dir
+		virtual index_t closest_vertex(	const vertex &,	// org,
+										const vertex &	// dir
 										) { return NIL; };
 
 	protected:
-		virtual glm::vec4 intersect_li(	const glm::vec3 &,	// org,
-										const glm::vec3 &,	// dir,
-										const glm::vec3 &,	// light,
+		virtual glm::vec4 intersect_li(	const vertex &,	// org,
+										const vertex &,	// dir,
+										const vertex &,	// light,
 										const bool &		// flat
 										) { return glm::vec4(0); };
 
-		virtual float intersect_depth(	const glm::vec3 &,	// org,
-										const glm::vec3 &	// dir
+		virtual float intersect_depth(	const vertex &,	// org,
+										const vertex &	// dir
 										) { return 0; };
 };
 
