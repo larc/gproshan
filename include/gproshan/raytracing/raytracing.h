@@ -27,9 +27,6 @@ struct hit
 
 class raytracing
 {
-	public:
-		bool restart = false;
-
 	protected:
 		struct rt_mesh
 		{

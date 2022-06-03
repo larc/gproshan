@@ -25,7 +25,7 @@ typedef unsigned int index_t;
 #endif
 
 
-#define tmp_file_path(file) (std::string("~/.gproshan/") + file)
+#define tmp_file_path(file) (std::string(getenv("HOME")) + "/.gproshan/"+ file)
 #define shaders_path(file) (std::string(GPROSHAN_DIR) + "/shaders/" + file)
 
 #ifdef GPROSHAN_LOG

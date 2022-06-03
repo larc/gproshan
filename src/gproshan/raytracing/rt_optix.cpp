@@ -70,11 +70,11 @@ optix::optix(const std::vector<che *> & meshes, const std::vector<glm::mat4> & m
 	optix_pipeline_compile_opt.numPayloadValues			= 2;
 	optix_pipeline_compile_opt.numAttributeValues		= 2;
 	optix_pipeline_compile_opt.exceptionFlags			= OPTIX_EXCEPTION_FLAG_NONE;
-	optix_pipeline_compile_opt.pipelineLaunchParamsVariableName = "render_params";
+	optix_pipeline_compile_opt.pipelineLaunchParamsVariableName = "optix_params";
 
-	optix_pipeline_link_opt.maxTraceDepth		= 2;
+	optix_pipeline_link_opt.maxTraceDepth = 2;
 
-	std::ifstream ptx_is(tmp_file_path("rt_optix.ptx"));
+	std::ifstream ptx_is(std::string(GPROSHAN_DIR) + "/src/rt_optix.ptx");
 	const std::string str_ptx_code = std::string(std::istreambuf_iterator<char>(ptx_is), std::istreambuf_iterator<char>());
 	ptx_is.close();
 
@@ -94,7 +94,7 @@ optix::optix(const std::vector<che *> & meshes, const std::vector<glm::mat4> & m
 	create_hitgroup_programs();
 
 	// build as
-	render_params.traversable = build_as(meshes, model_mats);
+	optix_params.traversable = build_as(meshes, model_mats);
 
 	// create pipeline
 	create_pipeline();
@@ -108,7 +108,7 @@ optix::optix(const std::vector<che *> & meshes, const std::vector<glm::mat4> & m
 
 optix::~optix()
 {
-	cudaFree(render_params.frame.color_buffer);
+	cudaFree(optix_params.color_buffer);
 	cudaFree(launch_params_buffer);
 	cudaFree(raygen_records_buffer);
 	cudaFree(miss_records_buffer);
@@ -119,49 +119,54 @@ optix::~optix()
 		cuda_free_CHE(dd_mesh[i], d_mesh[i]);
 }
 
-void optix::render(	glm::vec4 * img,
-					const glm::uvec2 & windows_size,
-					const glm::mat4 & proj_view_mat,
-					const glm::vec3 & cam_pos,
-					const std::vector<glm::vec3> & light,
-					const bool & flat,
-					const bool & restart
-					)
+void optix::render(glm::vec4 * img, const render_params & params, const bool & flat)
 {
-	if(restart)
+	if(params.restart)
 	{
 		n_samples = 0;
 
-		if(render_params.frame.color_buffer)
-			cudaFree(render_params.frame.color_buffer);
+		if(optix_params.color_buffer)
+			cudaFree(optix_params.color_buffer);
 
-		render_params.frame.width = windows_size.x;
-		render_params.frame.height = windows_size.y;
-		cudaMalloc(&render_params.frame.color_buffer, windows_size.x * windows_size.y * sizeof(glm::vec4));
+		optix_params.window_width = params.window_width;
+		optix_params.window_height = params.window_height;
+		if(params.viewport_is_window)
+		{
+			optix_params.window_width = params.viewport_width;
+			optix_params.window_height = params.viewport_height;
+		}
+
+		optix_params.viewport_width = params.viewport_width;
+		optix_params.viewport_height = params.viewport_height;
+
+		optix_params.viewport_x = params.viewport_x;
+		optix_params.viewport_y = params.viewport_y;
+
+		cudaMalloc(&optix_params.color_buffer, params.viewport_width * params.viewport_height * sizeof(glm::vec4));
 	}
 
-	glm::mat4 inv_proj_view = glm::inverse(proj_view_mat);
+	glm::mat4 inv_proj_view = glm::inverse(params.proj_view_mat);
 
-	render_params.flat = flat;
-	memcpy(render_params.light, glm::value_ptr(light[0]), sizeof(render_params.light));
-	memcpy(render_params.cam_pos, glm::value_ptr(cam_pos), sizeof(render_params.cam_pos));
-	memcpy(render_params.inv_proj_view, glm::value_ptr(inv_proj_view), sizeof(render_params.inv_proj_view));
+	optix_params.flat = flat;
+	memcpy(optix_params.light, glm::value_ptr(params.lights[0]), sizeof(optix_params.light));
+	memcpy(optix_params.cam_pos, glm::value_ptr(params.cam_pos), sizeof(optix_params.cam_pos));
+	memcpy(optix_params.inv_proj_view, glm::value_ptr(inv_proj_view), sizeof(optix_params.inv_proj_view));
 
-	cudaMemcpy(launch_params_buffer, &render_params, sizeof(launch_params), cudaMemcpyHostToDevice);
+	cudaMemcpy(launch_params_buffer, &optix_params, sizeof(launch_params), cudaMemcpyHostToDevice);
 
 	optixLaunch(optix_pipeline,
 				stream,
 				(CUdeviceptr) launch_params_buffer,
 				sizeof(launch_params),
 				&sbt,
-				render_params.frame.width,
-				render_params.frame.height,
+				optix_params.viewport_width,
+				optix_params.viewport_height,
 				1
 				);
 
 	cudaDeviceSynchronize();
 
-	cudaMemcpy(img, render_params.frame.color_buffer, windows_size.x * windows_size.y * sizeof(glm::vec4), cudaMemcpyDeviceToHost);
+	cudaMemcpy(img, optix_params.color_buffer, params.viewport_width * params.viewport_height * sizeof(glm::vec4), cudaMemcpyDeviceToHost);
 }
 
 void optix::create_raygen_programs()

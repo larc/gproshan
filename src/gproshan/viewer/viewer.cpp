@@ -429,14 +429,14 @@ void viewer::cursor_callback(GLFWwindow * window, double x, double y)
 	if(GLFW_PRESS == glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT))
 	{
 		view->cam.motion(x, y, view->window_width, view->window_height);
-		//view->rt_restart = true;
+		view->render_params.restart = true;
 	}
 
 	if(GLFW_PRESS == glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT))
 	{
 		view->cam.pos.im().x = 2 * x / view->window_width - 1;
 		view->cam.pos.im().y = 2 * y / view->window_height - 1;
-		//view->rt_restart = true;
+		view->render_params.restart = true;
 	}
 }
 
@@ -448,13 +448,13 @@ void viewer::scroll_callback(GLFWwindow * window, double, double yoffset)
 	if(yoffset > 0)
 	{
 		view->cam.zoom_in();
-		//view->rt_restart = true;
+		view->render_params.restart = true;
 	}
 
 	if(yoffset < 0)
 	{
 		view->cam.zoom_out();
-		//view->rt_restart = true;
+		view->render_params.restart = true;
 	}
 }
 
@@ -704,7 +704,7 @@ bool viewer::m_render_gl(viewer * view)
 bool viewer::m_render_embree(viewer * view)
 {
 	che_viewer & mesh = view->active_mesh();
-	//view->rt_restart = true;
+	view->render_params.restart = true;
 	mesh.render_opt = R_EMBREE;
 	return false;
 }
@@ -712,7 +712,7 @@ bool viewer::m_render_embree(viewer * view)
 bool viewer::m_render_optix(viewer * view)
 {
 	che_viewer & mesh = view->active_mesh();
-	//view->rt_restart = true;
+	view->render_params.restart = true;
 	mesh.render_opt = R_OPTIX;
 	return false;
 }
@@ -797,7 +797,7 @@ bool viewer::m_render_flat(viewer * view)
 {
 	che_viewer & mesh = view->active_mesh();
 	mesh.render_flat = !mesh.render_flat;
-	//view->rt_restart = true;
+	view->render_params.restart = true;
 
 	return false;
 }
@@ -871,6 +871,8 @@ void viewer::render_gl()
 
 		mesh.draw_selected_vertices(sphere, shader_sphere);
 	}
+
+	render_params.restart = false;
 }
 
 void viewer::render_rt(che_viewer & mesh, frame & rt_frame)
@@ -879,7 +881,9 @@ void viewer::render_rt(che_viewer & mesh, frame & rt_frame)
 	if(mesh.render_opt == R_EMBREE) rt = mesh.rt_embree;
 	if(mesh.render_opt == R_OPTIX) rt = mesh.rt_optix;
 
-	rt->restart = rt_frame.resize(viewport_width, viewport_height) || rt->restart;
+	if(!rt) return;
+
+	render_params.restart = rt_frame.resize(viewport_width, viewport_height) || render_params.restart;
 
 	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, rt_frame);
 	glm::vec4 * img = (glm::vec4 *) glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_READ_WRITE);
@@ -893,8 +897,9 @@ void viewer::render_rt(che_viewer & mesh, frame & rt_frame)
 	if(!scene_lights.size())
 		scene_lights = {glm_vec3(cam_light)};
 
-//	render_params.viewport_x = mesh.vx * viewport_width;
-//	render_params.viewport_y = mesh.vy * viewport_height;
+	//render_params.viewport_x = mesh.vx * viewport_width;
+	//render_params.viewport_y = mesh.vy * viewport_height;
+	//render_params.viewport_is_window = false;
 	render_params.cam_pos = glm_vec3(cam.eye);
 
 	rt->render(img, render_params, mesh.render_flat);
@@ -902,7 +907,6 @@ void viewer::render_rt(che_viewer & mesh, frame & rt_frame)
 	glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
 	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 
-	rt->restart = false;
 	rt_frame.display();
 }
 

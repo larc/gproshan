@@ -13,9 +13,7 @@ std::uniform_real_distribution<float> raytracing::randf;
 
 void raytracing::render(glm::vec4 * img, const render_params & params, const bool & flat)
 {
-	if(restart) n_samples = 0;
-
-	glm::mat4 inv_proj_view = glm::inverse(params.proj_view_mat);
+	if(params.restart) n_samples = 0;
 
 	int window_width = params.window_width;
 	int window_height = params.window_height;
@@ -25,6 +23,7 @@ void raytracing::render(glm::vec4 * img, const render_params & params, const boo
 		window_height = params.viewport_height;
 	}
 
+	glm::mat4 inv_proj_view = glm::inverse(params.proj_view_mat);
 	glm::vec4 li;
 
 	#pragma omp parallel for private(li)

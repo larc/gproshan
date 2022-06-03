@@ -40,7 +40,7 @@ class optix : public raytracing
 
 	OptixShaderBindingTable sbt = {};
 
-	launch_params render_params;
+	launch_params optix_params;
 	void * launch_params_buffer = nullptr;
 
 	std::vector<CHE *> dd_mesh;
@@ -55,15 +55,7 @@ class optix : public raytracing
 		optix(const std::vector<che *> & meshes, const std::vector<glm::mat4> & model_mats);
 		~optix();
 
-		void render(glm::vec4 * img,
-					const glm::uvec2 & windows_size,
-					const glm::mat4 & proj_view_mat,
-					const glm::vec3 & cam_pos,
-					const std::vector<glm::vec3> & light,
-					const bool & flat,
-					const bool & restart = false
-					);
-
+		void render(glm::vec4 * img, const render_params & params, const bool & flat);
 
 	private:
 		void create_raygen_programs();

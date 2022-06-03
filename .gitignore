@@ -11,3 +11,5 @@ tmp/*
 
 
 include/gproshan/config.h
+
+src/rt_optix.ptx
