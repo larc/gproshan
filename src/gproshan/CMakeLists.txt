@@ -39,7 +39,7 @@ if(OptiX_INCLUDE)
 	add_custom_target(	ptx_tmp DEPENDS ${ptx_file}
 						COMMAND ${CMAKE_COMMAND} -E copy
 						${ptx_file}
-						${gproshan_SOURCE_DIR}/tmp/rt_optix.ptx
+						${gproshan_SOURCE_DIR}/src/rt_optix.ptx
 						)
 	add_dependencies(gproshan ptx_tmp)
 endif(OptiX_INCLUDE)
