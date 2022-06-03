@@ -881,6 +881,8 @@ void viewer::render_rt(che_viewer & mesh, frame & rt_frame)
 	if(mesh.render_opt == R_EMBREE) rt = mesh.rt_embree;
 	if(mesh.render_opt == R_OPTIX) rt = mesh.rt_optix;
 
+	if(!rt) return;
+
 	render_params.restart = rt_frame.resize(viewport_width, viewport_height) || render_params.restart;
 
 	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, rt_frame);
@@ -895,8 +897,9 @@ void viewer::render_rt(che_viewer & mesh, frame & rt_frame)
 	if(!scene_lights.size())
 		scene_lights = {glm_vec3(cam_light)};
 
-//	render_params.viewport_x = mesh.vx * viewport_width;
-//	render_params.viewport_y = mesh.vy * viewport_height;
+	//render_params.viewport_x = mesh.vx * viewport_width;
+	//render_params.viewport_y = mesh.vy * viewport_height;
+	//render_params.viewport_is_window = false;
 	render_params.cam_pos = glm_vec3(cam.eye);
 
 	rt->render(img, render_params, mesh.render_flat);
