@@ -50,8 +50,11 @@ const std::vector<std::string> viewer::colormap = { "vertex color",
 													"set"
 													};
 
-viewer::viewer(const int & width, const int & height): window_width(width), window_height(height)
+viewer::viewer(const int & width, const int & height)
 {
+	window_width = width;
+	window_height = height;
+
 	init_gl();
 	init_glsl();
 	init_imgui();
@@ -91,7 +94,7 @@ bool viewer::run()
 		cam_light = vertex(-1, 1, -2);
 		cam_light = r.conj() * cam_light * r;
 
-		proj_view_mat = glm::perspective(45.0f, float(viewport_width) / float(viewport_height), 0.01f, 1000.0f) * cam.look_at(r);
+		render_params.proj_view_mat = glm::perspective(45.0f, float(window_width) / float(window_height), 0.01f, 1000.0f) * cam.look_at(r);
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		render_gl();
@@ -191,7 +194,7 @@ void viewer::imgui()
 		{
 			ImGui::PushID(pro.name.c_str());
 			ImGui::Indent();
-			pro.selected = pro.selected && p.second.function(this);
+			pro.selected = pro.selected && pro.function(this);
 			ImGui::Unindent();
 			ImGui::PopID();
 		}
@@ -398,9 +401,10 @@ void viewer::keyboard_callback(GLFWwindow * window, int key, int, int action, in
 	process_t & pro = view->processes[key];
 	if(pro.function)
 	{
-		pro.selected = !pro.selected;
+		pro.selected = view->hide_imgui ? pro.function(view) && pro.selected : !pro.selected;
 		sprintf(view->status_message, "%s", pro.selected ? pro.name.c_str() : "");
 	}
+
 }
 
 void viewer::mouse_callback(GLFWwindow * window, int button, int action, int mods)
@@ -425,14 +429,14 @@ void viewer::cursor_callback(GLFWwindow * window, double x, double y)
 	if(GLFW_PRESS == glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT))
 	{
 		view->cam.motion(x, y, view->window_width, view->window_height);
-		view->rt_restart = true;
+		//view->rt_restart = true;
 	}
 
 	if(GLFW_PRESS == glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT))
 	{
 		view->cam.pos.im().x = 2 * x / view->window_width - 1;
 		view->cam.pos.im().y = 2 * y / view->window_height - 1;
-		view->rt_restart = true;
+		//view->rt_restart = true;
 	}
 }
 
@@ -444,13 +448,13 @@ void viewer::scroll_callback(GLFWwindow * window, double, double yoffset)
 	if(yoffset > 0)
 	{
 		view->cam.zoom_in();
-		view->rt_restart = true;
+		//view->rt_restart = true;
 	}
 
 	if(yoffset < 0)
 	{
 		view->cam.zoom_out();
-		view->rt_restart = true;
+		//view->rt_restart = true;
 	}
 }
 
@@ -700,7 +704,7 @@ bool viewer::m_render_gl(viewer * view)
 bool viewer::m_render_embree(viewer * view)
 {
 	che_viewer & mesh = view->active_mesh();
-	view->rt_restart = true;
+	//view->rt_restart = true;
 	mesh.render_opt = R_EMBREE;
 	return false;
 }
@@ -708,7 +712,7 @@ bool viewer::m_render_embree(viewer * view)
 bool viewer::m_render_optix(viewer * view)
 {
 	che_viewer & mesh = view->active_mesh();
-	view->rt_restart = true;
+	//view->rt_restart = true;
 	mesh.render_opt = R_OPTIX;
 	return false;
 }
@@ -793,7 +797,7 @@ bool viewer::m_render_flat(viewer * view)
 {
 	che_viewer & mesh = view->active_mesh();
 	mesh.render_flat = !mesh.render_flat;
-	view->rt_restart = true;
+	//view->rt_restart = true;
 
 	return false;
 }
@@ -805,7 +809,7 @@ bool viewer::m_raycasting(viewer * view)
 	rt::embree rc({mesh}, {mesh.model_mat});
 
 	float * frame = rc.raycaster(	glm::uvec2(view->viewport_width, view->viewport_height),
-									view->proj_view_mat, glm_vec3(view->cam.eye)
+									view->render_params.proj_view_mat, glm_vec3(view->cam.eye)
 									);
 
 	std::thread([](CImg<float> img)
@@ -829,6 +833,7 @@ void viewer::render_gl()
 	glProgramUniform3f(shader_triangles, shader_triangles("cam_light"), cam_light[0], cam_light[1], cam_light[2]);
 	glProgramUniform3f(shader_pointcloud, shader_pointcloud("cam_light"), cam_light[0], cam_light[1], cam_light[2]);
 
+	glm::mat4 & proj_view_mat = render_params.proj_view_mat;
 	glProgramUniformMatrix4fv(shader_sphere, shader_sphere("proj_view_mat"), 1, 0, &proj_view_mat[0][0]);
 	glProgramUniformMatrix4fv(shader_triangles, shader_triangles("proj_view_mat"), 1, 0, &proj_view_mat[0][0]);
 	glProgramUniformMatrix4fv(shader_pointcloud, shader_pointcloud("proj_view_mat"), 1, 0, &proj_view_mat[0][0]);
@@ -870,11 +875,16 @@ void viewer::render_gl()
 
 void viewer::render_rt(che_viewer & mesh, frame & rt_frame)
 {
-	rt_restart = rt_frame.resize(viewport_width, viewport_height) || rt_restart;
+	rt::raytracing * rt = nullptr;
+	if(mesh.render_opt == R_EMBREE) rt = mesh.rt_embree;
+	if(mesh.render_opt == R_OPTIX) rt = mesh.rt_optix;
+
+	rt->restart = rt_frame.resize(viewport_width, viewport_height) || rt->restart;
 
 	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, rt_frame);
 	glm::vec4 * img = (glm::vec4 *) glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_READ_WRITE);
 
+	std::vector<glm::vec3> & scene_lights = render_params.lights;
 	scene_lights.clear();
 
 	for(const index_t & v: mesh.selected)
@@ -883,19 +893,16 @@ void viewer::render_rt(che_viewer & mesh, frame & rt_frame)
 	if(!scene_lights.size())
 		scene_lights = {glm_vec3(cam_light)};
 
-	rt::raytracing * rt = nullptr;
-	if(mesh.render_opt == R_EMBREE) rt = mesh.rt_embree;
-	if(mesh.render_opt == R_OPTIX) rt = mesh.rt_optix;
+//	render_params.viewport_x = mesh.vx * viewport_width;
+//	render_params.viewport_y = mesh.vy * viewport_height;
+	render_params.cam_pos = glm_vec3(cam.eye);
 
-		rt->render(	img, glm::uvec2(viewport_width, viewport_height),
-					proj_view_mat, glm_vec3(cam.eye), scene_lights,
-					mesh.render_flat, rt_restart
-					);
+	rt->render(img, render_params, mesh.render_flat);
 
 	glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
 	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 
-	rt_restart = false;
+	rt->restart = false;
 	rt_frame.display();
 }
 
@@ -910,7 +917,9 @@ void viewer::pick_vertex(const real_t & x, const real_t & y)
 
 	che_viewer & mesh = meshes[cols * (iy / viewport_height) + ix / viewport_width];
 
-	mesh.select(ix % viewport_width, iy % viewport_height, {viewport_width, viewport_height}, proj_view_mat, glm_vec3(cam.eye));
+	mesh.select(ix % viewport_width, iy % viewport_height,
+				{viewport_width, viewport_height},
+				render_params.proj_view_mat, glm_vec3(cam.eye));
 }
 
 

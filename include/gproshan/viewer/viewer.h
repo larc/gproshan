@@ -10,8 +10,8 @@
 #include <gproshan/viewer/shader.h>
 #include <gproshan/viewer/frame.h>
 #include <gproshan/viewer/che_viewer.h>
-
 #include <gproshan/viewer/include_opengl.h>
+#include <gproshan/raytracing/render_params.h>
 
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_glfw.h>
@@ -56,8 +56,11 @@ class viewer
 
 
 		GLFWwindow * window = nullptr;
-		int window_width, window_height;
-		int viewport_width, viewport_height;
+		rt::render_params render_params;
+		int & window_width = render_params.window_width;
+		int & window_height = render_params.window_height;
+		int & viewport_width = render_params.viewport_width;
+		int & viewport_height = render_params.viewport_height;
 
 		bool hide_imgui = false;
 
@@ -67,11 +70,7 @@ class viewer
 		shader shader_pointcloud;
 
 		camera cam;
-
 		quaternion cam_light;
-		std::vector<glm::vec3> scene_lights;
-
-		glm::mat4 proj_view_mat;
 
 		double render_time = 0;
 
@@ -80,8 +79,6 @@ class viewer
 		index_t idx_active_mesh = 0;
 
 		frame * frames = nullptr;
-
-		bool rt_restart = false;
 
 		float bgc = 0;
 
