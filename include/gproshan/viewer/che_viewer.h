@@ -21,6 +21,8 @@
 namespace gproshan {
 
 
+enum render_type: index_t { R_GL, R_EMBREE, R_OPTIX };
+
 class che_viewer
 {
 	protected:
@@ -37,12 +39,14 @@ class che_viewer
 		int vx, vy;							///< viewport positions.
 		std::vector<index_t> selected;
 		std::vector<vertex> selected_xyz;
-		rt::raytracing * pick_vertex = nullptr;
+		rt::raytracing * rt_embree	= nullptr;
+		rt::raytracing * rt_optix	= nullptr;
 
 		glm::mat4 model_mat		= glm::mat4(1);
 
 		index_t idx_colormap	= 1;		// colormap index defined in shaders/colormap.glsl
 		index_t point_size		= 1;
+		index_t render_opt		= R_GL;
 		bool point_normals		= true;
 		bool render_pointcloud	= false;
 		bool render_wireframe	= false;

@@ -2,6 +2,7 @@
 #define RAYTRACING_H
 
 #include <gproshan/mesh/che.h>
+#include <gproshan/raytracing/render_params.h>
 
 #include <vector>
 #include <map>
@@ -26,6 +27,9 @@ struct hit
 
 class raytracing
 {
+	public:
+		bool restart = false;
+
 	protected:
 		struct rt_mesh
 		{
@@ -49,14 +53,7 @@ class raytracing
 		raytracing() = default;
 		virtual ~raytracing() = default;
 
-		virtual void render(glm::vec4 * img,
-							const glm::uvec2 & windows_size,
-							const glm::mat4 & proj_view_mat,
-							const glm::vec3 & cam_pos,
-							const std::vector<glm::vec3> & light,
-							const bool & flat,
-							const bool & restart = false
-							);
+		virtual void render(glm::vec4 * img, const render_params & params, const bool & flat);
 
 		virtual float * raycaster(	const glm::uvec2 & windows_size,
 									const glm::mat4 & proj_view_mat,

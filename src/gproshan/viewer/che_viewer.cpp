@@ -19,6 +19,9 @@ namespace gproshan {
 
 che_viewer::~che_viewer()
 {
+	delete rt_embree;
+	delete rt_optix;
+
 	glDeleteBuffers(5, vbo);
 	glDeleteVertexArrays(1, &vao);
 }
@@ -78,8 +81,8 @@ void che_viewer::update()
 	selected_xyz.clear();
 	update_vbo();
 
-	delete pick_vertex;
-	pick_vertex = new rt::embree({mesh}, {model_mat});
+	delete rt_embree;
+	rt_embree = new rt::embree({mesh}, {model_mat});
 }
 
 void che_viewer::update_vbo()
@@ -257,8 +260,11 @@ void che_viewer::scale(const real_t & s)
 
 void che_viewer::select(const index_t & x, const index_t & y, const glm::uvec2 & windows_size, const glm::mat4 & proj_view_mat, const glm::vec3 & cam_pos)
 {
-	glm::vec3 dir = pick_vertex->ray_view_dir(x, windows_size.y - y, windows_size, glm::inverse(proj_view_mat), cam_pos);
-	index_t v = pick_vertex->closest_vertex(cam_pos, dir);
+	const glm::vec3 & dir = rt_embree->ray_view_dir(x, windows_size.y - y, windows_size,
+													glm::inverse(proj_view_mat), cam_pos);
+
+	const index_t & v = rt_embree->closest_vertex(cam_pos, dir);
+
 	if(v != NIL) selected.push_back(v);
 }
 

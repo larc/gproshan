@@ -10,10 +10,8 @@
 #include <gproshan/viewer/shader.h>
 #include <gproshan/viewer/frame.h>
 #include <gproshan/viewer/che_viewer.h>
-
-#include <gproshan/raytracing/raytracing.h>
-
 #include <gproshan/viewer/include_opengl.h>
+#include <gproshan/raytracing/render_params.h>
 
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_glfw.h>
@@ -58,8 +56,13 @@ class viewer
 
 
 		GLFWwindow * window = nullptr;
-		int window_width, window_height;
-		int viewport_width, viewport_height;
+		rt::render_params render_params;
+		int & window_width = render_params.window_width;
+		int & window_height = render_params.window_height;
+		int & viewport_width = render_params.viewport_width;
+		int & viewport_height = render_params.viewport_height;
+
+		bool hide_imgui = false;
 
 		shader shader_triangles;
 		shader shader_normals;
@@ -67,25 +70,15 @@ class viewer
 		shader shader_pointcloud;
 
 		camera cam;
-
 		quaternion cam_light;
-		std::vector<glm::vec3> scene_lights;
 
-		glm::mat4 proj_view_mat;
+		double render_time = 0;
 
 		che_viewer meshes[N_MESHES];
 		size_t n_meshes	= 0;
 		index_t idx_active_mesh = 0;
 
-		enum render_type: index_t { R_GL, R_EMBREE, R_OPTIX };
-		index_t render_opt = R_GL;
-
-		frame * rt_frame = nullptr;
-
-		rt::raytracing * rt_embree = nullptr;
-		rt::raytracing * rt_optix = nullptr;
-
-		bool rt_restart = false;
+		frame * frames = nullptr;
 
 		float bgc = 0;
 
@@ -105,11 +98,12 @@ class viewer
 		viewer(const int & width = 1920, const int & height = 1080);
 		virtual ~viewer();
 
-		bool run();
-
 		che_viewer & active_mesh();
 		void add_process(const int & key, const std::string & skey, const std::string & name, const function_t & f);
 		void add_mesh(che * p_mesh);
+
+	protected:
+		virtual bool run();
 
 	private:
 		void info_gl();
@@ -118,8 +112,10 @@ class viewer
 		void init_menus();
 		void init_glsl();
 
+		void imgui();
+
 		void render_gl();
-		void render_rt(rt::raytracing * rt);
+		void render_rt(che_viewer & mesh, frame & rt_frame);
 
 		static void framebuffer_size_callback(GLFWwindow * window, int width, int height);
 		static void window_size_callback(GLFWwindow * window, int width, int height);
@@ -129,6 +125,9 @@ class viewer
 		static void scroll_callback(GLFWwindow * window, double xoffset, double yoffset);
 
 		static bool m_help(viewer * view);
+		static bool m_close(viewer * view);
+		static bool m_hide_show_imgui(viewer * view);
+
 		static bool m_save_load_view(viewer * view);
 		static bool m_reset_mesh(viewer * view);
 		static bool m_save_mesh(viewer * view);

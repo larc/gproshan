@@ -11,33 +11,40 @@ namespace gproshan::rt {
 std::default_random_engine raytracing::gen;
 std::uniform_real_distribution<float> raytracing::randf;
 
-void raytracing::render(glm::vec4 * img,
-						const glm::uvec2 & windows_size,
-						const glm::mat4 & proj_view_mat,
-						const glm::vec3 & cam_pos,
-						const std::vector<glm::vec3> & light,
-						const bool & flat,
-						const bool & restart )
+void raytracing::render(glm::vec4 * img, const render_params & params, const bool & flat)
 {
 	if(restart) n_samples = 0;
 
-	glm::mat4 inv_proj_view = glm::inverse(proj_view_mat);
+	glm::mat4 inv_proj_view = glm::inverse(params.proj_view_mat);
+
+	int window_width = params.window_width;
+	int window_height = params.window_height;
+	if(params.viewport_is_window)
+	{
+		window_width = params.viewport_width;
+		window_height = params.viewport_height;
+	}
 
 	glm::vec4 li;
 
 	#pragma omp parallel for private(li)
-	for(index_t i = 0; i < windows_size.x; ++i)
-	for(index_t j = 0; j < windows_size.y; ++j)
+	for(int i = 0; i < params.viewport_width; ++i)
+	for(int j = 0; j < params.viewport_height; ++j)
 	{
 		//row major
-		glm::vec4 & color = img[j * windows_size.x + i];
-		glm::vec3 dir = ray_view_dir(i, j, windows_size, inv_proj_view, cam_pos);
+		glm::vec4 & color = img[j * params.viewport_width + i];
+		const glm::vec3 & dir = ray_view_dir(	i + params.viewport_x,
+												j + params.viewport_y,
+												{window_width, window_height},
+												inv_proj_view,
+												params.cam_pos
+												);
 
 		li = glm::vec4(0);
-		for(auto & l: light)
-			li += intersect_li(cam_pos, dir, l, flat);
+		for(auto & l: params.lights)
+			li += intersect_li(params.cam_pos, dir, l, flat);
 
-		color = (color * float(n_samples) + li / float(light.size())) / float(n_samples + 1);
+		color = (color * float(n_samples) + li / float(params.lights.size())) / float(n_samples + 1);
 	}
 
 	++n_samples;

@@ -81,7 +81,7 @@ void app_viewer::init()
 	add_process(GLFW_KEY_T, "T", "Toplesets", process_compute_toplesets);
 
 	sub_menus.push_back("Sparse Coding");
-	add_process(GLFW_KEY_I, "I", "Mesh Sparse Coding", process_msparse_coding);
+	add_process(GLFW_KEY_U, "U", "Mesh Sparse Coding", process_msparse_coding);
 	add_process(GLFW_KEY_J, "J", "MDICT Patch", process_mdict_patch);
 	add_process(GLFW_KEY_D, "D", "MDICT Mask", process_mask);
 	add_process(GLFW_KEY_L, "L", "PC reconstruction", process_pc_reconstruction);
@@ -132,11 +132,10 @@ bool app_viewer::process_simulate_scanner(viewer * p_view)
 
 	if(ImGui::Button("Scan"))
 	{
-		che * ptx_mesh = scanner_ptx(mesh, view->rt_embree, n_rows, n_cols, {0, 0, 0});
-		view->add_mesh(ptx_mesh);
+		che * ptx_mesh = scanner_ptx(mesh, mesh.rt_embree, n_rows, n_cols, {0, 0, 0});
 		che_ptx::write_file(ptx_mesh, mesh->filename, n_rows, n_cols);
+		view->add_mesh(ptx_mesh);
 	}
-
 
 	return true;
 }

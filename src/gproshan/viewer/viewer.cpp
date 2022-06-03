@@ -50,8 +50,11 @@ const std::vector<std::string> viewer::colormap = { "vertex color",
 													"set"
 													};
 
-viewer::viewer(const int & width, const int & height): window_width(width), window_height(height)
+viewer::viewer(const int & width, const int & height)
 {
+	window_width = width;
+	window_height = height;
+
 	init_gl();
 	init_glsl();
 	init_imgui();
@@ -63,6 +66,8 @@ viewer::viewer(const int & width, const int & height): window_width(width), wind
 	che * s = new che_sphere(0.01);
 	s->update_normals();
 	sphere.init(s, false);
+
+	frames = new frame[N_MESHES];
 }
 
 viewer::~viewer()
@@ -74,18 +79,12 @@ viewer::~viewer()
 	glfwDestroyWindow(window);
 	glfwTerminate();
 
-	delete rt_embree;
-	delete rt_optix;
-
-	delete rt_frame;
-
 	delete sphere;
+	delete [] frames;
 }
 
 bool viewer::run()
 {
-	double render_time = 0;
-
 	while(!glfwWindowShouldClose(window))
 	{
 		TIC(render_time)
@@ -95,122 +94,117 @@ bool viewer::run()
 		cam_light = vertex(-1, 1, -2);
 		cam_light = r.conj() * cam_light * r;
 
-		proj_view_mat = glm::perspective(45.0f, float(viewport_width) / float(viewport_height), 0.01f, 1000.0f) * cam.look_at(r);
+		render_params.proj_view_mat = glm::perspective(45.0f, float(window_width) / float(window_height), 0.01f, 1000.0f) * cam.look_at(r);
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		switch(render_opt)
-		{
-			case R_GL:
-					render_gl();
-					break;
-			case R_EMBREE:
-					render_rt(rt_embree);
-					break;
-			case R_OPTIX:
-					render_rt(rt_optix);
-					break;
-		}
+		render_gl();
 
 		TOC(render_time);
 
-
-		ImGui_ImplOpenGL3_NewFrame();
-		ImGui_ImplGlfw_NewFrame();
-		ImGui::NewFrame();
-
-		che_viewer & mesh = active_mesh();
-
-		if(ImGui::BeginMainMenuBar())
-		{
-			if(ImGui::BeginMenu("Select"))
-			{
-				for(index_t i = 0; i < n_meshes; ++i)
-					if(ImGui::MenuItem((to_string(i) + ": " + meshes[i]->filename).c_str(), nullptr, i == idx_active_mesh, i != idx_active_mesh))
-					{
-						idx_active_mesh = i;
-						glfwSetWindowTitle(window, mesh->filename.c_str());
-					}
-
-				ImGui::EndMenu();
-			}
-
-			if(ImGui::BeginMenu("Color"))
-			{
-				for(index_t i = 0; i < colormap.size(); ++i)
-					if(ImGui::MenuItem(colormap[i].c_str(), nullptr, i == mesh.idx_colormap, i != mesh.idx_colormap))
-						mesh.idx_colormap = i;
-
-				ImGui::EndMenu();
-			}
-
-			for(index_t i = 0; i < sub_menus.size(); ++i)
-			{
-				if(ImGui::BeginMenu(sub_menus[i].c_str()))
-				{
-					for(auto & p: processes)
-					{
-						process_t & pro = p.second;
-						if(pro.function != nullptr && pro.sub_menu == i)
-							if(ImGui::MenuItem(pro.name.c_str(), ('[' + pro.key + ']').c_str(), &pro.selected))
-								sprintf(status_message, "%s", pro.selected ? pro.name.c_str() : "");
-					}
-
-					ImGui::EndMenu();
-				}
-			}
-
-			ImGui::EndMainMenuBar();
-		}
-
-		ImGui::SetNextWindowSize(ImVec2(window_width, -1));
-		ImGui::SetNextWindowPos(ImVec2(0, window_height - 32));
-		ImGui::Begin("status gproshan", nullptr, ImGuiWindowFlags_NoTitleBar);
-		ImGui::Text("[] %s", status_message);
-		ImGui::SameLine(window_width - 180);
-		ImGui::Text("github.com/larc/gproshan");
-		ImGui::End();
-
-		ImGui::SetNextWindowSize(ImVec2(320, -1));
-		ImGui::SetNextWindowPos(ImVec2(20, 60), ImGuiCond_Once);
-		ImGui::Begin("gproshan");
-
-		ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.5);
-
-		ImGui::Text("%s", mesh->filename.c_str());
-		ImGui::Text("%16s: %.3f", "FPS", 1.0 / render_time);
-		ImGui::Text("%16s: %10lu", "n_vertices", mesh->n_vertices);
-		ImGui::Text("%16s: %10lu", "n_faces", mesh->n_faces);
-
-		if(mesh.render_pointcloud)
-		{
-			ImGui::Checkbox("point_normals", &mesh.point_normals);
-			ImGui::SliderInt("point_size", (int *) &mesh.point_size, 1, 32);
-		}
-
-		for(auto & p: processes)
-		{
-			process_t & pro = p.second;
-			if(ImGui::CollapsingHeader(("[" + pro.key + "] " + pro.name).c_str(), &pro.selected, ImGuiTreeNodeFlags_DefaultOpen))
-			{
-				ImGui::PushID(pro.name.c_str());
-				ImGui::Indent();
-				pro.selected = pro.selected && p.second.function(this);
-				ImGui::Unindent();
-				ImGui::PopID();
-			}
-		}
-
-		ImGui::PopItemWidth();
-		ImGui::End();
-
-		ImGui::Render();
-		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+		imgui();
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
 
 	return true;
+}
+
+void viewer::imgui()
+{
+	if(hide_imgui) return;
+
+	ImGui_ImplOpenGL3_NewFrame();
+	ImGui_ImplGlfw_NewFrame();
+	ImGui::NewFrame();
+
+	che_viewer & mesh = active_mesh();
+
+	if(ImGui::BeginMainMenuBar())
+	{
+		if(ImGui::BeginMenu("Select"))
+		{
+			for(index_t i = 0; i < n_meshes; ++i)
+				if(ImGui::MenuItem((to_string(i) + ": " + meshes[i]->filename).c_str(), nullptr, i == idx_active_mesh, i != idx_active_mesh))
+				{
+					idx_active_mesh = i;
+					glfwSetWindowTitle(window, mesh->filename.c_str());
+				}
+
+			ImGui::EndMenu();
+		}
+
+		if(ImGui::BeginMenu("Color"))
+		{
+			for(index_t i = 0; i < colormap.size(); ++i)
+				if(ImGui::MenuItem(colormap[i].c_str(), nullptr, i == mesh.idx_colormap, i != mesh.idx_colormap))
+					mesh.idx_colormap = i;
+
+			ImGui::EndMenu();
+		}
+
+		for(index_t i = 0; i < sub_menus.size(); ++i)
+		{
+			if(ImGui::BeginMenu(sub_menus[i].c_str()))
+			{
+				for(auto & p: processes)
+				{
+					process_t & pro = p.second;
+					if(pro.function != nullptr && pro.sub_menu == i)
+						if(ImGui::MenuItem(pro.name.c_str(), ('[' + pro.key + ']').c_str(), &pro.selected))
+							sprintf(status_message, "%s", pro.selected ? pro.name.c_str() : "");
+				}
+
+				ImGui::EndMenu();
+			}
+		}
+
+		ImGui::EndMainMenuBar();
+	}
+
+	ImGui::SetNextWindowSize(ImVec2(window_width, -1));
+	ImGui::SetNextWindowPos(ImVec2(0, window_height - 32));
+	ImGui::Begin("status gproshan", nullptr, ImGuiWindowFlags_NoTitleBar);
+	ImGui::Text("[] %s", status_message);
+	ImGui::SameLine(window_width - 180);
+	ImGui::Text("github.com/larc/gproshan");
+	ImGui::End();
+
+	ImGui::SetNextWindowSize(ImVec2(320, -1));
+	ImGui::SetNextWindowPos(ImVec2(20, 60), ImGuiCond_Once);
+	ImGui::Begin("gproshan");
+
+	ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.5);
+
+	ImGui::Text("%s", mesh->filename.c_str());
+	ImGui::Text("%16s: %.3f", "FPS", 1.0 / render_time);
+	ImGui::Text("%16s: %10lu", "n_vertices", mesh->n_vertices);
+	ImGui::Text("%16s: %10lu", "n_faces", mesh->n_faces);
+
+	if(mesh.render_pointcloud)
+	{
+		ImGui::Checkbox("point_normals", &mesh.point_normals);
+		ImGui::SliderInt("point_size", (int *) &mesh.point_size, 1, 32);
+	}
+
+	for(auto & p: processes)
+	{
+		process_t & pro = p.second;
+		if(ImGui::CollapsingHeader(("[" + pro.key + "] " + pro.name).c_str(), &pro.selected, ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			ImGui::PushID(pro.name.c_str());
+			ImGui::Indent();
+			pro.selected = pro.selected && pro.function(this);
+			ImGui::Unindent();
+			ImGui::PopID();
+		}
+	}
+
+	ImGui::PopItemWidth();
+	ImGui::End();
+
+	ImGui::Render();
+	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
 che_viewer & viewer::active_mesh()
@@ -286,6 +280,8 @@ void viewer::init_menus()
 {
 	sub_menus.push_back("Viewer");
 	add_process(GLFW_KEY_F1, "F1", "Help", m_help);
+	add_process(GLFW_KEY_ESCAPE, "ESCAPE", "Close", m_close);
+	add_process(GLFW_KEY_I, "F1", "Hide/Show ImGui", m_hide_show_imgui);
 	add_process(GLFW_KEY_PERIOD, "PERIOD", "Save/Load view", m_save_load_view);
 	add_process(GLFW_KEY_UP, "UP", "Zoom in", m_zoom_in);
 	add_process(GLFW_KEY_DOWN, "DOWN", "Zoom out", m_zoom_out);
@@ -399,21 +395,16 @@ void viewer::keyboard_callback(GLFWwindow * window, int key, int, int action, in
 {
 	if(action == GLFW_RELEASE) return;
 
-	if(key == GLFW_KEY_ESCAPE)
-	{
-		glfwSetWindowShouldClose(window, GLFW_TRUE);
-		return;
-	}
-
 	viewer * view = (viewer *) glfwGetWindowUserPointer(window);
 	if(ImGui::GetIO().WantCaptureKeyboard) return;
 
 	process_t & pro = view->processes[key];
 	if(pro.function)
 	{
-		pro.selected = !pro.selected;
+		pro.selected = view->hide_imgui ? pro.function(view) && pro.selected : !pro.selected;
 		sprintf(view->status_message, "%s", pro.selected ? pro.name.c_str() : "");
 	}
+
 }
 
 void viewer::mouse_callback(GLFWwindow * window, int button, int action, int mods)
@@ -438,14 +429,14 @@ void viewer::cursor_callback(GLFWwindow * window, double x, double y)
 	if(GLFW_PRESS == glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT))
 	{
 		view->cam.motion(x, y, view->window_width, view->window_height);
-		view->rt_restart = true;
+		//view->rt_restart = true;
 	}
 
 	if(GLFW_PRESS == glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT))
 	{
 		view->cam.pos.im().x = 2 * x / view->window_width - 1;
 		view->cam.pos.im().y = 2 * y / view->window_height - 1;
-		view->rt_restart = true;
+		//view->rt_restart = true;
 	}
 }
 
@@ -457,13 +448,13 @@ void viewer::scroll_callback(GLFWwindow * window, double, double yoffset)
 	if(yoffset > 0)
 	{
 		view->cam.zoom_in();
-		view->rt_restart = true;
+		//view->rt_restart = true;
 	}
 
 	if(yoffset < 0)
 	{
 		view->cam.zoom_out();
-		view->rt_restart = true;
+		//view->rt_restart = true;
 	}
 }
 
@@ -473,6 +464,18 @@ bool viewer::m_help(viewer * view)
 		if(p.second.function != nullptr)
 			fprintf(stderr, "%16s: %s\n", ('[' + p.second.key + ']').c_str(), p.second.name.c_str());
 
+	return false;
+}
+
+bool viewer::m_close(viewer * view)
+{
+	glfwSetWindowShouldClose(view->window, GLFW_TRUE);
+	return false;
+}
+
+bool viewer::m_hide_show_imgui(viewer * view)
+{
+	view->hide_imgui = !view->hide_imgui;
 	return false;
 }
 
@@ -664,26 +667,23 @@ bool viewer::m_setup_raytracing(viewer * view)
 
 	if(ImGui::Button("Build"))
 	{
-		if(!view->rt_frame)
-			view->rt_frame = new frame;
-
 		switch(rt)
 		{
 			case R_GL: break;
 
 			case R_EMBREE:
-				delete view->rt_embree;
+				delete mesh.rt_embree;
 				TIC(time);
-					view->rt_embree = new rt::embree({mesh}, {mesh.model_mat}, mesh.render_pointcloud, pc_radius);
+					mesh.rt_embree = new rt::embree({mesh}, {mesh.model_mat}, mesh.render_pointcloud, pc_radius);
 				TOC(time);
 				sprintf(view->status_message, "build embree in %.3fs", time);
 				break;
 
 			case R_OPTIX:
 			#ifdef GPROSHAN_OPTIX
-				delete view->rt_optix;
+				delete mesh.rt_optix;
 				TIC(time);
-					view->rt_optix = new rt::optix({mesh}, {mesh.model_mat});
+					mesh.rt_optix = new rt::optix({mesh}, {mesh.model_mat});
 				TOC(time);
 				sprintf(view->status_message, "build optix in %.3fs", time);
 			#endif // GPROSHAN_OPTIX
@@ -696,21 +696,24 @@ bool viewer::m_setup_raytracing(viewer * view)
 
 bool viewer::m_render_gl(viewer * view)
 {
-	view->render_opt = R_GL;
+	che_viewer & mesh = view->active_mesh();
+	mesh.render_opt = R_GL;
 	return false;
 }
 
 bool viewer::m_render_embree(viewer * view)
 {
-	view->rt_restart = true;
-	view->render_opt = R_EMBREE;
+	che_viewer & mesh = view->active_mesh();
+	//view->rt_restart = true;
+	mesh.render_opt = R_EMBREE;
 	return false;
 }
 
 bool viewer::m_render_optix(viewer * view)
 {
-	view->rt_restart = true;
-	view->render_opt = R_OPTIX;
+	che_viewer & mesh = view->active_mesh();
+	//view->rt_restart = true;
+	mesh.render_opt = R_OPTIX;
 	return false;
 }
 
@@ -794,7 +797,7 @@ bool viewer::m_render_flat(viewer * view)
 {
 	che_viewer & mesh = view->active_mesh();
 	mesh.render_flat = !mesh.render_flat;
-	view->rt_restart = true;
+	//view->rt_restart = true;
 
 	return false;
 }
@@ -806,7 +809,7 @@ bool viewer::m_raycasting(viewer * view)
 	rt::embree rc({mesh}, {mesh.model_mat});
 
 	float * frame = rc.raycaster(	glm::uvec2(view->viewport_width, view->viewport_height),
-									view->proj_view_mat, glm_vec3(view->cam.eye)
+									view->render_params.proj_view_mat, glm_vec3(view->cam.eye)
 									);
 
 	std::thread([](CImg<float> img)
@@ -830,6 +833,7 @@ void viewer::render_gl()
 	glProgramUniform3f(shader_triangles, shader_triangles("cam_light"), cam_light[0], cam_light[1], cam_light[2]);
 	glProgramUniform3f(shader_pointcloud, shader_pointcloud("cam_light"), cam_light[0], cam_light[1], cam_light[2]);
 
+	glm::mat4 & proj_view_mat = render_params.proj_view_mat;
 	glProgramUniformMatrix4fv(shader_sphere, shader_sphere("proj_view_mat"), 1, 0, &proj_view_mat[0][0]);
 	glProgramUniformMatrix4fv(shader_triangles, shader_triangles("proj_view_mat"), 1, 0, &proj_view_mat[0][0]);
 	glProgramUniformMatrix4fv(shader_pointcloud, shader_pointcloud("proj_view_mat"), 1, 0, &proj_view_mat[0][0]);
@@ -848,6 +852,12 @@ void viewer::render_gl()
 
 		glViewport(mesh.vx * viewport_width, mesh.vy * viewport_height, viewport_width, viewport_height);
 
+		if(mesh.render_opt != R_GL)
+		{
+			render_rt(mesh, frames[i]);
+			continue;
+		}
+
 		if(mesh->is_pointcloud() || mesh.render_pointcloud)
 			mesh.draw_point_cloud(shader_pointcloud);
 		else
@@ -863,34 +873,37 @@ void viewer::render_gl()
 	}
 }
 
-void viewer::render_rt(rt::raytracing * rt)
+void viewer::render_rt(che_viewer & mesh, frame & rt_frame)
 {
-	if(!rt) return;
+	rt::raytracing * rt = nullptr;
+	if(mesh.render_opt == R_EMBREE) rt = mesh.rt_embree;
+	if(mesh.render_opt == R_OPTIX) rt = mesh.rt_optix;
 
-	rt_restart = rt_frame->resize(viewport_width, viewport_height) || rt_restart;
+	rt->restart = rt_frame.resize(viewport_width, viewport_height) || rt->restart;
 
-	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, *rt_frame);
+	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, rt_frame);
 	glm::vec4 * img = (glm::vec4 *) glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_READ_WRITE);
 
+	std::vector<glm::vec3> & scene_lights = render_params.lights;
 	scene_lights.clear();
 
-	che_viewer & mesh = active_mesh();
 	for(const index_t & v: mesh.selected)
 		scene_lights.push_back(glm_vec3(mesh->gt(v)));
 
 	if(!scene_lights.size())
 		scene_lights = {glm_vec3(cam_light)};
 
-	rt->render(	img, glm::uvec2(viewport_width, viewport_height),
-				proj_view_mat, glm_vec3(cam.eye), scene_lights,
-				mesh.render_flat, rt_restart
-				);
+//	render_params.viewport_x = mesh.vx * viewport_width;
+//	render_params.viewport_y = mesh.vy * viewport_height;
+	render_params.cam_pos = glm_vec3(cam.eye);
+
+	rt->render(img, render_params, mesh.render_flat);
 
 	glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
 	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 
-	rt_restart = false;
-	rt_frame->display();
+	rt->restart = false;
+	rt_frame.display();
 }
 
 void viewer::pick_vertex(const real_t & x, const real_t & y)
@@ -904,7 +917,9 @@ void viewer::pick_vertex(const real_t & x, const real_t & y)
 
 	che_viewer & mesh = meshes[cols * (iy / viewport_height) + ix / viewport_width];
 
-	mesh.select(ix % viewport_width, iy % viewport_height, {viewport_width, viewport_height}, proj_view_mat, glm_vec3(cam.eye));
+	mesh.select(ix % viewport_width, iy % viewport_height,
+				{viewport_width, viewport_height},
+				render_params.proj_view_mat, glm_vec3(cam.eye));
 }
 
 
