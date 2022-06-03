@@ -17,5 +17,5 @@ add_executable(test_scanner test_scanner.cpp)
 target_link_libraries(test_scanner gproshan)
 
 
-file(MAKE_DIRECTORY ${gproshan_SOURCE_DIR}/tmp)
+file(MAKE_DIRECTORY ~/.gproshan/)
 
