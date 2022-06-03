@@ -137,8 +137,8 @@ extern "C" __global__ void __raygen__render_frame()
 	const int ix = optixGetLaunchIndex().x;
 	const int iy = optixGetLaunchIndex().y;
 
-	const float sx = (float(ix) + .5f) / optix_params.frame.width;
-	const float sy = (float(iy) + .5f) / optix_params.frame.height;
+	const float sx = (float(ix + optix_params.viewport_x) + .5f) / optix_params.window_width;
+	const float sy = (float(iy + optix_params.viewport_y) + .5f) / optix_params.window_height;
 
 	vertex_cu & cam_pos = *(vertex_cu *) optix_params.cam_pos;
 
@@ -180,9 +180,9 @@ extern "C" __global__ void __raygen__render_frame()
 				0,	// missSBTIndex
 				u0, u1);
 
-	const uint32_t fbIndex = ix + iy * optix_params.frame.width;
+	const uint32_t fbIndex = ix + iy * optix_params.viewport_width;
 
-	float4 * frame = (float4 *) optix_params.frame.color_buffer;
+	float4 * frame = (float4 *) optix_params.color_buffer;
 	frame[fbIndex].x = pixelColorPRD.x;
 	frame[fbIndex].y = pixelColorPRD.y;
 	frame[fbIndex].z = pixelColorPRD.z;

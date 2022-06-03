@@ -16,11 +16,10 @@ namespace gproshan::rt {
 
 struct launch_params
 {
-	struct
-	{
-		void * color_buffer = nullptr;
-		uint32_t width, height;
-	} frame;
+	void * color_buffer = nullptr;
+	uint32_t window_width, window_height;
+	uint32_t viewport_width, viewport_height;
+	uint32_t viewport_x, viewport_y;
 
 	bool flat;
 	float light[3];

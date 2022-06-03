@@ -108,7 +108,7 @@ optix::optix(const std::vector<che *> & meshes, const std::vector<glm::mat4> & m
 
 optix::~optix()
 {
-	cudaFree(optix_params.frame.color_buffer);
+	cudaFree(optix_params.color_buffer);
 	cudaFree(launch_params_buffer);
 	cudaFree(raygen_records_buffer);
 	cudaFree(miss_records_buffer);
@@ -121,16 +121,28 @@ optix::~optix()
 
 void optix::render(glm::vec4 * img, const render_params & params, const bool & flat)
 {
-	if(restart)
+	if(params.restart)
 	{
 		n_samples = 0;
 
-		if(optix_params.frame.color_buffer)
-			cudaFree(optix_params.frame.color_buffer);
+		if(optix_params.color_buffer)
+			cudaFree(optix_params.color_buffer);
 
-		optix_params.frame.width = params.viewport_width;
-		optix_params.frame.height = params.viewport_height;
-		cudaMalloc(&optix_params.frame.color_buffer, params.viewport_width * params.viewport_height * sizeof(glm::vec4));
+		optix_params.window_width = params.window_width;
+		optix_params.window_height = params.window_height;
+		if(params.viewport_is_window)
+		{
+			optix_params.window_width = params.viewport_width;
+			optix_params.window_height = params.viewport_height;
+		}
+
+		optix_params.viewport_width = params.viewport_width;
+		optix_params.viewport_height = params.viewport_height;
+
+		optix_params.viewport_x = params.viewport_x;
+		optix_params.viewport_y = params.viewport_y;
+
+		cudaMalloc(&optix_params.color_buffer, params.viewport_width * params.viewport_height * sizeof(glm::vec4));
 	}
 
 	glm::mat4 inv_proj_view = glm::inverse(params.proj_view_mat);
@@ -147,14 +159,14 @@ void optix::render(glm::vec4 * img, const render_params & params, const bool & f
 				(CUdeviceptr) launch_params_buffer,
 				sizeof(launch_params),
 				&sbt,
-				optix_params.frame.width,
-				optix_params.frame.height,
+				optix_params.viewport_width,
+				optix_params.viewport_height,
 				1
 				);
 
 	cudaDeviceSynchronize();
 
-	cudaMemcpy(img, optix_params.frame.color_buffer, params.viewport_width * params.viewport_height * sizeof(glm::vec4), cudaMemcpyDeviceToHost);
+	cudaMemcpy(img, optix_params.color_buffer, params.viewport_width * params.viewport_height * sizeof(glm::vec4), cudaMemcpyDeviceToHost);
 }
 
 void optix::create_raygen_programs()

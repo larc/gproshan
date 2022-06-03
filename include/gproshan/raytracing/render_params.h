@@ -19,10 +19,11 @@ struct render_params
 	int viewport_height = 0;
 	int viewport_x = 0;
 	int viewport_y = 0;
+	bool restart = false;
+	bool viewport_is_window = true;
 	glm::mat4 proj_view_mat;
 	glm::vec3 cam_pos;
 	std::vector<glm::vec3> lights;
-	bool viewport_is_window = true;
 };
 
 
