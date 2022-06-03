@@ -87,7 +87,6 @@ class viewer
 		che_viewer sphere;
 		shader shader_sphere;
 
-	public:
 		std::vector<vertex> other_vertices;
 		std::vector<vertex> vectors;
 		std::vector<std::string> sub_menus;
@@ -105,7 +104,6 @@ class viewer
 	protected:
 		virtual bool run();
 
-	private:
 		void info_gl();
 		void init_gl();
 		void init_imgui();
