@@ -970,7 +970,7 @@ real_t msparse_coding::mesh_reconstruction(const fmask_t & mask)
 	gproshan_debug_var(error);
 	gproshan_debug_var(max_error);
 
-	mesh->set_vertices(new_vertices, mesh->n_vertices);
+	mesh->update_vertices(new_vertices, mesh->n_vertices);
 	che_off::write_file(mesh, "../tmp/recon_mesh");
 
 	return max_error;

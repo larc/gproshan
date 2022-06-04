@@ -1,8 +1,5 @@
 #include <gproshan/mesh/che.h>
 
-#include <gproshan/mesh/kdtree.h>
-#include <gproshan/include_arma.h>
-
 #include <cassert>
 #include <cstring>
 #include <cmath>
@@ -459,7 +456,7 @@ size_t che::genus() const
 }
 
 // The Gauss-Bonnet Scheme
-real_t che::mean_curvature(const index_t & v)
+real_t che::mean_curvature(const index_t & v) const
 {
 	real_t h = 0;
 	real_t a = 0;
@@ -534,13 +531,13 @@ const vertex & che::gt_vt_next_evt(const index_t & v) const
 	return GT[VT[next(EVT[v])]];
 }
 
-const vertex & che::gt_e(const index_t & e, const bool & op)
+const vertex & che::gt_e(const index_t & e, const bool & op) const
 {
 	assert(e < n_edges);
 	return op ? GT[VT[next(ET[e])]] : GT[VT[ET[e]]];
 }
 
-const index_t & che::vt_e(const index_t & e, const bool & op)
+const index_t & che::vt_e(const index_t & e, const bool & op) const
 {
 	assert(e < n_edges);
 	return op ? VT[next(ET[e])] : VT[ET[e]];
@@ -592,16 +589,20 @@ size_t che::max_degree() const
 	return md;
 }
 
-vertex & che::point(index_t v)
+const vertex & che::point(const index_t & v) const
 {
 	return GT[v];
 }
 
-void che::set_vertices(const vertex *const& positions, size_t n, const index_t & v_i)
+vertex & che::point(const index_t & v)
+{
+	return GT[v];
+}
+
+void che::update_vertices(const vertex * positions, const size_t & n, const index_t & v_i)
 {
 	if(!positions) return;
-	if(!n) n = n_vertices;
-	memcpy(GT + v_i, positions, sizeof(vertex) * n);
+	memcpy(GT + v_i, positions, sizeof(vertex) * (!n) ? n_vertices : n);
 }
 
 const string che::filename_size() const
@@ -975,17 +976,6 @@ void che::set_head_vertices(index_t * head, const size_t & n)
 
 		swap(EVT[v], EVT[i]);
 	}
-}
-
-index_t che::link_intersect(const index_t & v_a, const index_t & v_b)
-{
-	index_t intersect = 0;
-
-	for(index_t & a: link(v_a))
-	for(index_t & b: link(v_b))
-		if(a == b) ++intersect;
-
-	return intersect;
 }
 
 void che::edge_collapse(const index_t *const & sort_edges)

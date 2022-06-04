@@ -342,11 +342,11 @@ bool app_viewer::process_fairing_spectral(viewer * p_view)
 			vertices.resize(mesh->n_vertices);
 			memcpy(vertices.data(), &mesh->gt(0), mesh->n_vertices * sizeof(vertex));
 		}
-		else mesh->set_vertices(vertices.data());
+		else mesh->update_vertices(vertices.data());
 
 		fair.run(mesh);
 
-		mesh->set_vertices(fair.new_vertices());
+		mesh->update_vertices(fair.new_vertices());
 		mesh->update_normals();
 
 		mesh.update_vbo_geometry();
@@ -371,11 +371,11 @@ bool app_viewer::process_fairing_taubin(viewer * p_view)
 			vertices.resize(mesh->n_vertices);
 			memcpy(vertices.data(), &mesh->gt(0), mesh->n_vertices * sizeof(vertex));
 		}
-		else mesh->set_vertices(vertices.data());
+		else mesh->update_vertices(vertices.data());
 
 		fair.run(mesh);
 
-		mesh->set_vertices(fair.new_vertices());
+		mesh->update_vertices(fair.new_vertices());
 		mesh->update_normals();
 
 		mesh.update_vbo_geometry();

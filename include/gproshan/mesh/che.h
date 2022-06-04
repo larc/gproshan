@@ -7,8 +7,11 @@
 #include <vector>
 #include <string>
 
-#define for_star(he, mesh, v) for(index_t stop = mesh->evt(v), he = mesh->evt(v); he != NIL; he = (he = mesh->ot(prev(he))) != stop ? he : NIL)
-#define for_boundary(he, mesh, v) for(index_t stop = mesh->evt(v), he = mesh->evt(v); he != NIL; he = (he = mesh->evt(mesh->vt(next(he)))) != stop ? he : NIL)
+#define for_star(he, mesh, v) \
+	for(index_t stop = mesh->evt(v), he = mesh->evt(v); he != NIL; he = (he = mesh->ot(prev(he))) != stop ? he : NIL)
+
+#define for_boundary(he, mesh, v) \
+	for(index_t stop = mesh->evt(v), he = mesh->evt(v); he != NIL; he = (he = mesh->evt(mesh->vt(next(he)))) != stop ? he : NIL)
 
 
 // geometry processing and shape analysis framework
@@ -69,27 +72,13 @@ class che
 		che(const vertex * vertices, const index_t & n_v, const index_t * faces, const index_t & n_f);
 		virtual ~che();
 
-		std::vector<index_t> star(const index_t & v) const;
-		std::vector<index_t> link(const index_t & v) const;
-		std::vector<index_t> bounds() const;
-		std::vector<index_t> boundary(const index_t & v) const;
-		bool is_vertex_bound(const index_t & v) const;
-		bool is_edge_bound(const index_t & e) const;
-		void flip(const index_t & e);
-		real_t pdetriq(const index_t & t) const;
-		real_t quality() const;
-		real_t area_trig(const index_t & t) const;
-		real_t area_vertex(const index_t & v) const;
-		real_t area_surface() const;
-		void update_heatmap(const real_t * hm = nullptr);
-		const rgb_t & rgb(const index_t & v) const;
-		rgb_t & rgb(const index_t & v);
-		vertex color(const index_t & v) const;
-		vertex shading_color(const index_t & f, const float & u, const float & v, const float & w) const;
-		const real_t & heatmap(const index_t & v) const;
-		real_t & heatmap(const index_t & v);
-		void update_normals();
-		void invert_normals();
+		// vertex access geometry methods to xyz point values, normals, and gradient
+		const vertex & gt(const index_t & v) const;
+		const vertex & gt_vt(const index_t & he) const;
+		const vertex & gt_vt_next_evt(const index_t & v) const;
+		const vertex & gt_e(const index_t & e, const bool & op = false) const;
+		const vertex & point(const index_t & v) const;
+		vertex & point(const index_t & v);
 		const vertex & normal(const index_t & v) const;
 		vertex & normal(const index_t & v);
 		vertex shading_normal(const index_t & f, const float & u, const float & v, const float & w) const;
@@ -98,48 +87,79 @@ class che
 		vertex gradient_he(const index_t & he, const real_t *const & f) const;
 		vertex gradient(const index_t & v, const real_t *const & f);
 		vertex barycenter(const index_t & t) const;
-		real_t cotan(const index_t & he) const;
-		real_t mean_edge() const;
-		size_t memory() const;
-		size_t genus() const;
-		real_t mean_curvature(const index_t & v);
 
+		// vertex color methods
+		const real_t & heatmap(const index_t & v) const;
+		real_t & heatmap(const index_t & v);
+		const rgb_t & rgb(const index_t & v) const;
+		rgb_t & rgb(const index_t & v);
+		vertex color(const index_t & v) const;
+		vertex shading_color(const index_t & f, const float & u, const float & v, const float & w) const;
+
+		// update methods
+		void reload();
 		void normalize();
-		bool is_pointcloud() const;
-		bool is_manifold() const;
+		void merge(const che * mesh, const std::vector<index_t> & com_vertices);
+		void update_vertices(const vertex * positions, const size_t & n = 0, const index_t & v_i = 0);
+		void update_heatmap(const real_t * hm = nullptr);
+		void update_normals();
+		void invert_normals();
+		void multiplicate_vertices();
+		void remove_vertices(const std::vector<index_t> & vertices);
+		void remove_non_manifold_vertices();
+		void set_head_vertices(index_t * head, const size_t & n);
+
+		// half edge access methods triangular faces and navigation
 		const index_t & vt(const index_t & he) const;
-		const vertex & gt(const index_t & v) const;
-		const vertex & gt_vt(const index_t & he) const;
-		const vertex & gt_vt_next_evt(const index_t & v) const;
-		const vertex & gt_e(const index_t & e, const bool & op = false);
-		const index_t & vt_e(const index_t & e, const bool & op = false);
+		const index_t & vt_e(const index_t & e, const bool & op = false) const;
 		const index_t & et(const index_t & e) const;
 		const index_t & ot_et(const index_t & e) const;
 		const index_t & ot(const index_t & he) const;
 		const index_t & ot_evt(const index_t & v) const;
 		const index_t & evt(const index_t & v) const;
 		const index_t & bt(const index_t & b) const;
-		size_t max_degree() const;
-		vertex & point(index_t v);
-		void set_vertices(const vertex *const& positions, size_t n = 0, const index_t & v_i = 0);
-		const std::string filename_size() const;
+
+		// topology methods
+		std::vector<index_t> star(const index_t & v) const;
+		std::vector<index_t> link(const index_t & v) const;
+		void edge_collapse(const index_t *const & sort_edges);
+		void compute_toplesets(index_t *& rings, index_t *& sorted, std::vector<index_t> & limites, const std::vector<index_t> & sources, const index_t & k = NIL);
+
+		// boundaray methods
+		std::vector<index_t> bounds() const;
+		std::vector<index_t> boundary(const index_t & v) const;
+		bool is_vertex_bound(const index_t & v) const;
+		bool is_edge_bound(const index_t & e) const;
+
+		// file, name, and system methods
 		const std::string name() const;
 		const std::string name_size() const;
-		void reload();
-		void compute_toplesets(index_t *& rings, index_t *& sorted, std::vector<index_t> & limites, const std::vector<index_t> & sources, const index_t & k = NIL);
-		void multiplicate_vertices();
-		void remove_non_manifold_vertices();
-		void remove_vertices(const std::vector<index_t> & vertices);
-		void merge(const che * mesh, const std::vector<index_t> & com_vertices);
-		void set_head_vertices(index_t * head, const size_t & n);
-		index_t link_intersect(const index_t & v_a, const index_t & v_b);
-		void edge_collapse(const index_t *const & sort_edges);
+		const std::string filename_size() const;
+
+		// mesh information methods
+		size_t genus() const;
+		size_t memory() const;
+		size_t max_degree() const;
+		real_t quality() const;
+		real_t mean_edge() const;
+		real_t area_surface() const;
+		bool is_manifold() const;
+		bool is_pointcloud() const;
+
+		// operation methods
+		void flip(const index_t & e);
+		real_t cotan(const index_t & he) const;
+		real_t pdetriq(const index_t & t) const;
+		real_t area_trig(const index_t & t) const;
+		real_t area_vertex(const index_t & v) const;
+		real_t mean_curvature(const index_t & v) const;
 
 	protected:
 		void init(const vertex * vertices, const index_t & n_v, const index_t * faces, const index_t & n_f);
 		void init(const std::string & file);
-		void free();
 		void alloc(const size_t & n_v, const size_t & n_f);
+		void free();
+
 		virtual void read_file(const std::string & file);
 
 	private:
@@ -151,6 +171,7 @@ class che
 
 	friend struct CHE;
 };
+
 
 struct vertex_cu;
 
