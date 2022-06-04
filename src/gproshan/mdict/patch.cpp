@@ -126,7 +126,7 @@ bool patch::add_vertex_by_faces(vertex & n, vector<vertex> & N, double thr_angle
 			}
 		}
 	}
-	//p = mesh->get_vertex(indexes[i]);
+	//p = mesh->point(indexes[i]);
 	//p = p - c ;
 	//p = p - ((p,n)*n);
 
@@ -208,8 +208,8 @@ void patch::recover_radial_disjoint(che * mesh, const real_t & radio_, const ind
 
 		for(index_t i=1; i < vertices.size(); ++i)
 		{
-			p = mesh->get_vertex(indexes[i]);
-			c = mesh->get_vertex(v); // central vertices
+			p = mesh->point(indexes[i]);
+			c = mesh->point(v); // central vertices
 
 			p = p - c ;
 			p = p - ((p,n)*n);
@@ -256,7 +256,7 @@ void patch::init_radial_disjoint(	real_t & euc_radio,
 	real_t proj_area = std::numeric_limits<real_t>::epsilon();
 	real_t ratio;
 
-	vertex c = mesh->get_vertex(v);
+	vertex c = mesh->point(v);
 
 	geodesics::params params;
 	params.dist_alloc = new real_t[mesh->n_vertices];
@@ -268,7 +268,7 @@ void patch::init_radial_disjoint(	real_t & euc_radio,
 
 		if(add_vertex_by_faces(n, N, delta, params.dist_alloc, mesh, u, area, proj_area, M_PI / 2.5 ) && (ratio < sum_thres || (area / area_mesh) < area_thres) )
 		{
-			euc_radio = max(euc_radio, *(mesh->get_vertex(u) - c));
+			euc_radio = max(euc_radio, *(mesh->point(u) - c));
 			return true;
 		}
 
@@ -292,7 +292,7 @@ void patch::init_radial_disjoint(	real_t & euc_radio,
 	vertex p;
 	for(auto & vi: vertices)
 	{
-		p = mesh->get_vertex(vi);
+		p = mesh->point(vi);
 
 		p = p - c ;
 		p = p - ((p, n) * n);
@@ -633,7 +633,7 @@ void patch::normal_fit_directions(che * mesh, const index_t & v)
 	vertex nz = mesh->normal(v);
 	vertex nx = mesh->gt_vt_next_evt(v);
 //	GT[VT[next(EVT[v]]]
-	vertex c = mesh->get_vertex(v);
+	vertex c = mesh->point(v);
 	vertex ny;
 	nx = nx - c ;
 	nx = nx - ((nx,nz)*nz);

@@ -592,7 +592,7 @@ size_t che::max_degree() const
 	return md;
 }
 
-vertex & che::get_vertex(index_t v)
+vertex & che::point(index_t v)
 {
 	return GT[v];
 }

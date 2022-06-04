@@ -55,9 +55,9 @@ void poisson(che * mesh, const size_t & old_n_vertices, index_t k)
 	if(spsolve(X, s * L, s * B))
 	for(index_t v = old_n_vertices; v < mesh->n_vertices; ++v)
 	{
-		mesh->get_vertex(v).x = X(v - old_n_vertices, 0);
-		mesh->get_vertex(v).y = X(v - old_n_vertices, 1);
-		mesh->get_vertex(v).z = X(v - old_n_vertices, 2);
+		mesh->point(v).x = X(v - old_n_vertices, 0);
+		mesh->point(v).y = X(v - old_n_vertices, 1);
+		mesh->point(v).z = X(v - old_n_vertices, 2);
 	}
 }
 

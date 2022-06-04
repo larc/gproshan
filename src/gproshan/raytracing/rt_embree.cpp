@@ -257,9 +257,7 @@ index_t embree::add_pointcloud(const che * mesh)
 float embree::pointcloud_hit(vertex & position, vertex & normal, vertex & color, ray_hit r)
 {
 	float w, sum_w = 0;
-	position = vertex(0);
-	normal = vertex(0);
-	color = vertex(0);
+	position = normal = color = {0, 0, 0};
 
 	do
 	{

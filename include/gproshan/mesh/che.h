@@ -120,7 +120,7 @@ class che
 		const index_t & evt(const index_t & v) const;
 		const index_t & bt(const index_t & b) const;
 		size_t max_degree() const;
-		vertex & get_vertex(index_t v);
+		vertex & point(index_t v);
 		void set_vertices(const vertex *const& positions, size_t n = 0, const index_t & v_i = 0);
 		const std::string filename_size() const;
 		const std::string name() const;

@@ -939,7 +939,7 @@ bool app_viewer::process_noise(viewer * p_view)
 	for(index_t v = 0; v < mesh->n_vertices; ++v)
 	{
 		real_t r = real_t(d_mod_1000(generator)) / 200000;
-		mesh->get_vertex(v) += (!d_mod_5(generator)) * r * mesh->normal(v);
+		mesh->point(v) += (!d_mod_5(generator)) * r * mesh->normal(v);
 	}
 
 	mesh->update_normals();
@@ -961,7 +961,7 @@ bool app_viewer::process_black_noise(viewer * p_view)
 	for(index_t v = 0; v < mesh->n_vertices; ++v)
 	{
 		real_t r = real_t(d_mod_1000(generator)) / 200000;
-		mesh->get_vertex(v) += (!d_mod_5(generator)) * r * mesh->normal(v);
+		mesh->point(v) += (!d_mod_5(generator)) * r * mesh->normal(v);
 	}
 
 	mesh->update_normals();

@@ -24,7 +24,7 @@ quaternion::operator const vertex & () const
 const quaternion & quaternion::operator = (real_t _s)
 {
 	s = _s;
-	v = vertex(0, 0, 0);
+	v = {0, 0, 0};
 
 	return *this;
 }

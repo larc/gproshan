@@ -94,7 +94,7 @@ bool viewer::run()
 		cam_light = vertex(-1, 1, -2);
 		cam_light = r.conj() * cam_light * r;
 
-		render_params.proj_view_mat = glm::perspective(45.0f, float(window_width) / float(window_height), 0.01f, 1000.0f) * cam.look_at(r);
+		render_params.proj_view_mat = glm::perspective(45.0f, float(viewport_width) / float(viewport_height), 0.01f, 1000.0f) * cam.look_at(r);
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		render_gl();

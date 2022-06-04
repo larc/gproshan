@@ -43,7 +43,7 @@ void che_img::read_file(const string & file)
 			VT[he++] = (i - 1) * img.height() + j - 1;
 		}
 
-		GT[v++] = vertex(i,j, img(i, j));
+		GT[v++] = {i, j, img(i, j)};
 	}
 
 	thread([](CImg<real_t> img) { img.display(); }, img).detach();
