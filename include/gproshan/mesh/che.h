@@ -81,12 +81,11 @@ class che
 		vertex & point(const index_t & v);
 		const vertex & normal(const index_t & v) const;
 		vertex & normal(const index_t & v);
-		vertex shading_normal(const index_t & f, const float & u, const float & v, const float & w) const;
+		vertex shading_normal(const index_t & f, const float & u, const float & v) const;
 		vertex normal_trig(const index_t & f) const;
 		vertex normal_he(const index_t & he) const;
-		vertex gradient_he(const index_t & he, const real_t *const & f) const;
-		vertex gradient(const index_t & v, const real_t *const & f);
-		vertex barycenter(const index_t & t) const;
+		vertex gradient_he(const index_t & he, const real_t * f) const;
+		vertex gradient(const index_t & v, const real_t * f);
 
 		// vertex color methods
 		const real_t & heatmap(const index_t & v) const;
@@ -94,11 +93,11 @@ class che
 		const rgb_t & rgb(const index_t & v) const;
 		rgb_t & rgb(const index_t & v);
 		vertex color(const index_t & v) const;
-		vertex shading_color(const index_t & f, const float & u, const float & v, const float & w) const;
+		vertex shading_color(const index_t & f, const float & u, const float & v) const;
 
 		// update methods
 		void reload();
-		void normalize();
+		void normalize_sphere(const real_t & r = 1);
 		void merge(const che * mesh, const std::vector<index_t> & com_vertices);
 		void update_vertices(const vertex * positions, const size_t & n = 0, const index_t & v_i = 0);
 		void update_heatmap(const real_t * hm = nullptr);
@@ -117,15 +116,14 @@ class che
 		const index_t & ot(const index_t & he) const;
 		const index_t & ot_evt(const index_t & v) const;
 		const index_t & evt(const index_t & v) const;
-		const index_t & bt(const index_t & b) const;
 
 		// topology methods
 		std::vector<index_t> star(const index_t & v) const;
 		std::vector<index_t> link(const index_t & v) const;
-		void edge_collapse(const index_t *const & sort_edges);
+		void edge_collapse(const std::vector<index_t> & sort_edges);
 		void compute_toplesets(index_t *& rings, index_t *& sorted, std::vector<index_t> & limites, const std::vector<index_t> & sources, const index_t & k = NIL);
 
-		// boundaray methods
+		// boundary methods
 		std::vector<index_t> bounds() const;
 		std::vector<index_t> boundary(const index_t & v) const;
 		bool is_vertex_bound(const index_t & v) const;

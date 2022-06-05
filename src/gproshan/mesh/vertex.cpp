@@ -116,6 +116,21 @@ vertex operator * (const real_t & a, const vertex & v)
 	return {a * v.x, a * v.y, a * v.z};
 }
 
+vertex cross(const vertex & u, const vertex & v)
+{
+	return u * v;
+}
+
+real_t dot(const vertex & u, const vertex & v)
+{
+	return (u, v);
+}
+
+real_t norm(const vertex & v)
+{
+	return *v;
+}
+
 vertex normalize(const vertex & v)
 {
 	return v / *v;
@@ -123,14 +138,12 @@ vertex normalize(const vertex & v)
 
 ostream & operator << (ostream & os, const vertex & v)
 {
-	os << v.x << " " << v.y << " " << v.z;
-	return os;
+	return os << v.x << " " << v.y << " " << v.z;
 }
 
 istream & operator >> (istream & is, vertex & v)
 {
-	is >> v.x >> v.y >> v.z;
-	return is;
+	return is >> v.x >> v.y >> v.z;
 }
 
 

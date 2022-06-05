@@ -49,7 +49,7 @@ vertex embree::ray_hit::color(const rt_mesh & mesh) const
 	if(mesh.pointcloud)
 		return mesh->color(hit.primID);
 
-	return mesh->shading_color(hit.primID, 1.0 - hit.u - hit.v, hit.u, hit.v);
+	return mesh->shading_color(hit.primID, 1.0 - hit.u - hit.v, hit.u);
 }
 
 vertex embree::ray_hit::normal(const rt_mesh & mesh, const bool & flat) const
@@ -57,7 +57,7 @@ vertex embree::ray_hit::normal(const rt_mesh & mesh, const bool & flat) const
 	if(flat || mesh.pointcloud)
 		return normalize({hit.Ng_x, hit.Ng_y, hit.Ng_z});
 
-	const vertex & n = mesh->shading_normal(hit.primID, 1.0 - hit.u - hit.v, hit.u, hit.v);
+	const vertex & n = mesh->shading_normal(hit.primID, 1.0 - hit.u - hit.v, hit.u);
 	return n / *n;
 }
 
@@ -193,10 +193,10 @@ index_t embree::add_mesh(const che * mesh, const glm::mat4 & model_mat)
 	RTCGeometry geom = rtcNewGeometry(device, RTC_GEOMETRY_TYPE_TRIANGLE);
 
 	vertex * vertices = (vertex *) rtcSetNewGeometryBuffer(	geom,
-																	RTC_BUFFER_TYPE_VERTEX, 0,
-																	RTC_FORMAT_FLOAT3, 3 * sizeof(float),
-																	mesh->n_vertices
-																	);
+															RTC_BUFFER_TYPE_VERTEX, 0,
+															RTC_FORMAT_FLOAT3, 3 * sizeof(float),
+															mesh->n_vertices
+															);
 
 	index_t * tri_idxs = (index_t *) rtcSetNewGeometryBuffer(	geom,
 																RTC_BUFFER_TYPE_INDEX, 0,
@@ -261,7 +261,7 @@ float embree::pointcloud_hit(vertex & position, vertex & normal, vertex & color,
 
 	do
 	{
-		glm::vec4 * xyzr = (glm::vec4 *) rtcGetGeometryBufferData(rtcGetGeometry(scene, r.hit.geomID), RTC_BUFFER_TYPE_VERTEX, 0);
+		//glm::vec4 * xyzr = (glm::vec4 *) rtcGetGeometryBufferData(rtcGetGeometry(scene, r.hit.geomID), RTC_BUFFER_TYPE_VERTEX, 0);
 
 		sum_w += w = 1; //pc_radius - glm::length(r.position() - vertex(xyzr[r.hit.primID]));
 		position += w * r.position();

@@ -600,7 +600,7 @@ bool viewer::m_save_mesh(viewer * view)
 bool viewer::m_normalize_mesh(viewer * view)
 {
 	che_viewer & mesh = view->active_mesh();
-	mesh->normalize();
+	mesh->normalize_sphere();
 	mesh.update();
 
 	return false;

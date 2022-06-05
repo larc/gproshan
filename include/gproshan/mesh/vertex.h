@@ -53,6 +53,10 @@ class vertex
 };
 
 vertex operator * (const real_t & a, const vertex & v);
+
+vertex cross(const vertex & u, const vertex & v);
+real_t dot(const vertex & u, const vertex & v);
+real_t norm(const vertex & v);
 vertex normalize(const vertex & v);
 
 std::ostream & operator << (std::ostream & os, const vertex & v);
