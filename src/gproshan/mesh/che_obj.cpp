@@ -84,7 +84,7 @@ void che_obj::write_file(const che * mesh, const string & file, const bool & col
 
 	for(index_t i = 0; i < mesh->n_vertices; ++i)
 	{
-		const vertex & v = mesh->gt(i);
+		const vertex & v = mesh->point(i);
 		fprintf(fp, "v %f %f %f", (float) v.x, (float) v.y, (float) v.z);
 		if(color)
 		{
@@ -100,7 +100,7 @@ void che_obj::write_file(const che * mesh, const string & file, const bool & col
 		{
 			fprintf(fp, "f");
 			for(index_t i = 0; i < che::mtrig; ++i)
-				fprintf(fp, " %u", mesh->vt(he++) + 1);
+				fprintf(fp, " %u", mesh->halfedge(he++) + 1);
 			fprintf(fp, "\n");
 		}
 	}

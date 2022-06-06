@@ -16,10 +16,15 @@ quaternion::quaternion(real_t s_, const vertex & v_): s(s_), v(v_) {}
 
 quaternion::quaternion(const vertex & v_): s(0), v(v_) {}
 
+quaternion::operator const vertex & () const
+{
+	return v;
+}
+
 const quaternion & quaternion::operator = (real_t _s)
 {
 	s = _s;
-	v = vertex(0, 0, 0);
+	v = {0, 0, 0};
 
 	return *this;
 }

@@ -248,8 +248,8 @@ void msparse_coding::load_sampling()
 
 					if(!invalid_seed[v])
 					{
-						const vertex & va = mesh->get_vertex(vsf);
-						const vertex & vb = mesh->get_vertex(v);
+						const vertex & va = mesh->point(vsf);
+						const vertex & vb = mesh->point(v);
 
 						invalid_seed[v] = *(va - vb) < 0.8 * euc_radio;
 					}
@@ -943,9 +943,9 @@ real_t msparse_coding::mesh_reconstruction(const fmask_t & mask)
 		}
 		else
 		{
-			V(0, v) = mesh->gt(v).x;
-			V(1, v) = mesh->gt(v).y;
-			V(2, v) = mesh->gt(v).z;
+			V(0, v) = mesh->point(v).x;
+			V(1, v) = mesh->point(v).y;
+			V(2, v) = mesh->point(v).z;
 		}
 	}
 
@@ -959,7 +959,7 @@ real_t msparse_coding::mesh_reconstruction(const fmask_t & mask)
 	#pragma omp parallel for reduction(+: error) reduction(max: max_error)
 	for(index_t v = 0; v < mesh->n_vertices; ++v)
 	{
-		dist[v] = *(new_vertices[v] - mesh->get_vertex(v));
+		dist[v] = *(new_vertices[v] - mesh->point(v));
 		error += dist[v];
 		max_error = max(max_error, dist[v]);
 	}
@@ -970,7 +970,7 @@ real_t msparse_coding::mesh_reconstruction(const fmask_t & mask)
 	gproshan_debug_var(error);
 	gproshan_debug_var(max_error);
 
-	mesh->set_vertices(new_vertices, mesh->n_vertices);
+	mesh->update_vertices(new_vertices, mesh->n_vertices);
 	che_off::write_file(mesh, "../tmp/recon_mesh");
 
 	return max_error;

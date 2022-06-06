@@ -32,14 +32,14 @@ vector<pair<index_t, real_t> > iter_error_parallel_toplesets_propagation_coalesc
 	#pragma omp parallel for
 	for(index_t i = 0; i < mesh->n_vertices; ++i)
 	{
-		V[i] = mesh->gt(sorted_index[i]);
+		V[i] = mesh->point(sorted_index[i]);
 		inv[sorted_index[i]] = i;
 		exact_dist_sorted[i] = exact_dist[sorted_index[i]];
 	}
 
 	#pragma omp parallel for
 	for(index_t he = 0; he < mesh->n_half_edges; ++he)
-		F[he] = inv[mesh->vt(he)];
+		F[he] = inv[mesh->halfedge(he)];
 
 	mesh = new che(V, mesh->n_vertices, F, mesh->n_faces);
 
@@ -150,13 +150,13 @@ double * times_farthest_point_sampling_ptp_coalescence_gpu(che * mesh, vector<in
 		#pragma omp parallel for
 		for(index_t i = 0; i < mesh->n_vertices; ++i)
 		{
-			V[i] = mesh->gt(sorted_index[i]);
+			V[i] = mesh->point(sorted_index[i]);
 			inv[sorted_index[i]] = i;
 		}
 
 		#pragma omp parallel for
 		for(index_t he = 0; he < mesh->n_half_edges; ++he)
-			F[he] = inv[mesh->vt(he)];
+			F[he] = inv[mesh->halfedge(he)];
 
 		che * tmp_mesh = new che(V, mesh->n_vertices, F, mesh->n_faces);
 

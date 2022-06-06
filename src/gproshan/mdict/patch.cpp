@@ -90,13 +90,13 @@ bool patch::add_vertex_by_faces(vertex & n, vector<vertex> & N, double thr_angle
 	bool added = false;
 	vertex pav, pbv, va, vb,vv;
 
-	for_star(he, mesh, v)
+	for(const index_t & he: mesh->star(v))
 	{
-		a = mesh->vt(next(he)); //index of the next vertex index_t
-		b = mesh->vt(prev(he));
-		va = mesh->gt(a);
-		vb = mesh->gt(b);
-		vv = mesh->gt(v);
+		a = mesh->halfedge(next(he)); //index of the next vertex index_t
+		b = mesh->halfedge(prev(he));
+		va = mesh->point(a);
+		vb = mesh->point(b);
+		vv = mesh->point(v);
 		// If is an adjacent face
 		assert(a < mesh->n_vertices);
 		assert(b < mesh->n_vertices);
@@ -126,7 +126,7 @@ bool patch::add_vertex_by_faces(vertex & n, vector<vertex> & N, double thr_angle
 			}
 		}
 	}
-	//p = mesh->get_vertex(indexes[i]);
+	//p = mesh->point(indexes[i]);
 	//p = p - c ;
 	//p = p - ((p,n)*n);
 
@@ -208,8 +208,8 @@ void patch::recover_radial_disjoint(che * mesh, const real_t & radio_, const ind
 
 		for(index_t i=1; i < vertices.size(); ++i)
 		{
-			p = mesh->get_vertex(indexes[i]);
-			c = mesh->get_vertex(v); // central vertices
+			p = mesh->point(indexes[i]);
+			c = mesh->point(v); // central vertices
 
 			p = p - c ;
 			p = p - ((p,n)*n);
@@ -256,7 +256,7 @@ void patch::init_radial_disjoint(	real_t & euc_radio,
 	real_t proj_area = std::numeric_limits<real_t>::epsilon();
 	real_t ratio;
 
-	vertex c = mesh->get_vertex(v);
+	vertex c = mesh->point(v);
 
 	geodesics::params params;
 	params.dist_alloc = new real_t[mesh->n_vertices];
@@ -268,7 +268,7 @@ void patch::init_radial_disjoint(	real_t & euc_radio,
 
 		if(add_vertex_by_faces(n, N, delta, params.dist_alloc, mesh, u, area, proj_area, M_PI / 2.5 ) && (ratio < sum_thres || (area / area_mesh) < area_thres) )
 		{
-			euc_radio = max(euc_radio, *(mesh->get_vertex(u) - c));
+			euc_radio = max(euc_radio, *(mesh->point(u) - c));
 			return true;
 		}
 
@@ -292,7 +292,7 @@ void patch::init_radial_disjoint(	real_t & euc_radio,
 	vertex p;
 	for(auto & vi: vertices)
 	{
-		p = mesh->get_vertex(vi);
+		p = mesh->point(vi);
 
 		p = p - c ;
 		p = p - ((p, n) * n);
@@ -333,7 +333,7 @@ void patch::reset_xyz(che * mesh, vector<vpatches_t> & vpatches, const index_t &
 	{
 		if(!mask || mask(vertices[i]))
 		{
-			const vertex & v = mesh->gt(vertices[i]);
+			const vertex & v = mesh->point(vertices[i]);
 			xyz(0, j) = v.x;
 			xyz(1, j) = v.y;
 			xyz(2, j) = v.z;
@@ -407,11 +407,11 @@ void patch::add_extra_xyz_disjoint(che * mesh, vector<vpatches_t> & vpatches, co
 
 		// forstar to find closest trinagle
 		a_mat abc(3,3);
-		for_star(he, mesh, min_v)
+		for(const index_t & he: mesh->star(min_v))
 		{
 			//discard triangles outside the patch
-			vpatches_t & ma = vpatches[mesh->vt(next(he))];
-			vpatches_t & mb = vpatches[mesh->vt(prev(he))];
+			vpatches_t & ma = vpatches[mesh->halfedge(next(he))];
+			vpatches_t & mb = vpatches[mesh->halfedge(prev(he))];
 
 			if(ma.find(p) != ma.end() && mb.find(p) != mb.end())
 			{
@@ -489,7 +489,7 @@ void patch::reset_xyz_disjoint(che * mesh, real_t * dist, size_t M, vector<vpatc
 	{
 		if(!mask || mask(vi))
 		{
-			const vertex & v = mesh->gt(vi);
+			const vertex & v = mesh->point(vi);
 			xyz(0, i) = v.x;
 			xyz(1, i) = v.y;
 			xyz(2, i) = v.z;
@@ -569,9 +569,9 @@ void patch::gather_vertices(che * mesh, const index_t & v, const real_t & radio,
 		{
 			if(toplevel[u] == NIL)
 			{
-				p(0) = mesh->gt(u).x;
-				p(1) = mesh->gt(u).y;
-				p(2) = mesh->gt(u).z;
+				p(0) = mesh->point(u).x;
+				p(1) = mesh->point(u).y;
+				p(2) = mesh->point(u).z;
 				p = T.t() * (p - x);
 
 				toplevel[u] = toplevel[v] + 1;
@@ -595,7 +595,7 @@ void patch::jet_fit_directions(che * mesh, const index_t & v)
 	vector<DPoint> in_points;
 	in_points.reserve(vertices.size());
 	for(const index_t & u: vertices)
-		in_points.push_back(DPoint(mesh->gt(u).x, mesh->gt(u).y, mesh->gt(u).z));
+		in_points.push_back(DPoint(mesh->point(u).x, mesh->point(u).y, mesh->point(u).z));
 
 	My_Monge_form monge_form;
 	My_Monge_via_jet_fitting monge_fit;
@@ -605,9 +605,9 @@ void patch::jet_fit_directions(che * mesh, const index_t & v)
 	monge_form.comply_wrt_given_normal(DVector(normal.x, normal.y, normal.z));
 
 	x.set_size(3);
-	x(0) = mesh->gt(v).x;
-	x(1) = mesh->gt(v).y;
-	x(2) = mesh->gt(v).z;
+	x(0) = mesh->point(v).x;
+	x(1) = mesh->point(v).y;
+	x(2) = mesh->point(v).z;
 
 	T.set_size(3, 3);
 	T(0, 0) = monge_form.maximal_principal_direction()[0];
@@ -625,15 +625,15 @@ void patch::jet_fit_directions(che * mesh, const index_t & v)
 void patch::normal_fit_directions(che * mesh, const index_t & v)
 {
 	x.set_size(3);
-	x(0) = mesh->gt(v).x;
-	x(1) = mesh->gt(v).y;
-	x(2) = mesh->gt(v).z;
+	x(0) = mesh->point(v).x;
+	x(1) = mesh->point(v).y;
+	x(2) = mesh->point(v).z;
 
 
 	vertex nz = mesh->normal(v);
-	vertex nx = mesh->gt_vt_next_evt(v);
+	vertex nx = mesh->vertex_he(next(mesh->evt(v)));
 //	GT[VT[next(EVT[v]]]
-	vertex c = mesh->get_vertex(v);
+	vertex c = mesh->point(v);
 	vertex ny;
 	nx = nx - c ;
 	nx = nx - ((nx,nz)*nz);

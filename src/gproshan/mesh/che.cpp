@@ -1,8 +1,5 @@
 #include <gproshan/mesh/che.h>
 
-#include <gproshan/mesh/kdtree.h>
-#include <gproshan/include_arma.h>
-
 #include <cassert>
 #include <cstring>
 #include <cmath>
@@ -85,262 +82,19 @@ che::~che()
 	free();
 }
 
-vector<index_t> che::star(const index_t & v) const
+
+// vertex access geometry methods to xyz point values, normals, and gradient
+
+const vertex & che::point(const index_t & v) const
 {
-	assert(v >= n_vertices);
-
-	vector<index_t> vstar;
-	for_star(he, this, v)
-		vstar.push_back(he);
-
-	return vstar;
+	assert(v < n_vertices);
+	return GT[v];
 }
 
-vector<index_t> che::link(const index_t & v) const
+vertex & che::point(const index_t & v)
 {
-	assert(v >= n_vertices);
-
-	vector<index_t> vlink;
-
-	if(is_vertex_bound(v))
-		vlink.push_back(VT[next(EVT[v])]);
-
-	for_star(he, this, v)
-		vlink.push_back(VT[prev(he)]);
-
-	return vlink;
-}
-
-///< return a vector of indices of one vertex per boundary
-vector<index_t> che::bounds() const
-{
-	if(!n_faces) return {};
-	if(!manifold) return {};
-
-	vector<index_t> vbounds;
-
-	bool * is_bound = new bool[n_vertices];
-	memset(is_bound, 0, sizeof(bool) * n_vertices);
-
-	for(index_t v = 0; v < n_vertices; ++v)
-		if(!is_bound[v] && is_vertex_bound(v))
-		{
-			vbounds.push_back(v);
-
-			for_boundary(he, this, v)
-				is_bound[VT[he]] = true;
-		}
-
-	delete [] is_bound;
-
-	return vbounds;
-}
-
-///< return a vector of the indices of the boundary where v belongs
-vector<index_t> che::boundary(const index_t & v) const
-{
-	vector<index_t> vbound;
-
-	for_boundary(he, this, v)
-		vbound.push_back(VT[he]);
-
-	return vbound;
-}
-
-bool che::is_vertex_bound(const index_t & v) const
-{
-	assert(v < n_vertices && EVT[v] < n_half_edges);
-	return EVT[v] != NIL && OT[EVT[v]] == NIL;
-}
-
-bool che::is_edge_bound(const index_t & e) const
-{
-	return OT[ET[e]] == NIL;
-}
-
-void che::flip(const index_t & e)
-{
-	index_t ha = ET[e];
-	index_t hb = OT[ha];
-
-	if(hb == NIL)
-		return;
-
-	index_t va = VT[ha];
-	index_t vb = VT[hb];
-	index_t vc = VT[prev(ha)];
-	index_t vd = VT[prev(hb)];
-
-	index_t et_pa = EHT[prev(ha)];
-	index_t et_na = EHT[next(ha)];
-	index_t et_pb = EHT[prev(hb)];
-	index_t et_nb = EHT[next(hb)];
-
-	index_t ot_pa = OT[prev(ha)];
-	index_t ot_na = OT[next(ha)];
-	index_t ot_pb = OT[prev(hb)];
-	index_t ot_nb = OT[next(hb)];
-
-	VT[prev(ha)] = vb;
-	VT[ha] = vc;
-	VT[next(ha)] = vd;
-	VT[prev(hb)] = va;
-	VT[hb] = vd;
-	VT[next(hb)] = vc;
-
-	if(ot_pa != NIL) OT[ot_pa] = next(hb);
-	if(ot_na != NIL) OT[ot_na] = prev(ha);
-	if(ot_pb != NIL) OT[ot_pb] = next(ha);
-	if(ot_nb != NIL) OT[ot_nb] = prev(hb);
-
-	OT[prev(ha)] = ot_na;
-	OT[next(ha)] = ot_pb;
-	OT[prev(hb)] = ot_nb;
-	OT[next(hb)] = ot_pa;
-
-	ET[et_pa] = prev(ha);
-	ET[et_na] = next(ha);
-	ET[et_pb] = prev(hb);
-	ET[et_nb] = next(hb);
-
-	EHT[prev(ha)] = EHT[OT[prev(ha)]] = et_pa;
-	EHT[next(ha)] = EHT[OT[next(ha)]] = et_na;
-	EHT[prev(hb)] = EHT[OT[prev(hb)]] = et_pb;
-	EHT[next(hb)] = EHT[OT[next(hb)]] = et_nb;
-
-	if(EVT[va] == next(hb) || EVT[va] == ha) EVT[va] = prev(hb);
-	if(EVT[vb] == next(ha) || EVT[vb] == hb) EVT[vb] = prev(ha);
-	if(EVT[vc] == prev(ha)) EVT[vc] = next(hb);
-	if(EVT[vd] == prev(hb)) EVT[vd] = next(ha);
-}
-
-// https://www.mathworks.com/help/pde/ug/pdetriq.html
-// 4*sqrt(3)*a
-// q = ----------------
-// h1^2+h2^2+h3^2
-real_t che::pdetriq(const index_t & t) const
-{
-	index_t he = t * che::mtrig;
-	real_t h[3] = {
-						*(GT[VT[next(he)]] - GT[VT[he]]),
-						*(GT[VT[prev(he)]] - GT[VT[next(he)]]),
-						*(GT[VT[he]] - GT[VT[prev(he)]])
-					};
-	return (4 * sqrt(3) * area_trig(t)) / (h[0] * h[0] + h[1] * h[1] + h[2] * h[2]);
-}
-
-real_t che::quality() const
-{
-	real_t q = 0;
-
-	#pragma omp parallel for reduction(+: q)
-	for(index_t t = 0; t < n_faces; ++t)
-		q += pdetriq(t) > 0.6; // is confederating good triangle
-
-	return q * 100 / n_faces;
-}
-
-real_t che::area_trig(const index_t & t) const
-{
-	index_t he = t * che::mtrig;
-	vertex a = GT[VT[next(he)]] - GT[VT[he]];
-	vertex b = GT[VT[prev(he)]] - GT[VT[he]];
-
-	return *(a * b) / 2;
-}
-
-real_t che::area_vertex(const index_t & v) const
-{
-	real_t area_star = 0;
-	for_star(he, this, v)
-		area_star += area_trig(trig(he));
-
-	return area_star / 3;
-}
-
-real_t che::area_surface() const
-{
-	real_t area = 0;
-
-	#pragma omp parallel for reduction(+: area)
-	for(index_t i = 0; i < n_faces; ++i)
-		area += area_trig(i);
-
-	return area;
-}
-
-void che::update_heatmap(const real_t * hm)
-{
-	if(!hm)
-	{
-		#pragma omp parallel for
-		for(index_t v = 0; v < n_vertices; ++v)
-			VHC[v] = 0.45;	// default heatmap value
-
-		return;
-	}
-
-	memcpy(VHC, hm, n_vertices * sizeof(real_t));
-}
-
-const che::rgb_t & che::rgb(const index_t & v) const
-{
-	assert(VC && v < n_vertices);
-	return VC[v];
-}
-
-che::rgb_t & che::rgb(const index_t & v)
-{
-	assert(VC && v < n_vertices);
-	return VC[v];
-}
-
-vertex che::color(const index_t & v) const
-{
-	assert(VC && v < n_vertices);
-	return VC[v];
-}
-
-vertex che::shading_color(const index_t & f, const float & u, const float & v, const float & w) const
-{
-	const index_t & he = f * che::mtrig;
-	return u * color(VT[he]) + v * color(VT[he + 1]) + w * color(VT[he + 2]);
-}
-
-const real_t & che::heatmap(const index_t & v) const
-{
-	assert(VHC && v < n_vertices);
-	return VHC[v];
-}
-
-real_t & che::heatmap(const index_t & v)
-{
-	assert(VHC && v < n_vertices);
-	return VHC[v];
-}
-
-void che::update_normals()
-{
-	if(!n_faces) return;
-
-	#pragma omp parallel for
-	for(index_t v = 0; v < n_vertices; ++v)
-	{
-		vertex & n = VN[v];
-
-		n = 0;
-		for_star(he, this, v)
-			n += area_trig(trig(he)) * normal_he(he);
-
-		n /= *n;
-	}
-}
-
-void che::invert_normals()
-{
-	#pragma omp parallel for
-	for(index_t v = 0; v < n_vertices; ++v)
-		VN[v] = - VN[v];
+	assert(v < n_vertices);
+	return GT[v];
 }
 
 const vertex & che::normal(const index_t & v) const
@@ -355,10 +109,10 @@ vertex & che::normal(const index_t & v)
 	return VN[v];
 }
 
-vertex che::shading_normal(const index_t & f, const float & u, const float & v, const float & w) const
+vertex che::shading_normal(const index_t & f, const float & u, const float & v) const
 {
 	const index_t & he = f * che::mtrig;
-	return u * VN[VT[he]] + v * VN[VT[he + 1]] + w * VN[VT[he + 2]];
+	return u * VN[VT[he]] + v * VN[VT[he + 1]] + (1 - u - v) * VN[VT[he + 2]];
 }
 
 vertex che::normal_trig(const index_t & f) const
@@ -368,11 +122,14 @@ vertex che::normal_trig(const index_t & f) const
 
 vertex che::normal_he(const index_t & he) const
 {
-	vertex n = (GT[VT[next(he)]] - GT[VT[he]]) * (GT[VT[prev(he)]] - GT[VT[he]]);
-	return n / *n;
+	const vertex & a = GT[VT[he]];
+	const vertex & b = GT[VT[next(he)]];
+	const vertex & c = GT[VT[prev(he)]];
+
+	return normalize((b - a) * (c - a));
 }
 
-vertex che::gradient_he(const index_t & he, const real_t *const & f) const
+vertex che::gradient_he(const index_t & he, const real_t * f) const
 {
 	index_t i = VT[he];
 	index_t j = VT[next(he)];
@@ -390,16 +147,16 @@ vertex che::gradient_he(const index_t & he, const real_t *const & f) const
 	vertex pjk = n * (xk - xj);
 	vertex pki = n * (xi - xk);
 
-	vertex g = ( f[i] * pjk + f[j] * pki + f[k] * pij ) / A2;
+	vertex g = (f[i] * pjk + f[j] * pki + f[k] * pij) / A2;
 	return g / *g;
 }
 
-vertex che::gradient(const index_t & v, const real_t *const & f)
+vertex che::gradient(const index_t & v, const real_t * f)
 {
 	vertex g;
 	real_t area, area_star = 0;
 
-	for_star(he, this, v)
+	for(const index_t & he: star(v))
 	{
 		area = area_trig(trig(he));
 		area_star += area;
@@ -409,71 +166,55 @@ vertex che::gradient(const index_t & v, const real_t *const & f)
 	return g / area_star;
 }
 
-vertex che::barycenter(const index_t & t) const
+
+// vertex color methods
+
+const real_t & che::heatmap(const index_t & v) const
 {
-	vertex bc;
-	index_t tmp, he = t * che::mtrig;
-	tmp = he;
-
-	do
-	{
-		bc += GT[VT[he]];
-		he = next(he);
-	}
-	while(he != tmp);
-
-	return bc / che::mtrig;
+	assert(v < n_vertices);
+	return VHC[v];
 }
 
-real_t che::cotan(const index_t & he) const
+real_t & che::heatmap(const index_t & v)
 {
-	if(he == NIL) return 0;
-
-	vertex a = GT[VT[he]] - GT[VT[prev(he)]];
-	vertex b = GT[VT[next(he)]] - GT[VT[prev(he)]];
-
-	return (a, b) / *(a * b);
+	assert(v < n_vertices);
+	return VHC[v];
 }
 
-real_t che::mean_edge() const
+const che::rgb_t & che::rgb(const index_t & v) const
 {
-	real_t m = 0;
-
-	#pragma omp parallel for reduction(+: m)
-	for(index_t e = 0; e < n_edges; ++e)
-		m += *(GT[VT[ET[e]]] - GT[VT[next(ET[e])]]);
-
-	return m / n_edges;
+	assert(v < n_vertices);
+	return VC[v];
 }
 
-size_t che::memory() const
+che::rgb_t & che::rgb(const index_t & v)
 {
-	return sizeof(*this) + n_vertices * (sizeof(vertex) + sizeof(index_t)) + filename.size()
-						+ sizeof(index_t) * (3 * n_half_edges + n_edges);
+	assert(v < n_vertices);
+	return VC[v];
 }
 
-size_t che::genus() const
+vertex che::color(const index_t & v) const
 {
-	size_t g = n_vertices - n_edges + n_faces;
-	return (g - 2) / (-2);
+	assert(VC && v < n_vertices);
+	return VC[v];
 }
 
-// The Gauss-Bonnet Scheme
-real_t che::mean_curvature(const index_t & v)
+vertex che::shading_color(const index_t & f, const float & u, const float & v) const
 {
-	real_t h = 0;
-	real_t a = 0;
-
-	for_star(he, this, v)
-	{
-		a += area_trig(trig(he));
-		h += *(GT[VT[next(he)]] - GT[v]) * (normal(v), normal_he(he));
-	}
-
-	return 0.75 * h / a;
+	const index_t & he = f * che::mtrig;
+	return u * color(VT[he]) + v * color(VT[he + 1]) + (1 - u - v) * color(VT[he + 2]);
 }
 
-void che::normalize()
+
+// update methods
+
+void che::reload()
+{
+	free();
+	init(filename);
+}
+
+void che::normalize_sphere(const real_t & r)
 {
 	vertex center;
 
@@ -488,7 +229,7 @@ void che::normalize()
 
 	real_t max_norm = 0;
 
-	#pragma omp parallel for reduction(max : max_norm)
+	#pragma omp parallel for reduction(max: max_norm)
 	for(index_t v = 0; v < n_vertices; ++v)
 	{
 		GT[v] -= center;
@@ -497,359 +238,12 @@ void che::normalize()
 
 	#pragma omp parallel for
 	for(index_t v = 0; v < n_vertices; ++v)
-		GT[v] /= max_norm;
-}
-
-bool che::is_pointcloud() const
-{
-	return n_faces == 0;
-}
-
-bool che::is_manifold() const
-{
-	return manifold;
-}
-
-const index_t & che::vt(const index_t & he) const
-{
-	assert(he < n_half_edges);
-	return VT[he];
-}
-
-const vertex & che::gt(const index_t & v) const
-{
-	assert(v < n_vertices);
-	return GT[v];
-}
-
-const vertex & che::gt_vt(const index_t & he) const
-{
-	assert(he < n_half_edges);
-	return GT[VT[he]];
-}
-
-const vertex & che::gt_vt_next_evt(const index_t & v) const
-{
-	assert(v < n_vertices);
-	return GT[VT[next(EVT[v])]];
-}
-
-const vertex & che::gt_e(const index_t & e, const bool & op)
-{
-	assert(e < n_edges);
-	return op ? GT[VT[next(ET[e])]] : GT[VT[ET[e]]];
-}
-
-const index_t & che::vt_e(const index_t & e, const bool & op)
-{
-	assert(e < n_edges);
-	return op ? VT[next(ET[e])] : VT[ET[e]];
-}
-
-const index_t & che::et(const index_t & e) const
-{
-	assert(e < n_edges);
-	return ET[e];
-}
-
-const index_t & che::ot_et(const index_t & e) const
-{
-	assert(e < n_edges);
-	return OT[ET[e]];
-}
-
-const index_t & che::ot(const index_t & he) const
-{
-	assert(he < n_half_edges);
-	return OT[he];
-}
-
-const index_t & che::ot_evt(const index_t & v) const
-{
-	assert(v < n_vertices);
-	return OT[EVT[v]];
-}
-
-const index_t & che::evt(const index_t & v) const
-{
-	assert(v < n_vertices);
-	return EVT[v];
-}
-
-size_t che::max_degree() const
-{
-	size_t d, md = 0;
-
-	#pragma omp parallel for private(d) reduction(max: md)
-	for(index_t v = 0; v < n_vertices; ++v)
-	{
-		d = 0;
-		for_star(he, this, v) ++d;
-		d += is_vertex_bound(v);
-		md = max(md, d);
-	}
-
-	return md;
-}
-
-vertex & che::get_vertex(index_t v)
-{
-	return GT[v];
-}
-
-void che::set_vertices(const vertex *const& positions, size_t n, const index_t & v_i)
-{
-	if(!positions) return;
-	if(!n) n = n_vertices;
-	memcpy(GT + v_i, positions, sizeof(vertex) * n);
-}
-
-const string che::filename_size() const
-{
-	return filename + "_" + to_string(n_vertices);
-}
-
-const string che::name() const
-{
-	index_t p = filename.find_last_of('/');
-	index_t q = filename.find_last_of('.');
-	return filename.substr(p + 1, q - p - 1);
-}
-
-const string che::name_size() const
-{
-	return name() + "_" + to_string(n_vertices);
-}
-
-void che::reload()
-{
-	free();
-	init(filename);
-}
-
-void che::compute_toplesets(index_t *& toplesets, index_t *& sorted, vector<index_t> & limits, const vector<index_t> & sources, const index_t & k)
-{
-	if(!sources.size()) return;
-
-	memset(toplesets, -1, sizeof(index_t) * n_vertices);
-
-	index_t level = 0;
-
-	index_t p = 0;
-	for(const index_t & s: sources)
-	{
-		sorted[p++] = s;
-
-		if(toplesets[s] == NIL)
-			toplesets[s] = level;
-	}
-
-	limits.push_back(0);
-	for(index_t i = 0; i < p; ++i)
-	{
-		const index_t & v = sorted[i];
-
-		if(toplesets[v] > level)
-		{
-			if(++level > k) break;
-
-			limits.push_back(i);
-		}
-
-		for(const index_t & u: link(v))
-		{
-			if(toplesets[u] == NIL)
-			{
-				toplesets[u] = toplesets[v] + 1;
-				sorted[p++] = u;
-			}
-		}
-	}
-
-	assert(p <= n_vertices);
-	limits.push_back(p);
-}
-
-void che::multiplicate_vertices()
-{
-	vertex * old_GT = GT;
-	index_t * old_VT = VT;
-	size_t nv = n_vertices;
-	size_t nf = n_faces;
-
-	GT = nullptr;
-	VT = nullptr;
-
-	free();
-	alloc(nv + nf, 3 * nf);
-
-	memcpy(GT, old_GT, nv * sizeof(vertex));
-
-	#pragma omp parallel for
-	for(index_t f = 0; f < nf; ++f)
-	{
-		const index_t & v = nv + f;
-		const index_t & old_he = f * che::mtrig;
-		const index_t & he = 3 * f * che::mtrig;
-
-		GT[v] = (GT[old_VT[old_he]] + GT[old_VT[old_he + 1]] + GT[old_VT[old_he + 2]]) / 3;
-
-		VT[he] = old_VT[old_he];
-		VT[he + 1] = old_VT[old_he + 1];
-		VT[he + 2] = v;
-
-		VT[he + 3] = old_VT[old_he + 1];
-		VT[he + 4] = old_VT[old_he + 2];
-		VT[he + 5] = v;
-
-		VT[he + 6] = old_VT[old_he + 2];
-		VT[he + 7] = old_VT[old_he];
-		VT[he + 8] = v;
-	}
-
-	delete [] old_GT;
-	delete [] old_VT;
-
-	update_evt_ot_et();
-	update_eht();
-
-	for(index_t e = 0; e < n_edges; ++e)
-	{
-		const index_t & he = ET[e];
-		if(!(he % 3) && OT[he] != NIL)
-			flip(e);
-	}
-}
-
-void che::remove_non_manifold_vertices()
-{
-	for( index_t he = 0; he < n_half_edges; he+=3)
-	{
-		if(EVT[VT[he]] == NIL || EVT[VT[he+1]] == NIL || EVT[VT[he+2]] == NIL)
-		{
-			VT[he] = NIL;
-			VT[he + 1] = NIL;
-			VT[he + 2] = NIL;
-		}
-	}
-
-	/* save in vectors */
-	vector<vertex> new_vertices;
-	vector<index_t> removed;
-	vector<index_t> new_faces; // each 3
-
-	gproshan_debug(removing vertex);
-	for(index_t v = 0; v < n_vertices; ++v)
-	{
-		if(EVT[v] != NIL)
-			new_vertices.push_back(GT[v]);
-		else
-			removed.push_back(v);
-	}
-	removed.push_back(n_vertices);
-
-	gproshan_debug_var(removed.size());
-	gproshan_debug_var(removed[0]);
-	index_t r = 1;
-	index_t d = 1;
-	for(index_t v = removed[0] + 1; v < n_vertices; ++v)
-	{
-		if(v < removed[r])
-		{
-			for_star(he, this, v)
-				if(VT[he] != NIL) VT[he] = v - d;
-		}
-		else if(v == removed[r])
-		{
-			++d;
-			++r;
-		}
-	}
-
-	for(index_t he = 0; he < n_half_edges; ++he)
-		if(VT[he] != NIL)
-			new_faces.push_back(VT[he]);
-		else gproshan_error_var(he);
-
-	gproshan_debug_var(new_vertices.size());
-	gproshan_debug_var(new_faces.size());
-	gproshan_debug(removing vertex);
-	free();
-	gproshan_debug(removing vertex);
-	init(new_vertices.data(), new_vertices.size(), new_faces.data(), new_faces.size() / che::mtrig);
-	gproshan_debug(removing vertex);
-}
-
-void che::remove_vertices(const vector<index_t> & vertices)
-{
-	if(!vertices.size()) return;
-
-	gproshan_debug(removing vertex);
-	for(index_t v: vertices)
-	{
-		for_star(he, this, v)
-		{
-			VT[he] = NIL;
-			VT[prev(he)] = NIL;
-			VT[next(he)] = NIL;
-
-			gproshan_debug_var(he);
-			gproshan_debug_var(next(he));
-			gproshan_debug_var(prev(he));
-		}
-
-		gproshan_debug_var(EVT[v]);
-		EVT[v] = NIL;
-	}
-	/* save in vectors */
-	vector<vertex> new_vertices;
-	vector<index_t> removed;
-	vector<index_t> new_faces; // each 3
-
-	gproshan_debug(removing vertex);
-	for(index_t v = 0; v < n_vertices; ++v)
-	{
-		if(EVT[v] != NIL)
-			new_vertices.push_back(GT[v]);
-		else
-			removed.push_back(v);
-	}
-	removed.push_back(n_vertices);
-
-	gproshan_debug_var(removed.size());
-	gproshan_debug_var(removed[0]);
-	index_t r = 1;
-	index_t d = 1;
-	for(index_t v = removed[0] + 1; v < n_vertices; ++v)
-	{
-		if(v < removed[r])
-		{
-			for_star(he, this, v)
-				if(VT[he] != NIL) VT[he] = v - d;
-		}
-		else if(v == removed[r])
-		{
-			++d;
-			++r;
-		}
-	}
-
-	for(index_t he = 0; he < n_half_edges; ++he)
-		if(VT[he] != NIL)
-			new_faces.push_back(VT[he]);
-		else gproshan_error_var(he);
-
-	gproshan_debug_var(new_vertices.size());
-	gproshan_debug_var(new_faces.size());
-	gproshan_debug(removing vertex);
-	free();
-	gproshan_debug(removing vertex);
-	init(new_vertices.data(), new_vertices.size(), new_faces.data(), new_faces.size() / che::mtrig);
-	gproshan_debug(removing vertex);
+		GT[v] *= r / max_norm;
 }
 
 void che::merge(const che * mesh, const vector<index_t> & com_vertices)
 {
+	// TODO
 //	write_file("big.off");
 //	mesh->write_file("small.off");
 gproshan_debug(fill_holes);
@@ -953,6 +347,228 @@ gproshan_debug(fill_holes);
 	update_eht();
 }
 
+void che::update_vertices(const vertex * positions, const size_t & n, const index_t & v_i)
+{
+	if(!positions) return;
+	memcpy(GT + v_i, positions, sizeof(vertex) * (!n ? n_vertices : n));
+}
+
+void che::update_heatmap(const real_t * hm)
+{
+	if(!hm)
+	{
+		#pragma omp parallel for
+		for(index_t v = 0; v < n_vertices; ++v)
+			VHC[v] = 0.45;	// default heatmap value
+
+		return;
+	}
+
+	memcpy(VHC, hm, n_vertices * sizeof(real_t));
+}
+
+void che::update_normals()
+{
+	if(!n_faces) return;
+
+	#pragma omp parallel for
+	for(index_t v = 0; v < n_vertices; ++v)
+	{
+		vertex & n = VN[v];
+
+		n = 0;
+		for(const index_t & he: star(v))
+			n += area_trig(trig(he)) * normal_he(he);
+
+		n /= *n;
+	}
+}
+
+void che::invert_normals()
+{
+	#pragma omp parallel for
+	for(index_t v = 0; v < n_vertices; ++v)
+		VN[v] = - VN[v];
+}
+
+void che::multiplicate_vertices()
+{
+	vertex * old_GT = GT;
+	index_t * old_VT = VT;
+	size_t nv = n_vertices;
+	size_t nf = n_faces;
+
+	GT = nullptr;
+	VT = nullptr;
+
+	free();
+	alloc(nv + nf, 3 * nf);
+
+	memcpy(GT, old_GT, nv * sizeof(vertex));
+
+	#pragma omp parallel for
+	for(index_t f = 0; f < nf; ++f)
+	{
+		const index_t & v = nv + f;
+		const index_t & old_he = f * che::mtrig;
+		const index_t & he = 3 * f * che::mtrig;
+
+		GT[v] = (GT[old_VT[old_he]] + GT[old_VT[old_he + 1]] + GT[old_VT[old_he + 2]]) / 3;
+
+		VT[he] = old_VT[old_he];
+		VT[he + 1] = old_VT[old_he + 1];
+		VT[he + 2] = v;
+
+		VT[he + 3] = old_VT[old_he + 1];
+		VT[he + 4] = old_VT[old_he + 2];
+		VT[he + 5] = v;
+
+		VT[he + 6] = old_VT[old_he + 2];
+		VT[he + 7] = old_VT[old_he];
+		VT[he + 8] = v;
+	}
+
+	delete [] old_GT;
+	delete [] old_VT;
+
+	update_evt_ot_et();
+	update_eht();
+
+	for(index_t e = 0; e < n_edges; ++e)
+	{
+		const index_t & he = ET[e];
+		if(!(he % 3) && OT[he] != NIL)
+			flip(e);
+	}
+}
+
+void che::remove_vertices(const vector<index_t> & vertices)
+{
+	if(!vertices.size()) return;
+
+	gproshan_debug(removing vertex);
+	for(index_t v: vertices)
+	{
+		for(const index_t & he: star(v))
+		{
+			VT[he] = NIL;
+			VT[prev(he)] = NIL;
+			VT[next(he)] = NIL;
+
+			gproshan_debug_var(he);
+			gproshan_debug_var(next(he));
+			gproshan_debug_var(prev(he));
+		}
+
+		gproshan_debug_var(EVT[v]);
+		EVT[v] = NIL;
+	}
+	/* save in vectors */
+	vector<vertex> new_vertices;
+	vector<index_t> removed;
+	vector<index_t> new_faces; // each 3
+
+	gproshan_debug(removing vertex);
+	for(index_t v = 0; v < n_vertices; ++v)
+	{
+		if(EVT[v] != NIL)
+			new_vertices.push_back(GT[v]);
+		else
+			removed.push_back(v);
+	}
+	removed.push_back(n_vertices);
+
+	gproshan_debug_var(removed.size());
+	gproshan_debug_var(removed[0]);
+	index_t r = 1;
+	index_t d = 1;
+	for(index_t v = removed[0] + 1; v < n_vertices; ++v)
+	{
+		if(v < removed[r])
+		{
+			for(const index_t & he: star(v))
+				if(VT[he] != NIL) VT[he] = v - d;
+		}
+		else if(v == removed[r])
+		{
+			++d;
+			++r;
+		}
+	}
+
+	for(index_t he = 0; he < n_half_edges; ++he)
+		if(VT[he] != NIL)
+			new_faces.push_back(VT[he]);
+		else gproshan_error_var(he);
+
+	gproshan_debug_var(new_vertices.size());
+	gproshan_debug_var(new_faces.size());
+	gproshan_debug(removing vertex);
+	free();
+	gproshan_debug(removing vertex);
+	init(new_vertices.data(), new_vertices.size(), new_faces.data(), new_faces.size() / che::mtrig);
+	gproshan_debug(removing vertex);
+}
+
+void che::remove_non_manifold_vertices()
+{
+	for( index_t he = 0; he < n_half_edges; he+=3)
+	{
+		if(EVT[VT[he]] == NIL || EVT[VT[he+1]] == NIL || EVT[VT[he+2]] == NIL)
+		{
+			VT[he] = NIL;
+			VT[he + 1] = NIL;
+			VT[he + 2] = NIL;
+		}
+	}
+
+	/* save in vectors */
+	vector<vertex> new_vertices;
+	vector<index_t> removed;
+	vector<index_t> new_faces; // each 3
+
+	gproshan_debug(removing vertex);
+	for(index_t v = 0; v < n_vertices; ++v)
+	{
+		if(EVT[v] != NIL)
+			new_vertices.push_back(GT[v]);
+		else
+			removed.push_back(v);
+	}
+	removed.push_back(n_vertices);
+
+	gproshan_debug_var(removed.size());
+	gproshan_debug_var(removed[0]);
+	index_t r = 1;
+	index_t d = 1;
+	for(index_t v = removed[0] + 1; v < n_vertices; ++v)
+	{
+		if(v < removed[r])
+		{
+			for(const index_t & he: star(v))
+				if(VT[he] != NIL) VT[he] = v - d;
+		}
+		else if(v == removed[r])
+		{
+			++d;
+			++r;
+		}
+	}
+
+	for(index_t he = 0; he < n_half_edges; ++he)
+		if(VT[he] != NIL)
+			new_faces.push_back(VT[he]);
+		else gproshan_error_var(he);
+
+	gproshan_debug_var(new_vertices.size());
+	gproshan_debug_var(new_faces.size());
+	gproshan_debug(removing vertex);
+	free();
+	gproshan_debug(removing vertex);
+	init(new_vertices.data(), new_vertices.size(), new_faces.data(), new_faces.size() / che::mtrig);
+	gproshan_debug(removing vertex);
+}
+
 void che::set_head_vertices(index_t * head, const size_t & n)
 {
 	for(index_t v, i = 0; i < n; ++i)
@@ -968,29 +584,422 @@ void che::set_head_vertices(index_t * head, const size_t & n)
 
 		swap(GT[v], GT[i]);
 
-		for_star(he, this, v)
+		for(const index_t & he: star(v))
 			VT[he] = i;
-		for_star(he, this, i)
-			VT[he] = v;
+
+		for(const index_t & he: star(i))
+			VT[he] = i;
 
 		swap(EVT[v], EVT[i]);
 	}
 }
 
-index_t che::link_intersect(const index_t & v_a, const index_t & v_b)
+
+// half edge access methods triangular faces and navigation
+
+const index_t & che::halfedge(const index_t & he) const
 {
-	index_t intersect = 0;
-
-	for(index_t & a: link(v_a))
-	for(index_t & b: link(v_b))
-		if(a == b) ++intersect;
-
-	return intersect;
+	assert(he < n_half_edges);
+	return VT[he];
 }
 
-void che::edge_collapse(const index_t *const & sort_edges)
+const index_t & che::twin_he(const index_t & he) const
 {
+	assert(he < n_half_edges);
+	return OT[he];
 }
+
+const index_t & che::edge_u(const index_t & e) const
+{
+	assert(e < n_edges);
+	return VT[ET[e]];
+}
+
+const index_t & che::edge_v(const index_t & e) const
+{
+	assert(e < n_edges);
+	return VT[next(ET[e])];
+}
+
+const index_t & che::edge_he_0(const index_t & e) const
+{
+	assert(e < n_edges);
+	return ET[e];
+}
+
+const index_t & che::edge_he_1(const index_t & e) const
+{
+	assert(e < n_edges);
+	return OT[ET[e]];
+}
+
+const vertex & che::vertex_he(const index_t & he) const
+{
+	assert(he < n_half_edges);
+	return GT[VT[he]];
+}
+
+const vertex & che::vertex_edge_u(const index_t & e) const
+{
+	assert(e < n_edges);
+	return GT[VT[ET[e]]];
+}
+
+const vertex & che::vertex_edge_v(const index_t & e) const
+{
+	assert(e < n_edges);
+	return GT[VT[next(ET[e])]];
+}
+
+const index_t & che::evt(const index_t & v) const
+{
+	assert(v < n_vertices);
+	return EVT[v];
+}
+
+
+// topology methods
+
+che::star_he che::star(const index_t & v) const
+{
+	return {this, v};
+}
+
+vector<index_t> che::link(const index_t & v) const
+{
+	assert(v < n_vertices);
+
+	vector<index_t> vlink;
+
+	if(is_vertex_bound(v))
+		vlink.push_back(VT[next(EVT[v])]);
+
+	for(const index_t & he: star(v))
+		vlink.push_back(VT[prev(he)]);
+
+	return vlink;
+}
+
+void che::edge_collapse(const std::vector<index_t> & sort_edges)
+{
+	// TODO
+}
+
+void che::compute_toplesets(index_t *& toplesets, index_t *& sorted, vector<index_t> & limits, const vector<index_t> & sources, const index_t & k)
+{
+	if(!sources.size()) return;
+
+	memset(toplesets, -1, sizeof(index_t) * n_vertices);
+
+	index_t level = 0;
+
+	index_t p = 0;
+	for(const index_t & s: sources)
+	{
+		sorted[p++] = s;
+
+		if(toplesets[s] == NIL)
+			toplesets[s] = level;
+	}
+
+	limits.push_back(0);
+	for(index_t i = 0; i < p; ++i)
+	{
+		const index_t & v = sorted[i];
+
+		if(toplesets[v] > level)
+		{
+			if(++level > k) break;
+
+			limits.push_back(i);
+		}
+
+		for(const index_t & u: link(v))
+		{
+			if(toplesets[u] == NIL)
+			{
+				toplesets[u] = toplesets[v] + 1;
+				sorted[p++] = u;
+			}
+		}
+	}
+
+	assert(p <= n_vertices);
+	limits.push_back(p);
+}
+
+
+// boundary methods
+
+///< return a vector of indices of one vertex per boundary
+vector<index_t> che::bounds() const
+{
+	if(!n_faces) return {};
+	if(!manifold) return {};
+
+	vector<index_t> vbounds;
+
+	bool * is_bound = new bool[n_vertices];
+	memset(is_bound, 0, sizeof(bool) * n_vertices);
+
+	for(index_t v = 0; v < n_vertices; ++v)
+		if(!is_bound[v] && is_vertex_bound(v))
+		{
+			vbounds.push_back(v);
+
+			for(const index_t & b: boundary(v))
+				is_bound[b] = true;
+		}
+
+	delete [] is_bound;
+
+	return vbounds;
+}
+
+///< return a vector of the indices of the boundary where v belongs
+vector<index_t> che::boundary(const index_t & v) const
+{
+	vector<index_t> vbound;
+
+	index_t he_end = EVT[v];
+	index_t he = he_end;
+	do
+	{
+		vbound.push_back(VT[he]);
+		he = EVT[VT[next(he)]];
+	}
+	while(he != NIL && he != he_end);
+
+	return vbound;
+}
+
+bool che::is_vertex_bound(const index_t & v) const
+{
+	assert(v < n_vertices);
+	return EVT[v] != NIL && OT[EVT[v]] == NIL;
+}
+
+bool che::is_edge_bound(const index_t & e) const
+{
+	assert(e < n_edges);
+	return OT[ET[e]] == NIL;
+}
+
+
+// file, name, and system methods
+
+const string che::name() const
+{
+	index_t p = filename.find_last_of('/');
+	index_t q = filename.find_last_of('.');
+	return filename.substr(p + 1, q - p - 1);
+}
+
+const string che::name_size() const
+{
+	return name() + "_" + to_string(n_vertices);
+}
+
+const string che::filename_size() const
+{
+	return filename + "_" + to_string(n_vertices);
+}
+
+
+// mesh information methods
+
+size_t che::genus() const
+{
+	size_t g = n_vertices - n_edges + n_faces;
+	return (g - 2) / (-2);
+}
+
+size_t che::memory() const
+{
+	return	sizeof(*this) +
+			n_vertices * (2 * sizeof(vertex) + sizeof(index_t) + sizeof(real_t) + sizeof(rgb_t)) +
+			sizeof(index_t) * (3 * n_half_edges + n_edges) +
+			filename.size();
+}
+
+size_t che::max_degree() const
+{
+	size_t d, md = 0;
+
+	#pragma omp parallel for private(d) reduction(max: md)
+	for(index_t v = 0; v < n_vertices; ++v)
+	{
+		d = 0;
+		for(const index_t & he: star(v)) ++d;
+		d += is_vertex_bound(v);
+		md = max(md, d);
+	}
+
+	return md;
+}
+
+real_t che::quality() const
+{
+	real_t q = 0;
+
+	#pragma omp parallel for reduction(+: q)
+	for(index_t t = 0; t < n_faces; ++t)
+		q += pdetriq(t) > 0.6; // is confederating good triangle
+
+	return q * 100 / n_faces;
+}
+
+real_t che::mean_edge() const
+{
+	real_t m = 0;
+
+	#pragma omp parallel for reduction(+: m)
+	for(index_t e = 0; e < n_edges; ++e)
+		m += *(GT[VT[ET[e]]] - GT[VT[next(ET[e])]]);
+
+	return m / n_edges;
+}
+
+real_t che::area_surface() const
+{
+	real_t area = 0;
+
+	#pragma omp parallel for reduction(+: area)
+	for(index_t i = 0; i < n_faces; ++i)
+		area += area_trig(i);
+
+	return area;
+}
+
+bool che::is_manifold() const
+{
+	return manifold;
+}
+
+bool che::is_pointcloud() const
+{
+	return n_faces == 0;
+}
+
+
+// operation methods
+
+void che::flip(const index_t & e)
+{
+	index_t ha = ET[e];
+	index_t hb = OT[ha];
+
+	if(hb == NIL)
+		return;
+
+	index_t va = VT[ha];
+	index_t vb = VT[hb];
+	index_t vc = VT[prev(ha)];
+	index_t vd = VT[prev(hb)];
+
+	index_t et_pa = EHT[prev(ha)];
+	index_t et_na = EHT[next(ha)];
+	index_t et_pb = EHT[prev(hb)];
+	index_t et_nb = EHT[next(hb)];
+
+	index_t ot_pa = OT[prev(ha)];
+	index_t ot_na = OT[next(ha)];
+	index_t ot_pb = OT[prev(hb)];
+	index_t ot_nb = OT[next(hb)];
+
+	VT[prev(ha)] = vb;
+	VT[ha] = vc;
+	VT[next(ha)] = vd;
+	VT[prev(hb)] = va;
+	VT[hb] = vd;
+	VT[next(hb)] = vc;
+
+	if(ot_pa != NIL) OT[ot_pa] = next(hb);
+	if(ot_na != NIL) OT[ot_na] = prev(ha);
+	if(ot_pb != NIL) OT[ot_pb] = next(ha);
+	if(ot_nb != NIL) OT[ot_nb] = prev(hb);
+
+	OT[prev(ha)] = ot_na;
+	OT[next(ha)] = ot_pb;
+	OT[prev(hb)] = ot_nb;
+	OT[next(hb)] = ot_pa;
+
+	ET[et_pa] = prev(ha);
+	ET[et_na] = next(ha);
+	ET[et_pb] = prev(hb);
+	ET[et_nb] = next(hb);
+
+	EHT[prev(ha)] = EHT[OT[prev(ha)]] = et_pa;
+	EHT[next(ha)] = EHT[OT[next(ha)]] = et_na;
+	EHT[prev(hb)] = EHT[OT[prev(hb)]] = et_pb;
+	EHT[next(hb)] = EHT[OT[next(hb)]] = et_nb;
+
+	if(EVT[va] == next(hb) || EVT[va] == ha) EVT[va] = prev(hb);
+	if(EVT[vb] == next(ha) || EVT[vb] == hb) EVT[vb] = prev(ha);
+	if(EVT[vc] == prev(ha)) EVT[vc] = next(hb);
+	if(EVT[vd] == prev(hb)) EVT[vd] = next(ha);
+}
+
+real_t che::cotan(const index_t & he) const
+{
+	if(he == NIL) return 0;
+
+	vertex a = GT[VT[he]] - GT[VT[prev(he)]];
+	vertex b = GT[VT[next(he)]] - GT[VT[prev(he)]];
+
+	return (a, b) / *(a * b);
+}
+
+// https://www.mathworks.com/help/pde/ug/pdetriq.html
+// 4*sqrt(3)*a
+// q = ----------------
+// h1^2+h2^2+h3^2
+real_t che::pdetriq(const index_t & t) const
+{
+	index_t he = t * che::mtrig;
+	real_t h[3] = {
+						*(GT[VT[next(he)]] - GT[VT[he]]),
+						*(GT[VT[prev(he)]] - GT[VT[next(he)]]),
+						*(GT[VT[he]] - GT[VT[prev(he)]])
+					};
+	return (4 * sqrt(3) * area_trig(t)) / (h[0] * h[0] + h[1] * h[1] + h[2] * h[2]);
+}
+
+real_t che::area_trig(const index_t & t) const
+{
+	index_t he = t * che::mtrig;
+	vertex a = GT[VT[next(he)]] - GT[VT[he]];
+	vertex b = GT[VT[prev(he)]] - GT[VT[he]];
+
+	return *(a * b) / 2;
+}
+
+real_t che::area_vertex(const index_t & v) const
+{
+	real_t area_star = 0;
+	for(const index_t & he: star(v))
+		area_star += area_trig(trig(he));
+
+	return area_star / 3;
+}
+
+// The Gauss-Bonnet Scheme
+real_t che::mean_curvature(const index_t & v) const
+{
+	real_t h = 0;
+	real_t a = 0;
+
+	for(const index_t & he: star(v))
+	{
+		a += area_trig(trig(he));
+		h += *(GT[VT[next(he)]] - GT[v]) * (normal(v), normal_he(he));
+	}
+
+	return 0.75 * h / a;
+}
+
+
+// protected
 
 void che::init(const vertex * vertices, const index_t & n_v, const index_t * faces, const index_t & n_f)
 {

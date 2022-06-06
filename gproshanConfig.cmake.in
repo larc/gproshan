@@ -2,7 +2,7 @@
 
 include(CMakeFindDependencyMacro)
 
-find_dependency(CUDAToolkit 11.4)
+find_dependency(CUDAToolkit 11.7)
 if(CUDAToolkit_FOUND)
 	add_definitions(-DGPROSHAN_CUDA)
 endif(CUDAToolkit_FOUND)

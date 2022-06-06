@@ -149,7 +149,7 @@ bool app_viewer::process_convex_hull(viewer * p_view)
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
-	convex_hull ch(&mesh->gt(0), mesh->n_vertices);
+	convex_hull ch(&mesh->point(0), mesh->n_vertices);
 	mesh.selected = ch;
 
 	return false;
@@ -217,10 +217,10 @@ bool app_viewer::process_gaussian_curvature(viewer * p_view)
 	for(index_t v = 0; v < mesh->n_vertices; ++v)
 	{
 		g = 0;
-		for_star(he, mesh, v)
+		for(const index_t & he: mesh->star(v))
 		{
-			a = mesh->gt_vt(next(he)) - mesh->gt(v);
-			b = mesh->gt_vt(prev(he)) - mesh->gt(v);
+			a = mesh->vertex_he(next(he)) - mesh->point(v);
+			b = mesh->vertex_he(prev(he)) - mesh->point(v);
 			g += acos((a,b) / (*a * *b));
 		}
 		//gv(v) = (2 * M_PI - g) / mesh->area_vertex(v);
@@ -340,13 +340,13 @@ bool app_viewer::process_fairing_spectral(viewer * p_view)
 		if(vertices.size() != mesh->n_vertices)
 		{
 			vertices.resize(mesh->n_vertices);
-			memcpy(vertices.data(), &mesh->gt(0), mesh->n_vertices * sizeof(vertex));
+			memcpy(vertices.data(), &mesh->point(0), mesh->n_vertices * sizeof(vertex));
 		}
-		else mesh->set_vertices(vertices.data());
+		else mesh->update_vertices(vertices.data());
 
 		fair.run(mesh);
 
-		mesh->set_vertices(fair.new_vertices());
+		mesh->update_vertices(fair.new_vertices());
 		mesh->update_normals();
 
 		mesh.update_vbo_geometry();
@@ -369,13 +369,13 @@ bool app_viewer::process_fairing_taubin(viewer * p_view)
 		if(vertices.size() != mesh->n_vertices)
 		{
 			vertices.resize(mesh->n_vertices);
-			memcpy(vertices.data(), &mesh->gt(0), mesh->n_vertices * sizeof(vertex));
+			memcpy(vertices.data(), &mesh->point(0), mesh->n_vertices * sizeof(vertex));
 		}
-		else mesh->set_vertices(vertices.data());
+		else mesh->update_vertices(vertices.data());
 
 		fair.run(mesh);
 
-		mesh->set_vertices(fair.new_vertices());
+		mesh->update_vertices(fair.new_vertices());
 		mesh->update_normals();
 
 		mesh.update_vbo_geometry();
@@ -564,23 +564,23 @@ bool app_viewer::process_mdict_patch(viewer * p_view)
 		vdir.x = p.T(0, 0);
 		vdir.y = p.T(0, 1);
 		vdir.z = p.T(0, 2);
-		view->vectors.push_back(mesh->gt(v));
-		view->vectors.push_back(mesh->gt(v) + 3 * mean_edge * vdir);
+		view->vectors.push_back(mesh->point(v));
+		view->vectors.push_back(mesh->point(v) + 3 * mean_edge * vdir);
 
 		vdir.x = p.T(1, 0);
 		vdir.y = p.T(1, 1);
 		vdir.z = p.T(1, 2);
-		view->vectors.push_back(mesh->gt(v));
-		view->vectors.push_back(mesh->gt(v) + 3 * mean_edge * vdir);
+		view->vectors.push_back(mesh->point(v));
+		view->vectors.push_back(mesh->point(v) + 3 * mean_edge * vdir);
 
 		vdir.x = p.T(2, 0);
 		vdir.y = p.T(2, 1);
 		vdir.z = p.T(2, 2);
-		view->vectors.push_back(mesh->gt(v));
-		view->vectors.push_back(mesh->gt(v) + 3 * mean_edge * vdir);
+		view->vectors.push_back(mesh->point(v));
+		view->vectors.push_back(mesh->point(v) + 3 * mean_edge * vdir);
 
-		view->vectors.push_back(mesh->gt(v));
-		view->vectors.push_back(mesh->gt(v) + 3 * mean_edge * mesh->normal(v));
+		view->vectors.push_back(mesh->point(v));
+		view->vectors.push_back(mesh->point(v) + 3 * mean_edge * mesh->normal(v));
 
 		avg_nvp += p.vertices.size();
 	}
@@ -939,7 +939,7 @@ bool app_viewer::process_noise(viewer * p_view)
 	for(index_t v = 0; v < mesh->n_vertices; ++v)
 	{
 		real_t r = real_t(d_mod_1000(generator)) / 200000;
-		mesh->get_vertex(v) += (!d_mod_5(generator)) * r * mesh->normal(v);
+		mesh->point(v) += (!d_mod_5(generator)) * r * mesh->normal(v);
 	}
 
 	mesh->update_normals();
@@ -961,7 +961,7 @@ bool app_viewer::process_black_noise(viewer * p_view)
 	for(index_t v = 0; v < mesh->n_vertices; ++v)
 	{
 		real_t r = real_t(d_mod_1000(generator)) / 200000;
-		mesh->get_vertex(v) += (!d_mod_5(generator)) * r * mesh->normal(v);
+		mesh->point(v) += (!d_mod_5(generator)) * r * mesh->normal(v);
 	}
 
 	mesh->update_normals();

@@ -251,17 +251,17 @@ void che_ply::write_file(const che * mesh, const string & file, const bool & col
 	{
 		for(index_t v = 0; v < mesh->n_vertices; ++v)
 		{
-			fwrite(&mesh->gt(v), sizeof(vertex), 1, fp);
+			fwrite(&mesh->point(v), sizeof(vertex), 1, fp);
 			fwrite(&mesh->rgb(v), sizeof(rgb_t), 1, fp);
 		}
 	}
-	else fwrite(&mesh->gt(0), sizeof(vertex), mesh->n_vertices, fp);
+	else fwrite(&mesh->point(0), sizeof(vertex), mesh->n_vertices, fp);
 
 	unsigned char mtrig = che::mtrig;
 	for(index_t he = 0; he < mesh->n_half_edges; he += che::mtrig)
 	{
 		fwrite(&mtrig, 1, 1, fp);
-		fwrite(&mesh->vt(he), sizeof(index_t), che::mtrig, fp);
+		fwrite(&mesh->halfedge(he), sizeof(index_t), che::mtrig, fp);
 	}
 
 	fclose(fp);

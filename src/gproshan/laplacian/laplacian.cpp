@@ -24,18 +24,18 @@ void laplacian(const che * mesh, a_sp_mat & L, a_sp_mat & A)
 		index_t i = e << 1;
 
 		DI(0, i) = e;
-		DI(1, i) = mesh->vt(mesh->et(e));
+		DI(1, i) = mesh->edge_u(e);
 		DV(i) = -1;
 
 		++i;
 
 		DI(0, i) = e;
-		DI(1, i) = mesh->vt(next(mesh->et(e)));
+		DI(1, i) = mesh->edge_v(e);
 		DV(i) = 1;
 
 		SI(0, e) = SI(1, e) = e;
-		SV(e) = (mesh->cotan(mesh->et(e)) +
-					mesh->cotan(mesh->ot_et(e))) / 2;
+		SV(e) = (mesh->cotan(mesh->edge_he_0(e)) +
+					mesh->cotan(mesh->edge_he_1(e))) / 2;
 	}
 
 	a_sp_mat D(DI, DV, n_edges, n_vertices);

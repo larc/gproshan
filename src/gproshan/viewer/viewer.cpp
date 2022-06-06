@@ -94,7 +94,7 @@ bool viewer::run()
 		cam_light = vertex(-1, 1, -2);
 		cam_light = r.conj() * cam_light * r;
 
-		render_params.proj_view_mat = glm::perspective(45.0f, float(window_width) / float(window_height), 0.01f, 1000.0f) * cam.look_at(r);
+		render_params.proj_view_mat = glm::perspective(45.0f, float(viewport_width) / float(viewport_height), 0.01f, 1000.0f) * cam.look_at(r);
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		render_gl();
@@ -600,7 +600,7 @@ bool viewer::m_save_mesh(viewer * view)
 bool viewer::m_normalize_mesh(viewer * view)
 {
 	che_viewer & mesh = view->active_mesh();
-	mesh->normalize();
+	mesh->normalize_sphere();
 	mesh.update();
 
 	return false;
@@ -731,8 +731,8 @@ bool viewer::m_select_border_vertices(viewer * view)
 {
 	che_viewer & mesh = view->active_mesh();
 	for(const index_t & b: mesh->bounds())
-		for_boundary(he, mesh, b)
-			mesh.selected.push_back(mesh->vt(he));
+		for(const index_t & v: mesh->boundary(b))
+			mesh.selected.push_back(v);
 
 	return false;
 }
@@ -809,7 +809,7 @@ bool viewer::m_raycasting(viewer * view)
 	rt::embree rc({mesh}, {mesh.model_mat});
 
 	float * frame = rc.raycaster(	glm::uvec2(view->viewport_width, view->viewport_height),
-									view->render_params.proj_view_mat, glm_vec3(view->cam.eye)
+									view->render_params.proj_view_mat, view->cam.eye
 									);
 
 	std::thread([](CImg<float> img)
@@ -888,19 +888,19 @@ void viewer::render_rt(che_viewer & mesh, frame & rt_frame)
 	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, rt_frame);
 	glm::vec4 * img = (glm::vec4 *) glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_READ_WRITE);
 
-	std::vector<glm::vec3> & scene_lights = render_params.lights;
+	std::vector<vertex> & scene_lights = render_params.lights;
 	scene_lights.clear();
 
 	for(const index_t & v: mesh.selected)
-		scene_lights.push_back(glm_vec3(mesh->gt(v)));
+		scene_lights.push_back(mesh->point(v));
 
 	if(!scene_lights.size())
-		scene_lights = {glm_vec3(cam_light)};
+		scene_lights = {cam_light};
 
 	//render_params.viewport_x = mesh.vx * viewport_width;
 	//render_params.viewport_y = mesh.vy * viewport_height;
 	//render_params.viewport_is_window = false;
-	render_params.cam_pos = glm_vec3(cam.eye);
+	render_params.cam_pos = cam.eye;
 
 	rt->render(img, render_params, mesh.render_flat);
 
@@ -923,7 +923,7 @@ void viewer::pick_vertex(const real_t & x, const real_t & y)
 
 	mesh.select(ix % viewport_width, iy % viewport_height,
 				{viewport_width, viewport_height},
-				render_params.proj_view_mat, glm_vec3(cam.eye));
+				render_params.proj_view_mat, cam.eye);
 }
 
 
