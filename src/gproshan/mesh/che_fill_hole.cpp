@@ -28,7 +28,7 @@ che * mesh_simple_fill_hole(che * mesh, const vector<index_t> & border_vertices,
 {
 	vector<vertex> vertices;
 	vertex normal, normal_v, edge_v, v;
-	a_mat E(3,3);
+	a_mat E(3, 3);
 	a_vec ve(3);
 
 	vertices.reserve(border_vertices.size());
@@ -37,7 +37,7 @@ che * mesh_simple_fill_hole(che * mesh, const vector<index_t> & border_vertices,
 	{
 		v = mesh->point(b);
 		normal_v = mesh->normal(b);
-		edge_v = mesh->gt_vt_next_evt(b) - v;
+		edge_v = mesh->vertex_he(next(mesh->evt(b))) - v;
 		edge_v -= (normal_v, edge_v) * normal_v;
 
 		E(0, 2) = normal_v.x;

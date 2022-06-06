@@ -731,8 +731,8 @@ bool viewer::m_select_border_vertices(viewer * view)
 {
 	che_viewer & mesh = view->active_mesh();
 	for(const index_t & b: mesh->bounds())
-		for_boundary(he, mesh, b)
-			mesh.selected.push_back(mesh->halfedge(he));
+		for(const index_t & v: mesh->boundary(b))
+			mesh.selected.push_back(v);
 
 	return false;
 }

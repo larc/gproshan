@@ -85,12 +85,6 @@ che::~che()
 
 // vertex access geometry methods to xyz point values, normals, and gradient
 
-const vertex & che::gt_vt_next_evt(const index_t & v) const
-{
-	assert(v < n_vertices);
-	return GT[VT[next(EVT[v])]];
-}
-
 const vertex & che::point(const index_t & v) const
 {
 	assert(v < n_vertices);
@@ -673,7 +667,7 @@ che::star_he che::star(const index_t & v) const
 
 vector<index_t> che::link(const index_t & v) const
 {
-	assert(v >= n_vertices);
+	assert(v < n_vertices);
 
 	vector<index_t> vlink;
 
@@ -753,8 +747,8 @@ vector<index_t> che::bounds() const
 		{
 			vbounds.push_back(v);
 
-			for_boundary(he, this, v)
-				is_bound[VT[he]] = true;
+			for(const index_t & b: boundary(v))
+				is_bound[b] = true;
 		}
 
 	delete [] is_bound;
@@ -767,20 +761,27 @@ vector<index_t> che::boundary(const index_t & v) const
 {
 	vector<index_t> vbound;
 
-	for_boundary(he, this, v)
+	index_t he_end = EVT[v];
+	index_t he = he_end;
+	do
+	{
 		vbound.push_back(VT[he]);
+		he = EVT[VT[next(he)]];
+	}
+	while(he != NIL && he != he_end);
 
 	return vbound;
 }
 
 bool che::is_vertex_bound(const index_t & v) const
 {
-	assert(v < n_vertices && EVT[v] < n_half_edges);
+	assert(v < n_vertices);
 	return EVT[v] != NIL && OT[EVT[v]] == NIL;
 }
 
 bool che::is_edge_bound(const index_t & e) const
 {
+	assert(e < n_edges);
 	return OT[ET[e]] == NIL;
 }
 

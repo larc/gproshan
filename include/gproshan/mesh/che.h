@@ -8,10 +8,6 @@
 #include <string>
 
 
-#define for_boundary(he, mesh, v) \
-	for(index_t stop = mesh->evt(v), he = mesh->evt(v); he != NIL; he = (he = mesh->evt(mesh->halfedge(next(he)))) != stop ? he : NIL)
-
-
 // geometry processing and shape analysis framework
 namespace gproshan {
 
@@ -115,7 +111,6 @@ class che
 		virtual ~che();
 
 		// vertex access geometry methods to xyz point values, normals, and gradient
-		const vertex & gt_vt_next_evt(const index_t & v) const;
 		const vertex & point(const index_t & v) const;
 		vertex & point(const index_t & v);
 		const vertex & normal(const index_t & v) const;

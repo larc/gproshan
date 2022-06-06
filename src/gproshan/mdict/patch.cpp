@@ -631,7 +631,7 @@ void patch::normal_fit_directions(che * mesh, const index_t & v)
 
 
 	vertex nz = mesh->normal(v);
-	vertex nx = mesh->gt_vt_next_evt(v);
+	vertex nx = mesh->vertex_he(next(mesh->evt(v)));
 //	GT[VT[next(EVT[v]]]
 	vertex c = mesh->point(v);
 	vertex ny;
