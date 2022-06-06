@@ -38,7 +38,7 @@ void simplification::compute_quadrics()
 		Q[v].zeros();
 		a_vec p(4);
 
-		for_star(he, mesh, v)
+		for(const index_t & he: mesh->star(v))
 		{
 			n = mesh->normal_he(he);
 			p(0) = n.x;

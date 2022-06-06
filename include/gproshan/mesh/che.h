@@ -7,8 +7,6 @@
 #include <vector>
 #include <string>
 
-#define for_star(he, mesh, v) \
-	for(index_t stop = mesh->evt(v), he = mesh->evt(v); he != NIL; he = (he = mesh->twin_he(prev(he))) != stop ? he : NIL)
 
 #define for_boundary(he, mesh, v) \
 	for(index_t stop = mesh->evt(v), he = mesh->evt(v); he != NIL; he = (he = mesh->evt(mesh->halfedge(next(he)))) != stop ? he : NIL)
@@ -26,6 +24,50 @@ index_t prev(const index_t & he);
 
 class che
 {
+	public:
+		class star_he
+		{
+			public:
+				class star_he_it
+				{
+					const che * mesh;
+					index_t he;
+					const index_t & he_end;
+
+					public:
+						star_he_it(const che * p_mesh, const index_t & p_he, const index_t & p_he_end): mesh(p_mesh), he(p_he), he_end(p_he_end) {}
+						star_he_it & operator ++ ()
+						{
+							he = mesh->OT[prev(he)];
+							he = he != he_end ? he : NIL;
+							return *this;
+						}
+						bool operator != (const star_he_it & it)
+						{
+							return he != it.he;
+						}
+						const index_t & operator * ()
+						{
+							return he;
+						}
+				};
+
+			private:
+				const che * mesh;
+				const index_t & v;
+
+			public:
+				star_he(const che * p_mesh, const index_t & p_v): mesh(p_mesh), v(p_v) {}
+				star_he_it begin()
+				{
+					return {mesh, mesh->EVT[v], mesh->EVT[v]};
+				}
+				star_he_it end()
+				{
+					return {nullptr, NIL, NIL};
+				}
+		};
+
 	public:
 		enum mesh_type : unsigned char { mtrig = 3, mquad = 4 };	///< meshes_types
 		struct rgb_t
@@ -118,7 +160,7 @@ class che
 		const index_t & evt(const index_t & v) const;
 
 		// topology methods
-		std::vector<index_t> star(const index_t & v) const;
+		che::star_he star(const index_t & v) const;
 		std::vector<index_t> link(const index_t & v) const;
 		void edge_collapse(const std::vector<index_t> & sort_edges);
 		void compute_toplesets(index_t *& rings, index_t *& sorted, std::vector<index_t> & limites, const std::vector<index_t> & sources, const index_t & k = NIL);

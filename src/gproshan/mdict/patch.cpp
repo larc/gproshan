@@ -90,7 +90,7 @@ bool patch::add_vertex_by_faces(vertex & n, vector<vertex> & N, double thr_angle
 	bool added = false;
 	vertex pav, pbv, va, vb,vv;
 
-	for_star(he, mesh, v)
+	for(const index_t & he: mesh->star(v))
 	{
 		a = mesh->halfedge(next(he)); //index of the next vertex index_t
 		b = mesh->halfedge(prev(he));
@@ -407,7 +407,7 @@ void patch::add_extra_xyz_disjoint(che * mesh, vector<vpatches_t> & vpatches, co
 
 		// forstar to find closest trinagle
 		a_mat abc(3,3);
-		for_star(he, mesh, min_v)
+		for(const index_t & he: mesh->star(min_v))
 		{
 			//discard triangles outside the patch
 			vpatches_t & ma = vpatches[mesh->halfedge(next(he))];

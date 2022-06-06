@@ -81,7 +81,7 @@ void parallel_toplesets_propagation_coalescence_cpu(const ptp_out_t & ptp_out, c
 			pdist[!d][v] = pdist[d][v];
 
 			real_t p;
-			for_star(he, mesh, v)
+			for(const index_t & he: mesh->star(v))
 			{
 				p = update_step(mesh, pdist[d], he);
 				if(p < pdist[!d][v])
@@ -158,7 +158,7 @@ void parallel_toplesets_propagation_cpu(const ptp_out_t & ptp_out, che * mesh, c
 			pdist[!d][v] = pdist[d][v];
 
 			real_t p;
-			for_star(he, mesh, v)
+			for(const index_t & he: mesh->star(v))
 			{
 				p = update_step(mesh, pdist[d], he);
 				if(p < pdist[!d][v])

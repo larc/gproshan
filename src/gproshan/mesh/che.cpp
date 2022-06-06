@@ -162,7 +162,7 @@ vertex che::gradient(const index_t & v, const real_t * f)
 	vertex g;
 	real_t area, area_star = 0;
 
-	for_star(he, this, v)
+	for(const index_t & he: star(v))
 	{
 		area = area_trig(trig(he));
 		area_star += area;
@@ -383,7 +383,7 @@ void che::update_normals()
 		vertex & n = VN[v];
 
 		n = 0;
-		for_star(he, this, v)
+		for(const index_t & he: star(v))
 			n += area_trig(trig(he)) * normal_he(he);
 
 		n /= *n;
@@ -455,7 +455,7 @@ void che::remove_vertices(const vector<index_t> & vertices)
 	gproshan_debug(removing vertex);
 	for(index_t v: vertices)
 	{
-		for_star(he, this, v)
+		for(const index_t & he: star(v))
 		{
 			VT[he] = NIL;
 			VT[prev(he)] = NIL;
@@ -492,7 +492,7 @@ void che::remove_vertices(const vector<index_t> & vertices)
 	{
 		if(v < removed[r])
 		{
-			for_star(he, this, v)
+			for(const index_t & he: star(v))
 				if(VT[he] != NIL) VT[he] = v - d;
 		}
 		else if(v == removed[r])
@@ -551,7 +551,7 @@ void che::remove_non_manifold_vertices()
 	{
 		if(v < removed[r])
 		{
-			for_star(he, this, v)
+			for(const index_t & he: star(v))
 				if(VT[he] != NIL) VT[he] = v - d;
 		}
 		else if(v == removed[r])
@@ -590,10 +590,11 @@ void che::set_head_vertices(index_t * head, const size_t & n)
 
 		swap(GT[v], GT[i]);
 
-		for_star(he, this, v)
+		for(const index_t & he: star(v))
 			VT[he] = i;
-		for_star(he, this, i)
-			VT[he] = v;
+
+		for(const index_t & he: star(i))
+			VT[he] = i;
 
 		swap(EVT[v], EVT[i]);
 	}
@@ -665,15 +666,9 @@ const index_t & che::evt(const index_t & v) const
 
 // topology methods
 
-vector<index_t> che::star(const index_t & v) const
+che::star_he che::star(const index_t & v) const
 {
-	assert(v >= n_vertices);
-
-	vector<index_t> vstar;
-	for_star(he, this, v)
-		vstar.push_back(he);
-
-	return vstar;
+	return {this, v};
 }
 
 vector<index_t> che::link(const index_t & v) const
@@ -685,7 +680,7 @@ vector<index_t> che::link(const index_t & v) const
 	if(is_vertex_bound(v))
 		vlink.push_back(VT[next(EVT[v])]);
 
-	for_star(he, this, v)
+	for(const index_t & he: star(v))
 		vlink.push_back(VT[prev(he)]);
 
 	return vlink;
@@ -834,7 +829,7 @@ size_t che::max_degree() const
 	for(index_t v = 0; v < n_vertices; ++v)
 	{
 		d = 0;
-		for_star(he, this, v) ++d;
+		for(const index_t & he: star(v)) ++d;
 		d += is_vertex_bound(v);
 		md = max(md, d);
 	}
@@ -981,7 +976,7 @@ real_t che::area_trig(const index_t & t) const
 real_t che::area_vertex(const index_t & v) const
 {
 	real_t area_star = 0;
-	for_star(he, this, v)
+	for(const index_t & he: star(v))
 		area_star += area_trig(trig(he));
 
 	return area_star / 3;
@@ -993,7 +988,7 @@ real_t che::mean_curvature(const index_t & v) const
 	real_t h = 0;
 	real_t a = 0;
 
-	for_star(he, this, v)
+	for(const index_t & he: star(v))
 	{
 		a += area_trig(trig(he));
 		h += *(GT[VT[next(he)]] - GT[v]) * (normal(v), normal_he(he));

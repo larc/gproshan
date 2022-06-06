@@ -92,7 +92,7 @@ void compute_divergence(const che * mesh, const a_mat & u, a_mat & div)
 		real_t & sum = div(v);
 
 		sum = 0;
-		for_star(he, mesh, v)
+		for(const index_t & he: mesh->star(v))
 		{
 			const vertex & nhe = mesh->normal_he(he);
 			const vertex & vhe = mesh->vertex_he(prev(he)) - mesh->vertex_he(next(he));

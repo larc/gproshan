@@ -217,7 +217,7 @@ bool app_viewer::process_gaussian_curvature(viewer * p_view)
 	for(index_t v = 0; v < mesh->n_vertices; ++v)
 	{
 		g = 0;
-		for_star(he, mesh, v)
+		for(const index_t & he: mesh->star(v))
 		{
 			a = mesh->vertex_he(next(he)) - mesh->point(v);
 			b = mesh->vertex_he(prev(he)) - mesh->point(v);

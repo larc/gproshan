@@ -167,7 +167,7 @@ void geodesics::run_fastmarching(che * mesh, const vector<index_t> & sources, co
 			if(color[v] == RED)
 			{
 				dv = dist[v];
-				for_star(he, mesh, v)
+				for(const index_t & he: mesh->star(v))
 				{
 					dp = update_step(mesh, dist, he);
 					if(dp < dv)
