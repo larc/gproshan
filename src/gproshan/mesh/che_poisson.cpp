@@ -19,9 +19,9 @@ void poisson(che * mesh, const size_t & old_n_vertices, index_t k)
 	{
 		if(v < old_n_vertices)
 		{
-			B(v, 0) = mesh->gt(v).x;
-			B(v, 1) = mesh->gt(v).y;
-			B(v, 2) = mesh->gt(v).z;
+			B(v, 0) = mesh->point(v).x;
+			B(v, 1) = mesh->point(v).y;
+			B(v, 2) = mesh->point(v).z;
 		}
 		else B.row(v).zeros();
 	}
@@ -40,9 +40,9 @@ void poisson(che * mesh, const size_t & old_n_vertices, index_t k)
 
 	for(index_t v = 0; v < old_n_vertices; ++v)
 	{
-		B.col(0) -= mesh->gt(v).x * L.col(v);
-		B.col(1) -= mesh->gt(v).y * L.col(v);
-		B.col(2) -= mesh->gt(v).z * L.col(v);
+		B.col(0) -= mesh->point(v).x * L.col(v);
+		B.col(1) -= mesh->point(v).y * L.col(v);
+		B.col(2) -= mesh->point(v).z * L.col(v);
 	}
 
 	L.shed_cols(0, old_n_vertices - 1);
@@ -122,9 +122,9 @@ void biharmonic_interp_2(che * mesh, const size_t & old_n_vertices, const size_t
 	index_t i = 0;
 	for(index_t & b: sub_mesh_hole)
 	{
-		P(0, i) = mesh->gt(b).x;
-		P(1, i) = mesh->gt(b).y;
-		P(2, i) = mesh->gt(b).z;
+		P(0, i) = mesh->point(b).x;
+		P(1, i) = mesh->point(b).y;
+		P(2, i) = mesh->point(b).z;
 		++i;
 	}
 
@@ -132,9 +132,9 @@ void biharmonic_interp_2(che * mesh, const size_t & old_n_vertices, const size_t
 
 	for(index_t i = 0, v = old_n_vertices; v < n_vertices; ++i, ++v)
 	{
-		H(0, i) = mesh->gt(v).x;
-		H(1, i) = mesh->gt(v).y;
-		H(2, i) = mesh->gt(v).z;
+		H(0, i) = mesh->point(v).x;
+		H(1, i) = mesh->point(v).y;
+		H(2, i) = mesh->point(v).z;
 	}
 
 	a_vec avg = mean(H, 1);

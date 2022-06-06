@@ -35,7 +35,7 @@ che * mesh_simple_fill_hole(che * mesh, const vector<index_t> & border_vertices,
 
 	for(const index_t & b: border_vertices)
 	{
-		v = mesh->gt(b);
+		v = mesh->point(b);
 		normal_v = mesh->normal(b);
 		edge_v = mesh->gt_vt_next_evt(b) - v;
 		edge_v -= (normal_v, edge_v) * normal_v;
@@ -95,7 +95,7 @@ che * mesh_fill_hole(che * mesh, const vector<index_t> & border_vertices, const 
 		for(index_t v = i; v <= end_v; ++v)
 		{
 			vmap_border[v % size] = vertices[c].size() + delta_v;
-			vertices[c].push_back(mesh->gt(border_vertices[v % size]));
+			vertices[c].push_back(mesh->point(border_vertices[v % size]));
 			normal += mesh->normal(border_vertices[v % size]);
 		}
 		return end_v - i + 1;
@@ -122,7 +122,7 @@ che * mesh_fill_hole(che * mesh, const vector<index_t> & border_vertices, const 
 		{
 			reverse(merge_vertices[!c].begin(), merge_vertices[!c].end());
 			for(index_t v: merge_vertices[!c])
-				vertices[c].push_back(hole->gt(v));
+				vertices[c].push_back(hole->point(v));
 
 			normal = 0;
 			n_v = 0;
@@ -134,7 +134,7 @@ che * mesh_fill_hole(che * mesh, const vector<index_t> & border_vertices, const 
 			}
 			else merge_vertices[c].push_back(merge_vertices[!c].back());
 
-			gen_vertices(merge_vertices[c], vertices[c], mesh->gt(border_vertices[p.second]), mesh->gt(border_vertices[p.first]), hole->n_vertices - merge_vertices[!c].size());
+			gen_vertices(merge_vertices[c], vertices[c], mesh->point(border_vertices[p.second]), mesh->point(border_vertices[p.first]), hole->n_vertices - merge_vertices[!c].size());
 
 			if(i != p.first)
 			{
@@ -166,7 +166,7 @@ che * mesh_fill_hole(che * mesh, const vector<index_t> & border_vertices, const 
 		for(auto & b: border_vertices)
 		{
 			normal += mesh->normal(b);
-			vertices[c].push_back(mesh->gt(b));
+			vertices[c].push_back(mesh->point(b));
 		}
 		normal /= vertices[c].size();
 
@@ -177,7 +177,7 @@ che * mesh_fill_hole(che * mesh, const vector<index_t> & border_vertices, const 
 		reverse(merge_vertices[!c].begin(), merge_vertices[!c].end());
 
 		for(index_t v: merge_vertices[!c])
-			vertices[c].push_back(hole->gt(v));
+			vertices[c].push_back(hole->point(v));
 
 		i = i > 0 ? i - 1 : size - 1;
 		j = (j + 1) % size;
@@ -221,9 +221,9 @@ void split_border(vector<pair<index_t, index_t> > & split_indices, che * mesh, c
 		data(1, i) = normal.y;
 		data(2, i) = normal.z;
 		/*
-		data(3, i) = mesh->gt(border_vertices[i]).x;
-		data(4, i) = mesh->gt(border_vertices[i]).y;
-		data(5, i) = mesh->gt(border_vertices[i]).z;
+		data(3, i) = mesh->point(border_vertices[i]).x;
+		data(4, i) = mesh->point(border_vertices[i]).y;
+		data(5, i) = mesh->point(border_vertices[i]).z;
 		*/
 	}
 
@@ -331,7 +331,7 @@ che * fill_hole_front_angles_test(che * mesh, vector<index_t> & front_vertices, 
 	vector<index_t> faces;
 
 	for(index_t v: front_vertices)
-		vertices.push_back(mesh->gt(v));
+		vertices.push_back(mesh->point(v));
 
 	vector<a_vec> tmp_vertices(vertices.size());
 	vector<a_vec> tmp_normals(vertices.size());
@@ -839,17 +839,17 @@ void get_real_tri(che * mesh, vector<index_t> & select_vertices, vector<vertex> 
 	{
 		if(i < b)
 		{
-			tri[0] += mesh->gt(select_vertices[i]);
+			tri[0] += mesh->point(select_vertices[i]);
 			++tri_sizes[0];
 		}
 		else if ( i >= b && i < c)
 		{
-			tri[1] += mesh->gt(select_vertices[i]);
+			tri[1] += mesh->point(select_vertices[i]);
 			++tri_sizes[1];
 		}
 		else
 		{
-			tri[2] += mesh->gt(select_vertices[i]);
+			tri[2] += mesh->point(select_vertices[i]);
 			++tri_sizes[2];
 		}
 	}
@@ -888,7 +888,7 @@ che * fill_hole_center_triangle(che * mesh, vector<index_t> & select_vertices, i
 
 	index_t i = 0;
 	for(index_t v: select_vertices)
-		vertices[i++] = mesh->gt(v);
+		vertices[i++] = mesh->point(v);
 
 	vertices[i++] = triangle[0];
 	vertices[i++] = triangle[1];

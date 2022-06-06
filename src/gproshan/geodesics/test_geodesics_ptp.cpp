@@ -159,7 +159,7 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 		map<index_t, index_t> deg;
 		for(index_t v = 0; v < n_vertices; ++v)
 		{
-			dv = mesh->ot_evt(v) == NIL ? 1 : 0;
+			dv = mesh->is_vertex_bound(v) ? 1 : 0;
 			for_star(he, mesh, v) ++dv;
 			++deg[dv];
 		}

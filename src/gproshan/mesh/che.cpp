@@ -85,28 +85,10 @@ che::~che()
 
 // vertex access geometry methods to xyz point values, normals, and gradient
 
-const vertex & che::gt(const index_t & v) const
-{
-	assert(v < n_vertices);
-	return GT[v];
-}
-
-const vertex & che::gt_vt(const index_t & he) const
-{
-	assert(he < n_half_edges);
-	return GT[VT[he]];
-}
-
 const vertex & che::gt_vt_next_evt(const index_t & v) const
 {
 	assert(v < n_vertices);
 	return GT[VT[next(EVT[v])]];
-}
-
-const vertex & che::gt_e(const index_t & e, const bool & op) const
-{
-	assert(e < n_edges);
-	return op ? GT[VT[next(ET[e])]] : GT[VT[ET[e]]];
 }
 
 const vertex & che::point(const index_t & v) const
@@ -620,40 +602,58 @@ void che::set_head_vertices(index_t * head, const size_t & n)
 
 // half edge access methods triangular faces and navigation
 
-const index_t & che::vt(const index_t & he) const
+const index_t & che::halfedge(const index_t & he) const
 {
 	assert(he < n_half_edges);
 	return VT[he];
 }
 
-const index_t & che::vt_e(const index_t & e, const bool & op) const
-{
-	assert(e < n_edges);
-	return op ? VT[next(ET[e])] : VT[ET[e]];
-}
-
-const index_t & che::et(const index_t & e) const
-{
-	assert(e < n_edges);
-	return ET[e];
-}
-
-const index_t & che::ot_et(const index_t & e) const
-{
-	assert(e < n_edges);
-	return OT[ET[e]];
-}
-
-const index_t & che::ot(const index_t & he) const
+const index_t & che::twin_he(const index_t & he) const
 {
 	assert(he < n_half_edges);
 	return OT[he];
 }
 
-const index_t & che::ot_evt(const index_t & v) const
+const index_t & che::edge_u(const index_t & e) const
 {
-	assert(v < n_vertices);
-	return OT[EVT[v]];
+	assert(e < n_edges);
+	return VT[ET[e]];
+}
+
+const index_t & che::edge_v(const index_t & e) const
+{
+	assert(e < n_edges);
+	return VT[next(ET[e])];
+}
+
+const index_t & che::edge_he_0(const index_t & e) const
+{
+	assert(e < n_edges);
+	return ET[e];
+}
+
+const index_t & che::edge_he_1(const index_t & e) const
+{
+	assert(e < n_edges);
+	return OT[ET[e]];
+}
+
+const vertex & che::vertex_he(const index_t & he) const
+{
+	assert(he < n_half_edges);
+	return GT[VT[he]];
+}
+
+const vertex & che::vertex_edge_u(const index_t & e) const
+{
+	assert(e < n_edges);
+	return GT[VT[ET[e]]];
+}
+
+const vertex & che::vertex_edge_v(const index_t & e) const
+{
+	assert(e < n_edges);
+	return GT[VT[next(ET[e])]];
 }
 
 const index_t & che::evt(const index_t & v) const

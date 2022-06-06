@@ -139,7 +139,7 @@ void che_ptx::write_file(const che * mesh, const std::string & file, const size_
 
 	for(size_t i = 0; i < mesh->n_vertices; ++i)
 	{
-		const vertex & v = mesh->gt(i);
+		const vertex & v = mesh->point(i);
 		const rgb_t & c = mesh->rgb(i);
 
 		fprintf(fp, "%f %f %f %f %hhu %hhu %hhu\n", (float) v.x, (float) v.y, (float) v.z, (float) 0, c.r, c.g, c.b );

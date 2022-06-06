@@ -13,7 +13,7 @@ void fairing_taubin::compute(che * mesh)
 {
 	delete [] vertices;
 	vertices = new vertex[mesh->n_vertices];
-	memcpy(vertices, &mesh->gt(0), mesh->n_vertices * sizeof(vertex));
+	memcpy(vertices, &mesh->point(0), mesh->n_vertices * sizeof(vertex));
 
 	a_mat X((real_t *) vertices, 3, mesh->n_vertices, false, true);
 

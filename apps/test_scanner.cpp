@@ -29,7 +29,7 @@ glm::mat4 normalize_coordinates(gproshan::che_ply * mesh)
 
 	for(gproshan::index_t v = 0; v < mesh->n_vertices; ++v)
 	{
-		const gproshan::vertex & p = mesh->gt(v);
+		const gproshan::vertex & p = mesh->point(v);
 
 		pmin.x = std::min(pmin.x, p.x);
 		pmin.y = std::min(pmin.y, p.y);

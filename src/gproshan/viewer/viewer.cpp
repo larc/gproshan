@@ -732,7 +732,7 @@ bool viewer::m_select_border_vertices(viewer * view)
 	che_viewer & mesh = view->active_mesh();
 	for(const index_t & b: mesh->bounds())
 		for_boundary(he, mesh, b)
-			mesh.selected.push_back(mesh->vt(he));
+			mesh.selected.push_back(mesh->halfedge(he));
 
 	return false;
 }
@@ -892,7 +892,7 @@ void viewer::render_rt(che_viewer & mesh, frame & rt_frame)
 	scene_lights.clear();
 
 	for(const index_t & v: mesh.selected)
-		scene_lights.push_back(mesh->gt(v));
+		scene_lights.push_back(mesh->point(v));
 
 	if(!scene_lights.size())
 		scene_lights = {cam_light};

@@ -175,7 +175,7 @@ void geodesics::run_fastmarching(che * mesh, const vector<index_t> & sources, co
 						dv = dp;
 
 						if(clusters)
-							clusters[v] = clusters[mesh->vt(prev(he))] ? clusters[mesh->vt(prev(he))] : clusters[mesh->vt(next(he))];
+							clusters[v] = clusters[mesh->halfedge(prev(he))] ? clusters[mesh->halfedge(prev(he))] : clusters[mesh->halfedge(next(he))];
 					}
 				}
 

@@ -943,9 +943,9 @@ real_t msparse_coding::mesh_reconstruction(const fmask_t & mask)
 		}
 		else
 		{
-			V(0, v) = mesh->gt(v).x;
-			V(1, v) = mesh->gt(v).y;
-			V(2, v) = mesh->gt(v).z;
+			V(0, v) = mesh->point(v).x;
+			V(1, v) = mesh->point(v).y;
+			V(2, v) = mesh->point(v).z;
 		}
 	}
 

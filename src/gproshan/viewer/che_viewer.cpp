@@ -62,7 +62,7 @@ void che_viewer::update()
 
 		for(index_t v = 0; v < mesh->n_vertices; ++v)
 		{
-			const vertex & p = mesh->gt(v);
+			const vertex & p = mesh->point(v);
 
 			pmin.x = min(pmin.x, p.x);
 			pmin.y = min(pmin.y, p.y);
@@ -99,7 +99,7 @@ void che_viewer::update_vbo_geometry()
 
 	// 0 VERTEX
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
-	glBufferData(GL_ARRAY_BUFFER, mesh->n_vertices * sizeof(vertex), &mesh->gt(0), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, mesh->n_vertices * sizeof(vertex), &mesh->point(0), GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_REAL, GL_FALSE, 0, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -108,7 +108,7 @@ void che_viewer::update_vbo_geometry()
 	if(!mesh->is_pointcloud())
 	{
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[4]);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh->n_half_edges * sizeof(index_t), &mesh->vt(0), GL_STATIC_DRAW);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh->n_half_edges * sizeof(index_t), &mesh->halfedge(0), GL_STATIC_DRAW);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	}
 
@@ -237,7 +237,7 @@ void che_viewer::draw_selected_vertices(che_viewer & sphere, shader & program)
 		selected_xyz.reserve(selected.size());
 
 		for(const index_t & v: selected)
-			selected_xyz.push_back(mesh->gt(v));
+			selected_xyz.push_back(mesh->point(v));
 	}
 
 	if(selected_xyz.size())

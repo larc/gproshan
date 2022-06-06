@@ -80,7 +80,7 @@ index_t embree::ray_hit::closest_vertex(const rt_mesh & mesh) const
 		w = hit.v;
 	}
 
-	return mesh->vt(he);
+	return mesh->halfedge(he);
 }
 
 vertex embree::ray_hit::position() const
@@ -207,11 +207,11 @@ index_t embree::add_mesh(const che * mesh, const glm::mat4 & model_mat)
 	#pragma omp parallel for
 	for(index_t i = 0; i < mesh->n_vertices; ++i)
 	{
-		const glm::vec4 & v = model_mat * glm::vec4(glm_vec3(mesh->gt(i)), 1);
+		const glm::vec4 & v = model_mat * glm::vec4(glm_vec3(mesh->point(i)), 1);
 		vertices[i] = {v.x, v.y, v.z};
 	}
 
-	memcpy(tri_idxs, &mesh->vt(0), mesh->n_half_edges * sizeof(index_t));
+	memcpy(tri_idxs, &mesh->halfedge(0), mesh->n_half_edges * sizeof(index_t));
 
 	rtcCommitGeometry(geom);
 
@@ -242,7 +242,7 @@ index_t embree::add_pointcloud(const che * mesh)
 	#pragma omp parallel for
 	for(index_t i = 0; i < mesh->n_vertices; ++i)
 	{
-		pxyzr[i] = glm::vec4(glm_vec3(mesh->gt(i)), pc_radius);
+		pxyzr[i] = glm::vec4(glm_vec3(mesh->point(i)), pc_radius);
 		normal[i] = mesh->normal(i);
 	}
 

@@ -42,7 +42,7 @@ void key_points::compute_kps_areas(che * mesh, const real_t & percent)
 		he = che::mtrig * face_areas[t].second;
 		for(index_t i = 0; i < che::mtrig; ++i)
 		{
-			const index_t & v = mesh->vt(he);
+			const index_t & v = mesh->halfedge(he);
 			if(!is_kp[v])
 			{
 				kps.push_back(v);

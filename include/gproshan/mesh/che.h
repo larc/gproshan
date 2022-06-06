@@ -8,10 +8,10 @@
 #include <string>
 
 #define for_star(he, mesh, v) \
-	for(index_t stop = mesh->evt(v), he = mesh->evt(v); he != NIL; he = (he = mesh->ot(prev(he))) != stop ? he : NIL)
+	for(index_t stop = mesh->evt(v), he = mesh->evt(v); he != NIL; he = (he = mesh->twin_he(prev(he))) != stop ? he : NIL)
 
 #define for_boundary(he, mesh, v) \
-	for(index_t stop = mesh->evt(v), he = mesh->evt(v); he != NIL; he = (he = mesh->evt(mesh->vt(next(he)))) != stop ? he : NIL)
+	for(index_t stop = mesh->evt(v), he = mesh->evt(v); he != NIL; he = (he = mesh->evt(mesh->halfedge(next(he)))) != stop ? he : NIL)
 
 
 // geometry processing and shape analysis framework
@@ -73,10 +73,7 @@ class che
 		virtual ~che();
 
 		// vertex access geometry methods to xyz point values, normals, and gradient
-		const vertex & gt(const index_t & v) const;
-		const vertex & gt_vt(const index_t & he) const;
 		const vertex & gt_vt_next_evt(const index_t & v) const;
-		const vertex & gt_e(const index_t & e, const bool & op = false) const;
 		const vertex & point(const index_t & v) const;
 		vertex & point(const index_t & v);
 		const vertex & normal(const index_t & v) const;
@@ -109,12 +106,15 @@ class che
 		void set_head_vertices(index_t * head, const size_t & n);
 
 		// half edge access methods triangular faces and navigation
-		const index_t & vt(const index_t & he) const;
-		const index_t & vt_e(const index_t & e, const bool & op = false) const;
-		const index_t & et(const index_t & e) const;
-		const index_t & ot_et(const index_t & e) const;
-		const index_t & ot(const index_t & he) const;
-		const index_t & ot_evt(const index_t & v) const;
+		const index_t & halfedge(const index_t & he) const;
+		const index_t & twin_he(const index_t & he) const;
+		const index_t &	edge_u(const index_t & e) const;
+		const index_t &	edge_v(const index_t & e) const;
+		const index_t &	edge_he_0(const index_t & e) const;
+		const index_t &	edge_he_1(const index_t & e) const;
+		const vertex & vertex_he(const index_t & he) const;
+		const vertex & vertex_edge_u(const index_t & e) const;
+		const vertex & vertex_edge_v(const index_t & e) const;
 		const index_t & evt(const index_t & v) const;
 
 		// topology methods

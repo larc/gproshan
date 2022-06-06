@@ -27,13 +27,13 @@ che * ptp_coalescence(index_t * & inv, const che * mesh, const toplesets_t & top
 	#pragma omp parallel for
 	for(index_t i = 0; i < toplesets.limits.back(); ++i)
 	{
-		V[i] = mesh->gt(toplesets.index[i]);
+		V[i] = mesh->point(toplesets.index[i]);
 		inv[toplesets.index[i]] = i;
 	}
 
 	for(index_t he = 0; he < mesh->n_half_edges; ++he)
-		if(inv[mesh->vt(he)] != NIL && inv[mesh->vt(prev(he))] != NIL && inv[mesh->vt(next(he))] != NIL)
-			F.push_back(inv[mesh->vt(he)]);
+		if(inv[mesh->halfedge(he)] != NIL && inv[mesh->halfedge(prev(he))] != NIL && inv[mesh->halfedge(next(he))] != NIL)
+			F.push_back(inv[mesh->halfedge(he)]);
 
 	return new che(V.data(), toplesets.limits.back(), F.data(), F.size() / che::mtrig);
 }
@@ -89,7 +89,7 @@ void parallel_toplesets_propagation_coalescence_cpu(const ptp_out_t & ptp_out, c
 					pdist[!d][v] = p;
 
 					if(ptp_out.clusters)
-						ptp_out.clusters[v] = ptp_out.clusters[mesh->vt(prev(he))] != NIL ? ptp_out.clusters[mesh->vt(prev(he))] : ptp_out.clusters[mesh->vt(next(he))];
+						ptp_out.clusters[v] = ptp_out.clusters[mesh->halfedge(prev(he))] != NIL ? ptp_out.clusters[mesh->halfedge(prev(he))] : ptp_out.clusters[mesh->halfedge(next(he))];
 				}
 			}
 		}
@@ -166,7 +166,7 @@ void parallel_toplesets_propagation_cpu(const ptp_out_t & ptp_out, che * mesh, c
 					pdist[!d][v] = p;
 
 					if(ptp_out.clusters)
-						ptp_out.clusters[v] = ptp_out.clusters[mesh->vt(prev(he))] != NIL ? ptp_out.clusters[mesh->vt(prev(he))] : ptp_out.clusters[mesh->vt(next(he))];
+						ptp_out.clusters[v] = ptp_out.clusters[mesh->halfedge(prev(he))] != NIL ? ptp_out.clusters[mesh->halfedge(prev(he))] : ptp_out.clusters[mesh->halfedge(next(he))];
 				}
 			}
 		}
@@ -202,13 +202,13 @@ void parallel_toplesets_propagation_cpu(const ptp_out_t & ptp_out, che * mesh, c
 real_t update_step(che * mesh, const real_t * dist, const index_t & he)
 {
 	index_t x[3];
-	x[0] = mesh->vt(next(he));
-	x[1] = mesh->vt(prev(he));
-	x[2] = mesh->vt(he);
+	x[0] = mesh->halfedge(next(he));
+	x[1] = mesh->halfedge(prev(he));
+	x[2] = mesh->halfedge(he);
 
 	vertex X[2];
-	X[0] = mesh->gt(x[0]) - mesh->gt(x[2]);
-	X[1] = mesh->gt(x[1]) - mesh->gt(x[2]);
+	X[0] = mesh->point(x[0]) - mesh->point(x[2]);
+	X[1] = mesh->point(x[1]) - mesh->point(x[2]);
 
 	real_t t[2];
 	t[0] = dist[x[0]];

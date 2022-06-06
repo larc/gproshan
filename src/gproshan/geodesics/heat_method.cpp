@@ -95,7 +95,7 @@ void compute_divergence(const che * mesh, const a_mat & u, a_mat & div)
 		for_star(he, mesh, v)
 		{
 			const vertex & nhe = mesh->normal_he(he);
-			const vertex & vhe = mesh->gt_vt(prev(he)) - mesh->gt_vt(next(he));
+			const vertex & vhe = mesh->vertex_he(prev(he)) - mesh->vertex_he(next(he));
 			const vertex & ghe = mesh->gradient_he(he, u.memptr());
 			sum += (nhe * vhe , -ghe);
 		}
