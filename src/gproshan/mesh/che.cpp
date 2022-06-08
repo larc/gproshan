@@ -112,7 +112,7 @@ vertex & che::normal(const index_t & v)
 vertex che::shading_normal(const index_t & f, const float & u, const float & v) const
 {
 	const index_t & he = f * che::mtrig;
-	return u * VN[VT[he]] + v * VN[VT[he + 1]] + (1 - u - v) * VN[VT[he + 2]];
+	return normalize(u * VN[VT[he]] + v * VN[VT[he + 1]] + (1 - u - v) * VN[VT[he + 2]]);
 }
 
 vertex che::normal_trig(const index_t & f) const
@@ -141,14 +141,11 @@ vertex che::gradient_he(const index_t & he, const real_t * f) const
 
 	vertex n = normal_he(he);
 
-	real_t A2 = area_trig(trig(he)) * 2;
-
 	vertex pij = n * (xj - xi);
 	vertex pjk = n * (xk - xj);
 	vertex pki = n * (xi - xk);
 
-	vertex g = (f[i] * pjk + f[j] * pki + f[k] * pij) / A2;
-	return g / *g;
+	return normalize(f[i] * pjk + f[j] * pki + f[k] * pij);
 }
 
 vertex che::gradient(const index_t & v, const real_t * f)
@@ -233,7 +230,7 @@ void che::normalize_sphere(const real_t & r)
 	for(index_t v = 0; v < n_vertices; ++v)
 	{
 		GT[v] -= center;
-		max_norm = std::max(max_norm, *GT[v]);
+		max_norm = std::max(max_norm, norm(GT[v]));
 	}
 
 	#pragma omp parallel for
@@ -380,7 +377,7 @@ void che::update_normals()
 		for(const index_t & he: star(v))
 			n += area_trig(trig(he)) * normal_he(he);
 
-		n /= *n;
+		n /= norm(n);
 	}
 }
 
@@ -855,7 +852,7 @@ real_t che::mean_edge() const
 
 	#pragma omp parallel for reduction(+: m)
 	for(index_t e = 0; e < n_edges; ++e)
-		m += *(GT[VT[ET[e]]] - GT[VT[next(ET[e])]]);
+		m += norm(GT[VT[ET[e]]] - GT[VT[next(ET[e])]]);
 
 	return m / n_edges;
 }
@@ -947,7 +944,7 @@ real_t che::cotan(const index_t & he) const
 	vertex a = GT[VT[he]] - GT[VT[prev(he)]];
 	vertex b = GT[VT[next(he)]] - GT[VT[prev(he)]];
 
-	return (a, b) / *(a * b);
+	return (a, b) / norm(a * b);
 }
 
 // https://www.mathworks.com/help/pde/ug/pdetriq.html
@@ -958,9 +955,9 @@ real_t che::pdetriq(const index_t & t) const
 {
 	index_t he = t * che::mtrig;
 	real_t h[3] = {
-						*(GT[VT[next(he)]] - GT[VT[he]]),
-						*(GT[VT[prev(he)]] - GT[VT[next(he)]]),
-						*(GT[VT[he]] - GT[VT[prev(he)]])
+					norm(GT[VT[next(he)]] - GT[VT[he]]),
+					norm(GT[VT[prev(he)]] - GT[VT[next(he)]]),
+					norm(GT[VT[he]] - GT[VT[prev(he)]])
 					};
 	return (4 * sqrt(3) * area_trig(t)) / (h[0] * h[0] + h[1] * h[1] + h[2] * h[2]);
 }
@@ -971,7 +968,7 @@ real_t che::area_trig(const index_t & t) const
 	vertex a = GT[VT[next(he)]] - GT[VT[he]];
 	vertex b = GT[VT[prev(he)]] - GT[VT[he]];
 
-	return *(a * b) / 2;
+	return norm(a * b) / 2;
 }
 
 real_t che::area_vertex(const index_t & v) const
@@ -992,7 +989,7 @@ real_t che::mean_curvature(const index_t & v) const
 	for(const index_t & he: star(v))
 	{
 		a += area_trig(trig(he));
-		h += *(GT[VT[next(he)]] - GT[v]) * (normal(v), normal_he(he));
+		h += norm(GT[VT[next(he)]] - GT[v]) * (normal(v), normal_he(he));
 	}
 
 	return 0.75 * h / a;

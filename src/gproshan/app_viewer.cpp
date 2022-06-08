@@ -39,15 +39,21 @@ che * app_viewer::load_mesh(const string & file_path)
 
 int app_viewer::main(int nargs, const char ** args)
 {
-	vec<double, 3> va{1, 2, 3};
-	vec<double, 3> vb = {1, 2, 3};
+	vertex n = {};
+	gproshan_log_var(n);
+
+	vec<double, 3> va = {1, 2, 3};
+	vec<double, 3> vb = {1, 2};
 	vec<double, 3> vc;
 	vc = {1, 2, 3};
 	vec<double, 3> vs = va + vb + vc;
-
+	vertex a = {1, 0, 0};
+	vertex b = {0, 1, 0};
+	gproshan_log_var(norm(a * b) / 2);
 	gproshan_log_var((va, vb));
 	gproshan_log_var(dot(va, vb));
-	gproshan_log_var(*vb);
+	gproshan_log_var(norm(vb));
+	gproshan_log_var(length(vb));
 	gproshan_log_var(vc * 2 / 4);
 	gproshan_log_var(2 * vc / 4);
 	gproshan_log_var(vs);
@@ -58,8 +64,7 @@ int app_viewer::main(int nargs, const char ** args)
 	gproshan_log_var(sizeof(vec<double, 3>));
 	gproshan_log_var(sizeof(vec<float, 3>));
 	gproshan_log_var(sizeof(vec<real_t, 3>));
-
-	return 0;
+	gproshan_log_var(sizeof(vertex));
 
 	if(nargs < 2)
 	{
@@ -245,7 +250,7 @@ bool app_viewer::process_gaussian_curvature(viewer * p_view)
 		{
 			a = mesh->vertex_he(next(he)) - mesh->point(v);
 			b = mesh->vertex_he(prev(he)) - mesh->point(v);
-			g += acos((a,b) / (*a * *b));
+			g += acos((a,b) / (norm(a) * norm(b)));
 		}
 		//gv(v) = (2 * M_PI - g) / mesh->area_vertex(v);
 		gv(v) = mesh->mean_curvature(v);

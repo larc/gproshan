@@ -119,7 +119,7 @@ bool patch::add_vertex_by_faces(vertex & n, vector<vertex> & N, double thr_angle
 				// compute projected area
 				pav = va - vv + ( (n,vv) - (n,va) ) * n;
 				pbv = vb - vv + ( (n,vv) - (n,vb) ) * n;
-				proj_area_face = *(pav * pbv) / 2;
+				proj_area_face = norm(pav * pbv) / 2;
 
 				min_he = mesh->normal_he(he);
 				added = true;
@@ -214,9 +214,9 @@ void patch::recover_radial_disjoint(che * mesh, const real_t & radio_, const ind
 			p = p - c ;
 			p = p - ((p,n)*n);
 
-			if(*p > radio)
+			if(norm(p) > radio)
 			{
-				radio = *p;
+				radio = norm(p);
 			}
 		}
 	}
@@ -268,7 +268,7 @@ void patch::init_radial_disjoint(	real_t & euc_radio,
 
 		if(add_vertex_by_faces(n, N, delta, params.dist_alloc, mesh, u, area, proj_area, M_PI / 2.5 ) && (ratio < sum_thres || (area / area_mesh) < area_thres) )
 		{
-			euc_radio = max(euc_radio, *(mesh->point(u) - c));
+			euc_radio = max(euc_radio, norm(mesh->point(u) - c));
 			return true;
 		}
 
@@ -297,7 +297,7 @@ void patch::init_radial_disjoint(	real_t & euc_radio,
 		p = p - c ;
 		p = p - ((p, n) * n);
 
-		radio = max(radio, *p);
+		radio = max(radio, norm(p));
 	}
 
 	geo_radio = geo[vertices.back()];
@@ -639,9 +639,9 @@ void patch::normal_fit_directions(che * mesh, const index_t & v)
 	nx = nx - ((nx,nz)*nz);
 
 	ny = (nz * nx);
-	nx.unit();
-	ny.unit();
-	nz.unit();
+	nx = normalize(nx);
+	ny = normalize(ny);
+	nz = normalize(nz);
 
 
 	T.set_size(3, 3);

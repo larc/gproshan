@@ -55,10 +55,9 @@ vertex embree::ray_hit::color(const rt_mesh & mesh) const
 vertex embree::ray_hit::normal(const rt_mesh & mesh, const bool & flat) const
 {
 	if(flat || mesh.pointcloud)
-		return normalize({hit.Ng_x, hit.Ng_y, hit.Ng_z});
+		return normalize(vertex{hit.Ng_x, hit.Ng_y, hit.Ng_z});
 
-	const vertex & n = mesh->shading_normal(hit.primID, 1.0 - hit.u - hit.v, hit.u);
-	return n / *n;
+	return mesh->shading_normal(hit.primID, 1.0 - hit.u - hit.v, hit.u);
 }
 
 index_t embree::ray_hit::closest_vertex(const rt_mesh & mesh) const

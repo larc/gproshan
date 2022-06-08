@@ -78,7 +78,7 @@ che * mesh_fill_hole(che * mesh, const vector<index_t> & border_vertices, const 
 
 	auto gen_vertices = [&mean_edge](vector<index_t> & merge_vertices, vector<vertex> & vertices, const vertex & va, const vertex & vb, const index_t & delta_v = 0)
 	{
-		real_t L = *(va - vb);
+		real_t L = length(va - vb);
 		size_t N = L / mean_edge;
 		L = N;
 
@@ -352,11 +352,11 @@ che * fill_hole_front_angles_test(che * mesh, vector<index_t> & front_vertices, 
 		tmp_vertices[v](1) = vertices[v].y;
 		tmp_vertices[v](2) = vertices[v].z;
 
-		if(v) init_perimeter += *(vertices[v] - vertices[v - 1]);
+		if(v) init_perimeter += norm(vertices[v] - vertices[v - 1]);
 	}
 
 
-	init_perimeter += *(vertices.back() - vertices.front());
+	init_perimeter += norm(vertices.back() - vertices.front());
 	perimeter = init_perimeter;
 
 //	length = perimeter / vertices.size();
@@ -547,7 +547,7 @@ che * fill_hole_front_angles_test(che * mesh, vector<index_t> & front_vertices, 
 	vertices.clear();
 
 	for(a_vec r: tmp_vertices)
-		vertices.push_back(vertex(r[0], r[1], r[2]));
+		vertices.push_back({r[0], r[1], r[2]});
 
 	for(index_t v = 0; false && v < tmp_vertices.size(); ++v)
 		a_vec normal = tmp_vertices[v] + length * 3 * normalise(tmp_normals[v]);
@@ -580,7 +580,7 @@ che * fill_hole_front_angles(vector<vertex> & vertices, const real_t & length, c
 		if(v) init_perimeter += norm(V.col(v) - V.col(v-1));
 	}
 
-	init_perimeter += *(vertices.back() - vertices.front());
+	init_perimeter += norm(vertices.back() - vertices.front());
 	perimeter = init_perimeter;
 	//debug(perimeter)
 
@@ -813,7 +813,7 @@ che * fill_hole_front_angles(vector<vertex> & vertices, const real_t & length, c
 	for(a_vec r: tmp_vertices)
 	{
 		r = E * r + avg;
-		vertices.push_back(vertex(r[0], r[1], r[2]));
+		vertices.push_back({r[0], r[1], r[2]});
 	}
 
 	return faces.size() ? new che(vertices.data(), vertices.size(), faces.data(), faces.size() / 3) : nullptr;

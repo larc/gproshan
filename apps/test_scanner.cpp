@@ -24,8 +24,8 @@ glm::mat4 normalize_coordinates(gproshan::che_ply * mesh)
 {
 	glm::mat4 model_mat = glm::mat4(1);
 
-	gproshan::vertex pmin(INFINITY, INFINITY, INFINITY);
-	gproshan::vertex pmax(0, 0, 0);
+	gproshan::vertex pmin = INFINITY;
+	gproshan::vertex pmax = 0;
 
 	for(gproshan::index_t v = 0; v < mesh->n_vertices; ++v)
 	{

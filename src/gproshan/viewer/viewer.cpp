@@ -91,7 +91,7 @@ bool viewer::run()
 
 		quaternion r = cam.current_rotation();
 
-		cam_light = vertex(-1, 1, -2);
+		cam_light = vertex{-1, 1, -2};
 		cam_light = r.conj() * cam_light * r;
 
 		render_params.proj_view_mat = glm::perspective(45.0f, float(viewport_width) / float(viewport_height), 0.01f, 1000.0f) * cam.look_at(r);

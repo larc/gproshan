@@ -57,8 +57,8 @@ void che_viewer::update()
 	model_mat = glm::mat4(1);
 	if(center_mesh)
 	{
-		vertex pmin(INFINITY, INFINITY, INFINITY);
-		vertex pmax(0, 0, 0);
+		vertex pmin = INFINITY;
+		vertex pmax = 0;
 
 		for(index_t v = 0; v < mesh->n_vertices; ++v)
 		{

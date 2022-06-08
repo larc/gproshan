@@ -20,9 +20,9 @@ class camera
 
 	public:
 		quaternion eye;
-		quaternion pos		= vertex(0, 0, -2.5);
-		quaternion front	= vertex(0, 0, 1);
-		quaternion up		= vertex(0, 1, 0);
+		quaternion pos		= vertex{0, 0, -2.5};
+		quaternion front	= vertex{0, 0, 1};
+		quaternion up		= vertex{0, 1, 0};
 
 	public:
 		glm::mat4 look_at(const quaternion & r);

@@ -251,7 +251,7 @@ void msparse_coding::load_sampling()
 						const vertex & va = mesh->point(vsf);
 						const vertex & vb = mesh->point(v);
 
-						invalid_seed[v] = *(va - vb) < 0.8 * euc_radio;
+						invalid_seed[v] = norm(va - vb) < 0.8 * euc_radio;
 					}
 				}
 			}
@@ -959,7 +959,7 @@ real_t msparse_coding::mesh_reconstruction(const fmask_t & mask)
 	#pragma omp parallel for reduction(+: error) reduction(max: max_error)
 	for(index_t v = 0; v < mesh->n_vertices; ++v)
 	{
-		dist[v] = *(new_vertices[v] - mesh->point(v));
+		dist[v] = length(new_vertices[v] - mesh->point(v));
 		error += dist[v];
 		max_error = max(max_error, dist[v]);
 	}

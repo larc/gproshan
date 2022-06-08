@@ -10,7 +10,7 @@ using namespace std;
 namespace gproshan {
 
 
-quaternion::quaternion(real_t s_, real_t vi, real_t vj, real_t vk): s(s_), v(vi, vj, vk) {}
+quaternion::quaternion(real_t s_, real_t vi, real_t vj, real_t vk): s(s_), v{vi, vj, vk} {}
 
 quaternion::quaternion(real_t s_, const vertex & v_): s(s_), v(v_) {}
 

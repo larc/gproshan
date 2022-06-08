@@ -18,8 +18,8 @@ class embree : public raytracing
 	protected:
 		struct ray_hit : public RTCRayHit
 		{
-			ray_hit(const vertex & p_org = vertex(0.0f),
-					const vertex & v_dir = vertex(0.0f),
+			ray_hit(const vertex & p_org = {0, 0, 0},
+					const vertex & v_dir = {0, 0, 0},
 					float near = 1e-5f,
 					float far = FLT_MAX);
 

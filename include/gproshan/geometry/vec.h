@@ -4,6 +4,7 @@
 #include <gproshan/include.h>
 
 #include <cstring>
+#include <cassert>
 #include <cmath>
 #include <iostream>
 
@@ -18,8 +19,17 @@ namespace gproshan {
 template<class T, size_t N>
 class vec
 {
-	protected:
-		T values[N] = {};
+	public:
+		union
+		{
+			T values[N] = {};
+			struct
+			{
+				T x;
+				T y;
+				T z;
+			};
+		};
 
 	public:
 		vec() = default;
@@ -29,7 +39,18 @@ class vec
 			memcpy(values, list.begin(), sizeof(values));
 		}
 
-		virtual ~vec() = default;
+		vec(const T & val)
+		{
+			for(T & v: values)
+				v = val;
+		}
+
+		const vec<T, N> & operator = (const T & val)
+		{
+			for(T & v: values)
+				v = val;
+			return *this;
+		}
 
 		T & operator [] (const index_t & i)
 		{
@@ -43,13 +64,19 @@ class vec
 			return values[i];
 		}
 
-		///< norm or length
-		T operator * () const
+		///< norm
+		T norm() const
 		{
 			T res = 0;
 			for(const T & v: values)
 				res += v * v;
 			return std::sqrt(res);
+		}
+
+		///< length
+		T length() const
+		{
+			return norm();
 		}
 
 		///< dot product
@@ -107,7 +134,7 @@ class vec
 		}
 
 		///< scalar product self assign
-		const vec<T, N> & operator *= (const T & a) const
+		const vec<T, N> & operator *= (const T & a)
 		{
 			for(T & v: values)
 				v *= a;
@@ -115,7 +142,7 @@ class vec
 		}
 
 		///< scalar division self assign
-		const vec<T, N> & operator /= (const T & a) const
+		const vec<T, N> & operator /= (const T & a)
 		{
 			for(T & v: values)
 				v /= a;
@@ -123,7 +150,7 @@ class vec
 		}
 
 		///< sum of vectors self assign
-		const vec<T, N> & operator += (const vec<T, N> & v) const
+		const vec<T, N> & operator += (const vec<T, N> & v)
 		{
 			for(index_t i = 0; i < N; ++i)
 				values[i] += v[i];
@@ -131,26 +158,55 @@ class vec
 		}
 
 		///< difference of vectors self assign
-		const vec<T, N> & operator -= (const vec<T, N> & v) const
+		const vec<T, N> & operator -= (const vec<T, N> & v)
 		{
 			for(index_t i = 0; i < N; ++i)
 				values[i] -= v[i];
 			return *this;
 		}
 
-		/*
+		///< comparison less than
+		bool operator < (const vec<T, N> & v) const
+		{
+			if(x != v.x) return x < v.x;
+			if(y != v.y) return y < v.y;
+			return z < v.z;
+		}
 
-		bool operator < (const vec<T, N> & v) const;
-		bool operator == (const vec<T, N> & v) const;
+		///< comparison equal than
+		bool operator == (const vec<T, N> & v) const
+		{
+			return x == v.x && y == v.y && z == v.z;
+		}
 
-		bool is_zero();*/
+		bool is_zero()
+		{
+			double eps = std::numeric_limits<double>::epsilon();
+
+			return abs(double(x)) < eps && abs(double(y)) < eps && abs(double(z)) < eps;
+		}
 };
+
 
 ///< scalar product
 template<class T, size_t N>
 vec<T, N> operator * (const double & a, const vec<T, N> & v)
 {
 	return v * a;
+}
+
+///< cross product
+template<class T>
+vec<T, 3> operator * (const vec<T, 3> & u, const vec<T, 3> & v)
+{
+	return {u.y * v.z - u.z * v.y, u.z * v.x - u.x * v.z, u.x * v.y - u.y * v.x};
+}
+
+///< cross product
+template<class T>
+vec<T, 3> cross(const vec<T, 3> & u, const vec<T, 3> & v)
+{
+	return u * v;
 }
 
 ///< dot product
@@ -160,18 +216,25 @@ T dot(const vec<T, N> & u, const vec<T, N> & v)
 	return (u, v);
 }
 
-///< norm or length
+///< norm
 template<class T, size_t N>
 T norm(const vec<T, N> & v)
 {
-	return *v;
+	return v.norm();
+}
+
+///< length
+template<class T, size_t N>
+T length(const vec<T, N> & v)
+{
+	return v.length();
 }
 
 ///< normalize vector: divide by its norm
 template<class T, size_t N>
 vec<T, N> normalize(const vec<T, N> & v)
 {
-	return v / *v;
+	return v / norm(v);
 }
 
 ///< std ostream
