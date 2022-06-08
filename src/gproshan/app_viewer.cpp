@@ -39,33 +39,6 @@ che * app_viewer::load_mesh(const string & file_path)
 
 int app_viewer::main(int nargs, const char ** args)
 {
-	vertex n = {};
-	gproshan_log_var(n);
-
-	vec<double, 3> va = {1, 2, 3};
-	vec<double, 3> vb = {1, 2};
-	vec<double, 3> vc;
-	vc = {1, 2, 3};
-	vec<double, 3> vs = va + vb + vc;
-	vertex a = {1, 0, 0};
-	vertex b = {0, 1, 0};
-	gproshan_log_var(norm(a * b) / 2);
-	gproshan_log_var((va, vb));
-	gproshan_log_var(dot(va, vb));
-	gproshan_log_var(norm(vb));
-	gproshan_log_var(length(vb));
-	gproshan_log_var(vc * 2 / 4);
-	gproshan_log_var(2 * vc / 4);
-	gproshan_log_var(vs);
-
-	vec<double, 3> dd{1, 1, 1};
-	gproshan_log_var(vs - dd);
-	gproshan_log_var(- vs - dd);
-	gproshan_log_var(sizeof(vec<double, 3>));
-	gproshan_log_var(sizeof(vec<float, 3>));
-	gproshan_log_var(sizeof(vec<real_t, 3>));
-	gproshan_log_var(sizeof(vertex));
-
 	if(nargs < 2)
 	{
 		printf("%s [mesh_paths.(off,obj,ply)]\n", args[0]);

@@ -32,14 +32,14 @@ class vec
 		};
 
 	public:
-		vec() = default;
-
 		vec(const std::initializer_list<T> & list)
 		{
-			memcpy(values, list.begin(), sizeof(values));
+			int i = -1;
+			for(const T & v: list)
+				values[++i] = v;
 		}
 
-		vec(const T & val)
+		vec(const T & val = 0)
 		{
 			for(T & v: values)
 				v = val;
@@ -190,7 +190,7 @@ class vec
 
 ///< scalar product
 template<class T, size_t N>
-vec<T, N> operator * (const double & a, const vec<T, N> & v)
+vec<T, N> operator * (const T & a, const vec<T, N> & v)
 {
 	return v * a;
 }
