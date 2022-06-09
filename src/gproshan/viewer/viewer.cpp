@@ -8,9 +8,6 @@
 #include <vector>
 #include <thread>
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-
 #include <gproshan/mesh/che_off.h>
 #include <gproshan/mesh/che_obj.h>
 #include <gproshan/mesh/che_ply.h>
@@ -808,7 +805,7 @@ bool viewer::m_raycasting(viewer * view)
 
 	rt::embree rc({mesh}, {mesh.model_mat});
 
-	float * frame = rc.raycaster(	glm::uvec2(view->viewport_width, view->viewport_height),
+	float * frame = rc.raycaster(	uvec2(view->viewport_width, view->viewport_height),
 									view->render_params.proj_view_mat, view->cam.eye
 									);
 
@@ -833,7 +830,7 @@ void viewer::render_gl()
 	glProgramUniform3f(shader_triangles, shader_triangles("cam_light"), cam_light[0], cam_light[1], cam_light[2]);
 	glProgramUniform3f(shader_pointcloud, shader_pointcloud("cam_light"), cam_light[0], cam_light[1], cam_light[2]);
 
-	glm::mat4 & proj_view_mat = render_params.proj_view_mat;
+	mat4 & proj_view_mat = render_params.proj_view_mat;
 	glProgramUniformMatrix4fv(shader_sphere, shader_sphere("proj_view_mat"), 1, 0, &proj_view_mat[0][0]);
 	glProgramUniformMatrix4fv(shader_triangles, shader_triangles("proj_view_mat"), 1, 0, &proj_view_mat[0][0]);
 	glProgramUniformMatrix4fv(shader_pointcloud, shader_pointcloud("proj_view_mat"), 1, 0, &proj_view_mat[0][0]);
@@ -886,7 +883,7 @@ void viewer::render_rt(che_viewer & mesh, frame & rt_frame)
 	render_params.restart = rt_frame.resize(viewport_width, viewport_height) || render_params.restart;
 
 	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, rt_frame);
-	glm::vec4 * img = (glm::vec4 *) glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_READ_WRITE);
+	vec4 * img = (vec4 *) glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_READ_WRITE);
 
 	std::vector<vertex> & scene_lights = render_params.lights;
 	scene_lights.clear();

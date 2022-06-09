@@ -11,7 +11,7 @@ namespace gproshan::rt {
 std::default_random_engine raytracing::gen;
 std::uniform_real_distribution<float> raytracing::randf;
 
-void raytracing::render(glm::vec4 * img, const render_params & params, const bool & flat)
+void raytracing::render(vec4 * img, const render_params & params, const bool & flat)
 {
 	if(params.restart) n_samples = 0;
 
@@ -24,14 +24,14 @@ void raytracing::render(glm::vec4 * img, const render_params & params, const boo
 	}
 
 	glm::mat4 inv_proj_view = glm::inverse(params.proj_view_mat);
-	glm::vec4 li;
+	vec4 li;
 
 	#pragma omp parallel for private(li)
 	for(int i = 0; i < params.viewport_width; ++i)
 	for(int j = 0; j < params.viewport_height; ++j)
 	{
 		//row major
-		glm::vec4 & color = img[j * params.viewport_width + i];
+		vec4 & color = img[j * params.viewport_width + i];
 		const vertex & dir = ray_view_dir(	i + params.viewport_x,
 												j + params.viewport_y,
 												{window_width, window_height},
@@ -39,7 +39,7 @@ void raytracing::render(glm::vec4 * img, const render_params & params, const boo
 												params.cam_pos
 												);
 
-		li = glm::vec4(0);
+		li = vec4(0);
 		for(auto & l: params.lights)
 			li += intersect_li(params.cam_pos, dir, l, flat);
 
@@ -49,14 +49,14 @@ void raytracing::render(glm::vec4 * img, const render_params & params, const boo
 	++n_samples;
 }
 
-float * raytracing::raycaster(	const glm::uvec2 & windows_size,
-								const glm::mat4 & proj_view_mat,
+float * raytracing::raycaster(	const uvec2 & windows_size,
+								const mat4 & proj_view_mat,
 								const vertex & cam_pos,
 								const index_t & samples	)
 {
 	float * frame = new float[windows_size.x * windows_size.y];
 
-	glm::mat4 inv_proj_view = glm::inverse(proj_view_mat);
+	mat4 inv_proj_view;// = glm::inverse(proj_view_mat);
 
 	#pragma omp parallel for
 	for(index_t i = 0; i < windows_size.x; ++i)
@@ -75,12 +75,12 @@ float * raytracing::raycaster(	const glm::uvec2 & windows_size,
 	return frame;
 }
 
-vertex raytracing::ray_view_dir(const index_t & x, const index_t & y, const glm::vec2 & windows_size, const glm::mat4 & inv_proj_view, const vertex & cam_pos)
+vertex raytracing::ray_view_dir(const index_t & x, const index_t & y, const uvec2 & windows_size, const mat4 & inv_proj_view, const vertex & cam_pos)
 {
-	glm::vec2 screen = glm::vec2((float(x) + randf(gen)) / windows_size.x, (float(y) + randf(gen)) / windows_size.y);
-	glm::vec4 view = glm::vec4(screen.x * 2.f - 1.f, screen.y * 2.f - 1.f, 1.f, 1.f);
-	glm::vec4 q = inv_proj_view * view;
-	vertex p = {q.x / q.w, q.y / q.w, q.z / q.w};
+	vec2 screen = vec2((float(x) + randf(gen)) / windows_size.x, (float(y) + randf(gen)) / windows_size.y);
+	vec4 view = {screen.x * 2 - 1, screen.y * 2 - 1, 1, 1};
+	vec4 q = inv_proj_view * view;
+	vertex p = q / q[3];
 
 	return normalize(p - cam_pos);
 }

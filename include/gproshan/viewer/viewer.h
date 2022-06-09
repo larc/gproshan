@@ -4,8 +4,6 @@
 #include <map>
 #include <cstring>
 
-#include <glm/glm.hpp>
-
 #include <gproshan/viewer/camera.h>
 #include <gproshan/viewer/shader.h>
 #include <gproshan/viewer/frame.h>

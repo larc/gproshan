@@ -1,11 +1,14 @@
 #ifndef KDTREE_H
 #define KDTREE_H
 
-#include <gproshan/mesh/vertex.h>
+#include <gproshan/geometry/vec.h>
 
 
 // geometry processing and shape analysis framework
 namespace gproshan {
+
+
+using vertex = vec3;
 
 
 class kdtree

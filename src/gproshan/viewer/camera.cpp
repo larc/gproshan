@@ -2,8 +2,6 @@
 
 #include <cmath>
 
-#include <glm/gtc/matrix_transform.hpp>
-
 
 using namespace std;
 
@@ -12,7 +10,7 @@ using namespace std;
 namespace gproshan {
 
 
-glm::mat4 camera::look_at(const quaternion & r)
+mat4 camera::look_at(const quaternion & r)
 {
 	eye = r.conj() * pos * r;
 

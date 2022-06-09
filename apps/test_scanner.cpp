@@ -6,8 +6,6 @@
 #include <algorithm>
 #include <cstdlib>
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 
 
 void translate(glm::mat4 & model_mat, const gproshan::vertex & p)
@@ -20,9 +18,9 @@ void scale(glm::mat4 & model_mat, const gproshan::real_t & s)
 	model_mat = glm::scale(model_mat, {s, s, s});
 }
 
-glm::mat4 normalize_coordinates(gproshan::che_ply * mesh)
+gproshan::mat4 normalize_coordinates(gproshan::che_ply * mesh)
 {
-	glm::mat4 model_mat = glm::mat4(1);
+	gproshan::mat4 model_mat = gproshan::mat4::identity();
 
 	gproshan::vertex pmin = INFINITY;
 	gproshan::vertex pmax = 0;
@@ -69,9 +67,9 @@ int main(int argc, char* argv[])
 
 	gproshan::rt::raytracing * rt_embree;
 
-	glm::mat4 model_mat = normalize_coordinates(mesh_ply);
+	gproshan::mat4 model_mat = normalize_coordinates(mesh_ply);
 
-	rt_embree = new gproshan::rt::embree({mesh_ply},{model_mat}, false, pc_radius);
+	rt_embree = new gproshan::rt::embree({mesh_ply}, {model_mat}, false, pc_radius);
 
 	gproshan::che * ptx_mesh = scanner_ptx(mesh_ply, rt_embree, n_rows, n_cols, {0, 0, 0}, jpg_folder);
 

@@ -2,8 +2,7 @@
 #define CAMERA_H
 
 #include <gproshan/mesh/quaternion.h>
-
-#include <glm/glm.hpp>
+#include <gproshan/geometry/mat.h>
 
 
 // geometry processing and shape analysis framework
@@ -25,7 +24,7 @@ class camera
 		quaternion up		= vertex{0, 1, 0};
 
 	public:
-		glm::mat4 look_at(const quaternion & r);
+		mat4 look_at(const quaternion & r);
 		quaternion current_rotation() const;
 		void mouse(const bool & press, const double & x, const double & y, const int & w, const int & h);
 		void motion(const double & x, const double & y, const int & w, const int & h);

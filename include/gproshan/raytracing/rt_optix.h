@@ -12,8 +12,6 @@
 #include <optix.h>
 #include <optix_stubs.h>
 
-#include <glm/glm.hpp>
-
 
 // geometry processing and shape analysis framework
 // raytracing approach
@@ -52,10 +50,10 @@ class optix : public raytracing
 	void * as_buffer = nullptr;
 
 	public:
-		optix(const std::vector<che *> & meshes, const std::vector<glm::mat4> & model_mats);
+		optix(const std::vector<che *> & meshes, const std::vector<mat4> & model_mats);
 		~optix();
 
-		void render(glm::vec4 * img, const render_params & params, const bool & flat);
+		void render(vec4 * img, const render_params & params, const bool & flat);
 
 	private:
 		void create_raygen_programs();
@@ -63,8 +61,8 @@ class optix : public raytracing
 		void create_hitgroup_programs();
 		void create_pipeline();
 		void build_sbt();
-		OptixTraversableHandle build_as(const std::vector<che *> & meshes, const std::vector<glm::mat4> & model_mats);
-		void add_mesh(OptixBuildInput & optix_mesh, CUdeviceptr & d_vertex_ptr, uint32_t & optix_trig_flags, const che * mesh, const glm::mat4 & model_mat);
+		OptixTraversableHandle build_as(const std::vector<che *> & meshes, const std::vector<mat4> & model_mats);
+		void add_mesh(OptixBuildInput & optix_mesh, CUdeviceptr & d_vertex_ptr, uint32_t & optix_trig_flags, const che * mesh, const mat4 & model_mat);
 };
 
 

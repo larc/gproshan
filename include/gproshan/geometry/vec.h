@@ -39,17 +39,23 @@ class vec
 				values[++i] = v;
 		}
 
+		vec(const vec<T, N - 1> & v, const T & val = 0)
+		{
+			for(index_t i = 0; i < N - 1; ++i)
+				values[i] = v[i];
+			values[N - 1] = val;
+		}
+
+		vec(const vec<T, N + 1> & v)
+		{
+			for(index_t i = 0; i < N; ++i)
+				values[i] = v[i];
+		}
+
 		vec(const T & val = 0)
 		{
 			for(T & v: values)
 				v = val;
-		}
-
-		const vec<T, N> & operator = (const T & val)
-		{
-			for(T & v: values)
-				v = val;
-			return *this;
 		}
 
 		T & operator [] (const index_t & i)
@@ -254,6 +260,15 @@ std::istream & operator >> (std::istream & is, vec<T, N> & v)
 		is >> v[i];
 	return is;
 }
+
+
+using vec2 = vec<real_t, 2>;
+using vec3 = vec<real_t, 3>;
+using vec4 = vec<real_t, 4>;
+
+using uvec2 = vec<unsigned int, 2>;
+using uvec3 = vec<unsigned int, 3>;
+using uvec4 = vec<unsigned int, 4>;
 
 
 } // namespace gproshan

@@ -2,7 +2,7 @@
 #define CHE_H
 
 #include <gproshan/include.h>
-#include <gproshan/mesh/vertex.h>
+#include <gproshan/geometry/vec.h>
 
 #include <vector>
 #include <string>
@@ -16,6 +16,9 @@ size_t & rw(const size_t & n);
 index_t trig(const index_t & he);
 index_t next(const index_t & he);
 index_t prev(const index_t & he);
+
+
+using vertex = vec3;
 
 
 class che

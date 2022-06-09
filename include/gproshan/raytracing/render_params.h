@@ -3,8 +3,7 @@
 
 
 #include <gproshan/include.h>
-
-#include <glm/glm.hpp>
+#include <gproshan/geometry/mat.h>
 
 
 // geometry processing and shape analysis framework
@@ -21,7 +20,7 @@ struct render_params
 	int viewport_y = 0;
 	bool restart = false;
 	bool viewport_is_window = true;
-	glm::mat4 proj_view_mat;
+	mat4 proj_view_mat;
 	vertex cam_pos;
 	std::vector<vertex> lights;
 };
