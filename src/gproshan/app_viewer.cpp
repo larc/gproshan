@@ -39,15 +39,6 @@ che * app_viewer::load_mesh(const string & file_path)
 
 int app_viewer::main(int nargs, const char ** args)
 {
-	mat4 a;/* {
-				{1, 0, 0, 0},
-				{0, 1, 0, 0},
-				{0, 0, 1, 0},
-				{0, 0, 0, 1}
-				};*/
-	vec4 b = 4;
-	gproshan_log_var(a * a);
-	gproshan_log_var(a * b);
 	if(nargs < 2)
 	{
 		printf("%s [mesh_paths.(off,obj,ply)]\n", args[0]);

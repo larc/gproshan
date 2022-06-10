@@ -3,6 +3,7 @@
 #include <cassert>
 #include <cstring>
 #include <cmath>
+#include <algorithm>
 
 
 using namespace std;
@@ -236,6 +237,38 @@ void che::normalize_sphere(const real_t & r)
 	#pragma omp parallel for
 	for(index_t v = 0; v < n_vertices; ++v)
 		GT[v] *= r / max_norm;
+}
+
+mat4 che::normalize_box(const real_t & side) const
+{
+	vertex pmin = INFINITY;
+	vertex pmax = 0;
+
+	for(index_t v = 0; v < n_vertices; ++v)
+	{
+		const vertex & p = point(v);
+
+		pmin.x = min(pmin.x, p.x);
+		pmin.y = min(pmin.y, p.y);
+		pmin.z = min(pmin.z, p.z);
+
+		pmax.x = max(pmax.x, p.x);
+		pmax.y = max(pmax.y, p.y);
+		pmax.z = max(pmax.z, p.z);
+	}
+
+	mat4 model_mat;
+
+	const real_t & scale = side / std::max({pmax.x - pmin.x, pmax.y - pmin.y, pmax.z - pmin.z});
+	model_mat(0, 0) = model_mat(1, 1) = model_mat(2, 2) = scale;
+
+	const vertex & translate = - scale * (pmax + pmin) / 2;
+	model_mat(0, 3) = translate.x;
+	model_mat(1, 3) = translate.y;
+	model_mat(2, 3) = translate.z;
+	model_mat(3, 3) = 1;
+
+	return model_mat;
 }
 
 void che::merge(const che * mesh, const vector<index_t> & com_vertices)

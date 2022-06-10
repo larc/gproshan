@@ -3,6 +3,7 @@
 
 #include <gproshan/include.h>
 #include <gproshan/geometry/vec.h>
+#include <gproshan/geometry/mat.h>
 
 #include <vector>
 #include <string>
@@ -135,6 +136,7 @@ class che
 		// update methods
 		void reload();
 		void normalize_sphere(const real_t & r = 1);
+		mat4 normalize_box(const real_t & side = 2) const;
 		void merge(const che * mesh, const std::vector<index_t> & com_vertices);
 		void update_vertices(const vertex * positions, const size_t & n = 0, const index_t & v_i = 0);
 		void update_heatmap(const real_t * hm = nullptr);

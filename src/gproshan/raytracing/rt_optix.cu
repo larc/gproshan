@@ -145,13 +145,13 @@ extern "C" __global__ void __raygen__render_frame()
 	vertex_cu ipv[3];
 	for(int i = 0; i < 3; ++i)
 	for(int j = 0; j < 3; ++j)
-		ipv[i][j] = optix_params.inv_proj_view[i + j * 4];
+		ipv[i][j] = optix_params.inv_proj_view[i * 4 + j];
 
-	vertex_cu d = { optix_params.inv_proj_view[0 * 4 + 3],
+	vertex_cu e = { optix_params.inv_proj_view[0 * 4 + 3],
 					optix_params.inv_proj_view[1 * 4 + 3],
 					optix_params.inv_proj_view[2 * 4 + 3]
 					};
-	vertex_cu e = { optix_params.inv_proj_view[3 * 4 + 0],
+	vertex_cu d = { optix_params.inv_proj_view[3 * 4 + 0],
 					optix_params.inv_proj_view[3 * 4 + 1],
 					optix_params.inv_proj_view[3 * 4 + 2]
 					};

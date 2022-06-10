@@ -52,28 +52,7 @@ void che_viewer::init(che * m, const bool & center)
 
 void che_viewer::update()
 {
-	model_mat = mat4::identity();
-	if(center_mesh)
-	{
-		vertex pmin = INFINITY;
-		vertex pmax = 0;
-
-		for(index_t v = 0; v < mesh->n_vertices; ++v)
-		{
-			const vertex & p = mesh->point(v);
-
-			pmin.x = min(pmin.x, p.x);
-			pmin.y = min(pmin.y, p.y);
-			pmin.z = min(pmin.z, p.z);
-
-			pmax.x = max(pmax.x, p.x);
-			pmax.y = max(pmax.y, p.y);
-			pmax.z = max(pmax.z, p.z);
-		}
-
-		scale(2.0 / std::max({pmax.x - pmin.x, pmax.y - pmin.y, pmax.z - pmin.z}));
-		translate(- (pmax + pmin) / 2);
-	}
+	model_mat = center_mesh ? mesh->normalize_box(2) : mat4::identity();
 
 	render_pointcloud = mesh->is_pointcloud();
 	selected_xyz.clear();
@@ -182,7 +161,7 @@ void che_viewer::update_instances_positions(const vector<vertex> & translations)
 
 void che_viewer::draw(shader & program)
 {
-	glProgramUniformMatrix4fv(program, program("model_mat"), 1, 0, &model_mat[0][0]);
+	glProgramUniformMatrix4fv(program, program("model_mat"), 1, true, &model_mat[0][0]);
 	glProgramUniform1ui(program, program("idx_colormap"), idx_colormap);
 	glProgramUniform1i(program, program("render_flat"), render_flat);
 	glProgramUniform1i(program, program("render_lines"), render_lines);
@@ -208,7 +187,7 @@ void che_viewer::draw(shader & program)
 
 void che_viewer::draw_point_cloud(shader & program)
 {
-	glProgramUniformMatrix4fv(program, program("model_mat"), 1, 0, &model_mat[0][0]);
+	glProgramUniformMatrix4fv(program, program("model_mat"), 1, true, &model_mat[0][0]);
 	glProgramUniform1ui(program, program("idx_colormap"), idx_colormap);
 	glProgramUniform1i(program, program("render_lines"), render_lines);
 	glProgramUniform1i(program, program("point_normals"), point_normals);
@@ -244,16 +223,6 @@ void che_viewer::draw_selected_vertices(che_viewer & sphere, shader & program)
 		sphere.update_instances_positions(selected_xyz);
 		sphere.draw(program);
 	}
-}
-
-void che_viewer::translate(const vertex & p)
-{
-	model_mat = glm::translate(model_mat, glm_vec3(p));
-}
-
-void che_viewer::scale(const real_t & s)
-{
-	model_mat = glm::scale(model_mat, {s, s, s});
 }
 
 void che_viewer::select(const index_t & x, const index_t & y, const uvec2 & windows_size, const mat4 & inv_proj_view_mat, const vertex & cam_pos)

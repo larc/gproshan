@@ -14,19 +14,18 @@ mat4 camera::look_at(const quaternion & r)
 {
 	eye = r.conj() * pos * r;
 
-	vec3 Z = r.conj() * (pos + front) * r - eye;
+	vec3 Z = r.conj() * front * r;
 	Z = normalize(Z);
 	vec3 Y = r.conj() * up * r;
 	Y = normalize(Y);
 	vec3 X = Z * Y;
-	Y = X * Z;
 
 	mat4 view;
 	view[0] = {X, -(X, eye)};
 	view[1] = {Y, -(Y, eye)};
 	view[2] = {-Z, (Z, eye)};
 	view[3] = {0, 0, 0, 1};
-	
+
 	return view;
 }
 
@@ -40,7 +39,7 @@ mat4 camera::perspective(const real_t & fovy, const real_t & aspect, const real_
 	P(2, 2) = - (far + near) / (far - near);
 	P(2, 3) = -2 * far * near / (far - near);
 	P(3, 2) = -1;
-	
+
 	return P;
 }
 
