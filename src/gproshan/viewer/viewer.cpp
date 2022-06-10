@@ -86,7 +86,7 @@ bool viewer::run()
 	{
 		TIC(render_time)
 
-		quaternion r = cam.current_rotation();
+		const quaternion & r = cam.current_rotation();
 
 		cam_light = vertex{-1, 1, -2};
 		cam_light = r.conj() * cam_light * r;

@@ -24,7 +24,7 @@ class mat
 			for(const row<T, N> & r: list)
 				rows[++i] = r;
 		}
-		
+
 		T & operator () (const index_t & i, const index_t & j)
 		{
 			return rows[i][j];
