@@ -27,13 +27,11 @@ jobs:
         sudo apt update
         sudo apt install \
                           libarmadillo-dev \
-                          libeigen3-dev \
                           libcgal-dev \
                           libsuitesparse-dev \
                           libopenblas-dev \
                           libglew-dev \
                           libglfw3-dev \
-                          libglm-dev \
                           cimg-dev
 
     - name: Install Cuda

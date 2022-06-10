@@ -25,11 +25,11 @@ finally execute:
 	./gproshan [mesh_paths.(off,obj,ply)]
 
 ### Dependencies (Linux)
-g++ >= 9.3, cuda >= 11.0, cmake >= 3.18, armadillo, eigen, cgal, suitesparse, openblas, glew, glfw3, glm, cimg, gnuplot, embree >= 3.13
+g++ >= 9.3, cuda >= 11.0, cmake >= 3.22, armadillo, cgal, suitesparse, openblas, glew, glfw3, cimg, gnuplot, embree >= 3.13
 
 In Ubuntu you can install them with:
 
-	sudo apt install cmake libarmadillo-dev libcgal-dev libsuitesparse-dev libopenblas-dev libglew-dev libglfw3-dev libglm-dev cimg-dev gnuplot
+	sudo apt install cmake libarmadillo-dev libcgal-dev libsuitesparse-dev libopenblas-dev libglew-dev libglfw3-dev cimg-dev gnuplot
 
 #### Installing Intel Embree
 

@@ -805,7 +805,7 @@ bool viewer::m_raycasting(viewer * view)
 
 	rt::embree rc({mesh}, {mesh.model_mat});
 
-	float * frame = rc.raycaster(	uvec2(view->viewport_width, view->viewport_height),
+	float * frame = rc.raycaster(	{view->viewport_width, view->viewport_height},
 									inverse(view->proj_view_mat),
 									view->cam.eye
 									);

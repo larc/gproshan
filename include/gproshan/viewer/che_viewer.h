@@ -77,7 +77,7 @@ class che_viewer
 		void draw_point_cloud(shader & program);
 		void draw_selected_vertices(che_viewer & sphere, shader & program);
 
-		void select(const index_t & x, const index_t & y, const uvec2 & windows_size, const mat4 & inv_proj_view_mat, const vertex & cam_pos);
+		void select(const index_t & x, const index_t & y, const ivec2 & windows_size, const mat4 & inv_proj_view_mat, const vertex & cam_pos);
 
 		void log_info();
 };

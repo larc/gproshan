@@ -270,6 +270,10 @@ using uvec2 = vec<unsigned int, 2>;
 using uvec3 = vec<unsigned int, 3>;
 using uvec4 = vec<unsigned int, 4>;
 
+using ivec2 = vec<int, 2>;
+using ivec3 = vec<int, 3>;
+using ivec4 = vec<int, 4>;
+
 
 } // namespace gproshan
 

@@ -32,11 +32,11 @@ void raytracing::render(vec4 * img, const render_params & params, const bool & f
 		//row major
 		vec4 & color = img[j * params.viewport_width + i];
 		const vertex & dir = ray_view_dir(	i + params.viewport_x,
-												j + params.viewport_y,
-												{window_width, window_height},
-												params.inv_proj_view,
-												params.cam_pos
-												);
+											j + params.viewport_y,
+											{window_width, window_height},
+											params.inv_proj_view,
+											params.cam_pos
+											);
 
 		li = vec4(0);
 		for(auto & l: params.lights)
@@ -48,7 +48,7 @@ void raytracing::render(vec4 * img, const render_params & params, const bool & f
 	++n_samples;
 }
 
-float * raytracing::raycaster(	const uvec2 & windows_size,
+float * raytracing::raycaster(	const ivec2 & windows_size,
 								const mat4 & inv_proj_view,
 								const vertex & cam_pos,
 								const index_t & samples	)
@@ -56,8 +56,8 @@ float * raytracing::raycaster(	const uvec2 & windows_size,
 	float * frame = new float[windows_size.x * windows_size.y];
 
 	#pragma omp parallel for
-	for(index_t i = 0; i < windows_size.x; ++i)
-	for(index_t j = 0; j < windows_size.y; ++j)
+	for(int i = 0; i < windows_size.x; ++i)
+	for(int j = 0; j < windows_size.y; ++j)
 	{
 		//row major
 		float & color = frame[(windows_size.y - j - 1) * windows_size.x + i] = 0;
@@ -72,7 +72,7 @@ float * raytracing::raycaster(	const uvec2 & windows_size,
 	return frame;
 }
 
-vertex raytracing::ray_view_dir(const index_t & x, const index_t & y, const uvec2 & windows_size, const mat4 & inv_proj_view, const vertex & cam_pos)
+vertex raytracing::ray_view_dir(const index_t & x, const index_t & y, const ivec2 & windows_size, const mat4 & inv_proj_view, const vertex & cam_pos)
 {
 	vec2 screen = vec2((float(x) + randf(gen)) / windows_size.x, (float(y) + randf(gen)) / windows_size.y);
 	vec4 view = {screen.x * 2 - 1, screen.y * 2 - 1, 1, 1};
