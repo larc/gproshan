@@ -24,6 +24,7 @@ class camera
 		quaternion up		= vertex{0, 1, 0};
 
 	public:
+		static mat4 perspective(const real_t & fovy, const real_t & aspect, const real_t & near, const real_t & far);
 		mat4 look_at(const quaternion & r);
 		quaternion current_rotation() const;
 		void mouse(const bool & press, const double & x, const double & y, const int & w, const int & h);

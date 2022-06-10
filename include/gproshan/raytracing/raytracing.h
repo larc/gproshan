@@ -51,7 +51,7 @@ class raytracing
 		virtual void render(vec4 * img, const render_params & params, const bool & flat);
 
 		virtual float * raycaster(	const uvec2 & windows_size,
-									const mat4 & proj_view_mat,
+									const mat4 & inv_proj_view,
 									const vertex & cam_pos,
 									const index_t & samples = 4
 									);

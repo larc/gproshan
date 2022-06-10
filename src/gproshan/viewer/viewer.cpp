@@ -91,7 +91,7 @@ bool viewer::run()
 		cam_light = vertex{-1, 1, -2};
 		cam_light = r.conj() * cam_light * r;
 
-		render_params.proj_view_mat = glm::perspective(45.0f, float(viewport_width) / float(viewport_height), 0.01f, 1000.0f) * cam.look_at(r);
+		proj_view_mat = camera::perspective(45, real_t(viewport_width) / real_t(viewport_height), 0.01, 1000) * cam.look_at(r);
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		render_gl();
@@ -806,7 +806,8 @@ bool viewer::m_raycasting(viewer * view)
 	rt::embree rc({mesh}, {mesh.model_mat});
 
 	float * frame = rc.raycaster(	uvec2(view->viewport_width, view->viewport_height),
-									view->render_params.proj_view_mat, view->cam.eye
+									inverse(view->proj_view_mat),
+									view->cam.eye
 									);
 
 	std::thread([](CImg<float> img)
@@ -830,12 +831,11 @@ void viewer::render_gl()
 	glProgramUniform3f(shader_triangles, shader_triangles("cam_light"), cam_light[0], cam_light[1], cam_light[2]);
 	glProgramUniform3f(shader_pointcloud, shader_pointcloud("cam_light"), cam_light[0], cam_light[1], cam_light[2]);
 
-	mat4 & proj_view_mat = render_params.proj_view_mat;
-	glProgramUniformMatrix4fv(shader_sphere, shader_sphere("proj_view_mat"), 1, 0, &proj_view_mat[0][0]);
-	glProgramUniformMatrix4fv(shader_triangles, shader_triangles("proj_view_mat"), 1, 0, &proj_view_mat[0][0]);
-	glProgramUniformMatrix4fv(shader_pointcloud, shader_pointcloud("proj_view_mat"), 1, 0, &proj_view_mat[0][0]);
-	glProgramUniformMatrix4fv(shader_normals, shader_normals("proj_view_mat"), 1, 0, &proj_view_mat[0][0]);
-	glProgramUniformMatrix4fv(shader_gradient, shader_gradient("proj_view_mat"), 1, 0, &proj_view_mat[0][0]);
+	glProgramUniformMatrix4fv(shader_sphere, shader_sphere("proj_view_mat"), 1, true, &proj_view_mat[0][0]);
+	glProgramUniformMatrix4fv(shader_triangles, shader_triangles("proj_view_mat"), 1, true, &proj_view_mat[0][0]);
+	glProgramUniformMatrix4fv(shader_pointcloud, shader_pointcloud("proj_view_mat"), 1, true, &proj_view_mat[0][0]);
+	glProgramUniformMatrix4fv(shader_normals, shader_normals("proj_view_mat"), 1, true, &proj_view_mat[0][0]);
+	glProgramUniformMatrix4fv(shader_gradient, shader_gradient("proj_view_mat"), 1, true, &proj_view_mat[0][0]);
 
 	glProgramUniform1f(shader_normals, shader_normals("length"), cam.zoom() * 0.02);
 	glProgramUniform1f(shader_gradient, shader_gradient("length"), cam.zoom() * 0.02);
@@ -897,6 +897,7 @@ void viewer::render_rt(che_viewer & mesh, frame & rt_frame)
 	//render_params.viewport_x = mesh.vx * viewport_width;
 	//render_params.viewport_y = mesh.vy * viewport_height;
 	//render_params.viewport_is_window = false;
+	render_params.inv_proj_view = inverse(proj_view_mat);
 	render_params.cam_pos = cam.eye;
 
 	rt->render(img, render_params, mesh.render_flat);
@@ -920,7 +921,7 @@ void viewer::pick_vertex(const real_t & x, const real_t & y)
 
 	mesh.select(ix % viewport_width, iy % viewport_height,
 				{viewport_width, viewport_height},
-				render_params.proj_view_mat, cam.eye);
+				inverse(proj_view_mat), cam.eye);
 }
 
 

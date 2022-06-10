@@ -256,11 +256,9 @@ void che_viewer::scale(const real_t & s)
 	model_mat = glm::scale(model_mat, {s, s, s});
 }
 
-void che_viewer::select(const index_t & x, const index_t & y, const uvec2 & windows_size, const mat4 & proj_view_mat, const vertex & cam_pos)
+void che_viewer::select(const index_t & x, const index_t & y, const uvec2 & windows_size, const mat4 & inv_proj_view_mat, const vertex & cam_pos)
 {
-	const vertex & dir = rt_embree->ray_view_dir(x, windows_size.y - y, windows_size,
-													glm::inverse(proj_view_mat), cam_pos);
-
+	const vertex & dir = rt_embree->ray_view_dir(x, windows_size.y - y, windows_size, inv_proj_view_mat, cam_pos);
 	const index_t & v = rt_embree->closest_vertex(cam_pos, dir);
 
 	if(v != NIL) selected.push_back(v);

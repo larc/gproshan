@@ -24,6 +24,16 @@ class mat
 			for(const row<T, N> & r: list)
 				rows[++i] = r;
 		}
+		
+		T & operator () (const index_t & i, const index_t & j)
+		{
+			return rows[i][j];
+		}
+
+		const T & operator () (const index_t & i, const index_t & j) const
+		{
+			return rows[i][j];
+		}
 
 		row<T, N> & operator [] (const index_t & i)
 		{
@@ -55,7 +65,7 @@ class mat
 			return res;
 		}
 
-		static mat<T,N> identity()
+		static mat<T, N> identity()
 		{
 			mat<T, N> res;
 			for(index_t i = 0; i < N; ++i)
@@ -63,7 +73,7 @@ class mat
 			return res;
 		}
 
-		static mat<T,N> transpose(const mat<T, N> & m)
+		static mat<T, N> transpose(const mat<T, N> & m)
 		{
 			mat<T, N> res;
 			for(index_t i = 0; i < N; ++i)
@@ -95,6 +105,8 @@ std::istream & operator >> (std::istream & is, mat<T, N> & m)
 using mat2 = mat<real_t, 2>;
 using mat3 = mat<real_t, 3>;
 using mat4 = mat<real_t, 4>;
+
+mat4 inverse(const mat4 & m);
 
 
 } // namespace gproshan

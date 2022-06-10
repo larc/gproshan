@@ -13,8 +13,37 @@ namespace gproshan {
 mat4 camera::look_at(const quaternion & r)
 {
 	eye = r.conj() * pos * r;
+	
+	vec3 p = eye;
+	vec3 Z = eye - r.conj() * (pos + front) * r;
+	vec3 Y = r.conj() * up * r;
+	vec3 X = Y * Z;
+	X = normalize(X);
+	Y = normalize(Y);
+	Z = normalize(Z);
 
-	return glm::lookAt(glm_vec3(eye), glm_vec3(r.conj() * (pos + front) * r), glm_vec3(r.conj() * up * r));
+	mat4 view = mat4::identity();
+	view[0] = {X, - (X, p)};
+	view[1] = {Y, - (Y, p)};
+	view[2] = {Z, - (Z, p)};
+	view[3] = {0, 0, 0, 1};
+	
+	return view;
+}
+
+mat4 camera::perspective(const real_t & fovy, const real_t & aspect, const real_t & near, const real_t & far)
+{
+	const real_t & top = near * std::tan(fovy * M_PI / 180);
+	const real_t & right = top * aspect;
+
+	mat4 P;
+	P(0, 0) = near / right;	
+	P(1, 1) = near / top;	
+	P(2, 2) = - (far + near) / (far - near);	
+	P(2, 3) = -2 * far * near / (far - near);	
+	P(3, 2) = -1;	
+
+	return P;
 }
 
 quaternion camera::click_to_sphere(const double & x, const double & y, const int & w, const int & h)

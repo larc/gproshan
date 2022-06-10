@@ -20,8 +20,8 @@ struct render_params
 	int viewport_y = 0;
 	bool restart = false;
 	bool viewport_is_window = true;
-	mat4 proj_view_mat;
 	vertex cam_pos;
+	mat4 inv_proj_view;
 	std::vector<vertex> lights;
 };
 

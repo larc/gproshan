@@ -23,7 +23,6 @@ void raytracing::render(vec4 * img, const render_params & params, const bool & f
 		window_height = params.viewport_height;
 	}
 
-	glm::mat4 inv_proj_view = glm::inverse(params.proj_view_mat);
 	vec4 li;
 
 	#pragma omp parallel for private(li)
@@ -35,7 +34,7 @@ void raytracing::render(vec4 * img, const render_params & params, const bool & f
 		const vertex & dir = ray_view_dir(	i + params.viewport_x,
 												j + params.viewport_y,
 												{window_width, window_height},
-												inv_proj_view,
+												params.inv_proj_view,
 												params.cam_pos
 												);
 
@@ -50,13 +49,11 @@ void raytracing::render(vec4 * img, const render_params & params, const bool & f
 }
 
 float * raytracing::raycaster(	const uvec2 & windows_size,
-								const mat4 & proj_view_mat,
+								const mat4 & inv_proj_view,
 								const vertex & cam_pos,
 								const index_t & samples	)
 {
 	float * frame = new float[windows_size.x * windows_size.y];
-
-	mat4 inv_proj_view;// = glm::inverse(proj_view_mat);
 
 	#pragma omp parallel for
 	for(index_t i = 0; i < windows_size.x; ++i)
