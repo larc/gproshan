@@ -259,10 +259,13 @@ void split_border(vector<pair<index_t, index_t> > & split_indices, che * mesh, c
 
 vector<index_t> * fill_all_holes(che * mesh, const size_t & max_iter)
 {
+	gproshan_error(holes);
 	vector<index_t> * border_vertices;
 	che ** holes;
+	gproshan_error(holes);
 
 	tie(border_vertices, holes) = fill_all_holes_meshes(mesh, max_iter);
+	gproshan_error(holes);
 	if(holes)
 	{
 		// FIX_BOUND
@@ -271,7 +274,7 @@ vector<index_t> * fill_all_holes(che * mesh, const size_t & max_iter)
 			if(holes[b]) delete holes[b];
 		*/
 	}
-	delete [] holes;
+	//delete [] holes;
 	return border_vertices;
 }
 
@@ -289,13 +292,16 @@ tuple<vector<index_t> *, che **> fill_all_holes_meshes(che * mesh, const size_t 
 	holes = new che*[n_borders];
 
 	gproshan_debug(inpainting);
+	gproshan_error(holes);
 
 	for(index_t b = 0; b < n_borders; ++b)
 		border_vertices[b] = mesh->boundary(bounds[b]);
 
 	gproshan_debug(inpainting);
+	gproshan_error(holes);
 	for(index_t b = 0; b < n_borders; ++b)
 	{
+	gproshan_error(holes);
 		gproshan_debug_var(b);
 //		vector<pair<index_t, index_t> > split_indices;
 //		split_border(split_indices, mesh, border_vertices[b]);
@@ -304,15 +310,16 @@ tuple<vector<index_t> *, che **> fill_all_holes_meshes(che * mesh, const size_t 
 	gproshan_debug(inpainting);
 		if(holes[b]) che_off::write_file(holes[b], tmp_file_path("fill_holes_" + to_string(b) + "_" + mesh->name() + ".off"));
 	gproshan_debug(inpainting);
+	gproshan_error(holes);
 	}
 
-	gproshan_debug(inpainting);
+	che * old = nullptr;
 	for(index_t b = 0; b < n_borders; ++b)
 		if(holes[b])
 		{
-	gproshan_debug(inpainting);
-			mesh->merge(holes[b], border_vertices[b]);
-	gproshan_debug(inpainting);
+			old = mesh;
+			mesh = old->merge(holes[b], border_vertices[b]);
+			delete old;
 		}
 
 

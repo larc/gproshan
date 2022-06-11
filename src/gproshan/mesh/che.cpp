@@ -271,110 +271,33 @@ mat4 che::normalize_box(const real_t & side) const
 	return model_mat;
 }
 
-void che::merge(const che * mesh, const vector<index_t> & com_vertices)
+///< vcommon correspond to the first vertices of the mesh with indices to the main mesh (this)
+che * che::merge(const che * mesh, const vector<index_t> & vcommon)
 {
-	// TODO
-//	write_file("big.off");
-//	mesh->write_file("small.off");
-gproshan_debug(fill_holes);
-	size_t ncv = com_vertices.size();
-	bool is_open = mesh->VT[next(mesh->EVT[0])] >= ncv;
-	gproshan_debug_var(is_open);
+	const size_t & n_vcommon = vcommon.size();
+	const size_t & n_vnew = mesh->n_vertices - n_vcommon;
 
-	size_t nv = n_vertices + mesh->n_vertices - ncv;
-	size_t nf = n_faces + mesh->n_faces;
-	size_t nh = n_half_edges + mesh->n_half_edges;
-	size_t ne = n_edges + mesh->n_edges - (ncv - is_open);
+	che * new_mesh = new che(n_vertices + n_vnew, n_faces + mesh->n_faces);
 
-	vertex * aGT = new vertex[nv];
-	index_t * aVT = new index_t[nh];
-	index_t * aOT = new index_t[nh];
-	index_t * aEVT = new index_t[nv];
-	index_t * aET = new index_t[ne];
-	index_t * aEHT = new index_t[nh];
+	memcpy(new_mesh->GT, GT, sizeof(vertex) * n_vertices);
+	memcpy(new_mesh->GT + n_vertices, mesh->GT + n_vcommon, sizeof(vertex) * n_vnew);
+	memcpy(new_mesh->VC, VC, sizeof(rgb_t) * n_vertices);
+	memcpy(new_mesh->VC + n_vertices, mesh->VC + n_vcommon, sizeof(rgb_t) * n_vnew);
+	memcpy(new_mesh->VHC, VHC, sizeof(real_t) * n_vertices);
+	memcpy(new_mesh->VHC + n_vertices, mesh->VHC + n_vcommon, sizeof(real_t) * n_vnew);
 
-gproshan_debug(fill_holes);
-	memcpy(aGT, GT, sizeof(vertex) * n_vertices);
-	memcpy(aGT + n_vertices, mesh->GT + ncv, sizeof(vertex) * (nv - n_vertices));
+	memcpy(new_mesh->VT, VT, sizeof(index_t) * n_half_edges);
 
-	memcpy(aVT, VT, sizeof(index_t) * n_half_edges);
-
-	index_t * t_aVT = aVT + n_half_edges;
+	index_t * tVT = new_mesh->VT + n_half_edges;
 	for(index_t he = 0; he < mesh->n_half_edges; ++he)
-		t_aVT[he] = mesh->VT[he] < ncv ? com_vertices[mesh->VT[he]] : mesh->VT[he] + n_vertices - ncv;
-gproshan_debug(fill_holes);
+		tVT[he] = mesh->VT[he] < vcommon.size() ? vcommon[mesh->VT[he]] : mesh->VT[he] + n_vertices - n_vcommon;
 
-	memcpy(aOT, OT, sizeof(index_t) * n_half_edges);
-gproshan_debug(fill_holes);
+	new_mesh->update_evt_ot_et();
+	new_mesh->update_eht();
 
-	index_t * t_aOT = aOT + n_half_edges;
-	for(index_t he = 0; he < mesh->n_half_edges; ++he)
-		t_aOT[he] = mesh->OT[he] != NIL ? mesh->OT[he] + n_half_edges : NIL;
-gproshan_debug(fill_holes);
+	new_mesh->update_normals();
 
-	for(index_t v, he_v, he_i, i = 0; i < ncv; ++i)
-	{
-		he_i = mesh->EVT[i];
-		if(he_i != NIL && mesh->VT[next(he_i)] < ncv)
-		{
-			v = com_vertices[mesh->VT[next(he_i)]];
-			he_v = EVT[v];
-			aOT[he_v] = he_i + n_half_edges;
-			aOT[aOT[he_v]] = he_v;
-		}
-	}
-
-gproshan_debug(fill_holes);
-	memcpy(aEVT, EVT, sizeof(index_t) * n_vertices);
-gproshan_debug(fill_holes);
-	if(is_open)
-		aEVT[com_vertices[0]] = mesh->EVT[0] != NIL ? mesh->EVT[0] + n_half_edges : NIL;
-
-gproshan_debug(fill_holes);
-	index_t * t_aEVT = aEVT + n_vertices;
-	for(index_t v = ncv; v < mesh->n_vertices; ++v)
-		t_aEVT[v - ncv] = mesh->EVT[v] != NIL ? mesh->EVT[v] + n_half_edges : NIL;
-gproshan_debug(fill_holes);
-
-	memcpy(aET, ET, sizeof(index_t) * n_edges);
-gproshan_debug(fill_holes);
-
-	bool * common_edge = new bool[mesh->n_edges];
-	memset(common_edge, 0, sizeof(bool) * mesh->n_edges);
-	for(index_t he_i, i = 0; i < ncv; ++i)
-	{
-		he_i = mesh->EVT[i];
-		if(he_i != NIL && mesh->VT[next(he_i)] < ncv)
-			common_edge[mesh->EHT[he_i]] = true;
-	}
-
-	index_t ae = n_edges;
-	for(index_t e = 0; e < mesh->n_edges; ++e)
-		if(!common_edge[e])
-			aET[ae++] = mesh->ET[e] + n_half_edges;
-
-	gproshan_debug_var(ae == ne);
-	gproshan_debug_var(ae);
-	gproshan_debug_var(ne);
-	assert(ae == ne);
-	delete [] common_edge;
-gproshan_debug(fill_holes);
-	free();
-
-gproshan_debug(fill_holes);
-	GT	= aGT;
-	VT	= aVT;
-	OT	= aOT;
-	EVT	= aEVT;
-	ET	= aET;
-	EHT	= aEHT;
-
-	rw(n_vertices)		= nv;
-	rw(n_faces)			= nf;
-	rw(n_half_edges)	= nh;
-	rw(n_edges)			= ne;
-
-	update_eht();
+	return new_mesh;
 }
 
 void che::update_vertices(const vertex * positions, const size_t & n, const index_t & v_i)
@@ -860,7 +783,7 @@ size_t che::max_degree() const
 	for(index_t v = 0; v < n_vertices; ++v)
 	{
 		d = 0;
-		for(const index_t & he: star(v)) ++d;
+		for([[maybe_unused]] const index_t & he: star(v)) ++d;
 		d += is_vertex_bound(v);
 		md = max(md, d);
 	}

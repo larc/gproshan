@@ -797,22 +797,6 @@ bool app_viewer::process_key_components(viewer * p_view)
 
 // Hole Filling
 
-bool paint_holes_vertices(viewer * p_view)
-{
-	app_viewer * view = (app_viewer *) p_view;
-	che_viewer & mesh = view->active_mesh();
-
-	size_t nv = mesh->n_vertices;
-
-	// TODO
-
-	#pragma omp parallel for
-	for(index_t v = 0; v < mesh->n_vertices; ++v)
-		if(v >= nv) mesh->heatmap(v) = .25;
-
-	return false;
-}
-
 bool app_viewer::process_poisson(viewer * p_view, const index_t & k)
 {
 	app_viewer * view = (app_viewer *) p_view;
@@ -824,7 +808,6 @@ bool app_viewer::process_poisson(viewer * p_view, const index_t & k)
 	TIC(view->time) poisson(mesh, old_n_vertices, k); TOC(view->time)
 	gproshan_log_var(view->time);
 
-//	paint_holes_vertices();
 	mesh.update();
 
 	return false;
@@ -856,7 +839,7 @@ bool app_viewer::process_fill_holes(viewer * p_view)
 
 	fill_all_holes(mesh);
 
-	paint_holes_vertices(p_view);
+	mesh.update();
 
 	return false;
 }
@@ -887,7 +870,8 @@ bool app_viewer::process_fill_holes_biharmonic_splines(viewer * p_view)
 
 	delete [] holes;
 	delete [] border_vertices;
-	paint_holes_vertices(p_view);
+
+	mesh.update();
 
 	return false;
 }

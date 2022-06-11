@@ -160,7 +160,7 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 		for(index_t v = 0; v < n_vertices; ++v)
 		{
 			dv = mesh->is_vertex_bound(v) ? 1 : 0;
-			for(const index_t & he: mesh->star(v)) ++dv;
+			for([[maybe_unused]] const index_t & he: mesh->star(v)) ++dv;
 			++deg[dv];
 		}
 
