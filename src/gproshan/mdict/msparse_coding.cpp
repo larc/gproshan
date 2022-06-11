@@ -9,29 +9,10 @@
 #include <cassert>
 #include <fstream>
 
-#ifndef CGAL_PATCH_DEFS
-	#define CGAL_PATCH_DEFS
-	#define CGAL_EIGEN3_ENABLED
-	#define CGAL_USE_BOOST_PROGRAM_OPTIONS
-	#define CGAL_USE_GMP
-	#define DCGAL_USE_MPFR
-#endif
-
-#include <CGAL/Simple_cartesian.h>
-#include <CGAL/Monge_via_jet_fitting.h>
-
 
 // geometry processing and shape analysis framework
 // mesh dictionary learning and sparse coding namespace
 namespace gproshan::mdict {
-
-
-typedef real_t DFT;
-typedef CGAL::Simple_cartesian<DFT> Data_Kernel;
-typedef Data_Kernel::Point_3 DPoint;
-typedef Data_Kernel::Vector_3 DVector;
-typedef CGAL::Monge_via_jet_fitting<Data_Kernel> My_Monge_via_jet_fitting;
-typedef My_Monge_via_jet_fitting::Monge_form My_Monge_form;
 
 
 size_t msparse_coding::L = 12;
