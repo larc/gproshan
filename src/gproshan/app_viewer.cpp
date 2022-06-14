@@ -845,7 +845,7 @@ bool app_viewer::process_fill_holes(viewer * p_view)
 		const std::vector<index_t> & vbounds = mesh->boundary(v);
 		std::vector<vertex> vertices;
 		std::vector<index_t> faces;
-		
+
 		vertex center;
 		for(const index_t & v: vbounds)
 		{
@@ -853,10 +853,10 @@ bool app_viewer::process_fill_holes(viewer * p_view)
 			center += mesh->point(v);
 		}
 		center /= vbounds.size();
-		
+
 		std::priority_queue<std::pair<real_t, index_t> > front;
 		std::vector<uvec2> neigs(vertices.size());
-		
+
 		auto bprev = [&](const index_t & v) -> index_t &
 		{
 			return neigs[v].x;
@@ -877,7 +877,7 @@ bool app_viewer::process_fill_holes(viewer * p_view)
 		for(index_t i = 1; i < vertices.size() - 1; ++i)
 			push({i, i - 1, i + 1});
 		push({vertices.size() - 1, vertices.size() - 2, 0});
-		
+
 		std::vector<bool> border;
 		border.assign(true, vertices.size());
 
@@ -885,8 +885,8 @@ bool app_viewer::process_fill_holes(viewer * p_view)
 		index_t v0, v1, v2;
 		while(!front.empty())
 		{
-			angle = front.top().first;	
-			
+			angle = front.top().first;
+
 			if(!(border[v0] && border[v1] && border[v2]))
 				continue;
 
@@ -894,7 +894,7 @@ bool app_viewer::process_fill_holes(viewer * p_view)
 		}
 
 		// vertices.push_back(center);
-	
+
 		che * old = fill_mesh;
 		che * hole = new che(vertices.data(), vertices.size(), faces.data(), faces.size() / 3);
 		fill_mesh = old->merge(hole, vbounds);

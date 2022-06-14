@@ -13,78 +13,27 @@
 namespace gproshan {
 
 
-size_t & rw(const size_t & n);
-index_t trig(const index_t & he);
-index_t next(const index_t & he);
-index_t prev(const index_t & he);
-
-
 using vertex = vec3;
-
 
 class che
 {
-	public:
-		class star_he
-		{
-			public:
-				class star_he_it
-				{
-					const che * mesh;
-					index_t he;
-					const index_t & he_end;
+	protected:
+		static size_t & rw(const size_t & n);
 
-					public:
-						star_he_it(const che * p_mesh, const index_t & p_he, const index_t & p_he_end): mesh(p_mesh), he(p_he), he_end(p_he_end) {}
-						star_he_it & operator ++ ()
-						{
-							he = mesh->OT[prev(he)];
-							he = he != he_end ? he : NIL;
-							return *this;
-						}
-						bool operator != (const star_he_it & it)
-						{
-							return he != it.he;
-						}
-						const index_t & operator * ()
-						{
-							return he;
-						}
-				};
-
-			private:
-				const che * mesh;
-				const index_t & v;
-
-			public:
-				star_he(const che * p_mesh, const index_t & p_v): mesh(p_mesh), v(p_v) {}
-				star_he_it begin()
-				{
-					return {mesh, mesh->EVT[v], mesh->EVT[v]};
-				}
-				star_he_it end()
-				{
-					return {nullptr, NIL, NIL};
-				}
-		};
+	private:
+		class star_he;
 
 	public:
 		enum mesh_type : unsigned char { mtrig = 3, mquad = 4 };	///< meshes_types
+
 		struct rgb_t
 		{
 			unsigned char r = 230;
 			unsigned char g = 240;
 			unsigned char b = 250;
 
-			unsigned char & operator [] (const index_t & i)
-			{
-				return (&r)[i];
-			}
-
-			operator vertex () const
-			{
-				return {float(r) / 255, float(g) / 255, float(b) / 255};
-			}
+			unsigned char & operator [] (const index_t & i);
+			operator vertex () const;
 		};
 
 		const size_t n_vertices		= 0;
@@ -212,6 +161,34 @@ class che
 	friend struct CHE;
 };
 
+class che::star_he
+{
+	class iterator;
+
+	const che * mesh;
+	const index_t & v;
+
+	public:
+		star_he(const che * p_mesh, const index_t & p_v);
+		iterator begin() const;
+		iterator end() const;
+};
+
+class che::star_he::iterator
+{
+	const che * mesh;
+	index_t he;
+	const index_t & he_end;
+
+	public:
+		iterator(const che * p_mesh, const index_t & p_he, const index_t & p_he_end);
+		iterator & operator ++ ();
+		bool operator != (const iterator & it) const;
+		const index_t & operator * ();
+};
+
+
+// aux che structs for cuda
 
 struct vertex_cu;
 
@@ -231,6 +208,27 @@ struct CHE
 	CHE() = default;
 	CHE(const che * mesh);
 };
+
+
+// che halfedge functions
+
+inline index_t trig(const index_t & he)
+{
+	if(he == NIL) return NIL;
+	return he / che::mtrig;
+}
+
+inline index_t next(const index_t & he)
+{
+	if(he == NIL) return NIL;
+	return che::mtrig * trig(he) + (he + 1) % che::mtrig;
+}
+
+inline index_t prev(const index_t & he)
+{
+	if(he == NIL) return NIL;
+	return che::mtrig * trig(he) + (he + che::mtrig - 1) % che::mtrig;
+}
 
 
 } // namespace gproshan

@@ -13,42 +13,22 @@ using namespace std;
 namespace gproshan {
 
 
-size_t & rw(const size_t & n)
+size_t & che::rw(const size_t & n)
 {
 	return const_cast<size_t&>(n);
 }
 
-index_t trig(const index_t & he)
+
+unsigned char & che::rgb_t::operator [] (const index_t & i)
 {
-	if(he == NIL) return NIL;
-	return he / che::mtrig;
+	return (&r)[i];
 }
 
-index_t next(const index_t & he)
+che::rgb_t::operator vertex () const
 {
-	if(he == NIL) return NIL;
-	return che::mtrig * trig(he) + (he + 1) % che::mtrig;
+	return {float(r) / 255, float(g) / 255, float(b) / 255};
 }
 
-index_t prev(const index_t & he)
-{
-	if(he == NIL) return NIL;
-	return che::mtrig * trig(he) + (he + che::mtrig - 1) % che::mtrig;
-}
-
-CHE::CHE(const che * mesh)
-{
-	n_vertices = mesh->n_vertices;
-	n_faces = mesh->n_faces;
-	n_half_edges = mesh->n_half_edges;
-
-	GT = (vertex_cu *) mesh->GT;
-	VN = (vertex_cu *) mesh->VN;
-	VC = mesh->VC;
-	VT = mesh->VT;
-	OT = mesh->OT;
-	EVT = mesh->EVT;
-}
 
 che::che(const che & mesh)
 {
@@ -1111,6 +1091,57 @@ vector<index_t> che::trig_convex_polygon(const index_t * P, const size_t & n)
 	}
 
 	return trigs;
+}
+
+
+// iterator classes methods
+
+che::star_he::star_he(const che * p_mesh, const index_t & p_v): mesh(p_mesh), v(p_v) {}
+
+che::star_he::iterator che::star_he::begin() const
+{
+	return {mesh, mesh->EVT[v], mesh->EVT[v]};
+}
+
+che::star_he::iterator che::star_he::end() const
+{
+	return {nullptr, NIL, NIL};
+}
+
+che::star_he::iterator::iterator(const che * p_mesh, const index_t & p_he, const index_t & p_he_end): mesh(p_mesh), he(p_he), he_end(p_he_end) {}
+
+che::star_he::iterator & che::star_he::iterator::operator ++ ()
+{
+	he = mesh->OT[prev(he)];
+	he = he != he_end ? he : NIL;
+	return *this;
+}
+
+bool che::star_he::iterator::operator != (const iterator & it) const
+{
+	return he != it.he;
+}
+
+const index_t & che::star_he::iterator::operator * ()
+{
+	return he;
+}
+
+
+// cuda auxiliar che struct
+
+CHE::CHE(const che * mesh)
+{
+	n_vertices = mesh->n_vertices;
+	n_faces = mesh->n_faces;
+	n_half_edges = mesh->n_half_edges;
+
+	GT = (vertex_cu *) mesh->GT;
+	VN = (vertex_cu *) mesh->VN;
+	VC = mesh->VC;
+	VT = mesh->VT;
+	OT = mesh->OT;
+	EVT = mesh->EVT;
 }
 
 
