@@ -16,8 +16,8 @@ namespace gproshan {
 
 app_viewer::~app_viewer()
 {
-	for(che * mesh: meshes)
-		delete mesh;
+	for(index_t i = 0; i < n_meshes; ++i)
+		delete meshes[i];
 }
 
 che * app_viewer::load_mesh(const string & file_path)
@@ -679,9 +679,9 @@ bool app_viewer::process_eigenfuntions(viewer * p_view)
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
-	static int K = 20;
+	static unsigned int K = 20;
 
-	ImGui::InputInt("eigenvectors", &K);
+	ImGui::InputInt("eigenvectors", (int *) &K);
 
 	if(ImGui::Button("Run"))
 	{
@@ -694,10 +694,14 @@ bool app_viewer::process_eigenfuntions(viewer * p_view)
 
 		gproshan_log_var(K);
 
-		K = K < N_MESHES ? K : N_MESHES;
-		for(index_t k = 0; k < N_MESHES; ++k)
+		for(index_t k = 0; k < K; ++k)
 		{
-			if(k) view->add_mesh(new che(*mesh));
+			if(k)
+			{
+				if(!view->add_mesh(new che(*mesh)))
+					break;
+			}
+
 			view->idx_active_mesh = k;
 
 			eigvec.col(k) -= eigvec.col(k).min();

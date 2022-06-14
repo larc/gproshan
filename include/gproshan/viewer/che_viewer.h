@@ -36,7 +36,7 @@ class che_viewer
 		GLuint vbo[6];
 
 	public:
-		int vx, vy;							///< viewport positions.
+		int vx = 0, vy = 0;							///< viewport positions.
 		std::vector<index_t> selected;
 		std::vector<vertex> selected_xyz;
 		rt::raytracing * rt_embree	= nullptr;

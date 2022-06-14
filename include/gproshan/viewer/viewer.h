@@ -24,8 +24,6 @@
 	#define ImGuiDataType_Real ImGuiDataType_Double
 #endif // GPROSHAN_FLOAT
 
-#define N_MESHES 12
-
 
 // geometry processing and shape analysis framework
 namespace gproshan {
@@ -49,7 +47,8 @@ class viewer
 			process_t(const std::string & k, const std::string & n, function_t f, const index_t & sm = NIL): key(k), name(n), function(f), sub_menu(sm) {};
 		};
 
-		static const int m_window_size[N_MESHES + 1][2];
+		static const std::vector<ivec2> m_window_split;
+		static const size_t max_n_meshes;
 		static const std::vector<std::string> colormap;
 
 
@@ -73,7 +72,7 @@ class viewer
 
 		double render_time = 0;
 
-		che_viewer meshes[N_MESHES];
+		che_viewer * meshes = nullptr;
 		size_t n_meshes	= 0;
 		index_t idx_active_mesh = 0;
 
@@ -98,7 +97,7 @@ class viewer
 
 		che_viewer & active_mesh();
 		void add_process(const int & key, const std::string & skey, const std::string & name, const function_t & f);
-		void add_mesh(che * p_mesh);
+		bool add_mesh(che * p_mesh);
 
 	protected:
 		virtual bool run();

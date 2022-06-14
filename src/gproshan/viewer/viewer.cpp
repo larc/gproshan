@@ -33,12 +33,16 @@ using namespace std;
 namespace gproshan {
 
 
-const int viewer::m_window_size[N_MESHES + 1][2] = {{1, 1},
+const std::vector<ivec2> viewer::m_window_split = {	{1, 1},
 													{1, 1}, {1, 2}, {1, 3},
 													{2, 2}, {2, 3}, {2, 3},
 													{2, 4}, {2, 4}, {2, 5},
-													{2, 5}, {3, 4}, {3, 4}
+													{2, 5}, {3, 4}, {3, 4},
+													{4, 4}, {4, 4}, {4, 4}, {4, 4},
+													{4, 5}, {4, 5}, {4, 5}, {4, 5}
 													};
+
+const size_t viewer::max_n_meshes = m_window_split.size() - 1;
 
 const std::vector<std::string> viewer::colormap = { "vertex color",
 													"blue",
@@ -64,7 +68,8 @@ viewer::viewer(const int & width, const int & height)
 	s->update_normals();
 	sphere.init(s, false);
 
-	frames = new frame[N_MESHES];
+	frames = new frame[max_n_meshes];
+	meshes = new che_viewer[max_n_meshes];
 }
 
 viewer::~viewer()
@@ -78,6 +83,7 @@ viewer::~viewer()
 
 	delete sphere;
 	delete [] frames;
+	delete [] meshes;
 }
 
 bool viewer::run()
@@ -344,25 +350,22 @@ void viewer::add_process(const int & key, const string & skey, const string & na
 	else cerr << "Repeat key: " << key << endl;
 }
 
-void viewer::add_mesh(che * p_mesh)
+bool viewer::add_mesh(che * p_mesh)
 {
-	if(n_meshes == N_MESHES)
-	{
-		gproshan_log_var(n_meshes == N_MESHES);
-		gproshan_log_var(n_meshes);
-		return;
-	}
+	if(n_meshes == max_n_meshes)
+		return false;
 
 	p_mesh->update_normals();
-	meshes[n_meshes].init(p_mesh);
-	meshes[n_meshes].log_info();
-	++n_meshes;
 
-	idx_active_mesh = n_meshes - 1;
-	glfwSetWindowTitle(window, active_mesh()->filename.c_str());
+	che_viewer & mesh = meshes[n_meshes];
+	mesh.init(p_mesh);
+	mesh.log_info();
 
-	const int & rows = m_window_size[n_meshes][0];
-	const int & cols = m_window_size[n_meshes][1];
+	idx_active_mesh = n_meshes++;
+	glfwSetWindowTitle(window, mesh->filename.c_str());
+
+	const int & rows = m_window_split[n_meshes].x;
+	const int & cols = m_window_split[n_meshes].y;
 	for(index_t m = 0; m < n_meshes; ++m)
 	{
 		meshes[m].vx = m % cols;
@@ -370,15 +373,17 @@ void viewer::add_mesh(che * p_mesh)
 	}
 
 	glfwGetFramebufferSize(window, &viewport_width, &viewport_height);
-	viewport_width /= m_window_size[n_meshes][1];
-	viewport_height /= m_window_size[n_meshes][0];
+	viewport_width /= cols;
+	viewport_height /= rows;
+
+	return true;
 }
 
 void viewer::framebuffer_size_callback(GLFWwindow * window, int width, int height)
 {
 	viewer * view = (viewer *) glfwGetWindowUserPointer(window);
-	view->viewport_width = width / m_window_size[view->n_meshes][1];
-	view->viewport_height = height / m_window_size[view->n_meshes][0];
+	view->viewport_width = width / m_window_split[view->n_meshes].y;
+	view->viewport_height = height / m_window_split[view->n_meshes].x;
 }
 
 void viewer::window_size_callback(GLFWwindow * window, int width, int height)
@@ -487,7 +492,7 @@ bool viewer::m_save_load_view(viewer * view)
 
 	if(ImGui::Button("Save"))
 	{
-		ofstream os(tmp_file_path("views/" + file));
+		ofstream os(tmp_file_path(std::string("views/") + file));
 		os << view->cam;
 		os.close();
 	}
@@ -915,7 +920,7 @@ void viewer::pick_vertex(const real_t & x, const real_t & y)
 
 	index_t ix = x * xscale;
 	index_t iy = y * yscale;
-	const int & cols = m_window_size[n_meshes][1];
+	const int & cols = m_window_split[n_meshes].y;
 
 	che_viewer & mesh = meshes[cols * (iy / viewport_height) + ix / viewport_width];
 
