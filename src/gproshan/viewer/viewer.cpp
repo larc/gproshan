@@ -142,13 +142,10 @@ void viewer::imgui()
 			for(index_t i = 0; i < colormap.size(); ++i)
 			{
 				if(ImGui::MenuItem(colormap[i].c_str(), nullptr, i == mesh.idx_colormap, i != mesh.idx_colormap))
-				{
-					if(apply_all_meshes)
-						for(index_t m = 0; m < n_meshes; ++m)
-							meshes[m].idx_colormap = i;
-					else
+					check_apply_all_meshes([&](che_viewer & mesh)
+					{
 						mesh.idx_colormap = i;
-				}
+					});
 				ImGui::Separator();
 			}
 			ImGui::EndMenu();
@@ -188,18 +185,20 @@ void viewer::imgui()
 
 	ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.5);
 
-	ImGui::Checkbox("apply options to all meshes\nmenus: [color, viewer, render, mesh]", &apply_all_meshes);
+	ImGui::Checkbox("apply options to all meshes\nmenus: [color, render, mesh]", &apply_all_meshes);
 	if(ImGui::CollapsingHeader(mesh->filename.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
 	{
 		ImGui::Text("%13lu fps", size_t(1.0 / render_time));
 		ImGui::Text("%13lu vertices", mesh->n_vertices);
 		ImGui::Text("%13lu faces", mesh->n_faces);
-	}
 
-	if(mesh.render_pointcloud)
-	{
-		ImGui::Checkbox("point_normals", &mesh.point_normals);
-		ImGui::SliderInt("point_size", (int *) &mesh.point_size, 1, 32);
+		if(mesh.render_pointcloud)
+		{
+			ImGui::Indent();
+			ImGui::Checkbox("point_normals", &mesh.point_normals);
+			ImGui::SliderInt("point_size", (int *) &mesh.point_size, 1, 32);
+			ImGui::Unindent();
+		}
 	}
 
 	for(auto & p: processes)
@@ -549,11 +548,13 @@ bool viewer::m_reset_mesh(viewer * view)
 	view->other_vertices.clear();
 	view->vectors.clear();
 
-	che_viewer & mesh = view->active_mesh();
-	mesh.selected.clear();
-	mesh->reload();
-	mesh->update_normals();
-	mesh.update();
+	view->check_apply_all_meshes([&](che_viewer & mesh)
+	{
+		mesh.selected.clear();
+		mesh->reload();
+		mesh->update_normals();
+		mesh.update();
+	});
 
 	return false;
 }
@@ -613,9 +614,11 @@ bool viewer::m_save_mesh(viewer * view)
 
 bool viewer::m_normalize_mesh(viewer * view)
 {
-	che_viewer & mesh = view->active_mesh();
-	mesh->normalize_sphere();
-	mesh.update();
+	view->check_apply_all_meshes([&](che_viewer & mesh)
+	{
+		mesh->normalize_sphere();
+		mesh.update();
+	});
 
 	return false;
 }
@@ -688,7 +691,7 @@ bool viewer::m_setup_raytracing(viewer * view)
 			case R_EMBREE:
 				delete mesh.rt_embree;
 				TIC(time);
-					mesh.rt_embree = new rt::embree({mesh}, {mesh.model_mat}, mesh.render_pointcloud, pc_radius);
+					mesh.rt_embree = new rt::embree({mesh}, {mesh.model_mat}, mesh.render_pointcloud, pc_radius); // TODO embree pc
 				TOC(time);
 				sprintf(view->status_message, "build embree in %.3fs", time);
 				break;
@@ -710,108 +713,136 @@ bool viewer::m_setup_raytracing(viewer * view)
 
 bool viewer::m_render_gl(viewer * view)
 {
-	che_viewer & mesh = view->active_mesh();
-	mesh.render_opt = R_GL;
+	view->check_apply_all_meshes([&](che_viewer & mesh)
+	{
+		mesh.render_opt = R_GL;
+	});
+
 	return false;
 }
 
 bool viewer::m_render_embree(viewer * view)
 {
-	che_viewer & mesh = view->active_mesh();
+	view->check_apply_all_meshes([&](che_viewer & mesh)
+	{
+		mesh.render_opt = R_EMBREE;
+	});
 	view->render_params.restart = true;
-	mesh.render_opt = R_EMBREE;
+
 	return false;
 }
 
 bool viewer::m_render_optix(viewer * view)
 {
-	che_viewer & mesh = view->active_mesh();
+	view->check_apply_all_meshes([&](che_viewer & mesh)
+	{
+		mesh.render_opt = R_OPTIX;
+	});
 	view->render_params.restart = true;
-	mesh.render_opt = R_OPTIX;
+
 	return false;
 }
 
 bool viewer::m_invert_normals(viewer * view)
 {
-	che_viewer & mesh = view->active_mesh();
-
-	mesh->invert_normals();
-	mesh.update_vbo_normal();
+	view->check_apply_all_meshes([&](che_viewer & mesh)
+	{
+		mesh->invert_normals();
+		mesh.update_vbo_normal();
+	});
 
 	return false;
 }
 
 bool viewer::m_select_border_vertices(viewer * view)
 {
-	che_viewer & mesh = view->active_mesh();
-	for(const index_t & b: mesh->bounds())
-		for(const index_t & v: mesh->boundary(b))
-			mesh.selected.push_back(v);
+	view->check_apply_all_meshes([&](che_viewer & mesh)
+	{
+		for(const index_t & b: mesh->bounds())
+			for(const index_t & v: mesh->boundary(b))
+				mesh.selected.push_back(v);
+	});
 
 	return false;
 }
 
 bool viewer::m_clean_selected_vertices(viewer * view)
 {
-	che_viewer & mesh = view->active_mesh();
-	mesh.selected.clear();
+	view->check_apply_all_meshes([&](che_viewer & mesh)
+	{
+		mesh.selected.clear();
+	});
 
 	return false;
 }
 
 bool viewer::m_render_pointcloud(viewer * view)
 {
-	che_viewer & mesh = view->active_mesh();
-	mesh.render_pointcloud = !mesh.render_pointcloud;
+	view->check_apply_all_meshes([&](che_viewer & mesh)
+	{
+		mesh.render_pointcloud = !mesh.render_pointcloud;
+	});
 
 	return false;
 }
 
 bool viewer::m_render_wireframe(viewer * view)
 {
-	che_viewer & mesh = view->active_mesh();
-	mesh.render_wireframe = !mesh.render_wireframe;
+	view->check_apply_all_meshes([&](che_viewer & mesh)
+	{
+		mesh.render_wireframe = !mesh.render_wireframe;
+	});
 
 	return false;
 }
 
 bool viewer::m_render_triangles(viewer * view)
 {
-	che_viewer & mesh = view->active_mesh();
-	mesh.render_triangles = !mesh.render_triangles;
+	view->check_apply_all_meshes([&](che_viewer & mesh)
+	{
+		mesh.render_triangles = !mesh.render_triangles;
+	});
 
 	return false;
 }
 
 bool viewer::m_render_gradients(viewer * view)
 {
-	che_viewer & mesh = view->active_mesh();
-	mesh.render_gradients = !mesh.render_gradients;
+	view->check_apply_all_meshes([&](che_viewer & mesh)
+	{
+		mesh.render_gradients = !mesh.render_gradients;
+	});
 
 	return false;
 }
 
 bool viewer::m_render_normals(viewer * view)
 {
-	che_viewer & mesh = view->active_mesh();
-	mesh.render_normals = !mesh.render_normals;
+	view->check_apply_all_meshes([&](che_viewer & mesh)
+	{
+		mesh.render_normals = !mesh.render_normals;
+	});
 
 	return false;
 }
 
 bool viewer::m_render_lines(viewer * view)
 {
-	che_viewer & mesh = view->active_mesh();
-	mesh.render_lines = !mesh.render_lines;
+	view->check_apply_all_meshes([&](che_viewer & mesh)
+	{
+		mesh.render_lines = !mesh.render_lines;
+	});
 
 	return false;
 }
 
 bool viewer::m_render_flat(viewer * view)
 {
-	che_viewer & mesh = view->active_mesh();
-	mesh.render_flat = !mesh.render_flat;
-	view->render_params.restart = true;
+	view->check_apply_all_meshes([&](che_viewer & mesh)
+	{
+		mesh.render_flat = !mesh.render_flat;
+		view->render_params.restart = true;
+	});
 
 	return false;
 }
@@ -939,6 +970,18 @@ void viewer::pick_vertex(const real_t & x, const real_t & y)
 	mesh.select(ix % viewport_width, iy % viewport_height,
 				{viewport_width, viewport_height},
 				inverse(proj_view_mat), cam.eye);
+}
+
+void viewer::check_apply_all_meshes(const std::function<void(che_viewer &)> & fun)
+{
+	if(!apply_all_meshes)
+	{
+		fun(active_mesh());
+		return;
+	}
+
+	for(index_t i = 0; i < n_meshes; ++i)
+		fun(meshes[i]);
 }
 
 

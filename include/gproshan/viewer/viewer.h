@@ -1,8 +1,9 @@
 #ifndef VIEWER_H
 #define VIEWER_H
 
-#include <map>
 #include <cstring>
+#include <functional>
+#include <map>
 
 #include <gproshan/viewer/camera.h>
 #include <gproshan/viewer/shader.h>
@@ -156,6 +157,7 @@ class viewer
 		static bool m_raycasting(viewer * view);
 
 		void pick_vertex(const real_t & x, const real_t & y);
+		void check_apply_all_meshes(const std::function<void(che_viewer &)> & fun);
 };
 
 
