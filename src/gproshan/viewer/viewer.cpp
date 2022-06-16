@@ -933,14 +933,13 @@ void viewer::render_rt(che_viewer & mesh, frame & rt_frame)
 	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, rt_frame);
 	vec4 * img = (vec4 *) glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_READ_WRITE);
 
-	std::vector<vertex> & scene_lights = render_params.lights;
-	scene_lights.clear();
+	render_params.n_lights = 0;;
 
 	for(const index_t & v: mesh.selected)
-		scene_lights.push_back(mesh->point(v));
+		render_params.add_light(mesh->point(v));
 
-	if(!scene_lights.size())
-		scene_lights = {cam_light};
+	if(!render_params.n_lights)
+		render_params.add_light(cam_light);
 
 	//render_params.viewport_x = mesh.vx * viewport_width;
 	//render_params.viewport_y = mesh.vy * viewport_height;

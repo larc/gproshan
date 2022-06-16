@@ -10,6 +10,8 @@
 namespace gproshan::rt {
 
 
+const unsigned int max_lights = 16;
+
 struct render_params
 {
 	int window_width = 0;
@@ -21,8 +23,18 @@ struct render_params
 	bool restart = false;
 	bool viewport_is_window = true;
 	vertex cam_pos;
+	vertex lights[16];
+	unsigned int n_lights = 0;
 	mat4 inv_proj_view;
-	std::vector<vertex> lights;
+
+	bool add_light(const vertex & light)
+	{
+		if(n_lights == max_lights)
+			return false;
+
+		lights[n_lights++] = light;
+		return true;
+	}
 };
 
 
