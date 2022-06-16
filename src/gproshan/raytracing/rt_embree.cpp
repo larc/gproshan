@@ -162,7 +162,7 @@ void embree::build_bvh(const std::vector<che *> & meshes, const std::vector<mat4
 		const mat4 & model_mat = model_mats[i];
 
 		if(mesh->is_pointcloud() || pointcloud)
-			geomID_mesh[add_pointcloud(mesh)] = {mesh, true};
+			geomID_mesh[add_pointcloud(mesh, model_mat)] = {mesh, true};
 		else
 			geomID_mesh[add_mesh(mesh, model_mat)] = {mesh, false};
 	}
@@ -175,8 +175,9 @@ index_t embree::add_sphere(const vec4 & xyzr)
 	RTCGeometry geom = rtcNewGeometry(device, RTC_GEOMETRY_TYPE_SPHERE_POINT);
 
 	vec4 * pxyzr = (vec4 *) rtcSetNewGeometryBuffer(	geom,
-																RTC_BUFFER_TYPE_VERTEX, 0,
-																RTC_FORMAT_FLOAT4, 4 * sizeof(float), 1);
+														RTC_BUFFER_TYPE_VERTEX, 0,
+														RTC_FORMAT_FLOAT4, 4 * sizeof(float), 1
+														);
 	*pxyzr = xyzr;
 
 	rtcCommitGeometry(geom);
@@ -217,28 +218,29 @@ index_t embree::add_mesh(const che * mesh, const mat4 & model_mat)
 	return geom_id;
 }
 
-index_t embree::add_pointcloud(const che * mesh)
+index_t embree::add_pointcloud(const che * mesh, const mat4 & model_mat)
 {
 	RTCGeometry geom = rtcNewGeometry(device, RTC_GEOMETRY_TYPE_ORIENTED_DISC_POINT);
 
 	vec4 * pxyzr = (vec4 *) rtcSetNewGeometryBuffer(	geom,
-																RTC_BUFFER_TYPE_VERTEX, 0,
-																RTC_FORMAT_FLOAT4,
-																4 * sizeof(float),
-																mesh->n_vertices
-																);
+														RTC_BUFFER_TYPE_VERTEX, 0,
+														RTC_FORMAT_FLOAT4,
+														4 * sizeof(float),
+														mesh->n_vertices
+														);
 
 	vertex * normal = (vertex *) rtcSetNewGeometryBuffer(	geom,
-																RTC_BUFFER_TYPE_NORMAL, 0,
-																RTC_FORMAT_FLOAT3,
-																3 * sizeof(float),
-																mesh->n_vertices
-																);
+															RTC_BUFFER_TYPE_NORMAL, 0,
+															RTC_FORMAT_FLOAT3,
+															3 * sizeof(float),
+															mesh->n_vertices
+															);
 
 	#pragma omp parallel for
 	for(index_t i = 0; i < mesh->n_vertices; ++i)
 	{
-		pxyzr[i] = {mesh->point(i), pc_radius};
+		pxyzr[i] = model_mat * vec4(mesh->point(i), 1);
+		pxyzr[i][3] = pc_radius;
 		normal[i] = mesh->normal(i);
 	}
 

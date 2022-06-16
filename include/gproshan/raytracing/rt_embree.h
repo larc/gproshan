@@ -63,7 +63,7 @@ class embree : public raytracing
 		index_t add_sphere(const vec4 & xyzr);
 		index_t add_mesh(const che * mesh, const mat4 & model_mat);
 
-		virtual index_t add_pointcloud(const che * mesh);
+		virtual index_t add_pointcloud(const che * mesh, const mat4 & model_mat);
 		virtual float pointcloud_hit(vertex & position, vertex & normal, vertex & color, ray_hit r);
 
 		vec4 li(const vertex & light, const vertex & position, const vertex & normal, const vertex & color, const float & near = 1e-5f);

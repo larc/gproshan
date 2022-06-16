@@ -691,7 +691,7 @@ bool viewer::m_setup_raytracing(viewer * view)
 			case R_EMBREE:
 				delete mesh.rt_embree;
 				TIC(time);
-					mesh.rt_embree = new rt::embree({mesh}, {mesh.model_mat}, mesh.render_pointcloud, pc_radius); // TODO embree pc
+					mesh.rt_embree = new rt::embree({mesh}, {mesh.model_mat}, mesh.render_pointcloud, pc_radius);
 				TOC(time);
 				sprintf(view->status_message, "build embree in %.3fs", time);
 				break;
