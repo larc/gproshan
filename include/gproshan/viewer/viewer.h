@@ -51,6 +51,8 @@ class viewer
 		static const size_t max_n_meshes;
 		static const std::vector<std::string> colormap;
 
+		bool apply_all_meshes = false;
+
 
 		GLFWwindow * window = nullptr;
 		rt::render_params render_params;

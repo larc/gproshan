@@ -140,9 +140,17 @@ void viewer::imgui()
 		if(ImGui::BeginMenu("Color"))
 		{
 			for(index_t i = 0; i < colormap.size(); ++i)
+			{
 				if(ImGui::MenuItem(colormap[i].c_str(), nullptr, i == mesh.idx_colormap, i != mesh.idx_colormap))
-					mesh.idx_colormap = i;
-
+				{
+					if(apply_all_meshes)
+						for(index_t m = 0; m < n_meshes; ++m)
+							meshes[m].idx_colormap = i;
+					else
+						mesh.idx_colormap = i;
+				}
+				ImGui::Separator();
+			}
 			ImGui::EndMenu();
 		}
 
@@ -156,8 +164,9 @@ void viewer::imgui()
 					if(pro.function != nullptr && pro.sub_menu == i)
 						if(ImGui::MenuItem(pro.name.c_str(), ('[' + pro.key + ']').c_str(), &pro.selected))
 							sprintf(status_message, "%s", pro.selected ? pro.name.c_str() : "");
-				}
 
+					//ImGui::Separator();
+				}
 				ImGui::EndMenu();
 			}
 		}
@@ -173,16 +182,19 @@ void viewer::imgui()
 	ImGui::Text("github.com/larc/gproshan");
 	ImGui::End();
 
-	ImGui::SetNextWindowSize(ImVec2(320, -1));
+	ImGui::SetNextWindowSize(ImVec2(360, -1));
 	ImGui::SetNextWindowPos(ImVec2(20, 60), ImGuiCond_Once);
 	ImGui::Begin("gproshan");
 
 	ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.5);
 
-	ImGui::Text("%s", mesh->filename.c_str());
-	ImGui::Text("%16s: %.3f", "FPS", 1.0 / render_time);
-	ImGui::Text("%16s: %10lu", "n_vertices", mesh->n_vertices);
-	ImGui::Text("%16s: %10lu", "n_faces", mesh->n_faces);
+	ImGui::Checkbox("apply options to all meshes\nmenus: [color, viewer, render, mesh]", &apply_all_meshes);
+	if(ImGui::CollapsingHeader(mesh->filename.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
+	{
+		ImGui::Text("%13lu fps", size_t(1.0 / render_time));
+		ImGui::Text("%13lu vertices", mesh->n_vertices);
+		ImGui::Text("%13lu faces", mesh->n_faces);
+	}
 
 	if(mesh.render_pointcloud)
 	{
