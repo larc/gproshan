@@ -679,9 +679,9 @@ bool app_viewer::process_eigenfuntions(viewer * p_view)
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
-	static unsigned int K = 20;
+	static unsigned int n_eigs = 20;
 
-	ImGui::InputInt("eigenvectors", (int *) &K);
+	ImGui::InputInt("eigenvectors", (int *) &n_eigs);
 
 	if(ImGui::Button("Run"))
 	{
@@ -689,29 +689,31 @@ bool app_viewer::process_eigenfuntions(viewer * p_view)
 		a_vec eigval;
 		a_mat eigvec;
 
-		TIC(view->time) K = eigs_laplacian(mesh, eigval, eigvec, L, A, K); TOC(view->time)
-		gproshan_log_var(view->time);
+		TIC(view->time)
+			n_eigs = eigs_laplacian(mesh, eigval, eigvec, L, A, n_eigs);
+		TOC(view->time)
 
-		gproshan_log_var(K);
+		sprintf(view->status_message, "computing %u eigs in %.3fs", n_eigs, view->time);
 
-		for(index_t k = 0; k < K; ++k)
+		for(index_t k = 0; k < n_eigs; ++k)
 		{
-			if(k)
+			if(n_eigs)
 			{
 				if(!view->add_mesh(new che(*mesh)))
 					break;
 			}
 
 			view->idx_active_mesh = k;
+			che_viewer & mesh = view->active_mesh();
 
 			eigvec.col(k) -= eigvec.col(k).min();
 			eigvec.col(k) /= eigvec.col(k).max();
 
 			#pragma omp parallel for
 			for(index_t v = 0; v < mesh->n_vertices; ++v)
-				view->active_mesh()->heatmap(v) = eigvec(v, k);
+				mesh->heatmap(v) = eigvec(v, k);
 
-			view->active_mesh().update_vbo();
+			mesh.update_vbo();
 		}
 
 		view->idx_active_mesh = 0;
