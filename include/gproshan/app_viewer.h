@@ -48,7 +48,7 @@ class app_viewer : public viewer
 
 	public:
 		app_viewer() = default;
-		~app_viewer();
+		virtual ~app_viewer();
 
 		int main(int nargs, const char ** args);
 

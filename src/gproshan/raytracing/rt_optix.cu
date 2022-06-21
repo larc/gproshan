@@ -1,5 +1,6 @@
 #include <gproshan/mesh/che.h>
 #include <gproshan/mesh/vertex.cuh>
+#include <gproshan/geometry/cu_vec.cuh>
 #include <gproshan/raytracing/rt_optix_params.h>
 
 
@@ -163,8 +164,9 @@ extern "C" __global__ void __raygen__render_frame()
 	vertex_cu p = (1.f / ((d, view) + de)) * q;
 	vertex_cu ray_dir = p - cam_pos;
 	ray_dir /= *ray_dir;
-
+	
 	vertex_cu pixelColorPRD;
+	cu_vec3 pdsadsa;
 	uint32_t u0, u1;
 	packPointer(&pixelColorPRD, u0, u1);
 	optixTrace(	optix_params.traversable,
