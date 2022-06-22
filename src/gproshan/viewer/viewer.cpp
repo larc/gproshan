@@ -375,8 +375,8 @@ bool viewer::add_mesh(che * p_mesh)
 	idx_active_mesh = n_meshes++;
 	glfwSetWindowTitle(window, mesh->filename.c_str());
 
-	const int & rows = m_window_split[n_meshes].x;
-	const int & cols = m_window_split[n_meshes].y;
+	const int & rows = m_window_split[n_meshes].x();
+	const int & cols = m_window_split[n_meshes].y();
 	for(index_t m = 0; m < n_meshes; ++m)
 	{
 		meshes[m].vx = m % cols;
@@ -393,8 +393,8 @@ bool viewer::add_mesh(che * p_mesh)
 void viewer::framebuffer_size_callback(GLFWwindow * window, int width, int height)
 {
 	viewer * view = (viewer *) glfwGetWindowUserPointer(window);
-	view->viewport_width = width / m_window_split[view->n_meshes].y;
-	view->viewport_height = height / m_window_split[view->n_meshes].x;
+	view->viewport_width = width / m_window_split[view->n_meshes].y();
+	view->viewport_height = height / m_window_split[view->n_meshes].x();
 }
 
 void viewer::window_size_callback(GLFWwindow * window, int width, int height)
@@ -447,8 +447,8 @@ void viewer::cursor_callback(GLFWwindow * window, double x, double y)
 
 	if(GLFW_PRESS == glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT))
 	{
-		view->cam.pos.im().x = 2 * x / view->window_width - 1;
-		view->cam.pos.im().y = 2 * y / view->window_height - 1;
+		view->cam.pos.im().x() = 2 * x / view->window_width - 1;
+		view->cam.pos.im().y() = 2 * y / view->window_height - 1;
 		view->render_params.restart = true;
 	}
 }
@@ -962,7 +962,7 @@ void viewer::pick_vertex(const real_t & x, const real_t & y)
 
 	index_t ix = x * xscale;
 	index_t iy = y * yscale;
-	const int & cols = m_window_split[n_meshes].y;
+	const int & cols = m_window_split[n_meshes].y();
 
 	che_viewer & mesh = meshes[cols * (iy / viewport_height) + ix / viewport_width];
 

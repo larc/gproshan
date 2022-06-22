@@ -169,9 +169,9 @@ extern "C" __global__ void __raygen__render_frame()
 	const uint32_t fbIndex = ix + iy * optix_params.viewport_width;
 
 	float4 * frame = (float4 *) optix_params.color_buffer;
-	frame[fbIndex].x = pixelColorPRD.x;
-	frame[fbIndex].y = pixelColorPRD.y;
-	frame[fbIndex].z = pixelColorPRD.z;
+	frame[fbIndex].x = pixelColorPRD.x();
+	frame[fbIndex].y = pixelColorPRD.y();
+	frame[fbIndex].z = pixelColorPRD.z();
 	frame[fbIndex].w = 1;
 }
 

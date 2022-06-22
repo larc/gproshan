@@ -97,7 +97,7 @@ void che_off::write_file(const che * mesh, const string & file, const che_off::t
 	for(size_t i = 0; i < mesh->n_vertices; ++i)
 	{
 		const vertex & v = mesh->point(i);
-		fprintf(fp, "%f %f %f", (float) v.x, (float) v.y, (float) v.z);
+		fprintf(fp, "%f %f %f", (float) v.x(), (float) v.y(), (float) v.z());
 
 		if(off == COFF || off == NCOFF)
 		{
@@ -108,7 +108,7 @@ void che_off::write_file(const che * mesh, const string & file, const che_off::t
 		if(off == NOFF || off == NCOFF)
 		{
 			const vertex & n = mesh->normal(i);
-			fprintf(fp, " %f %f %f", (float) n.x, (float) n.y, (float) n.z);
+			fprintf(fp, " %f %f %f", (float) n.x(), (float) n.y(), (float) n.z());
 		}
 
 		fprintf(fp, "\n");

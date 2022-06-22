@@ -39,6 +39,8 @@ che * app_viewer::load_mesh(const string & file_path)
 
 int app_viewer::main(int nargs, const char ** args)
 {
+	gproshan_error_var(sizeof(vec2));
+	gproshan_error_var(sizeof(vec3));
 	if(nargs < 2)
 	{
 		printf("%s [mesh_paths.(off,obj,ply)]\n", args[0]);
@@ -563,21 +565,15 @@ bool app_viewer::process_mdict_patch(viewer * p_view)
 		for(auto & u: p.vertices)
 			mesh->heatmap(u) = 1;
 
-		vdir.x = p.T(0, 0);
-		vdir.y = p.T(0, 1);
-		vdir.z = p.T(0, 2);
+		vdir = {p.T(0, 0), p.T(0, 1), p.T(0, 2)};
 		view->vectors.push_back(mesh->point(v));
 		view->vectors.push_back(mesh->point(v) + 3 * mean_edge * vdir);
 
-		vdir.x = p.T(1, 0);
-		vdir.y = p.T(1, 1);
-		vdir.z = p.T(1, 2);
+		vdir = {p.T(1, 0), p.T(1, 1), p.T(1, 2)};
 		view->vectors.push_back(mesh->point(v));
 		view->vectors.push_back(mesh->point(v) + 3 * mean_edge * vdir);
 
-		vdir.x = p.T(2, 0);
-		vdir.y = p.T(2, 1);
-		vdir.z = p.T(2, 2);
+		vdir = {p.T(2, 0), p.T(2, 1), p.T(2, 2)};
 		view->vectors.push_back(mesh->point(v));
 		view->vectors.push_back(mesh->point(v) + 3 * mean_edge * vdir);
 
@@ -865,18 +861,18 @@ bool app_viewer::process_fill_holes(viewer * p_view)
 
 		auto bprev = [&](const index_t & v) -> index_t &
 		{
-			return neigs[v].x;
+			return neigs[v].x();
 		};
 		auto bnext = [&](const index_t & v) -> index_t &
 		{
-			return neigs[v].y;
+			return neigs[v].y();
 		};
 		auto push = [&](const uvec3 & p)
 		{
-			neigs[p.x] = {p.y, p.z};
+			neigs[p.x()] = {p.y(), p.z()};
 			const real_t & angle = 21;
 			if(angle <= M_PI)
-				front.push({angle, p.x});
+				front.push({angle, p.x()});
 		};
 
 		push({0, vertices.size() - 1, 1});

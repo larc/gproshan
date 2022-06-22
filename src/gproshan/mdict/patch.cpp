@@ -148,9 +148,9 @@ void patch::init_random(const vertex & c, const a_mat & T, const real_t & radio,
 	this->T = T;
 
 	x.resize(3);
-	x(0) = c.x;
-	x(1) = c.y;
-	x(2) = c.z;
+	x(0) = c.x();
+	x(1) = c.y();
+	x(2) = c.z();
 
 
 	std::random_device rd; //Will be used to obtain a seed for the random number engine
@@ -203,7 +203,7 @@ void patch::recover_radial_disjoint(che * mesh, const real_t & radio_, const ind
 	if(vertices.size() > min_points)
 	{
 		jet_fit_directions(mesh, v);
-		n.x = T(0, 2); n.y = T(1, 2); n.z = T(2, 2);
+		n.x() = T(0, 2); n.y() = T(1, 2); n.z() = T(2, 2);
 		radio = -INFINITY;
 
 		for(index_t i=1; i < vertices.size(); ++i)
@@ -286,7 +286,7 @@ void patch::init_radial_disjoint(	real_t & euc_radio,
 	else
 		normal_fit_directions(mesh,v);
 
-	n.x = T(0, 2); n.y = T(1, 2); n.z = T(2, 2);
+	n.x() = T(0, 2); n.y() = T(1, 2); n.z() = T(2, 2);
 	radio = -INFINITY;
 
 	vertex p;
@@ -334,9 +334,9 @@ void patch::reset_xyz(che * mesh, vector<vpatches_t> & vpatches, const index_t &
 		if(!mask || mask(vertices[i]))
 		{
 			const vertex & v = mesh->point(vertices[i]);
-			xyz(0, j) = v.x;
-			xyz(1, j) = v.y;
-			xyz(2, j) = v.z;
+			xyz(0, j) = v.x();
+			xyz(1, j) = v.y();
+			xyz(2, j) = v.z();
 		//p idx patche where belongs to
 			//j: local index
 			//i: global index
@@ -490,9 +490,9 @@ void patch::reset_xyz_disjoint(che * mesh, real_t * dist, size_t M, vector<vpatc
 		if(!mask || mask(vi))
 		{
 			const vertex & v = mesh->point(vi);
-			xyz(0, i) = v.x;
-			xyz(1, i) = v.y;
-			xyz(2, i) = v.z;
+			xyz(0, i) = v.x();
+			xyz(1, i) = v.y();
+			xyz(2, i) = v.z();
 
 			vpatches[vi][p] = i++;
 		}
@@ -569,9 +569,9 @@ void patch::gather_vertices(che * mesh, const index_t & v, const real_t & radio,
 		{
 			if(toplevel[u] == NIL)
 			{
-				p(0) = mesh->point(u).x;
-				p(1) = mesh->point(u).y;
-				p(2) = mesh->point(u).z;
+				p(0) = mesh->point(u).x();
+				p(1) = mesh->point(u).y();
+				p(2) = mesh->point(u).z();
 				p = T.t() * (p - x);
 
 				toplevel[u] = toplevel[v] + 1;
@@ -595,19 +595,19 @@ void patch::jet_fit_directions(che * mesh, const index_t & v)
 	vector<DPoint> in_points;
 	in_points.reserve(vertices.size());
 	for(const index_t & u: vertices)
-		in_points.push_back(DPoint(mesh->point(u).x, mesh->point(u).y, mesh->point(u).z));
+		in_points.push_back(DPoint(mesh->point(u).x(), mesh->point(u).y(), mesh->point(u).z()));
 
 	My_Monge_form monge_form;
 	My_Monge_via_jet_fitting monge_fit;
 	monge_form = monge_fit(in_points.begin(), in_points.end(), d_fitting, d_monge);
 
 	vertex normal = mesh->normal(v);
-	monge_form.comply_wrt_given_normal(DVector(normal.x, normal.y, normal.z));
+	monge_form.comply_wrt_given_normal(DVector(normal.x(), normal.y(), normal.z()));
 
 	x.set_size(3);
-	x(0) = mesh->point(v).x;
-	x(1) = mesh->point(v).y;
-	x(2) = mesh->point(v).z;
+	x(0) = mesh->point(v).x();
+	x(1) = mesh->point(v).y();
+	x(2) = mesh->point(v).z();
 
 	T.set_size(3, 3);
 	T(0, 0) = monge_form.maximal_principal_direction()[0];
@@ -625,9 +625,9 @@ void patch::jet_fit_directions(che * mesh, const index_t & v)
 void patch::normal_fit_directions(che * mesh, const index_t & v)
 {
 	x.set_size(3);
-	x(0) = mesh->point(v).x;
-	x(1) = mesh->point(v).y;
-	x(2) = mesh->point(v).z;
+	x(0) = mesh->point(v).x();
+	x(1) = mesh->point(v).y();
+	x(2) = mesh->point(v).z();
 
 
 	vertex nz = mesh->normal(v);

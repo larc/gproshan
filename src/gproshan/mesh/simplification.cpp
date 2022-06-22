@@ -41,9 +41,9 @@ void simplification::compute_quadrics()
 		for(const index_t & he: mesh->star(v))
 		{
 			n = mesh->normal_he(he);
-			p(0) = n.x;
-			p(1) = n.y;
-			p(2) = n.z;
+			p(0) = n.x();
+			p(1) = n.y();
+			p(2) = n.z();
 			p(3) = -(n, mesh->point(v));
 
 			Q[v] += p * p.t();
@@ -73,9 +73,9 @@ real_t simplification::compute_error(const index_t & e)
 	vertex ve = create_vertex(e);
 	a_vec v(4);
 
-	v(0) = ve.x;
-	v(1) = ve.y;
-	v(2) = ve.z;
+	v(0) = ve.x();
+	v(1) = ve.y();
+	v(2) = ve.z();
 	v(3) = 1;
 
 	return as_scalar(v.t() * (Q[mesh->edge_u(e)] + Q[mesh->edge_v(e)]) * v);

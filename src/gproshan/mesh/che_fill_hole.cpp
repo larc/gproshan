@@ -40,18 +40,18 @@ che * mesh_simple_fill_hole(che * mesh, const vector<index_t> & border_vertices,
 		edge_v = mesh->vertex_he(next(mesh->evt(b))) - v;
 		edge_v -= (normal_v, edge_v) * normal_v;
 
-		E(0, 2) = normal_v.x;
-		E(1, 2) = normal_v.y;
-		E(2, 2) = normal_v.z;
+		E(0, 2) = normal_v.x();
+		E(1, 2) = normal_v.y();
+		E(2, 2) = normal_v.z();
 
-		E(0, 0) = edge_v.x;
-		E(1, 0) = edge_v.y;
-		E(2, 0) = edge_v.z;
+		E(0, 0) = edge_v.x();
+		E(1, 0) = edge_v.y();
+		E(2, 0) = edge_v.z();
 
 		E.col(1) = cross(E.col(2), E.col(0));
 		E = normalise(E);
 
-		ve(0) = v.x; ve(1) = v.y; ve(2) = v.z;
+		ve(0) = v.x(); ve(1) = v.y(); ve(2) = v.z();
 
 		ve = E.t() * ve;
 		vertices.push_back(*((vertex *) ve.memptr()));
@@ -217,13 +217,13 @@ void split_border(vector<pair<index_t, index_t> > & split_indices, che * mesh, c
 	for(index_t i = 0; i < n; ++i)
 	{
 		normal = mesh->normal(border_vertices[i]);
-		data(0, i) = normal.x;
-		data(1, i) = normal.y;
-		data(2, i) = normal.z;
+		data(0, i) = normal.x();
+		data(1, i) = normal.y();
+		data(2, i) = normal.z();
 		/*
-		data(3, i) = mesh->point(border_vertices[i]).x;
-		data(4, i) = mesh->point(border_vertices[i]).y;
-		data(5, i) = mesh->point(border_vertices[i]).z;
+		data(3, i) = mesh->point(border_vertices[i]).x();
+		data(4, i) = mesh->point(border_vertices[i]).y();
+		data(5, i) = mesh->point(border_vertices[i]).z();
 		*/
 	}
 
@@ -350,14 +350,14 @@ che * fill_hole_front_angles_test(che * mesh, vector<index_t> & front_vertices, 
 		if(is_grow) normal = -normal;
 
 		tmp_normals[v].resize(3);
-		tmp_normals[v](0) = normal.x;
-		tmp_normals[v](1) = normal.y;
-		tmp_normals[v](2) = normal.z;
+		tmp_normals[v](0) = normal.x();
+		tmp_normals[v](1) = normal.y();
+		tmp_normals[v](2) = normal.z();
 
 		tmp_vertices[v].resize(3);
-		tmp_vertices[v](0) = vertices[v].x;
-		tmp_vertices[v](1) = vertices[v].y;
-		tmp_vertices[v](2) = vertices[v].z;
+		tmp_vertices[v](0) = vertices[v].x();
+		tmp_vertices[v](1) = vertices[v].y();
+		tmp_vertices[v](2) = vertices[v].z();
 
 		if(v) init_perimeter += norm(vertices[v] - vertices[v - 1]);
 	}
@@ -595,9 +595,9 @@ che * fill_hole_front_angles(vector<vertex> & vertices, const real_t & length, c
 	V.each_col() -= avg;
 
 	a_vec orientation(3);
-	orientation(0) = normal.x;
-	orientation(1) = normal.y;
-	orientation(2) = normal.z;
+	orientation(0) = normal.x();
+	orientation(1) = normal.y();
+	orientation(2) = normal.z();
 
 	a_mat E;
 	a_vec eigval;

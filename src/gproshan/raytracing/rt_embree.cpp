@@ -14,14 +14,14 @@ namespace gproshan::rt {
 
 embree::ray_hit::ray_hit(const vertex & p_org, const vertex & v_dir, float near, float far)
 {
-	ray.org_x = p_org.x;
-	ray.org_y = p_org.y;
-	ray.org_z = p_org.z;
+	ray.org_x = p_org.x();
+	ray.org_y = p_org.y();
+	ray.org_z = p_org.z();
 	ray.tnear = near;
 
-	ray.dir_x = v_dir.x;
-	ray.dir_y = v_dir.y;
-	ray.dir_z = v_dir.z;
+	ray.dir_x = v_dir.x();
+	ray.dir_y = v_dir.y();
+	ray.dir_z = v_dir.z();
 
 	ray.time = 0.0f;
 
@@ -134,8 +134,8 @@ hit embree::intersect(const vertex & org, const vertex & dir)
 
 		return	{	r.closest_vertex(mesh),
 					r.ray.tfar,
-					{color.x, color.y, color.z},
-					{normal.x, normal.y, normal.z}
+					{color.x(), color.y(), color.z()},
+					{normal.x(), normal.y(), normal.z()}
 					};
 	}
 

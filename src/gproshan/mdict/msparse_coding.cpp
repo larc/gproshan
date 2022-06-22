@@ -863,7 +863,7 @@ void msparse_coding::init_patches(const bool & reset, const fmask_t & mask)
 	for(index_t s = 0; s < m_params.n_patches; ++s)
 	{
 		viewer::vectors.push_back({patches[s].x(0), patches[s].x(1), patches[s].x(2)});
-		a_vec r = patches[s].x + 0.02 * patches[s].normal();
+		a_vec r = patches[s].x() + 0.02 * patches[s].normal();
 		viewer::vectors.push_back({r(0), r(1), r(2)});
 	}
 	*/
@@ -924,9 +924,9 @@ real_t msparse_coding::mesh_reconstruction(const fmask_t & mask)
 		}
 		else
 		{
-			V(0, v) = mesh->point(v).x;
-			V(1, v) = mesh->point(v).y;
-			V(2, v) = mesh->point(v).z;
+			V(0, v) = mesh->point(v).x();
+			V(1, v) = mesh->point(v).y();
+			V(2, v) = mesh->point(v).z();
 		}
 	}
 

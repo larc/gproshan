@@ -56,7 +56,7 @@ void che_pts::write_file(const che * mesh, const string & file)
 	{
 		const vertex & v = mesh->point(i);
 		const rgb_t & c = mesh->rgb(i);
-		fprintf(fp, "%f %f %f", (float) v.x, (float) v.y, (float) v.z);
+		fprintf(fp, "%f %f %f", (float) v.x(), (float) v.y(), (float) v.z());
 		fprintf(fp, " %d ", int(mesh->heatmap(i) * 4095) - 2048);
 		fprintf(fp, "%hhu %hhu %hhu\n", c.r, c.g, c.b);
 	}

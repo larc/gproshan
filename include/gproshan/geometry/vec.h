@@ -24,16 +24,7 @@ template<class T, size_t N>
 class vec
 {
 	public:
-		union
-		{
-			T values[N] = {};
-			struct
-			{
-				T x;
-				T y;
-				T z;
-			};
-		};
+		T values[N] = {};
 
 	public:
 		__host__ __device__
@@ -79,6 +70,49 @@ class vec
 			assert(i < N);
 			return values[i];
 		}
+
+		__host__ __device__
+		T & x()
+		{
+			assert(N > 0);
+			return values[0];
+		}
+
+		__host__ __device__
+		const T & x() const
+		{
+			assert(N > 0);
+			return values[0];
+		}
+
+		__host__ __device__
+		T & y()
+		{
+			assert(N > 1);
+			return values[1];
+		}
+
+		__host__ __device__
+		const T & y() const
+		{
+			assert(N > 1);
+			return values[1];
+		}
+
+		__host__ __device__
+		T & z()
+		{
+			assert(N > 2);
+			return values[2];
+		}
+
+		__host__ __device__
+		const T & z() const
+		{
+			assert(N > 2);
+			return values[2];
+		}
+
 
 		///< norm
 		__host__ __device__
@@ -197,24 +231,33 @@ class vec
 		__host__ __device__
 		bool operator < (const vec<T, N> & v) const
 		{
-			if(x != v.x) return x < v.x;
-			if(y != v.y) return y < v.y;
-			return z < v.z;
+			for(index_t i = 0; i < N; ++i)
+				if(values[i] != v[i])
+					return values[i] < v[i];
+
+			return false;
 		}
 
 		///< comparison equal than
 		__host__ __device__
 		bool operator == (const vec<T, N> & v) const
 		{
-			return x == v.x && y == v.y && z == v.z;
+			for(index_t i = 0; i < N; ++i)
+				if(values[i] != v[i])
+					return false;
+
+			return true;
 		}
 
 		__host__ __device__
 		bool is_zero()
 		{
 			double eps = std::numeric_limits<double>::epsilon();
+			for(index_t i = 0; i < N; ++i)
+				if(abs(values[i]) > eps)
+					return false;
 
-			return abs(double(x)) < eps && abs(double(y)) < eps && abs(double(z)) < eps;
+			return true;
 		}
 };
 
@@ -232,7 +275,14 @@ template<class T>
 __host__ __device__
 vec<T, 3> operator * (const vec<T, 3> & u, const vec<T, 3> & v)
 {
-	return {u.y * v.z - u.z * v.y, u.z * v.x - u.x * v.z, u.x * v.y - u.y * v.x};
+	const T & ux = u[0];
+	const T & uy = u[1];
+	const T & uz = u[2];
+	const T & vx = v[0];
+	const T & vy = v[1];
+	const T & vz = v[2];
+
+	return {uy * vz - uz * vy, uz * vx - ux * vz, ux * vy - uy * vx};
 }
 
 ///< cross product

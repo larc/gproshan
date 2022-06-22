@@ -50,11 +50,11 @@ quaternion camera::click_to_sphere(const double & x, const double & y, const int
 	if(p.norm2() > 1)
 	{
 		p.normalize();
-		p.im().z = 0;
+		p.im().z() = 0;
 	}
 	else
 	{
-		p.im().z = sqrt(1 - p.norm2());
+		p.im().z() = sqrt(1 - p.norm2());
 	}
 
 	return p;
@@ -86,17 +86,17 @@ void camera::motion(const double & x, const double & y, const int & w, const int
 
 void camera::zoom_in()
 {
-	pos.v.z += 0.02;
+	pos.v.z() += 0.02;
 }
 
 void camera::zoom_out()
 {
-	pos.v.z -= 0.02;
+	pos.v.z() -= 0.02;
 }
 
 real_t camera::zoom() const
 {
-	return -pos.v.z;
+	return -pos.v.z();
 }
 
 ostream & operator << (ostream & os, const camera & cam)
