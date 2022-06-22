@@ -3,7 +3,6 @@
 
 #ifdef GPROSHAN_OPTIX
 
-#include <gproshan/mesh/che.cuh>
 
 #include <cstring>
 #include <fstream>

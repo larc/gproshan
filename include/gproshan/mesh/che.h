@@ -188,28 +188,6 @@ class che::star_he::iterator
 };
 
 
-// aux che structs for cuda
-
-struct vertex_cu;
-
-struct CHE
-{
-	size_t n_vertices = 0;
-	size_t n_faces = 0;
-	size_t n_half_edges = 0;
-
-	vertex_cu * GT	= nullptr;
-	vertex_cu * VN	= nullptr;
-	che::rgb_t * VC	= nullptr;
-	index_t * VT	= nullptr;
-	index_t * OT	= nullptr;
-	index_t * EVT	= nullptr;
-
-	CHE() = default;
-	CHE(const che * mesh);
-};
-
-
 // che halfedge functions
 
 inline index_t trig(const index_t & he)

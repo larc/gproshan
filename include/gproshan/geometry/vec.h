@@ -8,6 +8,10 @@
 #include <cmath>
 #include <iostream>
 
+#ifndef __CUDACC__
+	#define __host__
+	#define __device__
+#endif
 
 // geometry processing and shape analysis framework
 namespace gproshan {
@@ -32,6 +36,7 @@ class vec
 		};
 
 	public:
+		__host__ __device__
 		vec(const std::initializer_list<T> & list)
 		{
 			int i = -1;
@@ -39,6 +44,7 @@ class vec
 				values[++i] = v;
 		}
 
+		__host__ __device__
 		vec(const vec<T, N - 1> & v, const T & val = 0)
 		{
 			for(index_t i = 0; i < N - 1; ++i)
@@ -46,24 +52,28 @@ class vec
 			values[N - 1] = val;
 		}
 
+		__host__ __device__
 		vec(const vec<T, N + 1> & v)
 		{
 			for(index_t i = 0; i < N; ++i)
 				values[i] = v[i];
 		}
 
+		__host__ __device__
 		vec(const T & val = 0)
 		{
 			for(T & v: values)
 				v = val;
 		}
 
+		__host__ __device__
 		T & operator [] (const index_t & i)
 		{
 			assert(i < N);
 			return values[i];
 		}
 
+		__host__ __device__
 		const T & operator [] (const index_t & i) const
 		{
 			assert(i < N);
@@ -71,6 +81,7 @@ class vec
 		}
 
 		///< norm
+		__host__ __device__
 		T norm() const
 		{
 			T res = 0;
@@ -80,12 +91,14 @@ class vec
 		}
 
 		///< length
+		__host__ __device__
 		T length() const
 		{
 			return norm();
 		}
 
 		///< dot product
+		__host__ __device__
 		T operator , (const vec<T, N> & v) const
 		{
 			T res = 0;
@@ -95,6 +108,7 @@ class vec
 		}
 
 		///< scalar product
+		__host__ __device__
 		vec<T, N> operator * (const T & a) const
 		{
 			vec<T, N> res;
@@ -104,6 +118,7 @@ class vec
 		}
 
 		///< scalar division
+		__host__ __device__
 		vec<T, N> operator / (const T & a) const
 		{
 			vec<T, N> res;
@@ -113,6 +128,7 @@ class vec
 		}
 
 		///< sum of vectors
+		__host__ __device__
 		vec<T, N> operator + (const vec<T, N> & v) const
 		{
 			vec<T, N> res;
@@ -122,6 +138,7 @@ class vec
 		}
 
 		///< difference of vectors
+		__host__ __device__
 		vec<T, N> operator - (const vec<T, N> & v) const
 		{
 			vec<T, N> res;
@@ -131,6 +148,7 @@ class vec
 		}
 
 		///< negative of vector
+		__host__ __device__
 		vec<T, N> operator - () const
 		{
 			vec<T, N> res;
@@ -140,6 +158,7 @@ class vec
 		}
 
 		///< scalar product self assign
+		__host__ __device__
 		const vec<T, N> & operator *= (const T & a)
 		{
 			for(T & v: values)
@@ -148,6 +167,7 @@ class vec
 		}
 
 		///< scalar division self assign
+		__host__ __device__
 		const vec<T, N> & operator /= (const T & a)
 		{
 			for(T & v: values)
@@ -156,6 +176,7 @@ class vec
 		}
 
 		///< sum of vectors self assign
+		__host__ __device__
 		const vec<T, N> & operator += (const vec<T, N> & v)
 		{
 			for(index_t i = 0; i < N; ++i)
@@ -164,6 +185,7 @@ class vec
 		}
 
 		///< difference of vectors self assign
+		__host__ __device__
 		const vec<T, N> & operator -= (const vec<T, N> & v)
 		{
 			for(index_t i = 0; i < N; ++i)
@@ -172,6 +194,7 @@ class vec
 		}
 
 		///< comparison less than
+		__host__ __device__
 		bool operator < (const vec<T, N> & v) const
 		{
 			if(x != v.x) return x < v.x;
@@ -180,11 +203,13 @@ class vec
 		}
 
 		///< comparison equal than
+		__host__ __device__
 		bool operator == (const vec<T, N> & v) const
 		{
 			return x == v.x && y == v.y && z == v.z;
 		}
 
+		__host__ __device__
 		bool is_zero()
 		{
 			double eps = std::numeric_limits<double>::epsilon();
@@ -196,6 +221,7 @@ class vec
 
 ///< scalar product
 template<class T, size_t N>
+__host__ __device__
 vec<T, N> operator * (const T & a, const vec<T, N> & v)
 {
 	return v * a;
@@ -203,6 +229,7 @@ vec<T, N> operator * (const T & a, const vec<T, N> & v)
 
 ///< cross product
 template<class T>
+__host__ __device__
 vec<T, 3> operator * (const vec<T, 3> & u, const vec<T, 3> & v)
 {
 	return {u.y * v.z - u.z * v.y, u.z * v.x - u.x * v.z, u.x * v.y - u.y * v.x};
@@ -210,6 +237,7 @@ vec<T, 3> operator * (const vec<T, 3> & u, const vec<T, 3> & v)
 
 ///< cross product
 template<class T>
+__host__ __device__
 vec<T, 3> cross(const vec<T, 3> & u, const vec<T, 3> & v)
 {
 	return u * v;
@@ -217,6 +245,7 @@ vec<T, 3> cross(const vec<T, 3> & u, const vec<T, 3> & v)
 
 ///< dot product
 template<class T, size_t N>
+__host__ __device__
 T dot(const vec<T, N> & u, const vec<T, N> & v)
 {
 	return (u, v);
@@ -224,6 +253,7 @@ T dot(const vec<T, N> & u, const vec<T, N> & v)
 
 ///< norm
 template<class T, size_t N>
+__host__ __device__
 T norm(const vec<T, N> & v)
 {
 	return v.norm();
@@ -231,6 +261,7 @@ T norm(const vec<T, N> & v)
 
 ///< length
 template<class T, size_t N>
+__host__ __device__
 T length(const vec<T, N> & v)
 {
 	return v.length();
@@ -238,6 +269,7 @@ T length(const vec<T, N> & v)
 
 ///< normalize vector: divide by its norm
 template<class T, size_t N>
+__host__ __device__
 vec<T, N> normalize(const vec<T, N> & v)
 {
 	return v / norm(v);
@@ -245,6 +277,7 @@ vec<T, N> normalize(const vec<T, N> & v)
 
 ///< std ostream
 template<class T, size_t N>
+__host__ __device__
 std::ostream & operator << (std::ostream & os, const vec<T, N> & v)
 {
 	for(index_t i = 0; i < N - 1; ++i)
@@ -254,6 +287,7 @@ std::ostream & operator << (std::ostream & os, const vec<T, N> & v)
 
 ///< std istream
 template<class T, size_t N>
+__host__ __device__
 std::istream & operator >> (std::istream & is, vec<T, N> & v)
 {
 	for(index_t i = 0; i < N; ++i)

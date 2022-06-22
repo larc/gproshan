@@ -218,7 +218,7 @@ real_t cu_update_step(CHE * mesh, const real_t * dist, const index_t & he)
 	x[1] = mesh->VT[cu_prev(he)];
 	x[2] = mesh->VT[he];
 
-	vertex_cu X[2];
+	vertex X[2];
 	X[0] = mesh->GT[x[0]] - mesh->GT[x[2]];
 	X[1] = mesh->GT[x[1]] - mesh->GT[x[2]];
 
@@ -258,9 +258,10 @@ real_t cu_update_step(CHE * mesh, const real_t * dist, const index_t & he)
 	tp[0] = t[0] - p;
 	tp[1] = t[1] - p;
 
-	vertex_cu n(tp[0] * (X[0][0]*Q[0][0] + X[1][0]*Q[1][0]) + tp[1] * (X[0][0]*Q[0][1] + X[1][0]*Q[1][1]),
-			 tp[0] * (X[0][1]*Q[0][0] + X[1][1]*Q[1][0]) + tp[1] * (X[0][1]*Q[0][1] + X[1][1]*Q[1][1]),
-			 tp[0] * (X[0][2]*Q[0][0] + X[1][2]*Q[1][0]) + tp[1] * (X[0][2]*Q[0][1] + X[1][2]*Q[1][1]) );
+	vertex n = {	tp[0] * (X[0][0]*Q[0][0] + X[1][0]*Q[1][0]) + tp[1] * (X[0][0]*Q[0][1] + X[1][0]*Q[1][1]),
+					tp[0] * (X[0][1]*Q[0][0] + X[1][1]*Q[1][0]) + tp[1] * (X[0][1]*Q[0][1] + X[1][1]*Q[1][1]),
+					tp[0] * (X[0][2]*Q[0][0] + X[1][2]*Q[1][0]) + tp[1] * (X[0][2]*Q[0][1] + X[1][2]*Q[1][1])
+					};
 
 	real_t cond[2];
 	cond[0] = (X[0] , n);
@@ -273,8 +274,8 @@ real_t cu_update_step(CHE * mesh, const real_t * dist, const index_t & he)
 	if(t[0] == INFINITY || t[1] == INFINITY || dis < 0 || c[0] >= 0 || c[1] >= 0)
 	{
 		real_t dp[2];
-		dp[0] = dist[x[0]] + *X[0];
-		dp[1] = dist[x[1]] + *X[1];
+		dp[0] = dist[x[0]] + norm(X[0]);
+		dp[1] = dist[x[1]] + norm(X[1]);
 
 		p = dp[dp[1] < dp[0]];
 	}

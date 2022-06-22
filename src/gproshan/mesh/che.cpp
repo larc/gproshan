@@ -1128,22 +1128,5 @@ const index_t & che::star_he::iterator::operator * ()
 }
 
 
-// cuda auxiliar che struct
-
-CHE::CHE(const che * mesh)
-{
-	n_vertices = mesh->n_vertices;
-	n_faces = mesh->n_faces;
-	n_half_edges = mesh->n_half_edges;
-
-	GT = (vertex_cu *) mesh->GT;
-	VN = (vertex_cu *) mesh->VN;
-	VC = mesh->VC;
-	VT = mesh->VT;
-	OT = mesh->OT;
-	EVT = mesh->EVT;
-}
-
-
 } // namespace gproshan
 
