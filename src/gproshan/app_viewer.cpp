@@ -290,6 +290,7 @@ bool app_viewer::process_multiplicate_vertices(viewer * p_view)
 	che_viewer & mesh = view->active_mesh();
 
 	mesh->multiplicate_vertices();
+	mesh->update_normals();
 	mesh.update();
 
 	mesh.log_info();

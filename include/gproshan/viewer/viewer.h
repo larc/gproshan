@@ -156,7 +156,7 @@ class viewer
 
 		static bool m_raycasting(viewer * view);
 
-		void pick_vertex(const real_t & x, const real_t & y);
+		void pick_vertex(const int & x, const int & y);
 		void check_apply_all_meshes(const std::function<void(che_viewer &)> & fun);
 };
 

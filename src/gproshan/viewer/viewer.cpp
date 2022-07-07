@@ -426,9 +426,21 @@ void viewer::mouse_callback(GLFWwindow * window, int button, int action, int mod
 
 	double xpos, ypos;
 	glfwGetCursorPos(window, &xpos, &ypos);
+	
+	if(action == GLFW_RELEASE)
+	{
+		float xscale, yscale;
+		glfwGetWindowContentScale(window, &xscale, &yscale);
 
-	if(mods == GLFW_MOD_SHIFT && action == GLFW_RELEASE)
-		view->pick_vertex(xpos, ypos);
+		index_t ix = xpos * xscale;
+		index_t iy = ypos * yscale;
+		const int & cols = m_window_split[view->n_meshes].y();
+
+		view->idx_active_mesh = cols * (iy / view->viewport_height) + ix / view->viewport_width;
+
+		if(mods == GLFW_MOD_SHIFT)
+			view->pick_vertex(ix % view->viewport_width, iy % view->viewport_height);
+	}
 	else if(button == GLFW_MOUSE_BUTTON_LEFT)
 		view->cam.mouse(action == GLFW_PRESS, xpos, ypos, view->window_width, view->window_height);
 }
@@ -955,20 +967,11 @@ void viewer::render_rt(che_viewer & mesh, frame & rt_frame)
 	rt_frame.display();
 }
 
-void viewer::pick_vertex(const real_t & x, const real_t & y)
+void viewer::pick_vertex(const int & x, const int & y)
 {
-	float xscale, yscale;
-	glfwGetWindowContentScale(window, &xscale, &yscale);
+	che_viewer & mesh = active_mesh();
 
-	index_t ix = x * xscale;
-	index_t iy = y * yscale;
-	const int & cols = m_window_split[n_meshes].y();
-
-	che_viewer & mesh = meshes[cols * (iy / viewport_height) + ix / viewport_width];
-
-	mesh.select(ix % viewport_width, iy % viewport_height,
-				{viewport_width, viewport_height},
-				inverse(proj_view_mat), cam.eye);
+	mesh.select(x, y, {viewport_width, viewport_height}, inverse(proj_view_mat), cam.eye);
 }
 
 void viewer::check_apply_all_meshes(const std::function<void(che_viewer &)> & fun)
