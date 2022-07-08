@@ -427,21 +427,23 @@ void viewer::mouse_callback(GLFWwindow * window, int button, int action, int mod
 	double xpos, ypos;
 	glfwGetCursorPos(window, &xpos, &ypos);
 	
-	if(action == GLFW_RELEASE)
+	if(button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE)
 	{
 		float xscale, yscale;
 		glfwGetWindowContentScale(window, &xscale, &yscale);
 
-		index_t ix = xpos * xscale;
-		index_t iy = ypos * yscale;
+		const index_t & ix = xpos * xscale;
+		const index_t & iy = ypos * yscale;
 		const int & cols = m_window_split[view->n_meshes].y();
-
-		view->idx_active_mesh = cols * (iy / view->viewport_height) + ix / view->viewport_width;
-
+		const index_t & idx_mesh = cols * (iy / view->viewport_height) + ix / view->viewport_width;
+		if(idx_mesh < view->n_meshes)
+			view->idx_active_mesh = idx_mesh;
+		
 		if(mods == GLFW_MOD_SHIFT)
 			view->pick_vertex(ix % view->viewport_width, iy % view->viewport_height);
 	}
-	else if(button == GLFW_MOUSE_BUTTON_LEFT)
+	
+	if(button == GLFW_MOUSE_BUTTON_LEFT)
 		view->cam.mouse(action == GLFW_PRESS, xpos, ypos, view->window_width, view->window_height);
 }
 
