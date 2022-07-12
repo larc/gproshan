@@ -406,10 +406,11 @@ void viewer::window_size_callback(GLFWwindow * window, int width, int height)
 
 void viewer::keyboard_callback(GLFWwindow * window, int key, int, int action, int)
 {
+	if(ImGui::GetIO().WantCaptureKeyboard) return;
+	
 	if(action == GLFW_RELEASE) return;
 
 	viewer * view = (viewer *) glfwGetWindowUserPointer(window);
-	if(ImGui::GetIO().WantCaptureKeyboard) return;
 
 	process_t & pro = view->processes[key];
 	if(pro.function)
@@ -422,6 +423,8 @@ void viewer::keyboard_callback(GLFWwindow * window, int key, int, int action, in
 
 void viewer::mouse_callback(GLFWwindow * window, int button, int action, int mods)
 {
+	if(ImGui::GetIO().WantCaptureMouse) return;
+	
 	viewer * view = (viewer *) glfwGetWindowUserPointer(window);
 
 	double xpos, ypos;

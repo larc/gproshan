@@ -875,11 +875,12 @@ bool app_viewer::process_fill_holes(viewer * p_view)
 			if(angle <= M_PI)
 				front.push({angle, p.x()});
 		};
-
-		push({0, vertices.size() - 1, 1});
+		
+		index_t nv = vertices.size();
+		push({0, nv - 1, 1});
 		for(index_t i = 1; i < vertices.size() - 1; ++i)
 			push({i, i - 1, i + 1});
-		push({vertices.size() - 1, vertices.size() - 2, 0});
+		push({nv - 1, nv - 2, 0});
 
 		std::vector<bool> border;
 		border.assign(true, vertices.size());
