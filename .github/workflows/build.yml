@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04]
+        os: [ubuntu-20.04, ubuntu-22.04]
         config: [Release, Debug]
         cuda: [cuda, '']
 
@@ -33,7 +33,6 @@ jobs:
                           libopenblas-dev \
                           libglew-dev \
                           libglfw3-dev \
-                          libglm-dev \
                           cimg-dev
 
     - name: Install Cuda

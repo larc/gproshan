@@ -1,5 +1,7 @@
 #include <gproshan/app_viewer.h>
 
+#include <gproshan/geometry/vec.h>
+
 #include <random>
 #include <queue>
 
@@ -14,8 +16,8 @@ namespace gproshan {
 
 app_viewer::~app_viewer()
 {
-	for(che * mesh: meshes)
-		delete mesh;
+	for(index_t i = 0; i < n_meshes; ++i)
+		delete meshes[i];
 }
 
 che * app_viewer::load_mesh(const string & file_path)
@@ -37,6 +39,8 @@ che * app_viewer::load_mesh(const string & file_path)
 
 int app_viewer::main(int nargs, const char ** args)
 {
+	gproshan_error_var(sizeof(vec2));
+	gproshan_error_var(sizeof(vec3));
 	if(nargs < 2)
 	{
 		printf("%s [mesh_paths.(off,obj,ply)]\n", args[0]);
@@ -221,7 +225,7 @@ bool app_viewer::process_gaussian_curvature(viewer * p_view)
 		{
 			a = mesh->vertex_he(next(he)) - mesh->point(v);
 			b = mesh->vertex_he(prev(he)) - mesh->point(v);
-			g += acos((a,b) / (*a * *b));
+			g += acos((a,b) / (norm(a) * norm(b)));
 		}
 		//gv(v) = (2 * M_PI - g) / mesh->area_vertex(v);
 		gv(v) = mesh->mean_curvature(v);
@@ -286,6 +290,7 @@ bool app_viewer::process_multiplicate_vertices(viewer * p_view)
 	che_viewer & mesh = view->active_mesh();
 
 	mesh->multiplicate_vertices();
+	mesh->update_normals();
 	mesh.update();
 
 	mesh.log_info();
@@ -561,21 +566,15 @@ bool app_viewer::process_mdict_patch(viewer * p_view)
 		for(auto & u: p.vertices)
 			mesh->heatmap(u) = 1;
 
-		vdir.x = p.T(0, 0);
-		vdir.y = p.T(0, 1);
-		vdir.z = p.T(0, 2);
+		vdir = {p.T(0, 0), p.T(0, 1), p.T(0, 2)};
 		view->vectors.push_back(mesh->point(v));
 		view->vectors.push_back(mesh->point(v) + 3 * mean_edge * vdir);
 
-		vdir.x = p.T(1, 0);
-		vdir.y = p.T(1, 1);
-		vdir.z = p.T(1, 2);
+		vdir = {p.T(1, 0), p.T(1, 1), p.T(1, 2)};
 		view->vectors.push_back(mesh->point(v));
 		view->vectors.push_back(mesh->point(v) + 3 * mean_edge * vdir);
 
-		vdir.x = p.T(2, 0);
-		vdir.y = p.T(2, 1);
-		vdir.z = p.T(2, 2);
+		vdir = {p.T(2, 0), p.T(2, 1), p.T(2, 2)};
 		view->vectors.push_back(mesh->point(v));
 		view->vectors.push_back(mesh->point(v) + 3 * mean_edge * vdir);
 
@@ -677,9 +676,9 @@ bool app_viewer::process_eigenfuntions(viewer * p_view)
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
-	static int K = 20;
+	static unsigned int n_eigs = 20;
 
-	ImGui::InputInt("eigenvectors", &K);
+	ImGui::InputInt("eigenvectors", (int *) &n_eigs);
 
 	if(ImGui::Button("Run"))
 	{
@@ -687,25 +686,31 @@ bool app_viewer::process_eigenfuntions(viewer * p_view)
 		a_vec eigval;
 		a_mat eigvec;
 
-		TIC(view->time) K = eigs_laplacian(mesh, eigval, eigvec, L, A, K); TOC(view->time)
-		gproshan_log_var(view->time);
+		TIC(view->time)
+			n_eigs = eigs_laplacian(mesh, eigval, eigvec, L, A, n_eigs);
+		TOC(view->time)
 
-		gproshan_log_var(K);
+		sprintf(view->status_message, "computing %u eigs in %.3fs", n_eigs, view->time);
 
-		K = K < N_MESHES ? K : N_MESHES;
-		for(index_t k = 0; k < N_MESHES; ++k)
+		for(index_t k = 0; k < n_eigs; ++k)
 		{
-			if(k) view->add_mesh(new che(*mesh));
+			if(n_eigs)
+			{
+				if(!view->add_mesh(new che(*mesh)))
+					break;
+			}
+
 			view->idx_active_mesh = k;
+			che_viewer & mesh = view->active_mesh();
 
 			eigvec.col(k) -= eigvec.col(k).min();
 			eigvec.col(k) /= eigvec.col(k).max();
 
 			#pragma omp parallel for
 			for(index_t v = 0; v < mesh->n_vertices; ++v)
-				view->active_mesh()->heatmap(v) = eigvec(v, k);
+				mesh->heatmap(v) = eigvec(v, k);
 
-			view->active_mesh().update_vbo();
+			mesh.update_vbo();
 		}
 
 		view->idx_active_mesh = 0;
@@ -795,22 +800,6 @@ bool app_viewer::process_key_components(viewer * p_view)
 
 // Hole Filling
 
-bool paint_holes_vertices(viewer * p_view)
-{
-	app_viewer * view = (app_viewer *) p_view;
-	che_viewer & mesh = view->active_mesh();
-
-	size_t nv = mesh->n_vertices;
-
-	// TODO
-
-	#pragma omp parallel for
-	for(index_t v = 0; v < mesh->n_vertices; ++v)
-		if(v >= nv) mesh->heatmap(v) = .25;
-
-	return false;
-}
-
 bool app_viewer::process_poisson(viewer * p_view, const index_t & k)
 {
 	app_viewer * view = (app_viewer *) p_view;
@@ -822,7 +811,6 @@ bool app_viewer::process_poisson(viewer * p_view, const index_t & k)
 	TIC(view->time) poisson(mesh, old_n_vertices, k); TOC(view->time)
 	gproshan_log_var(view->time);
 
-//	paint_holes_vertices();
 	mesh.update();
 
 	return false;
@@ -852,9 +840,74 @@ bool app_viewer::process_fill_holes(viewer * p_view)
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
-	fill_all_holes(mesh);
+	//	fill_all_holes(mesh);
+	/*********************************************************************/
+	che * fill_mesh = new che(*mesh);
+	for(index_t & v: mesh->bounds())
+	{
+		const std::vector<index_t> & vbounds = mesh->boundary(v);
+		std::vector<vertex> vertices;
+		std::vector<index_t> faces;
 
-	paint_holes_vertices(p_view);
+		vertex center;
+		for(const index_t & v: vbounds)
+		{
+			vertices.push_back(mesh->point(v));
+			center += mesh->point(v);
+		}
+		center /= vbounds.size();
+
+		std::priority_queue<std::pair<real_t, index_t> > front;
+		std::vector<uvec2> neigs(vertices.size());
+
+		auto bprev = [&](const index_t & v) -> index_t &
+		{
+			return neigs[v].x();
+		};
+		auto bnext = [&](const index_t & v) -> index_t &
+		{
+			return neigs[v].y();
+		};
+		auto push = [&](const uvec3 & p)
+		{
+			neigs[p.x()] = {p.y(), p.z()};
+			const real_t & angle = 21;
+			if(angle <= M_PI)
+				front.push({angle, p.x()});
+		};
+		
+		index_t nv = vertices.size();
+		push({0, nv - 1, 1});
+		for(index_t i = 1; i < vertices.size() - 1; ++i)
+			push({i, i - 1, i + 1});
+		push({nv - 1, nv - 2, 0});
+
+		std::vector<bool> border;
+		border.assign(true, vertices.size());
+
+		real_t angle;
+		index_t v0, v1, v2;
+		while(!front.empty())
+		{
+			angle = front.top().first;
+
+			if(!(border[v0] && border[v1] && border[v2]))
+				continue;
+
+
+		}
+
+		// vertices.push_back(center);
+
+		che * old = fill_mesh;
+		che * hole = new che(vertices.data(), vertices.size(), faces.data(), faces.size() / 3);
+		fill_mesh = old->merge(hole, vbounds);
+		delete old;
+		delete hole;
+	}
+
+	view->add_mesh(fill_mesh);
+	/*********************************************************************/
 
 	return false;
 }
@@ -885,7 +938,8 @@ bool app_viewer::process_fill_holes_biharmonic_splines(viewer * p_view)
 
 	delete [] holes;
 	delete [] border_vertices;
-	paint_holes_vertices(p_view);
+
+	mesh.update();
 
 	return false;
 }

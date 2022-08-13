@@ -75,7 +75,7 @@ void dijkstra::run(che * mesh)
 				{
 					if(visited[nv])
 					{
-						w = weights[nv] + *(mesh->point(nv) - mesh->point(v));
+						w = weights[nv] + norm(mesh->point(nv) - mesh->point(v));
 
 						if(w < weights[v])
 							weights[v] = w;

@@ -9,29 +9,10 @@
 #include <cassert>
 #include <fstream>
 
-#ifndef CGAL_PATCH_DEFS
-	#define CGAL_PATCH_DEFS
-	#define CGAL_EIGEN3_ENABLED
-	#define CGAL_USE_BOOST_PROGRAM_OPTIONS
-	#define CGAL_USE_GMP
-	#define DCGAL_USE_MPFR
-#endif
-
-#include <CGAL/Simple_cartesian.h>
-#include <CGAL/Monge_via_jet_fitting.h>
-
 
 // geometry processing and shape analysis framework
 // mesh dictionary learning and sparse coding namespace
 namespace gproshan::mdict {
-
-
-typedef real_t DFT;
-typedef CGAL::Simple_cartesian<DFT> Data_Kernel;
-typedef Data_Kernel::Point_3 DPoint;
-typedef Data_Kernel::Vector_3 DVector;
-typedef CGAL::Monge_via_jet_fitting<Data_Kernel> My_Monge_via_jet_fitting;
-typedef My_Monge_via_jet_fitting::Monge_form My_Monge_form;
 
 
 size_t msparse_coding::L = 12;
@@ -251,7 +232,7 @@ void msparse_coding::load_sampling()
 						const vertex & va = mesh->point(vsf);
 						const vertex & vb = mesh->point(v);
 
-						invalid_seed[v] = *(va - vb) < 0.8 * euc_radio;
+						invalid_seed[v] = norm(va - vb) < 0.8 * euc_radio;
 					}
 				}
 			}
@@ -882,7 +863,7 @@ void msparse_coding::init_patches(const bool & reset, const fmask_t & mask)
 	for(index_t s = 0; s < m_params.n_patches; ++s)
 	{
 		viewer::vectors.push_back({patches[s].x(0), patches[s].x(1), patches[s].x(2)});
-		a_vec r = patches[s].x + 0.02 * patches[s].normal();
+		a_vec r = patches[s].x() + 0.02 * patches[s].normal();
 		viewer::vectors.push_back({r(0), r(1), r(2)});
 	}
 	*/
@@ -943,9 +924,9 @@ real_t msparse_coding::mesh_reconstruction(const fmask_t & mask)
 		}
 		else
 		{
-			V(0, v) = mesh->point(v).x;
-			V(1, v) = mesh->point(v).y;
-			V(2, v) = mesh->point(v).z;
+			V(0, v) = mesh->point(v).x();
+			V(1, v) = mesh->point(v).y();
+			V(2, v) = mesh->point(v).z();
 		}
 	}
 
@@ -959,7 +940,7 @@ real_t msparse_coding::mesh_reconstruction(const fmask_t & mask)
 	#pragma omp parallel for reduction(+: error) reduction(max: max_error)
 	for(index_t v = 0; v < mesh->n_vertices; ++v)
 	{
-		dist[v] = *(new_vertices[v] - mesh->point(v));
+		dist[v] = length(new_vertices[v] - mesh->point(v));
 		error += dist[v];
 		max_error = max(max_error, dist[v]);
 	}

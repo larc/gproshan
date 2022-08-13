@@ -3,6 +3,7 @@
 
 #include <gproshan/config.h>
 
+#include <filesystem>
 #include <iostream>
 #include <iomanip>
 #include <string>
@@ -25,7 +26,14 @@ typedef unsigned int index_t;
 #endif
 
 
-#define tmp_file_path(file) (std::string(getenv("HOME")) + "/.gproshan/"+ file)
+inline std::string tmp_file_path(const std::string & file)
+{
+	const std::string & gproshan_home = std::string(getenv("HOME")) + "/.gproshan";
+	std::filesystem::create_directory(gproshan_home);
+
+	return gproshan_home + "/" + file;
+}
+
 #define shaders_path(file) (std::string(GPROSHAN_DIR) + "/shaders/" + file)
 
 #ifdef GPROSHAN_LOG

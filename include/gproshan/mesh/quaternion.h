@@ -1,13 +1,16 @@
 #ifndef QUATERNION_H
 #define QUATERNION_H
 
-#include <gproshan/mesh/vertex.h>
+#include <gproshan/geometry/vec.h>
 
 #include <ostream>
 
 
 // geometry processing and shape analysis framework
 namespace gproshan {
+
+
+using vertex = vec3;
 
 
 class quaternion

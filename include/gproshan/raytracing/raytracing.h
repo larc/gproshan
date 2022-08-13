@@ -8,8 +8,6 @@
 #include <map>
 #include <random>
 
-#include <glm/glm.hpp>
-
 
 // geometry processing and shape analysis framework
 // raytracing approach
@@ -50,17 +48,17 @@ class raytracing
 		raytracing() = default;
 		virtual ~raytracing() = default;
 
-		virtual void render(glm::vec4 * img, const render_params & params, const bool & flat);
+		virtual void render(vec4 * img, const render_params & params, const bool & flat);
 
-		virtual float * raycaster(	const glm::uvec2 & windows_size,
-									const glm::mat4 & proj_view_mat,
+		virtual float * raycaster(	const ivec2 & windows_size,
+									const mat4 & inv_proj_view,
 									const vertex & cam_pos,
 									const index_t & samples = 4
 									);
 
 		vertex ray_view_dir(	const index_t & x, const index_t & y,
-								const glm::vec2 & windows_size,
-								const glm::mat4 & inv_proj_view,
+								const ivec2 & windows_size,
+								const mat4 & inv_proj_view,
 								const vertex & cam_pos
 								);
 
@@ -73,11 +71,11 @@ class raytracing
 										) { return NIL; };
 
 	protected:
-		virtual glm::vec4 intersect_li(	const vertex &,	// org,
+		virtual vec4 intersect_li(	const vertex &,	// org,
 										const vertex &,	// dir,
 										const vertex &,	// light,
 										const bool &		// flat
-										) { return glm::vec4(0); };
+										) { return vec4(0); };
 
 		virtual float intersect_depth(	const vertex &,	// org,
 										const vertex &	// dir

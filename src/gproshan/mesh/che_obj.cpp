@@ -85,11 +85,11 @@ void che_obj::write_file(const che * mesh, const string & file, const bool & col
 	for(index_t i = 0; i < mesh->n_vertices; ++i)
 	{
 		const vertex & v = mesh->point(i);
-		fprintf(fp, "v %f %f %f", (float) v.x, (float) v.y, (float) v.z);
+		fprintf(fp, "v %f %f %f", (float) v.x(), (float) v.y(), (float) v.z());
 		if(color)
 		{
 			const vertex & c = mesh->color(i);
-			fprintf(fp, " %f %f %f", (float) c.x, (float) c.y, (float) c.z);
+			fprintf(fp, " %f %f %f", (float) c.x(), (float) c.y(), (float) c.z());
 		}
 		fprintf(fp, "\n");
 	}

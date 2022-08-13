@@ -4,8 +4,9 @@
 #include <gproshan/mesh/che.h>
 #include <gproshan/raytracing/raytracing.h>
 
+#include <cfloat>
+
 #include <embree3/rtcore.h>
-#include <glm/glm.hpp>
 
 
 // geometry processing and shape analysis framework
@@ -18,8 +19,8 @@ class embree : public raytracing
 	protected:
 		struct ray_hit : public RTCRayHit
 		{
-			ray_hit(const vertex & p_org = vertex(0.0f),
-					const vertex & v_dir = vertex(0.0f),
+			ray_hit(const vertex & p_org = {0, 0, 0},
+					const vertex & v_dir = {0, 0, 0},
 					float near = 1e-5f,
 					float far = FLT_MAX);
 
@@ -42,7 +43,7 @@ class embree : public raytracing
 	public:
 		embree();
 		embree(	const std::vector<che *> & meshes,
-				const std::vector<glm::mat4> & model_mats,
+				const std::vector<mat4> & model_mats,
 				const bool & pointcloud = false,
 				const float & pcr = 1
 				);
@@ -57,18 +58,18 @@ class embree : public raytracing
 		bool occluded(ray_hit & r);
 
 		void build_bvh(	const std::vector<che *> & meshes,
-						const std::vector<glm::mat4> & model_mats,
+						const std::vector<mat4> & model_mats,
 						const bool & pointcloud = false);
-		index_t add_sphere(const glm::vec4 & xyzr);
-		index_t add_mesh(const che * mesh, const glm::mat4 & model_mat);
+		index_t add_sphere(const vec4 & xyzr);
+		index_t add_mesh(const che * mesh, const mat4 & model_mat);
 
-		virtual index_t add_pointcloud(const che * mesh);
+		virtual index_t add_pointcloud(const che * mesh, const mat4 & model_mat);
 		virtual float pointcloud_hit(vertex & position, vertex & normal, vertex & color, ray_hit r);
 
-		glm::vec4 li(const vertex & light, const vertex & position, const vertex & normal, const vertex & color, const float & near = 1e-5f);
-		glm::vec4 li(ray_hit r, const vertex & light, const bool & flat);
+		vec4 li(const vertex & light, const vertex & position, const vertex & normal, const vertex & color, const float & near = 1e-5f);
+		vec4 li(ray_hit r, const vertex & light, const bool & flat);
 
-		glm::vec4 intersect_li(const vertex & org, const vertex & dir, const vertex & light, const bool & flat);
+		vec4 intersect_li(const vertex & org, const vertex & dir, const vertex & light, const bool & flat);
 		float intersect_depth(const vertex & org, const vertex & dir);
 };
 

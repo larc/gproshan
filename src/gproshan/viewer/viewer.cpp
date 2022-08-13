@@ -8,9 +8,6 @@
 #include <vector>
 #include <thread>
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-
 #include <gproshan/mesh/che_off.h>
 #include <gproshan/mesh/che_obj.h>
 #include <gproshan/mesh/che_ply.h>
@@ -36,12 +33,16 @@ using namespace std;
 namespace gproshan {
 
 
-const int viewer::m_window_size[N_MESHES + 1][2] = {{1, 1},
+const std::vector<ivec2> viewer::m_window_split = {	{1, 1},
 													{1, 1}, {1, 2}, {1, 3},
 													{2, 2}, {2, 3}, {2, 3},
 													{2, 4}, {2, 4}, {2, 5},
-													{2, 5}, {3, 4}, {3, 4}
+													{2, 5}, {3, 4}, {3, 4},
+													{4, 4}, {4, 4}, {4, 4}, {4, 4},
+													{4, 5}, {4, 5}, {4, 5}, {4, 5}
 													};
+
+const size_t viewer::max_n_meshes = m_window_split.size() - 1;
 
 const std::vector<std::string> viewer::colormap = { "vertex color",
 													"blue",
@@ -67,7 +68,8 @@ viewer::viewer(const int & width, const int & height)
 	s->update_normals();
 	sphere.init(s, false);
 
-	frames = new frame[N_MESHES];
+	frames = new frame[max_n_meshes];
+	meshes = new che_viewer[max_n_meshes];
 }
 
 viewer::~viewer()
@@ -81,6 +83,7 @@ viewer::~viewer()
 
 	delete sphere;
 	delete [] frames;
+	delete [] meshes;
 }
 
 bool viewer::run()
@@ -89,12 +92,12 @@ bool viewer::run()
 	{
 		TIC(render_time)
 
-		quaternion r = cam.current_rotation();
+		const quaternion & r = cam.current_rotation();
 
-		cam_light = vertex(-1, 1, -2);
+		cam_light = vertex{-1, 1, -2};
 		cam_light = r.conj() * cam_light * r;
 
-		render_params.proj_view_mat = glm::perspective(45.0f, float(viewport_width) / float(viewport_height), 0.01f, 1000.0f) * cam.look_at(r);
+		proj_view_mat = camera::perspective(45, real_t(viewport_width) / real_t(viewport_height), 0.01, 1000) * cam.look_at(r);
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		render_gl();
@@ -137,9 +140,14 @@ void viewer::imgui()
 		if(ImGui::BeginMenu("Color"))
 		{
 			for(index_t i = 0; i < colormap.size(); ++i)
+			{
 				if(ImGui::MenuItem(colormap[i].c_str(), nullptr, i == mesh.idx_colormap, i != mesh.idx_colormap))
-					mesh.idx_colormap = i;
-
+					check_apply_all_meshes([&](che_viewer & mesh)
+					{
+						mesh.idx_colormap = i;
+					});
+				ImGui::Separator();
+			}
 			ImGui::EndMenu();
 		}
 
@@ -153,8 +161,9 @@ void viewer::imgui()
 					if(pro.function != nullptr && pro.sub_menu == i)
 						if(ImGui::MenuItem(pro.name.c_str(), ('[' + pro.key + ']').c_str(), &pro.selected))
 							sprintf(status_message, "%s", pro.selected ? pro.name.c_str() : "");
-				}
 
+					//ImGui::Separator();
+				}
 				ImGui::EndMenu();
 			}
 		}
@@ -170,21 +179,26 @@ void viewer::imgui()
 	ImGui::Text("github.com/larc/gproshan");
 	ImGui::End();
 
-	ImGui::SetNextWindowSize(ImVec2(320, -1));
+	ImGui::SetNextWindowSize(ImVec2(360, -1));
 	ImGui::SetNextWindowPos(ImVec2(20, 60), ImGuiCond_Once);
 	ImGui::Begin("gproshan");
 
 	ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.5);
 
-	ImGui::Text("%s", mesh->filename.c_str());
-	ImGui::Text("%16s: %.3f", "FPS", 1.0 / render_time);
-	ImGui::Text("%16s: %10lu", "n_vertices", mesh->n_vertices);
-	ImGui::Text("%16s: %10lu", "n_faces", mesh->n_faces);
-
-	if(mesh.render_pointcloud)
+	ImGui::Checkbox("apply options to all meshes\nmenus: [color, render, mesh]", &apply_all_meshes);
+	if(ImGui::CollapsingHeader(mesh->filename.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
 	{
-		ImGui::Checkbox("point_normals", &mesh.point_normals);
-		ImGui::SliderInt("point_size", (int *) &mesh.point_size, 1, 32);
+		ImGui::Text("%13lu fps", size_t(1.0 / render_time));
+		ImGui::Text("%13lu vertices", mesh->n_vertices);
+		ImGui::Text("%13lu faces", mesh->n_faces);
+
+		if(mesh.render_pointcloud)
+		{
+			ImGui::Indent();
+			ImGui::Checkbox("point_normals", &mesh.point_normals);
+			ImGui::SliderInt("point_size", (int *) &mesh.point_size, 1, 32);
+			ImGui::Unindent();
+		}
 	}
 
 	for(auto & p: processes)
@@ -347,25 +361,22 @@ void viewer::add_process(const int & key, const string & skey, const string & na
 	else cerr << "Repeat key: " << key << endl;
 }
 
-void viewer::add_mesh(che * p_mesh)
+bool viewer::add_mesh(che * p_mesh)
 {
-	if(n_meshes == N_MESHES)
-	{
-		gproshan_log_var(n_meshes == N_MESHES);
-		gproshan_log_var(n_meshes);
-		return;
-	}
+	if(n_meshes == max_n_meshes)
+		return false;
 
 	p_mesh->update_normals();
-	meshes[n_meshes].init(p_mesh);
-	meshes[n_meshes].log_info();
-	++n_meshes;
 
-	idx_active_mesh = n_meshes - 1;
-	glfwSetWindowTitle(window, active_mesh()->filename.c_str());
+	che_viewer & mesh = meshes[n_meshes];
+	mesh.init(p_mesh);
+	mesh.log_info();
 
-	const int & rows = m_window_size[n_meshes][0];
-	const int & cols = m_window_size[n_meshes][1];
+	idx_active_mesh = n_meshes++;
+	glfwSetWindowTitle(window, mesh->filename.c_str());
+
+	const int & rows = m_window_split[n_meshes].x();
+	const int & cols = m_window_split[n_meshes].y();
 	for(index_t m = 0; m < n_meshes; ++m)
 	{
 		meshes[m].vx = m % cols;
@@ -373,15 +384,17 @@ void viewer::add_mesh(che * p_mesh)
 	}
 
 	glfwGetFramebufferSize(window, &viewport_width, &viewport_height);
-	viewport_width /= m_window_size[n_meshes][1];
-	viewport_height /= m_window_size[n_meshes][0];
+	viewport_width /= cols;
+	viewport_height /= rows;
+
+	return true;
 }
 
 void viewer::framebuffer_size_callback(GLFWwindow * window, int width, int height)
 {
 	viewer * view = (viewer *) glfwGetWindowUserPointer(window);
-	view->viewport_width = width / m_window_size[view->n_meshes][1];
-	view->viewport_height = height / m_window_size[view->n_meshes][0];
+	view->viewport_width = width / m_window_split[view->n_meshes].y();
+	view->viewport_height = height / m_window_split[view->n_meshes].x();
 }
 
 void viewer::window_size_callback(GLFWwindow * window, int width, int height)
@@ -393,10 +406,11 @@ void viewer::window_size_callback(GLFWwindow * window, int width, int height)
 
 void viewer::keyboard_callback(GLFWwindow * window, int key, int, int action, int)
 {
+	if(ImGui::GetIO().WantCaptureKeyboard) return;
+	
 	if(action == GLFW_RELEASE) return;
 
 	viewer * view = (viewer *) glfwGetWindowUserPointer(window);
-	if(ImGui::GetIO().WantCaptureKeyboard) return;
 
 	process_t & pro = view->processes[key];
 	if(pro.function)
@@ -409,14 +423,30 @@ void viewer::keyboard_callback(GLFWwindow * window, int key, int, int action, in
 
 void viewer::mouse_callback(GLFWwindow * window, int button, int action, int mods)
 {
+	if(ImGui::GetIO().WantCaptureMouse) return;
+	
 	viewer * view = (viewer *) glfwGetWindowUserPointer(window);
 
 	double xpos, ypos;
 	glfwGetCursorPos(window, &xpos, &ypos);
+	
+	if(button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE)
+	{
+		float xscale, yscale;
+		glfwGetWindowContentScale(window, &xscale, &yscale);
 
-	if(mods == GLFW_MOD_SHIFT && action == GLFW_RELEASE)
-		view->pick_vertex(xpos, ypos);
-	else if(button == GLFW_MOUSE_BUTTON_LEFT)
+		const index_t & ix = xpos * xscale;
+		const index_t & iy = ypos * yscale;
+		const int & cols = m_window_split[view->n_meshes].y();
+		const index_t & idx_mesh = cols * (iy / view->viewport_height) + ix / view->viewport_width;
+		if(idx_mesh < view->n_meshes)
+			view->idx_active_mesh = idx_mesh;
+		
+		if(mods == GLFW_MOD_SHIFT)
+			view->pick_vertex(ix % view->viewport_width, iy % view->viewport_height);
+	}
+	
+	if(button == GLFW_MOUSE_BUTTON_LEFT)
 		view->cam.mouse(action == GLFW_PRESS, xpos, ypos, view->window_width, view->window_height);
 }
 
@@ -434,8 +464,8 @@ void viewer::cursor_callback(GLFWwindow * window, double x, double y)
 
 	if(GLFW_PRESS == glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT))
 	{
-		view->cam.pos.im().x = 2 * x / view->window_width - 1;
-		view->cam.pos.im().y = 2 * y / view->window_height - 1;
+		view->cam.pos.im().x() = 2 * x / view->window_width - 1;
+		view->cam.pos.im().y() = 2 * y / view->window_height - 1;
 		view->render_params.restart = true;
 	}
 }
@@ -490,7 +520,7 @@ bool viewer::m_save_load_view(viewer * view)
 
 	if(ImGui::Button("Save"))
 	{
-		ofstream os(tmp_file_path("views/" + file));
+		ofstream os(tmp_file_path(std::string("views/") + file));
 		os << view->cam;
 		os.close();
 	}
@@ -535,11 +565,13 @@ bool viewer::m_reset_mesh(viewer * view)
 	view->other_vertices.clear();
 	view->vectors.clear();
 
-	che_viewer & mesh = view->active_mesh();
-	mesh.selected.clear();
-	mesh->reload();
-	mesh->update_normals();
-	mesh.update();
+	view->check_apply_all_meshes([&](che_viewer & mesh)
+	{
+		mesh.selected.clear();
+		mesh->reload();
+		mesh->update_normals();
+		mesh.update();
+	});
 
 	return false;
 }
@@ -599,9 +631,11 @@ bool viewer::m_save_mesh(viewer * view)
 
 bool viewer::m_normalize_mesh(viewer * view)
 {
-	che_viewer & mesh = view->active_mesh();
-	mesh->normalize_sphere();
-	mesh.update();
+	view->check_apply_all_meshes([&](che_viewer & mesh)
+	{
+		mesh->normalize_sphere();
+		mesh.update();
+	});
 
 	return false;
 }
@@ -696,108 +730,136 @@ bool viewer::m_setup_raytracing(viewer * view)
 
 bool viewer::m_render_gl(viewer * view)
 {
-	che_viewer & mesh = view->active_mesh();
-	mesh.render_opt = R_GL;
+	view->check_apply_all_meshes([&](che_viewer & mesh)
+	{
+		mesh.render_opt = R_GL;
+	});
+
 	return false;
 }
 
 bool viewer::m_render_embree(viewer * view)
 {
-	che_viewer & mesh = view->active_mesh();
+	view->check_apply_all_meshes([&](che_viewer & mesh)
+	{
+		mesh.render_opt = R_EMBREE;
+	});
 	view->render_params.restart = true;
-	mesh.render_opt = R_EMBREE;
+
 	return false;
 }
 
 bool viewer::m_render_optix(viewer * view)
 {
-	che_viewer & mesh = view->active_mesh();
+	view->check_apply_all_meshes([&](che_viewer & mesh)
+	{
+		mesh.render_opt = R_OPTIX;
+	});
 	view->render_params.restart = true;
-	mesh.render_opt = R_OPTIX;
+
 	return false;
 }
 
 bool viewer::m_invert_normals(viewer * view)
 {
-	che_viewer & mesh = view->active_mesh();
-
-	mesh->invert_normals();
-	mesh.update_vbo_normal();
+	view->check_apply_all_meshes([&](che_viewer & mesh)
+	{
+		mesh->invert_normals();
+		mesh.update_vbo_normal();
+	});
 
 	return false;
 }
 
 bool viewer::m_select_border_vertices(viewer * view)
 {
-	che_viewer & mesh = view->active_mesh();
-	for(const index_t & b: mesh->bounds())
-		for(const index_t & v: mesh->boundary(b))
-			mesh.selected.push_back(v);
+	view->check_apply_all_meshes([&](che_viewer & mesh)
+	{
+		for(const index_t & b: mesh->bounds())
+			for(const index_t & v: mesh->boundary(b))
+				mesh.selected.push_back(v);
+	});
 
 	return false;
 }
 
 bool viewer::m_clean_selected_vertices(viewer * view)
 {
-	che_viewer & mesh = view->active_mesh();
-	mesh.selected.clear();
+	view->check_apply_all_meshes([&](che_viewer & mesh)
+	{
+		mesh.selected.clear();
+	});
 
 	return false;
 }
 
 bool viewer::m_render_pointcloud(viewer * view)
 {
-	che_viewer & mesh = view->active_mesh();
-	mesh.render_pointcloud = !mesh.render_pointcloud;
+	view->check_apply_all_meshes([&](che_viewer & mesh)
+	{
+		mesh.render_pointcloud = !mesh.render_pointcloud;
+	});
 
 	return false;
 }
 
 bool viewer::m_render_wireframe(viewer * view)
 {
-	che_viewer & mesh = view->active_mesh();
-	mesh.render_wireframe = !mesh.render_wireframe;
+	view->check_apply_all_meshes([&](che_viewer & mesh)
+	{
+		mesh.render_wireframe = !mesh.render_wireframe;
+	});
 
 	return false;
 }
 
 bool viewer::m_render_triangles(viewer * view)
 {
-	che_viewer & mesh = view->active_mesh();
-	mesh.render_triangles = !mesh.render_triangles;
+	view->check_apply_all_meshes([&](che_viewer & mesh)
+	{
+		mesh.render_triangles = !mesh.render_triangles;
+	});
 
 	return false;
 }
 
 bool viewer::m_render_gradients(viewer * view)
 {
-	che_viewer & mesh = view->active_mesh();
-	mesh.render_gradients = !mesh.render_gradients;
+	view->check_apply_all_meshes([&](che_viewer & mesh)
+	{
+		mesh.render_gradients = !mesh.render_gradients;
+	});
 
 	return false;
 }
 
 bool viewer::m_render_normals(viewer * view)
 {
-	che_viewer & mesh = view->active_mesh();
-	mesh.render_normals = !mesh.render_normals;
+	view->check_apply_all_meshes([&](che_viewer & mesh)
+	{
+		mesh.render_normals = !mesh.render_normals;
+	});
 
 	return false;
 }
 
 bool viewer::m_render_lines(viewer * view)
 {
-	che_viewer & mesh = view->active_mesh();
-	mesh.render_lines = !mesh.render_lines;
+	view->check_apply_all_meshes([&](che_viewer & mesh)
+	{
+		mesh.render_lines = !mesh.render_lines;
+	});
 
 	return false;
 }
 
 bool viewer::m_render_flat(viewer * view)
 {
-	che_viewer & mesh = view->active_mesh();
-	mesh.render_flat = !mesh.render_flat;
-	view->render_params.restart = true;
+	view->check_apply_all_meshes([&](che_viewer & mesh)
+	{
+		mesh.render_flat = !mesh.render_flat;
+		view->render_params.restart = true;
+	});
 
 	return false;
 }
@@ -808,8 +870,9 @@ bool viewer::m_raycasting(viewer * view)
 
 	rt::embree rc({mesh}, {mesh.model_mat});
 
-	float * frame = rc.raycaster(	glm::uvec2(view->viewport_width, view->viewport_height),
-									view->render_params.proj_view_mat, view->cam.eye
+	float * frame = rc.raycaster(	{view->viewport_width, view->viewport_height},
+									inverse(view->proj_view_mat),
+									view->cam.eye
 									);
 
 	std::thread([](CImg<float> img)
@@ -833,12 +896,11 @@ void viewer::render_gl()
 	glProgramUniform3f(shader_triangles, shader_triangles("cam_light"), cam_light[0], cam_light[1], cam_light[2]);
 	glProgramUniform3f(shader_pointcloud, shader_pointcloud("cam_light"), cam_light[0], cam_light[1], cam_light[2]);
 
-	glm::mat4 & proj_view_mat = render_params.proj_view_mat;
-	glProgramUniformMatrix4fv(shader_sphere, shader_sphere("proj_view_mat"), 1, 0, &proj_view_mat[0][0]);
-	glProgramUniformMatrix4fv(shader_triangles, shader_triangles("proj_view_mat"), 1, 0, &proj_view_mat[0][0]);
-	glProgramUniformMatrix4fv(shader_pointcloud, shader_pointcloud("proj_view_mat"), 1, 0, &proj_view_mat[0][0]);
-	glProgramUniformMatrix4fv(shader_normals, shader_normals("proj_view_mat"), 1, 0, &proj_view_mat[0][0]);
-	glProgramUniformMatrix4fv(shader_gradient, shader_gradient("proj_view_mat"), 1, 0, &proj_view_mat[0][0]);
+	glProgramUniformMatrix4fv(shader_sphere, shader_sphere("proj_view_mat"), 1, true, &proj_view_mat[0][0]);
+	glProgramUniformMatrix4fv(shader_triangles, shader_triangles("proj_view_mat"), 1, true, &proj_view_mat[0][0]);
+	glProgramUniformMatrix4fv(shader_pointcloud, shader_pointcloud("proj_view_mat"), 1, true, &proj_view_mat[0][0]);
+	glProgramUniformMatrix4fv(shader_normals, shader_normals("proj_view_mat"), 1, true, &proj_view_mat[0][0]);
+	glProgramUniformMatrix4fv(shader_gradient, shader_gradient("proj_view_mat"), 1, true, &proj_view_mat[0][0]);
 
 	glProgramUniform1f(shader_normals, shader_normals("length"), cam.zoom() * 0.02);
 	glProgramUniform1f(shader_gradient, shader_gradient("length"), cam.zoom() * 0.02);
@@ -886,20 +948,20 @@ void viewer::render_rt(che_viewer & mesh, frame & rt_frame)
 	render_params.restart = rt_frame.resize(viewport_width, viewport_height) || render_params.restart;
 
 	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, rt_frame);
-	glm::vec4 * img = (glm::vec4 *) glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_READ_WRITE);
+	vec4 * img = (vec4 *) glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_READ_WRITE);
 
-	std::vector<vertex> & scene_lights = render_params.lights;
-	scene_lights.clear();
+	render_params.n_lights = 0;;
 
 	for(const index_t & v: mesh.selected)
-		scene_lights.push_back(mesh->point(v));
+		render_params.add_light(mesh->point(v));
 
-	if(!scene_lights.size())
-		scene_lights = {cam_light};
+	if(!render_params.n_lights)
+		render_params.add_light(cam_light);
 
 	//render_params.viewport_x = mesh.vx * viewport_width;
 	//render_params.viewport_y = mesh.vy * viewport_height;
 	//render_params.viewport_is_window = false;
+	render_params.inv_proj_view = inverse(proj_view_mat);
 	render_params.cam_pos = cam.eye;
 
 	rt->render(img, render_params, mesh.render_flat);
@@ -910,20 +972,23 @@ void viewer::render_rt(che_viewer & mesh, frame & rt_frame)
 	rt_frame.display();
 }
 
-void viewer::pick_vertex(const real_t & x, const real_t & y)
+void viewer::pick_vertex(const int & x, const int & y)
 {
-	float xscale, yscale;
-	glfwGetWindowContentScale(window, &xscale, &yscale);
+	che_viewer & mesh = active_mesh();
 
-	index_t ix = x * xscale;
-	index_t iy = y * yscale;
-	const int & cols = m_window_size[n_meshes][1];
+	mesh.select(x, y, {viewport_width, viewport_height}, inverse(proj_view_mat), cam.eye);
+}
 
-	che_viewer & mesh = meshes[cols * (iy / viewport_height) + ix / viewport_width];
+void viewer::check_apply_all_meshes(const std::function<void(che_viewer &)> & fun)
+{
+	if(!apply_all_meshes)
+	{
+		fun(active_mesh());
+		return;
+	}
 
-	mesh.select(ix % viewport_width, iy % viewport_height,
-				{viewport_width, viewport_height},
-				render_params.proj_view_mat, cam.eye);
+	for(index_t i = 0; i < n_meshes; ++i)
+		fun(meshes[i]);
 }
 
 

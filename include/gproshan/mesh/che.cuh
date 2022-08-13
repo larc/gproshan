@@ -1,7 +1,6 @@
 #ifndef CHE_CUH
 #define CHE_CUH
 
-#include <gproshan/mesh/vertex.cuh>
 #include <gproshan/mesh/che.h>
 
 
@@ -20,6 +19,25 @@ index_t cu_next(index_t he);
 
 __host__ __device__
 index_t cu_prev(index_t he);
+
+
+struct CHE
+{
+	size_t n_vertices = 0;
+	size_t n_faces = 0;
+	size_t n_half_edges = 0;
+
+	vertex * GT	= nullptr;
+	vertex * VN	= nullptr;
+	che::rgb_t * VC	= nullptr;
+	index_t * VT	= nullptr;
+	index_t * OT	= nullptr;
+	index_t * EVT	= nullptr;
+
+	CHE() = default;
+	CHE(const che * mesh);
+};
+
 
 void cuda_create_CHE(CHE * h_che, CHE *& dd_che, CHE *& d_che, const bool & normal = false, const bool & color = false);
 

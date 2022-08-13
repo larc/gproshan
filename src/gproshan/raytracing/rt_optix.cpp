@@ -3,17 +3,12 @@
 
 #ifdef GPROSHAN_OPTIX
 
-#include <gproshan/mesh/che.cuh>
 
 #include <cstring>
 #include <fstream>
 #include <random>
 
 #include <optix_function_table_definition.h>
-
-#include <glm/glm.hpp>
-#include <glm/gtx/string_cast.hpp>
-#include <glm/gtc/type_ptr.hpp>
 
 
 // geometry processing and shape analysis framework
@@ -46,7 +41,7 @@ void optix_log(unsigned int level, const char * tag, const char * message, void 
 	fprintf(stderr, "OptiX [%2u][%12s]: %s\n", level, tag, message);
 }
 
-optix::optix(const std::vector<che *> & meshes, const std::vector<glm::mat4> & model_mats)
+optix::optix(const std::vector<che *> & meshes, const std::vector<mat4> & model_mats)
 {
 	optixInit();
 
@@ -119,7 +114,7 @@ optix::~optix()
 		cuda_free_CHE(dd_mesh[i], d_mesh[i]);
 }
 
-void optix::render(glm::vec4 * img, const render_params & params, const bool & flat)
+void optix::render(vec4 * img, const render_params & params, const bool & flat)
 {
 	if(params.restart)
 	{
@@ -142,15 +137,13 @@ void optix::render(glm::vec4 * img, const render_params & params, const bool & f
 		optix_params.viewport_x = params.viewport_x;
 		optix_params.viewport_y = params.viewport_y;
 
-		cudaMalloc(&optix_params.color_buffer, params.viewport_width * params.viewport_height * sizeof(glm::vec4));
+		cudaMalloc(&optix_params.color_buffer, params.viewport_width * params.viewport_height * sizeof(vec4));
 	}
-
-	glm::mat4 inv_proj_view = glm::inverse(params.proj_view_mat);
 
 	optix_params.flat = flat;
 	memcpy(optix_params.light, &params.lights[0], sizeof(optix_params.light));
 	memcpy(optix_params.cam_pos, &params.cam_pos, sizeof(optix_params.cam_pos));
-	memcpy(optix_params.inv_proj_view, glm::value_ptr(inv_proj_view), sizeof(optix_params.inv_proj_view));
+	memcpy(optix_params.inv_proj_view, &params.inv_proj_view, sizeof(optix_params.inv_proj_view));
 
 	cudaMemcpy(launch_params_buffer, &optix_params, sizeof(launch_params), cudaMemcpyHostToDevice);
 
@@ -166,7 +159,7 @@ void optix::render(glm::vec4 * img, const render_params & params, const bool & f
 
 	cudaDeviceSynchronize();
 
-	cudaMemcpy(img, optix_params.color_buffer, params.viewport_width * params.viewport_height * sizeof(glm::vec4), cudaMemcpyDeviceToHost);
+	cudaMemcpy(img, optix_params.color_buffer, params.viewport_width * params.viewport_height * sizeof(vec4), cudaMemcpyDeviceToHost);
 }
 
 void optix::create_raygen_programs()
@@ -343,7 +336,7 @@ void optix::build_sbt()
 	sbt.hitgroupRecordCount			= hitgroup_records.size();
 }
 
-OptixTraversableHandle optix::build_as(const std::vector<che *> & meshes, const std::vector<glm::mat4> & model_mats)
+OptixTraversableHandle optix::build_as(const std::vector<che *> & meshes, const std::vector<mat4> & model_mats)
 {
 	OptixTraversableHandle optix_as_handle = {};
 
@@ -420,7 +413,7 @@ OptixTraversableHandle optix::build_as(const std::vector<che *> & meshes, const 
 	return optix_as_handle;
 }
 
-void optix::add_mesh(OptixBuildInput & optix_mesh, CUdeviceptr & d_vertex_ptr, uint32_t & optix_trig_flags, const che * mesh, const glm::mat4 & model_mat)
+void optix::add_mesh(OptixBuildInput & optix_mesh, CUdeviceptr & d_vertex_ptr, uint32_t & optix_trig_flags, const che * mesh, const mat4 & model_mat)
 {
 	CHE * dd_m, * d_m;
 	CHE h_m(mesh);
@@ -429,14 +422,9 @@ void optix::add_mesh(OptixBuildInput & optix_mesh, CUdeviceptr & d_vertex_ptr, u
 	dd_mesh.push_back(dd_m);
 	d_mesh.push_back(d_m);
 
-	float h_transform[12] = {	model_mat[0][0], model_mat[1][0], model_mat[2][0], model_mat[3][0],
-								model_mat[0][1], model_mat[1][1], model_mat[2][1], model_mat[3][1],
-								model_mat[0][2], model_mat[1][2], model_mat[2][2], model_mat[3][2],
-								};
-
-	float * d_transform = nullptr;
-	cudaMalloc(&d_transform, sizeof(h_transform));
-	cudaMemcpy(d_transform, h_transform, sizeof(h_transform), cudaMemcpyHostToDevice);
+	float * d_model_mat = nullptr;
+	cudaMalloc(&d_model_mat, sizeof(model_mat));
+	cudaMemcpy(d_model_mat, &model_mat, sizeof(model_mat), cudaMemcpyHostToDevice);
 
 	d_vertex_ptr = (CUdeviceptr) dd_m->GT;
 
@@ -454,7 +442,7 @@ void optix::add_mesh(OptixBuildInput & optix_mesh, CUdeviceptr & d_vertex_ptr, u
 	optix_mesh.triangleArray.indexBuffer			= (CUdeviceptr) dd_m->VT;
 
 	optix_mesh.triangleArray.transformFormat		= OPTIX_TRANSFORM_FORMAT_MATRIX_FLOAT12;
-	optix_mesh.triangleArray.preTransform			= (CUdeviceptr) d_transform;
+	optix_mesh.triangleArray.preTransform			= (CUdeviceptr) d_model_mat;
 
 	optix_trig_flags = 0;
 

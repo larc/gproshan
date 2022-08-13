@@ -36,13 +36,13 @@ class che_viewer
 		GLuint vbo[6];
 
 	public:
-		int vx, vy;							///< viewport positions.
+		int vx = 0, vy = 0;							///< viewport positions.
 		std::vector<index_t> selected;
 		std::vector<vertex> selected_xyz;
 		rt::raytracing * rt_embree	= nullptr;
 		rt::raytracing * rt_optix	= nullptr;
 
-		glm::mat4 model_mat		= glm::mat4(1);
+		mat4 model_mat = mat4::identity();
 
 		index_t idx_colormap	= 1;		// colormap index defined in shaders/colormap.glsl
 		index_t point_size		= 1;
@@ -77,10 +77,7 @@ class che_viewer
 		void draw_point_cloud(shader & program);
 		void draw_selected_vertices(che_viewer & sphere, shader & program);
 
-		void translate(const vertex & p);
-		void scale(const real_t & s);
-
-		void select(const index_t & x, const index_t & y, const glm::uvec2 & windows_size, const glm::mat4 & proj_view_mat, const vertex & cam_pos);
+		void select(const index_t & x, const index_t & y, const ivec2 & windows_size, const mat4 & inv_proj_view_mat, const vertex & cam_pos);
 
 		void log_info();
 };

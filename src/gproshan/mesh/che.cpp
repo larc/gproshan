@@ -3,6 +3,7 @@
 #include <cassert>
 #include <cstring>
 #include <cmath>
+#include <algorithm>
 
 
 using namespace std;
@@ -12,42 +13,22 @@ using namespace std;
 namespace gproshan {
 
 
-size_t & rw(const size_t & n)
+size_t & che::rw(const size_t & n)
 {
 	return const_cast<size_t&>(n);
 }
 
-index_t trig(const index_t & he)
+
+unsigned char & che::rgb_t::operator [] (const index_t & i)
 {
-	if(he == NIL) return NIL;
-	return he / che::mtrig;
+	return (&r)[i];
 }
 
-index_t next(const index_t & he)
+che::rgb_t::operator vertex () const
 {
-	if(he == NIL) return NIL;
-	return che::mtrig * trig(he) + (he + 1) % che::mtrig;
+	return {float(r) / 255, float(g) / 255, float(b) / 255};
 }
 
-index_t prev(const index_t & he)
-{
-	if(he == NIL) return NIL;
-	return che::mtrig * trig(he) + (he + che::mtrig - 1) % che::mtrig;
-}
-
-CHE::CHE(const che * mesh)
-{
-	n_vertices = mesh->n_vertices;
-	n_faces = mesh->n_faces;
-	n_half_edges = mesh->n_half_edges;
-
-	GT = (vertex_cu *) mesh->GT;
-	VN = (vertex_cu *) mesh->VN;
-	VC = mesh->VC;
-	VT = mesh->VT;
-	OT = mesh->OT;
-	EVT = mesh->EVT;
-}
 
 che::che(const che & mesh)
 {
@@ -112,7 +93,7 @@ vertex & che::normal(const index_t & v)
 vertex che::shading_normal(const index_t & f, const float & u, const float & v) const
 {
 	const index_t & he = f * che::mtrig;
-	return u * VN[VT[he]] + v * VN[VT[he + 1]] + (1 - u - v) * VN[VT[he + 2]];
+	return normalize(u * VN[VT[he]] + v * VN[VT[he + 1]] + (1 - u - v) * VN[VT[he + 2]]);
 }
 
 vertex che::normal_trig(const index_t & f) const
@@ -141,14 +122,11 @@ vertex che::gradient_he(const index_t & he, const real_t * f) const
 
 	vertex n = normal_he(he);
 
-	real_t A2 = area_trig(trig(he)) * 2;
-
 	vertex pij = n * (xj - xi);
 	vertex pjk = n * (xk - xj);
 	vertex pki = n * (xi - xk);
 
-	vertex g = (f[i] * pjk + f[j] * pki + f[k] * pij) / A2;
-	return g / *g;
+	return normalize(f[i] * pjk + f[j] * pki + f[k] * pij);
 }
 
 vertex che::gradient(const index_t & v, const real_t * f)
@@ -233,7 +211,7 @@ void che::normalize_sphere(const real_t & r)
 	for(index_t v = 0; v < n_vertices; ++v)
 	{
 		GT[v] -= center;
-		max_norm = std::max(max_norm, *GT[v]);
+		max_norm = std::max(max_norm, norm(GT[v]));
 	}
 
 	#pragma omp parallel for
@@ -241,110 +219,65 @@ void che::normalize_sphere(const real_t & r)
 		GT[v] *= r / max_norm;
 }
 
-void che::merge(const che * mesh, const vector<index_t> & com_vertices)
+mat4 che::normalize_box(const real_t & side) const
 {
-	// TODO
-//	write_file("big.off");
-//	mesh->write_file("small.off");
-gproshan_debug(fill_holes);
-	size_t ncv = com_vertices.size();
-	bool is_open = mesh->VT[next(mesh->EVT[0])] >= ncv;
-	gproshan_debug_var(is_open);
+	vertex pmin = INFINITY;
+	vertex pmax = 0;
 
-	size_t nv = n_vertices + mesh->n_vertices - ncv;
-	size_t nf = n_faces + mesh->n_faces;
-	size_t nh = n_half_edges + mesh->n_half_edges;
-	size_t ne = n_edges + mesh->n_edges - (ncv - is_open);
-
-	vertex * aGT = new vertex[nv];
-	index_t * aVT = new index_t[nh];
-	index_t * aOT = new index_t[nh];
-	index_t * aEVT = new index_t[nv];
-	index_t * aET = new index_t[ne];
-	index_t * aEHT = new index_t[nh];
-
-gproshan_debug(fill_holes);
-	memcpy(aGT, GT, sizeof(vertex) * n_vertices);
-	memcpy(aGT + n_vertices, mesh->GT + ncv, sizeof(vertex) * (nv - n_vertices));
-
-	memcpy(aVT, VT, sizeof(index_t) * n_half_edges);
-
-	index_t * t_aVT = aVT + n_half_edges;
-	for(index_t he = 0; he < mesh->n_half_edges; ++he)
-		t_aVT[he] = mesh->VT[he] < ncv ? com_vertices[mesh->VT[he]] : mesh->VT[he] + n_vertices - ncv;
-gproshan_debug(fill_holes);
-
-	memcpy(aOT, OT, sizeof(index_t) * n_half_edges);
-gproshan_debug(fill_holes);
-
-	index_t * t_aOT = aOT + n_half_edges;
-	for(index_t he = 0; he < mesh->n_half_edges; ++he)
-		t_aOT[he] = mesh->OT[he] != NIL ? mesh->OT[he] + n_half_edges : NIL;
-gproshan_debug(fill_holes);
-
-	for(index_t v, he_v, he_i, i = 0; i < ncv; ++i)
+	for(index_t v = 0; v < n_vertices; ++v)
 	{
-		he_i = mesh->EVT[i];
-		if(he_i != NIL && mesh->VT[next(he_i)] < ncv)
-		{
-			v = com_vertices[mesh->VT[next(he_i)]];
-			he_v = EVT[v];
-			aOT[he_v] = he_i + n_half_edges;
-			aOT[aOT[he_v]] = he_v;
-		}
+		const vertex & p = point(v);
+
+		pmin.x() = min(pmin.x(), p.x());
+		pmin.y() = min(pmin.y(), p.y());
+		pmin.z() = min(pmin.z(), p.z());
+
+		pmax.x() = max(pmax.x(), p.x());
+		pmax.y() = max(pmax.y(), p.y());
+		pmax.z() = max(pmax.z(), p.z());
 	}
 
-gproshan_debug(fill_holes);
-	memcpy(aEVT, EVT, sizeof(index_t) * n_vertices);
-gproshan_debug(fill_holes);
-	if(is_open)
-		aEVT[com_vertices[0]] = mesh->EVT[0] != NIL ? mesh->EVT[0] + n_half_edges : NIL;
+	mat4 model_mat;
 
-gproshan_debug(fill_holes);
-	index_t * t_aEVT = aEVT + n_vertices;
-	for(index_t v = ncv; v < mesh->n_vertices; ++v)
-		t_aEVT[v - ncv] = mesh->EVT[v] != NIL ? mesh->EVT[v] + n_half_edges : NIL;
-gproshan_debug(fill_holes);
+	const real_t & scale = side / std::max({pmax.x() - pmin.x(), pmax.y() - pmin.y(), pmax.z() - pmin.z()});
+	model_mat(0, 0) = model_mat(1, 1) = model_mat(2, 2) = scale;
 
-	memcpy(aET, ET, sizeof(index_t) * n_edges);
-gproshan_debug(fill_holes);
+	const vertex & translate = - scale * (pmax + pmin) / 2;
+	model_mat(0, 3) = translate.x();
+	model_mat(1, 3) = translate.y();
+	model_mat(2, 3) = translate.z();
+	model_mat(3, 3) = 1;
 
-	bool * common_edge = new bool[mesh->n_edges];
-	memset(common_edge, 0, sizeof(bool) * mesh->n_edges);
-	for(index_t he_i, i = 0; i < ncv; ++i)
-	{
-		he_i = mesh->EVT[i];
-		if(he_i != NIL && mesh->VT[next(he_i)] < ncv)
-			common_edge[mesh->EHT[he_i]] = true;
-	}
+	return model_mat;
+}
 
-	index_t ae = n_edges;
-	for(index_t e = 0; e < mesh->n_edges; ++e)
-		if(!common_edge[e])
-			aET[ae++] = mesh->ET[e] + n_half_edges;
+///< vcommon correspond to the first vertices of the mesh with indices to the main mesh (this)
+che * che::merge(const che * mesh, const vector<index_t> & vcommon)
+{
+	const size_t & n_vcommon = vcommon.size();
+	const size_t & n_vnew = mesh->n_vertices - n_vcommon;
 
-	gproshan_debug_var(ae == ne);
-	gproshan_debug_var(ae);
-	gproshan_debug_var(ne);
-	assert(ae == ne);
-	delete [] common_edge;
-gproshan_debug(fill_holes);
-	free();
+	che * new_mesh = new che(n_vertices + n_vnew, n_faces + mesh->n_faces);
 
-gproshan_debug(fill_holes);
-	GT	= aGT;
-	VT	= aVT;
-	OT	= aOT;
-	EVT	= aEVT;
-	ET	= aET;
-	EHT	= aEHT;
+	memcpy(new_mesh->GT, GT, sizeof(vertex) * n_vertices);
+	memcpy(new_mesh->GT + n_vertices, mesh->GT + n_vcommon, sizeof(vertex) * n_vnew);
+	memcpy(new_mesh->VC, VC, sizeof(rgb_t) * n_vertices);
+	memcpy(new_mesh->VC + n_vertices, mesh->VC + n_vcommon, sizeof(rgb_t) * n_vnew);
+	memcpy(new_mesh->VHC, VHC, sizeof(real_t) * n_vertices);
+	memcpy(new_mesh->VHC + n_vertices, mesh->VHC + n_vcommon, sizeof(real_t) * n_vnew);
 
-	rw(n_vertices)		= nv;
-	rw(n_faces)			= nf;
-	rw(n_half_edges)	= nh;
-	rw(n_edges)			= ne;
+	memcpy(new_mesh->VT, VT, sizeof(index_t) * n_half_edges);
 
-	update_eht();
+	index_t * tVT = new_mesh->VT + n_half_edges;
+	for(index_t he = 0; he < mesh->n_half_edges; ++he)
+		tVT[he] = mesh->VT[he] < vcommon.size() ? vcommon[mesh->VT[he]] : mesh->VT[he] + n_vertices - n_vcommon;
+
+	new_mesh->update_evt_ot_et();
+	new_mesh->update_eht();
+
+	new_mesh->update_normals();
+
+	return new_mesh;
 }
 
 void che::update_vertices(const vertex * positions, const size_t & n, const index_t & v_i)
@@ -380,7 +313,7 @@ void che::update_normals()
 		for(const index_t & he: star(v))
 			n += area_trig(trig(he)) * normal_he(he);
 
-		n /= *n;
+		n /= norm(n);
 	}
 }
 
@@ -830,7 +763,7 @@ size_t che::max_degree() const
 	for(index_t v = 0; v < n_vertices; ++v)
 	{
 		d = 0;
-		for(const index_t & he: star(v)) ++d;
+		for([[maybe_unused]] const index_t & he: star(v)) ++d;
 		d += is_vertex_bound(v);
 		md = max(md, d);
 	}
@@ -855,7 +788,7 @@ real_t che::mean_edge() const
 
 	#pragma omp parallel for reduction(+: m)
 	for(index_t e = 0; e < n_edges; ++e)
-		m += *(GT[VT[ET[e]]] - GT[VT[next(ET[e])]]);
+		m += norm(GT[VT[ET[e]]] - GT[VT[next(ET[e])]]);
 
 	return m / n_edges;
 }
@@ -947,7 +880,7 @@ real_t che::cotan(const index_t & he) const
 	vertex a = GT[VT[he]] - GT[VT[prev(he)]];
 	vertex b = GT[VT[next(he)]] - GT[VT[prev(he)]];
 
-	return (a, b) / *(a * b);
+	return (a, b) / norm(a * b);
 }
 
 // https://www.mathworks.com/help/pde/ug/pdetriq.html
@@ -958,9 +891,9 @@ real_t che::pdetriq(const index_t & t) const
 {
 	index_t he = t * che::mtrig;
 	real_t h[3] = {
-						*(GT[VT[next(he)]] - GT[VT[he]]),
-						*(GT[VT[prev(he)]] - GT[VT[next(he)]]),
-						*(GT[VT[he]] - GT[VT[prev(he)]])
+					norm(GT[VT[next(he)]] - GT[VT[he]]),
+					norm(GT[VT[prev(he)]] - GT[VT[next(he)]]),
+					norm(GT[VT[he]] - GT[VT[prev(he)]])
 					};
 	return (4 * sqrt(3) * area_trig(t)) / (h[0] * h[0] + h[1] * h[1] + h[2] * h[2]);
 }
@@ -971,7 +904,7 @@ real_t che::area_trig(const index_t & t) const
 	vertex a = GT[VT[next(he)]] - GT[VT[he]];
 	vertex b = GT[VT[prev(he)]] - GT[VT[he]];
 
-	return *(a * b) / 2;
+	return norm(a * b) / 2;
 }
 
 real_t che::area_vertex(const index_t & v) const
@@ -992,7 +925,7 @@ real_t che::mean_curvature(const index_t & v) const
 	for(const index_t & he: star(v))
 	{
 		a += area_trig(trig(he));
-		h += *(GT[VT[next(he)]] - GT[v]) * (normal(v), normal_he(he));
+		h += norm(GT[VT[next(he)]] - GT[v]) * (normal(v), normal_he(he));
 	}
 
 	return 0.75 * h / a;
@@ -1158,6 +1091,40 @@ vector<index_t> che::trig_convex_polygon(const index_t * P, const size_t & n)
 	}
 
 	return trigs;
+}
+
+
+// iterator classes methods
+
+che::star_he::star_he(const che * p_mesh, const index_t & p_v): mesh(p_mesh), v(p_v) {}
+
+che::star_he::iterator che::star_he::begin() const
+{
+	return {mesh, mesh->EVT[v], mesh->EVT[v]};
+}
+
+che::star_he::iterator che::star_he::end() const
+{
+	return {nullptr, NIL, NIL};
+}
+
+che::star_he::iterator::iterator(const che * p_mesh, const index_t & p_he, const index_t & p_he_end): mesh(p_mesh), he(p_he), he_end(p_he_end) {}
+
+che::star_he::iterator & che::star_he::iterator::operator ++ ()
+{
+	he = mesh->OT[prev(he)];
+	he = he != he_end ? he : NIL;
+	return *this;
+}
+
+bool che::star_he::iterator::operator != (const iterator & it) const
+{
+	return he != it.he;
+}
+
+const index_t & che::star_he::iterator::operator * ()
+{
+	return he;
 }
 
 

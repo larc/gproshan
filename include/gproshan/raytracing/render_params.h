@@ -3,13 +3,14 @@
 
 
 #include <gproshan/include.h>
-
-#include <glm/glm.hpp>
+#include <gproshan/geometry/mat.h>
 
 
 // geometry processing and shape analysis framework
 namespace gproshan::rt {
 
+
+const unsigned int max_lights = 16;
 
 struct render_params
 {
@@ -21,9 +22,19 @@ struct render_params
 	int viewport_y = 0;
 	bool restart = false;
 	bool viewport_is_window = true;
-	glm::mat4 proj_view_mat;
 	vertex cam_pos;
-	std::vector<vertex> lights;
+	vertex lights[16];
+	unsigned int n_lights = 0;
+	mat4 inv_proj_view;
+
+	bool add_light(const vertex & light)
+	{
+		if(n_lights == max_lights)
+			return false;
+
+		lights[n_lights++] = light;
+		return true;
+	}
 };
 
 

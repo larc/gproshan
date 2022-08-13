@@ -1,10 +1,9 @@
 #ifndef VIEWER_H
 #define VIEWER_H
 
-#include <map>
 #include <cstring>
-
-#include <glm/glm.hpp>
+#include <functional>
+#include <map>
 
 #include <gproshan/viewer/camera.h>
 #include <gproshan/viewer/shader.h>
@@ -25,8 +24,6 @@
 	#define ImGui_InputReal ImGui::InputDouble
 	#define ImGuiDataType_Real ImGuiDataType_Double
 #endif // GPROSHAN_FLOAT
-
-#define N_MESHES 12
 
 
 // geometry processing and shape analysis framework
@@ -51,8 +48,11 @@ class viewer
 			process_t(const std::string & k, const std::string & n, function_t f, const index_t & sm = NIL): key(k), name(n), function(f), sub_menu(sm) {};
 		};
 
-		static const int m_window_size[N_MESHES + 1][2];
+		static const std::vector<ivec2> m_window_split;
+		static const size_t max_n_meshes;
 		static const std::vector<std::string> colormap;
+
+		bool apply_all_meshes = false;
 
 
 		GLFWwindow * window = nullptr;
@@ -61,6 +61,7 @@ class viewer
 		int & window_height = render_params.window_height;
 		int & viewport_width = render_params.viewport_width;
 		int & viewport_height = render_params.viewport_height;
+		mat4 proj_view_mat;
 
 		bool hide_imgui = false;
 
@@ -74,7 +75,7 @@ class viewer
 
 		double render_time = 0;
 
-		che_viewer meshes[N_MESHES];
+		che_viewer * meshes = nullptr;
 		size_t n_meshes	= 0;
 		index_t idx_active_mesh = 0;
 
@@ -99,7 +100,7 @@ class viewer
 
 		che_viewer & active_mesh();
 		void add_process(const int & key, const std::string & skey, const std::string & name, const function_t & f);
-		void add_mesh(che * p_mesh);
+		bool add_mesh(che * p_mesh);
 
 	protected:
 		virtual bool run();
@@ -155,7 +156,8 @@ class viewer
 
 		static bool m_raycasting(viewer * view);
 
-		void pick_vertex(const real_t & x, const real_t & y);
+		void pick_vertex(const int & x, const int & y);
+		void check_apply_all_meshes(const std::function<void(che_viewer &)> & fun);
 };
 
 
