@@ -130,13 +130,26 @@ bool app_viewer::process_simulate_scanner(viewer * p_view)
 	static size_t n_cols = 2000;
 	static const size_t n_min = 1000;
 	static const size_t n_max = 1000000;
+	static vertex cam_pos = {0, 0, 0};
+
+	if(view->sphere_points.size() != 1)
+	{
+		view->sphere_points.clear();
+		view->sphere_points.push_back(cam_pos);
+	}
 
 	ImGui::SliderScalar("n_rows", ImGuiDataType_U64, &n_rows, &n_min, &n_max);
 	ImGui::SliderScalar("n_cols", ImGuiDataType_U64, &n_cols, &n_min, &n_max);
+	if(	ImGui_InputReal("cam_pos.x", &cam_pos.x(), 0.001, 2, "%.3lf") ||
+		ImGui_InputReal("cam_pos.y", &cam_pos.y(), 0.001, 2, "%.3lf") ||
+		ImGui_InputReal("cam_pos.z", &cam_pos.z(), 0.001, 2, "%.3lf") )
+	{
+		view->sphere_points[0] = cam_pos;
+	}
 
 	if(ImGui::Button("Scan"))
 	{
-		che * ptx_mesh = scanner_ptx(mesh, mesh.rt_embree, n_rows, n_cols, {0, 0, 0});
+		che * ptx_mesh = scanner_ptx(mesh, mesh.rt_embree, n_rows, n_cols, cam_pos);
 		che_ptx::write_file(ptx_mesh, mesh->filename, n_rows, n_cols);
 		view->add_mesh(ptx_mesh);
 	}
@@ -875,7 +888,7 @@ bool app_viewer::process_fill_holes(viewer * p_view)
 			if(angle <= M_PI)
 				front.push({angle, p.x()});
 		};
-		
+
 		index_t nv = vertices.size();
 		push({0, nv - 1, 1});
 		for(index_t i = 1; i < vertices.size() - 1; ++i)
