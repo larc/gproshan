@@ -407,7 +407,7 @@ void viewer::window_size_callback(GLFWwindow * window, int width, int height)
 void viewer::keyboard_callback(GLFWwindow * window, int key, int, int action, int)
 {
 	if(ImGui::GetIO().WantCaptureKeyboard) return;
-	
+
 	if(action == GLFW_RELEASE) return;
 
 	viewer * view = (viewer *) glfwGetWindowUserPointer(window);
@@ -424,12 +424,12 @@ void viewer::keyboard_callback(GLFWwindow * window, int key, int, int action, in
 void viewer::mouse_callback(GLFWwindow * window, int button, int action, int mods)
 {
 	if(ImGui::GetIO().WantCaptureMouse) return;
-	
+
 	viewer * view = (viewer *) glfwGetWindowUserPointer(window);
 
 	double xpos, ypos;
 	glfwGetCursorPos(window, &xpos, &ypos);
-	
+
 	if(button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE)
 	{
 		float xscale, yscale;
@@ -441,11 +441,11 @@ void viewer::mouse_callback(GLFWwindow * window, int button, int action, int mod
 		const index_t & idx_mesh = cols * (iy / view->viewport_height) + ix / view->viewport_width;
 		if(idx_mesh < view->n_meshes)
 			view->idx_active_mesh = idx_mesh;
-		
+
 		if(mods == GLFW_MOD_SHIFT)
 			view->pick_vertex(ix % view->viewport_width, iy % view->viewport_height);
 	}
-	
+
 	if(button == GLFW_MOUSE_BUTTON_LEFT)
 		view->cam.mouse(action == GLFW_PRESS, xpos, ypos, view->window_width, view->window_height);
 }
@@ -562,7 +562,6 @@ bool viewer::m_save_load_view(viewer * view)
 
 bool viewer::m_reset_mesh(viewer * view)
 {
-	view->other_vertices.clear();
 	view->vectors.clear();
 
 	view->check_apply_all_meshes([&](che_viewer & mesh)
@@ -657,7 +656,7 @@ bool viewer::m_bgc_inc(viewer * view)
 	if(view->bgc < 1) view->bgc += 0.05;
 	else view->bgc = 1;
 
-	glClearColor(view->bgc, view->bgc, view->bgc, 1.);
+	glClearColor(view->bgc, view->bgc, view->bgc, 1);
 
 	return false;
 }
@@ -667,7 +666,7 @@ bool viewer::m_bgc_dec(viewer * view)
 	if(view->bgc > 0) view->bgc -= 0.05;
 	else view->bgc = 0;
 
-	glClearColor(view->bgc, view->bgc, view->bgc, 1.);
+	glClearColor(view->bgc, view->bgc, view->bgc, 1);
 
 	return false;
 }
@@ -675,7 +674,7 @@ bool viewer::m_bgc_dec(viewer * view)
 bool viewer::m_bgc_white(viewer * view)
 {
 	view->bgc = 1;
-	glClearColor(view->bgc, view->bgc, view->bgc, 1.);
+	glClearColor(view->bgc, view->bgc, view->bgc, 1);
 
 	return false;
 }
@@ -683,7 +682,7 @@ bool viewer::m_bgc_white(viewer * view)
 bool viewer::m_bgc_black(viewer * view)
 {
 	view->bgc = 0;
-	glClearColor(view->bgc, view->bgc, view->bgc, 1.);
+	glClearColor(view->bgc, view->bgc, view->bgc, 1);
 
 	return false;
 }
@@ -932,6 +931,13 @@ void viewer::render_gl()
 			mesh.draw(shader_gradient);
 
 		mesh.draw_selected_vertices(sphere, shader_sphere);
+
+		if(sphere_points.size())
+		{
+			sphere.model_mat = mat4::identity();
+			sphere.update_instances_positions(sphere_points);
+			sphere.draw(shader_sphere);
+		}
 	}
 
 	render_params.restart = false;

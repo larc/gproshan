@@ -87,8 +87,8 @@ class viewer
 
 		che_viewer sphere;
 		shader shader_sphere;
+		std::vector<vertex> sphere_points;
 
-		std::vector<vertex> other_vertices;
 		std::vector<vertex> vectors;
 		std::vector<std::string> sub_menus;
 
