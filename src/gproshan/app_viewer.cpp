@@ -39,8 +39,6 @@ che * app_viewer::load_mesh(const string & file_path)
 
 int app_viewer::main(int nargs, const char ** args)
 {
-	gproshan_error_var(sizeof(vec2));
-	gproshan_error_var(sizeof(vec3));
 	if(nargs < 2)
 	{
 		printf("%s [mesh_paths.(off,obj,ply)]\n", args[0]);

@@ -656,7 +656,7 @@ bool viewer::m_bgc_inc(viewer * view)
 	if(view->bgc < 1) view->bgc += 0.05;
 	else view->bgc = 1;
 
-	glClearColor(view->bgc, view->bgc, view->bgc, 1.);
+	glClearColor(view->bgc, view->bgc, view->bgc, 1);
 
 	return false;
 }
@@ -666,7 +666,7 @@ bool viewer::m_bgc_dec(viewer * view)
 	if(view->bgc > 0) view->bgc -= 0.05;
 	else view->bgc = 0;
 
-	glClearColor(view->bgc, view->bgc, view->bgc, 1.);
+	glClearColor(view->bgc, view->bgc, view->bgc, 1);
 
 	return false;
 }
@@ -674,7 +674,7 @@ bool viewer::m_bgc_dec(viewer * view)
 bool viewer::m_bgc_white(viewer * view)
 {
 	view->bgc = 1;
-	glClearColor(view->bgc, view->bgc, view->bgc, 1.);
+	glClearColor(view->bgc, view->bgc, view->bgc, 1);
 
 	return false;
 }
@@ -682,7 +682,7 @@ bool viewer::m_bgc_white(viewer * view)
 bool viewer::m_bgc_black(viewer * view)
 {
 	view->bgc = 0;
-	glClearColor(view->bgc, view->bgc, view->bgc, 1.);
+	glClearColor(view->bgc, view->bgc, view->bgc, 1);
 
 	return false;
 }
