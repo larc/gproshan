@@ -70,6 +70,8 @@ viewer::viewer(const int & width, const int & height)
 
 	frames = new frame[max_n_meshes];
 	meshes = new che_viewer[max_n_meshes];
+
+	render_params.add_light({-1, 1, -2});
 }
 
 viewer::~viewer()
@@ -94,7 +96,7 @@ bool viewer::run()
 
 		const quaternion & r = cam.current_rotation();
 
-		cam_light = vertex{-1, 1, -2};
+		cam_light = render_params.lights[0];
 		cam_light = r.conj() * cam_light * r;
 
 		proj_view_mat = camera::perspective(45, real_t(viewport_width) / real_t(viewport_height), 0.01, 1000) * cam.look_at(r);
@@ -200,6 +202,15 @@ void viewer::imgui()
 			ImGui::Unindent();
 		}
 	}
+
+	if(ImGui::CollapsingHeader("Scene Lights"))
+	{
+		for(index_t i = 0; i < render_params.n_lights; ++i)
+		{
+			ImGui::DragScalarN("", ImGuiDataType_Real, &render_params.lights[i], 3);
+		}
+	}
+	
 
 	for(auto & p: processes)
 	{
@@ -955,14 +966,6 @@ void viewer::render_rt(che_viewer & mesh, frame & rt_frame)
 
 	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, rt_frame);
 	vec4 * img = (vec4 *) glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_READ_WRITE);
-
-	render_params.n_lights = 0;;
-
-	for(const index_t & v: mesh.selected)
-		render_params.add_light(mesh->point(v));
-
-	if(!render_params.n_lights)
-		render_params.add_light(cam_light);
 
 	//render_params.viewport_x = mesh.vx * viewport_width;
 	//render_params.viewport_y = mesh.vy * viewport_height;

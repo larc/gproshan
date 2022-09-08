@@ -309,7 +309,7 @@ vec4 embree::li(ray_hit r, const vertex & light, const bool & flat)
 
 		L += r.ray.tfar * li(light, position, normal, color, near);
 
-		r = ray_hit(r.position(), r.dir());
+//		r = ray_hit(r.position(), r.dir());
 //		if(!intersect(r))
 //			break;
 	}
