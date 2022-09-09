@@ -203,14 +203,23 @@ void viewer::imgui()
 		}
 	}
 
+	static char slight[32];
 	if(ImGui::CollapsingHeader("Scene Lights"))
 	{
 		for(index_t i = 0; i < render_params.n_lights; ++i)
 		{
-			ImGui::DragScalarN("", ImGuiDataType_Real, &render_params.lights[i], 3);
+			sprintf(slight, "light %d", i);
+			ImGui::DragScalarN(slight, ImGuiDataType_Real, &render_params.lights[i], 3);
 		}
+
+		if(ImGui::Button("add light"))
+			render_params.add_light({0, 0, 0});
+
+		ImGui::SameLine();
+		if(render_params.n_lights > 1 && ImGui::Button("remove light"))
+			--render_params.n_lights;
 	}
-	
+
 
 	for(auto & p: processes)
 	{

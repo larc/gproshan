@@ -141,7 +141,8 @@ void optix::render(vec4 * img, const render_params & params, const bool & flat)
 	}
 
 	optix_params.flat = flat;
-	memcpy(optix_params.light, &params.lights[0], sizeof(optix_params.light));
+	optix_params.n_lights = params.n_lights;
+	memcpy(optix_params.lights, params.lights, sizeof(optix_params.lights));
 	memcpy(optix_params.cam_pos, &params.cam_pos, sizeof(optix_params.cam_pos));
 	memcpy(optix_params.inv_proj_view, &params.inv_proj_view, sizeof(optix_params.inv_proj_view));
 

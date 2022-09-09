@@ -10,8 +10,6 @@
 namespace gproshan::rt {
 
 
-const unsigned int max_lights = 16;
-
 struct render_params
 {
 	int window_width = 0;
@@ -29,7 +27,7 @@ struct render_params
 
 	bool add_light(const vertex & light)
 	{
-		if(n_lights == max_lights)
+		if(n_lights == sizeof(lights) / sizeof(vertex))
 			return false;
 
 		lights[n_lights++] = light;

@@ -71,33 +71,37 @@ extern "C" __global__ void __closesthit__radiance()
 	const vertex cb = {float(mesh.VC[b].r), float(mesh.VC[b].g), float(mesh.VC[b].b)};
 	const vertex cc = {float(mesh.VC[c].r), float(mesh.VC[c].g), float(mesh.VC[c].b)};
 
-	const vertex & light = *(vertex *) optix_params.light;
+	const vertex * lights = (vertex *) optix_params.lights;
 	const vertex color = ((1.f - u - v) * ca + u * cb + v * cc) / 255;
 	const vertex position = (1.f - u - v) * A + u * B + v * C;
 
-	const vertex wi = normalize(light - position);
-	const float dot_wi_normal = (wi, normal);
-
 	vertex & L = *getPRD<vertex>();
-	L = (dot_wi_normal < 0 ? -dot_wi_normal : dot_wi_normal) * color;
 
-	unsigned int occluded = 1;
-	optixTrace( optix_params.traversable,
-				* (float3 *) &position,
-				* (float3 *) &wi,
-				1e-5f,		// tmin
-				1e20f,		// tmax
-				0.0f,		// rayTime
-				OptixVisibilityMask(255),
-				OPTIX_RAY_FLAG_DISABLE_ANYHIT
-				| OPTIX_RAY_FLAG_DISABLE_CLOSESTHIT
-				| OPTIX_RAY_FLAG_TERMINATE_ON_FIRST_HIT,
-				1,	// SBT offset
-				2,	// SBT stride
-				1,	// missSBTIndex
-				occluded);
+	for(int i = 0; i < optix_params.n_lights; ++i)
+	{
+		const vertex wi = normalize(lights[i] - position);
+		const float dot_wi_normal = (wi, normal);
 
-	if(occluded) L = 0.4f * L;
+		unsigned int occluded = 1;
+		optixTrace( optix_params.traversable,
+					* (float3 *) &position,
+					* (float3 *) &wi,
+					1e-5f,		// tmin
+					1e20f,		// tmax
+					0.0f,		// rayTime
+					OptixVisibilityMask(255),
+					OPTIX_RAY_FLAG_DISABLE_ANYHIT
+					| OPTIX_RAY_FLAG_DISABLE_CLOSESTHIT
+					| OPTIX_RAY_FLAG_TERMINATE_ON_FIRST_HIT,
+					1,	// SBT offset
+					2,	// SBT stride
+					1,	// missSBTIndex
+					occluded);
+
+		L += (dot_wi_normal < 0 ? -dot_wi_normal : dot_wi_normal) * (occluded ? 0.4f : 1.0f) * color;
+	}
+
+	L /= optix_params.n_lights;
 }
 
 
