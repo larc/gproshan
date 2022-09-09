@@ -20,11 +20,11 @@ struct launch_params
 	uint32_t window_width, window_height;
 	uint32_t viewport_width, viewport_height;
 	uint32_t viewport_x, viewport_y;
-
-	bool flat;
-	float light[3];
+	uint32_t n_lights = 0;
+	float lights[3][16];
 	float cam_pos[3];
 	float inv_proj_view[16];
+	bool flat;
 
 	OptixTraversableHandle traversable;
 };

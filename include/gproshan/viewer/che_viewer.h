@@ -23,10 +23,17 @@ namespace gproshan {
 
 enum render_type: index_t { R_GL, R_EMBREE, R_OPTIX };
 
+
+struct material
+{
+};
+
+
 class che_viewer
 {
 	protected:
 		che * mesh = nullptr;
+		std::vector<material> materials;
 
 		size_t n_instances = 0;
 		bool center_mesh = false;
