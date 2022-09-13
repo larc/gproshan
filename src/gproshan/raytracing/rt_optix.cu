@@ -79,16 +79,18 @@ extern "C" __global__ void __closesthit__radiance()
 
 	for(int i = 0; i < optix_params.n_lights; ++i)
 	{
-		const vertex wi = normalize(lights[i] - position);
-		const float dot_wi_normal = (wi, normal);
+		vertex wi = lights[i] - position;
+		float light_dist = length(wi);
+		wi /= light_dist;
+		float dot_wi_normal = (wi, normal);
 
 		unsigned int occluded = 1;
 		optixTrace( optix_params.traversable,
 					* (float3 *) &position,
 					* (float3 *) &wi,
-					1e-5f,		// tmin
-					1e20f,		// tmax
-					0.0f,		// rayTime
+					1e-3f,					// tmin
+					light_dist - 1e-3f,		// tmax
+					0.0f,					// rayTime
 					OptixVisibilityMask(255),
 					OPTIX_RAY_FLAG_DISABLE_ANYHIT
 					| OPTIX_RAY_FLAG_DISABLE_CLOSESTHIT
