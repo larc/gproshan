@@ -204,20 +204,33 @@ void viewer::imgui()
 	}
 
 	static char slight[32];
+	static real_t light_min = -2;
+	static real_t light_max = 2;
 	if(ImGui::CollapsingHeader("Scene Lights"))
 	{
 		for(index_t i = 0; i < render_params.n_lights; ++i)
 		{
 			sprintf(slight, "light %d", i);
-			ImGui::DragScalarN(slight, ImGuiDataType_Real, &render_params.lights[i], 3);
+			ImGui::SliderScalarN(slight, ImGuiDataType_Real, &render_params.lights[i], 3, &light_min, &light_max);
 		}
 
 		if(ImGui::Button("add light"))
 			render_params.add_light({0, 0, 0});
 
+		if(render_params.n_lights > 1)
+		{
+			ImGui::SameLine();
+			if(ImGui::Button("remove light"))
+				--render_params.n_lights;
+		}
+
 		ImGui::SameLine();
-		if(render_params.n_lights > 1 && ImGui::Button("remove light"))
-			--render_params.n_lights;
+		if(ImGui::Button("show lights"))
+		{
+			sphere_points.clear();
+			for(index_t i = 0; i < render_params.n_lights; ++i)
+				sphere_points.push_back(render_params.lights[i]);
+		}
 	}
 
 
