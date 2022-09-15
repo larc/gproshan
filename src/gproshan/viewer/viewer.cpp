@@ -208,6 +208,8 @@ void viewer::imgui()
 	static real_t light_max = 2;
 	if(ImGui::CollapsingHeader("Scene Lights"))
 	{
+		ImGui::Indent();
+
 		for(index_t i = 0; i < render_params.n_lights; ++i)
 		{
 			sprintf(slight, "light %d", i);
@@ -231,6 +233,15 @@ void viewer::imgui()
 			for(index_t i = 0; i < render_params.n_lights; ++i)
 				sphere_points.push_back(render_params.lights[i]);
 		}
+
+		if(ImGui::Button("add selected points as lights"))
+		{
+			for(const index_t & v: mesh.selected)
+				if(!render_params.add_light(mesh.model_mat * vec4(mesh->point(v), 1)))
+					break;
+		}
+
+		ImGui::Unindent();
 	}
 
 
