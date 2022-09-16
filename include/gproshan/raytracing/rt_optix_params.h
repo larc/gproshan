@@ -3,6 +3,7 @@
 
 
 #include <gproshan/include.h>
+#include <gproshan/geometry/mat.h>
 
 
 #ifdef GPROSHAN_OPTIX
@@ -16,14 +17,17 @@ namespace gproshan::rt {
 
 struct launch_params
 {
-	void * color_buffer = nullptr;
-	uint32_t window_width, window_height;
-	uint32_t viewport_width, viewport_height;
-	uint32_t viewport_x, viewport_y;
+	vec4 * color_buffer = nullptr;
+	uint32_t window_width = 0;
+	uint32_t window_height = 0;
+	uint32_t viewport_width = 0;
+	uint32_t viewport_height = 0;
+	uint32_t viewport_x = 0;
+	uint32_t viewport_y = 0;
 	uint32_t n_lights = 0;
-	float lights[3][16];
-	float cam_pos[3];
-	float inv_proj_view[16];
+	vec3 lights[16];
+	vec3 cam_pos;
+	mat4 inv_proj_view;
 	bool flat;
 
 	OptixTraversableHandle traversable;
