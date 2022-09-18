@@ -1,4 +1,5 @@
 #include <gproshan/mesh/che.cuh>
+#include <gproshan/raytracing/rt_utils.h>
 #include <gproshan/raytracing/rt_optix_params.h>
 
 
@@ -130,13 +131,11 @@ extern "C" __global__ void __raygen__render_frame()
 	const int ix = optixGetLaunchIndex().x;
 	const int iy = optixGetLaunchIndex().y;
 
-	const float sx = (float(ix + optix_params.viewport_x) + .5f) / optix_params.window_width;
-	const float sy = (float(iy + optix_params.viewport_y) + .5f) / optix_params.window_height;
-
-	vec4 view = {sx * 2 - 1, sy * 2 - 1, 1, 1};
-	vec4 q = optix_params.inv_proj_view * view;
-	vec3 p = q / q[3];
-	vec3 ray_dir = normalize(p - optix_params.cam_pos);
+	const vec3 ray_dir = ray_view_dir(	{ix + optix_params.viewport_x, iy + optix_params.viewport_y},
+										{optix_params.window_width, optix_params.window_height},
+										optix_params.inv_proj_view,
+										optix_params.cam_pos
+										);
 
 	vec4 & pixel_color = optix_params.color_buffer[ix + iy * optix_params.window_width];
 

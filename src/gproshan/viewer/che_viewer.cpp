@@ -232,7 +232,7 @@ void che_viewer::draw_selected_vertices(che_viewer & sphere, shader & program)
 
 void che_viewer::select(const index_t & x, const index_t & y, const ivec2 & windows_size, const mat4 & inv_proj_view_mat, const vertex & cam_pos)
 {
-	const vertex & dir = rt_embree->ray_view_dir(x, windows_size.y() - y, windows_size, inv_proj_view_mat, cam_pos);
+	const vertex & dir = rt::ray_view_dir({x, windows_size.y() - y}, windows_size, inv_proj_view_mat, cam_pos);
 	const index_t & v = rt_embree->closest_vertex(cam_pos, dir);
 
 	if(v != NIL) selected.push_back(v);

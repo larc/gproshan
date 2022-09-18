@@ -3,6 +3,7 @@
 
 #include <gproshan/mesh/che.h>
 #include <gproshan/raytracing/render_params.h>
+#include <gproshan/raytracing/rt_utils.h>
 
 #include <vector>
 #include <map>
@@ -55,12 +56,6 @@ class raytracing
 									const vertex & cam_pos,
 									const index_t & samples = 4
 									);
-
-		vertex ray_view_dir(	const index_t & x, const index_t & y,
-								const ivec2 & windows_size,
-								const mat4 & inv_proj_view,
-								const vertex & cam_pos
-								);
 
 		virtual hit intersect(	const vertex &,	// org
 								const vertex &	//dir
