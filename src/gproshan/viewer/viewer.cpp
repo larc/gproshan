@@ -1018,7 +1018,7 @@ void viewer::pick_vertex(const int & x, const int & y)
 {
 	che_viewer & mesh = active_mesh();
 
-	mesh.select(x, y, {viewport_width, viewport_height}, inverse(proj_view_mat), cam.eye);
+	mesh.select({x, y}, {viewport_width, viewport_height}, inverse(proj_view_mat), cam.eye);
 }
 
 void viewer::check_apply_all_meshes(const std::function<void(che_viewer &)> & fun)

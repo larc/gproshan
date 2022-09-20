@@ -7,7 +7,6 @@
 
 #include <vector>
 #include <map>
-#include <random>
 
 
 // geometry processing and shape analysis framework
@@ -41,9 +40,6 @@ class raytracing
 		std::map<index_t, rt_mesh> geomID_mesh;
 
 		size_t n_samples = 0;
-
-		static std::default_random_engine gen;
-		static std::uniform_real_distribution<float> randf;
 
 	public:
 		raytracing() = default;

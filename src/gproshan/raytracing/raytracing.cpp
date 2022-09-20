@@ -8,9 +8,6 @@
 namespace gproshan::rt {
 
 
-std::default_random_engine raytracing::gen;
-std::uniform_real_distribution<float> raytracing::randf;
-
 void raytracing::render(vec4 * img, const render_params & params, const bool & flat)
 {
 	if(params.restart) n_samples = 0;
