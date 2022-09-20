@@ -62,8 +62,8 @@ extern "C" __global__ void __closesthit__radiance()
 	const vertex & B = data[1];
 	const vertex & C = data[2];
 
-	const vertex Ng = normalize((B - A) * (C - A));
-	const vertex normal = optix_params.flat ? Ng : (1.f - u - v) * mesh.VN[a] + u * mesh.VN[b] + v * mesh.VN[c];
+	const vertex normal = optix_params.flat ? normalize((B - A) * (C - A))
+											: (1.f - u - v) * mesh.VN[a] + u * mesh.VN[b] + v * mesh.VN[c];
 
 	const vertex ca = {float(mesh.VC[a].r), float(mesh.VC[a].g), float(mesh.VC[a].b)};
 	const vertex cb = {float(mesh.VC[b].r), float(mesh.VC[b].g), float(mesh.VC[b].b)};
@@ -113,8 +113,8 @@ extern "C" __global__ void __anyhit__shadow() {}
 
 extern "C" __global__ void __miss__radiance()
 {
-	vec3 & prd = *ray_data<vertex>();
-	prd = {0, 0, 0};
+	vec3 & pixel_color = *ray_data<vertex>();
+	pixel_color = {0, 0, 0};
 }
 
 extern "C" __global__ void __miss__shadow()

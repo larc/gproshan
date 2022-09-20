@@ -14,7 +14,7 @@ template <class T, uint32_t N = 16>
 struct random
 {
 	uint32_t previous;
-	
+
 	__host__ __device__
 	random(uint32_t v0, uint32_t v1)
 	{
