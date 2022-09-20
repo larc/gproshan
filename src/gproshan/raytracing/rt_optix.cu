@@ -16,25 +16,22 @@ extern "C" __constant__ launch_params optix_params;
 static __forceinline__ __device__
 void * unpack_pointer(uint32_t i0, uint32_t i1)
 {
-	const uint64_t uptr = static_cast<uint64_t>(i0) << 32 | i1;
-	void * ptr = reinterpret_cast<void*>(uptr);
-	return ptr;
+	return (void *) (uint64_t(i0) << 32 | i1);
 }
 
 static __forceinline__ __device__
 void pack_pointer(void * ptr, uint32_t & i0, uint32_t & i1)
 {
-	const uint64_t uptr = reinterpret_cast<uint64_t>(ptr);
+	const uint64_t uptr = uint64_t(ptr);
 	i0 = uptr >> 32;
 	i1 = uptr & 0x00000000ffffffff;
 }
 
 template<typename T>
-static __forceinline__ __device__ T * getPRD()
+static __forceinline__ __device__
+T * ray_data()
 {
-	const uint32_t u0 = optixGetPayload_0();
-	const uint32_t u1 = optixGetPayload_1();
-	return reinterpret_cast<T*>(unpack_pointer(u0, u1));
+	return (T *) unpack_pointer(optixGetPayload_0(), optixGetPayload_1());
 }
 
 
@@ -76,7 +73,7 @@ extern "C" __global__ void __closesthit__radiance()
 	const vertex color = ((1.f - u - v) * ca + u * cb + v * cc) / 255;
 	const vertex position = (1.f - u - v) * A + u * B + v * C;
 
-	vertex & L = *getPRD<vertex>();
+	vertex & L = *ray_data<vertex>();
 
 	L = {0, 0, 0};
 	for(int i = 0; i < optix_params.n_lights; ++i)
@@ -116,7 +113,7 @@ extern "C" __global__ void __anyhit__shadow() {}
 
 extern "C" __global__ void __miss__radiance()
 {
-	vec3 & prd = *getPRD<vertex>();
+	vec3 & prd = *ray_data<vertex>();
 	prd = {0, 0, 0};
 }
 
