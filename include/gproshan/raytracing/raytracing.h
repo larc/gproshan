@@ -3,10 +3,10 @@
 
 #include <gproshan/mesh/che.h>
 #include <gproshan/raytracing/render_params.h>
+#include <gproshan/raytracing/rt_utils.h>
 
 #include <vector>
 #include <map>
-#include <random>
 
 
 // geometry processing and shape analysis framework
@@ -41,9 +41,6 @@ class raytracing
 
 		size_t n_samples = 0;
 
-		static std::default_random_engine gen;
-		static std::uniform_real_distribution<float> randf;
-
 	public:
 		raytracing() = default;
 		virtual ~raytracing() = default;
@@ -55,12 +52,6 @@ class raytracing
 									const vertex & cam_pos,
 									const index_t & samples = 4
 									);
-
-		vertex ray_view_dir(	const index_t & x, const index_t & y,
-								const ivec2 & windows_size,
-								const mat4 & inv_proj_view,
-								const vertex & cam_pos
-								);
 
 		virtual hit intersect(	const vertex &,	// org
 								const vertex &	//dir

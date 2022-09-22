@@ -279,45 +279,31 @@ float embree::pointcloud_hit(vertex & position, vertex & normal, vertex & color,
 
 vec4 embree::li(const vertex & light, const vertex & position, const vertex & normal, const vertex & color, const float & near)
 {
-	const vertex wi = normalize(light - position);
-	const float dot_wi_normal = (wi, normal);
-	const vertex L = (dot_wi_normal < 0 ? -dot_wi_normal : dot_wi_normal) * color;
+	vertex wi = light - position;
+	float light_dist = length(wi);
+	wi /= light_dist;
+	float dot_wi_normal = (wi, normal);
 
-	ray_hit r(position, wi, near);
-	return {(occluded(r) ? 0.4f : 1.f) * L, 1};
+	ray_hit r(position, wi, 1e-3f, light_dist - 1e-3f);
+	return (dot_wi_normal < 0 ? -dot_wi_normal : dot_wi_normal) * (occluded(r) ? 0.4f : 1.0f) * color;
 }
 
-vec4 embree::li(ray_hit r, const vertex & light, const bool & flat)
+vec4 embree::li(const ray_hit & r, const vertex & light, const bool & flat)
 {
-	float total_tfar = 0;
+	const vertex & position = r.position();
+	const vertex & normal = r.normal(geomID_mesh[r.hit.geomID], flat);
+	const vertex & color = r.color(geomID_mesh[r.hit.geomID]);
 
-	float near;
-	vertex position, normal, color;
+	vertex wi = light - position;
+	float light_dist = length(wi);
+	wi /= light_dist;
+	float dot_wi_normal = (wi, normal);
 
-	vec4 L(0);
-//	while(total_tfar < 0.1)
-	{
-		total_tfar += r.ray.tfar;
-
-		position = r.position();
-		normal = r.normal(geomID_mesh[r.hit.geomID], flat);
-		color = r.color(geomID_mesh[r.hit.geomID]);
-
-		near = 1e-5f;
-		if(geomID_mesh[r.hit.geomID].pointcloud)
-			near += pointcloud_hit(position, normal, color, r);
-
-		L += r.ray.tfar * li(light, position, normal, color, near);
-
-//		r = ray_hit(r.position(), r.dir());
-//		if(!intersect(r))
-//			break;
-	}
-
-	return L / total_tfar;
+	ray_hit rs(position, wi, 1e-3f, light_dist - 1e-3f);
+	return (dot_wi_normal < 0 ? -dot_wi_normal : dot_wi_normal) * (occluded(rs) ? 0.4f : 1.0f) * vec4{color, 1};
 }
 
-vec4 embree::intersect_li(const vertex & org, const vertex & dir, const vertex & light,const bool & flat)
+vec4 embree::intersect_li(const vertex & org, const vertex & dir, const vertex & light, const bool & flat)
 {
 	ray_hit r(org, dir);
 	return intersect(r) ? li(r, light, flat) : vec4(0.f);

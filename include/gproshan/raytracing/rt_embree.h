@@ -67,7 +67,7 @@ class embree : public raytracing
 		virtual float pointcloud_hit(vertex & position, vertex & normal, vertex & color, ray_hit r);
 
 		vec4 li(const vertex & light, const vertex & position, const vertex & normal, const vertex & color, const float & near = 1e-5f);
-		vec4 li(ray_hit r, const vertex & light, const bool & flat);
+		vec4 li(const ray_hit & r, const vertex & light, const bool & flat);
 
 		vec4 intersect_li(const vertex & org, const vertex & dir, const vertex & light, const bool & flat);
 		float intersect_depth(const vertex & org, const vertex & dir);

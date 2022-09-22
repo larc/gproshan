@@ -1,4 +1,5 @@
 #include <gproshan/mesh/che.cuh>
+#include <gproshan/raytracing/rt_utils.h>
 #include <gproshan/raytracing/rt_optix_params.h>
 
 
@@ -13,27 +14,24 @@ namespace gproshan::rt {
 extern "C" __constant__ launch_params optix_params;
 
 static __forceinline__ __device__
-void * unpackPointer(uint32_t i0, uint32_t i1)
+void * unpack_pointer(uint32_t i0, uint32_t i1)
 {
-	const uint64_t uptr = static_cast<uint64_t>(i0) << 32 | i1;
-	void * ptr = reinterpret_cast<void*>(uptr);
-	return ptr;
+	return (void *) (uint64_t(i0) << 32 | i1);
 }
 
 static __forceinline__ __device__
-void packPointer(void * ptr, uint32_t & i0, uint32_t & i1)
+void pack_pointer(void * ptr, uint32_t & i0, uint32_t & i1)
 {
-	const uint64_t uptr = reinterpret_cast<uint64_t>(ptr);
+	const uint64_t uptr = uint64_t(ptr);
 	i0 = uptr >> 32;
 	i1 = uptr & 0x00000000ffffffff;
 }
 
 template<typename T>
-static __forceinline__ __device__ T * getPRD()
+static __forceinline__ __device__
+T * ray_data()
 {
-	const uint32_t u0 = optixGetPayload_0();
-	const uint32_t u1 = optixGetPayload_1();
-	return reinterpret_cast<T*>(unpackPointer(u0, u1));
+	return (T *) unpack_pointer(optixGetPayload_0(), optixGetPayload_1());
 }
 
 
@@ -64,19 +62,20 @@ extern "C" __global__ void __closesthit__radiance()
 	const vertex & B = data[1];
 	const vertex & C = data[2];
 
-	const vertex Ng = normalize((B - A) * (C - A));
-	const vertex normal = optix_params.flat ? Ng : (1.f - u - v) * mesh.VN[a] + u * mesh.VN[b] + v * mesh.VN[c];
+	const vertex normal = optix_params.flat ? normalize((B - A) * (C - A))
+											: (1.f - u - v) * mesh.VN[a] + u * mesh.VN[b] + v * mesh.VN[c];
 
 	const vertex ca = {float(mesh.VC[a].r), float(mesh.VC[a].g), float(mesh.VC[a].b)};
 	const vertex cb = {float(mesh.VC[b].r), float(mesh.VC[b].g), float(mesh.VC[b].b)};
 	const vertex cc = {float(mesh.VC[c].r), float(mesh.VC[c].g), float(mesh.VC[c].b)};
 
-	const vertex * lights = (vertex *) optix_params.lights;
+	const vertex * lights = optix_params.lights;
 	const vertex color = ((1.f - u - v) * ca + u * cb + v * cc) / 255;
 	const vertex position = (1.f - u - v) * A + u * B + v * C;
 
-	vertex & L = *getPRD<vertex>();
+	vertex & L = *ray_data<vertex>();
 
+	L = {0, 0, 0};
 	for(int i = 0; i < optix_params.n_lights; ++i)
 	{
 		vertex wi = lights[i] - position;
@@ -114,8 +113,8 @@ extern "C" __global__ void __anyhit__shadow() {}
 
 extern "C" __global__ void __miss__radiance()
 {
-	vertex & prd = *getPRD<vertex>();
-	prd = {0, 0, 0};
+	vec3 & pixel_color = *ray_data<vertex>();
+	pixel_color = {0, 0, 0};
 }
 
 extern "C" __global__ void __miss__shadow()
@@ -129,38 +128,19 @@ extern "C" __global__ void __raygen__render_frame()
 	const int ix = optixGetLaunchIndex().x;
 	const int iy = optixGetLaunchIndex().y;
 
-	const float sx = (float(ix + optix_params.viewport_x) + .5f) / optix_params.window_width;
-	const float sy = (float(iy + optix_params.viewport_y) + .5f) / optix_params.window_height;
+	const vec3 ray_dir = ray_view_dir(	{ix + optix_params.viewport_x, iy + optix_params.viewport_y},
+										{optix_params.window_width, optix_params.window_height},
+										optix_params.inv_proj_view,
+										optix_params.cam_pos
+										);
 
-	vertex & cam_pos = *(vertex *) optix_params.cam_pos;
-
-	vertex ipv[3];
-	for(int i = 0; i < 3; ++i)
-	for(int j = 0; j < 3; ++j)
-		ipv[i][j] = optix_params.inv_proj_view[i * 4 + j];
-
-	vertex e = { optix_params.inv_proj_view[0 * 4 + 3],
-					optix_params.inv_proj_view[1 * 4 + 3],
-					optix_params.inv_proj_view[2 * 4 + 3]
-					};
-	vertex d = { optix_params.inv_proj_view[3 * 4 + 0],
-					optix_params.inv_proj_view[3 * 4 + 1],
-					optix_params.inv_proj_view[3 * 4 + 2]
-					};
-
-	float & de = optix_params.inv_proj_view[15];
-
-	vertex view = {sx * 2 - 1, sy * 2 - 1, 1};
-	vertex q = vertex{(ipv[0], view), (ipv[1], view), (ipv[2], view)} + e;
-	vertex p = (1.f / ((d, view) + de)) * q;
-	vertex ray_dir = normalize(p - cam_pos);
-
-	vertex pixelColorPRD;
+	vec4 & pixel_color = optix_params.color_buffer[ix + iy * optix_params.window_width];
 
 	uint32_t u0, u1;
-	packPointer(&pixelColorPRD, u0, u1);
+	pack_pointer(&pixel_color, u0, u1);
+
 	optixTrace(	optix_params.traversable,
-				* (float3 *) &cam_pos,
+				* (float3 *) &optix_params.cam_pos,
 				* (float3 *) &ray_dir,
 				0.f,	// tmin
 				1e20f,	// tmax
@@ -172,13 +152,7 @@ extern "C" __global__ void __raygen__render_frame()
 				0,	// missSBTIndex
 				u0, u1);
 
-	const uint32_t fbIndex = ix + iy * optix_params.viewport_width;
-
-	float4 * frame = (float4 *) optix_params.color_buffer;
-	frame[fbIndex].x = pixelColorPRD.x();
-	frame[fbIndex].y = pixelColorPRD.y();
-	frame[fbIndex].z = pixelColorPRD.z();
-	frame[fbIndex].w = 1;
+	pixel_color[3] = 1;
 }
 
 
