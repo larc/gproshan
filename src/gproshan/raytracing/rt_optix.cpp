@@ -98,13 +98,13 @@ optix::optix(const std::vector<che *> & meshes, const std::vector<mat4> & model_
 	build_sbt();
 
 	// launch params
-	cudaMalloc(&launch_params_buffer, sizeof(launch_params));
+	cudaMalloc(&optix_params_buffer, sizeof(launch_params));
 }
 
 optix::~optix()
 {
 	cudaFree(optix_params.color_buffer);
-	cudaFree(launch_params_buffer);
+	cudaFree(optix_params_buffer);
 	cudaFree(raygen_records_buffer);
 	cudaFree(miss_records_buffer);
 	cudaFree(hitgroup_records_buffer);
@@ -120,8 +120,12 @@ void optix::render(vec4 * img, const render_params & params, const bool & flat)
 	{
 		n_samples = 0;
 
-		if(optix_params.color_buffer)
-			cudaFree(optix_params.color_buffer);
+		if(optix_params.viewport_width * optix_params.viewport_height < params.viewport_width * params.viewport_height)
+		{
+			if(optix_params.color_buffer)
+				cudaFree(optix_params.color_buffer);
+			cudaMalloc(&optix_params.color_buffer, params.viewport_width * params.viewport_height * sizeof(vec4));
+		}
 
 		optix_params.window_width = params.window_width;
 		optix_params.window_height = params.window_height;
@@ -136,8 +140,6 @@ void optix::render(vec4 * img, const render_params & params, const bool & flat)
 
 		optix_params.viewport_x = params.viewport_x;
 		optix_params.viewport_y = params.viewport_y;
-
-		cudaMalloc(&optix_params.color_buffer, params.viewport_width * params.viewport_height * sizeof(vec4));
 	}
 
 	optix_params.flat = flat;
@@ -146,11 +148,11 @@ void optix::render(vec4 * img, const render_params & params, const bool & flat)
 	memcpy(&optix_params.cam_pos, &params.cam_pos, sizeof(optix_params.cam_pos));
 	memcpy(&optix_params.inv_proj_view, &params.inv_proj_view, sizeof(optix_params.inv_proj_view));
 
-	cudaMemcpy(launch_params_buffer, &optix_params, sizeof(launch_params), cudaMemcpyHostToDevice);
+	cudaMemcpy(optix_params_buffer, &optix_params, sizeof(launch_params), cudaMemcpyHostToDevice);
 
 	optixLaunch(optix_pipeline,
 				stream,
-				(CUdeviceptr) launch_params_buffer,
+				(CUdeviceptr) optix_params_buffer,
 				sizeof(launch_params),
 				&sbt,
 				optix_params.viewport_width,
