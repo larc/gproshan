@@ -18,12 +18,12 @@ struct render_params
 	int viewport_height = 0;
 	int viewport_x = 0;
 	int viewport_y = 0;
+	int n_lights = 0;
+	vertex lights[16];
+	vertex cam_pos;
+	mat4 inv_proj_view;
 	bool restart = false;
 	bool viewport_is_window = true;
-	vertex cam_pos;
-	vertex lights[16];
-	unsigned int n_lights = 0;
-	mat4 inv_proj_view;
 
 	bool add_light(const vertex & light)
 	{
@@ -32,6 +32,20 @@ struct render_params
 
 		lights[n_lights++] = light;
 		return true;
+	}
+
+	void log()
+	{
+		gproshan_log_var(window_width);
+		gproshan_log_var(window_height);
+		gproshan_log_var(viewport_width);
+		gproshan_log_var(viewport_height);
+		gproshan_log_var(viewport_x);
+		gproshan_log_var(viewport_y);
+		gproshan_log_var(n_lights);
+		gproshan_log_var(cam_pos);
+		gproshan_log_var(restart);
+		gproshan_log_var(viewport_is_window);
 	}
 };
 

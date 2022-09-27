@@ -210,7 +210,7 @@ void viewer::imgui()
 	{
 		ImGui::Indent();
 
-		for(index_t i = 0; i < render_params.n_lights; ++i)
+		for(int i = 0; i < render_params.n_lights; ++i)
 		{
 			sprintf(slight, "light %d", i);
 			ImGui::SliderScalarN(slight, ImGuiDataType_Real, &render_params.lights[i], 3, &light_min, &light_max);
@@ -230,7 +230,7 @@ void viewer::imgui()
 		if(ImGui::Button("show lights"))
 		{
 			sphere_points.clear();
-			for(index_t i = 0; i < render_params.n_lights; ++i)
+			for(int i = 0; i < render_params.n_lights; ++i)
 				sphere_points.push_back(render_params.lights[i]);
 		}
 

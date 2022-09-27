@@ -116,31 +116,27 @@ optix::~optix()
 
 void optix::render(vec4 * img, const render_params & params, const bool & flat)
 {
-	if(params.restart)
+	if(params.restart) n_samples = 0;
+
+	if(optix_params.buffer_size < params.viewport_width * params.viewport_height)
 	{
-		n_samples = 0;
+		optix_params.buffer_size = params.viewport_width * params.viewport_height;
 
-		if(optix_params.viewport_width * optix_params.viewport_height < params.viewport_width * params.viewport_height)
-		{
-			if(optix_params.color_buffer)
-				cudaFree(optix_params.color_buffer);
-			cudaMalloc(&optix_params.color_buffer, params.viewport_width * params.viewport_height * sizeof(vec4));
-		}
-
-		optix_params.window_width = params.window_width;
-		optix_params.window_height = params.window_height;
-		if(params.viewport_is_window)
-		{
-			optix_params.window_width = params.viewport_width;
-			optix_params.window_height = params.viewport_height;
-		}
-
-		optix_params.viewport_width = params.viewport_width;
-		optix_params.viewport_height = params.viewport_height;
-
-		optix_params.viewport_x = params.viewport_x;
-		optix_params.viewport_y = params.viewport_y;
+		if(optix_params.color_buffer)
+			cudaFree(optix_params.color_buffer);
+		cudaMalloc(&optix_params.color_buffer, optix_params.buffer_size * sizeof(vec4));
 	}
+
+	optix_params.window_width = params.window_width;
+	optix_params.window_height = params.window_height;
+	if(params.viewport_is_window)
+	{
+		optix_params.window_width = params.viewport_width;
+		optix_params.window_height = params.viewport_height;
+	}
+
+	optix_params.viewport_x = params.viewport_x;
+	optix_params.viewport_y = params.viewport_y;
 
 	optix_params.flat = flat;
 	optix_params.n_lights = params.n_lights;
@@ -155,8 +151,8 @@ void optix::render(vec4 * img, const render_params & params, const bool & flat)
 				(CUdeviceptr) optix_params_buffer,
 				sizeof(launch_params),
 				&sbt,
-				optix_params.viewport_width,
-				optix_params.viewport_height,
+				params.viewport_width,
+				params.viewport_height,
 				1
 				);
 

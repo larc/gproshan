@@ -18,13 +18,12 @@ namespace gproshan::rt {
 struct launch_params
 {
 	vec4 * color_buffer = nullptr;
-	int32_t window_width = 0;
-	int32_t window_height = 0;
-	int32_t viewport_width = 0;
-	int32_t viewport_height = 0;
-	int32_t viewport_x = 0;
-	int32_t viewport_y = 0;
-	int32_t n_lights = 0;
+	int buffer_size = 0;
+	int window_width = 0;
+	int window_height = 0;
+	int viewport_x = 0;
+	int viewport_y = 0;
+	int n_lights = 0;
 	vec3 lights[16];
 	vec3 cam_pos;
 	mat4 inv_proj_view;
