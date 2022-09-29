@@ -134,7 +134,7 @@ extern "C" __global__ void __raygen__render_frame()
 										optix_params.cam_pos
 										);
 
-	vec4 & pixel_color = optix_params.color_buffer[ix + iy * optix_params.window_width];
+	vec4 & pixel_color = optix_params.color_buffer[ix + iy * optixGetLaunchDimensions().x];
 
 	uint32_t u0, u1;
 	pack_pointer(&pixel_color, u0, u1);
