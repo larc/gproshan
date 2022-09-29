@@ -26,7 +26,7 @@ if(CUDAToolkit_FOUND)
 	set(CMAKE_CUDA_SEPARABLE_COMPILATION ON)
 	set(CMAKE_CUDA_ARCHITECTURES 52 60 61 70 75 80 86)
 
-	find_package(OptiX 7.4)
+	find_package(OptiX 7.5)
 	if(OptiX_INCLUDE)
 		include_directories(SYSTEM ${OptiX_INCLUDE})
 	endif(OptiX_INCLUDE)
