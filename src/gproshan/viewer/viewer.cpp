@@ -997,19 +997,14 @@ void viewer::render_rt(che_viewer & mesh, frame & rt_frame)
 
 	render_params.restart = rt_frame.resize(viewport_width, viewport_height) || render_params.restart;
 
-	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, rt_frame);
-	vec4 * img = (vec4 *) glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_READ_WRITE);
-
 	//render_params.viewport_x = mesh.vx * viewport_width;
 	//render_params.viewport_y = mesh.vy * viewport_height;
 	//render_params.viewport_is_window = false;
 	render_params.inv_proj_view = inverse(proj_view_mat);
 	render_params.cam_pos = cam.eye;
 
-	rt->render(img, render_params, mesh.render_flat);
-
-	glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
-	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+	rt->render(rt_frame.map_pbo(mesh.render_opt == R_OPTIX), render_params, mesh.render_flat);
+	rt_frame.unmap_pbo(mesh.render_opt == R_OPTIX);
 
 	rt_frame.display();
 }

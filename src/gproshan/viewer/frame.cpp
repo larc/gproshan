@@ -38,6 +38,7 @@ frame::frame()
 
 	glGenBuffers(1, &pbo);
 
+
 	glGenTextures(1, &render_tex);
 	glBindTexture(GL_TEXTURE_2D, render_tex);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -49,6 +50,9 @@ frame::frame()
 
 frame::~frame()
 {
+	if(width && height)
+		cudaGraphicsUnregisterResource(pbo_cuda);
+
 	glDeleteBuffers(1, &vbo);
 	glDeleteVertexArrays(1, &vao);
 	glDeleteTextures(1, &render_tex);
@@ -60,6 +64,33 @@ frame::operator const GLuint & () const
 	return pbo;
 }
 
+vec4 * frame::map_pbo(bool cuda)
+{
+	if(cuda)
+	{
+		vec4 * img = nullptr;
+		size_t num_bytes = 0;
+		cudaGraphicsMapResources(1, &pbo_cuda, 0);
+		cudaGraphicsResourceGetMappedPointer((void **) &img, &num_bytes, pbo_cuda);
+		return img;
+	}
+
+	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
+	return (vec4 *) glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_READ_WRITE);
+}
+
+void frame::unmap_pbo(bool cuda)
+{
+	if(cuda)
+	{
+		cudaGraphicsUnmapResources(1, &pbo_cuda, 0);
+		return;
+	}
+
+	glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
+	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+}
+
 bool frame::resize(const size_t & w, const size_t & h)
 {
 	if(w == width && height == h)
@@ -67,9 +98,12 @@ bool frame::resize(const size_t & w, const size_t & h)
 
 	if(w * h > width * height)
 	{
+		if(width && height)
+			cudaGraphicsUnregisterResource(pbo_cuda);
 		glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
 		glBufferData(GL_PIXEL_UNPACK_BUFFER, 4 * sizeof(float) * w * h, 0, GL_DYNAMIC_DRAW);
 		glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+		cudaGraphicsGLRegisterBuffer(&pbo_cuda, pbo, cudaGraphicsMapFlagsNone);
 	}
 
 	width = w;
@@ -81,9 +115,6 @@ bool frame::resize(const size_t & w, const size_t & h)
 void frame::display()
 {
 	program.enable();
-
-	gproshan_debug_var(width);
-	gproshan_debug_var(height);
 
 	glBindVertexArray(vao);
 
