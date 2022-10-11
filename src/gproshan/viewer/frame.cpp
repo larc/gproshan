@@ -35,9 +35,7 @@ frame::frame()
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 
-
 	glGenBuffers(1, &pbo);
-
 
 	glGenTextures(1, &render_tex);
 	glBindTexture(GL_TEXTURE_2D, render_tex);
@@ -50,8 +48,10 @@ frame::frame()
 
 frame::~frame()
 {
+#ifdef GPROSHAN_CUDA
 	if(width && height)
 		cudaGraphicsUnregisterResource(pbo_cuda);
+#endif // GPROSHAN_CUDA
 
 	glDeleteBuffers(1, &vbo);
 	glDeleteVertexArrays(1, &vao);
@@ -66,6 +66,7 @@ frame::operator const GLuint & () const
 
 vec4 * frame::map_pbo(bool cuda)
 {
+#ifdef GPROSHAN_CUDA
 	if(cuda)
 	{
 		vec4 * img = nullptr;
@@ -74,6 +75,7 @@ vec4 * frame::map_pbo(bool cuda)
 		cudaGraphicsResourceGetMappedPointer((void **) &img, &num_bytes, pbo_cuda);
 		return img;
 	}
+#endif // GPROSHAN_CUDA
 
 	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
 	return (vec4 *) glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_READ_WRITE);
@@ -81,11 +83,13 @@ vec4 * frame::map_pbo(bool cuda)
 
 void frame::unmap_pbo(bool cuda)
 {
+#ifdef GPROSHAN_CUDA
 	if(cuda)
 	{
 		cudaGraphicsUnmapResources(1, &pbo_cuda, 0);
 		return;
 	}
+#endif // GPROSHAN_CUDA
 
 	glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
 	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
@@ -98,12 +102,14 @@ bool frame::resize(const size_t & w, const size_t & h)
 
 	if(w * h > width * height)
 	{
-		if(width && height)
-			cudaGraphicsUnregisterResource(pbo_cuda);
 		glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
 		glBufferData(GL_PIXEL_UNPACK_BUFFER, 4 * sizeof(float) * w * h, 0, GL_DYNAMIC_DRAW);
 		glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+	#ifdef GPROSHAN_CUDA
+		if(width && height)
+			cudaGraphicsUnregisterResource(pbo_cuda);
 		cudaGraphicsGLRegisterBuffer(&pbo_cuda, pbo, cudaGraphicsMapFlagsNone);
+	#endif // GPROSHAN_CUDA
 	}
 
 	width = w;

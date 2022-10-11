@@ -6,8 +6,11 @@
 #include <gproshan/viewer/shader.h>
 #include <gproshan/viewer/include_opengl.h>
 
-#include <cuda_runtime.h>
-#include <cuda_gl_interop.h>
+#ifdef GPROSHAN_CUDA
+	#include <cuda_runtime.h>
+	#include <cuda_gl_interop.h>
+#endif // GPROSHAN_CUDA
+
 
 // geometry processing and shape analysis framework
 namespace gproshan {
@@ -26,7 +29,9 @@ class frame
 
 		shader program;
 
-		cudaGraphicsResource * pbo_cuda;
+	#ifdef GPROSHAN_CUDA
+		cudaGraphicsResource_t pbo_cuda;
+	#endif // GPROSHAN_CUDA
 
 	public:
 		frame();
