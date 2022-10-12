@@ -73,9 +73,7 @@ extern "C" __global__ void __closesthit__radiance()
 	const vertex color = ((1.f - u - v) * ca + u * cb + v * cc) / 255;
 	const vertex position = (1.f - u - v) * A + u * B + v * C;
 
-	vertex & L = *ray_data<vertex>();
-
-	L = {0, 0, 0};
+	vertex li;
 	for(int i = 0; i < optix_params.n_lights; ++i)
 	{
 		vertex wi = lights[i] - position;
@@ -99,10 +97,11 @@ extern "C" __global__ void __closesthit__radiance()
 					1,	// missSBTIndex
 					occluded);
 
-		L += (dot_wi_normal < 0 ? -dot_wi_normal : dot_wi_normal) * (occluded ? 0.4f : 1.0f) * color;
+		li += (dot_wi_normal < 0 ? -dot_wi_normal : dot_wi_normal) * (occluded ? 0.4f : 1.0f) * color;
 	}
 
-	L /= optix_params.n_lights;
+	vertex & pixel_color = *ray_data<vertex>();
+	pixel_color = (pixel_color * optix_params.n_samples + li / optix_params.n_lights) / (optix_params.n_samples + 1);
 }
 
 
