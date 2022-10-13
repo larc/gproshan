@@ -23,6 +23,7 @@ struct launch_params
 	int window_height = 0;
 	int viewport_x = 0;
 	int viewport_y = 0;
+	int n_samples = 0;
 	int n_lights = 0;
 	vec3 lights[16];
 	vec3 cam_pos;

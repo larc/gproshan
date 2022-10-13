@@ -34,7 +34,7 @@ endif(CUDAToolkit_FOUND)
 
 if(OptiX_INCLUDE)
 	add_custom_target(	optix_ptx ALL
-						COMMAND ${CMAKE_CUDA_COMPILER} --optix-ir
+						COMMAND ${CMAKE_CUDA_COMPILER} --optix-ir --use_fast_math
 								-isystem ${OptiX_INCLUDE}
 								-isystem ${gproshan_SOURCE_DIR}/include
 								-o ${gproshan_SOURCE_DIR}/src/rt_optix.ptx

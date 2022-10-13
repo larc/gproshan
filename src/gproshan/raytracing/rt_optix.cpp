@@ -117,15 +117,9 @@ optix::~optix()
 void optix::render(vec4 * img, const render_params & params, const bool & flat)
 {
 	if(params.restart) n_samples = 0;
-
-	if(optix_params.buffer_size < params.viewport_width * params.viewport_height)
-	{
-		optix_params.buffer_size = params.viewport_width * params.viewport_height;
-
-		if(optix_params.color_buffer)
-			cudaFree(optix_params.color_buffer);
-		cudaMalloc(&optix_params.color_buffer, optix_params.buffer_size * sizeof(vec4));
-	}
+	
+	optix_params.n_samples = n_samples;
+	optix_params.color_buffer = img;
 
 	optix_params.window_width = params.window_width;
 	optix_params.window_height = params.window_height;
@@ -158,7 +152,7 @@ void optix::render(vec4 * img, const render_params & params, const bool & flat)
 
 	cudaDeviceSynchronize();
 
-	cudaMemcpy(img, optix_params.color_buffer, params.viewport_width * params.viewport_height * sizeof(vec4), cudaMemcpyDeviceToHost);
+	++n_samples;
 }
 
 void optix::create_raygen_programs()
