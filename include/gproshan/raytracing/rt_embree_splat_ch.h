@@ -1,8 +1,8 @@
 #ifndef RT_EMBREE_SPLAT_CH_H
 #define RT_EMBREE_SPLAT_CH_H
 
-#include "raytracing/rt_embree.h"
-#include "geometry/convex_hull.h"
+#include <gproshan/raytracing/rt_embree.h>
+#include <gproshan/geometry/convex_hull.h>
 
 #include <algorithm>
 
@@ -29,7 +29,8 @@ class embree_splat_ch : public embree
 		};
 
 		std::vector<ipoint_code> ipoints;
-		vertex c, t, b, n;				// center, tbn matrix
+		vertex c;	// center
+		mat3 tbn;	// tbn matrix
 
 		index_t & operator [] (const index_t & i)
 		{
@@ -51,17 +52,18 @@ class embree_splat_ch : public embree
 			ipoints.push_back({p, 0});
 		}
 
-		float shading(const rt_mesh & mesh, const glm::vec3 & p, glm::vec3 & normal, glm::vec3 & color)
+		float shading(const rt_mesh & mesh, const vec3 & p, vec3 & normal, vec3 & color)
 		{
-			normal = glm::vec3(0);
-			color = glm::vec3(0);
+			normal = vec3(0);
+			color = vec3(0);
 
-			vertex h(p.x, p.y, p.z); to2d(h);
-			int k = std::lower_bound(ipoints.begin(), ipoints.end(), ipoint_code{0, morton_2d((h.x + 1) / 2, (h.y + 1) / 2)}) - ipoints.begin();
+			vertex h = p;
+			to2d(h);
+			int k = std::lower_bound(ipoints.begin(), ipoints.end(), ipoint_code{0, morton_2d((h.x() + 1) / 2, (h.y() + 1) / 2)}) - ipoints.begin();
 
 			float w, sum_w = 0;
-			float sigma = k < ipoints.size() ? glm::length(p - glm_vec3(mesh->gt(ipoints[k].p))) :
-											glm::length(p - glm_vec3(mesh->gt(ipoints[k - 1].p)));
+			float sigma = k < ipoints.size() ? length(p - mesh->point(ipoints[k].p)) :
+											length(p - mesh->point(ipoints[k - 1].p));
 			int begin = std::max(k - k_neighbors, 0);
 			int end = std::min(k + k_neighbors, (int) ipoints.size());
 
@@ -69,10 +71,10 @@ class embree_splat_ch : public embree
 			for(int i = begin; i < end; ++i)
 			{
 				const index_t & v = ipoints[i].p;
-				w = glm::length(p - glm_vec3(mesh->gt(v)));
+				w = length(p - mesh->point(v));
 				w = exp(-0.5 * w * w / (sigma * sigma));
-				normal += w * glm_vec3(mesh->normal(v));
-				color += w * glm_vec3(mesh->color(v));
+				normal += w * mesh->normal(v);
+				color += w * mesh->color(v);
 				sum_w += w;
 			}
 
@@ -85,15 +87,12 @@ class embree_splat_ch : public embree
 		void to2d(vertex & v) const
 		{
 			v -= c;
-			v = {(t, v), (b, v), (n, b)};
+			v = mat3::transpose(tbn) * v;
 		}
 
 		void to3d(vertex & v) const
 		{
-			v = vertex{	(vertex{t.x, b.x, n.x}, v),
-						(vertex{t.y, b.y, n.y}, v),
-						(vertex{t.z, b.z, n.z}, v)
-						} + c;
+			v = tbn * v + c;
 		}
 	};
 
@@ -110,11 +109,13 @@ class embree_splat_ch : public embree
 		std::vector<index_t> primID_splat;
 
 	public:
-		embree_splat_ch(const std::vector<che *> & meshes, const bool & pointcloud);
+		embree_splat_ch(const std::vector<che *> & meshes,
+						const std::vector<mat4> & model_mats
+						);
 
 	private:
-		index_t add_pointcloud(const che * mesh);
-		float pointcloud_hit(glm::vec3 & position, glm::vec3 & normal, glm::vec3 & color, ray_hit r);
+		index_t add_pointcloud(const che * mesh, const mat4 & model_mat);
+		float pointcloud_hit(vec3 & position, vec3 & normal, vec3 & color, ray_hit r);
 
 		void init_splats(const che * mesh);
 };

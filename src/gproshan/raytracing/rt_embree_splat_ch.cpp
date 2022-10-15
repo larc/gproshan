@@ -1,7 +1,7 @@
-#include "raytracing/rt_embree_splat_ch.h"
+#include <gproshan/raytracing/rt_embree_splat_ch.h>
 
 
-#include "mesh/che_off.h"
+#include <gproshan/mesh/che_off.h>
 
 #include <cstring>
 #include <set>
@@ -17,12 +17,12 @@ namespace gproshan::rt {
 
 bool embree_splat_ch::show_chsplats = true;
 int embree_splat_ch::k_neighbors = 4;
-float embree_splat_ch::r_threshold = 0.50;	// cos overlapping radius
-float embree_splat_ch::n_threshold = 0.81;	// 30 degrees angle normals
+float embree_splat_ch::r_threshold = 0.50;		// cos overlapping radius
+float embree_splat_ch::n_threshold = 0.81;		// 30 degrees angle normals
 size_t embree_splat_ch::max_neighbors = 256;	// max neighbors per splat
 
 
-glm::vec3 colormap(const float & x)
+vec3 colormap(const float & x)
 {
 	float r = x < 0.75 ? 1012.0 * x - 389.0 : -1.11322769567548E+03 * x + 1.24461193212872E+03;
 	float g = x < 0.50 ? 1012.0 * x - 129.0 : -1012.0 * x + 899.0;
@@ -30,16 +30,16 @@ glm::vec3 colormap(const float & x)
 	r = std::min(std::max(r / 255.0, 0.0), 1.0);
 	g = std::min(std::max(g / 255.0, 0.0), 1.0);
 	b = std::min(std::max(b / 255.0, 0.0), 1.0);
-	return glm::vec3(r, g, b);
+	return {r, g, b};
 }
 
 
-embree_splat_ch::embree_splat_ch(const std::vector<che *> & meshes, const bool & pointcloud)
+embree_splat_ch::embree_splat_ch(const std::vector<che *> & meshes, const std::vector<mat4> & model_mats)
 {
-	build_bvh(meshes, pointcloud);
+	build_bvh(meshes, model_mats);
 }
 
-index_t embree_splat_ch::add_pointcloud(const che * mesh)
+index_t embree_splat_ch::add_pointcloud(const che * mesh, const mat4 & model_mat)
 {
 	init_splats(mesh);
 
@@ -64,26 +64,26 @@ index_t embree_splat_ch::add_pointcloud(const che * mesh)
 		const index_t & begin = vstart[i];
 		const index_t & end = vstart[i + 1];
 
-		is.c = is.n = 0;
+		is.c = 0;
 		for(index_t j = 0; j < is.size(); ++j)
 		{
 			index_t & v = is[j];
-			vertices[j + begin] = mesh->gt(v);
-			is.n += mesh->normal(v);
-			is.c += mesh->gt(v);
+			vertices[j + begin] = mesh->point(v);
+			is.tbn[2] += mesh->normal(v);
+			is.c += mesh->point(v);
 		}
 
 		is.c /= is.size();
-		is.n = is.n.unit();
-		is.t = vertices[end - 1] - is.c;
-		is.t = (is.t - ((is.t, is.n) * is.n)).unit();
-		is.b = (is.n * is.t).unit();
+		is.tbn[2] = normalize(is.tbn[2]);
+		is.tbn[0] = vertices[end - 1] - is.c;
+		is.tbn[0] = normalize(is.tbn[0] - ((is.tbn[0], is.tbn[2]) * is.tbn[2]));
+		is.tbn[1] = normalize(is.tbn[2] * is.tbn[0]);
 
 		for(index_t j = begin; j < end; ++j)
 		{
 			vertex & v = vertices[j];
 			is.to2d(vertices[j]);
-			is.code(j - begin) = morton_2d((v.x + 1) / 2, (v.y + 1) / 2);
+			is.code(j - begin) = morton_2d((v.x() + 1) / 2, (v.y() + 1) / 2);
 		}
 
 		// sorting point by its morton code
@@ -120,15 +120,15 @@ index_t embree_splat_ch::add_pointcloud(const che * mesh)
 	che ch_mesh(vertices.data(), vertices.size(), faces.data(), faces.size() / 3);
 	che_off::write_file(&ch_mesh, "ch_splats");
 
-	return add_mesh(&ch_mesh);
+	return add_mesh(&ch_mesh, model_mat);
 }
 
-float embree_splat_ch::pointcloud_hit(glm::vec3 & position, glm::vec3 & normal, glm::vec3 & color, ray_hit r)
+float embree_splat_ch::pointcloud_hit(vec3 & position, vec3 & normal, vec3 & color, ray_hit r)
 {
 	position = r.position();
 	if(show_chsplats)
 	{
-		normal = glm::normalize(glm::vec3(r.hit.Ng_x, r.hit.Ng_y, r.hit.Ng_z));
+		normal = normalize(vec3{r.hit.Ng_x, r.hit.Ng_y, r.hit.Ng_z});
 		color = colormap(csplat[primID_splat[r.hit.primID]]);
 	}
 	else
@@ -161,12 +161,12 @@ void embree_splat_ch::init_splats(const che * mesh)
 
 		while(!q.empty() && neigs.size() < max_neighbors)
 		{
-			for_star(he, mesh, q.front())
+			for(const index_t & he: mesh->star(q.front()))
 			{
-				const index_t & u = mesh->vt(prev(he));
+				const index_t & u = mesh->halfedge(prev(he));
 				if(!visited[u] && neigs.find(u) == neigs.end())
 				{
-					if((n.unit(), mesh->normal(u)) > n_threshold)
+					if((n, mesh->normal(u)) > n_threshold)
 					{
 						q.push(u);
 						n += mesh->normal(u);
