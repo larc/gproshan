@@ -1,8 +1,12 @@
-#ifdef GPROSHAN_OPTIX
-
 #ifndef RT_OPTIX_PARAMS_H
 #define RT_OPTIX_PARAMS_H
 
+
+#include <gproshan/include.h>
+#include <gproshan/geometry/mat.h>
+
+
+#ifdef GPROSHAN_OPTIX
 
 #include <optix.h>
 
@@ -13,16 +17,18 @@ namespace gproshan::rt {
 
 struct launch_params
 {
-	struct
-	{
-		void * color_buffer = nullptr;
-		uint32_t width, height;
-	} frame;
-
+	vec4 * color_buffer = nullptr;
+	int buffer_size = 0;
+	int window_width = 0;
+	int window_height = 0;
+	int viewport_x = 0;
+	int viewport_y = 0;
+	int n_samples = 0;
+	int n_lights = 0;
+	vec3 lights[16];
+	vec3 cam_pos;
+	mat4 inv_proj_view;
 	bool flat;
-	float light[3];
-	float cam_pos[3];
-	float inv_proj_view[16];
 
 	OptixTraversableHandle traversable;
 };
@@ -30,7 +36,7 @@ struct launch_params
 
 } // namespace gproshan
 
-#endif // RT_OPTIX_PARAMS_H
-
 #endif // GPROSHAN_OPTIX
+
+#endif // RT_OPTIX_PARAMS_H
 

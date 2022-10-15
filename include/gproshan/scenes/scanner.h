@@ -1,7 +1,8 @@
 #ifndef SCANNER_H
 #define SCANNER_H
 
-#include "raytracing/raytracing.h"
+#include <gproshan/mesh/che.h>
+#include <gproshan/raytracing/raytracing.h>
 
 
 // geometry processing and shape analysis framework
@@ -9,7 +10,9 @@
 namespace gproshan::rt {
 
 
-che * scanner_ptx(const raytracing * rt, const size_t & n_rows, const size_t & n_cols, const vertex & cam);
+che * scanner_ptx(const raytracing * rt, const size_t & n_rows, const size_t & n_cols, const vertex & cam_pos);
+
+che * scanner_ptx(const che * mesh, raytracing * rt, const size_t & n_rows, const size_t & n_cols, const vertex & cam_pos, const std::string & file_jpg = "");
 
 
 } // namespace gproshan

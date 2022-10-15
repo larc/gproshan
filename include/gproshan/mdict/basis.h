@@ -1,11 +1,11 @@
 #ifndef BASIS_H
 #define BASIS_H
 
-#include "include.h"
+#include <gproshan/include.h>
 
 #include <fstream>
 
-#include "include_arma.h"
+#include <gproshan/include_arma.h>
 
 
 using namespace std;

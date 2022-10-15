@@ -1,17 +1,26 @@
 #ifndef RAYTRACING_H
 #define RAYTRACING_H
 
-#include "mesh/che.h"
+#include <gproshan/mesh/che.h>
+#include <gproshan/raytracing/render_params.h>
+#include <gproshan/raytracing/rt_utils.h>
 
 #include <vector>
 #include <map>
-
-#include <glm/glm.hpp>
 
 
 // geometry processing and shape analysis framework
 // raytracing approach
 namespace gproshan::rt {
+
+
+struct hit
+{
+	index_t idx = NIL;
+	real_t dist = INFINITY;
+	vertex color;
+	vertex normal;
+};
 
 
 class raytracing
@@ -36,34 +45,31 @@ class raytracing
 		raytracing() = default;
 		virtual ~raytracing() = default;
 
-		virtual void render(glm::vec4 * img,
-							const glm::uvec2 & windows_size,
-							const glm::mat4 & view_mat,
-							const glm::mat4 & proj_mat,
-							const std::vector<glm::vec3> & light,
-							const bool & flat,
-							const bool & restart = false
-							);
+		virtual void render(vec4 * img, const render_params & params, const bool & flat);
 
-		virtual float * raycaster(	const glm::uvec2 & windows_size,
-									const glm::mat4 & view_mat,
-									const glm::mat4 & proj_mat,
+		virtual float * raycaster(	const ivec2 & windows_size,
+									const mat4 & inv_proj_view,
+									const vertex & cam_pos,
 									const index_t & samples = 4
 									);
 
-		virtual index_t cast_ray(	const glm::vec3 &,// org,
-									const glm::vec3 &// dir
-									) { return NIL; };
+		virtual hit intersect(	const vertex &,	// org
+								const vertex &	//dir
+								)	{ return hit(); }
+
+		virtual index_t closest_vertex(	const vertex &,	// org,
+										const vertex &	// dir
+										) { return NIL; };
 
 	protected:
-		virtual glm::vec4 intersect_li(	const glm::vec3 &,// org,
-										const glm::vec3 &,// dir,
-										const glm::vec3 &,// light,
-										const bool &// flat
-										) { return glm::vec4(0); };
+		virtual vec4 intersect_li(	const vertex &,	// org,
+										const vertex &,	// dir,
+										const vertex &,	// light,
+										const bool &		// flat
+										) { return vec4(0); };
 
-		virtual float intersect_depth(	const glm::vec3 &,// org,
-										const glm::vec3 &// dir
+		virtual float intersect_depth(	const vertex &,	// org,
+										const vertex &	// dir
 										) { return 0; };
 };
 

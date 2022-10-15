@@ -7,15 +7,15 @@ layout (location=3) in vec3 in_translation;
 out vec3 vs_position;
 out vec3 vs_normal;
 
-uniform mat4 model_view_mat;
-uniform mat4 proj_mat;
+uniform mat4 proj_view_mat;
+uniform mat4 model_mat;
 uniform float scale;
 
 void main()
 {
-	vs_position = scale * in_position + in_translation;
+	vs_position = scale * in_position + vec3(model_mat * vec4(in_translation, 1));
 	vs_normal = in_normal;
 
-	gl_Position = proj_mat * model_view_mat * vec4(vs_position, 1);
+	gl_Position = proj_view_mat * vec4(vs_position, 1);
 }
 

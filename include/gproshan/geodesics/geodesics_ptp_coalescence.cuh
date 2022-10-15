@@ -1,9 +1,9 @@
 #ifndef GEODESICS_PTP_COALESCENCE_CUH
 #define GEODESICS_PTP_COALESCENCE_CUH
 
-#include "mesh/che.cuh"
-#include "geodesics/geodesics_ptp.cuh"
-#include "geodesics/geodesics_ptp.h"
+#include <gproshan/mesh/che.cuh>
+#include <gproshan/geodesics/geodesics_ptp.cuh>
+#include <gproshan/geodesics/geodesics_ptp.h>
 
 
 // geometry processing and shape analysis framework

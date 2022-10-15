@@ -13,12 +13,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04]
+        os: [ubuntu-20.04, ubuntu-22.04]
         config: [Release, Debug]
         cuda: [cuda, '']
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Install Dependencies
       run: |
@@ -33,7 +33,6 @@ jobs:
                           libopenblas-dev \
                           libglew-dev \
                           libglfw3-dev \
-                          libglm-dev \
                           cimg-dev
 
     - name: Install Cuda
@@ -41,10 +40,10 @@ jobs:
       run: |
         wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-ubuntu2004.pin
         sudo mv cuda-ubuntu2004.pin /etc/apt/preferences.d/cuda-repository-pin-600
-        sudo apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/7fa2af80.pub
+        sudo apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/3bf863cc.pub
         sudo add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/ /"
-        sudo apt update
-        sudo apt -y install cuda
+        sudo apt-get update
+        sudo apt-get -y install cuda
 
     - name: Install Embree
       run: |

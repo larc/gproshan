@@ -1,4 +1,4 @@
-#include "mdict/image_denoising.h"
+#include <gproshan/mdict/image_denoising.h>
 
 int main(int nargs, const char ** args)
 {

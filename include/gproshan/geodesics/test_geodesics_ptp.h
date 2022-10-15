@@ -1,8 +1,8 @@
 #ifndef TEST_GEODESICS_PTP_H
 #define TEST_GEODESICS_PTP_H
 
-#include "geodesics/geodesics.h"
-#include "geodesics/geodesics_ptp.h"
+#include <gproshan/geodesics/geodesics.h>
+#include <gproshan/geodesics/geodesics_ptp.h>
 
 
 // geometry processing and shape analysis framework

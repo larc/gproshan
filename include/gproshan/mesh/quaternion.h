@@ -1,13 +1,16 @@
 #ifndef QUATERNION_H
 #define QUATERNION_H
 
-#include "mesh/vertex.h"
+#include <gproshan/geometry/vec.h>
 
 #include <ostream>
 
 
 // geometry processing and shape analysis framework
 namespace gproshan {
+
+
+using vertex = vec3;
 
 
 class quaternion
@@ -21,6 +24,7 @@ class quaternion
 		quaternion(real_t s, const vertex & v);
 		quaternion(const vertex & v);
 
+		operator const vertex & () const;
 		const quaternion & operator = (real_t s);
 		const quaternion & operator = (const vertex & v);
 		real_t & operator [] (int index);

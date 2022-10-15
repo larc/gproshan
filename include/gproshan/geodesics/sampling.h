@@ -1,8 +1,8 @@
 #ifndef SAMPLING_H
 #define SAMPLING_H
 
-#include "geodesics/geodesics.h"
-#include "geodesics/geodesics_ptp.h"
+#include <gproshan/geodesics/geodesics.h>
+#include <gproshan/geodesics/geodesics_ptp.h>
 
 #include <vector>
 

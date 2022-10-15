@@ -1,6 +1,5 @@
-#include "app_viewer.h"
+#include <gproshan/app_viewer.h>
 
-using namespace std;
 
 int main(int nargs, const char ** args)
 {

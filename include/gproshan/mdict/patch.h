@@ -1,15 +1,15 @@
 #ifndef PATCH_H
 #define PATCH_H
 
-#include "include.h"
-#include "mesh/che.h"
+#include <gproshan/include.h>
+#include <gproshan/mesh/che.h>
 
 #include <vector>
 #include <map>
 #include <algorithm>
 
 
-#include "include_arma.h"
+#include <gproshan/include_arma.h>
 
 
 #ifdef Success

@@ -1,17 +1,17 @@
-#ifdef GPROSHAN_OPTIX
-
 #ifndef RT_OPTIX_H
 #define RT_OPTIX_H
 
-#include "mesh/che.h"
-#include "raytracing/raytracing.h"
-#include "raytracing/rt_optix_params.h"
+#include <gproshan/mesh/che.h>
+#include <gproshan/mesh/che.cuh>
+#include <gproshan/raytracing/raytracing.h>
+#include <gproshan/raytracing/rt_optix_params.h>
+
+
+#ifdef GPROSHAN_OPTIX
 
 #include <cuda_runtime.h>
 #include <optix.h>
 #include <optix_stubs.h>
-
-#include <glm/glm.hpp>
 
 
 // geometry processing and shape analysis framework
@@ -39,8 +39,8 @@ class optix : public raytracing
 
 	OptixShaderBindingTable sbt = {};
 
-	launch_params render_params;
-	void * launch_params_buffer = nullptr;
+	launch_params optix_params;
+	launch_params * optix_params_buffer = nullptr;
 
 	std::vector<CHE *> dd_mesh;
 	std::vector<CHE *> d_mesh;
@@ -51,18 +51,10 @@ class optix : public raytracing
 	void * as_buffer = nullptr;
 
 	public:
-		optix(const std::vector<che *> & meshes);
+		optix(const std::vector<che *> & meshes, const std::vector<mat4> & model_mats);
 		~optix();
 
-		void render(glm::vec4 * img,
-					const glm::uvec2 & windows_size,
-					const glm::mat4 & view_mat,
-					const glm::mat4 & proj_mat,
-					const std::vector<glm::vec3> & light,
-					const bool & flat,
-					const bool & restart = false
-					);
-
+		void render(vec4 * img, const render_params & params, const bool & flat);
 
 	private:
 		void create_raygen_programs();
@@ -70,14 +62,14 @@ class optix : public raytracing
 		void create_hitgroup_programs();
 		void create_pipeline();
 		void build_sbt();
-		OptixTraversableHandle build_as(const std::vector<che *> & meshes);
-		void add_mesh(OptixBuildInput & optix_mesh, CUdeviceptr & d_vertex_ptr, uint32_t & optix_trig_flags, const che * mesh);
+		OptixTraversableHandle build_as(const std::vector<che *> & meshes, const std::vector<mat4> & model_mats);
+		void add_mesh(OptixBuildInput & optix_mesh, CUdeviceptr & d_vertex_ptr, uint32_t & optix_trig_flags, const che * mesh, const mat4 & model_mat);
 };
 
 
 } // namespace gproshan
 
-#endif // RT_OPTIX_H
-
 #endif // GPROSHAN_OPTIX
+
+#endif // RT_OPTIX_H
 

@@ -1,7 +1,7 @@
 #ifndef DIJKSTRA_H
 #define DIJKSTRA_H
 
-#include "mesh/che.h"
+#include <gproshan/mesh/che.h>
 
 
 // geometry processing and shape analysis framework

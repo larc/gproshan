@@ -1,7 +1,7 @@
 #ifndef BASIS_DCT_H
 #define BASIS_DCT_H
 
-#include "mdict/basis.h"
+#include <gproshan/mdict/basis.h>
 
 
 // geometry processing and shape analysis framework

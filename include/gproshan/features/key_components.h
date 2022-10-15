@@ -1,7 +1,7 @@
 #ifndef KEY_COMPONENTS_H
 #define KEY_COMPONENTS_H
 
-#include "mesh/che.h"
+#include <gproshan/mesh/che.h>
 
 #include <map>
 

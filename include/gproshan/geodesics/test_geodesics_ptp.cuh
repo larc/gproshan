@@ -1,7 +1,7 @@
 #ifndef TEST_GEODESICS_PTP_CUH
 #define TEST_GEODESICS_PTP_CUH
 
-#include "mesh/che.cuh"
+#include <gproshan/mesh/che.cuh>
 
 
 // geometry processing and shape analysis framework

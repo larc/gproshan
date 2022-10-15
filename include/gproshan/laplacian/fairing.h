@@ -1,7 +1,7 @@
 #ifndef FAIRING_H
 #define FAIRING_H
 
-#include "mesh/che.h"
+#include <gproshan/mesh/che.h>
 
 
 // geometry processing and shape analysis framework
