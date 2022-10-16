@@ -39,6 +39,7 @@ void raytracing::render(vec4 * img, const render_params & params, const bool & f
 			li += intersect_li(params.cam_pos, dir, params.lights[l], flat);
 
 		color = (color * n_samples + li / params.n_lights) / (n_samples + 1);
+		color[3] = 1;
 	}
 
 	++n_samples;

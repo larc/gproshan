@@ -252,42 +252,6 @@ index_t embree::add_pointcloud(const che * mesh, const mat4 & model_mat)
 	return geom_id;
 }
 
-float embree::pointcloud_hit(vertex & position, vertex & normal, vertex & color, ray_hit r)
-{
-	float w, sum_w = 0;
-	position = normal = color = {0, 0, 0};
-
-	do
-	{
-		vec4 * xyzr = (vec4 *) rtcGetGeometryBufferData(rtcGetGeometry(scene, r.hit.geomID), RTC_BUFFER_TYPE_VERTEX, 0);
-
-		sum_w += w = pc_radius - length(r.position() - vertex(xyzr[r.hit.primID]));
-		position += w * r.position();
-		normal += w * r.normal(geomID_mesh[r.hit.geomID]);
-		color += w * r.color(geomID_mesh[r.hit.geomID]);
-
-		r = ray_hit(r.position(), r.dir());
-	}
-	while(intersect(r) && r.ray.tfar < pc_radius);
-
-	position /= sum_w;
-	normal /= sum_w;
-	color /= sum_w;
-
-	return sum_w;
-}
-
-vec4 embree::li(const vertex & light, const vertex & position, const vertex & normal, const vertex & color, const float & near)
-{
-	vertex wi = light - position;
-	float light_dist = length(wi);
-	wi /= light_dist;
-	float dot_wi_normal = (wi, normal);
-
-	ray_hit r(position, wi, 1e-3f, light_dist - 1e-3f);
-	return (dot_wi_normal < 0 ? -dot_wi_normal : dot_wi_normal) * (occluded(r) ? 0.4f : 1.0f) * color;
-}
-
 vec4 embree::li(const ray_hit & r, const vertex & light, const bool & flat)
 {
 	const vertex & position = r.position();

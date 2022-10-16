@@ -38,7 +38,7 @@ class frame
 		~frame();
 
 		operator const GLuint & () const;
-		
+
 		vec4 * map_pbo(bool cuda = false);
 		void unmap_pbo(bool cuda = false);
 

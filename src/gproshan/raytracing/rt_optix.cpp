@@ -117,7 +117,7 @@ optix::~optix()
 void optix::render(vec4 * img, const render_params & params, const bool & flat)
 {
 	if(params.restart) n_samples = 0;
-	
+
 	optix_params.n_samples = n_samples;
 	optix_params.color_buffer = img;
 
