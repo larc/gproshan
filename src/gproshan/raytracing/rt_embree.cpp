@@ -277,17 +277,6 @@ float embree::pointcloud_hit(vertex & position, vertex & normal, vertex & color,
 	return sum_w;
 }
 
-vec4 embree::li(const vertex & light, const vertex & position, const vertex & normal, const vertex & color, const float & near)
-{
-	vertex wi = light - position;
-	float light_dist = length(wi);
-	wi /= light_dist;
-	float dot_wi_normal = (wi, normal);
-
-	ray_hit r(position, wi, 1e-3f, light_dist - 1e-3f);
-	return (dot_wi_normal < 0 ? -dot_wi_normal : dot_wi_normal) * (occluded(r) ? 0.4f : 1.0f) * color;
-}
-
 vec4 embree::li(const ray_hit & r, const vertex & light, const bool & flat)
 {
 	const vertex & position = r.position();
