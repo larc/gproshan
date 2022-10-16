@@ -45,7 +45,7 @@ class embree : public raytracing
 		embree(	const std::vector<che *> & meshes,
 				const std::vector<mat4> & model_mats,
 				const bool & pointcloud = false,
-				const float & pcr = 1
+				const float & pcr = 0.01
 				);
 		virtual ~embree();
 
@@ -64,9 +64,8 @@ class embree : public raytracing
 		index_t add_mesh(const che * mesh, const mat4 & model_mat);
 
 		virtual index_t add_pointcloud(const che * mesh, const mat4 & model_mat);
-		virtual float pointcloud_hit(vertex & position, vertex & normal, vertex & color, ray_hit r);
 
-		vec4 li(const ray_hit & r, const vertex & light, const bool & flat);
+		virtual vec4 li(const ray_hit & r, const vertex & light, const bool & flat);
 
 		vec4 intersect_li(const vertex & org, const vertex & dir, const vertex & light, const bool & flat);
 		float intersect_depth(const vertex & org, const vertex & dir);
