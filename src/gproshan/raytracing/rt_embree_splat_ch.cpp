@@ -36,7 +36,7 @@ vec3 colormap(const float & x)
 
 embree_splat_ch::embree_splat_ch(const std::vector<che *> & meshes, const std::vector<mat4> & model_mats)
 {
-	build_bvh(meshes, model_mats);
+	build_bvh(meshes, model_mats, true);
 }
 
 index_t embree_splat_ch::add_pointcloud(const che * mesh, const mat4 & model_mat)
@@ -123,8 +123,10 @@ index_t embree_splat_ch::add_pointcloud(const che * mesh, const mat4 & model_mat
 	return add_mesh(&ch_mesh, model_mat);
 }
 
-float embree_splat_ch::pointcloud_hit(vec3 & position, vec3 & normal, vec3 & color, ray_hit r)
+vec4 embree_splat_ch::li(const ray_hit & r, const vertex & light, const bool & flat)
 {
+	vertex position, normal, color;
+
 	position = r.position();
 	if(show_chsplats)
 	{
@@ -136,7 +138,13 @@ float embree_splat_ch::pointcloud_hit(vec3 & position, vec3 & normal, vec3 & col
 		vsplat[primID_splat[r.hit.primID]].shading(geomID_mesh[r.hit.geomID], position, normal, color);
 	}
 
-	return 1e-2;
+	vertex wi = light - position;
+	float light_dist = length(wi);
+	wi /= light_dist;
+	float dot_wi_normal = (wi, normal);
+
+	ray_hit rs(position, wi, 1e-3f, light_dist - 1e-3f);
+	return (dot_wi_normal < 0 ? -dot_wi_normal : dot_wi_normal) * (occluded(rs) ? 0.4f : 1.0f) * vec4{color, 1};
 }
 
 void embree_splat_ch::init_splats(const che * mesh)
