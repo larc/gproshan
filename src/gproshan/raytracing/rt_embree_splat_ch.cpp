@@ -68,9 +68,8 @@ index_t embree_splat_ch::add_pointcloud(const che * mesh, const mat4 & model_mat
 		for(index_t j = 0; j < is.size(); ++j)
 		{
 			index_t & v = is[j];
-			vertices[j + begin] = mesh->point(v);
+			is.c += vertices[j + begin] = model_mat * vec4(mesh->point(v), 1);
 			is.tbn[2] += mesh->normal(v);
-			is.c += mesh->point(v);
 		}
 
 		is.c /= is.size();
@@ -78,6 +77,7 @@ index_t embree_splat_ch::add_pointcloud(const che * mesh, const mat4 & model_mat
 		is.tbn[0] = vertices[end - 1] - is.c;
 		is.tbn[0] = normalize(is.tbn[0] - ((is.tbn[0], is.tbn[2]) * is.tbn[2]));
 		is.tbn[1] = normalize(is.tbn[2] * is.tbn[0]);
+		is.model_mat = model_mat;
 
 		for(index_t j = begin; j < end; ++j)
 		{
@@ -120,7 +120,7 @@ index_t embree_splat_ch::add_pointcloud(const che * mesh, const mat4 & model_mat
 	che ch_mesh(vertices.data(), vertices.size(), faces.data(), faces.size() / 3);
 	che_off::write_file(&ch_mesh, "ch_splats");
 
-	return add_mesh(&ch_mesh, model_mat);
+	return add_mesh(&ch_mesh, mat4::identity());
 }
 
 vec4 embree_splat_ch::li(const ray_hit & r, const vertex & light, const bool & flat)

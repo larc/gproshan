@@ -31,6 +31,7 @@ class embree_splat_ch : public embree
 		std::vector<ipoint_code> ipoints;
 		vertex c;	// center
 		mat3 tbn;	// tbn matrix
+		mat4 model_mat;
 
 		index_t & operator [] (const index_t & i)
 		{
@@ -62,8 +63,8 @@ class embree_splat_ch : public embree
 			int k = std::lower_bound(ipoints.begin(), ipoints.end(), ipoint_code{0, morton_2d((h.x() + 1) / 2, (h.y() + 1) / 2)}) - ipoints.begin();
 
 			float w, sum_w = 0;
-			float sigma = k < ipoints.size() ? length(p - mesh->point(ipoints[k].p)) :
-											length(p - mesh->point(ipoints[k - 1].p));
+			float sigma = k < ipoints.size() ? length(p - vec3(model_mat * vec4(mesh->point(ipoints[k].p), 1))) :
+											length(p - vec3(model_mat * vec4(mesh->point(ipoints[k - 1].p), 1)));
 			int begin = std::max(k - k_neighbors, 0);
 			int end = std::min(k + k_neighbors, (int) ipoints.size());
 
@@ -71,7 +72,7 @@ class embree_splat_ch : public embree
 			for(int i = begin; i < end; ++i)
 			{
 				const index_t & v = ipoints[i].p;
-				w = length(p - mesh->point(v));
+				w = length(p - vec3(model_mat * vec4(mesh->point(v), 1)));
 				w = exp(-0.5 * w * w / (sigma * sigma));
 				normal += w * mesh->normal(v);
 				color += w * mesh->color(v);
@@ -87,12 +88,12 @@ class embree_splat_ch : public embree
 		void to2d(vertex & v) const
 		{
 			v -= c;
-			v = mat3::transpose(tbn) * v;
+			v = tbn * v;
 		}
 
 		void to3d(vertex & v) const
 		{
-			v = tbn * v + c;
+			v = mat3::transpose(tbn) * v + c;
 		}
 	};
 
