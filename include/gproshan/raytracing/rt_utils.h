@@ -53,17 +53,17 @@ struct eval_hit
 	{
 		u = pu;
 		v = pv;
-		
+
 		const int he = primID * che::mtrig;
-		
+
 		const int a = mesh.VT[he];
 		const int b = mesh.VT[he + 1];
 		const int c = mesh.VT[he + 2];
-		
+
 		const vertex ca = {float(mesh.VC[a].r), float(mesh.VC[a].g), float(mesh.VC[a].b)};
 		const vertex cb = {float(mesh.VC[b].r), float(mesh.VC[b].g), float(mesh.VC[b].b)};
 		const vertex cc = {float(mesh.VC[c].r), float(mesh.VC[c].g), float(mesh.VC[c].b)};
-		
+
 		color = ((1.f - u - v) * ca + u * cb + v * cc) / 255;
 		normal = (1.f - u - v) * mesh.VN[a] + u * mesh.VN[b] + v * mesh.VN[c];
 	}
@@ -78,6 +78,7 @@ struct eval_hit
 		{
 			wi = lights[i] - position;
 			light_dist = length(wi);
+
 			wi /= light_dist;
 			dot_wi_normal = dot(wi, normal);
 

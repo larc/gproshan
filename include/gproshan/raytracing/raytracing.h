@@ -28,10 +28,10 @@ class raytracing
 	protected:
 		struct rt_mesh
 		{
-			che * mesh;
+			CHE * mesh;
 			bool pointcloud;
 
-			che * operator -> () const
+			CHE * operator -> () const
 			{
 				return mesh;
 			}
@@ -62,11 +62,12 @@ class raytracing
 										) { return NIL; };
 
 	protected:
-		virtual vec4 intersect_li(	const vertex &,	// org,
-										const vertex &,	// dir,
-										const vertex &,	// light,
-										const bool &		// flat
-										) { return vec4(0); };
+		virtual vec3 closesthit_radiance(	const vertex &, // org
+											const vertex &, // dir
+											const vertex *, // lights
+											const int &, // n_lights
+											const bool & // flat
+											) { return {}; };
 
 		virtual float intersect_depth(	const vertex &,	// org,
 										const vertex &	// dir

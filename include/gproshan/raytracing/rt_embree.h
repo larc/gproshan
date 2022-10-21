@@ -26,9 +26,8 @@ class embree : public raytracing
 
 			vertex org() const;
 			vertex dir() const;
-			vertex color(const rt_mesh & mesh) const;
-			vertex normal(const rt_mesh & mesh, const bool & flat = false) const;
 			vertex position() const;
+			vertex normal() const;
 			index_t closest_vertex(const rt_mesh & mesh) const;
 		};
 
@@ -54,21 +53,18 @@ class embree : public raytracing
 
 
 	protected:
-		bool intersect(ray_hit & r);
-		bool occluded(ray_hit & r);
-
-		void build_bvh(	const std::vector<che *> & meshes,
-						const std::vector<mat4> & model_mats,
-						const bool & pointcloud = false);
+		void build_bvh(const std::vector<che *> & meshes, const std::vector<mat4> & model_mats, const bool & pointcloud = false);
 		index_t add_sphere(const vec4 & xyzr);
 		index_t add_mesh(const che * mesh, const mat4 & model_mat);
 
 		virtual index_t add_pointcloud(const che * mesh, const mat4 & model_mat);
 
-		virtual vec4 li(const ray_hit & r, const vertex & light, const bool & flat);
+		virtual vec3 closesthit_radiance(const vertex & org, const vertex & dir, const vertex * lights, const int & n_lights, const bool & flat);
 
-		vec4 intersect_li(const vertex & org, const vertex & dir, const vertex & light, const bool & flat);
 		float intersect_depth(const vertex & org, const vertex & dir);
+
+		bool intersect(ray_hit & r);
+		bool occluded(ray_hit & r);
 };
 
 

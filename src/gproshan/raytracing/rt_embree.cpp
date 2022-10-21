@@ -44,20 +44,14 @@ vertex embree::ray_hit::dir() const
 	return {ray.dir_x, ray.dir_y, ray.dir_z};
 }
 
-vertex embree::ray_hit::color(const rt_mesh & mesh) const
+vertex embree::ray_hit::normal() const
 {
-	if(mesh.pointcloud)
-		return mesh->color(hit.primID);
-
-	return mesh->shading_color(hit.primID, 1.0 - hit.u - hit.v, hit.u);
+	return normalize(vec3{hit.Ng_x, hit.Ng_y, hit.Ng_z});
 }
 
-vertex embree::ray_hit::normal(const rt_mesh & mesh, const bool & flat) const
+vertex embree::ray_hit::position() const
 {
-	if(flat || mesh.pointcloud)
-		return normalize(vertex{hit.Ng_x, hit.Ng_y, hit.Ng_z});
-
-	return mesh->shading_normal(hit.primID, 1.0 - hit.u - hit.v, hit.u);
+	return org() + ray.tfar * dir();
 }
 
 index_t embree::ray_hit::closest_vertex(const rt_mesh & mesh) const
@@ -79,12 +73,7 @@ index_t embree::ray_hit::closest_vertex(const rt_mesh & mesh) const
 		w = hit.v;
 	}
 
-	return mesh->halfedge(he);
-}
-
-vertex embree::ray_hit::position() const
-{
-	return org() + ray.tfar * dir();
+	return mesh->VT[he];
 }
 
 
@@ -128,6 +117,7 @@ hit embree::intersect(const vertex & org, const vertex & dir)
 	ray_hit r(org, dir);
 	if(intersect(r))
 	{
+		/*
 		const rt_mesh & mesh = geomID_mesh[r.hit.geomID];
 		const vertex & color = r.color(mesh);
 		const vertex & normal = r.normal(mesh);
@@ -136,35 +126,23 @@ hit embree::intersect(const vertex & org, const vertex & dir)
 					r.ray.tfar,
 					{color.x(), color.y(), color.z()},
 					{normal.x(), normal.y(), normal.z()}
-					};
+					};*/
 	}
 
 	return hit();
-}
-
-bool embree::intersect(ray_hit & r)
-{
-	rtcIntersect1(scene, &intersect_context, &r);
-	return r.hit.geomID != RTC_INVALID_GEOMETRY_ID;
-}
-
-bool embree::occluded(ray_hit & r)
-{
-	rtcIntersect1(scene, &intersect_context, &r);
-	return r.hit.geomID != RTC_INVALID_GEOMETRY_ID;
 }
 
 void embree::build_bvh(const std::vector<che *> & meshes, const std::vector<mat4> & model_mats, const bool & pointcloud)
 {
 	for(index_t i = 0; i < meshes.size(); ++i)
 	{
-		che * mesh = meshes[i];
+		CHE * mesh = new CHE(meshes[i]);
 		const mat4 & model_mat = model_mats[i];
 
-		if(mesh->is_pointcloud() || pointcloud)
-			geomID_mesh[add_pointcloud(mesh, model_mat)] = {mesh, true};
+		if(!mesh->n_faces || pointcloud)
+			geomID_mesh[add_pointcloud(meshes[i], model_mat)] = {mesh, true};
 		else
-			geomID_mesh[add_mesh(mesh, model_mat)] = {mesh, false};
+			geomID_mesh[add_mesh(meshes[i], model_mat)] = {mesh, false};
 	}
 
 	rtcCommitScene(scene);
@@ -252,31 +230,40 @@ index_t embree::add_pointcloud(const che * mesh, const mat4 & model_mat)
 	return geom_id;
 }
 
-vec4 embree::li(const ray_hit & r, const vertex & light, const bool & flat)
-{
-	const vertex & position = r.position();
-	const vertex & normal = r.normal(geomID_mesh[r.hit.geomID], flat);
-	const vertex & color = r.color(geomID_mesh[r.hit.geomID]);
-
-	vertex wi = light - position;
-	float light_dist = length(wi);
-	wi /= light_dist;
-	float dot_wi_normal = (wi, normal);
-
-	ray_hit rs(position, wi, 1e-3f, light_dist - 1e-3f);
-	return (dot_wi_normal < 0 ? -dot_wi_normal : dot_wi_normal) * (occluded(rs) ? 0.4f : 1.0f) * vec4{color, 1};
-}
-
-vec4 embree::intersect_li(const vertex & org, const vertex & dir, const vertex & light, const bool & flat)
+vec3 embree::closesthit_radiance(const vertex & org, const vertex & dir, const vertex * lights, const int & n_lights, const bool & flat)
 {
 	ray_hit r(org, dir);
-	return intersect(r) ? li(r, light, flat) : vec4(0.f);
+	if(!intersect(r)) return {};
+
+	auto shadow = [&](const vec3 & position, const vec3 & wi, const float & light_dist) -> bool
+					{
+						ray_hit ro(position, wi, 1e-3f, light_dist - 1e-3f);
+						return occluded(ro);
+					};
+
+	eval_hit<float, decltype(shadow)> hit(*geomID_mesh[r.hit.geomID].mesh, r.hit.primID, r.hit.u, r.hit.v);
+	hit.position = r.position();
+	hit.normal = flat ? r.normal() : hit.normal;
+
+	return hit.eval_li(lights,  n_lights, shadow);
 }
 
 float embree::intersect_depth(const vertex & org, const vertex & dir)
 {
 	ray_hit r(org, dir);
 	return intersect(r) ? r.ray.tfar : 0.f;
+}
+
+bool embree::intersect(ray_hit & r)
+{
+	rtcIntersect1(scene, &intersect_context, &r);
+	return r.hit.geomID != RTC_INVALID_GEOMETRY_ID;
+}
+
+bool embree::occluded(ray_hit & r)
+{
+	rtcIntersect1(scene, &intersect_context, &r);
+	return r.hit.geomID != RTC_INVALID_GEOMETRY_ID;
 }
 
 
