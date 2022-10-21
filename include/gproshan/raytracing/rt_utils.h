@@ -38,9 +38,7 @@ struct random
 	}
 };
 
-
-
-template <class T, class Occluded>
+template <class T = float>
 struct eval_hit
 {
 	float u, v;
@@ -68,27 +66,28 @@ struct eval_hit
 		normal = (1.f - u - v) * mesh.VN[a] + u * mesh.VN[b] + v * mesh.VN[c];
 	}
 
-	__host__ __device__
-	vec<T, 3> eval_li(const vec<T, 3> * lights, const int & n_lights, Occluded occluded)
-	{
-		vec<T, 3> li, wi;
-		float light_dist, dot_wi_normal;
-
-		for(int i = 0; i < n_lights; ++i)
-		{
-			wi = lights[i] - position;
-			light_dist = length(wi);
-
-			wi /= light_dist;
-			dot_wi_normal = dot(wi, normal);
-
-			li += (dot_wi_normal < 0 ? -dot_wi_normal : dot_wi_normal) * (occluded(position, wi, light_dist) ? 0.4f : 1.0f) * color;
-		}
-
-		return li;
-	}
 };
 
+template <class T, class Occluded>
+__host__ __device__
+vec<T, 3> eval_li(const eval_hit<T> & hit, const vec<T, 3> * lights, const int & n_lights, Occluded occluded)
+{
+	vec<T, 3> li, wi;
+	float light_dist, dot_wi_normal;
+
+	for(int i = 0; i < n_lights; ++i)
+	{
+		wi = lights[i] - hit.position;
+		light_dist = length(wi);
+
+		wi /= light_dist;
+		dot_wi_normal = dot(wi, hit.normal);
+
+		li += (dot_wi_normal < 0 ? -dot_wi_normal : dot_wi_normal) * (occluded(hit.position, wi, light_dist) ? 0.4f : 1.0f) * hit.color;
+	}
+
+	return li / n_lights;
+}
 
 template <class T>
 __host__ __device__

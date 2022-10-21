@@ -48,29 +48,6 @@ extern "C" __global__ void __closesthit__radiance()
 	const unsigned int sbtID = optixGetSbtGASIndex();
 	const float time = optixGetRayTime();
 
-	auto occluded = [&](const vec3 & position, const vec3 & wi, const float & light_dist) -> bool
-					{
-						unsigned int occluded = 1;
-						optixTrace( optix_params.traversable,
-									* (float3 *) &position,
-									* (float3 *) &wi,
-									1e-3f,					// tmin
-									light_dist - 1e-3f,		// tmax
-									0.0f,					// rayTime
-									OptixVisibilityMask(255),
-									OPTIX_RAY_FLAG_DISABLE_ANYHIT
-									| OPTIX_RAY_FLAG_DISABLE_CLOSESTHIT
-									| OPTIX_RAY_FLAG_TERMINATE_ON_FIRST_HIT,
-									1,	// SBT offset
-									2,	// SBT stride
-									1,	// missSBTIndex
-									occluded);
-
-						return occluded != 0;
-					};
-
-	eval_hit<float, decltype(occluded)> hit(mesh, primID, bar.x, bar.y);
-
 	vertex data[3];
 	optixGetTriangleVertexData(gas, primID, sbtID, time, (float3 *) data);
 
@@ -78,10 +55,31 @@ extern "C" __global__ void __closesthit__radiance()
 	const vertex & B = data[1];
 	const vertex & C = data[2];
 
+	eval_hit hit(mesh, primID, bar.x, bar.y);
 	hit.normal = optix_params.flat ? normalize((B - A) * (C - A)) : hit.normal;
 	hit.position = (1.f - hit.u - hit.v) * A + hit.u * B + hit.v * C;
 
-	vertex li = hit.eval_li(optix_params.lights, optix_params.n_lights, occluded);
+	vertex li = eval_li(hit, optix_params.lights, optix_params.n_lights,
+						[&](const vec3 & position, const vec3 & wi, const float & light_dist) -> bool
+						{
+							unsigned int occluded = 1;
+							optixTrace( optix_params.traversable,
+										* (float3 *) &position,
+										* (float3 *) &wi,
+										1e-3f,					// tmin
+										light_dist - 1e-3f,		// tmax
+										0.0f,					// rayTime
+										OptixVisibilityMask(255),
+										OPTIX_RAY_FLAG_DISABLE_ANYHIT
+										| OPTIX_RAY_FLAG_DISABLE_CLOSESTHIT
+										| OPTIX_RAY_FLAG_TERMINATE_ON_FIRST_HIT,
+										1,	// SBT offset
+										2,	// SBT stride
+										1,	// missSBTIndex
+										occluded);
+
+							return occluded != 0;
+						});
 
 	vertex & pixel_color = *ray_data<vertex>();
 	pixel_color = (pixel_color * optix_params.n_samples + li / optix_params.n_lights) / (optix_params.n_samples + 1);

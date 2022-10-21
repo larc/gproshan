@@ -29,9 +29,7 @@ embree::ray_hit::ray_hit(const vertex & p_org, const vertex & v_dir, float near,
 	ray.mask = 0;
 	ray.flags = 0;
 
-	//hit.primID = RTC_INVALID_GEOMETRY_ID;
 	hit.geomID = RTC_INVALID_GEOMETRY_ID;
-	hit.instID[0] = RTC_INVALID_GEOMETRY_ID;
 }
 
 vertex embree::ray_hit::org() const
@@ -235,17 +233,16 @@ vec3 embree::closesthit_radiance(const vertex & org, const vertex & dir, const v
 	ray_hit r(org, dir);
 	if(!intersect(r)) return {};
 
-	auto shadow = [&](const vec3 & position, const vec3 & wi, const float & light_dist) -> bool
-					{
-						ray_hit ro(position, wi, 1e-3f, light_dist - 1e-3f);
-						return occluded(ro);
-					};
-
-	eval_hit<float, decltype(shadow)> hit(*geomID_mesh[r.hit.geomID].mesh, r.hit.primID, r.hit.u, r.hit.v);
+	eval_hit hit(*geomID_mesh[r.hit.geomID].mesh, r.hit.primID, r.hit.u, r.hit.v);
 	hit.position = r.position();
 	hit.normal = flat ? r.normal() : hit.normal;
 
-	return hit.eval_li(lights,  n_lights, shadow);
+	return eval_li(	hit, lights,  n_lights,
+					[&](const vec3 & position, const vec3 & wi, const float & light_dist) -> bool
+					{
+						ray_hit ro(position, wi, 1e-3f, light_dist - 1e-3f);
+						return occluded(ro);
+					});
 }
 
 float embree::intersect_depth(const vertex & org, const vertex & dir)
