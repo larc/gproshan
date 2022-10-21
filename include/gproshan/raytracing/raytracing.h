@@ -14,24 +14,15 @@
 namespace gproshan::rt {
 
 
-struct hit
-{
-	index_t idx = NIL;
-	real_t dist = INFINITY;
-	vertex color;
-	vertex normal;
-};
-
-
 class raytracing
 {
 	protected:
 		struct rt_mesh
 		{
-			che * mesh;
+			CHE * mesh;
 			bool pointcloud;
 
-			che * operator -> () const
+			CHE * operator -> () const
 			{
 				return mesh;
 			}
@@ -53,20 +44,21 @@ class raytracing
 									const index_t & samples = 4
 									);
 
-		virtual hit intersect(	const vertex &,	// org
-								const vertex &	//dir
-								)	{ return hit(); }
+		virtual eval_hit intersect(	const vertex &,	// org
+									const vertex &	//dir
+									) { return {}; }
 
 		virtual index_t closest_vertex(	const vertex &,	// org,
 										const vertex &	// dir
 										) { return NIL; };
 
 	protected:
-		virtual vec4 intersect_li(	const vertex &,	// org,
-										const vertex &,	// dir,
-										const vertex &,	// light,
-										const bool &		// flat
-										) { return vec4(0); };
+		virtual vec3 closesthit_radiance(	const vertex &, // org
+											const vertex &, // dir
+											const vertex *, // lights
+											const int &, // n_lights
+											const bool & // flat
+											) { return {}; };
 
 		virtual float intersect_depth(	const vertex &,	// org,
 										const vertex &	// dir
