@@ -38,21 +38,21 @@ struct random
 	}
 };
 
-template <class T = float>
-struct eval_hit
+template <class T>
+struct t_eval_hit
 {
 	int primID = NIL;
-	float dist = 0;
-	float u = 0, v = 0;
+	T dist = 0;
+	T u = 0, v = 0;
 	vec<T, 3> position;
 	vec<T, 3> normal;
 	vec<T, 3> color;
 
 	__host__ __device__
-	eval_hit() {}
+	t_eval_hit() {}
 
 	__host__ __device__
-	eval_hit(const CHE & mesh, const unsigned int & aprimID, const float & au, const float & av)
+	t_eval_hit(const CHE & mesh, const unsigned int & aprimID, const T & au, const T & av)
 	{
 		primID = aprimID;
 		u = au;
@@ -75,7 +75,7 @@ struct eval_hit
 
 template <class T, class Occluded>
 __host__ __device__
-vec<T, 3> eval_li(const eval_hit<T> & hit, const vec<T, 3> * lights, const int & n_lights, Occluded occluded)
+vec<T, 3> eval_li(const t_eval_hit<T> & hit, const vec<T, 3> * lights, const int & n_lights, Occluded occluded)
 {
 	vec<T, 3> li, wi;
 	float light_dist, dot_wi_normal;
@@ -93,6 +93,10 @@ vec<T, 3> eval_li(const eval_hit<T> & hit, const vec<T, 3> * lights, const int &
 
 	return li / n_lights;
 }
+
+
+using eval_hit = t_eval_hit<float>;
+
 
 template <class T>
 __host__ __device__

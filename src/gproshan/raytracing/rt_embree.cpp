@@ -108,10 +108,10 @@ index_t embree::closest_vertex(const vertex & org, const vertex & dir)
 	return mesh->VT[he];
 }
 
-eval_hit<float> embree::intersect(const vertex & org, const vertex & dir)
+eval_hit embree::intersect(const vertex & org, const vertex & dir)
 {
 	ray_hit r(org, dir);
-	if(!intersect(r)) return eval_hit<float>();
+	if(!intersect(r)) return {};
 
 	const rt_mesh & mesh = geomID_mesh[r.hit.geomID];
 	eval_hit hit(*mesh.mesh, r.hit.primID, r.hit.u, r.hit.v);

@@ -29,7 +29,7 @@ che * scanner_ptx(raytracing * rt, const size_t & n_rows, const size_t & n_cols,
 		const real_t & theta = j * delta_theta;
 		const vertex & dir = {std::sin(theta) * std::cos(phi), std::sin(theta) * std::sin(phi), std::cos(theta)};
 
-		const eval_hit<float> & h = rt->intersect(cam_pos, dir);
+		const eval_hit & h = rt->intersect(cam_pos, dir);
 
 		if(h.primID != NIL)
 		{

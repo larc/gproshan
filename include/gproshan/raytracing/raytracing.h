@@ -44,9 +44,9 @@ class raytracing
 									const index_t & samples = 4
 									);
 
-		virtual eval_hit<float> intersect(	const vertex &,	// org
-											const vertex &	//dir
-											) { return eval_hit<float>(); }
+		virtual eval_hit intersect(	const vertex &,	// org
+									const vertex &	//dir
+									) { return {}; }
 
 		virtual index_t closest_vertex(	const vertex &,	// org,
 										const vertex &	// dir
