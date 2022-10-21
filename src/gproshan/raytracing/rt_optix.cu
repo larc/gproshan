@@ -41,15 +41,8 @@ extern "C" __global__ void __closesthit__radiance()
 {
 	const CHE & mesh = **(const CHE **) optixGetSbtDataPointer();
 
-	const unsigned int primID = optixGetPrimitiveIndex();
-
-	const int he = primID * che::mtrig;
-	const float u = optixGetTriangleBarycentrics().x;
-	const float v = optixGetTriangleBarycentrics().y;
-
-	const int a = mesh.VT[he];
-	const int b = mesh.VT[he + 1];
-	const int c = mesh.VT[he + 2];
+	const int primID = optixGetPrimitiveIndex();
+	float2 bar = optixGetTriangleBarycentrics();
 
 	OptixTraversableHandle gas = optixGetGASTraversableHandle();
 	const unsigned int sbtID = optixGetSbtGASIndex();
@@ -62,46 +55,34 @@ extern "C" __global__ void __closesthit__radiance()
 	const vertex & B = data[1];
 	const vertex & C = data[2];
 
-	const vertex normal = optix_params.flat ? normalize((B - A) * (C - A))
-											: (1.f - u - v) * mesh.VN[a] + u * mesh.VN[b] + v * mesh.VN[c];
+	eval_hit hit(mesh, primID, bar.x, bar.y);
+	hit.normal = optix_params.flat ? normalize((B - A) * (C - A)) : hit.normal;
+	hit.position = (1.f - hit.u - hit.v) * A + hit.u * B + hit.v * C;
 
-	const vertex ca = {float(mesh.VC[a].r), float(mesh.VC[a].g), float(mesh.VC[a].b)};
-	const vertex cb = {float(mesh.VC[b].r), float(mesh.VC[b].g), float(mesh.VC[b].b)};
-	const vertex cc = {float(mesh.VC[c].r), float(mesh.VC[c].g), float(mesh.VC[c].b)};
+	vertex li = eval_li(hit, optix_params.lights, optix_params.n_lights,
+						[&](const vec3 & position, const vec3 & wi, const float & light_dist) -> bool
+						{
+							unsigned int occluded = 1;
+							optixTrace( optix_params.traversable,
+										* (float3 *) &position,
+										* (float3 *) &wi,
+										1e-3f,					// tmin
+										light_dist - 1e-3f,		// tmax
+										0.0f,					// rayTime
+										OptixVisibilityMask(255),
+										OPTIX_RAY_FLAG_DISABLE_ANYHIT
+										| OPTIX_RAY_FLAG_DISABLE_CLOSESTHIT
+										| OPTIX_RAY_FLAG_TERMINATE_ON_FIRST_HIT,
+										1,	// SBT offset
+										2,	// SBT stride
+										1,	// missSBTIndex
+										occluded);
 
-	const vertex * lights = optix_params.lights;
-	const vertex color = ((1.f - u - v) * ca + u * cb + v * cc) / 255;
-	const vertex position = (1.f - u - v) * A + u * B + v * C;
-
-	vertex li;
-	for(int i = 0; i < optix_params.n_lights; ++i)
-	{
-		vertex wi = lights[i] - position;
-		float light_dist = length(wi);
-		wi /= light_dist;
-		float dot_wi_normal = (wi, normal);
-
-		unsigned int occluded = 1;
-		optixTrace( optix_params.traversable,
-					* (float3 *) &position,
-					* (float3 *) &wi,
-					1e-3f,					// tmin
-					light_dist - 1e-3f,		// tmax
-					0.0f,					// rayTime
-					OptixVisibilityMask(255),
-					OPTIX_RAY_FLAG_DISABLE_ANYHIT
-					| OPTIX_RAY_FLAG_DISABLE_CLOSESTHIT
-					| OPTIX_RAY_FLAG_TERMINATE_ON_FIRST_HIT,
-					1,	// SBT offset
-					2,	// SBT stride
-					1,	// missSBTIndex
-					occluded);
-
-		li += (dot_wi_normal < 0 ? -dot_wi_normal : dot_wi_normal) * (occluded ? 0.4f : 1.0f) * color;
-	}
+							return occluded != 0;
+						});
 
 	vertex & pixel_color = *ray_data<vertex>();
-	pixel_color = (pixel_color * optix_params.n_samples + li / optix_params.n_lights) / (optix_params.n_samples + 1);
+	pixel_color = (pixel_color * optix_params.n_samples + li) / (optix_params.n_samples + 1);
 }
 
 

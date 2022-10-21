@@ -27,21 +27,6 @@ index_t cu_prev(index_t he)
 }
 
 
-CHE::CHE(const che * mesh)
-{
-	n_vertices = mesh->n_vertices;
-	n_faces = mesh->n_faces;
-	n_half_edges = mesh->n_half_edges;
-
-	GT = (vertex *) mesh->GT;
-	VN = (vertex *) mesh->VN;
-	VC = mesh->VC;
-	VT = mesh->VT;
-	OT = mesh->OT;
-	EVT = mesh->EVT;
-}
-
-
 void cuda_create_CHE(CHE * h_che, CHE *& dd_che, CHE *& d_che, const bool & normal, const bool & color)
 {
 	dd_che = new CHE;

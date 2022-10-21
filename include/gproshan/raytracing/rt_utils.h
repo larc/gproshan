@@ -4,6 +4,8 @@
 #include <gproshan/include.h>
 #include <gproshan/geometry/mat.h>
 
+#include <gproshan/mesh/che.cuh>
+
 
 // geometry processing and shape analysis framework
 // raytracing approach
@@ -35,6 +37,65 @@ struct random
 		return T(previous & 0x00FFFFFF) / T(0x01000000);
 	}
 };
+
+template <class T>
+struct t_eval_hit
+{
+	int primID = NIL;
+	T dist = 0;
+	T u = 0, v = 0;
+	vec<T, 3> position;
+	vec<T, 3> normal;
+	vec<T, 3> color;
+
+	__host__ __device__
+	t_eval_hit() {}
+
+	__host__ __device__
+	t_eval_hit(const CHE & mesh, const unsigned int & aprimID, const T & au, const T & av)
+	{
+		primID = aprimID;
+		u = au;
+		v = av;
+
+		const int he = primID * che::mtrig;
+
+		const int a = mesh.VT[he];
+		const int b = mesh.VT[he + 1];
+		const int c = mesh.VT[he + 2];
+
+		const vertex ca = {float(mesh.VC[a].r), float(mesh.VC[a].g), float(mesh.VC[a].b)};
+		const vertex cb = {float(mesh.VC[b].r), float(mesh.VC[b].g), float(mesh.VC[b].b)};
+		const vertex cc = {float(mesh.VC[c].r), float(mesh.VC[c].g), float(mesh.VC[c].b)};
+
+		color = ((1.f - u - v) * ca + u * cb + v * cc) / 255;
+		normal = (1.f - u - v) * mesh.VN[a] + u * mesh.VN[b] + v * mesh.VN[c];
+	}
+};
+
+template <class T, class Occluded>
+__host__ __device__
+vec<T, 3> eval_li(const t_eval_hit<T> & hit, const vec<T, 3> * lights, const int & n_lights, Occluded occluded)
+{
+	vec<T, 3> li, wi;
+	float light_dist, dot_wi_normal;
+
+	for(int i = 0; i < n_lights; ++i)
+	{
+		wi = lights[i] - hit.position;
+		light_dist = length(wi);
+
+		wi /= light_dist;
+		dot_wi_normal = dot(wi, hit.normal);
+
+		li += (dot_wi_normal < 0 ? -dot_wi_normal : dot_wi_normal) * (occluded(hit.position, wi, light_dist) ? 0.4f : 1.0f) * hit.color;
+	}
+
+	return li / n_lights;
+}
+
+
+using eval_hit = t_eval_hit<float>;
 
 
 template <class T>
