@@ -70,21 +70,25 @@ extern "C" __global__ void __closesthit__radiance()
 		wi /= light_dist;
 		float dot_wi_normal = (wi, normal);
 
-		unsigned int occluded = 1;
-		optixTrace( optix_params.traversable,
-					* (float3 *) &position,
-					* (float3 *) &wi,
-					1e-3f,					// tmin
-					light_dist - 1e-3f,		// tmax
-					0.0f,					// rayTime
-					OptixVisibilityMask(255),
-					OPTIX_RAY_FLAG_DISABLE_ANYHIT
-					| OPTIX_RAY_FLAG_DISABLE_CLOSESTHIT
-					| OPTIX_RAY_FLAG_TERMINATE_ON_FIRST_HIT,
-					1,	// SBT offset
-					2,	// SBT stride
-					1,	// missSBTIndex
-					occluded);
+		bool occluded = eval_occluded([&]()
+		{ 
+			unsigned int occluded = 1;
+			optixTrace( optix_params.traversable,
+						* (float3 *) &position,
+						* (float3 *) &wi,
+						1e-3f,					// tmin
+						light_dist - 1e-3f,		// tmax
+						0.0f,					// rayTime
+						OptixVisibilityMask(255),
+						OPTIX_RAY_FLAG_DISABLE_ANYHIT
+						| OPTIX_RAY_FLAG_DISABLE_CLOSESTHIT
+						| OPTIX_RAY_FLAG_TERMINATE_ON_FIRST_HIT,
+						1,	// SBT offset
+						2,	// SBT stride
+						1,	// missSBTIndex
+						occluded);
+			return occluded != 0;
+		});
 
 		li += (dot_wi_normal < 0 ? -dot_wi_normal : dot_wi_normal) * (occluded ? 0.4f : 1.0f) * hit.color;
 	}

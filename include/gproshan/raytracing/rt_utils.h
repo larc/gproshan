@@ -66,15 +66,15 @@ struct eval_hit
 		color = ((1.f - u - v) * ca + u * cb + v * cc) / 255;
 		normal = (1.f - u - v) * mesh.VN[a] + u * mesh.VN[b] + v * mesh.VN[c];
 	}
-
-
-
-	__host__ __device__
-	vec<T, 3> li()
-	{
-	}
 };
 
+
+template <class Fun>
+__host__ __device__
+bool eval_occluded(Fun f)
+{
+	return f();
+}
 
 template <class T>
 __host__ __device__
