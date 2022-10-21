@@ -63,8 +63,8 @@ class embree_splat_ch : public embree
 			int k = std::lower_bound(ipoints.begin(), ipoints.end(), ipoint_code{0, morton_2d((h.x() + 1) / 2, (h.y() + 1) / 2)}) - ipoints.begin();
 
 			float w, sum_w = 0;
-			float sigma = k < ipoints.size() ? length(p - vec3(model_mat * vec4(mesh->point(ipoints[k].p), 1))) :
-											length(p - vec3(model_mat * vec4(mesh->point(ipoints[k - 1].p), 1)));
+			float sigma = k < ipoints.size() ? length(p - vec3(model_mat * vec4(mesh->GT[ipoints[k].p], 1))) :
+											length(p - vec3(model_mat * vec4(mesh->GT[ipoints[k - 1].p], 1)));
 			int begin = std::max(k - k_neighbors, 0);
 			int end = std::min(k + k_neighbors, (int) ipoints.size());
 
@@ -72,10 +72,10 @@ class embree_splat_ch : public embree
 			for(int i = begin; i < end; ++i)
 			{
 				const index_t & v = ipoints[i].p;
-				w = length(p - vec3(model_mat * vec4(mesh->point(v), 1)));
+				w = length(p - vec3(model_mat * vec4(mesh->GT[v], 1)));
 				w = exp(-0.5 * w * w / (sigma * sigma));
-				normal += w * mesh->normal(v);
-				color += w * mesh->color(v);
+				normal += w * mesh->VN[v];
+				color += w * vec3{float(mesh->VC[v].r), float(mesh->VC[v].g), float(mesh->VC[v].b)} / 255;
 				sum_w += w;
 			}
 
@@ -116,7 +116,7 @@ class embree_splat_ch : public embree
 
 	private:
 		index_t add_pointcloud(const che * mesh, const mat4 & model_mat);
-		vec4 li(const ray_hit & r, const vertex & light, const bool & flat);
+		virtual vec3 closesthit_radiance(const vertex & org, const vertex & dir, const vertex * lights, const int & n_lights, const bool & flat);
 
 		void init_splats(const che * mesh);
 };

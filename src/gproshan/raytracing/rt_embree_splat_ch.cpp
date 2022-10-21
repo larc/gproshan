@@ -123,28 +123,31 @@ index_t embree_splat_ch::add_pointcloud(const che * mesh, const mat4 & model_mat
 	return add_mesh(&ch_mesh, mat4::identity());
 }
 
-vec4 embree_splat_ch::li(const ray_hit & r, const vertex & light, const bool & flat)
+vec3 embree_splat_ch::closesthit_radiance(const vertex & org, const vertex & dir, const vertex * lights, const int & n_lights, const bool & flat)
 {
-	vertex position, normal, color;
+	ray_hit r(org, dir);
+	if(!intersect(r)) return {};
 
-	position = r.position();
+	eval_hit hit(*geomID_mesh[r.hit.geomID].mesh, r.hit.primID, r.hit.u, r.hit.v);
+	hit.position = r.position();
+	hit.normal = flat ? r.normal() : hit.normal;
+
 	if(show_chsplats)
 	{
-		normal = normalize(vec3{r.hit.Ng_x, r.hit.Ng_y, r.hit.Ng_z});
-		color = colormap(csplat[primID_splat[r.hit.primID]]);
+		hit.normal = normalize(vec3{r.hit.Ng_x, r.hit.Ng_y, r.hit.Ng_z});
+		hit.color = colormap(csplat[primID_splat[r.hit.primID]]);
 	}
 	else
 	{
-		vsplat[primID_splat[r.hit.primID]].shading(geomID_mesh[r.hit.geomID], position, normal, color);
+		vsplat[primID_splat[r.hit.primID]].shading(geomID_mesh[r.hit.geomID], hit.position, hit.normal, hit.color);
 	}
 
-	vertex wi = light - position;
-	float light_dist = length(wi);
-	wi /= light_dist;
-	float dot_wi_normal = (wi, normal);
-
-	ray_hit rs(position, wi, 1e-3f, light_dist - 1e-3f);
-	return (dot_wi_normal < 0 ? -dot_wi_normal : dot_wi_normal) * (occluded(rs) ? 0.4f : 1.0f) * vec4{color, 1};
+	return eval_li(	hit, lights,  n_lights,
+					[&](const vec3 & position, const vec3 & wi, const float & light_dist) -> bool
+					{
+						ray_hit ro(position, wi, 1e-3f, light_dist - 1e-3f);
+						return occluded(ro);
+					});
 }
 
 void embree_splat_ch::init_splats(const che * mesh)
