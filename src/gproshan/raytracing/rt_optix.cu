@@ -82,7 +82,7 @@ extern "C" __global__ void __closesthit__radiance()
 						});
 
 	vertex & pixel_color = *ray_data<vertex>();
-	pixel_color = (pixel_color * optix_params.n_samples + li / optix_params.n_lights) / (optix_params.n_samples + 1);
+	pixel_color = (pixel_color * optix_params.n_samples + li) / (optix_params.n_samples + 1);
 }
 
 
