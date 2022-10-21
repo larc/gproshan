@@ -14,15 +14,6 @@
 namespace gproshan::rt {
 
 
-struct hit
-{
-	index_t idx = NIL;
-	real_t dist = INFINITY;
-	vertex color;
-	vertex normal;
-};
-
-
 class raytracing
 {
 	protected:
@@ -53,9 +44,9 @@ class raytracing
 									const index_t & samples = 4
 									);
 
-		virtual hit intersect(	const vertex &,	// org
-								const vertex &	//dir
-								)	{ return hit(); }
+		virtual eval_hit<float> intersect(	const vertex &,	// org
+											const vertex &	//dir
+											) { return eval_hit<float>(); }
 
 		virtual index_t closest_vertex(	const vertex &,	// org,
 										const vertex &	// dir

@@ -52,29 +52,6 @@ vertex embree::ray_hit::position() const
 	return org() + ray.tfar * dir();
 }
 
-index_t embree::ray_hit::closest_vertex(const rt_mesh & mesh) const
-{
-	if(mesh.pointcloud) return hit.primID;
-
-	index_t he = che::mtrig * hit.primID;
-	float w = 1 - hit.u - hit.v;
-
-	if(w < hit.u)
-	{
-		he = che::mtrig * hit.primID + 1;
-		w = hit.u;
-	}
-
-	if(w < hit.v)
-	{
-		he = che::mtrig * hit.primID + 2;
-		w = hit.v;
-	}
-
-	return mesh->VT[he];
-}
-
-
 void embree_error(void *, RTCError, const char * str)
 {
 	fprintf(stderr, "EMBREE ERROR: %s\n", str);
@@ -107,27 +84,41 @@ embree::~embree()
 index_t embree::closest_vertex(const vertex & org, const vertex & dir)
 {
 	ray_hit r(org, dir);
-	return intersect(r) ? r.closest_vertex(geomID_mesh[r.hit.geomID]) : NIL;
-}
+	if(!intersect(r)) return NIL;
 
-hit embree::intersect(const vertex & org, const vertex & dir)
-{
-	ray_hit r(org, dir);
-	if(intersect(r))
+	const rt_mesh & mesh = geomID_mesh[r.hit.geomID];
+	if(mesh.pointcloud)
+		return r.hit.primID;
+
+	index_t he = che::mtrig * r.hit.primID;
+	float w = 1 - r.hit.u - r.hit.v;
+
+	if(w < r.hit.u)
 	{
-		/*
-		const rt_mesh & mesh = geomID_mesh[r.hit.geomID];
-		const vertex & color = r.color(mesh);
-		const vertex & normal = r.normal(mesh);
-
-		return	{	r.closest_vertex(mesh),
-					r.ray.tfar,
-					{color.x(), color.y(), color.z()},
-					{normal.x(), normal.y(), normal.z()}
-					};*/
+		he = che::mtrig * r.hit.primID + 1;
+		w = r.hit.u;
 	}
 
-	return hit();
+	if(w < r.hit.v)
+	{
+		he = che::mtrig * r.hit.primID + 2;
+		w = r.hit.v;
+	}
+
+	return mesh->VT[he];
+}
+
+eval_hit<float> embree::intersect(const vertex & org, const vertex & dir)
+{
+	ray_hit r(org, dir);
+	if(!intersect(r)) return eval_hit<float>();
+
+	const rt_mesh & mesh = geomID_mesh[r.hit.geomID];
+	eval_hit hit(*mesh.mesh, r.hit.primID, r.hit.u, r.hit.v);
+	hit.dist = r.ray.tfar;
+	hit.position = r.position();
+
+	return hit;
 }
 
 void embree::build_bvh(const std::vector<che *> & meshes, const std::vector<mat4> & model_mats, const bool & pointcloud)

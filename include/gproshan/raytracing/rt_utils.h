@@ -41,16 +41,22 @@ struct random
 template <class T = float>
 struct eval_hit
 {
-	float u, v;
+	int primID = NIL;
+	float dist = 0;
+	float u = 0, v = 0;
 	vec<T, 3> position;
 	vec<T, 3> normal;
 	vec<T, 3> color;
 
 	__host__ __device__
-	eval_hit(const CHE & mesh, const unsigned int & primID, const float & pu, const float & pv)
+	eval_hit() {}
+
+	__host__ __device__
+	eval_hit(const CHE & mesh, const unsigned int & aprimID, const float & au, const float & av)
 	{
-		u = pu;
-		v = pv;
+		primID = aprimID;
+		u = au;
+		v = av;
 
 		const int he = primID * che::mtrig;
 
@@ -65,7 +71,6 @@ struct eval_hit
 		color = ((1.f - u - v) * ca + u * cb + v * cc) / 255;
 		normal = (1.f - u - v) * mesh.VN[a] + u * mesh.VN[b] + v * mesh.VN[c];
 	}
-
 };
 
 template <class T, class Occluded>
