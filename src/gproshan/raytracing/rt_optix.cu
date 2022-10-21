@@ -40,16 +40,10 @@ extern "C" __global__ void __closesthit__shadow() {}
 extern "C" __global__ void __closesthit__radiance()
 {
 	const CHE & mesh = **(const CHE **) optixGetSbtDataPointer();
-
-	const unsigned int primID = optixGetPrimitiveIndex();
-
-	const int he = primID * che::mtrig;
-	const float u = optixGetTriangleBarycentrics().x;
-	const float v = optixGetTriangleBarycentrics().y;
-
-	const int a = mesh.VT[he];
-	const int b = mesh.VT[he + 1];
-	const int c = mesh.VT[he + 2];
+	
+	const int primID = optixGetPrimitiveIndex();
+	float2 bar = optixGetTriangleBarycentrics();
+	eval_hit<float> hit(mesh, primID, bar.x, bar.y);
 
 	OptixTraversableHandle gas = optixGetGASTraversableHandle();
 	const unsigned int sbtID = optixGetSbtGASIndex();
@@ -62,16 +56,11 @@ extern "C" __global__ void __closesthit__radiance()
 	const vertex & B = data[1];
 	const vertex & C = data[2];
 
-	const vertex normal = optix_params.flat ? normalize((B - A) * (C - A))
-											: (1.f - u - v) * mesh.VN[a] + u * mesh.VN[b] + v * mesh.VN[c];
+	const vertex normal = optix_params.flat ? normalize((B - A) * (C - A)) : hit.normal; 
 
-	const vertex ca = {float(mesh.VC[a].r), float(mesh.VC[a].g), float(mesh.VC[a].b)};
-	const vertex cb = {float(mesh.VC[b].r), float(mesh.VC[b].g), float(mesh.VC[b].b)};
-	const vertex cc = {float(mesh.VC[c].r), float(mesh.VC[c].g), float(mesh.VC[c].b)};
 
 	const vertex * lights = optix_params.lights;
-	const vertex color = ((1.f - u - v) * ca + u * cb + v * cc) / 255;
-	const vertex position = (1.f - u - v) * A + u * B + v * C;
+	const vertex position = (1.f - hit.u - hit.v) * A + hit.u * B + hit.v * C;
 
 	vertex li;
 	for(int i = 0; i < optix_params.n_lights; ++i)
@@ -97,7 +86,7 @@ extern "C" __global__ void __closesthit__radiance()
 					1,	// missSBTIndex
 					occluded);
 
-		li += (dot_wi_normal < 0 ? -dot_wi_normal : dot_wi_normal) * (occluded ? 0.4f : 1.0f) * color;
+		li += (dot_wi_normal < 0 ? -dot_wi_normal : dot_wi_normal) * (occluded ? 0.4f : 1.0f) * hit.color;
 	}
 
 	vertex & pixel_color = *ray_data<vertex>();

@@ -33,8 +33,8 @@ CHE::CHE(const che * mesh)
 	n_faces = mesh->n_faces;
 	n_half_edges = mesh->n_half_edges;
 
-	GT = (vertex *) mesh->GT;
-	VN = (vertex *) mesh->VN;
+	GT = mesh->GT;
+	VN = mesh->VN;
 	VC = mesh->VC;
 	VT = mesh->VT;
 	OT = mesh->OT;

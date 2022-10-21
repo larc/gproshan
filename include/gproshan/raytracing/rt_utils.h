@@ -4,6 +4,8 @@
 #include <gproshan/include.h>
 #include <gproshan/geometry/mat.h>
 
+#include <gproshan/mesh/che.cuh>
+
 
 // geometry processing and shape analysis framework
 // raytracing approach
@@ -33,6 +35,43 @@ struct random
 	{
 		previous = previous * 1664525 + 1013904223;
 		return T(previous & 0x00FFFFFF) / T(0x01000000);
+	}
+};
+
+
+template <class T>
+struct eval_hit
+{
+	float u, v;
+	vec<T, 3> position;
+	vec<T, 3> normal;
+	vec<T, 3> color;
+
+	__host__ __device__
+	eval_hit(const CHE & mesh, const unsigned int & primID, const float & pu, const float & pv)
+	{
+		u = pu;
+		v = pv;
+		
+		const int he = primID * che::mtrig;
+		
+		const int a = mesh.VT[he];
+		const int b = mesh.VT[he + 1];
+		const int c = mesh.VT[he + 2];
+		
+		const vertex ca = {float(mesh.VC[a].r), float(mesh.VC[a].g), float(mesh.VC[a].b)};
+		const vertex cb = {float(mesh.VC[b].r), float(mesh.VC[b].g), float(mesh.VC[b].b)};
+		const vertex cc = {float(mesh.VC[c].r), float(mesh.VC[c].g), float(mesh.VC[c].b)};
+		
+		color = ((1.f - u - v) * ca + u * cb + v * cc) / 255;
+		normal = (1.f - u - v) * mesh.VN[a] + u * mesh.VN[b] + v * mesh.VN[c];
+	}
+
+
+
+	__host__ __device__
+	vec<T, 3> li()
+	{
 	}
 };
 
