@@ -24,7 +24,7 @@ if(CUDAToolkit_FOUND)
 
 	set(CMAKE_CUDA_FLAGS "-Xcompiler -fopenmp")
 	set(CMAKE_CUDA_SEPARABLE_COMPILATION ON)
-	set(CMAKE_CUDA_ARCHITECTURES 52 60 61 70 75 80 86)
+	set(CMAKE_CUDA_ARCHITECTURES native)
 
 	find_package(OptiX 7.5)
 	if(OptiX_INCLUDE)
