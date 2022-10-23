@@ -24,7 +24,9 @@ if(CUDAToolkit_FOUND)
 
 	set(CMAKE_CUDA_FLAGS "-Xcompiler -fopenmp")
 	set(CMAKE_CUDA_SEPARABLE_COMPILATION ON)
-	set(CMAKE_CUDA_ARCHITECTURES native)
+	if(NOT DEFINED ENV{GITHUB_ACTIONS})
+		set(CMAKE_CUDA_ARCHITECTURES native)
+	endif()
 
 	find_package(OptiX 7.5)
 	if(OptiX_INCLUDE)
