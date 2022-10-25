@@ -25,7 +25,7 @@ finally execute:
 	./gproshan [mesh_paths.(off,obj,ply)]
 
 ### Dependencies (Linux)
-g++ >= 9.4, cuda >= 11.7, cmake >= 3.22, armadillo, eigen3, cgal, suitesparse, openblas, glew, glfw3, cimg, gnuplot, embree >= 3.13
+g++ >= 9.4, cuda >= 11.8, cmake >= 3.24, armadillo, eigen3, cgal, suitesparse, openblas, glew, glfw3, cimg, gnuplot, embree >= 3.13
 
 In Ubuntu you can install them with:
 

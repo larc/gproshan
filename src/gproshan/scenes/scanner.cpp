@@ -8,11 +8,10 @@ using namespace cimg_library;
 
 
 // geometry processing and shape analysis framework
-// raytracing approach
-namespace gproshan::rt {
+namespace gproshan {
 
 
-che * scanner_ptx(raytracing * rt, const size_t & n_rows, const size_t & n_cols, const vertex & cam_pos)
+che * scanner_ptx(rt::raytracing * rt, const size_t & n_rows, const size_t & n_cols, const vertex & cam_pos)
 {
 	che * mesh_ptx = new che(n_cols * n_rows);
 
@@ -29,7 +28,7 @@ che * scanner_ptx(raytracing * rt, const size_t & n_rows, const size_t & n_cols,
 		const real_t & theta = j * delta_theta;
 		const vertex & dir = {std::sin(theta) * std::cos(phi), std::sin(theta) * std::sin(phi), std::cos(theta)};
 
-		const eval_hit & h = rt->intersect(cam_pos, dir);
+		const rt::eval_hit & h = rt->intersect(cam_pos, dir);
 
 		if(h.primID != NIL)
 		{
@@ -50,7 +49,7 @@ che * scanner_ptx(raytracing * rt, const size_t & n_rows, const size_t & n_cols,
 	return mesh_ptx;
 }
 
-che * scanner_ptx(const che * mesh, raytracing * rt, const size_t & n_rows, const size_t & n_cols, const vertex & cam_pos, const std::string & file_jpg)
+che * scanner_ptx(const che * mesh, rt::raytracing * rt, const size_t & n_rows, const size_t & n_cols, const vertex & cam_pos, const std::string & file_jpg)
 {
 	che * mesh_ptx = scanner_ptx(rt, n_rows, n_cols, cam_pos);
 

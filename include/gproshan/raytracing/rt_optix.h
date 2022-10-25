@@ -15,7 +15,6 @@
 
 
 // geometry processing and shape analysis framework
-// raytracing approach
 namespace gproshan::rt {
 
 
