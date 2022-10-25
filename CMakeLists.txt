@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.22)
+cmake_minimum_required(VERSION 3.24)
 
 project(gproshan VERSION 3.14)
 
@@ -14,7 +14,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_compile_options(-Wall -Wextra -Wno-unused-result)
 
 
-find_package(CUDAToolkit 11.7)
+find_package(CUDAToolkit 11.8)
 if(CUDAToolkit_FOUND)
 	enable_language(CUDA)
 	include_directories(SYSTEM ${CUDAToolkit_INCLUDE_DIRS})
