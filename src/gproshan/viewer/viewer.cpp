@@ -790,8 +790,12 @@ bool viewer::m_setup_raytracing(viewer * view)
 				break;
 
 			case 3:
+				TIC(time);
+					mesh.rt_optix = new rt::optix({mesh}, {mesh.model_mat});
 				rt::splat splat_test({mesh}, {mesh.model_mat});
 				mesh.update_vbo_heatmap();
+				TOC(time);
+				sprintf(view->status_message, "build splats in %.3fs", time);
 				break;
 		}
 	}

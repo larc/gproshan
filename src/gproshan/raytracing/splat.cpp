@@ -32,41 +32,50 @@ splat::~splat()
 
 void splat::add_splats_mesh(che * mesh)
 {
-	const real_t n_threshold = 0.9;
+	const real_t n_threshold = 0.81;
 	const real_t max_neigs = 1000;
 
 	std::vector<index_t> vertices;
 	std::vector<index_t> idx_splats({0});
-	
-	std::vector<bool> visited;
-	visited.assign(mesh->n_vertices, 0);
+
+	std::vector<unsigned int> visited;
+	visited.assign(mesh->n_vertices, -1);
+
 	for(index_t v = 0; v < mesh->n_vertices; ++v)
 	{
-		if(visited[v]) continue;
+		if(visited[v] != NIL) continue;
 
 		const vertex & vnormal = mesh->normal(v);
-		
+
 		std::queue<index_t> q; q.push(v);
+
 		while(!q.empty())
 		{
-			if(dot(vnormal, mesh->normal(q.front())) < n_threshold)
+			index_t front = q.front();
+			q.pop();
+
+			if(visited[front] == idx_splats.size())
+				continue;
+
+			if(visited[front] != NIL)
 				break;
 
 			if(vertices.size() - idx_splats.back() >= max_neigs)
 				break;
 
-			vertices.push_back(q.front());
-			visited[q.front()] = true;
+			if(dot(vnormal, mesh->normal(front)) < n_threshold)
+				break;
 
-			for(const index_t & he: mesh->star(q.front()))
+			vertices.push_back(front);
+			visited[front] = idx_splats.size();
+
+			for(const index_t & he: mesh->star(front))
 			{
 				const index_t & u = mesh->halfedge(prev(he));
-				if(!visited[u]) q.push(u);
+				if(visited[u] == NIL) q.push(u);
 			}
-
-			q.pop();
 		}
-		
+
 		// splat verification
 		if(vertices.size() - idx_splats.back() < 3)
 		{
@@ -75,18 +84,20 @@ void splat::add_splats_mesh(che * mesh)
 			vertices.resize(idx_splats.back());
 			continue;
 		}
-		
+
 		// new splat limit
 		idx_splats.push_back(vertices.size());
 	}
-	
+
 	std::vector<int> color(idx_splats.size() - 1);
 	std::iota(color.begin(), color.end(), 0);
 	std::random_shuffle(color.begin(), color.end());
 	for(index_t i = 1; i < idx_splats.size(); ++i)
 	for(index_t j = idx_splats[i - 1]; j < idx_splats[i]; ++j)
 		mesh->heatmap(vertices[j]) = real_t(color[i - 1]) / (color.size() - 1);
-	
+
+	gproshan_error_var(vertices.size());
+	gproshan_error_var(idx_splats.size());
 //	pointclouds.push_back(pc);
 //	splats_pcs.push_back(spc);
 }

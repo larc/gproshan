@@ -19,7 +19,7 @@ bool embree_splat_ch::show_chsplats = true;
 int embree_splat_ch::k_neighbors = 4;
 float embree_splat_ch::r_threshold = 0.50;		// cos overlapping radius
 float embree_splat_ch::n_threshold = 0.81;		// 30 degrees angle normals
-size_t embree_splat_ch::max_neighbors = 256;	// max neighbors per splat
+size_t embree_splat_ch::max_neighbors = 1000;	// max neighbors per splat
 
 
 vec3 colormap(const float & x)
