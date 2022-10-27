@@ -13,9 +13,11 @@ struct splats_data
 {
 	CHE * pc = nullptr;
 	unsigned int * morton_codes = nullptr;
-	unsigned int * idx_splats = nullptr;
+	
 	unsigned int n_splats = 0;
-	mat4 model_mat;
+	unsigned int * idx_splats = nullptr;
+	vertex * centers = nullptr;
+	mat3 * tbns = nullptr;
 };
 
 

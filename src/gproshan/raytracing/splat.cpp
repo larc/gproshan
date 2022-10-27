@@ -1,6 +1,7 @@
 #include <gproshan/raytracing/splat.h>
 
 #include <gproshan/raytracing/splat_utils.h>
+#include <gproshan/geometry/convex_hull.h>
 
 #include <queue>
 #include <numeric>
@@ -27,6 +28,8 @@ splat::~splat()
 		delete [] spc->pc;
 		delete [] spc->morton_codes;
 		delete [] spc->idx_splats;
+		delete [] spc->tbns;
+		delete [] spc->centers;
 	}
 }
 
@@ -101,12 +104,62 @@ void splat::add_splats_mesh(che * mesh, const mat4 & model_mat)
 	gproshan_error_var(vertices.size());
 	gproshan_error_var(idx_splats.size());
 
-	std::vector<vertex> points;
+	std::vector<vertex> points(vertices.size());
 	std::vector<index_t> faces;
+	
+	#pragma omp parallel for
+	for(index_t i = 0; i < vertices.size(); ++i)
+		points[i] = model_mat * vec4(mesh->point(vertices[i]), 1);
+	
+	splats_data * spc = new splats_data;
+	spc->morton_codes = new unsigned int[vertices.size()];
+	spc->n_splats = idx_splats.size() - 1;
+	spc->idx_splats = new unsigned int[spc->n_splats];
+	spc->tbns = new mat3[spc->n_splats];
+	spc->centers = new vertex[spc->n_splats];
+	
+	std::vector<convex_hull *> splat_chs(spc->n_splats);
+	
+	#pragma omp parallel for
+	for(index_t i = 0; i < spc->n_splats; ++i)
+	{
+		const unsigned int & begin = idx_splats[i];
+		const unsigned int & end = idx_splats[i + 1];
+		vertex & center = spc->centers[i];
+		mat3 & tbn = spc->tbns[i];
 
-	points.reserve(vertices.size());
-	for(const index_t & v: vertices)
-		points.push_back(mesh->point(v));
+		center = points[begin];
+		tbn[2] = mesh->normal(vertices[begin]);
+		tbn[0] = points[end - 1] - center;
+		tbn[0] = normalize(tbn[0] - dot(tbn[0], tbn[2]) * tbn[2]);
+		tbn[1] = normalize(tbn[2] * tbn[0]);
+		
+		for(index_t j = begin; j < end; ++j)
+		{
+			vertex & p = points[j];
+			p = tbn * (p - center);
+			spc->morton_codes[j] = morton_2d((p.x() + 1) / 2, (p.y() + 1) / 2);
+		}
+
+		std::sort(vertices.begin() + begin, vertices.begin() + end,
+					[&](const index_t & a, const index_t & b)
+					{
+						return spc->morton_codes[a] < spc->morton_codes[b];
+					});
+
+		for(index_t j = begin; j < end; ++j)
+		{
+			vertex & p = points[j];
+			p = model_mat * vec4(mesh->point(vertices[j]), 1);
+			p = tbn * (p - center);
+			spc->morton_codes[j] = morton_2d((p.x() + 1) / 2, (p.y() + 1) / 2);
+		}
+		
+		splat_chs[i] = new convex_hull(points.data() + begin, end - begin);
+	}
+	
+	for(convex_hull * ch: splat_chs)
+		delete ch;
 //	pointclouds.push_back(pc);
 //	splats_pcs.push_back(spc);
 }
