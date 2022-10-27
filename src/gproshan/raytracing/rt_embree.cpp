@@ -85,9 +85,9 @@ index_t embree::closest_vertex(const vertex & org, const vertex & dir)
 	ray_hit r(org, dir);
 	if(!intersect(r)) return NIL;
 
-	const rt_mesh & mesh = geomID_mesh[r.hit.geomID];
-	if(mesh.pointcloud)
-		return r.hit.primID;
+	const CHE * mesh = g_meshes[r.hit.geomID];
+
+	if(!mesh->n_faces) return r.hit.primID;
 
 	index_t he = che::mtrig * r.hit.primID;
 	float w = 1 - r.hit.u - r.hit.v;
@@ -112,8 +112,7 @@ eval_hit embree::intersect(const vertex & org, const vertex & dir)
 	ray_hit r(org, dir);
 	if(!intersect(r)) return {};
 
-	const rt_mesh & mesh = geomID_mesh[r.hit.geomID];
-	eval_hit hit(*mesh.mesh, r.hit.primID, r.hit.u, r.hit.v);
+	eval_hit hit(*g_meshes[r.hit.geomID], r.hit.primID, r.hit.u, r.hit.v);
 	hit.dist = r.ray.tfar;
 	hit.position = r.position();
 
@@ -122,15 +121,18 @@ eval_hit embree::intersect(const vertex & org, const vertex & dir)
 
 void embree::build_bvh(const std::vector<che *> & meshes, const std::vector<mat4> & model_mats, const bool & pointcloud)
 {
+	g_meshes.resize(meshes.size());
 	for(index_t i = 0; i < meshes.size(); ++i)
 	{
-		CHE * mesh = new CHE(meshes[i]);
-		const mat4 & model_mat = model_mats[i];
+		g_meshes[i] = new CHE(meshes[i]);
 
-		if(!mesh->n_faces || pointcloud)
-			geomID_mesh[add_pointcloud(meshes[i], model_mat)] = {mesh, true};
-		else
-			geomID_mesh[add_mesh(meshes[i], model_mat)] = {mesh, false};
+		if(!meshes[i]->n_faces || pointcloud)
+			g_meshes[i]->n_faces = 0;
+
+		const index_t & geomID = g_meshes[i]->n_faces ? add_mesh(meshes[i], model_mats[i]) :
+														add_pointcloud(meshes[i], model_mats[i]);
+
+		gproshan_error_var(i == geomID);
 	}
 
 	rtcCommitScene(scene);
@@ -223,7 +225,7 @@ vec3 embree::closesthit_radiance(const vertex & org, const vertex & dir, const v
 	ray_hit r(org, dir);
 	if(!intersect(r)) return {};
 
-	eval_hit hit(*geomID_mesh[r.hit.geomID].mesh, r.hit.primID, r.hit.u, r.hit.v);
+	eval_hit hit(*g_meshes[r.hit.geomID], r.hit.primID, r.hit.u, r.hit.v);
 	hit.position = r.position();
 	hit.normal = flat ? r.normal() : hit.normal;
 
