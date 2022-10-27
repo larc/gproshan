@@ -156,11 +156,38 @@ void splat::add_splats_mesh(che * mesh, const mat4 & model_mat)
 		}
 		
 		splat_chs[i] = new convex_hull(points.data() + begin, end - begin);
+		
+		for(index_t j = begin; j < end; ++j)
+		{
+			vertex & p = points[j];
+			p = mat3::transpose(tbn) * p + center;
+		}
+	}
+	
+	std::vector<index_t> primID_splat;
+	for(index_t i = 0; i < spc->n_splats; ++i)
+	{
+		const index_t & begin = idx_splats[i];
+		index_t f = -1;
+		const std::vector<index_t> & sch = *splat_chs[i];
+		for(const index_t & v: che::trig_convex_polygon(sch.data(), sch.size()))
+		{
+			faces.push_back(v + begin);
+			if(!(++f % 3))
+				primID_splat.push_back(i);
+		}
 	}
 	
 	for(convex_hull * ch: splat_chs)
 		delete ch;
-//	pointclouds.push_back(pc);
+	
+	che * pc = new che(points.data(), points.size(), faces.data(), faces.size() / 3);
+
+	for(index_t i = 0; i < vertices.size(); ++i)
+		pc->heatmap(i) = mesh->heatmap(vertices[i]);
+
+
+	pointclouds.push_back(pc);
 //	splats_pcs.push_back(spc);
 }
 

@@ -796,6 +796,8 @@ bool viewer::m_setup_raytracing(viewer * view)
 				mesh.update_vbo_heatmap();
 				TOC(time);
 				sprintf(view->status_message, "build splats in %.3fs", time);
+				for(che * pc: splat_test.pointclouds)
+					view->add_mesh(pc);
 				break;
 		}
 	}

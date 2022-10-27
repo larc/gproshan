@@ -8,10 +8,12 @@
 namespace gproshan::rt {
 
 
-class splat : public raytracing
+class splat
 {
-	private:
+	public:
 		std::vector<che *> pointclouds;
+
+	protected:
 		std::vector<splats_data *> splats_pcs;
 
 	public:
