@@ -19,6 +19,8 @@ struct splats_data
 };
 
 
+// FROM: https://developer.nvidia.com/blog/thinking-parallel-part-iii-tree-construction-gpu/
+
 // Expands a 10-bit integer into 30 bits
 // by inserting 2 zeros after each bit.
 template <class T>

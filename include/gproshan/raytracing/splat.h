@@ -19,7 +19,7 @@ class splat : public raytracing
 		virtual ~splat();
 
 	protected:
-		void add_splats_mesh(che * mesh);
+		void add_splats_mesh(che * mesh, const mat4 & model_mat);
 		void build_splats_ch(splats_data * s, const che * mesh, const std::vector<index_t> & vertices);
 };
 

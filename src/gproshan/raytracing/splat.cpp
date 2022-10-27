@@ -13,8 +13,8 @@ namespace gproshan::rt {
 
 splat::splat(const std::vector<che *> & meshes, const std::vector<mat4> & model_mats)
 {
-	for(che * m: meshes)
-		add_splats_mesh(m);
+	for(index_t i = 0; i < meshes.size(); ++i)
+		add_splats_mesh(meshes[i], model_mats[i]);
 }
 
 splat::~splat()
@@ -30,7 +30,7 @@ splat::~splat()
 	}
 }
 
-void splat::add_splats_mesh(che * mesh)
+void splat::add_splats_mesh(che * mesh, const mat4 & model_mat)
 {
 	const real_t n_threshold = 0.81;
 	const real_t max_neigs = 1000;
@@ -46,6 +46,7 @@ void splat::add_splats_mesh(che * mesh)
 		if(visited[v] != NIL) continue;
 
 		const vertex & vnormal = mesh->normal(v);
+		const vertex & vpoint = mesh->point(v);
 
 		std::queue<index_t> q; q.push(v);
 
@@ -62,8 +63,9 @@ void splat::add_splats_mesh(che * mesh)
 
 			if(vertices.size() - idx_splats.back() >= max_neigs)
 				break;
-
-			if(dot(vnormal, mesh->normal(front)) < n_threshold)
+			
+			real_t dist = length(vec3(model_mat * vec4(vpoint, 1) - model_mat * vec4(mesh->point(front), 1))) / (2 * M_SQRT2);
+			if(dot(vnormal, mesh->normal(front)) < dist) // vs n_threshold
 				break;
 
 			vertices.push_back(front);
@@ -98,6 +100,13 @@ void splat::add_splats_mesh(che * mesh)
 
 	gproshan_error_var(vertices.size());
 	gproshan_error_var(idx_splats.size());
+
+	std::vector<vertex> points;
+	std::vector<index_t> faces;
+
+	points.reserve(vertices.size());
+	for(const index_t & v: vertices)
+		points.push_back(mesh->point(v));
 //	pointclouds.push_back(pc);
 //	splats_pcs.push_back(spc);
 }
