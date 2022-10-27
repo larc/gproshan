@@ -1,6 +1,8 @@
 #ifndef SPLAT_H
 #define SPLAT_H
 
+#include <gproshan/raytracing/raytracing.h>
+#include <gproshan/raytracing/splat_utils.h>
 
 // geometry processing and shape analysis framework
 namespace gproshan::rt {
@@ -9,19 +11,16 @@ namespace gproshan::rt {
 class splat : public raytracing
 {
 	private:
-		che * pc = nullptr;
-		std::vector<int> morton_codes;
-		std::vector<index_t> start_splats;
+		std::vector<che *> pointclouds;
+		std::vector<splats_data *> splats_pcs;
 
 	public:
-		splat(const che * mesh);
+		splat(const std::vector<che *> & meshes, const std::vector<mat4> & model_mats);
 		virtual ~splat();
 
-		virtual void render(vec4 * img, const render_params & params, const bool & flat);
-
 	protected:
-		void init_splats_mesh(const che * mesh, std::vector<index_t> & vertices);
-		void build_splats_ch(const che * mesh, const std::vector<index_t> & vertices);
+		void add_splats_mesh(che * mesh, const mat4 & model_mat);
+		void build_splats_ch(splats_data * s, const che * mesh, const std::vector<index_t> & vertices);
 };
 
 

@@ -17,6 +17,7 @@
 
 #include <gproshan/raytracing/rt_embree.h>
 #include <gproshan/raytracing/rt_embree_splat_ch.h>
+#include <gproshan/raytracing/splat.h>
 
 #ifdef GPROSHAN_OPTIX
 	#include <gproshan/raytracing/rt_optix.h>
@@ -740,7 +741,7 @@ bool viewer::m_setup_raytracing(viewer * view)
 	static double time = 0;
 	static float pc_radius = 0.01;
 
-	ImGui::Combo("rt", &rt, "Select\0Embree\0OptiX\0\0");
+	ImGui::Combo("rt", &rt, "Select\0Embree\0OptiX\0Splat Test\0\0");
 	ImGui::InputFloat("pc_radius (if render_pointcloud)", &pc_radius, 0, 0, "%.3f");
 
 	static int rt_opt = 0;
@@ -786,6 +787,15 @@ bool viewer::m_setup_raytracing(viewer * view)
 				TOC(time);
 				sprintf(view->status_message, "build optix in %.3fs", time);
 			#endif // GPROSHAN_OPTIX
+				break;
+
+			case 3:
+				TIC(time);
+					mesh.rt_optix = new rt::optix({mesh}, {mesh.model_mat});
+				rt::splat splat_test({mesh}, {mesh.model_mat});
+				mesh.update_vbo_heatmap();
+				TOC(time);
+				sprintf(view->status_message, "build splats in %.3fs", time);
 				break;
 		}
 	}
