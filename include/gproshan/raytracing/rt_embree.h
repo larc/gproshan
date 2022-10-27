@@ -34,7 +34,8 @@ class embree : public raytracing
 		RTCScene scene;
 		RTCIntersectContext intersect_context;
 
-	protected:
+		std::vector<CHE *> g_meshes;
+
 		float pc_radius = 1;
 
 	public:
