@@ -1,6 +1,8 @@
 #ifndef RT_SPLAT_OPTIX_H
 #define RT_SPLAT_OPTIX_H
 
+#ifdef GPROSHAN_OPTIX
+
 #include <gproshan/raytracing/splat.h>
 #include <gproshan/raytracing/rt_optix.h>
 
@@ -24,6 +26,8 @@ class splat_optix: public splat, public optix
 
 
 } // namespace gproshan
+
+#endif // GPROSHAN_OPTIX
 
 #endif // RT_SPLAT_EMBREE_H
 

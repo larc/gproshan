@@ -813,11 +813,13 @@ bool viewer::m_setup_raytracing(viewer * view)
 				break;
 
 			case 5:
+			#ifdef GPROSHAN_OPTIX
 				delete mesh.rt_optix;
 				TIC(time);
 					mesh.rt_optix = new rt::splat_optix({mesh}, {mesh.model_mat});
 				TOC(time);
 				sprintf(view->status_message, "build splat optix in %.3fs", time);
+			#endif // GPROSHAN_OPTIX
 				break;
 		}
 	}
