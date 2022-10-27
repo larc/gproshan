@@ -14,7 +14,7 @@ struct splats_data
 	CHE * pc = nullptr;
 	unsigned int * morton_codes = nullptr;
 	unsigned int * primID_splat = nullptr;
-	
+
 	unsigned int n_splats = 0;
 	unsigned int * idx_splats = nullptr;
 	vertex * centers = nullptr;

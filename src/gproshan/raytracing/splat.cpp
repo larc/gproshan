@@ -66,7 +66,7 @@ void splat::add_splats_mesh(che * mesh, const mat4 & model_mat)
 
 			if(vertices.size() - idx_splats.back() >= max_neigs)
 				break;
-			
+
 			real_t dist = length(vec3(model_mat * vec4(vpoint, 1) - model_mat * vec4(mesh->point(front), 1))) / (2 * M_SQRT2);
 			if(dot(vnormal, mesh->normal(front)) < n_threshold) // vs n_threshold
 				break;
@@ -106,20 +106,19 @@ void splat::add_splats_mesh(che * mesh, const mat4 & model_mat)
 
 	std::vector<vertex> points(vertices.size());
 	std::vector<index_t> faces;
-	
+
 	#pragma omp parallel for
 	for(index_t i = 0; i < vertices.size(); ++i)
 		points[i] = model_mat * vec4(mesh->point(vertices[i]), 1);
-	
+
 	splats_data * spc = new splats_data;
 	spc->morton_codes = new unsigned int[vertices.size()];
 	spc->n_splats = idx_splats.size() - 1;
-	spc->idx_splats = new unsigned int[spc->n_splats];
 	spc->tbns = new mat3[spc->n_splats];
 	spc->centers = new vertex[spc->n_splats];
-	
+
 	std::vector<convex_hull *> splat_chs(spc->n_splats);
-	
+
 	#pragma omp parallel for
 	for(index_t i = 0; i < spc->n_splats; ++i)
 	{
@@ -133,7 +132,7 @@ void splat::add_splats_mesh(che * mesh, const mat4 & model_mat)
 		tbn[0] = points[end - 1] - center;
 		tbn[0] = normalize(tbn[0] - dot(tbn[0], tbn[2]) * tbn[2]);
 		tbn[1] = normalize(tbn[2] * tbn[0]);
-		
+
 		for(index_t j = begin; j < end; ++j)
 		{
 			vertex & p = points[j];
@@ -154,16 +153,16 @@ void splat::add_splats_mesh(che * mesh, const mat4 & model_mat)
 			p = tbn * (p - center);
 			spc->morton_codes[j] = morton_2d((p.x() + 1) / 2, (p.y() + 1) / 2);
 		}
-		
+
 		splat_chs[i] = new convex_hull(points.data() + begin, end - begin);
-		
+
 		for(index_t j = begin; j < end; ++j)
 		{
 			vertex & p = points[j];
 			p = mat3::transpose(tbn) * p + center;
 		}
 	}
-	
+
 	std::vector<index_t> primID_splat;
 	for(index_t i = 0; i < spc->n_splats; ++i)
 	{
@@ -177,10 +176,10 @@ void splat::add_splats_mesh(che * mesh, const mat4 & model_mat)
 				primID_splat.push_back(i);
 		}
 	}
-	
+
 	for(convex_hull * ch: splat_chs)
 		delete ch;
-	
+
 	che * pc = new che(points.data(), points.size(), faces.data(), faces.size() / 3);
 
 	#pragma omp parallel for
@@ -191,14 +190,14 @@ void splat::add_splats_mesh(che * mesh, const mat4 & model_mat)
 		pc->rgb(i) = mesh->rgb(vertices[i]);
 	}
 
+	spc->primID_splat = new unsigned int[primID_splat.size()];
+	memcpy(spc->primID_splat, primID_splat.data(), sizeof(unsigned int) * primID_splat.size());
+
+	spc->idx_splats = new unsigned int[idx_splats.size()];
+	memcpy(spc->idx_splats, idx_splats.data(), sizeof(unsigned int) * idx_splats.size());
 
 	pointclouds.push_back(pc);
 	splats_pcs.push_back(spc);
-}
-
-void splat::build_splats_ch(splats_data * s, const che * pc, const std::vector<index_t> & vertices)
-{
-
 }
 
 
