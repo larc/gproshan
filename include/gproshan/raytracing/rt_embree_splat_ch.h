@@ -52,7 +52,7 @@ class embree_splat_ch : public embree
 			ipoints.push_back({p, 0});
 		}
 
-		float shading(const rt_mesh & mesh, const vec3 & p, vec3 & normal, vec3 & color)
+		float shading(const CHE * mesh, const vec3 & p, vec3 & normal, vec3 & color)
 		{
 			normal = vec3(0);
 			color = vec3(0);

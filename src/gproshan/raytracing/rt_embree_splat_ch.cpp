@@ -128,7 +128,7 @@ vec3 embree_splat_ch::closesthit_radiance(const vertex & org, const vertex & dir
 	ray_hit r(org, dir);
 	if(!intersect(r)) return {};
 
-	eval_hit hit(*geomID_mesh[r.hit.geomID].mesh, r.hit.primID, r.hit.u, r.hit.v);
+	eval_hit hit(*g_meshes[r.hit.geomID], r.hit.primID, r.hit.u, r.hit.v);
 	hit.position = r.position();
 	hit.normal = flat ? r.normal() : hit.normal;
 
@@ -139,7 +139,7 @@ vec3 embree_splat_ch::closesthit_radiance(const vertex & org, const vertex & dir
 	}
 	else
 	{
-		vsplat[primID_splat[r.hit.primID]].shading(geomID_mesh[r.hit.geomID], hit.position, hit.normal, hit.color);
+		vsplat[primID_splat[r.hit.primID]].shading(g_meshes[r.hit.geomID], hit.position, hit.normal, hit.color);
 	}
 
 	return eval_li(	hit, lights,  n_lights,
