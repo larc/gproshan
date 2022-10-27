@@ -50,6 +50,7 @@ class optix : public raytracing
 	void * as_buffer = nullptr;
 
 	public:
+		optix();
 		optix(const std::vector<che *> & meshes, const std::vector<mat4> & model_mats);
 		~optix();
 
