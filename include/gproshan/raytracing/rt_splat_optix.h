@@ -14,6 +14,11 @@ class splat_optix: public splat, public optix
 	public:
 		splat_optix(const std::vector<che *> & meshes, const std::vector<mat4> & model_mats): splat(meshes, model_mats)
 		{
+			// build as
+			//optix_params.traversable = build_as(meshes, {mat4::identity()});
+
+			// build sbt
+			//build_sbt();
 		}
 };
 
