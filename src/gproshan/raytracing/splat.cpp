@@ -68,7 +68,7 @@ void splat::add_splats_mesh(che * mesh, const mat4 & model_mat)
 				break;
 			
 			real_t dist = length(vec3(model_mat * vec4(vpoint, 1) - model_mat * vec4(mesh->point(front), 1))) / (2 * M_SQRT2);
-			if(dot(vnormal, mesh->normal(front)) < dist) // vs n_threshold
+			if(dot(vnormal, mesh->normal(front)) < n_threshold) // vs n_threshold
 				break;
 
 			vertices.push_back(front);
@@ -183,12 +183,17 @@ void splat::add_splats_mesh(che * mesh, const mat4 & model_mat)
 	
 	che * pc = new che(points.data(), points.size(), faces.data(), faces.size() / 3);
 
+	#pragma omp parallel for
 	for(index_t i = 0; i < vertices.size(); ++i)
+	{
 		pc->heatmap(i) = mesh->heatmap(vertices[i]);
+		pc->normal(i) = mesh->normal(vertices[i]);
+		pc->rgb(i) = mesh->rgb(vertices[i]);
+	}
 
 
 	pointclouds.push_back(pc);
-//	splats_pcs.push_back(spc);
+	splats_pcs.push_back(spc);
 }
 
 void splat::build_splats_ch(splats_data * s, const che * pc, const std::vector<index_t> & vertices)

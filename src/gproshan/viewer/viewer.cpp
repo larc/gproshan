@@ -797,7 +797,7 @@ bool viewer::m_setup_raytracing(viewer * view)
 				TOC(time);
 				sprintf(view->status_message, "build splats in %.3fs", time);
 				for(che * pc: splat_test.pointclouds)
-					view->add_mesh(pc);
+					view->add_mesh(new che(*pc));
 				break;
 		}
 	}
