@@ -405,12 +405,13 @@ void viewer::add_process(const int & key, const string & skey, const string & na
 	else cerr << "Repeat key: " << key << endl;
 }
 
-bool viewer::add_mesh(che * p_mesh)
+bool viewer::add_mesh(che * p_mesh, const bool & reset_normals)
 {
 	if(n_meshes == max_n_meshes)
 		return false;
 
-	p_mesh->update_normals();
+	if(reset_normals)
+		p_mesh->update_normals();
 
 	che_viewer & mesh = meshes[n_meshes];
 	mesh.init(p_mesh);
