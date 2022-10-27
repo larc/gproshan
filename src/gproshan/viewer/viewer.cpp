@@ -18,6 +18,8 @@
 #include <gproshan/raytracing/rt_embree.h>
 #include <gproshan/raytracing/rt_embree_splat_ch.h>
 #include <gproshan/raytracing/splat.h>
+#include <gproshan/raytracing/rt_splat_embree.h>
+#include <gproshan/raytracing/rt_splat_optix.h>
 
 #ifdef GPROSHAN_OPTIX
 	#include <gproshan/raytracing/rt_optix.h>
@@ -742,7 +744,7 @@ bool viewer::m_setup_raytracing(viewer * view)
 	static double time = 0;
 	static float pc_radius = 0.01;
 
-	ImGui::Combo("rt", &rt, "Select\0Embree\0OptiX\0Splat Test\0\0");
+	ImGui::Combo("rt", &rt, "Select\0Embree\0OptiX\0Splat Test\0splat embree\0splat optix\0\0");
 	ImGui::InputFloat("pc_radius (if render_pointcloud)", &pc_radius, 0, 0, "%.3f");
 
 	static int rt_opt = 0;
@@ -791,14 +793,31 @@ bool viewer::m_setup_raytracing(viewer * view)
 				break;
 
 			case 3:
+			{
 				TIC(time);
-					mesh.rt_optix = new rt::optix({mesh}, {mesh.model_mat});
 				rt::splat splat_test({mesh}, {mesh.model_mat});
 				mesh.update_vbo_heatmap();
 				TOC(time);
 				sprintf(view->status_message, "build splats in %.3fs", time);
 				for(che * pc: splat_test.pointclouds)
 					view->add_mesh(new che(*pc), false);
+				break;
+			}
+
+			case 4:
+				delete mesh.rt_embree;
+				TIC(time);
+					mesh.rt_embree = new rt::splat_embree({mesh}, {mesh.model_mat});
+				TOC(time);
+				sprintf(view->status_message, "build splat embree in %.3fs", time);
+				break;
+
+			case 5:
+				delete mesh.rt_optix;
+				TIC(time);
+					mesh.rt_optix = new rt::splat_optix({mesh}, {mesh.model_mat});
+				TOC(time);
+				sprintf(view->status_message, "build splat optix in %.3fs", time);
 				break;
 		}
 	}

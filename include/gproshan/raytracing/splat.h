@@ -1,7 +1,6 @@
 #ifndef SPLAT_H
 #define SPLAT_H
 
-#include <gproshan/raytracing/raytracing.h>
 #include <gproshan/raytracing/splat_utils.h>
 
 // geometry processing and shape analysis framework
