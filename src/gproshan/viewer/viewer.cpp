@@ -759,7 +759,7 @@ bool viewer::m_setup_raytracing(viewer * view)
 		// ImGui::SliderFloat("r_threshold", &rt::embree_splat_ch::r_threshold, 0.01, 1, "%.2f");
 		ImGui::SliderFloat("n_threshold", &angle, 0, 90, "%.2f");
 		ImGui::SliderScalar("max_neighbors", ImGuiDataType_U64, &rt::embree_splat_ch::max_neighbors, &min_neighbors, &max_neighbors, "%lu");
-		ImGui::SliderInt("k_neighbors", &rt::embree_splat_ch::k_neighbors, 1 << 2, 1 << 5);
+		ImGui::SliderInt("k_neighbors", &rt::embree_splat_ch::k_neighbors, 1 << 2, 1 << 8);
 	}
 
 	if(ImGui::Button("Build"))

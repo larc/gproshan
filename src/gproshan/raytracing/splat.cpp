@@ -85,10 +85,13 @@ void splat::add_splats_mesh(che * mesh, const mat4 & model_mat)
 		if(vertices.size() - idx_splats.back() < 3)
 		{
 			for(index_t i = idx_splats.back(); i < vertices.size(); ++i)
-				visited[vertices[i]] = false;
+				visited[vertices[i]] = NIL;
 			vertices.resize(idx_splats.back());
 			continue;
 		}
+
+		for(index_t i = (vertices.size() + idx_splats.back()) / 2; i < vertices.size(); ++i)
+			visited[vertices[i]] = NIL;
 
 		// new splat limit
 		idx_splats.push_back(vertices.size());
@@ -167,11 +170,24 @@ void splat::add_splats_mesh(che * mesh, const mat4 & model_mat)
 	for(index_t i = 0; i < spc->n_splats; ++i)
 	{
 		const index_t & begin = idx_splats[i];
+		const vertex & center = spc->centers[i];
+		const mat3 & tbn = spc->tbns[i];
+
+		std::vector<index_t> sch = *splat_chs[i];
+		for(index_t & v: sch)
+		{
+			vertex p = points[v + begin] - center;
+			p = p - dot(p, tbn[2]) * tbn[2];
+			p = p + center;
+
+			v = points.size();
+			points.push_back(p);
+		}
+
 		index_t f = -1;
-		const std::vector<index_t> & sch = *splat_chs[i];
 		for(const index_t & v: che::trig_convex_polygon(sch.data(), sch.size()))
 		{
-			faces.push_back(v + begin);
+			faces.push_back(v);
 			if(!(++f % 3))
 				primID_splat.push_back(i);
 		}
