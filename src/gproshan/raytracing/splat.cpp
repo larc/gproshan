@@ -36,10 +36,11 @@ splat::~splat()
 void splat::add_splats_mesh(che * mesh, const mat4 & model_mat)
 {
 	const real_t n_threshold = 0.81;
-	const real_t max_neigs = 1000;
+//	const real_t max_neigs = 1000;
 
 	std::vector<index_t> vertices;
 	std::vector<index_t> idx_splats({0});
+	std::vector<vertex> centers;
 
 	std::vector<unsigned int> visited;
 	visited.assign(mesh->n_vertices, -1);
@@ -53,6 +54,7 @@ void splat::add_splats_mesh(che * mesh, const mat4 & model_mat)
 
 		std::queue<index_t> q; q.push(v);
 
+		vertex center = vpoint;
 		while(!q.empty())
 		{
 			index_t front = q.front();
@@ -61,23 +63,27 @@ void splat::add_splats_mesh(che * mesh, const mat4 & model_mat)
 			if(visited[front] == idx_splats.size())
 				continue;
 
-			if(visited[front] != NIL)
-				break;
+//			if(vertices.size() - idx_splats.back() >= max_neigs)
+//				break;
 
-			if(vertices.size() - idx_splats.back() >= max_neigs)
-				break;
-
-			real_t dist = length(vec3(model_mat * vec4(vpoint, 1) - model_mat * vec4(mesh->point(front), 1))) / (2 * M_SQRT2);
+			//real_t dist = length(vec3(model_mat * vec4(vpoint, 1) - model_mat * vec4(mesh->point(front), 1))) / (2 * M_SQRT2);
 			if(dot(vnormal, mesh->normal(front)) < n_threshold) // vs n_threshold
 				break;
-
+			if(visited[front] != NIL)
+			{
+				if(length(center - mesh->point(front)) > length(centers[visited[front]] - mesh->point(front)))
+					break;
+			}
+			
+			center = (center * vertices.size() + mesh->point(front)) / (vertices.size() + 1);
 			vertices.push_back(front);
 			visited[front] = idx_splats.size();
-
+			
 			for(const index_t & he: mesh->star(front))
 			{
 				const index_t & u = mesh->halfedge(prev(he));
-				if(visited[u] == NIL) q.push(u);
+				if(visited[u] == NIL)
+					q.push(u);
 			}
 		}
 
@@ -90,11 +96,9 @@ void splat::add_splats_mesh(che * mesh, const mat4 & model_mat)
 			continue;
 		}
 
-		for(index_t i = (vertices.size() + idx_splats.back()) / 2; i < vertices.size(); ++i)
-			visited[vertices[i]] = NIL;
-
 		// new splat limit
 		idx_splats.push_back(vertices.size());
+		centers.push_back(center);
 	}
 
 	std::vector<int> color(idx_splats.size() - 1);
@@ -163,6 +167,7 @@ void splat::add_splats_mesh(che * mesh, const mat4 & model_mat)
 		{
 			vertex & p = points[j];
 			p = mat3::transpose(tbn) * p + center;
+if(abs(p.z()) > 1e-5) gproshan_error_var(p);
 		}
 	}
 
@@ -174,20 +179,21 @@ void splat::add_splats_mesh(che * mesh, const mat4 & model_mat)
 		const mat3 & tbn = spc->tbns[i];
 
 		std::vector<index_t> sch = *splat_chs[i];
-		for(index_t & v: sch)
+/*		for(index_t & v: sch)
 		{
-			vertex p = points[v + begin] - center;
-			p = p - dot(p, tbn[2]) * tbn[2];
-			p = p + center;
+			vertex p = points[v + begin];// - center;
+//			p = p - dot(p, tbn[2]) * tbn[2];
+//			p = p + center;
 
 			v = points.size();
 			points.push_back(p);
 		}
-
+*/
 		index_t f = -1;
 		for(const index_t & v: che::trig_convex_polygon(sch.data(), sch.size()))
 		{
-			faces.push_back(v);
+if(v >= points.size()) gproshan_error_var(v < points.size());
+			faces.push_back(v + begin);
 			if(!(++f % 3))
 				primID_splat.push_back(i);
 		}
