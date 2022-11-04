@@ -252,7 +252,7 @@ class vec
 		__host__ __device__
 		bool is_zero()
 		{
-			double eps = std::numeric_limits<double>::epsilon();
+			T eps = std::numeric_limits<T>::epsilon();
 			for(index_t i = 0; i < N; ++i)
 				if(abs(values[i]) > eps)
 					return false;
