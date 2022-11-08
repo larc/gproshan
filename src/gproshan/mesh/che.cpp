@@ -192,7 +192,7 @@ void che::reload()
 	init(filename);
 }
 
-void che::normalize_sphere(const real_t & r)
+mat4 che::normalize_sphere(const real_t & r) const
 {
 	vertex center;
 
@@ -207,16 +207,24 @@ void che::normalize_sphere(const real_t & r)
 
 	real_t max_norm = 0;
 
-	#pragma omp parallel for reduction(max: max_norm)
+	#pragma omp parallel for reduction(+: max_norm)
 	for(index_t v = 0; v < n_vertices; ++v)
-	{
-		GT[v] -= center;
-		max_norm = std::max(max_norm, norm(GT[v]));
-	}
+		max_norm += norm(GT[v] - center);
 
-	#pragma omp parallel for
-	for(index_t v = 0; v < n_vertices; ++v)
-		GT[v] *= r / max_norm;
+	max_norm /= n_vertices;
+
+	mat4 model_mat;
+
+	const real_t & scale = r / max_norm;
+	model_mat(0, 0) = model_mat(1, 1) = model_mat(2, 2) = scale;
+
+	center *= -scale;
+	model_mat(0, 3) = center.x();
+	model_mat(1, 3) = center.y();
+	model_mat(2, 3) = center.z();
+	model_mat(3, 3) = 1;
+
+	return model_mat;
 }
 
 mat4 che::normalize_box(const real_t & side) const

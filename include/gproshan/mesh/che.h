@@ -84,7 +84,7 @@ class che
 
 		// update methods
 		void reload();
-		void normalize_sphere(const real_t & r = 1);
+		mat4 normalize_sphere(const real_t & r = 1) const;
 		mat4 normalize_box(const real_t & side = 2) const;
 		che * merge(const che * mesh, const std::vector<index_t> & com_vertices);
 		void update_vertices(const vertex * positions, const size_t & n = 0, const index_t & v_i = 0);
