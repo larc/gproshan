@@ -38,7 +38,7 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 	const char * pberror = "& %6s %6.2lf\\%% ";
 
 	std::string filename;
-	while(cin >> filename)
+	while(std::cin >> filename)
 	{
 		gproshan_debug_var(filename);
 
@@ -154,7 +154,7 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 		// DEGREE HISTOGRAM ________________________________________________________________________
 
 		index_t dv;
-		map<index_t, index_t> deg;
+		std::map<index_t, index_t> deg;
 		for(index_t v = 0; v < n_vertices; ++v)
 		{
 			dv = mesh->is_vertex_bound(v) ? 1 : 0;
@@ -162,9 +162,9 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 			++deg[dv];
 		}
 
-		ofstream os(test_path + filename + ".deg");
+		std::ofstream os(test_path + filename + ".deg");
 		for(auto & ii: deg)
-			os << ii.first << " " << ii.second << endl;
+			os << ii.first << " " << ii.second << std::endl;
 		os.close();
 
 
@@ -176,7 +176,7 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 		for(index_t i = 1; i < limits.size(); ++i)
 		{
 			toplesets_dist[i - 1] = limits[i] - limits[i - 1];
-			os << i - 1 << " " << toplesets_dist[i - 1] << endl;
+			os << i - 1 << " " << toplesets_dist[i - 1] << std::endl;
 		}
 		os.close();
 
@@ -184,7 +184,7 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 
 		os.open(test_path + filename + "_toplesets_sorted.dist");
 		for(index_t i = 0; i < limits.size() - 1; ++i)
-			os << i << " " << toplesets_dist[i] << endl;
+			os << i << " " << toplesets_dist[i] << std::endl;
 		os.close();
 
 
@@ -204,7 +204,7 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 		#endif
 
 		for(auto & p: iter_error)
-			os << p.first << " " << p.second << endl;
+			os << p.first << " " << p.second << std::endl;
 		os.close();
 
 #endif // GPROSHAN_CUDA
@@ -219,7 +219,7 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 
 		os.open(test_path + filename + ".fps");
 		for(index_t i = i_samples; i < n_samples; ++i)
-			os << i << " " << times_fps[i] << endl;
+			os << i << " " << times_fps[i] << std::endl;
 		os.close();
 
 		delete [] times_fps;
@@ -244,7 +244,7 @@ double test_fast_marching(real_t & error, const real_t * exact, che * mesh, cons
 	for(int i = 0; i < n_test; ++i)
 	{
 		TIC(t) geodesics fm(mesh, source); TOC(t);
-		seconds = min(seconds, t);
+		seconds = std::min(seconds, t);
 	}
 
 	geodesics fm(mesh, source);
@@ -262,7 +262,7 @@ double test_ptp_cpu(real_t & error, const real_t * exact, che * mesh, const std:
 	for(int i = 0; i < n_test; ++i)
 	{
 		TIC(t) parallel_toplesets_propagation_cpu(dist, mesh, source, toplesets); TOC(t)
-		seconds = min(seconds, t);
+		seconds = std::min(seconds, t);
 	}
 
 	error = compute_error(dist, exact, mesh->n_vertices, source.size());
@@ -281,8 +281,8 @@ double test_heat_method_cholmod(real_t & error, double & stime, const real_t * e
 	for(int i = 0; i < n_test; ++i)
 	{
 		TIC(t) st = heat_method(dist, mesh, source, HEAT_CHOLMOD); TOC(t)
-		ptime = min(t - st, ptime);
-		stime = min(st, stime);
+		ptime = std::min(t - st, ptime);
+		stime = std::min(st, stime);
 	}
 
 	error = compute_error(dist, exact, mesh->n_vertices, source.size());
@@ -303,7 +303,7 @@ double test_ptp_gpu(real_t & error, const real_t * exact, che * mesh, const std:
 	for(int i = 0; i < n_test; ++i)
 	{
 		t = parallel_toplesets_propagation_coalescence_gpu(dist, mesh, source, toplesets);
-		seconds = min(seconds, t);
+		seconds = std::min(seconds, t);
 	}
 
 	error = compute_error(dist, exact, mesh->n_vertices, source.size());
@@ -324,8 +324,8 @@ double test_heat_method_gpu(real_t & error, double & stime, const real_t * exact
 		if(dist) delete [] dist;
 
 		TIC(t) st = heat_method(dist, mesh, source, HEAT_CUDA); TOC(t)
-		ptime = min(t - st, ptime);
-		stime = min(st, stime);
+		ptime = std::min(t - st, ptime);
+		stime = std::min(st, stime);
 	}
 
 	error = compute_error(dist, exact, mesh->n_vertices, source.size());
@@ -340,7 +340,7 @@ double test_heat_method_gpu(real_t & error, double & stime, const real_t * exact
 
 real_t * load_exact_geodesics(const std::string & file, const size_t & n)
 {
-	ifstream is(file);
+	std::ifstream is(file);
 
 	if(!is.good()) return nullptr;
 

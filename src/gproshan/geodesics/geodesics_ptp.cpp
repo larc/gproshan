@@ -269,7 +269,7 @@ void normalize_ptp(real_t * dist, const size_t & n)
 	#pragma omp parallel for reduction(max: max_d)
 	for(index_t v = 0; v < n; ++v)
 		if(dist[v] < INFINITY)
-			max_d = max(dist[v], max_d);
+			max_d = std::max(dist[v], max_d);
 
 	#pragma omp parallel for
 	for(index_t v = 0; v < n; ++v)

@@ -248,7 +248,7 @@ void split_border(std::vector<std::pair<index_t, index_t> > & split_indices, che
 			}
 			if(b != a)
 			{
-				cerr << b << " " << i << endl;
+				std::cerr << b << " " << i << std::endl;
 				a = b;
 			}
 		}
@@ -276,7 +276,7 @@ std::vector<index_t> * fill_all_holes(che * mesh, const size_t & max_iter)
 	return border_vertices;
 }
 
-tuple<std::vector<index_t> *, che **> fill_all_holes_meshes(che * mesh, const size_t & max_iter)
+std::tuple<std::vector<index_t> *, che **> fill_all_holes_meshes(che * mesh, const size_t & max_iter)
 {
 	std::vector<index_t> * border_vertices = nullptr;
 	che ** holes = nullptr;
@@ -306,7 +306,7 @@ tuple<std::vector<index_t> *, che **> fill_all_holes_meshes(che * mesh, const si
 //		holes[b] = mesh_fill_hole(mesh, border_vertices[b], max_iter, { {77, 106}, {67, 106}, {38, 11} });
 		holes[b] = mesh_fill_hole(mesh, border_vertices[b], max_iter);
 	gproshan_debug(inpainting);
-		if(holes[b]) che_off::write_file(holes[b], tmp_file_path("fill_holes_" + to_std::string(b) + "_" + mesh->name() + ".off"));
+		if(holes[b]) che_off::write_file(holes[b], tmp_file_path("fill_holes_" + std::to_string(b) + "_" + mesh->name() + ".off"));
 	gproshan_debug(inpainting);
 	gproshan_error(holes);
 	}
@@ -330,7 +330,7 @@ che * fill_hole_front_angles_test(che * mesh, std::vector<index_t> & front_verti
 	real_t perimeter = 0.0, init_perimeter = 0.0;
 
 	real_t length = mesh->mean_edge();
-	priority_queue<border_t> front;
+	std::priority_queue<border_t> front;
 
 	std::vector<vertex> vertices;
 	std::vector<index_t> faces;
@@ -570,7 +570,7 @@ che * fill_hole_front_angles(std::vector<vertex> & vertices, const real_t & leng
 	real_t perimeter = 0.0;
 	real_t init_perimeter = 0.0;
 
-	priority_queue<border_t> front;
+	std::priority_queue<border_t> front;
 	std::vector<index_t> faces;
 
 	// PCA --------------------------------------------------------------------------

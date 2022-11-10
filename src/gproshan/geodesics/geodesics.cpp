@@ -121,9 +121,9 @@ void geodesics::run_fastmarching(che * mesh, const std::vector<index_t> & source
 
 	size_t green_count = n_iter ? n_iter : n_vertices;
 
-	priority_queue<std::pair<real_t, size_t>,
+	std::priority_queue<std::pair<real_t, size_t>,
 			std::vector<std::pair<real_t, size_t> >,
-			greater<std::pair<real_t, size_t> > > Q;
+			std::greater<std::pair<real_t, size_t> > > Q;
 
 	real_t dv, dp;
 	vertex vx;
@@ -137,7 +137,7 @@ void geodesics::run_fastmarching(che * mesh, const std::vector<index_t> & source
 		dist[s] = 0;
 		if(clusters) clusters[s] = ++c;
 		color[s] = RED;
-		Q.push(make_pair(dist[s], s));
+		Q.push({dist[s], s});
 	}
 
 	while(green_count-- && !Q.empty())
@@ -178,7 +178,7 @@ void geodesics::run_fastmarching(che * mesh, const std::vector<index_t> & source
 				}
 
 				if(dv < dist[v])
-					Q.push(make_pair(dist[v] = dv, v));
+					Q.push({dist[v] = dv, v});
 			}
 		}
 	}

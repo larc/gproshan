@@ -17,7 +17,7 @@ che_ply::che_ply(const std::string & file)
 
 void che_ply::read_file(const std::string & file)
 {
-	map<std::string, size_t> bytes = {
+	std::map<std::string, size_t> bytes = {
 									{"char", 1},
 									{"uchar", 1},
 									{"short", 2},

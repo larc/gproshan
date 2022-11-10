@@ -269,7 +269,7 @@ void patch::init_radial_disjoint(	real_t & euc_radio,
 
 		if(add_vertex_by_faces(n, N, delta, params.dist_alloc, mesh, u, area, proj_area, M_PI / 2.5 ) && (ratio < sum_thres || (area / area_mesh) < area_thres) )
 		{
-			euc_radio = max(euc_radio, norm(mesh->point(u) - c));
+			euc_radio = std::max(euc_radio, norm(mesh->point(u) - c));
 			return true;
 		}
 
@@ -298,7 +298,7 @@ void patch::init_radial_disjoint(	real_t & euc_radio,
 		p = p - c ;
 		p = p - ((p, n) * n);
 
-		radio = max(radio, norm(p));
+		radio = std::max(radio, norm(p));
 	}
 
 	geo_radio = geo[vertices.back()];
@@ -550,7 +550,7 @@ void patch::gather_vertices(che * mesh, const index_t & v, const real_t & radio,
 	if(vertices.size()) vertices.clear();
 	vertices.reserve(expected_nv);
 
-	priority_queue<std::pair<real_t, index_t> > qvertices;
+	std::priority_queue<std::pair<real_t, index_t> > qvertices;
 
 	memset(toplevel, -1, sizeof(index_t) * mesh->n_vertices);
 
@@ -693,7 +693,7 @@ void patch::update_heights(real_t & min, real_t & max, bool flag)
 
 }
 
-void patch::save_z(ostream & os)
+void patch::save_z(std::ostream & os)
 {
 	index_t i;
 	for( i = 0; i < vertices.size()-1; ++i)

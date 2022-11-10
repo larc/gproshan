@@ -24,7 +24,7 @@ namespace gproshan::mdict {
 
 class msparse_coding;
 
-typedef function<bool(const index_t &)> fmask_t;
+typedef std::function<bool(const index_t &)> fmask_t;
 typedef std::map<index_t, index_t> vpatches_t;
 
 ///
@@ -141,7 +141,7 @@ class patch
 		real_t get_min_z();
 		real_t get_max_z();
 
-		void save_z(ostream & os);
+		void save_z(std::ostream & os);
 		index_t find(const index_t * indexes, size_t nc, index_t idx_global);
 
 

@@ -40,10 +40,10 @@ index_t & dijkstra::operator[](index_t i)
 	return predecessors[i];
 }
 
-void dijkstra::print(ostream & os)
+void dijkstra::print(std::ostream & os)
 {
 	for(index_t i = 0; i < n_vertices; ++i)
-		os<<weights[i]<<endl;
+		os << weights[i] << std::endl;
 }
 
 void dijkstra::run(che * mesh)

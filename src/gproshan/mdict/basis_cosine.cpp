@@ -25,22 +25,22 @@ void basis_cosine::discrete(a_mat & phi, const a_vec & x, const a_vec & y)
 	}
 }
 
-void basis_cosine::plot_basis(ostream & os)
+void basis_cosine::plot_basis(std::ostream & os)
 {
 	real_t d = 1.0 / (n_rot - 1);
 	real_t c;
 
-	os << "set multiplot layout " << n_freq << "," << n_rot << " rowsfirst scale 1.2;" << endl;
+	os << "set multiplot layout " << n_freq << "," << n_rot << " rowsfirst scale 1.2;" << std::endl;
 
 	for(size_t ni = 1; ni <= n_freq; ++ni)
 	for(real_t alpha = 0; alpha <= 1; alpha += d)
 	{
 		c = ni * M_PI / _radio;
-		os << "splot v * cos(u), v * sin(u), "; cosine(os, c, alpha); os << ";" << endl;
+		os << "splot v * cos(u), v * sin(u), "; cosine(os, c, alpha); os << ";" << std::endl;
 	}
 }
 
-void basis_cosine::plot_atoms(ostream & os, const a_vec & A)
+void basis_cosine::plot_atoms(std::ostream & os, const a_vec & A)
 {
 	real_t d = 1.0 / (n_rot - 1);
 	real_t c;
@@ -58,7 +58,7 @@ a_vec basis_cosine::cosine(const a_vec & x, const a_vec & y, const real_t & c, c
 	return cos(c * (alpha * x + (1 - alpha) * y));
 }
 
-void basis_cosine::cosine(ostream & os, const real_t & c, const real_t & alpha)
+void basis_cosine::cosine(std::ostream & os, const real_t & c, const real_t & alpha)
 {
 	os << "cos( " << c << " * (" << alpha << " * v * cos(u) + ( 1 - " << alpha << ") * v * sin(u)))";
 }

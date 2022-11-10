@@ -233,13 +233,13 @@ mat4 che::normalize_box(const real_t & side) const
 	{
 		const vertex & p = point(v);
 
-		pmin.x() = min(pmin.x(), p.x());
-		pmin.y() = min(pmin.y(), p.y());
-		pmin.z() = min(pmin.z(), p.z());
+		pmin.x() = std::min(pmin.x(), p.x());
+		pmin.y() = std::min(pmin.y(), p.y());
+		pmin.z() = std::min(pmin.z(), p.z());
 
-		pmax.x() = max(pmax.x(), p.x());
-		pmax.y() = max(pmax.y(), p.y());
-		pmax.z() = max(pmax.z(), p.z());
+		pmax.x() = std::max(pmax.x(), p.x());
+		pmax.y() = std::max(pmax.y(), p.y());
+		pmax.z() = std::max(pmax.z(), p.z());
 	}
 
 	mat4 model_mat;
@@ -735,12 +735,12 @@ const std::string che::name() const
 
 const std::string che::name_size() const
 {
-	return name() + "_" + to_std::string(n_vertices);
+	return name() + "_" + std::to_string(n_vertices);
 }
 
 const std::string che::filename_size() const
 {
-	return filename + "_" + to_std::string(n_vertices);
+	return filename + "_" + std::to_string(n_vertices);
 }
 
 
@@ -770,7 +770,7 @@ size_t che::max_degree() const
 		d = 0;
 		for([[maybe_unused]] const index_t & he: star(v)) ++d;
 		d += is_vertex_bound(v);
-		md = max(md, d);
+		md = std::max(md, d);
 	}
 
 	return md;

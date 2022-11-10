@@ -96,7 +96,7 @@ real_t camera::zoom() const
 	return -pos.v.z();
 }
 
-ostream & operator << (ostream & os, const camera & cam)
+std::ostream & operator << (std::ostream & os, const camera & cam)
 {
 	return os << cam.p_click << "\n"
 			<< cam.p_drag << "\n"

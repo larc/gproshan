@@ -326,7 +326,7 @@ vec<T, N> normalize(const vec<T, N> & v)
 	return v / norm(v);
 }
 
-///< std ostream
+///< std std::ostream
 template<class T, size_t N>
 __host__ __device__
 std::ostream & operator << (std::ostream & os, const vec<T, N> & v)

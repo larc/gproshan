@@ -66,7 +66,7 @@ bool shader::load(GLenum shader_type, const std::string & filename)
 
 	if(!read_source(filename, source))
 	{
-		cerr << "Not load shader file: " << filename << endl;
+		std::cerr << "Not load shader file: " << filename << std::endl;
 		return false;
 	}
 
@@ -104,7 +104,7 @@ bool shader::load(GLenum shader_type, const std::string & filename)
 
 			glGetShaderInfoLog(shader, maxLength, &length, infoLog);
 
-			cerr << filename << " GLSL Error: " << infoLog << endl;
+			std::cerr << filename << " GLSL Error: " << infoLog << std::endl;
 
 			delete[] infoLog;
 		}
@@ -119,7 +119,7 @@ bool shader::load(GLenum shader_type, const std::string & filename)
 
 bool shader::read_source(const std::string & filename, std::string & source)
 {
-	ifstream is(filename);
+	std::ifstream is(filename);
 
 	if(!is.is_open())
 		return false;

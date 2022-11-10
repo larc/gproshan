@@ -92,7 +92,7 @@ class mat
 		}
 };
 
-///< std ostream
+///< std std::ostream
 template<class T, size_t N>
 std::ostream & operator << (std::ostream & os, const mat<T, N> & m)
 {

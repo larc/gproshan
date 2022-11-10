@@ -240,8 +240,8 @@ bool app_viewer::process_gaussian_curvature(viewer * p_view)
 		//gv(v) = (2 * M_PI - g) / mesh->area_vertex(v);
 		gv(v) = mesh->mean_curvature(v);
 
-		g_max = max(g_max, gv(v));
-		g_min = min(g_min, gv(v));
+		g_max = std::max(g_max, gv(v));
+		g_min = std::min(g_min, gv(v));
 	}
 
 	g = g_max - g_min;
@@ -282,7 +282,7 @@ bool app_viewer::process_edge_collapse(viewer * p_view)
 	che_viewer & mesh = view->active_mesh();
 
 	index_t levels;
-	cin >> levels;
+	std::cin >> levels;
 
 	TIC(view->time) simplification sampling(mesh, levels); TOC(view->time)
 	gproshan_debug_var(view->time);
@@ -756,7 +756,7 @@ bool app_viewer::process_descriptor_heatmap(viewer * p_view)
 			for(index_t v = 0; v < mesh->n_vertices; ++v)
 			{
 				mesh->heatmap(v) = features(v);
-				max_s = max(max_s, mesh->heatmap(v));
+				max_s = std::max(max_s, mesh->heatmap(v));
 			}
 
 			#pragma omp parallel for

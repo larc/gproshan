@@ -201,7 +201,7 @@ quaternion slerp(const quaternion & q0, const quaternion & q1, real_t t)
 	return m * p;
 }
 
-ostream & operator << (ostream & os, const quaternion & q)
+std::ostream & operator << (std::ostream & os, const quaternion & q)
 {
 	return os << q.s << " " << q.v;
 }

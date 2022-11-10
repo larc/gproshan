@@ -113,7 +113,7 @@ void sp_KSVD(a_mat & D, const a_mat & X, const size_t & L, size_t k)
 
 // DENSE
 
-tuple<a_vec, arma::uvec> _OMP(const a_vec & x, const a_mat & D, const size_t & L)
+std::tuple<a_vec, arma::uvec> _OMP(const a_vec & x, const a_mat & D, const size_t & L)
 {
 	arma::uvec selected_atoms(L);
 	real_t threshold = norm(x) * sigma;
@@ -144,7 +144,7 @@ arma::uword max_index(const a_vec & V,const arma::uchar_vec & mask)
 	return NIL;
 }
 
-tuple<a_vec, arma::uvec> _OMP(const a_vec & x, const a_mat & D, const size_t & L, const arma::uchar_vec & mask)
+std::tuple<a_vec, arma::uvec> _OMP(const a_vec & x, const a_mat & D, const size_t & L, const arma::uchar_vec & mask)
 {
 
 	arma::uvec selected_atoms(L);

@@ -127,7 +127,7 @@ void viewer::imgui()
 		if(ImGui::BeginMenu("Select"))
 		{
 			for(index_t i = 0; i < n_meshes; ++i)
-				if(ImGui::MenuItem((to_std::string(i) + ": " + meshes[i]->filename).c_str(), nullptr, i == idx_active_mesh, i != idx_active_mesh))
+				if(ImGui::MenuItem((std::to_string(i) + ": " + meshes[i]->filename).c_str(), nullptr, i == idx_active_mesh, i != idx_active_mesh))
 				{
 					idx_active_mesh = i;
 					glfwSetWindowTitle(window, mesh->filename.c_str());
@@ -399,7 +399,7 @@ void viewer::add_process(const int & key, const std::string & skey, const std::s
 		processes[key] = {skey, name, f};
 		processes[key].sub_menu = sub_menus.size() - 1;
 	}
-	else cerr << "Repeat key: " << key << endl;
+	else std::cerr << "Repeat key: " << key << std::endl;
 }
 
 bool viewer::add_mesh(che * p_mesh, const bool & reset_normals)
@@ -562,7 +562,7 @@ bool viewer::m_save_load_view(viewer * view)
 
 	if(ImGui::Button("Save"))
 	{
-		ofstream os(tmp_file_path(std::string("views/") + file));
+		std::ofstream os(tmp_file_path(std::string("views/") + file));
 		os << view->cam;
 		os.close();
 	}
@@ -594,7 +594,7 @@ bool viewer::m_save_load_view(viewer * view)
 
 	if(ImGui::Button("Load"))
 	{
-		ifstream is(vfiles[select]);
+		std::ifstream is(vfiles[select]);
 		is >> view->cam;
 		is.close();
 	}

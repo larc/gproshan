@@ -31,7 +31,7 @@ void sp_KSVD(a_mat & D, const a_mat & X, const size_t & L, size_t k);
 
 // DENSE
 
-tuple<a_vec, arma::uvec> _OMP(const a_vec & x, const a_mat & D, const size_t & L);
+std::tuple<a_vec, arma::uvec> _OMP(const a_vec & x, const a_mat & D, const size_t & L);
 
 a_vec OMP(const a_vec & x, const a_mat & D, const size_t & L);
 a_vec OMP(const a_vec & x, const a_mat & D, const size_t & L, const arma::uchar_vec & mask);
