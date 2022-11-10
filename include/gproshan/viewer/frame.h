@@ -1,7 +1,6 @@
 #ifndef FRAME_H
 #define FRAME_H
 
-
 #include <gproshan/geometry/vec.h>
 #include <gproshan/viewer/shader.h>
 #include <gproshan/viewer/include_opengl.h>

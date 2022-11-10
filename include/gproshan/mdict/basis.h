@@ -2,13 +2,9 @@
 #define BASIS_H
 
 #include <gproshan/include.h>
-
-#include <fstream>
-
 #include <gproshan/include_arma.h>
 
-
-using namespace std;
+#include <fstream>
 
 
 // geometry processing and shape analysis framework

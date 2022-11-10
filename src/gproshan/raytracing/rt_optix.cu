@@ -2,7 +2,6 @@
 #include <gproshan/raytracing/rt_utils.h>
 #include <gproshan/raytracing/rt_optix_params.h>
 
-
 #include <optix_device.h>
 #include <cuda_runtime.h>
 

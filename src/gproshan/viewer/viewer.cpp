@@ -21,12 +21,9 @@
 	#include <gproshan/raytracing/rt_optix.h>
 #endif // GPROSHAN_OPTIX
 
-
 #include <CImg.h>
 
-
 using namespace cimg_library;
-using namespace std;
 
 
 // geometry processing and shape analysis framework

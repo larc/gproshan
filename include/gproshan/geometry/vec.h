@@ -13,6 +13,7 @@
 	#define __device__
 #endif
 
+
 // geometry processing and shape analysis framework
 namespace gproshan {
 

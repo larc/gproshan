@@ -17,9 +17,6 @@
 #endif
 
 
-using namespace std;
-
-
 // geometry processing and shape analysis framework
 // mesh dictionary learning and sparse coding namespace
 namespace gproshan::mdict {

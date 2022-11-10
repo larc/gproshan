@@ -3,7 +3,6 @@
 
 #include <gproshan/mesh/che.h>
 
-
 #include <cmath>
 #include <functional>
 

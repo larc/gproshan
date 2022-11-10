@@ -2,11 +2,8 @@
 #define MDICT_H
 
 #include <gproshan/include.h>
-
 #include <gproshan/mdict/patch.h>
 #include <gproshan/mdict/basis.h>
-
-
 #include <gproshan/include_arma.h>
 
 

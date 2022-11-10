@@ -3,8 +3,6 @@
 #include <gproshan/laplacian/laplacian.h>
 #include <gproshan/include_arma.h>
 
-using namespace std;
-
 
 // geometry processing and shape analysis framework
 namespace gproshan {

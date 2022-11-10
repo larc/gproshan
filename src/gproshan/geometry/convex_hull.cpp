@@ -1,6 +1,5 @@
 #include <gproshan/geometry/convex_hull.h>
 
-
 #include <algorithm>
 #include <numeric>
 

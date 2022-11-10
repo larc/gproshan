@@ -6,7 +6,6 @@
 #include <queue>
 
 
-using namespace std;
 using namespace gproshan::mdict;
 
 

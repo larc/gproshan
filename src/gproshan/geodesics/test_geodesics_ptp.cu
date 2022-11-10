@@ -11,8 +11,6 @@
 #include <thrust/device_vector.h>
 #include <thrust/execution_policy.h>
 
-using namespace std;
-
 
 // geometry processing and shape analysis framework
 namespace gproshan {

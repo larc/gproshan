@@ -1,16 +1,16 @@
 #ifndef VIEWER_H
 #define VIEWER_H
 
-#include <cstring>
-#include <functional>
-#include <map>
-
 #include <gproshan/viewer/camera.h>
 #include <gproshan/viewer/shader.h>
 #include <gproshan/viewer/frame.h>
 #include <gproshan/viewer/che_viewer.h>
 #include <gproshan/viewer/include_opengl.h>
 #include <gproshan/raytracing/render_params.h>
+
+#include <cstring>
+#include <functional>
+#include <map>
 
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_glfw.h>

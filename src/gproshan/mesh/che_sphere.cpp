@@ -6,9 +6,6 @@
 #include <vector>
 
 
-using namespace std;
-
-
 // geometry processing and shape analysis framework
 namespace gproshan {
 
