@@ -20,7 +20,7 @@ const size_t & basis::dim() const
 
 void basis::plot_basis()
 {
-	string file = tmp_file_path("basis.gpi");
+	std::string file = tmp_file_path("basis.gpi");
 	ofstream os(file);
 
 	os << "set term qt size 1000,1000;" << endl;
@@ -51,7 +51,7 @@ void basis::plot_atoms(const a_mat & A)
 	size_t s = sqrt(m);
 	s += !(s * s == K);
 
-	string file = tmp_file_path("atoms.gpi");
+	std::string file = tmp_file_path("atoms.gpi");
 	ofstream os(file);
 
 	os << "set term qt size 1000,1000;" << endl;
@@ -84,7 +84,7 @@ void basis::plot_atoms(const a_mat & A)
 void basis::plot_patch(const a_mat & A, const a_mat & xyz, const index_t & p)
 {
 	a_mat tmp = xyz.t();
-	string data = tmp_file_path("xyz_" + to_string(p) + ".dat");
+	std::string data = tmp_file_path("xyz_" + to_std::string(p) + ".dat");
 	tmp.save(data.c_str(), arma::arma_ascii);
 
 	size_t K = A.n_rows;
@@ -92,7 +92,7 @@ void basis::plot_patch(const a_mat & A, const a_mat & xyz, const index_t & p)
 	size_t s = sqrt(m);
 	s += !(s * s == K);
 
-	string file = tmp_file_path("atoms_patch_"+ to_string(p) + ".gpi");
+	std::string file = tmp_file_path("atoms_patch_"+ to_std::string(p) + ".gpi");
 	ofstream os(file);
 
 	os << "set term qt size 1000,1000;" << endl;
@@ -104,7 +104,7 @@ void basis::plot_patch(const a_mat & A, const a_mat & xyz, const index_t & p)
 	os << "unset key;" << endl;
 	os << "set pm3d at b;" << endl;
 	os << "unset colorbox;" << endl;
-	os << "splot \"xyz_" << to_string(p) << ".dat\" u 1:2:3 with points palette pointsize 2 pointtype 7,";
+	os << "splot \"xyz_" << to_std::string(p) << ".dat\" u 1:2:3 with points palette pointsize 2 pointtype 7,";
 
 	for(index_t i = 0; i < m; ++i)
 	{

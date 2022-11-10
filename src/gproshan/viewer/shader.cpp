@@ -16,7 +16,7 @@ shader::~shader()
 	glDeleteProgram(program);
 }
 
-const GLint & shader::operator () (const string & name)
+const GLint & shader::operator () (const std::string & name)
 {
 	if(uniform.find(name) != uniform.end())
 		uniform[name] = glGetUniformLocation(program, name.c_str());
@@ -62,7 +62,7 @@ void shader::disable() const
 
 bool shader::load(GLenum shader_type, const std::string & filename)
 {
-	string source;
+	std::string source;
 
 	if(!read_source(filename, source))
 	{
@@ -126,10 +126,10 @@ bool shader::read_source(const std::string & filename, std::string & source)
 
 	source = "";
 
-	string line, include;
+	std::string line, include;
 	while(getline(is, line))
 	{
-		stringstream ss(line);
+		std::stringstream ss(line);
 
 		ss >> include;
 		if(include == "#include")

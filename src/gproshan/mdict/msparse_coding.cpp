@@ -26,7 +26,7 @@ msparse_coding::msparse_coding(che *const & _mesh, basis *const & _phi_basis, co
 
 	m_params.n_patches = mesh->n_vertices / m_params.avg_p;
 
-	key_name = mesh->name_size() + '_' + to_string(m_params.delta) + '_' + to_string(m_params.sum_thres) + '_' + to_string(m_params.area_thres);
+	key_name = mesh->name_size() + '_' + to_std::string(m_params.delta) + '_' + to_std::string(m_params.sum_thres) + '_' + to_std::string(m_params.area_thres);
 
 	mask = new bool[mesh->n_vertices];
 	memset(mask, 0, sizeof(bool) * mesh->n_vertices);
@@ -44,8 +44,8 @@ msparse_coding::operator const std::string & () const
 
 void msparse_coding::load_mask()
 {
-	//string f_mask = tmp_file_path(mesh->name_size() + '_' + to_string(avg_p) + '_' + to_string(percent) + '_' + to_string(radio) + ".msk");
-	string f_mask = tmp_file_path(mesh->name_size() + '_' + to_string(m_params.percent) + ".msk");
+	//std::string f_mask = tmp_file_path(mesh->name_size() + '_' + to_std::string(avg_p) + '_' + to_std::string(percent) + '_' + to_std::string(radio) + ".msk");
+	std::string f_mask = tmp_file_path(mesh->name_size() + '_' + to_std::string(m_params.percent) + ".msk");
 	arma::uvec V;
 	gproshan_log(loading radial mask);
 
@@ -83,7 +83,7 @@ void msparse_coding::load_mask()
 
 void msparse_coding::load_mask(const std::vector<index_t> * vertices, const index_t * clusters)
 {
-	string f_mask = tmp_file_path(mesh->name_size() + '_' + to_string(m_params.avg_p) + '_' + to_string(m_params.percent) + ".msk");
+	std::string f_mask = tmp_file_path(mesh->name_size() + '_' + to_std::string(m_params.avg_p) + '_' + to_std::string(m_params.percent) + ".msk");
 	arma::uvec V;
 
 	if(V.load(f_mask))
@@ -149,8 +149,8 @@ void msparse_coding::load_mask(const std::vector<index_t> * vertices, const inde
 void msparse_coding::load_sampling()
 {
 	size_t featsize;
-	vector<index_t> all_sorted_features;
-	vector<index_t> seeds;
+	std::vector<index_t> all_sorted_features;
+	std::vector<index_t> seeds;
 	load_features(all_sorted_features, featsize);
 
 	gproshan_debug_var(all_sorted_features.size());
@@ -193,8 +193,8 @@ void msparse_coding::load_sampling()
 
 	real_t euc_radio;
 	real_t geo_radio;
-	vector<real_t> radios;
-	vector<real_t> geo_radios;
+	std::vector<real_t> radios;
+	std::vector<real_t> geo_radios;
 	size_t count_cov = 0;
 	size_t count_cov_patch = 0;
 
@@ -261,7 +261,7 @@ void msparse_coding::load_sampling()
 
 
 #ifndef NDEBUG
-	vector<index_t> outliers;
+	std::vector<index_t> outliers;
 
 
 	for(index_t i = 0; i < mesh->n_vertices; ++i)
@@ -577,7 +577,7 @@ che * msparse_coding::point_cloud_reconstruction(real_t per, real_t fr)
 
 	gproshan_debug_var(total_points);
 
-	vector<vertex> point_cloud;
+	std::vector<vertex> point_cloud;
 	point_cloud.reserve(total_points);
 
 	for(index_t i = 0; i < m_params.n_patches; ++i)
@@ -609,7 +609,7 @@ che * msparse_coding::point_cloud_reconstruction(real_t per, real_t fr)
 		}
 	}
 
-	che_off::write_file(new_mesh, tmp_file_path(key_name + '_' + to_string(per) + '_' + to_string(fr) + "_pc"), che_off::NOFF);
+	che_off::write_file(new_mesh, tmp_file_path(key_name + '_' + to_std::string(per) + '_' + to_std::string(fr) + "_pc"), che_off::NOFF);
 
 	gproshan_debug(saved new point cloud);
 
@@ -662,7 +662,7 @@ void msparse_coding::learning()
 {
 	gproshan_log(MDICT);
 
-	string f_dict = tmp_file_path(mesh->name_size() + '_' + to_string(phi_basis->dim()) + '_' + to_string(m_params.n_atoms) + '_' + to_string(m_params.f) + '_' + to_string(L) + ".dict");
+	std::string f_dict = tmp_file_path(mesh->name_size() + '_' + to_std::string(phi_basis->dim()) + '_' + to_std::string(m_params.n_atoms) + '_' + to_std::string(m_params.f) + '_' + to_std::string(L) + ".dict");
 
 	if(m_params.learn)
 	{
@@ -707,7 +707,7 @@ void msparse_coding::sparse_coding()
 {
 	gproshan_log(MDICT);
 
-	vector<locval_t> locval;
+	std::vector<locval_t> locval;
 	alpha = OMP_all(patches, phi_basis, A, L);
 }
 
@@ -737,9 +737,9 @@ void msparse_coding::init_sampling()
 	gproshan_debug_var(phi_basis->radio());
 }
 
-void msparse_coding::load_features(vector<index_t> & v_feat, size_t & featsize)
+void msparse_coding::load_features(std::vector<index_t> & v_feat, size_t & featsize)
 {
-	string f_feat = tmp_file_path(mesh->name() + ".int");
+	std::string f_feat = tmp_file_path(mesh->name() + ".int");
 	ifstream inp;
 	inp.open(f_feat.c_str(), ifstream::in);
 
@@ -754,7 +754,7 @@ void msparse_coding::load_features(vector<index_t> & v_feat, size_t & featsize)
 		//g++ -O3 *.cpp -lgsl -lCGAL -o harris3d
 		//cmake -DCMAKE_BUILD_TYPE=Debug ..
 
-		string command = "../../harris3d/harris3d " + mesh->filename + " " + f_feat + " " + tmp_file_path("example.prop");
+		std::string command = "../../harris3d/harris3d " + mesh->filename + " " + f_feat + " " + tmp_file_path("example.prop");
 		gproshan_debug_var(command);
 		system(command.c_str());
 		gproshan_debug(created);
@@ -1019,7 +1019,7 @@ const index_t & msparse_coding::draw_patches(const index_t & p)
 	return patches[p].vertices[0];
 }
 
-void msparse_coding::save_alpha(string file)
+void msparse_coding::save_alpha(std::string file)
 {
 	alpha.save(file);
 }

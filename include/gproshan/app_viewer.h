@@ -55,7 +55,7 @@ class app_viewer : public viewer
 	protected:
 		virtual void init();
 
-		che * load_mesh(const string & file_path);
+		che * load_mesh(const std::string & file_path);
 
 		// Scenes
 		static bool process_compute_normals(viewer * p_view);

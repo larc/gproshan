@@ -10,7 +10,7 @@ using namespace cimg_library;
 namespace gproshan::mdict {
 
 
-void test_image_denoising(const string & file)
+void test_image_denoising(const std::string & file)
 {
 	CImg<real_t> image(file.c_str());
 	image.resize(128, 128);
@@ -93,7 +93,7 @@ void test_image_denoising(const string & file)
 	gproshan_log_var(time);
 
 	TIC(time)
-	vector<locval_t> locval;
+	std::vector<locval_t> locval;
 	a_mat spY = D * OMP_all(locval, X, D, L);
 	TOC(time)
 

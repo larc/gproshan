@@ -11,7 +11,7 @@
 namespace gproshan {
 
 
-geodesics::geodesics(che * mesh, const vector<index_t> & sources, const params & p): n_vertices(mesh->n_vertices)
+geodesics::geodesics(che * mesh, const std::vector<index_t> & sources, const params & p): n_vertices(mesh->n_vertices)
 {
 	assert(n_vertices > 0);
 
@@ -90,7 +90,7 @@ void geodesics::normalize()
 		dist[sorted_index[i]] /= max;
 }
 
-void geodesics::execute(che * mesh, const vector<index_t> & sources, const params & p)
+void geodesics::execute(che * mesh, const std::vector<index_t> & sources, const params & p)
 {
 	switch(p.alg)
 	{
@@ -110,7 +110,7 @@ void geodesics::execute(che * mesh, const vector<index_t> & sources, const param
 	}
 }
 
-void geodesics::run_fastmarching(che * mesh, const vector<index_t> & sources, const size_t & n_iter, const real_t & radio, const fm_function_t & fun)
+void geodesics::run_fastmarching(che * mesh, const std::vector<index_t> & sources, const size_t & n_iter, const real_t & radio, const fm_function_t & fun)
 {
 	index_t BLACK = 0, GREEN = 1, RED = 2;
 	index_t * color = new index_t[n_vertices];
@@ -121,9 +121,9 @@ void geodesics::run_fastmarching(che * mesh, const vector<index_t> & sources, co
 
 	size_t green_count = n_iter ? n_iter : n_vertices;
 
-	priority_queue<pair<real_t, size_t>,
-			vector<pair<real_t, size_t> >,
-			greater<pair<real_t, size_t> > > Q;
+	priority_queue<std::pair<real_t, size_t>,
+			std::vector<std::pair<real_t, size_t> >,
+			greater<std::pair<real_t, size_t> > > Q;
 
 	real_t dv, dp;
 	vertex vx;
@@ -186,10 +186,10 @@ void geodesics::run_fastmarching(che * mesh, const vector<index_t> & sources, co
 	delete [] color;
 }
 
-void geodesics::run_parallel_toplesets_propagation_cpu(che * mesh, const vector<index_t> & sources)
+void geodesics::run_parallel_toplesets_propagation_cpu(che * mesh, const std::vector<index_t> & sources)
 {
 	index_t * toplesets = new index_t[n_vertices];
-	vector<index_t> limits;
+	std::vector<index_t> limits;
 	mesh->compute_toplesets(toplesets, sorted_index, limits, sources);
 
 	double time_ptp;
@@ -203,7 +203,7 @@ void geodesics::run_parallel_toplesets_propagation_cpu(che * mesh, const vector<
 	delete [] toplesets;
 }
 
-void geodesics::run_heat_method(che * mesh, const vector<index_t> & sources)
+void geodesics::run_heat_method(che * mesh, const std::vector<index_t> & sources)
 {
 	double time_total, solve_time;
 	TIC(time_total)
@@ -217,10 +217,10 @@ void geodesics::run_heat_method(che * mesh, const vector<index_t> & sources)
 
 #ifdef GPROSHAN_CUDA
 
-void geodesics::run_parallel_toplesets_propagation_gpu(che * mesh, const vector<index_t> & sources)
+void geodesics::run_parallel_toplesets_propagation_gpu(che * mesh, const std::vector<index_t> & sources)
 {
 	index_t * toplesets = new index_t[n_vertices];
-	vector<index_t> limits;
+	std::vector<index_t> limits;
 	mesh->compute_toplesets(toplesets, sorted_index, limits, sources);
 
 	double time_ptp;
@@ -234,7 +234,7 @@ void geodesics::run_parallel_toplesets_propagation_gpu(che * mesh, const vector<
 	delete [] toplesets;
 }
 
-void geodesics::run_heat_method_gpu(che * mesh, const vector<index_t> & sources)
+void geodesics::run_heat_method_gpu(che * mesh, const std::vector<index_t> & sources)
 {
 	double time_total, solve_time;
 	TIC(time_total)

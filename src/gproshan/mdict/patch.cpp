@@ -46,7 +46,7 @@ void patch::init(che * mesh, const index_t & v, const size_t & n_toplevels, cons
 	if(!_toplevel) delete [] toplevel;
 }
 
-void patch::init_disjoint(che * mesh, const index_t & v, const size_t & n_toplevels, vector<index_t> & _vertices, index_t * _toplevel)
+void patch::init_disjoint(che * mesh, const index_t & v, const size_t & n_toplevels, std::vector<index_t> & _vertices, index_t * _toplevel)
 {
 	radio = 1;
 	index_t * toplevel = _toplevel ? _toplevel : new index_t[mesh->n_vertices];
@@ -77,7 +77,7 @@ index_t patch::find(const index_t * indexes, size_t nc, index_t idx_global)
 	return -1;
 }
 
-bool patch::add_vertex_by_faces(vertex & n, vector<vertex> & N, double thr_angle, const real_t * geo, che * mesh, const index_t & v, real_t & area, real_t & proj_area, real_t deviation)
+bool patch::add_vertex_by_faces(vertex & n, std::vector<vertex> & N, double thr_angle, const real_t * geo, che * mesh, const index_t & v, real_t & area, real_t & proj_area, real_t deviation)
 {
 	// it needs to return both vertices
 	// it needs to filter repeated indexes.
@@ -250,7 +250,7 @@ void patch::init_radial_disjoint(	real_t & euc_radio,
 
 	vertices.push_back(v);
 
-	vector<vertex> N;
+	std::vector<vertex> N;
 	N.push_back(n);
 
 	real_t area = 0;
@@ -318,7 +318,7 @@ void patch::itransform()
 	xyz.each_col() += x;
 }
 
-void patch::reset_xyz(che * mesh, vector<vpatches_t> & vpatches, const index_t & p, const fmask_t & mask)
+void patch::reset_xyz(che * mesh, std::vector<vpatches_t> & vpatches, const index_t & p, const fmask_t & mask)
 {
 	size_t m = vertices.size();
 
@@ -368,7 +368,7 @@ void patch::remove_extra_xyz_disjoint(size_t & max_points)
 	}
 
 }
-void patch::add_extra_xyz_disjoint(che * mesh, vector<vpatches_t> & vpatches, const index_t & p)
+void patch::add_extra_xyz_disjoint(che * mesh, std::vector<vpatches_t> & vpatches, const index_t & p)
 {
 
 	size_t m = std::max (vertices.size(), min_nv);
@@ -460,7 +460,7 @@ void patch::add_extra_xyz_disjoint(che * mesh, vector<vpatches_t> & vpatches, co
 	}
 }
 
-void patch::reset_xyz_disjoint(che * mesh, real_t * dist, size_t M, vector<vpatches_t> & vpatches, const index_t & p, const fmask_t & mask)
+void patch::reset_xyz_disjoint(che * mesh, real_t * dist, size_t M, std::vector<vpatches_t> & vpatches, const index_t & p, const fmask_t & mask)
 {
 	size_t m = vertices.size();
 	if(mask)
@@ -550,7 +550,7 @@ void patch::gather_vertices(che * mesh, const index_t & v, const real_t & radio,
 	if(vertices.size()) vertices.clear();
 	vertices.reserve(expected_nv);
 
-	priority_queue<pair<real_t, index_t> > qvertices;
+	priority_queue<std::pair<real_t, index_t> > qvertices;
 
 	memset(toplevel, -1, sizeof(index_t) * mesh->n_vertices);
 
@@ -593,7 +593,7 @@ void patch::jet_fit_directions(che * mesh, const index_t & v)
 	//size_t min_points = (d_fitting + 1) * (d_fitting + 2) / 2;
 	//assert(vertices.size() > min_points);
 
-	vector<DPoint> in_points;
+	std::vector<DPoint> in_points;
 	in_points.reserve(vertices.size());
 	for(const index_t & u: vertices)
 		in_points.push_back(DPoint(mesh->point(u).x(), mesh->point(u).y(), mesh->point(u).z()));
@@ -703,10 +703,10 @@ void patch::save_z(ostream & os)
 	os<<xyz.col(i)[2]<<"\n";
 }
 
-void patch::compute_avg_distance(che * mesh, vector<vpatches_t> & vpatches, const index_t & p)
+void patch::compute_avg_distance(che * mesh, std::vector<vpatches_t> & vpatches, const index_t & p)
 {
 	avg_dist = INFINITY;
-	vector<double> distances;
+	std::vector<double> distances;
 
 	for(size_t i = 0; i < vertices.size(); ++i)
 	{

@@ -127,7 +127,7 @@ void viewer::imgui()
 		if(ImGui::BeginMenu("Select"))
 		{
 			for(index_t i = 0; i < n_meshes; ++i)
-				if(ImGui::MenuItem((to_string(i) + ": " + meshes[i]->filename).c_str(), nullptr, i == idx_active_mesh, i != idx_active_mesh))
+				if(ImGui::MenuItem((to_std::string(i) + ": " + meshes[i]->filename).c_str(), nullptr, i == idx_active_mesh, i != idx_active_mesh))
 				{
 					idx_active_mesh = i;
 					glfwSetWindowTitle(window, mesh->filename.c_str());
@@ -392,7 +392,7 @@ void viewer::init_glsl()
 	shader_pointcloud.load_fragment(shaders_path("fragment_pointcloud.glsl"));
 }
 
-void viewer::add_process(const int & key, const string & skey, const string & name, const function_t & f)
+void viewer::add_process(const int & key, const std::string & skey, const std::string & name, const function_t & f)
 {
 	if(processes.find(key) == processes.end())
 	{
@@ -568,11 +568,11 @@ bool viewer::m_save_load_view(viewer * view)
 	}
 
 	static index_t select = 0;
-	static vector<string> vfiles;
+	static std::vector<std::string> vfiles;
 
 	vfiles.clear();
 	for(auto & p: filesystem::directory_iterator(tmp_file_path("views/")))
-		vfiles.push_back(p.path().string());
+		vfiles.push_back(p.path().std::string());
 
 	if(!vfiles.size()) return true;
 

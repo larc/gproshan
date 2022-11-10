@@ -15,7 +15,7 @@
 namespace gproshan {
 
 
-double parallel_toplesets_propagation_gpu(const ptp_out_t & ptp_out, che * mesh, const vector<index_t> & sources, const toplesets_t & toplesets)
+double parallel_toplesets_propagation_gpu(const ptp_out_t & ptp_out, che * mesh, const std::vector<index_t> & sources, const toplesets_t & toplesets)
 {
 	cudaDeviceReset();
 
@@ -82,7 +82,7 @@ double parallel_toplesets_propagation_gpu(const ptp_out_t & ptp_out, che * mesh,
 	return time / 1000;
 }
 
-real_t farthest_point_sampling_ptp_gpu(che * mesh, vector<index_t> & samples, double & time_fps, size_t n, real_t radio)
+real_t farthest_point_sampling_ptp_gpu(che * mesh, std::vector<index_t> & samples, double & time_fps, size_t n, real_t radio)
 {
 	cudaDeviceReset();
 
@@ -110,7 +110,7 @@ real_t farthest_point_sampling_ptp_gpu(che * mesh, vector<index_t> & samples, do
 	index_t * d_sorted;
 	cudaMalloc(&d_sorted, sizeof(index_t) * h_mesh->n_vertices);
 
-	vector<index_t> limits;
+	std::vector<index_t> limits;
 	index_t * toplesets = new index_t[h_mesh->n_vertices];
 	index_t * sorted_index = new index_t[h_mesh->n_vertices];
 
@@ -169,7 +169,7 @@ real_t farthest_point_sampling_ptp_gpu(che * mesh, vector<index_t> & samples, do
 	return max_dist;
 }
 
-index_t run_ptp_gpu(CHE * d_mesh, const index_t & n_vertices, real_t * h_dist, real_t ** d_dist, const vector<index_t> & sources, const vector<index_t> & limits, const index_t * h_sorted, index_t * d_sorted, real_t * d_error, index_t * h_clusters, index_t ** d_clusters)
+index_t run_ptp_gpu(CHE * d_mesh, const index_t & n_vertices, real_t * h_dist, real_t ** d_dist, const std::vector<index_t> & sources, const std::vector<index_t> & limits, const index_t * h_sorted, index_t * d_sorted, real_t * d_error, index_t * h_clusters, index_t ** d_clusters)
 {
 	#pragma omp parallel for
 	for(index_t v = 0; v < n_vertices; ++v)

@@ -19,12 +19,12 @@ app_viewer::~app_viewer()
 		delete meshes[i];
 }
 
-che * app_viewer::load_mesh(const string & file_path)
+che * app_viewer::load_mesh(const std::string & file_path)
 {
 	size_t pos = file_path.rfind('.');
-	assert(pos != string::npos);
+	assert(pos != std::string::npos);
 
-	string extension = file_path.substr(pos + 1);
+	std::string extension = file_path.substr(pos + 1);
 
 	if(extension == "off") return new che_off(file_path);
 	if(extension == "obj") return new che_obj(file_path);
@@ -345,7 +345,7 @@ bool app_viewer::process_fairing_spectral(viewer * p_view)
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
-	static vector<vertex> vertices;
+	static std::vector<vertex> vertices;
 	static size_t min_neigs = 1;
 	static size_t max_neigs = std::min(1000lu, mesh->n_vertices);
 	static fairing_spectral fair(max_neigs);
@@ -376,7 +376,7 @@ bool app_viewer::process_fairing_taubin(viewer * p_view)
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
-	static vector<vertex> vertices;
+	static std::vector<vertex> vertices;
 	static fairing_taubin fair(0);
 
 	if(ImGui_InputReal("step", &fair.step, 0.001))
@@ -499,7 +499,7 @@ bool app_viewer::process_compute_toplesets(viewer * p_view)
 
 	index_t * toplesets = new index_t[mesh->n_vertices];
 	index_t * sorted = new index_t[mesh->n_vertices];
-	vector<index_t> limites;
+	std::vector<index_t> limites;
 	mesh->compute_toplesets(toplesets, sorted, limites, mesh.selected);
 
 	size_t n_toplesets = limites.size() - 1;
@@ -629,7 +629,7 @@ bool app_viewer::process_mask(viewer * p_view)
 		msc.init_radial_feature_patches();
 		//dict.init_voronoi_patches();
 		mesh->update_heatmap(&msc[0]);
-		string f_points = tmp_file_path(string(msc) + ".rsampl");
+		std::string f_points = tmp_file_path(std::string(msc) + ".rsampl");
 
 		a_vec points_out;
 		gproshan_debug_var(f_points);
@@ -931,7 +931,7 @@ bool app_viewer::process_fill_holes_biharmonic_splines(viewer * p_view)
 	size_t old_n_vertices, n_vertices = mesh->n_vertices;
 	size_t n_holes = 0; // FIX_BOUND mesh->n_borders;
 
-	vector<index_t> * border_vertices;
+	std::vector<index_t> * border_vertices;
 	che ** holes;
 	tie(border_vertices, holes) = fill_all_holes_meshes(mesh);
 	if(!holes) return true;
@@ -968,7 +968,7 @@ bool app_viewer::process_select_multiple(viewer * p_view)
 
 	if(ImGui::Button("Add"))
 	{
-		stringstream ss(line);
+		std::stringstream ss(line);
 		index_t v;
 		while(ss >> v)
 			mesh.selected.push_back(v);

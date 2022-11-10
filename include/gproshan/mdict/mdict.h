@@ -22,9 +22,9 @@ struct locval_t
 
 bool operator < (const locval_t & a, const locval_t & b);
 
-void OMP(vector<locval_t> & alpha, const a_vec & x, const index_t & i, const a_mat & D, const size_t & L);
+void OMP(std::vector<locval_t> & alpha, const a_vec & x, const index_t & i, const a_mat & D, const size_t & L);
 
-a_sp_mat OMP_all(vector<locval_t> & locval, const a_mat & X, const a_mat & D, const size_t & L);
+a_sp_mat OMP_all(std::vector<locval_t> & locval, const a_mat & X, const a_mat & D, const size_t & L);
 
 void sp_KSVD(a_mat & D, const a_mat & X, const size_t & L, size_t k);
 
@@ -46,20 +46,20 @@ void KSVD(a_mat & D, const a_mat & X, const size_t & L, size_t k);
 a_vec OMP(const patch & p, const a_mat & A, const size_t & L);
 a_vec OMP(const patch & p, const a_mat & A, const size_t & L);
 
-a_mat OMP_all(const vector<patch> & patches, const a_mat & A, const size_t & L);
-a_mat OMP_all(const vector<patch> & patches, basis * phi_basis, const a_mat & A, const size_t & L);
+a_mat OMP_all(const std::vector<patch> & patches, const a_mat & A, const size_t & L);
+a_mat OMP_all(const std::vector<patch> & patches, basis * phi_basis, const a_mat & A, const size_t & L);
 
 
-void KSVD(a_mat & A, const vector<patch> & patches, const size_t & L, size_t k);
+void KSVD(a_mat & A, const std::vector<patch> & patches, const size_t & L, size_t k);
 
 
 // MESH SPARSE
 
-void OMP(vector<locval_t> & alpha, const patch & p, const index_t & i, const a_mat & A, const size_t & L);
+void OMP(std::vector<locval_t> & alpha, const patch & p, const index_t & i, const a_mat & A, const size_t & L);
 
-a_sp_mat OMP_all(vector<locval_t> & locval, const vector<patch> & patches, const a_mat & A, const size_t & L);
+a_sp_mat OMP_all(std::vector<locval_t> & locval, const std::vector<patch> & patches, const a_mat & A, const size_t & L);
 
-void sp_KSVD(a_mat & A, const vector<patch> & patches, const size_t & L, size_t k);
+void sp_KSVD(a_mat & A, const std::vector<patch> & patches, const size_t & L, size_t k);
 
 
 } // namespace gproshan::mdict

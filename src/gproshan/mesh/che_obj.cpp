@@ -9,12 +9,12 @@
 namespace gproshan {
 
 
-che_obj::che_obj(const string & file)
+che_obj::che_obj(const std::string & file)
 {
 	init(file);
 }
 
-void che_obj::read_file(const string & file)
+void che_obj::read_file(const std::string & file)
 {
 	FILE * fp = fopen(file.c_str(), "r");
 	assert(fp);
@@ -22,9 +22,9 @@ void che_obj::read_file(const string & file)
 	float x, y, z, r, g, b;
 	index_t P[32], n;
 
-	vector<vertex> vertices;
-	vector<rgb_t> vertices_color;
-	vector<index_t> faces;
+	std::vector<vertex> vertices;
+	std::vector<rgb_t> vertices_color;
+	std::vector<index_t> faces;
 
 	char line[256], str[64];
 	char * line_ptr;
@@ -70,7 +70,7 @@ void che_obj::read_file(const string & file)
 	memcpy(VT, faces.data(), faces.size() * sizeof(index_t));
 }
 
-void che_obj::write_file(const che * mesh, const string & file, const bool & color, const bool & pointcloud)
+void che_obj::write_file(const che * mesh, const std::string & file, const bool & color, const bool & pointcloud)
 {
 	FILE * fp = fopen((file + ".obj").c_str(), "w");
 	assert(fp);

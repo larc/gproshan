@@ -9,12 +9,12 @@
 namespace gproshan {
 
 
-che_off::che_off(const string & file)
+che_off::che_off(const std::string & file)
 {
 	init(file);
 }
 
-void che_off::read_file(const string & file)
+void che_off::read_file(const std::string & file)
 {
 	char soff[32];
 	size_t nv, nf, n;
@@ -47,7 +47,7 @@ void che_off::read_file(const string & file)
 		}
 	}
 
-	vector<index_t> faces;
+	std::vector<index_t> faces;
 	faces.reserve(che::mtrig * n_faces);
 
 	index_t P[32];
@@ -81,7 +81,7 @@ void che_off::read_file(const string & file)
 	memcpy(VT, faces.data(), faces.size() * sizeof(index_t));
 }
 
-void che_off::write_file(const che * mesh, const string & file, const che_off::type & off, const bool & pointcloud)
+void che_off::write_file(const che * mesh, const std::string & file, const che_off::type & off, const bool & pointcloud)
 {
 	static const char * str_off[] = {"OFF", "NOFF", "COFF", "NCOFF"};
 

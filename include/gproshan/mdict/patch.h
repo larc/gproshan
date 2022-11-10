@@ -58,7 +58,7 @@ class patch
 		void init_disjoint(che * mesh,
 					const index_t & v,
 					const size_t & n_toplevels,
-					vector<index_t> & _vertices,
+					std::vector<index_t> & _vertices,
 					index_t * _toplevel = nullptr);
 
 		void init_radial_disjoint(	real_t & euc_radio,
@@ -94,17 +94,17 @@ class patch
 						const fmask_t & mask = nullptr
 						);
 		void remove_extra_xyz_disjoint(size_t & max_points);
-		void add_extra_xyz_disjoint(che * mesh, vector<vpatches_t> & vpatches, const index_t & p);
+		void add_extra_xyz_disjoint(che * mesh, std::vector<vpatches_t> & vpatches, const index_t & p);
 		const a_vec normal();
 		bool is_covered( bool * covered);
 
 //		void save(const real_t & radio, const size_t & imsize, CImgList<real_t> & imlist);
 		void update_heights(real_t & min, real_t & max, bool flag);
-		void compute_avg_distance(che * mesh, vector<vpatches_t> & vpatches, const index_t & p);
+		void compute_avg_distance(che * mesh, std::vector<vpatches_t> & vpatches, const index_t & p);
 		void scale_xyz(const real_t & radio_f);
 		void iscale_xyz(const real_t & radio_f);
 		bool add_vertex_by_faces(	vertex & n,
-									vector<vertex> & N,
+									std::vector<vertex> & N,
 									double thr_angle,
 									const real_t * geo,
 									che * mesh,

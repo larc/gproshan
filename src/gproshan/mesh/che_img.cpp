@@ -15,12 +15,12 @@ using namespace cimg_library;
 namespace gproshan {
 
 
-che_img::che_img(const string & file)
+che_img::che_img(const std::string & file)
 {
 	init(file);
 }
 
-void che_img::read_file(const string & file)
+void che_img::read_file(const std::string & file)
 {
 	CImg<real_t> img(file.c_str());
 

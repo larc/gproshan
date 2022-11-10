@@ -78,7 +78,7 @@ class msparse_coding
 		void init_radial_feature_patches();
 		void load_sampling();
 		che * point_cloud_reconstruction(real_t per, real_t fr);
-		vector<index_t> sort_indexes(const vector<real_t> &v);
+		std::vector<index_t> sort_indexes(const std::vector<real_t> &v);
 
 		real_t execute_tmp();
 
@@ -86,14 +86,14 @@ class msparse_coding
 		void learning();
 		void sparse_coding();
 		void init_sampling();
-		void load_features(vector<index_t> & v_feat, size_t & featsize);
+		void load_features(std::vector<index_t> & v_feat, size_t & featsize);
 		void init_patches(	const bool & reset = 1,
 							const fmask_t & mask = nullptr
 							);
 
 		real_t mesh_reconstruction(const fmask_t & mask = nullptr);
 		void update_alphas(a_mat & alpha, size_t threshold);
-		void save_alpha(string file);
+		void save_alpha(std::string file);
 
 		index_t sample(const index_t & s);
 };

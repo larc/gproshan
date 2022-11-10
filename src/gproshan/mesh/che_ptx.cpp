@@ -14,12 +14,12 @@ using namespace cimg_library;
 namespace gproshan {
 
 
-che_ptx::che_ptx(const string & file)
+che_ptx::che_ptx(const std::string & file)
 {
 	init(file);
 }
 
-void che_ptx::read_file(const string & file)
+void che_ptx::read_file(const std::string & file)
 {
 	FILE * fp = fopen(file.c_str(), "r");
 	assert(fp);

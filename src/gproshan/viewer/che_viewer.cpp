@@ -137,7 +137,7 @@ void che_viewer::update_vbo_heatmap(const real_t * vheatmap)
 	glBindVertexArray(0);
 }
 
-void che_viewer::update_instances_positions(const vector<vertex> & translations)
+void che_viewer::update_instances_positions(const std::vector<vertex> & translations)
 {
 	n_instances = translations.size();
 	if(!n_instances) return;

@@ -37,19 +37,19 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 	const char * pbtime = "& %6s %6.3lfs ";
 	const char * pberror = "& %6s %6.2lf\\%% ";
 
-	string filename;
+	std::string filename;
 	while(cin >> filename)
 	{
 		gproshan_debug_var(filename);
 
-		vector<index_t> source = { 0 };
+		std::vector<index_t> source = { 0 };
 
 		che * mesh = new che_off(data_path + filename + ".off");
 		size_t n_vertices = mesh->n_vertices;
 
 		index_t * toplesets = new index_t[n_vertices];
 		index_t * sorted_index = new index_t[n_vertices];
-		vector<index_t> limits;
+		std::vector<index_t> limits;
 		mesh->compute_toplesets(toplesets, sorted_index, limits, source);
 
 
@@ -193,7 +193,7 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 #ifdef GPROSHAN_CUDA	// IMPLEMENT: iter_error_parallel_toplesets_propagation_coalescence_cpu
 
 		double time;
-		vector<pair<index_t, real_t> > iter_error = iter_error_parallel_toplesets_propagation_coalescence_gpu(mesh, source, limits, sorted_index, exact, time);
+		std::vector<std::pair<index_t, real_t> > iter_error = iter_error_parallel_toplesets_propagation_coalescence_gpu(mesh, source, limits, sorted_index, exact, time);
 
 		system(("mv band " + (test_path + filename + ".band")).c_str());
 
@@ -237,7 +237,7 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 	fclose(ftable);
 }
 
-double test_fast_marching(real_t & error, const real_t * exact, che * mesh, const vector<index_t> & source, const int & n_test)
+double test_fast_marching(real_t & error, const real_t * exact, che * mesh, const std::vector<index_t> & source, const int & n_test)
 {
 	double t, seconds = INFINITY;
 
@@ -254,7 +254,7 @@ double test_fast_marching(real_t & error, const real_t * exact, che * mesh, cons
 	return seconds;
 }
 
-double test_ptp_cpu(real_t & error, const real_t * exact, che * mesh, const vector<index_t> & source, const toplesets_t & toplesets, const int & n_test)
+double test_ptp_cpu(real_t & error, const real_t * exact, che * mesh, const std::vector<index_t> & source, const toplesets_t & toplesets, const int & n_test)
 {
 	double t, seconds = INFINITY;
 
@@ -272,7 +272,7 @@ double test_ptp_cpu(real_t & error, const real_t * exact, che * mesh, const vect
 	return seconds;
 }
 
-double test_heat_method_cholmod(real_t & error, double & stime, const real_t * exact, che * mesh, const vector<index_t> & source, const int & n_test)
+double test_heat_method_cholmod(real_t & error, double & stime, const real_t * exact, che * mesh, const std::vector<index_t> & source, const int & n_test)
 {
 	double t, st, ptime;
 	ptime = stime = INFINITY;
@@ -295,7 +295,7 @@ double test_heat_method_cholmod(real_t & error, double & stime, const real_t * e
 
 #ifdef GPROSHAN_CUDA
 
-double test_ptp_gpu(real_t & error, const real_t * exact, che * mesh, const vector<index_t> & source, const toplesets_t & toplesets, const int & n_test)
+double test_ptp_gpu(real_t & error, const real_t * exact, che * mesh, const std::vector<index_t> & source, const toplesets_t & toplesets, const int & n_test)
 {
 	double t, seconds = INFINITY;
 
@@ -313,7 +313,7 @@ double test_ptp_gpu(real_t & error, const real_t * exact, che * mesh, const vect
 	return seconds;
 }
 
-double test_heat_method_gpu(real_t & error, double & stime, const real_t * exact, che * mesh, const vector<index_t> & source, const int & n_test)
+double test_heat_method_gpu(real_t & error, double & stime, const real_t * exact, che * mesh, const std::vector<index_t> & source, const int & n_test)
 {
 	double t, st, ptime;
 	ptime = stime = INFINITY;
@@ -338,7 +338,7 @@ double test_heat_method_gpu(real_t & error, double & stime, const real_t * exact
 #endif // GPROSHAN_CUDA
 
 
-real_t * load_exact_geodesics(const string & file, const size_t & n)
+real_t * load_exact_geodesics(const std::string & file, const size_t & n)
 {
 	ifstream is(file);
 

@@ -15,16 +15,16 @@ bool operator<(const border_t & a, const border_t & b)
 	return a.theta > b.theta;
 }
 
-a_vec normal_face(const vector<a_vec> & tmp_vertices, const index_t & a_v, const index_t & b_v, const index_t & c_v)
+a_vec normal_face(const std::vector<a_vec> & tmp_vertices, const index_t & a_v, const index_t & b_v, const index_t & c_v)
 {
 	a_vec a = tmp_vertices[c_v] - tmp_vertices[a_v];
 	a_vec b = tmp_vertices[b_v] - tmp_vertices[a_v];
 	return normalise(cross(a,b));
 }
 
-che * mesh_simple_fill_hole(che * mesh, const vector<index_t> & border_vertices, const size_t & max_iter = 1000)
+che * mesh_simple_fill_hole(che * mesh, const std::vector<index_t> & border_vertices, const size_t & max_iter = 1000)
 {
-	vector<vertex> vertices;
+	std::vector<vertex> vertices;
 	vertex normal, normal_v, edge_v, v;
 	a_mat E(3, 3);
 	a_vec ve(3);
@@ -58,10 +58,10 @@ che * mesh_simple_fill_hole(che * mesh, const vector<index_t> & border_vertices,
 	return fill_hole_front_angles(vertices, mesh->mean_edge(), normal, max_iter);
 }
 
-che * mesh_fill_hole(che * mesh, const vector<index_t> & border_vertices, const size_t & max_iter, const vector<pair<index_t, index_t> > & split_indices = {})
+che * mesh_fill_hole(che * mesh, const std::vector<index_t> & border_vertices, const size_t & max_iter, const std::vector<std::pair<index_t, index_t> > & split_indices = {})
 {
-	vector<vertex> vertices[2];
-	vector<index_t> merge_vertices[2];
+	std::vector<vertex> vertices[2];
+	std::vector<index_t> merge_vertices[2];
 	vertex normal;
 
 	size_t size = border_vertices.size();
@@ -74,7 +74,7 @@ che * mesh_fill_hole(che * mesh, const vector<index_t> & border_vertices, const 
 	index_t c = 1;
 	real_t mean_edge = mesh->mean_edge();
 
-	auto gen_vertices = [&mean_edge](vector<index_t> & merge_vertices, vector<vertex> & vertices, const vertex & va, const vertex & vb, const index_t & delta_v = 0)
+	auto gen_vertices = [&mean_edge](std::vector<index_t> & merge_vertices, std::vector<vertex> & vertices, const vertex & va, const vertex & vb, const index_t & delta_v = 0)
 	{
 		real_t L = length(va - vb);
 		size_t N = L / mean_edge;
@@ -205,7 +205,7 @@ che * mesh_fill_hole(che * mesh, const vector<index_t> & border_vertices, const 
 	return hole;
 }
 
-void split_border(vector<pair<index_t, index_t> > & split_indices, che * mesh, const vector<index_t> & border_vertices)
+void split_border(std::vector<std::pair<index_t, index_t> > & split_indices, che * mesh, const std::vector<index_t> & border_vertices)
 {
 	size_t n = border_vertices.size();
 	a_mat data(3, n);
@@ -255,10 +255,10 @@ void split_border(vector<pair<index_t, index_t> > & split_indices, che * mesh, c
 	}
 }
 
-vector<index_t> * fill_all_holes(che * mesh, const size_t & max_iter)
+std::vector<index_t> * fill_all_holes(che * mesh, const size_t & max_iter)
 {
 	gproshan_error(holes);
-	vector<index_t> * border_vertices;
+	std::vector<index_t> * border_vertices;
 	che ** holes;
 	gproshan_error(holes);
 
@@ -276,17 +276,17 @@ vector<index_t> * fill_all_holes(che * mesh, const size_t & max_iter)
 	return border_vertices;
 }
 
-tuple<vector<index_t> *, che **> fill_all_holes_meshes(che * mesh, const size_t & max_iter)
+tuple<std::vector<index_t> *, che **> fill_all_holes_meshes(che * mesh, const size_t & max_iter)
 {
-	vector<index_t> * border_vertices = nullptr;
+	std::vector<index_t> * border_vertices = nullptr;
 	che ** holes = nullptr;
 
-	vector<index_t> bounds = mesh->bounds();
+	std::vector<index_t> bounds = mesh->bounds();
 	const size_t n_borders = bounds.size();
 
 	if(!n_borders) return make_tuple(border_vertices, holes);
 
-	border_vertices = new vector<index_t>[n_borders];
+	border_vertices = new std::vector<index_t>[n_borders];
 	holes = new che*[n_borders];
 
 	gproshan_debug(inpainting);
@@ -301,12 +301,12 @@ tuple<vector<index_t> *, che **> fill_all_holes_meshes(che * mesh, const size_t 
 	{
 	gproshan_error(holes);
 		gproshan_debug_var(b);
-//		vector<pair<index_t, index_t> > split_indices;
+//		std::vector<std::pair<index_t, index_t> > split_indices;
 //		split_border(split_indices, mesh, border_vertices[b]);
 //		holes[b] = mesh_fill_hole(mesh, border_vertices[b], max_iter, { {77, 106}, {67, 106}, {38, 11} });
 		holes[b] = mesh_fill_hole(mesh, border_vertices[b], max_iter);
 	gproshan_debug(inpainting);
-		if(holes[b]) che_off::write_file(holes[b], tmp_file_path("fill_holes_" + to_string(b) + "_" + mesh->name() + ".off"));
+		if(holes[b]) che_off::write_file(holes[b], tmp_file_path("fill_holes_" + to_std::string(b) + "_" + mesh->name() + ".off"));
 	gproshan_debug(inpainting);
 	gproshan_error(holes);
 	}
@@ -324,7 +324,7 @@ tuple<vector<index_t> *, che **> fill_all_holes_meshes(che * mesh, const size_t 
 	return make_tuple(border_vertices, holes);
 }
 
-che * fill_hole_front_angles_test(che * mesh, vector<index_t> & front_vertices, size_t p_iter, bool & is_grow)
+che * fill_hole_front_angles_test(che * mesh, std::vector<index_t> & front_vertices, size_t p_iter, bool & is_grow)
 {
 	gproshan_debug(filling holes);
 	real_t perimeter = 0.0, init_perimeter = 0.0;
@@ -332,14 +332,14 @@ che * fill_hole_front_angles_test(che * mesh, vector<index_t> & front_vertices, 
 	real_t length = mesh->mean_edge();
 	priority_queue<border_t> front;
 
-	vector<vertex> vertices;
-	vector<index_t> faces;
+	std::vector<vertex> vertices;
+	std::vector<index_t> faces;
 
 	for(index_t v: front_vertices)
 		vertices.push_back(mesh->point(v));
 
-	vector<a_vec> tmp_vertices(vertices.size());
-	vector<a_vec> tmp_normals(vertices.size());
+	std::vector<a_vec> tmp_vertices(vertices.size());
+	std::vector<a_vec> tmp_normals(vertices.size());
 
 	vertex normal;
 	for(index_t v = 0; v < vertices.size(); ++v)
@@ -368,8 +368,8 @@ che * fill_hole_front_angles_test(che * mesh, vector<index_t> & front_vertices, 
 
 	bool o = is_grow;
 
-	vector<bool> is_border(vertices.size());
-	vector<array<index_t, 2> > neighbors(vertices.size());
+	std::vector<bool> is_border(vertices.size());
+	std::vector<array<index_t, 2> > neighbors(vertices.size());
 
 	index_t v, p_v, n_v;
 	for(v = 0; v < vertices.size(); ++v)
@@ -564,14 +564,14 @@ che * fill_hole_front_angles_test(che * mesh, vector<index_t> & front_vertices, 
 	return faces.size() == 0 ? nullptr : new che(vertices.data(), vertices.size(), faces.data(), faces.size() / 3);
 }
 
-che * fill_hole_front_angles(vector<vertex> & vertices, const real_t & length, const vertex & normal, const size_t & max_iter, bool is_grow)
+che * fill_hole_front_angles(std::vector<vertex> & vertices, const real_t & length, const vertex & normal, const size_t & max_iter, bool is_grow)
 {
 	size_t p_iter = max_iter;
 	real_t perimeter = 0.0;
 	real_t init_perimeter = 0.0;
 
 	priority_queue<border_t> front;
-	vector<index_t> faces;
+	std::vector<index_t> faces;
 
 	// PCA --------------------------------------------------------------------------
 
@@ -624,9 +624,9 @@ che * fill_hole_front_angles(vector<vertex> & vertices, const real_t & length, c
 
 	// END PCA ----------------------------------------------------------------------
 
-	vector<a_vec> tmp_vertices(vertices.size());
-	vector<bool> is_border(vertices.size());
-	vector<array<index_t, 2> > neighbors(vertices.size());
+	std::vector<a_vec> tmp_vertices(vertices.size());
+	std::vector<bool> is_border(vertices.size());
+	std::vector<array<index_t, 2> > neighbors(vertices.size());
 
 	index_t v, p_v, n_v;
 	for(v = 0; v < vertices.size(); ++v)
@@ -824,7 +824,7 @@ che * fill_hole_front_angles(vector<vertex> & vertices, const real_t & length, c
 	return faces.size() ? new che(vertices.data(), vertices.size(), faces.data(), faces.size() / 3) : nullptr;
 }
 
-void get_real_tri(che * mesh, vector<index_t> & select_vertices, vector<vertex> & triangle, vector<size_t> & tri_sizes )
+void get_real_tri(che * mesh, std::vector<index_t> & select_vertices, std::vector<vertex> & triangle, std::vector<size_t> & tri_sizes )
 {
 	// Drawing a triangle in the middle of the border
 	size_t div = select_vertices.size() / 3;
@@ -878,7 +878,7 @@ void get_real_tri(che * mesh, vector<index_t> & select_vertices, vector<vertex> 
 	triangle.push_back( (wp * tri[2]) + wo * (tri[0] + tri[1]) );
 }
 
-che * fill_hole_center_triangle(che * mesh, vector<index_t> & select_vertices, index_t index)
+che * fill_hole_center_triangle(che * mesh, std::vector<index_t> & select_vertices, index_t index)
 {
 	size_t n_vertices = select_vertices.size() + 3;
 	size_t n_faces = select_vertices.size() + 4;
@@ -886,8 +886,8 @@ che * fill_hole_center_triangle(che * mesh, vector<index_t> & select_vertices, i
 	vertex * vertices = new vertex[n_vertices];
 	index_t * faces = new index_t[n_faces * che::mtrig];
 
-	vector<vertex> triangle;
-	vector<size_t> tri_sizes(3,0);
+	std::vector<vertex> triangle;
+	std::vector<size_t> tri_sizes(3,0);
 
 	get_real_tri(mesh, select_vertices, triangle, tri_sizes);
 
