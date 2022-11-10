@@ -43,6 +43,10 @@ class che_viewer
 		GLuint vbo[6];
 
 	public:
+		enum fit_screen: int { none, box, sphere };
+
+		fit_screen opt_fit_screen = box;
+
 		int vx = 0, vy = 0;							///< viewport positions.
 		std::vector<index_t> selected;
 		std::vector<vertex> selected_xyz;
@@ -73,6 +77,7 @@ class che_viewer
 
 		void init(che * m, const bool & center = true);
 		void update();
+		void update_model_mat();
 		void update_vbo();
 		void update_vbo_geometry();
 		void update_vbo_normal(const vertex * vnormal = nullptr);

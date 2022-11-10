@@ -192,27 +192,32 @@ void che::reload()
 mat4 che::normalize_sphere(const real_t & r) const
 {
 	vertex center;
-
 	#pragma omp parallel for
 	for(index_t v = 0; v < n_vertices; ++v)
 	{
 		#pragma omp critical
 		center += GT[v];
 	}
-
 	center /= n_vertices;
 
-	real_t max_norm = 0;
-
-	#pragma omp parallel for reduction(+: max_norm)
+	real_t mean_dist = 0;
+	#pragma omp parallel for reduction(+: mean_dist)
 	for(index_t v = 0; v < n_vertices; ++v)
-		max_norm += norm(GT[v] - center);
+		mean_dist += length(GT[v] - center);
+	mean_dist /= n_vertices;
 
-	max_norm /= n_vertices;
+	real_t sigma_dist = 0;
+	#pragma omp parallel for reduction(+: sigma_dist)
+	for(index_t v = 0; v < n_vertices; ++v)
+	{
+		const real_t & diff = mean_dist - length(GT[v] - center);
+		sigma_dist += diff * diff;
+	}
+	sigma_dist = sqrt(sigma_dist / n_vertices);
 
 	mat4 model_mat;
 
-	const real_t & scale = r / max_norm;
+	const real_t & scale = r / (mean_dist + 2 * sigma_dist);
 	model_mat(0, 0) = model_mat(1, 1) = model_mat(2, 2) = scale;
 
 	center *= -scale;

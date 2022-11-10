@@ -191,13 +191,17 @@ void viewer::imgui()
 		ImGui::Text("%13lu vertices", mesh->n_vertices);
 		ImGui::Text("%13lu faces", mesh->n_faces);
 
+		ImGui::Indent();
+		if(ImGui::Combo("fit screen", (int *) &mesh.opt_fit_screen, "none\0box (2x2x2)\0sphere (97.72%)\0\0"))
+		{
+			mesh.update_model_mat();
+		}
 		if(mesh.render_pointcloud)
 		{
-			ImGui::Indent();
 			ImGui::Checkbox("point_normals", &mesh.point_normals);
 			ImGui::SliderInt("point_size", (int *) &mesh.point_size, 1, 32);
-			ImGui::Unindent();
 		}
+		ImGui::Unindent();
 	}
 
 	static char slight[32];
