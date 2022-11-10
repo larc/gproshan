@@ -105,7 +105,7 @@ std::ostream & operator << (std::ostream & os, const camera & cam)
 			<< cam.pos << "\n";
 }
 
-istream & operator >> (istream & is, camera & cam)
+std::istream & operator >> (std::istream & is, camera & cam)
 {
 	return is >> cam.p_click
 			>> cam.p_drag

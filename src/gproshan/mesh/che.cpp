@@ -520,7 +520,7 @@ void che::set_head_vertices(index_t * head, const size_t & n)
 				break;
 			}
 
-		swap(GT[v], GT[i]);
+		std::swap(GT[v], GT[i]);
 
 		for(const index_t & he: star(v))
 			VT[he] = i;
@@ -528,7 +528,7 @@ void che::set_head_vertices(index_t * head, const size_t & n)
 		for(const index_t & he: star(i))
 			VT[he] = i;
 
-		swap(EVT[v], EVT[i]);
+		std::swap(EVT[v], EVT[i]);
 	}
 }
 

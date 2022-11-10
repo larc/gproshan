@@ -101,7 +101,7 @@ std::ostream & operator << (std::ostream & os, const mat<T, N> & m)
 	return os;
 }
 
-///< std istream
+///< std std::istream
 template<class T, size_t N>
 std::istream & operator >> (std::istream & is, mat<T, N> & m)
 {

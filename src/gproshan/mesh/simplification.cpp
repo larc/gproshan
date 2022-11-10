@@ -57,7 +57,7 @@ void simplification::order_edges(index_t * const & sort_edges, real_t * const & 
 		error_edges[e] = compute_error(e);
 	}
 
-	sort(sort_edges, sort_edges + mesh->n_edges,
+	std::sort(sort_edges, sort_edges + mesh->n_edges,
 		[&error_edges](const index_t & a, const index_t & b)
 		{
 			return error_edges[a] < error_edges[b];

@@ -119,7 +119,7 @@ void che_ply::read_file(const std::string & file)
 		auto big_to_little = [](char * buffer, const index_t & n)
 		{
 			for(index_t i = 0, j = n - 1; i < j; ++i, --j)
-				swap(buffer[i], buffer[j]);
+				std::swap(buffer[i], buffer[j]);
 		};
 
 		char * buffer = vbytes == sizeof(vertex) ? (char *) GT : new char[vbytes * n_vertices];

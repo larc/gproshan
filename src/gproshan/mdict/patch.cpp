@@ -736,7 +736,7 @@ void patch::compute_avg_distance(che * mesh, std::vector<vpatches_t> & vpatches,
 			distances.push_back(norm(a - b));
 		}
 	*/
-	sort(distances.begin(), distances.end());
+	std::sort(distances.begin(), distances.end());
 	size_t n_elem = distances.size();
 	if(distances.size()%2 ==0)
 	{

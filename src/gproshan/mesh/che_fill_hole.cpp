@@ -369,7 +369,7 @@ che * fill_hole_front_angles_test(che * mesh, std::vector<index_t> & front_verti
 	bool o = is_grow;
 
 	std::vector<bool> is_border(vertices.size());
-	std::vector<array<index_t, 2> > neighbors(vertices.size());
+	std::vector<std::array<index_t, 2> > neighbors(vertices.size());
 
 	index_t v, p_v, n_v;
 	for(v = 0; v < vertices.size(); ++v)
@@ -626,7 +626,7 @@ che * fill_hole_front_angles(std::vector<vertex> & vertices, const real_t & leng
 
 	std::vector<a_vec> tmp_vertices(vertices.size());
 	std::vector<bool> is_border(vertices.size());
-	std::vector<array<index_t, 2> > neighbors(vertices.size());
+	std::vector<std::array<index_t, 2> > neighbors(vertices.size());
 
 	index_t v, p_v, n_v;
 	for(v = 0; v < vertices.size(); ++v)

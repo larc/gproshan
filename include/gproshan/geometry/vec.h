@@ -336,7 +336,7 @@ std::ostream & operator << (std::ostream & os, const vec<T, N> & v)
 	return os << v[N - 1];
 }
 
-///< std istream
+///< std std::istream
 template<class T, size_t N>
 __host__ __device__
 std::istream & operator >> (std::istream & is, vec<T, N> & v)

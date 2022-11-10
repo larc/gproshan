@@ -44,7 +44,7 @@ void che_img::read_file(const std::string & file)
 		GT[v++] = {real_t(i), real_t(j), img(i, j)};
 	}
 
-	thread([](CImg<real_t> img) { img.display(); }, img).detach();
+	std::thread([](CImg<real_t> img) { img.display(); }, img).detach();
 }
 
 

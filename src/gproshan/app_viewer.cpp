@@ -931,9 +931,7 @@ bool app_viewer::process_fill_holes_biharmonic_splines(viewer * p_view)
 	size_t old_n_vertices, n_vertices = mesh->n_vertices;
 	size_t n_holes = 0; // FIX_BOUND mesh->n_borders;
 
-	std::vector<index_t> * border_vertices;
-	che ** holes;
-	tie(border_vertices, holes) = fill_all_holes_meshes(mesh);
+	const auto & [border_vertices, holes] = fill_all_holes_meshes(mesh);
 	if(!holes) return true;
 
 	index_t k = 2;

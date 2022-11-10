@@ -169,7 +169,7 @@ void msparse_coding::load_sampling()
 		{
 			patch p;
 			p.init_radial_disjoint(euc_radio, geo_radio, mesh, S(i), m_params.delta, m_params.sum_thres, m_params.area_thres, area_mesh);
-			patches.push_back(move(p));
+			patches.push_back(std::move(p));
 		}
 
 		m_params.n_patches = n_seeds;
@@ -217,7 +217,7 @@ void msparse_coding::load_sampling()
 			count_cov += count_cov_patch;
 			if(count_cov_patch > 0)
 			{
-				patches.push_back(move(p));
+				patches.push_back(std::move(p));
 				seeds.push_back(vsf);
 				radios.push_back(euc_radio);
 				geo_radios.push_back(geo_radio);
@@ -749,7 +749,7 @@ void msparse_coding::load_features(std::vector<index_t> & v_feat, size_t & feats
 	gproshan_debug_var(f_feat);
 	if(inp.fail())
 	{
-		inp.clear(ios::failbit);
+		inp.clear(std::ios::failbit);
 		// call the function using system
 		//g++ -O3 *.cpp -lgsl -lCGAL -o harris3d
 		//cmake -DCMAKE_BUILD_TYPE=Debug ..
@@ -891,7 +891,7 @@ real_t msparse_coding::mesh_reconstruction(const fmask_t & mask)
 		rp.xyz.row(2) = x.t();
 	}
 
-	sort(patches_error.begin(), patches_error.end());
+	std::sort(patches_error.begin(), patches_error.end());
 
 	fprintf(stderr, "error %16s%16s\n", "best", "worst");
 	for(index_t i = 0; i < 10; ++i)

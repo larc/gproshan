@@ -180,7 +180,7 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 		}
 		os.close();
 
-		sort(toplesets_dist, toplesets_dist + limits.size() - 1);
+		std::sort(toplesets_dist, toplesets_dist + limits.size() - 1);
 
 		os.open(test_path + filename + "_toplesets_sorted.dist");
 		for(index_t i = 0; i < limits.size() - 1; ++i)

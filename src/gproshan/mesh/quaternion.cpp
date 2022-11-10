@@ -206,7 +206,7 @@ std::ostream & operator << (std::ostream & os, const quaternion & q)
 	return os << q.s << " " << q.v;
 }
 
-istream & operator >> (istream & is, quaternion & q)
+std::istream & operator >> (std::istream & is, quaternion & q)
 {
 	return is >> q.s >> q.v;
 }

@@ -29,10 +29,7 @@ std::ostream & operator << (std::ostream & os, const locval_t & lc)
 
 void OMP(std::vector<locval_t> & alpha, const a_vec & x, const index_t & i, const a_mat & D, const size_t & L)
 {
-	a_vec aa;
-	arma::uvec selected_atoms;
-
-	tie(aa, selected_atoms) = _OMP(x, D, L);
+	const auto & [aa, selected_atoms] = _OMP(x, D, L);
 
 	for(index_t k = 0; k < selected_atoms.size(); ++k)
 	{
@@ -80,7 +77,7 @@ void sp_KSVD(a_mat & D, const a_mat & X, const size_t & L, size_t k)
 	{
 		a_sp_mat alpha = OMP_all(locval, X, D, L);
 
-		sort(locval.begin(), locval.end());
+		std::sort(locval.begin(), locval.end());
 
 		rows.push_back(0);
 		for(index_t k = 1; k < locval.size(); ++k)
@@ -170,10 +167,8 @@ std::tuple<a_vec, arma::uvec> _OMP(const a_vec & x, const a_mat & D, const size_
 a_vec OMP(const a_vec & x, const a_mat & D, const size_t & L)
 {
 	a_vec alpha(D.n_cols, arma::fill::zeros);
-	a_vec aa;
-	arma::uvec selected_atoms;
 
-	tie(aa, selected_atoms) = _OMP(x, D, L);
+	const auto & [aa, selected_atoms] = _OMP(x, D, L);
 	alpha.elem(selected_atoms) = aa;
 
 	return alpha;
@@ -182,10 +177,8 @@ a_vec OMP(const a_vec & x, const a_mat & D, const size_t & L)
 a_vec OMP(const a_vec & x, const a_mat & D, const size_t & L, const arma::uchar_vec & mask)
 {
 	a_vec alpha(D.n_cols, arma::fill::zeros);
-	a_vec aa;
-	arma::uvec selected_atoms;
 
-	tie(aa, selected_atoms) = _OMP(x, D, L, mask);
+	const auto & [aa, selected_atoms] = _OMP(x, D, L, mask);
 	alpha.elem(selected_atoms) = aa;
 
 	return alpha;
@@ -367,7 +360,7 @@ void sp_KSVD(a_mat & A, const std::vector<patch> & patches, const size_t & L, si
 	{
 		a_sp_mat alpha = OMP_all(locval, patches, A, L);
 
-		sort(locval.begin(), locval.end());
+		std::sort(locval.begin(), locval.end());
 
 		rows.push_back(0);
 		for(index_t k = 1; k < locval.size(); ++k)

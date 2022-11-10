@@ -553,7 +553,7 @@ bool viewer::m_hide_show_imgui(viewer * view)
 
 bool viewer::m_save_load_view(viewer * view)
 {
-	filesystem::create_directory(tmp_file_path("views/"));
+	std::filesystem::create_directory(tmp_file_path("views/"));
 
 	static char file[128] = "new_view";
 
@@ -571,8 +571,8 @@ bool viewer::m_save_load_view(viewer * view)
 	static std::vector<std::string> vfiles;
 
 	vfiles.clear();
-	for(auto & p: filesystem::directory_iterator(tmp_file_path("views/")))
-		vfiles.push_back(p.path().std::string());
+	for(auto & p: std::filesystem::directory_iterator(tmp_file_path("views/")))
+		vfiles.push_back(p.path().string());
 
 	if(!vfiles.size()) return true;
 
