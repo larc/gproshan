@@ -217,7 +217,7 @@ mat4 che::normalize_sphere(const real_t & r) const
 
 	mat4 model_mat;
 
-	const real_t & scale = r / (mean_dist + 2 * sigma_dist);
+	const real_t & scale = r / (mean_dist + sigma_dist);
 	model_mat(0, 0) = model_mat(1, 1) = model_mat(2, 2) = scale;
 
 	center *= -scale;

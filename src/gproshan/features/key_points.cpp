@@ -30,7 +30,7 @@ void key_points::compute_kps_areas(che * mesh, const real_t & percent)
 	for(index_t f = 0; f < mesh->n_faces; ++f)
 		face_areas[f] = { mesh->area_trig(f), f };
 
-	std::sort(face_areas.begin(), face_areas.end());
+	std::sort(begin(face_areas), end(face_areas));
 
 	is_kp.assign(mesh->n_vertices, false);
 	kps.reserve(mesh->n_vertices);

@@ -21,7 +21,7 @@ che_sphere::che_sphere(const real_t & r, const size_t & n)
 
 	for(real_t phi = 0; phi < 2 * M_PI - 0.5 * delta; phi += delta)
 	for(real_t theta = delta; theta < M_PI - 0.5 * delta; theta += delta)
-		vertices.push_back({r * sin(theta) * cos(phi), r * sin(theta) * sin(phi), r * cos(theta)});
+		vertices.push_back({r * std::sin(theta) * std::cos(phi), r * std::sin(theta) * std::sin(phi), r * std::cos(theta)});
 
 	vertices.push_back({0, 0, r});
 	vertices.push_back({0, 0, -r});
