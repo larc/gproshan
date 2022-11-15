@@ -1,16 +1,16 @@
 #ifndef VIEWER_H
 #define VIEWER_H
 
-#include <cstring>
-#include <functional>
-#include <map>
-
 #include <gproshan/viewer/camera.h>
 #include <gproshan/viewer/shader.h>
 #include <gproshan/viewer/frame.h>
 #include <gproshan/viewer/che_viewer.h>
 #include <gproshan/viewer/include_opengl.h>
 #include <gproshan/raytracing/render_params.h>
+
+#include <cstring>
+#include <functional>
+#include <map>
 
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_glfw.h>
@@ -100,7 +100,7 @@ class viewer
 
 		che_viewer & active_mesh();
 		void add_process(const int & key, const std::string & skey, const std::string & name, const function_t & f);
-		bool add_mesh(che * p_mesh);
+		bool add_mesh(che * p_mesh, const bool & reset_normals = true);
 
 	protected:
 		virtual bool run();

@@ -8,19 +8,18 @@
 #include <CImg.h>
 
 using namespace cimg_library;
-using namespace std;
 
 
 // geometry processing and shape analysis framework
 namespace gproshan {
 
 
-che_ptx::che_ptx(const string & file)
+che_ptx::che_ptx(const std::string & file)
 {
 	init(file);
 }
 
-void che_ptx::read_file(const string & file)
+void che_ptx::read_file(const std::string & file)
 {
 	FILE * fp = fopen(file.c_str(), "r");
 	assert(fp);
@@ -72,7 +71,7 @@ void che_ptx::read_file(const string & file)
 		img.permute_axes("zycx");
 		img.save((file + ".jpg").c_str());
 
-		thread([](CImg<real_t> img) { img.mirror("y").display(); }, img).detach();
+		std::thread([](CImg<real_t> img) { img.mirror("y").display(); }, img).detach();
 	}
 	else
 	{
@@ -141,8 +140,9 @@ void che_ptx::write_file(const che * mesh, const std::string & file, const size_
 	{
 		const vertex & v = mesh->point(i);
 		const rgb_t & c = mesh->rgb(i);
+		const real_t & h = mesh->heatmap(i);
 
-		fprintf(fp, "%f %f %f %f %hhu %hhu %hhu\n", (float) v.x(), (float) v.y(), (float) v.z(), (float) 0, c.r, c.g, c.b );
+		fprintf(fp, "%f %f %f %f %hhu %hhu %hhu\n", (float) v.x(), (float) v.y(), (float) v.z(), (float) h, c.r, c.g, c.b );
 	}
 }
 

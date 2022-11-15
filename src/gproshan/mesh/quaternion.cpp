@@ -3,8 +3,6 @@
 #include <cmath>
 #include <iostream>
 
-using namespace std;
-
 
 // geometry processing and shape analysis framework
 namespace gproshan {
@@ -203,12 +201,12 @@ quaternion slerp(const quaternion & q0, const quaternion & q1, real_t t)
 	return m * p;
 }
 
-ostream & operator << (ostream & os, const quaternion & q)
+std::ostream & operator << (std::ostream & os, const quaternion & q)
 {
 	return os << q.s << " " << q.v;
 }
 
-istream & operator >> (istream & is, quaternion & q)
+std::istream & operator >> (std::istream & is, quaternion & q)
 {
 	return is >> q.s >> q.v;
 }

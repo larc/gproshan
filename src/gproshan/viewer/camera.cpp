@@ -3,9 +3,6 @@
 #include <cmath>
 
 
-using namespace std;
-
-
 // geometry processing and shape analysis framework
 namespace gproshan {
 
@@ -99,7 +96,7 @@ real_t camera::zoom() const
 	return -pos.v.z();
 }
 
-ostream & operator << (ostream & os, const camera & cam)
+std::ostream & operator << (std::ostream & os, const camera & cam)
 {
 	return os << cam.p_click << "\n"
 			<< cam.p_drag << "\n"
@@ -108,7 +105,7 @@ ostream & operator << (ostream & os, const camera & cam)
 			<< cam.pos << "\n";
 }
 
-istream & operator >> (istream & is, camera & cam)
+std::istream & operator >> (std::istream & is, camera & cam)
 {
 	return is >> cam.p_click
 			>> cam.p_drag

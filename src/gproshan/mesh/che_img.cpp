@@ -8,8 +8,6 @@
 
 #include <CImg.h>
 
-
-using namespace std;
 using namespace cimg_library;
 
 
@@ -17,12 +15,12 @@ using namespace cimg_library;
 namespace gproshan {
 
 
-che_img::che_img(const string & file)
+che_img::che_img(const std::string & file)
 {
 	init(file);
 }
 
-void che_img::read_file(const string & file)
+void che_img::read_file(const std::string & file)
 {
 	CImg<real_t> img(file.c_str());
 
@@ -46,7 +44,7 @@ void che_img::read_file(const string & file)
 		GT[v++] = {real_t(i), real_t(j), img(i, j)};
 	}
 
-	thread([](CImg<real_t> img) { img.display(); }, img).detach();
+	std::thread([](CImg<real_t> img) { img.display(); }, img).detach();
 }
 
 

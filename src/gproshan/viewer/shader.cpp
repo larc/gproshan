@@ -7,9 +7,6 @@
 #include <sstream>
 
 
-using namespace std;
-
-
 // geometry processing and shape analysis framework
 namespace gproshan {
 
@@ -19,7 +16,7 @@ shader::~shader()
 	glDeleteProgram(program);
 }
 
-const GLint & shader::operator () (const string & name)
+const GLint & shader::operator () (const std::string & name)
 {
 	if(uniform.find(name) != uniform.end())
 		uniform[name] = glGetUniformLocation(program, name.c_str());
@@ -65,11 +62,11 @@ void shader::disable() const
 
 bool shader::load(GLenum shader_type, const std::string & filename)
 {
-	string source;
+	std::string source;
 
 	if(!read_source(filename, source))
 	{
-		cerr << "Not load shader file: " << filename << endl;
+		std::cerr << "Not load shader file: " << filename << std::endl;
 		return false;
 	}
 
@@ -107,7 +104,7 @@ bool shader::load(GLenum shader_type, const std::string & filename)
 
 			glGetShaderInfoLog(shader, maxLength, &length, infoLog);
 
-			cerr << filename << " GLSL Error: " << infoLog << endl;
+			std::cerr << filename << " GLSL Error: " << infoLog << std::endl;
 
 			delete[] infoLog;
 		}
@@ -122,17 +119,17 @@ bool shader::load(GLenum shader_type, const std::string & filename)
 
 bool shader::read_source(const std::string & filename, std::string & source)
 {
-	ifstream is(filename);
+	std::ifstream is(filename);
 
 	if(!is.is_open())
 		return false;
 
 	source = "";
 
-	string line, include;
+	std::string line, include;
 	while(getline(is, line))
 	{
-		stringstream ss(line);
+		std::stringstream ss(line);
 
 		ss >> include;
 		if(include == "#include")

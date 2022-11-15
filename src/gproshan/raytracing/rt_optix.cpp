@@ -12,7 +12,6 @@
 
 
 // geometry processing and shape analysis framework
-// raytracing approach
 namespace gproshan::rt {
 
 
@@ -41,7 +40,7 @@ void optix_log(unsigned int level, const char * tag, const char * message, void 
 	fprintf(stderr, "OptiX [%2u][%12s]: %s\n", level, tag, message);
 }
 
-optix::optix(const std::vector<che *> & meshes, const std::vector<mat4> & model_mats)
+optix::optix()
 {
 	optixInit();
 
@@ -88,22 +87,24 @@ optix::optix(const std::vector<che *> & meshes, const std::vector<mat4> & model_
 	create_miss_programs();
 	create_hitgroup_programs();
 
-	// build as
-	optix_params.traversable = build_as(meshes, model_mats);
-
 	// create pipeline
 	create_pipeline();
-
-	// build sbt
-	build_sbt();
 
 	// launch params
 	cudaMalloc(&optix_params_buffer, sizeof(launch_params));
 }
 
+optix::optix(const std::vector<che *> & meshes, const std::vector<mat4> & model_mats): optix()
+{
+	// build as
+	optix_params.traversable = build_as(meshes, model_mats);
+
+	// build sbt
+	build_sbt();
+}
+
 optix::~optix()
 {
-	cudaFree(optix_params.color_buffer);
 	cudaFree(optix_params_buffer);
 	cudaFree(raygen_records_buffer);
 	cudaFree(miss_records_buffer);

@@ -1,7 +1,5 @@
 #include <gproshan/laplacian/laplacian.h>
 
-using namespace std;
-
 
 // geometry processing and shape analysis framework
 namespace gproshan {
@@ -54,8 +52,8 @@ size_t eigs_laplacian(const che * mesh, a_vec & eigval, a_mat & eigvec, a_sp_mat
 {
 	laplacian(mesh, L, A);
 
-	string feigval = tmp_file_path(mesh->name_size() + ".eigval");
-	string feigvec = tmp_file_path(mesh->name_size() + ".eigvec");
+	std::string feigval = tmp_file_path(mesh->name_size() + ".eigval");
+	std::string feigvec = tmp_file_path(mesh->name_size() + ".eigvec");
 
 	if(!eigval.load(feigval) || !eigvec.load(feigvec) || eigval.n_elem < k)
 	{

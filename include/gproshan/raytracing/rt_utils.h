@@ -8,7 +8,6 @@
 
 
 // geometry processing and shape analysis framework
-// raytracing approach
 namespace gproshan::rt {
 
 
@@ -41,7 +40,7 @@ struct random
 template <class T>
 struct t_eval_hit
 {
-	int primID = NIL;
+	unsigned int primID = NIL;
 	T dist = 0;
 	T u = 0, v = 0;
 	vec<T, 3> position;

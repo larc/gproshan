@@ -13,6 +13,7 @@
 	#define __device__
 #endif
 
+
 // geometry processing and shape analysis framework
 namespace gproshan {
 
@@ -252,7 +253,7 @@ class vec
 		__host__ __device__
 		bool is_zero()
 		{
-			double eps = std::numeric_limits<double>::epsilon();
+			T eps = std::numeric_limits<T>::epsilon();
 			for(index_t i = 0; i < N; ++i)
 				if(abs(values[i]) > eps)
 					return false;
@@ -325,7 +326,7 @@ vec<T, N> normalize(const vec<T, N> & v)
 	return v / norm(v);
 }
 
-///< std ostream
+///< std std::ostream
 template<class T, size_t N>
 __host__ __device__
 std::ostream & operator << (std::ostream & os, const vec<T, N> & v)
@@ -335,7 +336,7 @@ std::ostream & operator << (std::ostream & os, const vec<T, N> & v)
 	return os << v[N - 1];
 }
 
-///< std istream
+///< std std::istream
 template<class T, size_t N>
 __host__ __device__
 std::istream & operator >> (std::istream & is, vec<T, N> & v)

@@ -8,9 +8,6 @@
 #include <gproshan/raytracing/rt_embree.h>
 
 
-using namespace std;
-
-
 // geometry processing and shape analysis framework
 namespace gproshan {
 
@@ -52,7 +49,7 @@ void che_viewer::init(che * m, const bool & center)
 
 void che_viewer::update()
 {
-	model_mat = center_mesh ? mesh->normalize_box(2) : mat4::identity();
+	update_model_mat();
 
 	render_pointcloud = mesh->is_pointcloud();
 	selected_xyz.clear();
@@ -60,6 +57,22 @@ void che_viewer::update()
 
 	delete rt_embree;
 	rt_embree = new rt::embree({mesh}, {model_mat});
+}
+
+void che_viewer::update_model_mat()
+{
+	switch(opt_fit_screen)
+	{
+		case none:
+			model_mat = mat4::identity();
+			break;
+		case box:
+			model_mat = mesh->normalize_box();
+			break;
+		case sphere:
+			model_mat = mesh->normalize_sphere();
+			break;
+	}
 }
 
 void che_viewer::update_vbo()
@@ -140,7 +153,7 @@ void che_viewer::update_vbo_heatmap(const real_t * vheatmap)
 	glBindVertexArray(0);
 }
 
-void che_viewer::update_instances_positions(const vector<vertex> & translations)
+void che_viewer::update_instances_positions(const std::vector<vertex> & translations)
 {
 	n_instances = translations.size();
 	if(!n_instances) return;

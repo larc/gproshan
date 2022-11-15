@@ -6,21 +6,18 @@
 #include <map>
 
 
-using namespace std;
-
-
 // geometry processing and shape analysis framework
 namespace gproshan {
 
 
-che_ply::che_ply(const string & file)
+che_ply::che_ply(const std::string & file)
 {
 	init(file);
 }
 
-void che_ply::read_file(const string & file)
+void che_ply::read_file(const std::string & file)
 {
-	map<string, size_t> bytes = {
+	std::map<std::string, size_t> bytes = {
 									{"char", 1},
 									{"uchar", 1},
 									{"short", 2},
@@ -94,7 +91,7 @@ void che_ply::read_file(const string & file)
 
 	alloc(nv, nf);
 
-	vector<index_t> faces;
+	std::vector<index_t> faces;
 	faces.reserve(che::mtrig * n_faces);
 
 	if(format[0] == 'a')	// ascii
@@ -122,7 +119,7 @@ void che_ply::read_file(const string & file)
 		auto big_to_little = [](char * buffer, const index_t & n)
 		{
 			for(index_t i = 0, j = n - 1; i < j; ++i, --j)
-				swap(buffer[i], buffer[j]);
+				std::swap(buffer[i], buffer[j]);
 		};
 
 		char * buffer = vbytes == sizeof(vertex) ? (char *) GT : new char[vbytes * n_vertices];
@@ -223,7 +220,7 @@ void che_ply::read_file(const string & file)
 	memcpy(VT, faces.data(), faces.size() * sizeof(index_t));
 }
 
-void che_ply::write_file(const che * mesh, const string & file, const bool & color)
+void che_ply::write_file(const che * mesh, const std::string & file, const bool & color)
 {
 	FILE * fp = fopen((file + ".ply").c_str(), "wb");
 	assert(fp);

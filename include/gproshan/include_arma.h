@@ -10,6 +10,7 @@
 	#define ARMA_NO_DEBUG
 #endif
 
+
 // geometry processing and shape analysis framework
 namespace gproshan {
 

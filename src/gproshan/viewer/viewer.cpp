@@ -21,12 +21,9 @@
 	#include <gproshan/raytracing/rt_optix.h>
 #endif // GPROSHAN_OPTIX
 
-
 #include <CImg.h>
 
-
 using namespace cimg_library;
-using namespace std;
 
 
 // geometry processing and shape analysis framework
@@ -130,7 +127,7 @@ void viewer::imgui()
 		if(ImGui::BeginMenu("Select"))
 		{
 			for(index_t i = 0; i < n_meshes; ++i)
-				if(ImGui::MenuItem((to_string(i) + ": " + meshes[i]->filename).c_str(), nullptr, i == idx_active_mesh, i != idx_active_mesh))
+				if(ImGui::MenuItem((std::to_string(i) + ": " + meshes[i]->filename).c_str(), nullptr, i == idx_active_mesh, i != idx_active_mesh))
 				{
 					idx_active_mesh = i;
 					glfwSetWindowTitle(window, mesh->filename.c_str());
@@ -194,13 +191,17 @@ void viewer::imgui()
 		ImGui::Text("%13lu vertices", mesh->n_vertices);
 		ImGui::Text("%13lu faces", mesh->n_faces);
 
+		ImGui::Indent();
+		if(ImGui::Combo("fit screen", (int *) &mesh.opt_fit_screen, "none\0box (2x2x2)\0sphere (97.72%)\0\0"))
+		{
+			mesh.update_model_mat();
+		}
 		if(mesh.render_pointcloud)
 		{
-			ImGui::Indent();
 			ImGui::Checkbox("point_normals", &mesh.point_normals);
 			ImGui::SliderInt("point_size", (int *) &mesh.point_size, 1, 32);
-			ImGui::Unindent();
 		}
+		ImGui::Unindent();
 	}
 
 	static char slight[32];
@@ -395,22 +396,23 @@ void viewer::init_glsl()
 	shader_pointcloud.load_fragment(shaders_path("fragment_pointcloud.glsl"));
 }
 
-void viewer::add_process(const int & key, const string & skey, const string & name, const function_t & f)
+void viewer::add_process(const int & key, const std::string & skey, const std::string & name, const function_t & f)
 {
 	if(processes.find(key) == processes.end())
 	{
 		processes[key] = {skey, name, f};
 		processes[key].sub_menu = sub_menus.size() - 1;
 	}
-	else cerr << "Repeat key: " << key << endl;
+	else std::cerr << "Repeat key: " << key << std::endl;
 }
 
-bool viewer::add_mesh(che * p_mesh)
+bool viewer::add_mesh(che * p_mesh, const bool & reset_normals)
 {
 	if(n_meshes == max_n_meshes)
 		return false;
 
-	p_mesh->update_normals();
+	if(reset_normals)
+		p_mesh->update_normals();
 
 	che_viewer & mesh = meshes[n_meshes];
 	mesh.init(p_mesh);
@@ -555,7 +557,7 @@ bool viewer::m_hide_show_imgui(viewer * view)
 
 bool viewer::m_save_load_view(viewer * view)
 {
-	filesystem::create_directory(tmp_file_path("views/"));
+	std::filesystem::create_directory(tmp_file_path("views/"));
 
 	static char file[128] = "new_view";
 
@@ -564,16 +566,16 @@ bool viewer::m_save_load_view(viewer * view)
 
 	if(ImGui::Button("Save"))
 	{
-		ofstream os(tmp_file_path(std::string("views/") + file));
+		std::ofstream os(tmp_file_path(std::string("views/") + file));
 		os << view->cam;
 		os.close();
 	}
 
 	static index_t select = 0;
-	static vector<string> vfiles;
+	static std::vector<std::string> vfiles;
 
 	vfiles.clear();
-	for(auto & p: filesystem::directory_iterator(tmp_file_path("views/")))
+	for(auto & p: std::filesystem::directory_iterator(tmp_file_path("views/")))
 		vfiles.push_back(p.path().string());
 
 	if(!vfiles.size()) return true;
@@ -596,7 +598,7 @@ bool viewer::m_save_load_view(viewer * view)
 
 	if(ImGui::Button("Load"))
 	{
-		ifstream is(vfiles[select]);
+		std::ifstream is(vfiles[select]);
 		is >> view->cam;
 		is.close();
 	}

@@ -11,14 +11,12 @@
 #include <thrust/device_vector.h>
 #include <thrust/execution_policy.h>
 
-using namespace std;
-
 
 // geometry processing and shape analysis framework
 namespace gproshan {
 
 
-double parallel_toplesets_propagation_coalescence_gpu(const ptp_out_t & ptp_out, const che * mesh, const vector<index_t> & sources, const toplesets_t & toplesets, const bool & set_inf)
+double parallel_toplesets_propagation_coalescence_gpu(const ptp_out_t & ptp_out, const che * mesh, const std::vector<index_t> & sources, const toplesets_t & toplesets, const bool & set_inf)
 {
 	index_t * inv = nullptr;
 	che * coalescence_mesh = ptp_coalescence(inv, mesh, toplesets);
@@ -106,7 +104,7 @@ double parallel_toplesets_propagation_coalescence_gpu(const ptp_out_t & ptp_out,
 	return time / 1000;
 }
 
-index_t run_ptp_coalescence_gpu(CHE * d_mesh, const index_t & n_vertices, real_t * h_dist, real_t ** d_dist, const vector<index_t> & sources, const toplesets_t & inv, real_t * d_error, index_t * h_clusters, index_t ** d_clusters)
+index_t run_ptp_coalescence_gpu(CHE * d_mesh, const index_t & n_vertices, real_t * h_dist, real_t ** d_dist, const std::vector<index_t> & sources, const toplesets_t & inv, real_t * d_error, index_t * h_clusters, index_t ** d_clusters)
 {
 	for(index_t i = 0; i < sources.size(); ++i)
 		h_dist[inv.index[sources[i]]] = 0;

@@ -6,9 +6,6 @@
 #include <algorithm>
 
 
-using namespace std;
-
-
 // geometry processing and shape analysis framework
 namespace gproshan {
 
@@ -192,31 +189,44 @@ void che::reload()
 	init(filename);
 }
 
-void che::normalize_sphere(const real_t & r)
+mat4 che::normalize_sphere(const real_t & r) const
 {
 	vertex center;
-
 	#pragma omp parallel for
 	for(index_t v = 0; v < n_vertices; ++v)
 	{
 		#pragma omp critical
 		center += GT[v];
 	}
-
 	center /= n_vertices;
 
-	real_t max_norm = 0;
+	real_t mean_dist = 0;
+	#pragma omp parallel for reduction(+: mean_dist)
+	for(index_t v = 0; v < n_vertices; ++v)
+		mean_dist += length(GT[v] - center);
+	mean_dist /= n_vertices;
 
-	#pragma omp parallel for reduction(max: max_norm)
+	real_t sigma_dist = 0;
+	#pragma omp parallel for reduction(+: sigma_dist)
 	for(index_t v = 0; v < n_vertices; ++v)
 	{
-		GT[v] -= center;
-		max_norm = std::max(max_norm, norm(GT[v]));
+		const real_t & diff = mean_dist - length(GT[v] - center);
+		sigma_dist += diff * diff;
 	}
+	sigma_dist = sqrt(sigma_dist / n_vertices);
 
-	#pragma omp parallel for
-	for(index_t v = 0; v < n_vertices; ++v)
-		GT[v] *= r / max_norm;
+	mat4 model_mat;
+
+	const real_t & scale = r / (mean_dist + sigma_dist);
+	model_mat(0, 0) = model_mat(1, 1) = model_mat(2, 2) = scale;
+
+	center *= -scale;
+	model_mat(0, 3) = center.x();
+	model_mat(1, 3) = center.y();
+	model_mat(2, 3) = center.z();
+	model_mat(3, 3) = 1;
+
+	return model_mat;
 }
 
 mat4 che::normalize_box(const real_t & side) const
@@ -228,13 +238,13 @@ mat4 che::normalize_box(const real_t & side) const
 	{
 		const vertex & p = point(v);
 
-		pmin.x() = min(pmin.x(), p.x());
-		pmin.y() = min(pmin.y(), p.y());
-		pmin.z() = min(pmin.z(), p.z());
+		pmin.x() = std::min(pmin.x(), p.x());
+		pmin.y() = std::min(pmin.y(), p.y());
+		pmin.z() = std::min(pmin.z(), p.z());
 
-		pmax.x() = max(pmax.x(), p.x());
-		pmax.y() = max(pmax.y(), p.y());
-		pmax.z() = max(pmax.z(), p.z());
+		pmax.x() = std::max(pmax.x(), p.x());
+		pmax.y() = std::max(pmax.y(), p.y());
+		pmax.z() = std::max(pmax.z(), p.z());
 	}
 
 	mat4 model_mat;
@@ -252,7 +262,7 @@ mat4 che::normalize_box(const real_t & side) const
 }
 
 ///< vcommon correspond to the first vertices of the mesh with indices to the main mesh (this)
-che * che::merge(const che * mesh, const vector<index_t> & vcommon)
+che * che::merge(const che * mesh, const std::vector<index_t> & vcommon)
 {
 	const size_t & n_vcommon = vcommon.size();
 	const size_t & n_vnew = mesh->n_vertices - n_vcommon;
@@ -375,7 +385,7 @@ void che::multiplicate_vertices()
 	}
 }
 
-void che::remove_vertices(const vector<index_t> & vertices)
+void che::remove_vertices(const std::vector<index_t> & vertices)
 {
 	if(!vertices.size()) return;
 
@@ -397,9 +407,9 @@ void che::remove_vertices(const vector<index_t> & vertices)
 		EVT[v] = NIL;
 	}
 	/* save in vectors */
-	vector<vertex> new_vertices;
-	vector<index_t> removed;
-	vector<index_t> new_faces; // each 3
+	std::vector<vertex> new_vertices;
+	std::vector<index_t> removed;
+	std::vector<index_t> new_faces; // each 3
 
 	gproshan_debug(removing vertex);
 	for(index_t v = 0; v < n_vertices; ++v)
@@ -456,9 +466,9 @@ void che::remove_non_manifold_vertices()
 	}
 
 	/* save in vectors */
-	vector<vertex> new_vertices;
-	vector<index_t> removed;
-	vector<index_t> new_faces; // each 3
+	std::vector<vertex> new_vertices;
+	std::vector<index_t> removed;
+	std::vector<index_t> new_faces; // each 3
 
 	gproshan_debug(removing vertex);
 	for(index_t v = 0; v < n_vertices; ++v)
@@ -515,7 +525,7 @@ void che::set_head_vertices(index_t * head, const size_t & n)
 				break;
 			}
 
-		swap(GT[v], GT[i]);
+		std::swap(GT[v], GT[i]);
 
 		for(const index_t & he: star(v))
 			VT[he] = i;
@@ -523,7 +533,7 @@ void che::set_head_vertices(index_t * head, const size_t & n)
 		for(const index_t & he: star(i))
 			VT[he] = i;
 
-		swap(EVT[v], EVT[i]);
+		std::swap(EVT[v], EVT[i]);
 	}
 }
 
@@ -598,11 +608,11 @@ che::star_he che::star(const index_t & v) const
 	return {this, v};
 }
 
-vector<index_t> che::link(const index_t & v) const
+std::vector<index_t> che::link(const index_t & v) const
 {
 	assert(v < n_vertices);
 
-	vector<index_t> vlink;
+	std::vector<index_t> vlink;
 
 	if(is_vertex_bound(v))
 		vlink.push_back(VT[next(EVT[v])]);
@@ -618,7 +628,7 @@ void che::edge_collapse(const std::vector<index_t> & sort_edges)
 	// TODO
 }
 
-void che::compute_toplesets(index_t *& toplesets, index_t *& sorted, vector<index_t> & limits, const vector<index_t> & sources, const index_t & k)
+void che::compute_toplesets(index_t *& toplesets, index_t *& sorted, std::vector<index_t> & limits, const std::vector<index_t> & sources, const index_t & k)
 {
 	if(!sources.size()) return;
 
@@ -665,12 +675,12 @@ void che::compute_toplesets(index_t *& toplesets, index_t *& sorted, vector<inde
 // boundary methods
 
 ///< return a vector of indices of one vertex per boundary
-vector<index_t> che::bounds() const
+std::vector<index_t> che::bounds() const
 {
 	if(!n_faces) return {};
 	if(!manifold) return {};
 
-	vector<index_t> vbounds;
+	std::vector<index_t> vbounds;
 
 	bool * is_bound = new bool[n_vertices];
 	memset(is_bound, 0, sizeof(bool) * n_vertices);
@@ -690,9 +700,9 @@ vector<index_t> che::bounds() const
 }
 
 ///< return a vector of the indices of the boundary where v belongs
-vector<index_t> che::boundary(const index_t & v) const
+std::vector<index_t> che::boundary(const index_t & v) const
 {
-	vector<index_t> vbound;
+	std::vector<index_t> vbound;
 
 	index_t he_end = EVT[v];
 	index_t he = he_end;
@@ -721,21 +731,21 @@ bool che::is_edge_bound(const index_t & e) const
 
 // file, name, and system methods
 
-const string che::name() const
+const std::string che::name() const
 {
 	index_t p = filename.find_last_of('/');
 	index_t q = filename.find_last_of('.');
 	return filename.substr(p + 1, q - p - 1);
 }
 
-const string che::name_size() const
+const std::string che::name_size() const
 {
-	return name() + "_" + to_string(n_vertices);
+	return name() + "_" + std::to_string(n_vertices);
 }
 
-const string che::filename_size() const
+const std::string che::filename_size() const
 {
-	return filename + "_" + to_string(n_vertices);
+	return filename + "_" + std::to_string(n_vertices);
 }
 
 
@@ -765,7 +775,7 @@ size_t che::max_degree() const
 		d = 0;
 		for([[maybe_unused]] const index_t & he: star(v)) ++d;
 		d += is_vertex_bound(v);
-		md = max(md, d);
+		md = std::max(md, d);
 	}
 
 	return md;
@@ -945,7 +955,7 @@ void che::init(const vertex * vertices, const index_t & n_v, const index_t * fac
 	update_eht();
 }
 
-void che::init(const string & file)
+void che::init(const std::string & file)
 {
 	filename = file;
 	read_file(filename);
@@ -988,7 +998,7 @@ void che::free()
 	delete [] VHC;	VHC = nullptr;
 }
 
-void che::read_file(const string & ) {}		/* virtual */
+void che::read_file(const std::string & ) {}		/* virtual */
 
 void che::update_evt_ot_et()
 {
@@ -997,13 +1007,13 @@ void che::update_evt_ot_et()
 	memset(EVT, -1, sizeof(index_t) * n_vertices);
 	memset(OT, -1, sizeof(index_t) * n_half_edges);
 
-	vector<index_t> vnhe;
+	std::vector<index_t> vnhe;
 	vnhe.assign(n_vertices, 0);
 
 	for(index_t he = 0; he < n_half_edges; ++he)
 		++vnhe[VT[he]];
 
-	vector<index_t *> vhe(n_vertices);
+	std::vector<index_t *> vhe(n_vertices);
 	vhe[0] = new index_t[n_half_edges];
 	for(index_t v = 1; v < n_vertices; ++v)
 		vhe[v] = vhe[v - 1] + vnhe[v - 1];
@@ -1073,9 +1083,9 @@ void che::update_eht()
 
 // static
 
-vector<index_t> che::trig_convex_polygon(const index_t * P, const size_t & n)
+std::vector<index_t> che::trig_convex_polygon(const index_t * P, const size_t & n)
 {
-	vector<index_t> trigs;
+	std::vector<index_t> trigs;
 	trigs.reserve(che::mtrig * (n - 2));
 
 	index_t a = n - 1;

@@ -4,8 +4,6 @@
 #include <cstring>
 #include <cassert>
 
-using namespace std;
-
 
 // geometry processing and shape analysis framework
 namespace gproshan {
@@ -17,8 +15,8 @@ che * ptp_coalescence(index_t * & inv, const che * mesh, const toplesets_t & top
 {
 	// sort data by levels, must be improve the coalescence
 
-	vector<vertex> V(toplesets.limits.back());
-	vector<index_t> F;
+	std::vector<vertex> V(toplesets.limits.back());
+	std::vector<index_t> F;
 	F.reserve(mesh->n_half_edges);
 
 	inv = !inv ? new index_t[mesh->n_vertices] : inv;
@@ -38,7 +36,7 @@ che * ptp_coalescence(index_t * & inv, const che * mesh, const toplesets_t & top
 	return new che(V.data(), toplesets.limits.back(), F.data(), F.size() / che::mtrig);
 }
 
-void parallel_toplesets_propagation_coalescence_cpu(const ptp_out_t & ptp_out, che * mesh, const vector<index_t> & sources, const toplesets_t & toplesets)
+void parallel_toplesets_propagation_coalescence_cpu(const ptp_out_t & ptp_out, che * mesh, const std::vector<index_t> & sources, const toplesets_t & toplesets)
 {
 	const size_t n_vertices = mesh->n_vertices;
 
@@ -120,7 +118,7 @@ void parallel_toplesets_propagation_coalescence_cpu(const ptp_out_t & ptp_out, c
 	delete mesh;
 }
 
-void parallel_toplesets_propagation_cpu(const ptp_out_t & ptp_out, che * mesh, const vector<index_t> & sources, const toplesets_t & toplesets)
+void parallel_toplesets_propagation_cpu(const ptp_out_t & ptp_out, che * mesh, const std::vector<index_t> & sources, const toplesets_t & toplesets)
 {
 	real_t * pdist[2] = {ptp_out.dist, new real_t[mesh->n_vertices]};
 	real_t * error = new real_t[mesh->n_vertices];
@@ -271,7 +269,7 @@ void normalize_ptp(real_t * dist, const size_t & n)
 	#pragma omp parallel for reduction(max: max_d)
 	for(index_t v = 0; v < n; ++v)
 		if(dist[v] < INFINITY)
-			max_d = max(dist[v], max_d);
+			max_d = std::max(dist[v], max_d);
 
 	#pragma omp parallel for
 	for(index_t v = 0; v < n; ++v)

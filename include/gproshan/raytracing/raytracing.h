@@ -6,30 +6,15 @@
 #include <gproshan/raytracing/rt_utils.h>
 
 #include <vector>
-#include <map>
 
 
 // geometry processing and shape analysis framework
-// raytracing approach
 namespace gproshan::rt {
 
 
 class raytracing
 {
 	protected:
-		struct rt_mesh
-		{
-			CHE * mesh;
-			bool pointcloud;
-
-			CHE * operator -> () const
-			{
-				return mesh;
-			}
-		};
-
-		std::map<index_t, rt_mesh> geomID_mesh;
-
 		size_t n_samples = 0;
 
 	public:

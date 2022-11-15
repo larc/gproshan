@@ -1,6 +1,5 @@
 #include <gproshan/geometry/convex_hull.h>
 
-
 #include <algorithm>
 #include <numeric>
 
@@ -25,9 +24,9 @@ convex_hull::operator const std::vector<index_t> & ()
 void convex_hull::andrew_algorithm(const vertex * points, const size_t & n_points)
 {
 	std::vector<index_t> idx(n_points);
-	std::iota(idx.begin(), idx.end(), 0);
+	std::iota(begin(idx), end(idx), 0);
 
-	std::sort(idx.begin(), idx.end(),
+	std::sort(begin(idx), end(idx),
 		[&points](const index_t & i, const index_t & j)
 		{
 			return points[i] < points[j];

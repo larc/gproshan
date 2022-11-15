@@ -5,19 +5,16 @@
 #include <cassert>
 
 
-using namespace std;
-
-
 // geometry processing and shape analysis framework
 namespace gproshan {
 
 
-che_pts::che_pts(const string & file)
+che_pts::che_pts(const std::string & file)
 {
 	init(file);
 }
 
-void che_pts::read_file(const string & file)
+void che_pts::read_file(const std::string & file)
 {
 	FILE * fp = fopen(file.c_str(), "r");
 	assert(fp);
@@ -46,7 +43,7 @@ void che_pts::read_file(const string & file)
 	fclose(fp);
 }
 
-void che_pts::write_file(const che * mesh, const string & file)
+void che_pts::write_file(const che * mesh, const std::string & file)
 {
 	FILE * fp = fopen((file + ".pts").c_str(), "w");
 	assert(fp);
