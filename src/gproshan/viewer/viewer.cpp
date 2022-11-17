@@ -96,7 +96,7 @@ bool viewer::run()
 		cam_light = render_params.lights[0];
 		cam_light = r.conj() * cam_light * r;
 
-		proj_view_mat = camera::perspective(45, real_t(viewport_width) / real_t(viewport_height), 0.01, 1000) * cam.look_at(r);
+		proj_view_mat = proj_mat * cam.look_at(r);
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		render_gl();
@@ -432,6 +432,9 @@ bool viewer::add_mesh(che * p_mesh, const bool & reset_normals)
 	glfwGetFramebufferSize(window, &viewport_width, &viewport_height);
 	viewport_width /= cols;
 	viewport_height /= rows;
+	cam.aspect = real_t(viewport_width) / viewport_height;
+	proj_mat = cam.perspective();
+
 
 	return true;
 }
@@ -441,6 +444,8 @@ void viewer::framebuffer_size_callback(GLFWwindow * window, int width, int heigh
 	viewer * view = (viewer *) glfwGetWindowUserPointer(window);
 	view->viewport_width = width / m_window_split[view->n_meshes].y();
 	view->viewport_height = height / m_window_split[view->n_meshes].x();
+	view->cam.aspect = real_t(view->viewport_width) / view->viewport_height;
+	view->proj_mat = view->cam.perspective();
 }
 
 void viewer::window_size_callback(GLFWwindow * window, int width, int height)

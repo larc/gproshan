@@ -26,6 +26,11 @@ mat4 camera::look_at(const quaternion & r)
 	return view;
 }
 
+mat4 camera::perspective()
+{
+	return perspective(fovy, aspect, near, far);
+}
+
 mat4 camera::perspective(const real_t & fovy, const real_t & aspect, const real_t & near, const real_t & far)
 {
 	const real_t & tan_fovy_2 = std::tan(fovy * M_PI / 360);
