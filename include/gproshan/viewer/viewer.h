@@ -61,6 +61,7 @@ class viewer
 		int & window_height = render_params.window_height;
 		int & viewport_width = render_params.viewport_width;
 		int & viewport_height = render_params.viewport_height;
+		mat4 proj_mat;
 		mat4 proj_view_mat;
 
 		bool hide_imgui = false;
