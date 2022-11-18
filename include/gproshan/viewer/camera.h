@@ -24,7 +24,7 @@ class camera
 		quaternion up		= vertex{0, 1, 0};
 		real_t fovy			= 45;
 		real_t aspect		= 1;
-		real_t near			= 0.1;
+		real_t near			= 0.01;
 		real_t far			= 1000;
 
 	public:

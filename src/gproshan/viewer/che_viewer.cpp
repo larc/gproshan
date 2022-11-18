@@ -188,13 +188,13 @@ void che_viewer::draw(shader & program)
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[4]);
 
 	if(n_instances) glDrawElementsInstanced(GL_TRIANGLES, mesh->n_half_edges, GL_UNSIGNED_INT, 0, n_instances);
-	else if(materials.size())
+	/*else if(materials.size())
 	{
 		for(auto & m: materials)
 		{
 			glDrawElementsBaseVertex(GL_TRIANGLES, mesh->n_half_edges, GL_UNSIGNED_INT, 0, 0);
 		}
-	}
+	}*/
 	else glDrawElements(GL_TRIANGLES, mesh->n_half_edges, GL_UNSIGNED_INT, 0);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);

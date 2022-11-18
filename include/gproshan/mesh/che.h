@@ -53,7 +53,7 @@ class che
 
 		vertex * VN		= nullptr;	///< vertex normals			: v		-> normal(v)
 		rgb_t * VC		= nullptr;	///< vertex color			: v		-> color(v)
-		real_t * VHC	= nullptr;	///< vertex color heat map	: v		-> heatmap(v)
+		real_t * VHC	= nullptr;	///< vertex color heatmap	: v		-> heatmap(v)
 
 		bool manifold = true;
 
