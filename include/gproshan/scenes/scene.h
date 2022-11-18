@@ -17,7 +17,7 @@ class scene: public che
 	public:
 		struct texture
 		{
-			vec3 * data;
+			vec3 * data = nullptr;
 			size_t rows = 0;
 			size_t cols = 0;
 		};
@@ -36,6 +36,9 @@ class scene: public che
 
 		struct object
 		{
+			index_t begin = 0;
+			index_t end = 0;
+			index_t idm = NIL;
 		};
 
 	protected:
@@ -48,6 +51,8 @@ class scene: public che
 		std::vector<texture> textures;
 
 	public:
+		~scene();
+		bool load_obj(const std::string & file);
 		bool load_mtl(const std::string & file);
 		bool load_texture(const std::string & file);
 };

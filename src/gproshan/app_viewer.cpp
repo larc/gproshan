@@ -32,6 +32,7 @@ che * app_viewer::load_mesh(const std::string & file_path)
 	{
 		scene sc;
 		sc.load_mtl(file_path.substr(0, pos) + ".mtl");
+		sc.load_obj(file_path);
 		return new che_obj(file_path);
 	}
 	if(extension == "ply") return new che_ply(file_path);
