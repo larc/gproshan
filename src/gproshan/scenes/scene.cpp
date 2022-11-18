@@ -1,11 +1,15 @@
 #include "gproshan/scenes/scene.h"
 
+#include <CImg.h>
+
+using namespace cimg_library;
+
 
 // geometry processing and shape analysis framework
 namespace gproshan {
 
 
-bool scene::read_mtl(const std::string & file)
+bool scene::load_mtl(const std::string & file)
 {
 	gproshan_error_var(file);
 
@@ -22,7 +26,7 @@ bool scene::read_mtl(const std::string & file)
 				sscanf(line, "%*s %s", str);
 				material_id[str] = materials.size();
 				material_name.push_back(str);
-				materials.push_back({});
+				materials.emplace_back();
 				break;
 			}
 			case 'K':	// Ka, Kd, Ks
@@ -66,7 +70,6 @@ bool scene::read_mtl(const std::string & file)
 				{
 					texture_id[str] = textures.size();
 					texture_name.push_back(str);
-					textures.push_back({});
 				}
 				m = texture_id[str];
 				break;
@@ -75,6 +78,16 @@ bool scene::read_mtl(const std::string & file)
 	}
 
 	fclose(fp);
+
+	const std::string path = file.substr(0, file.rfind('/') + 1);
+	for(auto & tex: texture_name)
+	{
+		for(char & c: tex)
+			if(c == '\\') c = '/';
+
+		if(!load_texture(path + tex))
+			return false;
+	}
 
 	for(index_t i = 0; i < materials.size(); ++i)
 	{
@@ -89,6 +102,23 @@ bool scene::read_mtl(const std::string & file)
 		if(m.map_Ka != NIL)	gproshan_log_var(texture_name[m.map_Ka]);
 		if(m.map_Kd != NIL)	gproshan_log_var(texture_name[m.map_Kd]);
 	}
+
+	gproshan_log_var(materials.size());
+	gproshan_log_var(textures.size());
+
+	return true;
+}
+
+bool scene::load_texture(const std::string & file)
+{
+	CImg<float> img(file.c_str());
+
+	textures.emplace_back();
+	texture & tex = textures.back();
+	tex.rows = img.height();
+	tex.cols = img.width();
+	tex.data = new vec3[tex.rows * tex.cols];
+	memcpy((float *) tex.data, img.data(), sizeof(vec3) * tex.rows * tex.cols);
 
 	return true;
 }

@@ -17,6 +17,9 @@ class scene: public che
 	public:
 		struct texture
 		{
+			vec3 * data;
+			size_t rows = 0;
+			size_t cols = 0;
 		};
 
 		struct material
@@ -42,10 +45,11 @@ class scene: public che
 
 		std::unordered_map<std::string, index_t> texture_id;
 		std::vector<std::string> texture_name;
-		std::vector<material> textures;
+		std::vector<texture> textures;
 
 	public:
-		bool read_mtl(const std::string & file);
+		bool load_mtl(const std::string & file);
+		bool load_texture(const std::string & file);
 };
 
 
