@@ -204,9 +204,16 @@ void viewer::imgui()
 		ImGui::Unindent();
 	}
 
+	static real_t pos_min = -10;
+	static real_t pos_max = 10;
+	if(ImGui::CollapsingHeader("Camera"))
+	{
+		ImGui::Indent();
+		ImGui::SliderScalarN("position", ImGuiDataType_Real, &cam.pos[0], 3, &pos_min, &pos_max);
+		ImGui::Unindent();
+	}
+
 	static char slight[32];
-	static real_t light_min = -2;
-	static real_t light_max = 2;
 	if(ImGui::CollapsingHeader("Scene Lights"))
 	{
 		ImGui::Indent();
@@ -214,7 +221,7 @@ void viewer::imgui()
 		for(int i = 0; i < render_params.n_lights; ++i)
 		{
 			sprintf(slight, "light %d", i);
-			ImGui::SliderScalarN(slight, ImGuiDataType_Real, &render_params.lights[i], 3, &light_min, &light_max);
+			ImGui::SliderScalarN(slight, ImGuiDataType_Real, &render_params.lights[i], 3, &pos_min, &pos_max);
 		}
 
 		if(ImGui::Button("add light"))

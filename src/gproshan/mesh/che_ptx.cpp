@@ -76,14 +76,14 @@ void che_ptx::read_file(const std::string & file)
 	}
 	else
 	{
-		GT[0] = { x, y, z };
+		GT[0] = {x, y, z};
 		VHC[0] = intensity;
 
 		for(index_t v = 1; v < n_vertices; ++v)
 		{
 			fgets(line, sizeof(line), fp);
 			sscanf(line, "%f %f %f %f", &x, &y, &z, &intensity);
-			GT[v] = { x, y, z };
+			GT[v] = {x, y, z};
 			VHC[v] = intensity;
 		}
 	}

@@ -1,6 +1,6 @@
 ## [gproshan](https://github.com/larc/gproshan): a geometry processing and shape analysis framework
 
-[![Build](https://github.com/larc/gproshan_dev/actions/workflows/build.yml/badge.svg?branch=dev)](https://github.com/larc/gproshan_dev/actions/workflows/build.yml)
+[![Build Ubuntu 22.04](https://github.com/larc/gproshan_dev/actions/workflows/build.yml/badge.svg?branch=dev)](https://github.com/larc/gproshan_dev/actions/workflows/build.yml)
 [![DOI](https://zenodo.org/badge/88686093.svg)](https://zenodo.org/badge/latestdoi/88686093)
 
 
