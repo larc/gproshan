@@ -25,19 +25,20 @@ void che_ptx::read_file(const std::string & file)
 	assert(fp);
 
 	size_t n_rows, n_cols;
-	float T[12], R[12], tr[4];
+	vertex p;	// scanner position
+	mat3 A;		// scanner axis
+	mat4 T;		// transformation matrix
 
 	fscanf(fp, "%lu %lu", &n_rows, &n_cols);
+	fscanf(fp, "%f %f %f", &p.x(), &p.y(), &p.z());
 
-	for(index_t i = 0; i < 12; ++i)
-		fscanf(fp, "%f", T + i);
-
-	for(index_t i = 0; i < 12; ++i)
-		fscanf(fp, "%f", R + i);
+	for(index_t i = 0; i < 3; ++i)
+	for(index_t j = 0; j < 3; ++j)
+		fscanf(fp, "%f", &A(i, j));
 
 	for(index_t i = 0; i < 4; ++i)
-		fscanf(fp, "%f", tr + i);
-
+	for(index_t j = 0; j < 4; ++j)
+		fscanf(fp, "%f", &T(i, j));
 
 	alloc(n_rows * n_cols, 2 * (n_rows - 1) * (n_cols - 1));
 
@@ -54,16 +55,16 @@ void che_ptx::read_file(const std::string & file)
 
 	if(rgb)
 	{
-		GT[0] = { x, y, z };
-		VC[0] = { r, g, b };
+		GT[0] = {x, y, z};
+		VC[0] = {r, g, b};
 		VHC[0] = intensity;
 
 		for(index_t v = 1; v < n_vertices; ++v)
 		{
 			fgets(line, sizeof(line), fp);
 			sscanf(line, "%f %f %f %f %hhu %hhu %hhu", &x, &y, &z, &intensity, &r, &g, &b);
-			GT[v] = { x, y, z };
-			VC[v] = { r, g, b };
+			GT[v] = {x, y, z};
+			VC[v] = {r, g, b};
 			VHC[v] = intensity;
 		}
 
