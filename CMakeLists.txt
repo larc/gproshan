@@ -50,8 +50,8 @@ configure_file(	${gproshan_SOURCE_DIR}/include/gproshan/config.h.in
 
 
 find_package(embree 3.13 REQUIRED)
-find_package(OpenGL REQUIRED)
 find_package(OpenMP REQUIRED)
+find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
 find_package(glfw3 REQUIRED)
 find_package(Armadillo REQUIRED)
@@ -64,9 +64,9 @@ include_directories(SYSTEM ${embree_INCLUDE_DIRS})
 include_directories(SYSTEM ${GLEW_INCLUDE_DIRS})
 include_directories(SYSTEM ${GLFW3_INCLUDE_DIRS})
 include_directories(SYSTEM ${AMADILLO_INCLUDE_DIR})
-include_directories(SYSTEM ${SuiteSparse_INCLUDE_DIRS})
 include_directories(SYSTEM ${EIGEN3_INCLUDE_DIRS})
 include_directories(SYSTEM ${CGAL_INCLUDE_DIRS})
+include_directories(SYSTEM ${SuiteSparse_INCLUDE_DIRS})
 
 
 add_subdirectory(src)			# gproshan library
