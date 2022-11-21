@@ -30,9 +30,7 @@ che * app_viewer::load_mesh(const std::string & file_path)
 	if(extension == "off") return new che_off(file_path);
 	if(extension == "obj")
 	{
-		scene sc;
-		//sc.load_mtl(file_path.substr(0, pos) + ".mtl");
-		che_obj::parser p(file_path);
+		scene sc(file_path);
 		return new che_obj(file_path);
 	}
 	if(extension == "ply") return new che_ply(file_path);

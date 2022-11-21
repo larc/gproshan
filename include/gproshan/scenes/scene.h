@@ -50,8 +50,12 @@ class scene: public che
 		std::vector<std::string> texture_name;
 		std::vector<texture> textures;
 
+		vertex * texcoords = nullptr;
+
 	public:
+		scene(const std::string & file);
 		~scene();
+		void read_file(const std::string & file);
 		bool load_obj(const std::string & file);
 		bool load_mtl(const std::string & file);
 		bool load_texture(const std::string & file);

@@ -25,9 +25,9 @@ class che_obj : public che
 		{
 			std::vector<vertex> vertices;
 			std::vector<vertex> vnormals;
-			std::vector<vertex> vtexcoords;
+			std::vector<vec2> vtexcoords;
 			std::vector<rgb_t> vcolors;
-			std::vector<index_t> faces;
+			std::vector<uvec3> faces;
 			std::vector<std::pair<std::string, index_t> > objects;
 			std::unordered_set<std::string> mtllibs;
 

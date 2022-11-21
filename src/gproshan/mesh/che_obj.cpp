@@ -20,7 +20,10 @@ void che_obj::read_file(const std::string & file)
 	alloc(p.vertices.size(), p.faces.size() / che::mtrig);
 	memcpy(GT, p.vertices.data(), p.vertices.size() * sizeof(vertex));
 	memcpy(VC, p.vcolors.data(), p.vcolors.size() * sizeof(rgb_t));
-	memcpy(VT, p.faces.data(), p.faces.size() * sizeof(index_t));
+
+	#pragma omp parallel for
+	for(index_t i = 0; i < p.faces.size(); ++i)
+		VT[i] = p.faces[i].x();
 }
 
 void che_obj::write_file(const che * mesh, const std::string & file, const bool & color, const bool & pointcloud)
@@ -63,9 +66,10 @@ che_obj::parser::parser(const std::string & file)
 	FILE * fp = fopen(file.c_str(), "r");
 	assert(fp);
 
-	std::vector<index_t> P;
+	std::vector<uvec3> P;
 	uvec3 vtn;
-	index_t n;
+	bool neg = false;
+	index_t n = 0;
 	float x, y, z, r, g, b;
 	char line[256], str[64];
 
@@ -75,26 +79,49 @@ che_obj::parser::parser(const std::string & file)
 		{
 			case 'f':
 			{
-				P.clear(); vtn = {}; n = 0;
+				P.clear(); vtn = {}; n = 0; neg = false;
 				for(index_t i = 2; line[i]; ++i)
+				{
 					switch(line[i])
 					{
-						case '/': ++n; break;
+						case '/':
+							if(neg) vtn[n] = 0 - vtn[n];
+							neg = false;
+							++n;
+							break;
 						case '\n':
 						case ' ':
-							P.push_back(vtn[0]);
+							if(neg) vtn[n] = 0 - vtn[n];
+							if(vtn[0] != 0) P.push_back(vtn);
 							vtn = {}; n = 0;
+							neg = false;
 							break;
+						case '-':
+							neg = true; break;
 						default:
-							vtn[n] = 10 * vtn[n] + line[i] - '0';
-							break;
+							if('0' <= line[i] && line[i] <= '9')
+								vtn[n] = 10 * vtn[n] + line[i] - '0';
 					}
+				}
 
-				for(index_t & i: P)
-					i += i > vertices.size() ?  vertices.size() : -1;
+				for(uvec3 & f: P)
+				for(int i = 0; i < 3; ++i)
+				{
+					if(!f[i])
+					{
+						f[i] = NIL;
+						break;
+					}
+					f[i] += f[i] > vertices.size() ? vertices.size() : -1;
+				}
 
-				for(const index_t & v: trig_convex_polygon(P.data(), P.size()))
-					faces.push_back(v);
+				for(index_t i = 2; i < P.size(); ++i)
+				{
+					faces.push_back(P[0]);
+					faces.push_back(P[i - 1]);
+					faces.push_back(P[i]);
+				}
+
 				break;
 			}
 			case 'v':
@@ -110,7 +137,7 @@ che_obj::parser::parser(const std::string & file)
 						vnormals.push_back({x, y, z});
 						break;
 					case 't':
-						vtexcoords.push_back({x, y, z});
+						vtexcoords.push_back({x, y});
 						break;
 				}
 				break;
@@ -132,16 +159,14 @@ che_obj::parser::parser(const std::string & file)
 
 	fclose(fp);
 
+	objects.emplace_back("", faces.size());
+
 	gproshan_error_var(vertices.size());
 	gproshan_error_var(vnormals.size());
 	gproshan_error_var(vtexcoords.size());
 	gproshan_error_var(vcolors.size());
 	gproshan_error_var(faces.size());
 	gproshan_error_var(objects.size());
-	for(auto & o: objects)
-		gproshan_log_var(o.first);
-	for(auto & mtllib: mtllibs)
-		gproshan_log_var(mtllib);
 }
 
 

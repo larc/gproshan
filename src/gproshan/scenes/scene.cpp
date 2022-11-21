@@ -1,5 +1,7 @@
 #include "gproshan/scenes/scene.h"
 
+#include "gproshan/mesh/che_obj.h"
+
 #include <CImg.h>
 
 using namespace cimg_library;
@@ -9,14 +11,39 @@ using namespace cimg_library;
 namespace gproshan {
 
 
+scene::scene(const std::string & file)
+{
+	init(file);
+}
+
 scene::~scene()
 {
 	for(texture & tex: textures)
 		delete tex.data;
 }
 
+void scene::read_file(const std::string & file)
+{
+	load_obj(file);
+}
+
 bool scene::load_obj(const std::string & file)
 {
+	const che_obj::parser p(file);
+
+	const std::string path = file.substr(0, file.rfind('/') + 1);
+	for(auto & m: p.mtllibs)
+		if(!load_mtl(path + m))
+			return false;
+
+	alloc(p.faces.size(), 0);
+
+	#pragma omp parallel for
+	for(index_t i = 0; i < n_vertices; ++i)
+	{
+		const index_t & v = p.faces[i].x();
+		GT[i] = p.vertices[v];
+	}
 
 	return true;
 }
