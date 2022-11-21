@@ -16,6 +16,13 @@ size_t & che::rw(const size_t & n)
 }
 
 
+che::rgb_t::rgb_t(const float & fr, const float & fg, const float & fb)
+{
+	r = (unsigned char) (fr * 255);
+	g = (unsigned char) (fg * 255);
+	b = (unsigned char) (fb * 255);
+}
+
 unsigned char & che::rgb_t::operator [] (const index_t & i)
 {
 	return (&r)[i];

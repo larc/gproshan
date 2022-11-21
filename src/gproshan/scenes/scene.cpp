@@ -17,23 +17,6 @@ scene::~scene()
 
 bool scene::load_obj(const std::string & file)
 {
-	FILE * fp = fopen(file.c_str(), "r");
-	if(!fp) return false;
-
-	char line[256], str[64];
-	while(fgets(line, sizeof(line), fp))
-	{
-		switch(line[0])
-		{
-			case 'f':
-			{
-
-				break;
-			}
-		}
-	}
-
-	fclose(fp);
 
 	return true;
 }

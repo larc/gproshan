@@ -16,58 +16,11 @@ che_obj::che_obj(const std::string & file)
 
 void che_obj::read_file(const std::string & file)
 {
-	FILE * fp = fopen(file.c_str(), "r");
-	assert(fp);
-
-	float x, y, z, r, g, b;
-	index_t P[32], n;
-
-	std::vector<vertex> vertices;
-	std::vector<rgb_t> vertices_color;
-	std::vector<index_t> faces;
-
-	char line[256], str[64];
-	char * line_ptr;
-	index_t offset;
-
-	while(fgets(line, sizeof(line), fp))
-	{
-		str[0] = 0;
-		line_ptr = line;
-
-		sscanf(line_ptr, "%s%n", str, &offset);
-		line_ptr += offset;
-
-		if(str[0] == 'v' && !str[1])	// v x y z
-		{
-			n = sscanf(line_ptr, "%f %f %f %f %f %f", &x, &y, &z, &r, &g, &b);
-			vertices.push_back({x, y, z});
-			vertices_color.push_back(n == 6 ? rgb_t{(unsigned char) (r * 255), (unsigned char) (g * 255), (unsigned char) (b * 255)} : rgb_t());
-		}
-
-		if(str[0] == 'f')				// f v1/vt1/vn1 v2/vt2/vn2 v3/vt3/vn3 ...
-		{
-			n = 0;
-			while(sscanf(line_ptr, "%s%n", str, &offset) > 0)
-			{
-				line_ptr += offset;
-				sscanf(str, "%d%*s", P + n);
-				P[n] += P[n] > vertices.size() ? vertices.size() : -1;
-				++n;
-			}
-
-			for(const index_t & v: trig_convex_polygon(P, n))
-				faces.push_back(v);
-		}
-	}
-
-	fclose(fp);
-
-
-	alloc(vertices.size(), faces.size() / che::mtrig);
-	memcpy(GT, vertices.data(), vertices.size() * sizeof(vertex));
-	memcpy(VC, vertices_color.data(), vertices_color.size() * sizeof(rgb_t));
-	memcpy(VT, faces.data(), faces.size() * sizeof(index_t));
+	parser p(file);
+	alloc(p.vertices.size(), p.faces.size() / che::mtrig);
+	memcpy(GT, p.vertices.data(), p.vertices.size() * sizeof(vertex));
+	memcpy(VC, p.vcolors.data(), p.vcolors.size() * sizeof(rgb_t));
+	memcpy(VT, p.faces.data(), p.faces.size() * sizeof(index_t));
 }
 
 void che_obj::write_file(const che * mesh, const std::string & file, const bool & color, const bool & pointcloud)
@@ -103,6 +56,92 @@ void che_obj::write_file(const che * mesh, const std::string & file, const bool 
 	}
 
 	fclose(fp);
+}
+
+che_obj::parser::parser(const std::string & file)
+{
+	FILE * fp = fopen(file.c_str(), "r");
+	assert(fp);
+
+	std::vector<index_t> P;
+	uvec3 vtn;
+	index_t n;
+	float x, y, z, r, g, b;
+	char line[256], str[64];
+
+	while(fgets(line, sizeof(line), fp))
+	{
+		switch(line[0])
+		{
+			case 'f':
+			{
+				P.clear(); vtn = {}; n = 0;
+				for(index_t i = 2; line[i]; ++i)
+					switch(line[i])
+					{
+						case '/': ++n; break;
+						case '\n':
+						case ' ':
+							P.push_back(vtn[0]);
+							vtn = {}; n = 0;
+							break;
+						default:
+							vtn[n] = 10 * vtn[n] + line[i] - '0';
+							break;
+					}
+
+				for(index_t & i: P)
+					i += i > vertices.size() ?  vertices.size() : -1;
+
+				for(const index_t & v: trig_convex_polygon(P.data(), P.size()))
+					faces.push_back(v);
+				break;
+			}
+			case 'v':
+			{
+				n = sscanf(line, "%*s %f %f %f %f %f %f", &x, &y, &z, &r, &g, &b);
+				switch(line[1])
+				{
+					case ' ':
+						vertices.push_back({x, y, z});
+						n == 6 ? vcolors.emplace_back(r, g, b) : vcolors.emplace_back();
+						break;
+					case 'n':
+						vnormals.push_back({x, y, z});
+						break;
+					case 't':
+						vtexcoords.push_back({x, y, z});
+						break;
+				}
+				break;
+			}
+			case 'u':	// usemtl
+			{
+				sscanf(line, "%*s %s", str);
+				objects.emplace_back(str, faces.size());
+				break;
+			}
+			case 'm':	// mtllib
+			{
+				sscanf(line, "%*s %s", str);
+				mtllibs.insert(str);
+				break;
+			}
+		}
+	}
+
+	fclose(fp);
+
+	gproshan_error_var(vertices.size());
+	gproshan_error_var(vnormals.size());
+	gproshan_error_var(vtexcoords.size());
+	gproshan_error_var(vcolors.size());
+	gproshan_error_var(faces.size());
+	gproshan_error_var(objects.size());
+	for(auto & o: objects)
+		gproshan_log_var(o.first);
+	for(auto & mtllib: mtllibs)
+		gproshan_log_var(mtllib);
 }
 
 

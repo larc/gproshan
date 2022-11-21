@@ -32,6 +32,8 @@ class che
 			unsigned char g = 240;
 			unsigned char b = 250;
 
+			rgb_t() = default;
+			rgb_t(const float & fr, const float & fg, const float & fb);
 			unsigned char & operator [] (const index_t & i);
 			operator vertex () const;
 		};
