@@ -826,6 +826,11 @@ bool che::is_manifold() const
 	return manifold;
 }
 
+bool che::is_scene() const
+{
+	return false;
+}
+
 bool che::is_pointcloud() const
 {
 	return n_faces == 0;

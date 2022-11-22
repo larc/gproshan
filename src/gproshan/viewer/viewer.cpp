@@ -13,6 +13,7 @@
 #include <gproshan/mesh/che_ply.h>
 #include <gproshan/mesh/che_xyz.h>
 #include <gproshan/mesh/che_pts.h>
+#include <gproshan/viewer/scene_viewer.h>
 
 #include <gproshan/raytracing/rt_embree.h>
 
@@ -426,7 +427,7 @@ bool viewer::add_mesh(che * p_mesh, const bool & reset_normals)
 	if(reset_normals)
 		p_mesh->update_normals();
 
-	meshes.push_back(new che_viewer(p_mesh));
+	meshes.push_back(p_mesh->is_scene() ? new scene_viewer((scene *) p_mesh) : new che_viewer(p_mesh));
 	che_viewer & mesh = *meshes.back();
 	mesh.log_info();
 
@@ -446,7 +447,6 @@ bool viewer::add_mesh(che * p_mesh, const bool & reset_normals)
 	viewport_height /= rows;
 	cam.aspect = real_t(viewport_width) / viewport_height;
 	proj_mat = cam.perspective();
-
 
 	return true;
 }

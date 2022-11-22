@@ -5,6 +5,10 @@
 namespace gproshan {
 
 
+scene_viewer::scene_viewer(scene * p_sc): che_viewer(p_sc), sc(p_sc)
+{
+}
+
 void scene_viewer::draw(shader & program)
 {
 	glProgramUniformMatrix4fv(program, program("model_mat"), 1, true, &model_mat[0][0]);
@@ -18,11 +22,7 @@ void scene_viewer::draw(shader & program)
 	program.enable();
 
 	glBindVertexArray(vao);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[1]);
-
-
-
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	glDrawArrays(GL_TRIANGLES, 0, mesh->n_vertices);
 	glBindVertexArray(0);
 
 	program.disable();

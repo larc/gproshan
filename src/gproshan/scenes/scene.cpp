@@ -23,6 +23,16 @@ scene::~scene()
 	delete [] texcoords;
 }
 
+bool scene::is_scene() const
+{
+	return true;
+}
+
+bool scene::is_pointcloud() const
+{
+	return false;
+}
+
 void scene::read_file(const std::string & file)
 {
 	load_obj(file);

@@ -135,7 +135,8 @@ class che
 		real_t mean_edge() const;
 		real_t area_surface() const;
 		bool is_manifold() const;
-		bool is_pointcloud() const;
+		virtual bool is_scene() const;
+		virtual bool is_pointcloud() const;
 
 		// operation methods
 		void flip(const index_t & e);

@@ -55,6 +55,8 @@ class scene: public che
 	public:
 		scene(const std::string & file);
 		~scene();
+		bool is_scene() const;
+		bool is_pointcloud() const;
 		void read_file(const std::string & file);
 		bool load_obj(const std::string & file);
 		bool load_mtl(const std::string & file);
