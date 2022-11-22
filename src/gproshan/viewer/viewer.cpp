@@ -13,7 +13,6 @@
 #include <gproshan/mesh/che_ply.h>
 #include <gproshan/mesh/che_xyz.h>
 #include <gproshan/mesh/che_pts.h>
-#include <gproshan/mesh/che_sphere.h>
 
 #include <gproshan/raytracing/rt_embree.h>
 
@@ -48,6 +47,8 @@ const std::vector<std::string> viewer::colormap = { "vertex color",
 													"set"
 													};
 
+che_sphere viewer::sphere_data = {0.01};
+
 viewer::viewer(const int & width, const int & height)
 {
 	window_width = width;
@@ -60,10 +61,9 @@ viewer::viewer(const int & width, const int & height)
 
 	info_gl();
 	gproshan_log_var(sizeof(real_t));
-
-	che * s = new che_sphere(0.01);
-	s->update_normals();
-	sphere.init(s, false);
+	
+	sphere_data.update_normals();
+	sphere = new che_viewer(&sphere_data);;
 
 	frames = new frame[max_meshes];
 
@@ -79,7 +79,9 @@ viewer::~viewer()
 	glfwDestroyWindow(window);
 	glfwTerminate();
 
+	delete *sphere;
 	delete sphere;
+
 	delete [] frames;
 
 	for(che_viewer * m: meshes)
@@ -425,9 +427,8 @@ bool viewer::add_mesh(che * p_mesh, const bool & reset_normals)
 	if(reset_normals)
 		p_mesh->update_normals();
 
-	meshes.push_back(new che_viewer);
+	meshes.push_back(new che_viewer(p_mesh));
 	che_viewer & mesh = *meshes.back();
-	mesh.init(p_mesh);
 	mesh.log_info();
 
 	idx_active_mesh = meshes.size() - 1;
@@ -993,13 +994,13 @@ void viewer::render_gl()
 		if(mesh.render_gradients)
 			mesh.draw(shader_gradient);
 
-		mesh.draw_selected_vertices(sphere, shader_sphere);
+		mesh.draw_selected_vertices(*sphere, shader_sphere);
 
 		if(sphere_points.size())
 		{
-			sphere.model_mat = mat4::identity();
-			sphere.update_instances_positions(sphere_points);
-			sphere.draw(shader_sphere);
+			sphere->model_mat = mat4::identity();
+			sphere->update_instances_positions(sphere_points);
+			sphere->draw(shader_sphere);
 		}
 	}
 

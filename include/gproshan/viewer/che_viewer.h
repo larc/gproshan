@@ -62,14 +62,13 @@ class che_viewer
 		bool render_flat		= false;
 
 	public:
-		che_viewer() = default;
+		che_viewer(che * m);
 		virtual ~che_viewer();
 
 		che *& operator -> ();
 		che *const & operator -> () const;
 		operator che *& ();
 
-		void init(che * m, const bool & center = true);
 		void update();
 		void update_model_mat();
 		void update_vbo();

@@ -1,6 +1,7 @@
 #ifndef VIEWER_H
 #define VIEWER_H
 
+#include <gproshan/mesh/che_sphere.h>
 #include <gproshan/viewer/camera.h>
 #include <gproshan/viewer/shader.h>
 #include <gproshan/viewer/frame.h>
@@ -51,6 +52,7 @@ class viewer
 		static const std::vector<ivec2> m_window_split;
 		static const size_t max_meshes;
 		static const std::vector<std::string> colormap;
+		static che_sphere sphere_data;
 
 		bool apply_all_meshes = false;
 
@@ -84,8 +86,8 @@ class viewer
 		float bgc = 0;
 
 		std::map<int, process_t> processes;
-
-		che_viewer sphere;
+		
+		che_viewer * sphere = nullptr;
 		shader shader_sphere;
 		std::vector<vertex> sphere_points;
 

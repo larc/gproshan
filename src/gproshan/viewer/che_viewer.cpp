@@ -12,6 +12,14 @@
 namespace gproshan {
 
 
+che_viewer::che_viewer(che * m): mesh(m)
+{
+	glGenVertexArrays(1, &vao);
+	glGenBuffers(6, vbo);
+
+	update();
+}
+
 che_viewer::~che_viewer()
 {
 	delete rt_embree;
@@ -34,17 +42,6 @@ che *const & che_viewer::operator -> () const
 che_viewer::operator che *& ()
 {
 	return mesh;
-}
-
-void che_viewer::init(che * m, const bool & center)
-{
-	glGenVertexArrays(1, &vao);
-	glGenBuffers(6, vbo);
-
-	mesh = m;
-	center_mesh = center;
-
-	update();
 }
 
 void che_viewer::update()
