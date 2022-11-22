@@ -47,7 +47,7 @@ const std::vector<std::string> viewer::colormap = { "vertex color",
 													"set"
 													};
 
-che_sphere viewer::sphere_data = {0.01};
+che_sphere viewer::sphere_data{0.01};
 
 viewer::viewer(const int & width, const int & height)
 {
@@ -79,7 +79,6 @@ viewer::~viewer()
 	glfwDestroyWindow(window);
 	glfwTerminate();
 
-	delete *sphere;
 	delete sphere;
 
 	delete [] frames;

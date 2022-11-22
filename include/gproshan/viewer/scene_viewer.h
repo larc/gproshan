@@ -11,7 +11,7 @@ namespace gproshan {
 class scene_viewer: public che_viewer
 {
 	public:
-		virtual void draw(shader & program);
+		void draw(shader & program);
 };
 
 
