@@ -41,7 +41,7 @@ class che_viewer
 
 		fit_screen opt_fit_screen = box;
 
-		int vx = 0, vy = 0;							///< viewport positions.
+		int vx = 0, vy = 0;					///< viewport positions.
 		std::vector<index_t> selected;
 		std::vector<vertex> selected_xyz;
 		rt::raytracing * rt_embree	= nullptr;

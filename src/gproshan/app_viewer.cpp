@@ -16,8 +16,8 @@ namespace gproshan {
 
 app_viewer::~app_viewer()
 {
-	for(index_t i = 0; i < n_meshes; ++i)
-		delete meshes[i];
+	for(auto & m: meshes)
+		delete *m;
 }
 
 che * app_viewer::load_mesh(const std::string & file_path)

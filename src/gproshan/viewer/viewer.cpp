@@ -39,7 +39,7 @@ const std::vector<ivec2> viewer::m_window_split = {	{1, 1},
 													{4, 5}, {4, 5}, {4, 5}, {4, 5}
 													};
 
-const size_t viewer::max_n_meshes = m_window_split.size() - 1;
+const size_t viewer::max_meshes = m_window_split.size() - 1;
 
 const std::vector<std::string> viewer::colormap = { "vertex color",
 													"blue",
@@ -65,8 +65,7 @@ viewer::viewer(const int & width, const int & height)
 	s->update_normals();
 	sphere.init(s, false);
 
-	frames = new frame[max_n_meshes];
-	meshes = new che_viewer[max_n_meshes];
+	frames = new frame[max_meshes];
 
 	render_params.add_light({-1, 1, -2});
 }
@@ -82,7 +81,9 @@ viewer::~viewer()
 
 	delete sphere;
 	delete [] frames;
-	delete [] meshes;
+
+	for(che_viewer * m: meshes)
+		delete m;
 }
 
 bool viewer::run()
@@ -126,12 +127,15 @@ void viewer::imgui()
 	{
 		if(ImGui::BeginMenu("Select"))
 		{
-			for(index_t i = 0; i < n_meshes; ++i)
-				if(ImGui::MenuItem((std::to_string(i) + ": " + meshes[i]->filename).c_str(), nullptr, i == idx_active_mesh, i != idx_active_mesh))
+			for(index_t i = 0; i < meshes.size(); ++i)
+			{
+				const che_viewer & m = *meshes[i];
+				if(ImGui::MenuItem((std::to_string(i) + ": " + m->filename).c_str(), nullptr, i == idx_active_mesh, i != idx_active_mesh))
 				{
 					idx_active_mesh = i;
-					glfwSetWindowTitle(window, mesh->filename.c_str());
+					glfwSetWindowTitle(window, m->filename.c_str());
 				}
+			}
 
 			ImGui::EndMenu();
 		}
@@ -275,7 +279,7 @@ void viewer::imgui()
 
 che_viewer & viewer::active_mesh()
 {
-	return meshes[idx_active_mesh];
+	return *meshes[idx_active_mesh];
 }
 
 void viewer::info_gl()
@@ -415,25 +419,26 @@ void viewer::add_process(const int & key, const std::string & skey, const std::s
 
 bool viewer::add_mesh(che * p_mesh, const bool & reset_normals)
 {
-	if(n_meshes == max_n_meshes)
+	if(meshes.size() == max_meshes)
 		return false;
 
 	if(reset_normals)
 		p_mesh->update_normals();
 
-	che_viewer & mesh = meshes[n_meshes];
+	meshes.push_back(new che_viewer);
+	che_viewer & mesh = *meshes.back();
 	mesh.init(p_mesh);
 	mesh.log_info();
 
-	idx_active_mesh = n_meshes++;
+	idx_active_mesh = meshes.size() - 1;
 	glfwSetWindowTitle(window, mesh->filename.c_str());
 
-	const int & rows = m_window_split[n_meshes].x();
-	const int & cols = m_window_split[n_meshes].y();
-	for(index_t m = 0; m < n_meshes; ++m)
+	const int & rows = m_window_split[meshes.size()].x();
+	const int & cols = m_window_split[meshes.size()].y();
+	for(index_t m = 0; m < meshes.size(); ++m)
 	{
-		meshes[m].vx = m % cols;
-		meshes[m].vy = rows - (m / cols) - 1;
+		meshes[m]->vx = m % cols;
+		meshes[m]->vy = rows - (m / cols) - 1;
 	}
 
 	glfwGetFramebufferSize(window, &viewport_width, &viewport_height);
@@ -449,8 +454,8 @@ bool viewer::add_mesh(che * p_mesh, const bool & reset_normals)
 void viewer::framebuffer_size_callback(GLFWwindow * window, int width, int height)
 {
 	viewer * view = (viewer *) glfwGetWindowUserPointer(window);
-	view->viewport_width = width / m_window_split[view->n_meshes].y();
-	view->viewport_height = height / m_window_split[view->n_meshes].x();
+	view->viewport_width = width / m_window_split[view->meshes.size()].y();
+	view->viewport_height = height / m_window_split[view->meshes.size()].x();
 	view->cam.aspect = real_t(view->viewport_width) / view->viewport_height;
 	view->proj_mat = view->cam.perspective();
 }
@@ -495,9 +500,9 @@ void viewer::mouse_callback(GLFWwindow * window, int button, int action, int mod
 
 		const index_t & ix = xpos * xscale;
 		const index_t & iy = ypos * yscale;
-		const int & cols = m_window_split[view->n_meshes].y();
+		const int & cols = m_window_split[view->meshes.size()].y();
 		const index_t & idx_mesh = cols * (iy / view->viewport_height) + ix / view->viewport_width;
-		if(idx_mesh < view->n_meshes)
+		if(idx_mesh < view->meshes.size())
 			view->idx_active_mesh = idx_mesh;
 
 		if(mods == GLFW_MOD_SHIFT)
@@ -965,9 +970,9 @@ void viewer::render_gl()
 	glProgramUniform1f(shader_sphere, shader_sphere("scale"), cam.zoom());
 
 
-	for(index_t i = 0; i < n_meshes; ++i)
+	for(index_t i = 0; i < meshes.size(); ++i)
 	{
-		che_viewer & mesh = meshes[i];
+		che_viewer & mesh = *meshes[i];
 
 		glViewport(mesh.vx * viewport_width, mesh.vy * viewport_height, viewport_width, viewport_height);
 
@@ -1038,8 +1043,8 @@ void viewer::check_apply_all_meshes(const std::function<void(che_viewer &)> & fu
 		return;
 	}
 
-	for(index_t i = 0; i < n_meshes; ++i)
-		fun(meshes[i]);
+	for(auto & m: meshes)
+		fun(*m);
 }
 
 

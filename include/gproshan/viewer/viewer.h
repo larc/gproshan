@@ -49,7 +49,7 @@ class viewer
 		};
 
 		static const std::vector<ivec2> m_window_split;
-		static const size_t max_n_meshes;
+		static const size_t max_meshes;
 		static const std::vector<std::string> colormap;
 
 		bool apply_all_meshes = false;
@@ -75,9 +75,8 @@ class viewer
 		quaternion cam_light;
 
 		double render_time = 0;
-
-		che_viewer * meshes = nullptr;
-		size_t n_meshes	= 0;
+		
+		std::vector<che_viewer *> meshes;
 		index_t idx_active_mesh = 0;
 
 		frame * frames = nullptr;
