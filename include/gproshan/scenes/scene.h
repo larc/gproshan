@@ -5,7 +5,6 @@
 
 #include <vector>
 #include <string>
-#include <unordered_map>
 
 
 // geometry processing and shape analysis framework
@@ -41,12 +40,10 @@ class scene: public che
 			index_t idm = NIL;
 		};
 
-	protected:
-		std::unordered_map<std::string, index_t> material_id;
+	public:
 		std::vector<std::string> material_name;
 		std::vector<material> materials;
 
-		std::unordered_map<std::string, index_t> texture_id;
 		std::vector<std::string> texture_name;
 		std::vector<texture> textures;
 

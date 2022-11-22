@@ -7,6 +7,33 @@ namespace gproshan {
 
 scene_viewer::scene_viewer(scene * p_sc): che_viewer(p_sc), sc(p_sc)
 {
+	gltextures = new GLuint[sc->textures.size()];
+
+	glGenTextures(sc->textures.size(), gltextures);
+	for(index_t i = 0; i < sc->textures.size(); ++i)
+	{
+		gproshan_log_var(sc->texture_name[i]);
+		init_texture(gltextures[i], sc->textures[i]);
+	}
+}
+
+scene_viewer::~scene_viewer()
+{
+	glDeleteTextures(sc->textures.size(), gltextures);
+	delete [] gltextures;
+}
+
+void scene_viewer::init_texture(const GLuint & gltex, const scene::texture & tex)
+{
+	glBindTexture(GL_TEXTURE_2D, gltex);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tex.cols, tex.rows, 0, GL_RGB, GL_FLOAT, tex.data);
+	glGenerateMipmap(GL_TEXTURE_2D);
+
+	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 void scene_viewer::draw(shader & program)
@@ -26,7 +53,6 @@ void scene_viewer::draw(shader & program)
 	glBindVertexArray(0);
 
 	program.disable();
-
 }
 
 

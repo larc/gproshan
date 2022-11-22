@@ -13,9 +13,12 @@ class scene_viewer: public che_viewer
 {
 	private:
 		scene * sc = nullptr;
+		GLuint * gltextures = nullptr;
 
 	public:
 		scene_viewer(scene * p_sc);
+		~scene_viewer();
+		void init_texture(const GLuint & gltex, const scene::texture & tex);
 		void draw(shader & program);
 };
 

@@ -2,6 +2,7 @@
 
 #include "gproshan/mesh/che_obj.h"
 
+#include <unordered_map>
 #include <CImg.h>
 
 using namespace cimg_library;
@@ -77,6 +78,9 @@ bool scene::load_mtl(const std::string & file)
 
 	FILE * fp = fopen(file.c_str(), "r");
 	if(!fp) return false;
+
+	std::unordered_map<std::string, index_t> material_id;
+	std::unordered_map<std::string, index_t> texture_id;
 
 	char line[256], str[64];
 	while(fgets(line, sizeof(line), fp))
