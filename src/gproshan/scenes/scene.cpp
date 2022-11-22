@@ -20,6 +20,7 @@ scene::~scene()
 {
 	for(texture & tex: textures)
 		delete tex.data;
+	delete [] texcoords;
 }
 
 void scene::read_file(const std::string & file)
@@ -36,13 +37,24 @@ bool scene::load_obj(const std::string & file)
 		if(!load_mtl(path + m))
 			return false;
 
-	alloc(p.faces.size(), 0);
+	alloc(p.trigs.size(), 0);
+	texcoords = new vec2[n_vertices];
 
 	#pragma omp parallel for
 	for(index_t i = 0; i < n_vertices; ++i)
 	{
-		const index_t & v = p.faces[i].x();
+		const index_t & v = p.trigs[i].x();
+		const index_t & t = p.trigs[i].y();
 		GT[i] = p.vertices[v];
+		texcoords[i] = t != NIL ? p.vtexcoords[t] : vec2{-1, -1};
+	}
+
+	#pragma omp parallel for
+	for(index_t i = 0; i < n_vertices; ++i)
+	{
+		const index_t & trig = 3 * (i / 3);
+		const index_t & n = p.trigs[i].z();
+		VN[i] = n != NIL ? p.vnormals[n] : normalize((GT[trig + 1] - GT[trig]) * (GT[trig + 2] - GT[trig]));
 	}
 
 	return true;

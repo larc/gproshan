@@ -24,10 +24,10 @@ class che_obj : public che
 		struct parser
 		{
 			std::vector<vertex> vertices;
-			std::vector<vertex> vnormals;
 			std::vector<vec2> vtexcoords;
+			std::vector<vertex> vnormals;
 			std::vector<rgb_t> vcolors;
-			std::vector<uvec3> faces;
+			std::vector<uvec3> trigs;
 			std::vector<std::pair<std::string, index_t> > objects;
 			std::unordered_set<std::string> mtllibs;
 

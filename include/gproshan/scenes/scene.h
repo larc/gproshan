@@ -50,7 +50,7 @@ class scene: public che
 		std::vector<std::string> texture_name;
 		std::vector<texture> textures;
 
-		vertex * texcoords = nullptr;
+		vec2 * texcoords = nullptr;
 
 	public:
 		scene(const std::string & file);
