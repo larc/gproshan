@@ -46,6 +46,7 @@ bool scene::load_obj(const std::string & file)
 		const index_t & v = p.trigs[i].x();
 		const index_t & t = p.trigs[i].y();
 		GT[i] = p.vertices[v];
+		VC[i] = p.vcolors[v];
 		texcoords[i] = t != NIL ? p.vtexcoords[t] : vec2{-1, -1};
 	}
 
@@ -117,6 +118,7 @@ bool scene::load_mtl(const std::string & file)
 			{
 				index_t & m = line[5] == 'a' ? materials.back().map_Ka : materials.back().map_Kd;
 				sscanf(line, "%*s %s", str);
+				if(str[0] == '-') continue;		// ignoring map textures with options
 				if(texture_id.find(str) == texture_id.end())
 				{
 					texture_id[str] = textures.size();
