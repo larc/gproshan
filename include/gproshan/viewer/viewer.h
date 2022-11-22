@@ -77,7 +77,7 @@ class viewer
 		quaternion cam_light;
 
 		double render_time = 0;
-		
+
 		std::vector<che_viewer *> meshes;
 		index_t idx_active_mesh = 0;
 
@@ -86,7 +86,7 @@ class viewer
 		float bgc = 0;
 
 		std::map<int, process_t> processes;
-		
+
 		che_viewer * sphere = nullptr;
 		shader shader_sphere;
 		std::vector<vertex> sphere_points;

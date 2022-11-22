@@ -61,7 +61,7 @@ viewer::viewer(const int & width, const int & height)
 
 	info_gl();
 	gproshan_log_var(sizeof(real_t));
-	
+
 	sphere_data.update_normals();
 	sphere = new che_viewer(&sphere_data);;
 
