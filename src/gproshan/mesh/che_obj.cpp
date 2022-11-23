@@ -103,6 +103,8 @@ che_obj::parser::parser(const std::string & file)
 								vtn[n] = 10 * vtn[n] + line[i] - '0';
 					}
 				}
+				if(neg) vtn[n] = 0 - vtn[n];
+				if(vtn[0]) P.push_back(vtn);
 
 				for(uvec3 & f: P)
 				for(int i = 0; i < 3; ++i)
@@ -135,6 +137,7 @@ che_obj::parser::parser(const std::string & file)
 				switch(line[1])
 				{
 					case ' ':
+					case '\t':
 						vertices.push_back({x, y, z});
 						n == 6 ? vcolors.emplace_back(r, g, b) : vcolors.emplace_back();
 						break;

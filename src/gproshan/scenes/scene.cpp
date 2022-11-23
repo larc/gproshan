@@ -2,7 +2,6 @@
 
 #include "gproshan/mesh/che_obj.h"
 
-#include <unordered_map>
 #include <CImg.h>
 
 using namespace cimg_library;
@@ -69,6 +68,21 @@ bool scene::load_obj(const std::string & file)
 		VN[i] = n != NIL ? p.vnormals[n] : normalize((GT[trig + 1] - GT[trig]) * (GT[trig + 2] - GT[trig]));
 	}
 
+	if(p.objects.size())
+	{
+//		#pragma omp parallel for
+		for(index_t i = 0; i < p.objects.size() - 1; ++i)
+		{
+			const auto & obj = p.objects[i];
+			const material & m = materials[material_id[obj.first]];
+			gproshan_error_var(m.Kd);
+
+			const index_t & end = p.objects[i + 1].second;
+			for(index_t j = obj.second; j < end; ++j)
+				VC[j] = {m.Kd.x(), m.Kd.y(), m.Kd.z()}; 
+		}
+	}
+
 	return true;
 }
 
@@ -79,13 +93,13 @@ bool scene::load_mtl(const std::string & file)
 	FILE * fp = fopen(file.c_str(), "r");
 	if(!fp) return false;
 
-	std::unordered_map<std::string, index_t> material_id;
 	std::unordered_map<std::string, index_t> texture_id;
 
 	char line[256], str[64];
 	while(fgets(line, sizeof(line), fp))
 	{
-		switch(line[0])
+		sscanf(line, "%s", str);
+		switch(str[0])
 		{
 			case 'n':	// newmtl
 			{
@@ -97,8 +111,8 @@ bool scene::load_mtl(const std::string & file)
 			}
 			case 'K':	// Ka, Kd, Ks
 			{
-				vec3 & rgb = line[1] == 'a' ? materials.back().Ka
-							: line[1] == 'd' ? materials.back().Kd
+				vec3 & rgb = str[1] == 'a' ? materials.back().Ka
+							: str[1] == 'd' ? materials.back().Kd
 							: materials.back().Ks;
 				sscanf(line, "%*s %f %f %f", &rgb.x(), &rgb.y(), &rgb.z());
 				break;
@@ -130,7 +144,7 @@ bool scene::load_mtl(const std::string & file)
 			}
 			case 'm':	// map_Ka, map_kd
 			{
-				index_t & m = line[5] == 'a' ? materials.back().map_Ka : materials.back().map_Kd;
+				index_t & m = str[5] == 'a' ? materials.back().map_Ka : materials.back().map_Kd;
 				sscanf(line, "%*s %s", str);
 				if(str[0] == '-') continue;		// ignoring map textures with options
 				if(texture_id.find(str) == texture_id.end())
