@@ -76,6 +76,9 @@ embree::embree(const std::vector<che *> & meshes, const std::vector<mat4> & mode
 
 embree::~embree()
 {
+	for(CHE * m: g_meshes)
+		delete m;
+
 	rtcReleaseScene(scene);
 	rtcReleaseDevice(device);
 }
@@ -129,8 +132,9 @@ void embree::build_bvh(const std::vector<che *> & meshes, const std::vector<mat4
 		if(!meshes[i]->n_faces || pointcloud)
 			g_meshes[i]->n_faces = 0;
 
-		const index_t & geomID = g_meshes[i]->n_faces ? add_mesh(meshes[i], model_mats[i]) :
-														add_pointcloud(meshes[i], model_mats[i]);
+		const index_t & geomID = g_meshes[i]->n_faces || meshes[i]->is_scene() ?
+											add_mesh(meshes[i], model_mats[i]) :
+											add_pointcloud(meshes[i], model_mats[i]);
 
 		gproshan_error_var(i == geomID);
 	}
@@ -166,22 +170,39 @@ index_t embree::add_mesh(const che * mesh, const mat4 & model_mat)
 															mesh->n_vertices
 															);
 
-	index_t * tri_idxs = (index_t *) rtcSetNewGeometryBuffer(	geom,
-																RTC_BUFFER_TYPE_INDEX, 0,
-																RTC_FORMAT_UINT3, 3 * sizeof(index_t),
-																mesh->n_faces
-																);
-
 	#pragma omp parallel for
 	for(index_t i = 0; i < mesh->n_vertices; ++i)
 		vertices[i] = model_mat * vec4(mesh->point(i), 1);
 
-	memcpy(tri_idxs, &mesh->halfedge(0), mesh->n_half_edges * sizeof(index_t));
+	index_t * tri_idxs = (index_t *) rtcSetNewGeometryBuffer(	geom,
+																RTC_BUFFER_TYPE_INDEX, 0,
+																RTC_FORMAT_UINT3, 3 * sizeof(index_t),
+																mesh->is_scene() ? mesh->n_vertices / 3 : mesh->n_faces
+																);
+
+
+	if(mesh->is_scene())
+	{
+		#pragma omp parallel for
+		for(index_t i = 0; i < mesh->n_vertices; ++i)
+			tri_idxs[i] = i;
+	}
+	else
+	{
+		memcpy(tri_idxs, &mesh->halfedge(0), mesh->n_half_edges * sizeof(index_t));
+	}
 
 	rtcCommitGeometry(geom);
 
 	index_t geom_id = rtcAttachGeometry(scene, geom);
 	rtcReleaseGeometry(geom);
+
+	if(mesh->is_scene())
+	{
+		g_meshes[geom_id]->VT = tri_idxs;
+		g_meshes[geom_id]->n_faces = mesh->n_vertices / 3;
+		g_meshes[geom_id]->n_half_edges = mesh->n_vertices;
+	}
 
 	return geom_id;
 }

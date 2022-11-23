@@ -70,12 +70,11 @@ bool scene::load_obj(const std::string & file)
 
 	if(p.objects.size())
 	{
-//		#pragma omp parallel for
+		#pragma omp parallel for
 		for(index_t i = 0; i < p.objects.size() - 1; ++i)
 		{
 			const auto & obj = p.objects[i];
 			const material & m = materials[material_id[obj.first]];
-			gproshan_error_var(m.Kd);
 
 			const index_t & end = p.objects[i + 1].second;
 			for(index_t j = obj.second; j < end; ++j)

@@ -412,6 +412,17 @@ void optix::add_mesh(OptixBuildInput & optix_mesh, CUdeviceptr & d_vertex_ptr, u
 	CHE * dd_m, * d_m;
 	CHE h_m(mesh);
 
+	if(mesh->is_scene())
+	{
+		h_m.n_half_edges = mesh->n_vertices;
+		h_m.n_faces = mesh->n_vertices / 3;
+		h_m.VT = new index_t[mesh->n_vertices];
+
+		#pragma omp parallel for
+		for(index_t i = 0; i < mesh->n_vertices; ++i)
+			h_m.VT[i] = i;
+	}
+
 	cuda_create_CHE(&h_m, dd_m, d_m, true, true);
 	dd_mesh.push_back(dd_m);
 	d_mesh.push_back(d_m);
@@ -427,12 +438,12 @@ void optix::add_mesh(OptixBuildInput & optix_mesh, CUdeviceptr & d_vertex_ptr, u
 
 	optix_mesh.triangleArray.vertexFormat			= OPTIX_VERTEX_FORMAT_FLOAT3;
 	optix_mesh.triangleArray.vertexStrideInBytes	= 3 * sizeof(float);
-	optix_mesh.triangleArray.numVertices			= mesh->n_vertices;
+	optix_mesh.triangleArray.numVertices			= h_m.n_vertices;
 	optix_mesh.triangleArray.vertexBuffers			= &d_vertex_ptr;
 
 	optix_mesh.triangleArray.indexFormat			= OPTIX_INDICES_FORMAT_UNSIGNED_INT3;
 	optix_mesh.triangleArray.indexStrideInBytes		= 3 * sizeof(index_t);
-	optix_mesh.triangleArray.numIndexTriplets		= mesh->n_faces;
+	optix_mesh.triangleArray.numIndexTriplets		= h_m.n_faces;
 	optix_mesh.triangleArray.indexBuffer			= (CUdeviceptr) dd_m->VT;
 
 	optix_mesh.triangleArray.transformFormat		= OPTIX_TRANSFORM_FORMAT_MATRIX_FLOAT12;
@@ -445,6 +456,9 @@ void optix::add_mesh(OptixBuildInput & optix_mesh, CUdeviceptr & d_vertex_ptr, u
 	optix_mesh.triangleArray.sbtIndexOffsetBuffer			= 0;
 	optix_mesh.triangleArray.sbtIndexOffsetSizeInBytes		= 0;
 	optix_mesh.triangleArray.sbtIndexOffsetStrideInBytes	= 0;
+
+	if(mesh->is_scene())
+		delete [] h_m.VT;
 }
 
 
