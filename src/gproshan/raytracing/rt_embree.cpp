@@ -250,7 +250,7 @@ vec3 embree::closesthit_radiance(const vertex & org, const vertex & dir, const v
 	hit.position = r.position();
 	hit.normal = flat ? r.normal() : hit.normal;
 
-	return eval_li(	hit, lights,  n_lights,
+	return eval_li(	hit, lights, n_lights,
 					[&](const vec3 & position, const vec3 & wi, const float & light_dist) -> bool
 					{
 						ray_hit ro(position, wi, 1e-3f, light_dist - 1e-3f);

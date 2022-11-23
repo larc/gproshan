@@ -36,7 +36,7 @@ if(OptiX_INCLUDE)
 	set_property(TARGET optix_ptx PROPERTY CUDA_PTX_COMPILATION ON)
 	add_custom_target(	copy_optix_ptx ALL
 						DEPENDS optix_ptx
-    					COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_OBJECTS:optix_ptx> ${gproshan_SOURCE_DIR}/src/)
+						COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_OBJECTS:optix_ptx> ${gproshan_SOURCE_DIR}/src/)
 endif(OptiX_INCLUDE)
 
 

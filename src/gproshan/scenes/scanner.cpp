@@ -35,10 +35,7 @@ che * scanner_ptx(rt::raytracing * rt, const size_t & n_rows, const size_t & n_c
 			mesh_ptx->point(v) = h.position;
 			mesh_ptx->normal(v) = h.normal;
 			mesh_ptx->heatmap(v) = h.dist / M_SQRT2;
-			mesh_ptx->rgb(v) = {	(unsigned char) (h.color.x() * 255),
-									(unsigned char) (h.color.y() * 255),
-									(unsigned char) (h.color.z() * 255)
-									};
+			mesh_ptx->rgb(v) = h.color;
 		}
 		else
 		{

@@ -16,6 +16,8 @@ size_t & che::rw(const size_t & n)
 }
 
 
+che::rgb_t::rgb_t(const vertex & v): rgb_t(v.x(), v.y(), v.z()) {}
+
 che::rgb_t::rgb_t(const float & fr, const float & fg, const float & fb)
 {
 	r = (unsigned char) (fr * 255);

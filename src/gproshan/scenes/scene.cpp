@@ -78,7 +78,7 @@ bool scene::load_obj(const std::string & file)
 
 			const index_t & end = p.objects[i + 1].second;
 			for(index_t j = obj.second; j < end; ++j)
-				VC[j] = {m.Kd.x(), m.Kd.y(), m.Kd.z()}; 
+				VC[j] = m.Kd;
 		}
 	}
 
