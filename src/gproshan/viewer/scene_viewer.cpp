@@ -49,7 +49,20 @@ void scene_viewer::draw(shader & program)
 	program.enable();
 
 	glBindVertexArray(vao);
-	glDrawArrays(GL_TRIANGLES, 0, mesh->n_vertices);
+	if(sc->objects.size() == 1)
+	{
+		glDrawArrays(GL_TRIANGLES, 0, mesh->n_vertices);
+	}
+	else
+	{
+		for(index_t i = 0; i < sc->objects.size() - 1; ++i)
+		{
+			const scene::object & obj = sc->objects[i];
+			const scene::material & mat = sc->materials[obj.material_id];
+			glProgramUniform3f(program, program("mat.Kd"), mat.Kd.x(), mat.Kd.y(), mat.Kd.z());
+			glDrawArrays(GL_TRIANGLES, obj.begin, sc->objects[i + 1].begin - obj.begin);
+		}
+	}
 	glBindVertexArray(0);
 
 	program.disable();

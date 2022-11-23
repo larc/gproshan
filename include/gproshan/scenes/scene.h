@@ -29,6 +29,7 @@ class scene: public che
 			vec3 Ks = {1, 1, 1};
 			real_t d = 1;	// Tr = 0, opposite
 			real_t Ns = 0;
+			real_t Ni = 0;
 			index_t illum = 1;
 			index_t map_Ka = NIL;
 			index_t map_Kd = NIL;
@@ -37,8 +38,7 @@ class scene: public che
 		struct object
 		{
 			index_t begin = 0;
-			index_t end = 0;
-			index_t idm = NIL;
+			index_t material_id = NIL;
 		};
 
 	public:
@@ -48,6 +48,8 @@ class scene: public che
 
 		std::vector<std::string> texture_name;
 		std::vector<texture> textures;
+
+		std::vector<object> objects;
 
 		vec2 * texcoords = nullptr;
 

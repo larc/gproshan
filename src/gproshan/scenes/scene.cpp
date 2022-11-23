@@ -68,19 +68,10 @@ bool scene::load_obj(const std::string & file)
 		VN[i] = n != NIL ? p.vnormals[n] : normalize((GT[trig + 1] - GT[trig]) * (GT[trig + 2] - GT[trig]));
 	}
 
-	if(p.objects.size())
-	{
-		#pragma omp parallel for
-		for(index_t i = 0; i < p.objects.size() - 1; ++i)
-		{
-			const auto & obj = p.objects[i];
-			const material & m = materials[material_id[obj.first]];
+	for(auto & obj: p.objects)
+		objects.push_back({obj.second, material_id[obj.first]});
 
-			const index_t & end = p.objects[i + 1].second;
-			for(index_t j = obj.second; j < end; ++j)
-				VC[j] = m.Kd;
-		}
-	}
+	gproshan_log_var(objects.size());
 
 	return true;
 }
@@ -131,8 +122,8 @@ bool scene::load_mtl(const std::string & file)
 			}
 			case 'N':	// Ns
 			{
-				real_t & d = materials.back().Ns;
-				sscanf(line, "%*s %f", &d);
+				real_t & N = str[1] == 's' ? materials.back().Ns : materials.back().Ni;
+				sscanf(line, "%*s %f", &N);
 				break;
 			}
 			case 'i':	// illum
