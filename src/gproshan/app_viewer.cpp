@@ -862,7 +862,7 @@ bool app_viewer::process_fill_holes(viewer * p_view)
 	{
 		const std::vector<index_t> & vbounds = mesh->boundary(v);
 		std::vector<vertex> vertices;
-		std::vector<index_t> faces;
+		std::vector<index_t> trigs;
 
 		vertex center;
 		for(const index_t & v: vbounds)
@@ -915,7 +915,7 @@ bool app_viewer::process_fill_holes(viewer * p_view)
 		// vertices.push_back(center);
 
 		che * old = fill_mesh;
-		che * hole = new che(vertices.data(), vertices.size(), faces.data(), faces.size() / 3);
+		che * hole = new che(vertices.data(), vertices.size(), trigs.data(), trigs.size() / 3);
 		fill_mesh = old->merge(hole, vbounds);
 		delete old;
 		delete hole;

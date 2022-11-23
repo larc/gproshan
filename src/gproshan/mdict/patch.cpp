@@ -77,7 +77,7 @@ index_t patch::find(const index_t * indexes, size_t nc, index_t idx_global)
 	return -1;
 }
 
-bool patch::add_vertex_by_faces(vertex & n, std::vector<vertex> & N, double thr_angle, const real_t * geo, che * mesh, const index_t & v, real_t & area, real_t & proj_area, real_t deviation)
+bool patch::add_vertex_by_trigs(vertex & n, std::vector<vertex> & N, double thr_angle, const real_t * geo, che * mesh, const index_t & v, real_t & area, real_t & proj_area, real_t deviation)
 {
 	// it needs to return both vertices
 	// it needs to filter repeated indexes.
@@ -267,7 +267,7 @@ void patch::init_radial_disjoint(	real_t & euc_radio,
 
 		ratio = area / proj_area;
 
-		if(add_vertex_by_faces(n, N, delta, params.dist_alloc, mesh, u, area, proj_area, M_PI / 2.5 ) && (ratio < sum_thres || (area / area_mesh) < area_thres) )
+		if(add_vertex_by_trigs(n, N, delta, params.dist_alloc, mesh, u, area, proj_area, M_PI / 2.5 ) && (ratio < sum_thres || (area / area_mesh) < area_thres) )
 		{
 			euc_radio = std::max(euc_radio, norm(mesh->point(u) - c));
 			return true;

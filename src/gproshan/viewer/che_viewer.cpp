@@ -254,7 +254,7 @@ void che_viewer::log_info()
 
 	gproshan_log_var(mesh->filename);
 	gproshan_log_var(mesh->n_vertices);
-	gproshan_log_var(mesh->n_faces);
+	gproshan_log_var(mesh->n_trigs);
 	gproshan_log_var(mesh->n_half_edges);
 	gproshan_log_var(mesh->n_edges);
 	gproshan_log_var(mesh->area_surface());

@@ -415,7 +415,7 @@ void optix::add_mesh(OptixBuildInput & optix_mesh, CUdeviceptr & d_vertex_ptr, u
 	if(mesh->is_scene())
 	{
 		h_m.n_half_edges = mesh->n_vertices;
-		h_m.n_faces = mesh->n_vertices / 3;
+		h_m.n_trigs = mesh->n_vertices / 3;
 		h_m.VT = new index_t[mesh->n_vertices];
 
 		#pragma omp parallel for
@@ -443,7 +443,7 @@ void optix::add_mesh(OptixBuildInput & optix_mesh, CUdeviceptr & d_vertex_ptr, u
 
 	optix_mesh.triangleArray.indexFormat			= OPTIX_INDICES_FORMAT_UNSIGNED_INT3;
 	optix_mesh.triangleArray.indexStrideInBytes		= 3 * sizeof(index_t);
-	optix_mesh.triangleArray.numIndexTriplets		= h_m.n_faces;
+	optix_mesh.triangleArray.numIndexTriplets		= h_m.n_trigs;
 	optix_mesh.triangleArray.indexBuffer			= (CUdeviceptr) dd_m->VT;
 
 	optix_mesh.triangleArray.transformFormat		= OPTIX_TRANSFORM_FORMAT_MATRIX_FLOAT12;

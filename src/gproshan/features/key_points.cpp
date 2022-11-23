@@ -24,10 +24,10 @@ key_points::operator const std::vector<index_t> & () const
 /// DOI: 10.1109/CLEI.2015.7359459
 void key_points::compute_kps_areas(che * mesh, const real_t & percent)
 {
-	std::vector<std::pair<real_t, index_t> > face_areas(mesh->n_faces);
+	std::vector<std::pair<real_t, index_t> > face_areas(mesh->n_trigs);
 
 	#pragma omp parallel for
-	for(index_t f = 0; f < mesh->n_faces; ++f)
+	for(index_t f = 0; f < mesh->n_trigs; ++f)
 		face_areas[f] = { mesh->area_trig(f), f };
 
 	std::sort(begin(face_areas), end(face_areas));
@@ -35,7 +35,7 @@ void key_points::compute_kps_areas(che * mesh, const real_t & percent)
 	is_kp.assign(mesh->n_vertices, false);
 	kps.reserve(mesh->n_vertices);
 
-	for(index_t he, t = 0; t < mesh->n_faces; ++t)
+	for(index_t he, t = 0; t < mesh->n_trigs; ++t)
 	{
 		he = che::mtrig * face_areas[t].second;
 		for(index_t i = 0; i < che::mtrig; ++i)

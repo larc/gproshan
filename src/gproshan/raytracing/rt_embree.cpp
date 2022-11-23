@@ -90,7 +90,7 @@ index_t embree::closest_vertex(const vertex & org, const vertex & dir)
 
 	const CHE * mesh = g_meshes[r.hit.geomID];
 
-	if(!mesh->n_faces) return r.hit.primID;
+	if(!mesh->n_trigs) return r.hit.primID;
 
 	index_t he = che::mtrig * r.hit.primID;
 	float w = 1 - r.hit.u - r.hit.v;
@@ -129,10 +129,10 @@ void embree::build_bvh(const std::vector<che *> & meshes, const std::vector<mat4
 	{
 		g_meshes[i] = new CHE(meshes[i]);
 
-		if(!meshes[i]->n_faces || pointcloud)
-			g_meshes[i]->n_faces = 0;
+		if(!meshes[i]->n_trigs || pointcloud)
+			g_meshes[i]->n_trigs = 0;
 
-		const index_t & geomID = g_meshes[i]->n_faces || meshes[i]->is_scene() ?
+		const index_t & geomID = g_meshes[i]->n_trigs || meshes[i]->is_scene() ?
 											add_mesh(meshes[i], model_mats[i]) :
 											add_pointcloud(meshes[i], model_mats[i]);
 
@@ -177,7 +177,7 @@ index_t embree::add_mesh(const che * mesh, const mat4 & model_mat)
 	index_t * tri_idxs = (index_t *) rtcSetNewGeometryBuffer(	geom,
 																RTC_BUFFER_TYPE_INDEX, 0,
 																RTC_FORMAT_UINT3, 3 * sizeof(index_t),
-																mesh->is_scene() ? mesh->n_vertices / 3 : mesh->n_faces
+																mesh->is_scene() ? mesh->n_vertices / 3 : mesh->n_trigs
 																);
 
 
@@ -200,7 +200,7 @@ index_t embree::add_mesh(const che * mesh, const mat4 & model_mat)
 	if(mesh->is_scene())
 	{
 		g_meshes[geom_id]->VT = tri_idxs;
-		g_meshes[geom_id]->n_faces = mesh->n_vertices / 3;
+		g_meshes[geom_id]->n_trigs = mesh->n_vertices / 3;
 		g_meshes[geom_id]->n_half_edges = mesh->n_vertices;
 	}
 

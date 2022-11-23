@@ -195,7 +195,7 @@ void viewer::imgui()
 	{
 		ImGui::Text("%13lu fps", size_t(1.0 / render_time));
 		ImGui::Text("%13lu vertices", mesh->n_vertices);
-		ImGui::Text("%13lu faces", mesh->n_faces);
+		ImGui::Text("%13lu trigs", mesh->n_trigs);
 
 		ImGui::Indent();
 		if(ImGui::Combo("fit screen", (int *) &mesh.opt_fit_screen, "none\0box (2x2x2)\0sphere (97.72%)\0\0"))
