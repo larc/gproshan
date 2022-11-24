@@ -47,8 +47,8 @@ void che_off::read_file(const std::string & file)
 		}
 	}
 
-	std::vector<index_t> faces;
-	faces.reserve(che::mtrig * n_faces);
+	std::vector<index_t> trigs;
+	trigs.reserve(che::mtrig * n_trigs);
 
 	index_t P[32];
 	while(nf--)
@@ -58,27 +58,27 @@ void che_off::read_file(const std::string & file)
 			fscanf(fp, "%u", P + i);
 
 		for(const index_t & v: trig_convex_polygon(P, n))
-			faces.push_back(v);
+			trigs.push_back(v);
 	}
 
 	fclose(fp);
 
 
-	if(faces.size() != che::mtrig * n_faces)
+	if(trigs.size() != che::mtrig * n_trigs)
 	{
 		vertex * tGT = GT; GT = nullptr;
 		vertex * tVN = VN; VN = nullptr;
 		rgb_t * tVC = VC; VC = nullptr;
 
 		free();
-		alloc(nv, faces.size() / che::mtrig);
+		alloc(nv, trigs.size() / che::mtrig);
 
 		GT = tGT;
 		VN = tVN;
 		VC = tVC;
 	}
 
-	memcpy(VT, faces.data(), faces.size() * sizeof(index_t));
+	memcpy(VT, trigs.data(), trigs.size() * sizeof(index_t));
 }
 
 void che_off::write_file(const che * mesh, const std::string & file, const che_off::type & off, const bool & pointcloud)
@@ -89,7 +89,7 @@ void che_off::write_file(const che * mesh, const std::string & file, const che_o
 	assert(fp);
 
 	fprintf(fp, "%s\n", str_off[off]);
-	fprintf(fp, "%lu %lu 0\n", mesh->n_vertices, pointcloud ? 0 : mesh->n_faces);
+	fprintf(fp, "%lu %lu 0\n", mesh->n_vertices, pointcloud ? 0 : mesh->n_trigs);
 
 	for(size_t i = 0; i < mesh->n_vertices; ++i)
 	{

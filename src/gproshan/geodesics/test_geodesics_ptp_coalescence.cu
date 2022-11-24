@@ -23,7 +23,7 @@ std::vector<std::pair<index_t, real_t> > iter_error_parallel_toplesets_propagati
 	// sort data by levels, must be improve the coalescence
 
 	vertex * V = new vertex[mesh->n_vertices];
-	index_t * F = new index_t[mesh->n_faces * che::mtrig];
+	index_t * F = new index_t[mesh->n_trigs * che::mtrig];
 	index_t * inv = new index_t[mesh->n_vertices];
 	real_t * exact_dist_sorted = new real_t[mesh->n_vertices];
 
@@ -39,7 +39,7 @@ std::vector<std::pair<index_t, real_t> > iter_error_parallel_toplesets_propagati
 	for(index_t he = 0; he < mesh->n_half_edges; ++he)
 		F[he] = inv[mesh->halfedge(he)];
 
-	mesh = new che(V, mesh->n_vertices, F, mesh->n_faces);
+	mesh = new che(V, mesh->n_vertices, F, mesh->n_trigs);
 
 	delete [] V;
 	delete [] F;
@@ -105,7 +105,7 @@ double * times_farthest_point_sampling_ptp_coalescence_gpu(che * mesh, std::vect
 	// BEGIN FPS PTP
 
 	vertex * V = new vertex[mesh->n_vertices];
-	index_t * F = new index_t[mesh->n_faces * che::mtrig];
+	index_t * F = new index_t[mesh->n_trigs * che::mtrig];
 	index_t * inv = new index_t[mesh->n_vertices];
 
 
@@ -156,7 +156,7 @@ double * times_farthest_point_sampling_ptp_coalescence_gpu(che * mesh, std::vect
 		for(index_t he = 0; he < mesh->n_half_edges; ++he)
 			F[he] = inv[mesh->halfedge(he)];
 
-		che * tmp_mesh = new che(V, mesh->n_vertices, F, mesh->n_faces);
+		che * tmp_mesh = new che(V, mesh->n_vertices, F, mesh->n_trigs);
 
 		CHE * h_mesh = new CHE(tmp_mesh);
 		CHE * dd_mesh, * d_mesh;

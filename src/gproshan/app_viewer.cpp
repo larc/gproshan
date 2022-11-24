@@ -1,6 +1,7 @@
 #include <gproshan/app_viewer.h>
 
 #include <gproshan/geometry/vec.h>
+#include <gproshan/scenes/scene.h>
 
 #include <random>
 #include <queue>
@@ -15,8 +16,8 @@ namespace gproshan {
 
 app_viewer::~app_viewer()
 {
-	for(index_t i = 0; i < n_meshes; ++i)
-		delete meshes[i];
+	for(auto & m: meshes)
+		delete *m;
 }
 
 che * app_viewer::load_mesh(const std::string & file_path)
@@ -27,7 +28,11 @@ che * app_viewer::load_mesh(const std::string & file_path)
 	std::string extension = file_path.substr(pos + 1);
 
 	if(extension == "off") return new che_off(file_path);
-	if(extension == "obj") return new che_obj(file_path);
+	if(extension == "obj")
+	{
+		return new scene(file_path);
+//		return new che_obj(file_path);
+	}
 	if(extension == "ply") return new che_ply(file_path);
 	if(extension == "ptx") return new che_ptx(file_path);
 	if(extension == "xyz") return new che_xyz(file_path);
@@ -857,7 +862,7 @@ bool app_viewer::process_fill_holes(viewer * p_view)
 	{
 		const std::vector<index_t> & vbounds = mesh->boundary(v);
 		std::vector<vertex> vertices;
-		std::vector<index_t> faces;
+		std::vector<index_t> trigs;
 
 		vertex center;
 		for(const index_t & v: vbounds)
@@ -910,7 +915,7 @@ bool app_viewer::process_fill_holes(viewer * p_view)
 		// vertices.push_back(center);
 
 		che * old = fill_mesh;
-		che * hole = new che(vertices.data(), vertices.size(), faces.data(), faces.size() / 3);
+		che * hole = new che(vertices.data(), vertices.size(), trigs.data(), trigs.size() / 3);
 		fill_mesh = old->merge(hole, vbounds);
 		delete old;
 		delete hole;

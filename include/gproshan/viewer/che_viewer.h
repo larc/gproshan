@@ -24,16 +24,10 @@ namespace gproshan {
 enum render_type: index_t { R_GL, R_EMBREE, R_OPTIX };
 
 
-struct material
-{
-};
-
-
 class che_viewer
 {
 	protected:
 		che * mesh = nullptr;
-		std::vector<material> materials;
 
 		size_t n_instances = 0;
 		bool center_mesh = false;
@@ -47,7 +41,7 @@ class che_viewer
 
 		fit_screen opt_fit_screen = box;
 
-		int vx = 0, vy = 0;							///< viewport positions.
+		int vx = 0, vy = 0;					///< viewport positions.
 		std::vector<index_t> selected;
 		std::vector<vertex> selected_xyz;
 		rt::raytracing * rt_embree	= nullptr;
@@ -68,14 +62,13 @@ class che_viewer
 		bool render_flat		= false;
 
 	public:
-		che_viewer() = default;
+		che_viewer(che * m);
 		virtual ~che_viewer();
 
 		che *& operator -> ();
 		che *const & operator -> () const;
 		operator che *& ();
 
-		void init(che * m, const bool & center = true);
 		void update();
 		void update_model_mat();
 		void update_vbo();
@@ -85,8 +78,8 @@ class che_viewer
 		void update_vbo_heatmap(const real_t * vheatmap = nullptr);
 		void update_instances_positions(const std::vector<vertex> & translations);
 
-		void draw(shader & program);
-		void draw_point_cloud(shader & program);
+		virtual void draw(shader & program);
+		virtual void draw_point_cloud(shader & program);
 		void draw_selected_vertices(che_viewer & sphere, shader & program);
 
 		void select(const ivec2 & pos, const ivec2 & windows_size, const mat4 & inv_proj_view_mat, const vertex & cam_pos);

@@ -32,12 +32,15 @@ class che
 			unsigned char g = 240;
 			unsigned char b = 250;
 
+			rgb_t() = default;
+			rgb_t(const vertex & v);
+			rgb_t(const float & fr, const float & fg, const float & fb);
 			unsigned char & operator [] (const index_t & i);
 			operator vertex () const;
 		};
 
 		const size_t n_vertices		= 0;
-		const size_t n_faces		= 0;
+		const size_t n_trigs		= 0;
 		const size_t n_half_edges	= 0;
 		const size_t n_edges		= 0;
 
@@ -45,7 +48,7 @@ class che
 
 	protected:
 		vertex * GT		= nullptr;	///< geometry table			: v		-> vertex
-		index_t * VT	= nullptr;	///< vertex table (faces)	: he	-> v
+		index_t * VT	= nullptr;	///< vertex table (trigs)	: he	-> v
 		index_t * OT	= nullptr;	///< opposite table			: he	-> he
 		index_t * EVT	= nullptr;	///< extra vertex table		: v		-> he
 		index_t * ET	= nullptr;	///< edge table				: e		-> he
@@ -53,14 +56,14 @@ class che
 
 		vertex * VN		= nullptr;	///< vertex normals			: v		-> normal(v)
 		rgb_t * VC		= nullptr;	///< vertex color			: v		-> color(v)
-		real_t * VHC	= nullptr;	///< vertex color heat map	: v		-> heatmap(v)
+		real_t * VHC	= nullptr;	///< vertex color heatmap	: v		-> heatmap(v)
 
 		bool manifold = true;
 
 	public:
 		che(const che & mesh);
 		che(const size_t & n_v = 0, const size_t & n_f = 0);
-		che(const vertex * vertices, const index_t & n_v, const index_t * faces, const index_t & n_f);
+		che(const vertex * vertices, const index_t & n_v, const index_t * trigs, const index_t & n_f);
 		virtual ~che();
 
 		// vertex access geometry methods to xyz point values, normals, and gradient
@@ -96,7 +99,7 @@ class che
 		void remove_non_manifold_vertices();
 		void set_head_vertices(index_t * head, const size_t & n);
 
-		// half edge access methods triangular faces and navigation
+		// half edge access methods triangular trigs and navigation
 		const index_t & halfedge(const index_t & he) const;
 		const index_t & twin_he(const index_t & he) const;
 		const index_t &	edge_u(const index_t & e) const;
@@ -133,7 +136,8 @@ class che
 		real_t mean_edge() const;
 		real_t area_surface() const;
 		bool is_manifold() const;
-		bool is_pointcloud() const;
+		virtual bool is_scene() const;
+		virtual bool is_pointcloud() const;
 
 		// operation methods
 		void flip(const index_t & e);
@@ -144,7 +148,7 @@ class che
 		real_t mean_curvature(const index_t & v) const;
 
 	protected:
-		void init(const vertex * vertices, const index_t & n_v, const index_t * faces, const index_t & n_f);
+		void init(const vertex * vertices, const index_t & n_v, const index_t * trigs, const index_t & n_f);
 		void init(const std::string & file);
 		void alloc(const size_t & n_v, const size_t & n_f);
 		void free();
@@ -213,7 +217,7 @@ inline index_t prev(const index_t & he)
 struct CHE
 {
 	size_t n_vertices = 0;
-	size_t n_faces = 0;
+	size_t n_trigs = 0;
 	size_t n_half_edges = 0;
 
 	vertex * GT	= nullptr;

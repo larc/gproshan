@@ -16,6 +16,15 @@ size_t & che::rw(const size_t & n)
 }
 
 
+che::rgb_t::rgb_t(const vertex & v): rgb_t(v.x(), v.y(), v.z()) {}
+
+che::rgb_t::rgb_t(const float & fr, const float & fg, const float & fb)
+{
+	r = (unsigned char) (fr * 255);
+	g = (unsigned char) (fg * 255);
+	b = (unsigned char) (fb * 255);
+}
+
 unsigned char & che::rgb_t::operator [] (const index_t & i)
 {
 	return (&r)[i];
@@ -31,7 +40,7 @@ che::che(const che & mesh)
 {
 	filename = mesh.filename;
 
-	alloc(mesh.n_vertices, mesh.n_faces);
+	alloc(mesh.n_vertices, mesh.n_trigs);
 	rw(n_edges)	= mesh.n_edges;
 
 	memcpy(GT, mesh.GT, n_vertices * sizeof(vertex));
@@ -50,9 +59,9 @@ che::che(const size_t & n_v, const size_t & n_f)
 	alloc(n_v, n_f);
 }
 
-che::che(const vertex * vertices, const index_t & n_v, const index_t * faces, const index_t & n_f)
+che::che(const vertex * vertices, const index_t & n_v, const index_t * trigs, const index_t & n_f)
 {
-	init(vertices, n_v, faces, n_f);
+	init(vertices, n_v, trigs, n_f);
 }
 
 che::~che()
@@ -267,7 +276,7 @@ che * che::merge(const che * mesh, const std::vector<index_t> & vcommon)
 	const size_t & n_vcommon = vcommon.size();
 	const size_t & n_vnew = mesh->n_vertices - n_vcommon;
 
-	che * new_mesh = new che(n_vertices + n_vnew, n_faces + mesh->n_faces);
+	che * new_mesh = new che(n_vertices + n_vnew, n_trigs + mesh->n_trigs);
 
 	memcpy(new_mesh->GT, GT, sizeof(vertex) * n_vertices);
 	memcpy(new_mesh->GT + n_vertices, mesh->GT + n_vcommon, sizeof(vertex) * n_vnew);
@@ -312,7 +321,7 @@ void che::update_heatmap(const real_t * hm)
 
 void che::update_normals()
 {
-	if(!n_faces) return;
+	if(!n_trigs) return;
 
 	#pragma omp parallel for
 	for(index_t v = 0; v < n_vertices; ++v)
@@ -339,7 +348,7 @@ void che::multiplicate_vertices()
 	vertex * old_GT = GT;
 	index_t * old_VT = VT;
 	size_t nv = n_vertices;
-	size_t nf = n_faces;
+	size_t nf = n_trigs;
 
 	GT = nullptr;
 	VT = nullptr;
@@ -409,7 +418,7 @@ void che::remove_vertices(const std::vector<index_t> & vertices)
 	/* save in vectors */
 	std::vector<vertex> new_vertices;
 	std::vector<index_t> removed;
-	std::vector<index_t> new_faces; // each 3
+	std::vector<index_t> new_trigs; // each 3
 
 	gproshan_debug(removing vertex);
 	for(index_t v = 0; v < n_vertices; ++v)
@@ -441,15 +450,15 @@ void che::remove_vertices(const std::vector<index_t> & vertices)
 
 	for(index_t he = 0; he < n_half_edges; ++he)
 		if(VT[he] != NIL)
-			new_faces.push_back(VT[he]);
+			new_trigs.push_back(VT[he]);
 		else gproshan_error_var(he);
 
 	gproshan_debug_var(new_vertices.size());
-	gproshan_debug_var(new_faces.size());
+	gproshan_debug_var(new_trigs.size());
 	gproshan_debug(removing vertex);
 	free();
 	gproshan_debug(removing vertex);
-	init(new_vertices.data(), new_vertices.size(), new_faces.data(), new_faces.size() / che::mtrig);
+	init(new_vertices.data(), new_vertices.size(), new_trigs.data(), new_trigs.size() / che::mtrig);
 	gproshan_debug(removing vertex);
 }
 
@@ -468,7 +477,7 @@ void che::remove_non_manifold_vertices()
 	/* save in vectors */
 	std::vector<vertex> new_vertices;
 	std::vector<index_t> removed;
-	std::vector<index_t> new_faces; // each 3
+	std::vector<index_t> new_trigs; // each 3
 
 	gproshan_debug(removing vertex);
 	for(index_t v = 0; v < n_vertices; ++v)
@@ -500,15 +509,15 @@ void che::remove_non_manifold_vertices()
 
 	for(index_t he = 0; he < n_half_edges; ++he)
 		if(VT[he] != NIL)
-			new_faces.push_back(VT[he]);
+			new_trigs.push_back(VT[he]);
 		else gproshan_error_var(he);
 
 	gproshan_debug_var(new_vertices.size());
-	gproshan_debug_var(new_faces.size());
+	gproshan_debug_var(new_trigs.size());
 	gproshan_debug(removing vertex);
 	free();
 	gproshan_debug(removing vertex);
-	init(new_vertices.data(), new_vertices.size(), new_faces.data(), new_faces.size() / che::mtrig);
+	init(new_vertices.data(), new_vertices.size(), new_trigs.data(), new_trigs.size() / che::mtrig);
 	gproshan_debug(removing vertex);
 }
 
@@ -538,7 +547,7 @@ void che::set_head_vertices(index_t * head, const size_t & n)
 }
 
 
-// half edge access methods triangular faces and navigation
+// half edge access methods triangular trigs and navigation
 
 const index_t & che::halfedge(const index_t & he) const
 {
@@ -677,7 +686,7 @@ void che::compute_toplesets(index_t *& toplesets, index_t *& sorted, std::vector
 ///< return a vector of indices of one vertex per boundary
 std::vector<index_t> che::bounds() const
 {
-	if(!n_faces) return {};
+	if(!n_trigs) return {};
 	if(!manifold) return {};
 
 	std::vector<index_t> vbounds;
@@ -753,7 +762,7 @@ const std::string che::filename_size() const
 
 size_t che::genus() const
 {
-	size_t g = n_vertices - n_edges + n_faces;
+	size_t g = n_vertices - n_edges + n_trigs;
 	return (g - 2) / (-2);
 }
 
@@ -786,10 +795,10 @@ real_t che::quality() const
 	real_t q = 0;
 
 	#pragma omp parallel for reduction(+: q)
-	for(index_t t = 0; t < n_faces; ++t)
+	for(index_t t = 0; t < n_trigs; ++t)
 		q += pdetriq(t) > 0.6; // is confederating good triangle
 
-	return q * 100 / n_faces;
+	return q * 100 / n_trigs;
 }
 
 real_t che::mean_edge() const
@@ -808,7 +817,7 @@ real_t che::area_surface() const
 	real_t area = 0;
 
 	#pragma omp parallel for reduction(+: area)
-	for(index_t i = 0; i < n_faces; ++i)
+	for(index_t i = 0; i < n_trigs; ++i)
 		area += area_trig(i);
 
 	return area;
@@ -819,9 +828,14 @@ bool che::is_manifold() const
 	return manifold;
 }
 
+bool che::is_scene() const
+{
+	return false;
+}
+
 bool che::is_pointcloud() const
 {
-	return n_faces == 0;
+	return n_trigs == 0;
 }
 
 
@@ -944,12 +958,12 @@ real_t che::mean_curvature(const index_t & v) const
 
 // protected
 
-void che::init(const vertex * vertices, const index_t & n_v, const index_t * faces, const index_t & n_f)
+void che::init(const vertex * vertices, const index_t & n_v, const index_t * trigs, const index_t & n_f)
 {
 	alloc(n_v, n_f);
 
 	memcpy(GT, vertices, n_vertices * sizeof(vertex));
-	memcpy(VT, faces, n_half_edges * sizeof(index_t));
+	memcpy(VT, trigs, n_half_edges * sizeof(index_t));
 
 	update_evt_ot_et();
 	update_eht();
@@ -967,8 +981,8 @@ void che::init(const std::string & file)
 void che::alloc(const size_t & n_v, const size_t & n_f)
 {
 	rw(n_vertices)		= n_v;
-	rw(n_faces)			= n_f;
-	rw(n_half_edges)	= che::mtrig * n_faces;
+	rw(n_trigs)			= n_f;
+	rw(n_half_edges)	= che::mtrig * n_trigs;
 	rw(n_edges)			= n_half_edges;				// max number of edges
 
 	if(n_vertices)		GT	= new vertex[n_vertices];
@@ -1002,7 +1016,7 @@ void che::read_file(const std::string & ) {}		/* virtual */
 
 void che::update_evt_ot_et()
 {
-	if(!n_faces) return;
+	if(!n_trigs) return;
 
 	memset(EVT, -1, sizeof(index_t) * n_vertices);
 	memset(OT, -1, sizeof(index_t) * n_half_edges);
@@ -1140,7 +1154,7 @@ const index_t & che::star_he::iterator::operator * ()
 CHE::CHE(const che * mesh)
 {
 	n_vertices = mesh->n_vertices;
-	n_faces = mesh->n_faces;
+	n_trigs = mesh->n_trigs;
 	n_half_edges = mesh->n_half_edges;
 
 	GT = mesh->GT;

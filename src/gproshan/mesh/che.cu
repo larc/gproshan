@@ -31,7 +31,7 @@ void cuda_create_CHE(CHE * h_che, CHE *& dd_che, CHE *& d_che, const bool & norm
 {
 	dd_che = new CHE;
 	dd_che->n_vertices = h_che->n_vertices;
-	dd_che->n_faces = h_che->n_faces;
+	dd_che->n_trigs = h_che->n_trigs;
 	dd_che->n_half_edges = h_che->n_half_edges;
 
 	cudaMalloc(&dd_che->GT, sizeof(vertex) * h_che->n_vertices);

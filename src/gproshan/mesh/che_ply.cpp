@@ -91,8 +91,8 @@ void che_ply::read_file(const std::string & file)
 
 	alloc(nv, nf);
 
-	std::vector<index_t> faces;
-	faces.reserve(che::mtrig * n_faces);
+	std::vector<index_t> trigs;
+	trigs.reserve(che::mtrig * n_trigs);
 
 	if(format[0] == 'a')	// ascii
 	{
@@ -110,7 +110,7 @@ void che_ply::read_file(const std::string & file)
 				fscanf(fp, "%u", P + i);
 
 			for(const index_t & v: trig_convex_polygon(P, nv))
-				faces.push_back(v);
+				trigs.push_back(v);
 		}
 	}
 	else // binary_little_endian or binary_big_endian
@@ -198,26 +198,26 @@ void che_ply::read_file(const std::string & file)
 			}
 
 			for(const index_t & v: trig_convex_polygon(P, nv))
-				faces.push_back(v);
+				trigs.push_back(v);
 		}
 	}
 
 	fclose(fp);
 
 
-	if(faces.size() != che::mtrig * n_faces)
+	if(trigs.size() != che::mtrig * n_trigs)
 	{
 		vertex * tGT = GT; GT = nullptr;
 		rgb_t * tVC = VC; VC = nullptr;
 
 		free();
-		alloc(nv, faces.size() / che::mtrig);
+		alloc(nv, trigs.size() / che::mtrig);
 
 		GT = tGT;
 		VC = tVC;
 	}
 
-	memcpy(VT, faces.data(), faces.size() * sizeof(index_t));
+	memcpy(VT, trigs.data(), trigs.size() * sizeof(index_t));
 }
 
 void che_ply::write_file(const che * mesh, const std::string & file, const bool & color)
@@ -240,7 +240,7 @@ void che_ply::write_file(const che * mesh, const std::string & file, const bool 
 		fprintf(fp, "property uchar green\n");
 		fprintf(fp, "property uchar blue\n");
 	}
-	fprintf(fp, "element face %lu\n", mesh->n_faces);
+	fprintf(fp, "element face %lu\n", mesh->n_trigs);
 	fprintf(fp, "property list uchar uint vertex_index\n");
 	fprintf(fp, "end_header\n");
 

@@ -12,6 +12,14 @@
 namespace gproshan {
 
 
+che_viewer::che_viewer(che * m): mesh(m)
+{
+	glGenVertexArrays(1, &vao);
+	glGenBuffers(6, vbo);
+
+	update();
+}
+
 che_viewer::~che_viewer()
 {
 	delete rt_embree;
@@ -34,17 +42,6 @@ che *const & che_viewer::operator -> () const
 che_viewer::operator che *& ()
 {
 	return mesh;
-}
-
-void che_viewer::init(che * m, const bool & center)
-{
-	glGenVertexArrays(1, &vao);
-	glGenBuffers(6, vbo);
-
-	mesh = m;
-	center_mesh = center;
-
-	update();
 }
 
 void che_viewer::update()
@@ -188,13 +185,13 @@ void che_viewer::draw(shader & program)
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[4]);
 
 	if(n_instances) glDrawElementsInstanced(GL_TRIANGLES, mesh->n_half_edges, GL_UNSIGNED_INT, 0, n_instances);
-	else if(materials.size())
+	/*else if(materials.size())
 	{
 		for(auto & m: materials)
 		{
 			glDrawElementsBaseVertex(GL_TRIANGLES, mesh->n_half_edges, GL_UNSIGNED_INT, 0, 0);
 		}
-	}
+	}*/
 	else glDrawElements(GL_TRIANGLES, mesh->n_half_edges, GL_UNSIGNED_INT, 0);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -257,7 +254,7 @@ void che_viewer::log_info()
 
 	gproshan_log_var(mesh->filename);
 	gproshan_log_var(mesh->n_vertices);
-	gproshan_log_var(mesh->n_faces);
+	gproshan_log_var(mesh->n_trigs);
 	gproshan_log_var(mesh->n_half_edges);
 	gproshan_log_var(mesh->n_edges);
 	gproshan_log_var(mesh->area_surface());

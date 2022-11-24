@@ -15,7 +15,7 @@ che_sphere::che_sphere(const real_t & r, const size_t & n)
 	filename = "sphere";
 
 	std::vector<vertex> vertices;
-	std::vector<index_t> faces;
+	std::vector<index_t> trigs;
 
 	const real_t delta = M_PI / n;
 
@@ -34,50 +34,50 @@ che_sphere::che_sphere(const real_t & r, const size_t & n)
 		{
 			v = i * cols + j;
 
-			faces.push_back(v);
-			faces.push_back(v + 1);
-			faces.push_back(v + cols);
+			trigs.push_back(v);
+			trigs.push_back(v + 1);
+			trigs.push_back(v + cols);
 
-			faces.push_back(v + cols);
-			faces.push_back(v + 1);
-			faces.push_back(v + cols + 1);
+			trigs.push_back(v + cols);
+			trigs.push_back(v + 1);
+			trigs.push_back(v + cols + 1);
 		}
 
 		v = i * cols;
-		faces.push_back(vertices.size() - 2);
-		faces.push_back(v);
-		faces.push_back(v + cols);
+		trigs.push_back(vertices.size() - 2);
+		trigs.push_back(v);
+		trigs.push_back(v + cols);
 
 		v = (i + 1) * cols - 1;
-		faces.push_back(vertices.size() - 1);
-		faces.push_back(v + cols);
-		faces.push_back(v);
+		trigs.push_back(vertices.size() - 1);
+		trigs.push_back(v + cols);
+		trigs.push_back(v);
 	}
 
 	for(index_t j = 0; j < cols - 1; ++j)
 	{
 		v = (2 * n - 1) * cols + j;
 
-		faces.push_back(v + 1);
-		faces.push_back(j);
-		faces.push_back(v);
+		trigs.push_back(v + 1);
+		trigs.push_back(j);
+		trigs.push_back(v);
 
-		faces.push_back(j + 1);
-		faces.push_back(j);
-		faces.push_back(v + 1);
+		trigs.push_back(j + 1);
+		trigs.push_back(j);
+		trigs.push_back(v + 1);
 	}
 
 	v = (2 * n - 1) * cols;
-	faces.push_back(vertices.size() - 2);
-	faces.push_back(v);
-	faces.push_back(0);
+	trigs.push_back(vertices.size() - 2);
+	trigs.push_back(v);
+	trigs.push_back(0);
 
 	v = (2 * n) * cols - 1;
-	faces.push_back(vertices.size() - 1);
-	faces.push_back(cols - 1);
-	faces.push_back(v);
+	trigs.push_back(vertices.size() - 1);
+	trigs.push_back(cols - 1);
+	trigs.push_back(v);
 
-	init(vertices.data(), vertices.size(), faces.data(), faces.size() / 3);
+	init(vertices.data(), vertices.size(), trigs.data(), trigs.size() / 3);
 }
 
 
