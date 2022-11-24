@@ -14,12 +14,15 @@ class scene_viewer: public che_viewer
 	private:
 		scene * sc = nullptr;
 		GLuint * gltextures = nullptr;
+		GLuint tex_vbo;
 
 	public:
 		scene_viewer(scene * p_sc);
 		~scene_viewer();
 		void init_texture(const GLuint & gltex, const scene::texture & tex);
 		void draw(shader & program);
+		void gl_uniform_material(shader & program, const scene::material & mat);
+		void update_vbo_texcoords();
 };
 
 

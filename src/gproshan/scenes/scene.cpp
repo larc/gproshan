@@ -48,7 +48,8 @@ bool scene::load_obj(const std::string & file)
 			return false;
 
 	alloc(p.trigs.size(), 0);
-	texcoords = new vec2[n_vertices];
+	if(p.vtexcoords.size())
+		texcoords = new vec2[n_vertices];
 
 	#pragma omp parallel for
 	for(index_t i = 0; i < n_vertices; ++i)
@@ -139,7 +140,7 @@ bool scene::load_mtl(const std::string & file)
 				if(str[0] == '-') continue;		// ignoring map textures with options
 				if(texture_id.find(str) == texture_id.end())
 				{
-					texture_id[str] = textures.size();
+					texture_id[str] = texture_name.size();
 					texture_name.push_back(str);
 				}
 				m = texture_id[str];
@@ -182,14 +183,15 @@ bool scene::load_mtl(const std::string & file)
 
 bool scene::load_texture(const std::string & file)
 {
-	CImg<float> img(file.c_str());
+	CImg<unsigned char> img(file.c_str());
 
 	textures.emplace_back();
 	texture & tex = textures.back();
 	tex.rows = img.height();
 	tex.cols = img.width();
 	tex.data = new vec3[tex.rows * tex.cols];
-	memcpy((float *) tex.data, img.data(), sizeof(vec3) * tex.rows * tex.cols);
+	img.permute_axes("cxyz");
+	memcpy((unsigned char *) tex.data, img.data(), tex.rows * tex.cols);
 
 	return true;
 }

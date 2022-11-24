@@ -1,10 +1,7 @@
 #include colormap.glsl
-#include material.glsl
 
 uniform bool render_lines;
 uniform uint idx_colormap;
-
-uniform material mat;
 
 
 float diffuse(vec3 N, vec3 L)
@@ -31,7 +28,6 @@ float fresnel(vec3 N, vec3 E)
 vec3 lines_colormap(vec3 color, float h)
 {
 	color = idx_colormap > 0 ? colormap(idx_colormap, h) : color;
-	color = mat.Kd;	
 
 	if(render_lines)
 	{
