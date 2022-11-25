@@ -34,10 +34,8 @@ void scene_viewer::init_texture(const GLuint & gltex, const scene::texture & tex
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tex.rows, tex.cols, 0, GL_RGB, GL_UNSIGNED_BYTE, tex.data);
-	//che::rgb_t colores = {255, 255, 0};
-	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGB, GL_UNSIGNED_BYTE, &colores);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tex.cols, tex.rows, 0, GL_RGB, GL_UNSIGNED_BYTE, tex.data);
 	glGenerateMipmap(GL_TEXTURE_2D);
 
 	glBindTexture(GL_TEXTURE_2D, 0);
@@ -89,29 +87,30 @@ void scene_viewer::gl_uniform_material(shader & program, const scene::material &
 	glProgramUniform1f(program, program("mat.d"), mat.d);
 	glProgramUniform1f(program, program("mat.Ns"), mat.Ns);
 	glProgramUniform1f(program, program("mat.Ni"), mat.Ni);
-	glProgramUniform1ui(program, program("mat.illum"), mat.illum);
-	glProgramUniform1ui(program, program("mat.map_Ka"), mat.map_Ka);
-	glProgramUniform1ui(program, program("mat.map_Kd"), mat.map_Kd);
+	glProgramUniform1i(program, program("mat.illum"), mat.illum);
+	glProgramUniform1i(program, program("mat.map_Ka"), mat.map_Ka);
+	glProgramUniform1i(program, program("mat.map_Kd"), mat.map_Kd);
+	glProgramUniform1i(program, program("mat.map_Ks"), mat.map_Ks);
 
-	if(mat.map_Ka != NIL)
+	if(mat.map_Ka > -1)
 	{
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, gltextures[mat.map_Ka]);
-		glProgramUniform1ui(program, program("tex_Ka"), 0);
+		glProgramUniform1i(program, program("tex_Ka"), 0);
 	}
 
-	if(mat.map_Kd != NIL)
+	if(mat.map_Kd > -1)
 	{
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, gltextures[mat.map_Kd]);
-		glProgramUniform1ui(program, program("tex_Kd"), 1);
+		glProgramUniform1i(program, program("tex_Kd"), 1);
 	}
 }
 
 void scene_viewer::update_vbo_texcoords()
 {
 	if(!sc->texcoords) return;
-
+	gproshan_error(texcoords);
 	glBindVertexArray(vao);
 
 	// 6 TEXTURE COORDS

@@ -6,8 +6,9 @@ struct material
 	float d;
 	float Ns;
 	float Ni;
-	uint illum;
-	uint map_Ka;
-	uint map_Kd;
+	int illum;
+	int map_Ka;
+	int map_Kd;
+	int map_Ks;
 };
 

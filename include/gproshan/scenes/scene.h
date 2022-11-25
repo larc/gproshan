@@ -17,7 +17,7 @@ class scene: public che
 	public:
 		struct texture
 		{
-			vec3 * data = nullptr;
+			rgb_t * data = nullptr;
 			size_t rows = 0;
 			size_t cols = 0;
 		};
@@ -30,9 +30,10 @@ class scene: public che
 			real_t d = 1;	// Tr = 0, opposite
 			real_t Ns = 0;
 			real_t Ni = 0;
-			index_t illum = 1;
-			index_t map_Ka = NIL;
-			index_t map_Kd = NIL;
+			int illum = 1;
+			int map_Ka = -1;
+			int map_Kd = -1;
+			int map_Ks = -1;
 		};
 
 		struct object

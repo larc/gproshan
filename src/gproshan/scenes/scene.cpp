@@ -48,17 +48,25 @@ bool scene::load_obj(const std::string & file)
 			return false;
 
 	alloc(p.trigs.size(), 0);
-	if(p.vtexcoords.size())
-		texcoords = new vec2[n_vertices];
 
 	#pragma omp parallel for
 	for(index_t i = 0; i < n_vertices; ++i)
 	{
 		const index_t & v = p.trigs[i].x();
-		const index_t & t = p.trigs[i].y();
 		GT[i] = p.vertices[v];
 		VC[i] = p.vcolors[v];
-		texcoords[i] = t != NIL ? p.vtexcoords[t] : vec2{-1, -1};
+	}
+
+	if(p.vtexcoords.size())
+	{
+		texcoords = new vec2[n_vertices];
+
+		#pragma omp parallel for
+		for(index_t i = 0; i < n_vertices; ++i)
+		{
+			const index_t & t = p.trigs[i].y();
+			texcoords[i] = t != NIL ? p.vtexcoords[t] : vec2{-1, -1};
+		}
 	}
 
 	#pragma omp parallel for
@@ -129,13 +137,16 @@ bool scene::load_mtl(const std::string & file)
 			}
 			case 'i':	// illum
 			{
-				index_t & illum = materials.back().illum;
+				int & illum = materials.back().illum;
 				sscanf(line, "%*s %u", &illum);
 				break;
 			}
 			case 'm':	// map_Ka, map_kd
 			{
-				index_t & m = str[5] == 'a' ? materials.back().map_Ka : materials.back().map_Kd;
+				if(str[4] != 'K') break;
+				int & m = str[5] == 'a' ? materials.back().map_Ka
+						: str[5] == 'd' ? materials.back().map_Kd
+						: materials.back().map_Ks;
 				sscanf(line, "%*s %s", str);
 				if(str[0] == '-') continue;		// ignoring map textures with options
 				if(texture_id.find(str) == texture_id.end())
@@ -171,8 +182,8 @@ bool scene::load_mtl(const std::string & file)
 		gproshan_log_var(m.d);
 		gproshan_log_var(m.Ns);
 		gproshan_log_var(m.illum);
-		if(m.map_Ka != NIL)	gproshan_log_var(texture_name[m.map_Ka]);
-		if(m.map_Kd != NIL)	gproshan_log_var(texture_name[m.map_Kd]);
+		if(m.map_Ka > -1)	gproshan_log_var(texture_name[m.map_Ka]);
+		if(m.map_Kd > -1)	gproshan_log_var(texture_name[m.map_Kd]);
 	}
 
 	gproshan_log_var(materials.size());
@@ -184,14 +195,19 @@ bool scene::load_mtl(const std::string & file)
 bool scene::load_texture(const std::string & file)
 {
 	CImg<unsigned char> img(file.c_str());
+	img.mirror('y');
 
 	textures.emplace_back();
 	texture & tex = textures.back();
 	tex.rows = img.height();
 	tex.cols = img.width();
-	tex.data = new vec3[tex.rows * tex.cols];
+	tex.data = new rgb_t[tex.rows * tex.cols];
+	gproshan_error_var(img.width());
+	gproshan_error_var(img.height());
+	gproshan_error_var(img.depth());
+	gproshan_error_var(img.spectrum());
 	img.permute_axes("cxyz");
-	memcpy((unsigned char *) tex.data, img.data(), tex.rows * tex.cols);
+	memcpy((unsigned char *) tex.data, img.data(), sizeof(rgb_t) * tex.rows * tex.cols);
 
 	return true;
 }
