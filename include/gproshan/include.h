@@ -17,12 +17,12 @@
 namespace gproshan {
 
 
-typedef unsigned int index_t;
+using index_t = unsigned int;
 
 #ifdef GPROSHAN_FLOAT
-	typedef float real_t;
+	using real_t = float;
 #else
-	typedef double real_t;
+	using real_t = double;
 #endif
 
 

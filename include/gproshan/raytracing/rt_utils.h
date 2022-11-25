@@ -40,7 +40,7 @@ struct random
 template <class T>
 struct t_eval_hit
 {
-	unsigned int primID = NIL;
+	index_t primID = NIL;
 	T dist = 0;
 	T u = 0, v = 0;
 	vec<T, 3> position;
@@ -51,7 +51,7 @@ struct t_eval_hit
 	t_eval_hit() {}
 
 	__host__ __device__
-	t_eval_hit(const CHE & mesh, const unsigned int & aprimID, const T & au, const T & av)
+	t_eval_hit(const CHE & mesh, const index_t & aprimID, const T & au, const T & av)
 	{
 		primID = aprimID;
 		u = au;

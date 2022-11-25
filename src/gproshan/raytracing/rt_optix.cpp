@@ -35,7 +35,7 @@ struct __align__(OPTIX_SBT_RECORD_ALIGNMENT) HitgroupRecord
 };
 
 
-void optix_log(unsigned int level, const char * tag, const char * message, void *)
+void optix_log(index_t level, const char * tag, const char * message, void *)
 {
 	fprintf(stderr, "OptiX [%2u][%12s]: %s\n", level, tag, message);
 }

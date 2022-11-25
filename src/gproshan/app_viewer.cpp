@@ -691,9 +691,8 @@ bool app_viewer::process_eigenfuntions(viewer * p_view)
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
-	static unsigned int n_eigs = 20;
-
-	ImGui::InputInt("eigenvectors", (int *) &n_eigs);
+	static size_t n_eigs = 20;
+	ImGui::InputScalar("n_eigs", ImGuiDataType_U64, &n_eigs);
 
 	if(ImGui::Button("Run"))
 	{

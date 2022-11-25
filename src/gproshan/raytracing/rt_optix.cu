@@ -44,7 +44,7 @@ extern "C" __global__ void __closesthit__radiance()
 	float2 bar = optixGetTriangleBarycentrics();
 
 	OptixTraversableHandle gas = optixGetGASTraversableHandle();
-	const unsigned int sbtID = optixGetSbtGASIndex();
+	const index_t sbtID = optixGetSbtGASIndex();
 	const float time = optixGetRayTime();
 
 	vertex data[3];
@@ -61,7 +61,7 @@ extern "C" __global__ void __closesthit__radiance()
 	vertex li = eval_li(hit, optix_params.lights, optix_params.n_lights,
 						[&](const vec3 & position, const vec3 & wi, const float & light_dist) -> bool
 						{
-							unsigned int occluded = 1;
+							uint32_t occluded = 1;
 							optixTrace( optix_params.traversable,
 										* (float3 *) &position,
 										* (float3 *) &wi,
