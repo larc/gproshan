@@ -72,6 +72,8 @@ void scene_viewer::draw(shader & program)
 			glBindTexture(GL_TEXTURE_2D, 0);
 			glActiveTexture(GL_TEXTURE1);
 			glBindTexture(GL_TEXTURE_2D, 0);
+			glActiveTexture(GL_TEXTURE2);
+			glBindTexture(GL_TEXTURE_2D, 0);
 		}
 	}
 	glBindVertexArray(0);
@@ -104,6 +106,13 @@ void scene_viewer::gl_uniform_material(shader & program, const scene::material &
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, gltextures[mat.map_Kd]);
 		glProgramUniform1i(program, program("tex_Kd"), 1);
+	}
+
+	if(mat.map_Ks > -1)
+	{
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, gltextures[mat.map_Ks]);
+		glProgramUniform1i(program, program("tex_Ks"), 2);
 	}
 }
 

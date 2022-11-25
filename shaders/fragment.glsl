@@ -21,6 +21,7 @@ uniform bool render_wireframe;
 
 uniform sampler2D tex_Ka;
 uniform sampler2D tex_Kd;
+uniform sampler2D tex_Ks;
 
 uniform material mat;
 

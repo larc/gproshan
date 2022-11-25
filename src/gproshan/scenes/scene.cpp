@@ -184,6 +184,7 @@ bool scene::load_mtl(const std::string & file)
 		gproshan_log_var(m.illum);
 		if(m.map_Ka > -1)	gproshan_log_var(texture_name[m.map_Ka]);
 		if(m.map_Kd > -1)	gproshan_log_var(texture_name[m.map_Kd]);
+		if(m.map_Ks > -1)	gproshan_log_var(texture_name[m.map_Ks]);
 	}
 
 	gproshan_log_var(materials.size());
@@ -202,10 +203,6 @@ bool scene::load_texture(const std::string & file)
 	tex.rows = img.height();
 	tex.cols = img.width();
 	tex.data = new rgb_t[tex.rows * tex.cols];
-	gproshan_error_var(img.width());
-	gproshan_error_var(img.height());
-	gproshan_error_var(img.depth());
-	gproshan_error_var(img.spectrum());
 	img.permute_axes("cxyz");
 	memcpy((unsigned char *) tex.data, img.data(), sizeof(rgb_t) * tex.rows * tex.cols);
 
