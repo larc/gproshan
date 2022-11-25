@@ -704,7 +704,7 @@ bool app_viewer::process_eigenfuntions(viewer * p_view)
 			n_eigs = eigs_laplacian(mesh, eigval, eigvec, L, A, n_eigs);
 		TOC(view->time)
 
-		sprintf(view->status_message, "computing %u eigs in %.3fs", n_eigs, view->time);
+		sprintf(view->status_message, "computing %lu eigs in %.3fs", n_eigs, view->time);
 
 		for(index_t k = 0; k < n_eigs; ++k)
 		{

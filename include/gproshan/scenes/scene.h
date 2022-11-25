@@ -34,6 +34,7 @@ class scene: public che
 			int map_Ka = -1;
 			int map_Kd = -1;
 			int map_Ks = -1;
+			int map_d = -1;
 		};
 
 		struct object
