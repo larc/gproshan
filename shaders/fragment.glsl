@@ -28,13 +28,19 @@ uniform material mat;
 void main()
 {
 	vec3 color = lines_colormap(gs_mesh_color, gs_color);
+
 	vec3 Ka = mat.Ka;
 	if(mat.map_Ka != -1)
 		Ka *= texture(tex_Ka, gs_texcoord.xy).rgb;
+	
 	vec3 Kd = mat.Kd;
 	if(mat.map_Kd != -1)
-		Kd *= texture(tex_Kd, gs_texcoord.xy).rgb;
-	color = Kd;
+		Kd = texture(tex_Kd, gs_texcoord.xy).rgb;
+	
+	vec3 Ks = mat.Ks;
+	if(mat.map_Ks != -1)
+		Ks *= texture(tex_Ks, gs_texcoord.xy).rgb;
+
 
  	vec3 N = render_flat ? normalize(cross(dFdx(gs_position), dFdy(gs_position))) : normalize(gs_normal);
 
@@ -46,7 +52,8 @@ void main()
 		color = mix(vec3(.2), color, d);
 	}
 
-	color = shading(N, normalize(cam_light - gs_position), normalize(eye - gs_position), color);
+	color = shading(N, normalize(cam_light - gs_position), normalize(eye - gs_position), Kd);
+	//color = Ka + Kd + Ks;
 	frag_color = vec4(color, 1);
 }
 
