@@ -10,5 +10,7 @@ struct material
 	int map_Ka;
 	int map_Kd;
 	int map_Ks;
+	int map_d;
+	int map_bump;
 };
 

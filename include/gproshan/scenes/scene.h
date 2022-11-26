@@ -17,9 +17,10 @@ class scene: public che
 	public:
 		struct texture
 		{
-			rgb_t * data = nullptr;
-			size_t rows = 0;
-			size_t cols = 0;
+			unsigned char * data = nullptr;
+			size_t width = 0;
+			size_t height = 0;
+			size_t spectrum = 0;
 		};
 
 		struct material
@@ -35,6 +36,7 @@ class scene: public che
 			int map_Kd = -1;
 			int map_Ks = -1;
 			int map_d = -1;
+			int map_bump = -1;
 		};
 
 		struct object

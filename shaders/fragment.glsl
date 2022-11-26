@@ -29,7 +29,7 @@ void main()
 {
 	vec3 color = lines_colormap(gs_mesh_color, gs_color);
 
-	vec3 Ka = mat.Ka;
+	vec3 Ka = mat.Ka * color;
 	if(mat.map_Ka != -1)
 		Ka *= texture(tex_Ka, gs_texcoord.xy).rgb;
 

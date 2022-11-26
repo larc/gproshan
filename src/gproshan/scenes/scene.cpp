@@ -143,10 +143,11 @@ bool scene::load_mtl(const std::string & file)
 			}
 			case 'm':	// map_Ka, map_kd
 			{
-				if(str[4] != 'K') break;
-				int & m = str[5] == 'a' ? materials.back().map_Ka
-						: str[5] == 'd' ? materials.back().map_Kd
-						: materials.back().map_Ks;
+				int & m = str[4] == 'K' && str[5] == 'a' ? materials.back().map_Ka
+						: str[4] == 'K' && str[5] == 'd' ? materials.back().map_Kd
+						: str[4] == 'K' && str[5] == 's' ? materials.back().map_Ks
+						: str[4] == 'd' ? materials.back().map_d
+						: materials.back().map_bump;
 				sscanf(line, "%*s %s", str);
 				if(str[0] == '-') continue;		// ignoring map textures with options
 				if(texture_id.find(str) == texture_id.end())
@@ -185,6 +186,8 @@ bool scene::load_mtl(const std::string & file)
 		if(m.map_Ka > -1)	gproshan_log_var(texture_name[m.map_Ka]);
 		if(m.map_Kd > -1)	gproshan_log_var(texture_name[m.map_Kd]);
 		if(m.map_Ks > -1)	gproshan_log_var(texture_name[m.map_Ks]);
+		if(m.map_d > -1)	gproshan_log_var(texture_name[m.map_d]);
+		if(m.map_bump > -1)	gproshan_log_var(texture_name[m.map_bump]);
 	}
 
 	gproshan_log_var(materials.size());
@@ -200,11 +203,12 @@ bool scene::load_texture(const std::string & file)
 
 	textures.emplace_back();
 	texture & tex = textures.back();
-	tex.rows = img.height();
-	tex.cols = img.width();
-	tex.data = new rgb_t[tex.rows * tex.cols];
+	tex.width = img.width();
+	tex.height = img.height();
+	tex.spectrum = img.spectrum();
+	tex.data = new unsigned char[tex.width * tex.height * tex.spectrum];
 	img.permute_axes("cxyz");
-	memcpy((unsigned char *) tex.data, img.data(), sizeof(rgb_t) * tex.rows * tex.cols);
+	memcpy(tex.data, img.data(), tex.width * tex.height * tex.spectrum);
 
 	return true;
 }
