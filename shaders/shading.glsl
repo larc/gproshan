@@ -13,6 +13,9 @@ uniform sampler2D tex_Ks;
 
 uniform material mat;
 
+const float Lp = 10;
+const vec3 La = vec3(0.2, 0.2, 0.2);
+
 
 vec3 lines_colormap(vec3 color, float h)
 {
@@ -20,7 +23,7 @@ vec3 lines_colormap(vec3 color, float h)
 
 	if(render_lines)
 	{
-		h = h * 40;
+		h = 50 * h;
 		h = h - floor(h);
 		h = (1 / (1 + exp(-100 * (h - .55)))) + (1 / (1 + exp(-100 * (-h + .45))));
 		h = 1 - h;
@@ -61,10 +64,8 @@ vec3 shading(vec3 color, vec3 n, vec3 pos, vec2 texcoord)
 	vec3 h = normalize(l + v);
 	float lambertian = max(dot(l, n), 0.0);
 	float specular = pow(max(dot(h, n), 0.0), Ns);
-	float P = 8;
-	vec3 La = vec3(0.2, 0.2, 0.2);
 
-	return Ka * La + (lambertian * Kd + specular * Ks) * P / (r * r);
+	return Ka * La + (lambertian * Kd + specular * Ks) * Lp / (r * r);
 }
 
 
