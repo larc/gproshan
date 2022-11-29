@@ -42,11 +42,11 @@ const std::vector<ivec2> viewer::m_window_split = {	{1, 1},
 const size_t viewer::max_meshes = m_window_split.size() - 1;
 
 const std::vector<std::string> viewer::colormap = { "vertex color",
+													"blue heatmap",
+													"red heatmap",
+													"blue/read heatmap",
+													"set heatmap",
 													"material scene",
-													"blue",
-													"red",
-													"blue/read",
-													"set"
 													};
 
 che_sphere viewer::sphere_data{0.01};
@@ -69,7 +69,7 @@ viewer::viewer(const int & width, const int & height)
 
 	frames = new frame[max_meshes];
 
-	render_params.add_light({-1, 1, -2});
+	render_params.add_light({-1, 1, -4});
 }
 
 viewer::~viewer()
