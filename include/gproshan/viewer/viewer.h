@@ -7,6 +7,7 @@
 #include <gproshan/viewer/frame.h>
 #include <gproshan/viewer/che_viewer.h>
 #include <gproshan/viewer/include_opengl.h>
+#include <gproshan/scenes/scene.h>
 #include <gproshan/raytracing/render_params.h>
 
 #include <cstring>
@@ -72,6 +73,7 @@ class viewer
 		shader shader_normals;
 		shader shader_gradient;
 		shader shader_pointcloud;
+		scene::material mat;
 
 		camera cam;
 		quaternion cam_light;

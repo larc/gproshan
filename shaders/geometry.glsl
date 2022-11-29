@@ -7,11 +7,13 @@ in vec3 vs_position[];
 in vec3 vs_normal[];
 in vec3 vs_mesh_color[];
 in float vs_color[];
+in vec2 vs_texcoord[];
 
 out vec3 gs_position;
 out vec3 gs_normal;
 out vec3 gs_mesh_color;
 out float gs_color;
+out vec2 gs_texcoord;
 
 noperspective out vec3 edge_dist;
 
@@ -33,6 +35,7 @@ void main()
 	gs_normal = vs_normal[0];
 	gs_mesh_color = vs_mesh_color[0];
 	gs_color = vs_color[0];
+	gs_texcoord = vs_texcoord[0];
 	edge_dist = vec3(ha, 0, 0);
 	gl_Position = gl_in[0].gl_Position;
 	EmitVertex();
@@ -41,6 +44,7 @@ void main()
 	gs_normal = vs_normal[1];
 	gs_mesh_color = vs_mesh_color[1];
 	gs_color = vs_color[1];
+	gs_texcoord = vs_texcoord[1];
 	edge_dist = vec3(0, hb, 0);
 	gl_Position = gl_in[1].gl_Position;
 	EmitVertex();
@@ -49,6 +53,7 @@ void main()
 	gs_normal = vs_normal[2];
 	gs_mesh_color = vs_mesh_color[2];
 	gs_color = vs_color[2];
+	gs_texcoord = vs_texcoord[2];
 	edge_dist = vec3(0, 0, hc);
 	gl_Position = gl_in[2].gl_Position;
 	EmitVertex();

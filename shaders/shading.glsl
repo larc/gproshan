@@ -1,29 +1,18 @@
 #include colormap.glsl
+#include material.glsl
 
-uniform bool render_lines;
 uniform uint idx_colormap;
+uniform bool render_lines;
 
+uniform vec3 eye;
+uniform vec3 cam_light;
 
-float diffuse(vec3 N, vec3 L)
-{
-	return max(0, dot(N, L));
-}
+uniform sampler2D tex_Ka;
+uniform sampler2D tex_Kd;
+uniform sampler2D tex_Ks;
 
-float specular(vec3 N, vec3 L, vec3 E)
-{
-	const float shininess = 4;
-	vec3 R = 2 * dot(L, N) * N - L;
+uniform material mat;
 
-	return pow(max(0, dot(R, E)), shininess);
-}
-
-float fresnel(vec3 N, vec3 E)
-{
-	const float sharpness = 10;
-	float NE = max(0, dot(N, E));
-
-	return pow(sqrt(1. - NE * NE ), sharpness);
-}
 
 vec3 lines_colormap(vec3 color, float h)
 {
@@ -41,9 +30,41 @@ vec3 lines_colormap(vec3 color, float h)
 	return color;
 }
 
-vec3 shading(vec3 N, vec3 L, vec3 E, vec3 color)
+vec3 shading(vec3 color, vec3 n, vec3 pos, vec2 texcoord)
 {
-	vec3 one = vec3(1);
-	return diffuse(N, L) * color + 0.1 * specular(N, L, E) * one + 0.25 * fresnel(N, E) * one;
+	vec3 Ka = vec3(0.4);
+	vec3 Kd = color;
+	vec3 Ks = vec3(0.2);
+	float Ns = 4;
+
+	if(idx_colormap == 5)
+	{
+		Ka = mat.Ka;
+		if(mat.map_Ka != -1)
+			Ka *= texture(tex_Ka, texcoord).rgb;
+
+		Kd = mat.Kd;
+		if(mat.map_Kd != -1)
+			Kd *= texture(tex_Kd, texcoord).rgb;
+
+		Ks = mat.Ks;
+		if(mat.map_Ks != -1)
+			Ks *= texture(tex_Ks, texcoord).rgb;
+
+		Ns = mat.Ns;
+	}
+
+	vec3 l = cam_light - pos;
+	float r = length(l);
+	l /= r;
+	vec3 v = normalize(eye - pos);
+	vec3 h = normalize(l + v);
+	float lambertian = max(dot(l, n), 0.0);
+	float specular = pow(max(dot(h, n), 0.0), Ns);
+	float P = 8;
+	vec3 La = vec3(0.2, 0.2, 0.2);
+
+	return Ka * La + (lambertian * Kd + specular * Ks) * P / (r * r);
 }
+
 

@@ -39,7 +39,7 @@ che * scanner_ptx(rt::raytracing * rt, const size_t & n_rows, const size_t & n_c
 		}
 		else
 		{
-			mesh_ptx->rgb(v) = {0, 0, 0};
+			mesh_ptx->rgb(v) = vertex{0, 0, 0};
 		}
 	}
 

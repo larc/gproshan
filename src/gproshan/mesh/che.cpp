@@ -25,6 +25,8 @@ che::rgb_t::rgb_t(const float & fr, const float & fg, const float & fb)
 	b = (unsigned char) (fb * 255);
 }
 
+che::rgb_t::rgb_t(const unsigned char & cr, const unsigned char & cg, const unsigned char & cb): r(cr), g(cg), b(cb) {}
+
 unsigned char & che::rgb_t::operator [] (const index_t & i)
 {
 	return (&r)[i];

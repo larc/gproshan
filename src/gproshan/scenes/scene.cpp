@@ -48,16 +48,25 @@ bool scene::load_obj(const std::string & file)
 			return false;
 
 	alloc(p.trigs.size(), 0);
-	texcoords = new vec2[n_vertices];
 
 	#pragma omp parallel for
 	for(index_t i = 0; i < n_vertices; ++i)
 	{
 		const index_t & v = p.trigs[i].x();
-		const index_t & t = p.trigs[i].y();
 		GT[i] = p.vertices[v];
 		VC[i] = p.vcolors[v];
-		texcoords[i] = t != NIL ? p.vtexcoords[t] : vec2{-1, -1};
+	}
+
+	if(p.vtexcoords.size())
+	{
+		texcoords = new vec2[n_vertices];
+
+		#pragma omp parallel for
+		for(index_t i = 0; i < n_vertices; ++i)
+		{
+			const index_t & t = p.trigs[i].y();
+			texcoords[i] = t != NIL ? p.vtexcoords[t] : vec2{-1, -1};
+		}
 	}
 
 	#pragma omp parallel for
@@ -68,19 +77,10 @@ bool scene::load_obj(const std::string & file)
 		VN[i] = n != NIL ? p.vnormals[n] : normalize((GT[trig + 1] - GT[trig]) * (GT[trig + 2] - GT[trig]));
 	}
 
-	if(p.objects.size())
-	{
-		#pragma omp parallel for
-		for(index_t i = 0; i < p.objects.size() - 1; ++i)
-		{
-			const auto & obj = p.objects[i];
-			const material & m = materials[material_id[obj.first]];
+	for(auto & obj: p.objects)
+		objects.push_back({obj.second, material_id[obj.first]});
 
-			const index_t & end = p.objects[i + 1].second;
-			for(index_t j = obj.second; j < end; ++j)
-				VC[j] = m.Kd;
-		}
-	}
+	gproshan_log_var(objects.size());
 
 	return true;
 }
@@ -131,24 +131,28 @@ bool scene::load_mtl(const std::string & file)
 			}
 			case 'N':	// Ns
 			{
-				real_t & d = materials.back().Ns;
-				sscanf(line, "%*s %f", &d);
+				real_t & N = str[1] == 's' ? materials.back().Ns : materials.back().Ni;
+				sscanf(line, "%*s %f", &N);
 				break;
 			}
 			case 'i':	// illum
 			{
-				index_t & illum = materials.back().illum;
+				int & illum = materials.back().illum;
 				sscanf(line, "%*s %u", &illum);
 				break;
 			}
 			case 'm':	// map_Ka, map_kd
 			{
-				index_t & m = str[5] == 'a' ? materials.back().map_Ka : materials.back().map_Kd;
+				int & m = str[4] == 'K' && str[5] == 'a' ? materials.back().map_Ka
+						: str[4] == 'K' && str[5] == 'd' ? materials.back().map_Kd
+						: str[4] == 'K' && str[5] == 's' ? materials.back().map_Ks
+						: str[4] == 'd' ? materials.back().map_d
+						: materials.back().map_bump;
 				sscanf(line, "%*s %s", str);
 				if(str[0] == '-') continue;		// ignoring map textures with options
 				if(texture_id.find(str) == texture_id.end())
 				{
-					texture_id[str] = textures.size();
+					texture_id[str] = texture_name.size();
 					texture_name.push_back(str);
 				}
 				m = texture_id[str];
@@ -179,8 +183,11 @@ bool scene::load_mtl(const std::string & file)
 		gproshan_log_var(m.d);
 		gproshan_log_var(m.Ns);
 		gproshan_log_var(m.illum);
-		if(m.map_Ka != NIL)	gproshan_log_var(texture_name[m.map_Ka]);
-		if(m.map_Kd != NIL)	gproshan_log_var(texture_name[m.map_Kd]);
+		if(m.map_Ka > -1)	gproshan_log_var(texture_name[m.map_Ka]);
+		if(m.map_Kd > -1)	gproshan_log_var(texture_name[m.map_Kd]);
+		if(m.map_Ks > -1)	gproshan_log_var(texture_name[m.map_Ks]);
+		if(m.map_d > -1)	gproshan_log_var(texture_name[m.map_d]);
+		if(m.map_bump > -1)	gproshan_log_var(texture_name[m.map_bump]);
 	}
 
 	gproshan_log_var(materials.size());
@@ -191,14 +198,17 @@ bool scene::load_mtl(const std::string & file)
 
 bool scene::load_texture(const std::string & file)
 {
-	CImg<float> img(file.c_str());
+	CImg<unsigned char> img(file.c_str());
+	img.mirror('y');
 
 	textures.emplace_back();
 	texture & tex = textures.back();
-	tex.rows = img.height();
-	tex.cols = img.width();
-	tex.data = new vec3[tex.rows * tex.cols];
-	memcpy((float *) tex.data, img.data(), sizeof(vec3) * tex.rows * tex.cols);
+	tex.width = img.width();
+	tex.height = img.height();
+	tex.spectrum = img.spectrum();
+	tex.data = new unsigned char[tex.width * tex.height * tex.spectrum];
+	img.permute_axes("cxyz");
+	memcpy(tex.data, img.data(), tex.width * tex.height * tex.spectrum);
 
 	return true;
 }

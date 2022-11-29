@@ -17,28 +17,32 @@ class scene: public che
 	public:
 		struct texture
 		{
-			vec3 * data = nullptr;
-			size_t rows = 0;
-			size_t cols = 0;
+			unsigned char * data = nullptr;
+			size_t width = 0;
+			size_t height = 0;
+			size_t spectrum = 0;
 		};
 
 		struct material
 		{
-			vec3 Ka = {0.2, 0.2, 0.2};
-			vec3 Kd = {0.8, 0.8, 0.8};
+			vec3 Ka = {0.2f, 0.2f, 0.2f};
+			vec3 Kd = {0.8f, 0.8f, 0.8f};
 			vec3 Ks = {1, 1, 1};
 			real_t d = 1;	// Tr = 0, opposite
 			real_t Ns = 0;
-			index_t illum = 1;
-			index_t map_Ka = NIL;
-			index_t map_Kd = NIL;
+			real_t Ni = 0;
+			int illum = 1;
+			int map_Ka = -1;
+			int map_Kd = -1;
+			int map_Ks = -1;
+			int map_d = -1;
+			int map_bump = -1;
 		};
 
 		struct object
 		{
 			index_t begin = 0;
-			index_t end = 0;
-			index_t idm = NIL;
+			index_t material_id = NIL;
 		};
 
 	public:
@@ -48,6 +52,8 @@ class scene: public che
 
 		std::vector<std::string> texture_name;
 		std::vector<texture> textures;
+
+		std::vector<object> objects;
 
 		vec2 * texcoords = nullptr;
 

@@ -27,12 +27,17 @@ che * app_viewer::load_mesh(const std::string & file_path)
 
 	std::string extension = file_path.substr(pos + 1);
 
-	if(extension == "off") return new che_off(file_path);
 	if(extension == "obj")
 	{
-		return new scene(file_path);
-//		return new che_obj(file_path);
+		scene * sc = new scene(file_path);
+		if(sc->objects.size() == 1)
+		{
+			delete sc;
+			return new che_obj(file_path);
+		}
+		return sc;
 	}
+	if(extension == "off") return new che_off(file_path);
 	if(extension == "ply") return new che_ply(file_path);
 	if(extension == "ptx") return new che_ptx(file_path);
 	if(extension == "xyz") return new che_xyz(file_path);
@@ -691,9 +696,8 @@ bool app_viewer::process_eigenfuntions(viewer * p_view)
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
-	static unsigned int n_eigs = 20;
-
-	ImGui::InputInt("eigenvectors", (int *) &n_eigs);
+	static size_t n_eigs = 20;
+	ImGui::InputScalar("n_eigs", ImGuiDataType_U64, &n_eigs);
 
 	if(ImGui::Button("Run"))
 	{
@@ -705,7 +709,7 @@ bool app_viewer::process_eigenfuntions(viewer * p_view)
 			n_eigs = eigs_laplacian(mesh, eigval, eigvec, L, A, n_eigs);
 		TOC(view->time)
 
-		sprintf(view->status_message, "computing %u eigs in %.3fs", n_eigs, view->time);
+		sprintf(view->status_message, "computing %lu eigs in %.3fs", n_eigs, view->time);
 
 		for(index_t k = 0; k < n_eigs; ++k)
 		{

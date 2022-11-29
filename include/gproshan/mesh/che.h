@@ -35,6 +35,7 @@ class che
 			rgb_t() = default;
 			rgb_t(const vertex & v);
 			rgb_t(const float & fr, const float & fg, const float & fb);
+			rgb_t(const unsigned char & cr, const unsigned char & cg, const unsigned char & cb);
 			unsigned char & operator [] (const index_t & i);
 			operator vertex () const;
 		};
