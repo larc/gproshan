@@ -29,11 +29,11 @@ void main()
 {
 	vec3 color = lines_colormap(gs_mesh_color, gs_color);
 
-	vec3 Ka = mat.Ka * color;
+	vec3 Ka = mat.Ka;
 	if(mat.map_Ka != -1)
 		Ka *= texture(tex_Ka, gs_texcoord.xy).rgb;
 
-	vec3 Kd = mat.Kd;
+	vec3 Kd = color;
 	if(mat.map_Kd != -1)
 		Kd *= texture(tex_Kd, gs_texcoord.xy).rgb;
 

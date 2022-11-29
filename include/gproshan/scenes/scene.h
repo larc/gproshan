@@ -25,8 +25,8 @@ class scene: public che
 
 		struct material
 		{
-			vec3 Ka = {0.2, 0.2, 0.2};
-			vec3 Kd = {0.8, 0.8, 0.8};
+			vec3 Ka = {0.2f, 0.2f, 0.2f};
+			vec3 Kd = {0.8f, 0.8f, 0.8f};
 			vec3 Ks = {1, 1, 1};
 			real_t d = 1;	// Tr = 0, opposite
 			real_t Ns = 0;

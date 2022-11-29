@@ -27,12 +27,17 @@ che * app_viewer::load_mesh(const std::string & file_path)
 
 	std::string extension = file_path.substr(pos + 1);
 
-	if(extension == "off") return new che_off(file_path);
 	if(extension == "obj")
 	{
-		return new scene(file_path);
-//		return new che_obj(file_path);
+		scene * sc = new scene(file_path);
+		if(sc->objects.size() == 1)
+		{
+			delete sc;
+			return new che_obj(file_path);
+		}
+		return sc;
 	}
+	if(extension == "off") return new che_off(file_path);
 	if(extension == "ply") return new che_ply(file_path);
 	if(extension == "ptx") return new che_ptx(file_path);
 	if(extension == "xyz") return new che_xyz(file_path);

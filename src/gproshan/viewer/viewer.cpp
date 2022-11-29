@@ -42,6 +42,7 @@ const std::vector<ivec2> viewer::m_window_split = {	{1, 1},
 const size_t viewer::max_meshes = m_window_split.size() - 1;
 
 const std::vector<std::string> viewer::colormap = { "vertex color",
+													"material scene",
 													"blue",
 													"red",
 													"blue/read",
@@ -195,7 +196,7 @@ void viewer::imgui()
 	{
 		ImGui::Text("%13lu fps", size_t(1.0 / render_time));
 		ImGui::Text("%13lu vertices", mesh->n_vertices);
-		ImGui::Text("%13lu trigs", mesh->n_trigs);
+		ImGui::Text("%13lu trigs", mesh->is_scene() ? mesh->n_vertices / 3 : mesh->n_trigs);
 
 		ImGui::Indent();
 		if(ImGui::Combo("fit screen", (int *) &mesh.opt_fit_screen, "none\0box (2x2x2)\0sphere (97.72%)\0\0"))
