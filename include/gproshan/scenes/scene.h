@@ -56,6 +56,7 @@ class scene: public che
 		std::vector<object> objects;
 
 		vec2 * texcoords = nullptr;
+		bool load_scene = true;
 
 	public:
 		scene(const std::string & file);

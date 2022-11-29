@@ -25,7 +25,7 @@ scene::~scene()
 
 bool scene::is_scene() const
 {
-	return true;
+	return load_scene && objects.size() > 1;
 }
 
 bool scene::is_pointcloud() const
@@ -35,7 +35,7 @@ bool scene::is_pointcloud() const
 
 void scene::read_file(const std::string & file)
 {
-	load_obj(file);
+	load_scene = load_obj(file);
 }
 
 bool scene::load_obj(const std::string & file)
@@ -198,17 +198,25 @@ bool scene::load_mtl(const std::string & file)
 
 bool scene::load_texture(const std::string & file)
 {
-	CImg<unsigned char> img(file.c_str());
-	img.mirror('y');
+	try
+	{
+		CImg<unsigned char> img(file.c_str());
+		img.mirror('y');
 
-	textures.emplace_back();
-	texture & tex = textures.back();
-	tex.width = img.width();
-	tex.height = img.height();
-	tex.spectrum = img.spectrum();
-	tex.data = new unsigned char[tex.width * tex.height * tex.spectrum];
-	img.permute_axes("cxyz");
-	memcpy(tex.data, img.data(), tex.width * tex.height * tex.spectrum);
+		textures.emplace_back();
+		texture & tex = textures.back();
+		tex.width = img.width();
+		tex.height = img.height();
+		tex.spectrum = img.spectrum();
+		tex.data = new unsigned char[tex.width * tex.height * tex.spectrum];
+		img.permute_axes("cxyz");
+		memcpy(tex.data, img.data(), tex.width * tex.height * tex.spectrum);
+	}
+	catch(CImgException & e)
+	{
+		gproshan_error_var(e.what());
+		return false;
+	}
 
 	return true;
 }

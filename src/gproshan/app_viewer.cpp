@@ -30,7 +30,7 @@ che * app_viewer::load_mesh(const std::string & file_path)
 	if(extension == "obj")
 	{
 		scene * sc = new scene(file_path);
-		if(sc->objects.size() == 1)
+		if(!sc->is_scene())
 		{
 			delete sc;
 			return new che_obj(file_path);
