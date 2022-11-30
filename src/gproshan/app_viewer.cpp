@@ -48,11 +48,6 @@ che * app_viewer::load_mesh(const std::string & file_path)
 
 int app_viewer::main(int nargs, const char ** args)
 {
-	//vec3 a = {2, 1, 4};
-	//vec3 b = {3, 5, 7};
-	//gproshan_log_var(a * b);
-	//gproshan_log_var(a * b);
-
 	if(nargs < 2)
 	{
 		printf("%s [mesh_paths.(off,obj,ply)]\n", args[0]);

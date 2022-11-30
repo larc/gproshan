@@ -174,7 +174,10 @@ void relax_ptp_coalescence(CHE * mesh, real_t * new_dist, real_t * old_dist, ind
 			real_t d;
 			cu_for_star(he, mesh, v)
 			{
-				d = cu_update_step(mesh, old_dist, he);
+				d = update_step(mesh, old_dist, {	mesh->VT[cu_next(he)],
+													mesh->VT[cu_prev(he)],
+													mesh->VT[he]
+													});
 				if(d < new_dist[v]) new_dist[v] = d;
 			}
 		}
@@ -197,7 +200,10 @@ void relax_ptp_coalescence(CHE * mesh, real_t * new_dist, real_t * old_dist, ind
 			real_t d;
 			cu_for_star(he, mesh, v)
 			{
-				d = cu_update_step(mesh, old_dist, he);
+				d = update_step(mesh, old_dist, {	mesh->VT[cu_next(he)],
+													mesh->VT[cu_prev(he)],
+													mesh->VT[he]
+													});
 				if(d < new_dist[v])
 				{
 					new_dist[v] = d;

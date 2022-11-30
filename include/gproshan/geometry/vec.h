@@ -141,7 +141,7 @@ class vec
 				res[i] = values[i] * a;
 			return res;
 		}
-/*
+
 		///< element wise product
 		__host__ __device__
 		vec<T, N> operator * (const vec<T, N> & v) const
@@ -151,7 +151,7 @@ class vec
 				res[i] = values[i] * v[i];
 			return res;
 		}
-*/
+
 		///< scalar division
 		__host__ __device__
 		vec<T, N> operator / (const T & a) const
@@ -198,6 +198,15 @@ class vec
 		{
 			for(T & v: values)
 				v *= a;
+			return *this;
+		}
+
+		///< element wise product self assign
+		__host__ __device__
+		const vec<T, N> & operator *= (const vec<T, N> & v)
+		{
+			for(index_t i = 0; i < N; ++i)
+				values[i] *= v[i];
 			return *this;
 		}
 

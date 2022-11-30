@@ -42,6 +42,7 @@ void parallel_toplesets_propagation_coalescence_cpu(const ptp_out_t & ptp_out, c
 
 	index_t * inv = nullptr;
 	mesh = ptp_coalescence(inv, mesh, toplesets);
+	CHE cmesh(mesh);
 
 	// ------------------------------------------------------
 	real_t * pdist[2] = {new real_t[mesh->n_vertices], new real_t[mesh->n_vertices]};
@@ -81,7 +82,10 @@ void parallel_toplesets_propagation_coalescence_cpu(const ptp_out_t & ptp_out, c
 			real_t p;
 			for(const index_t & he: mesh->star(v))
 			{
-				p = update_step(mesh, pdist[d], he);
+				p = update_step(&cmesh, pdist[d], {	mesh->halfedge(next(he)),
+													mesh->halfedge(prev(he)),
+													mesh->halfedge(he)
+													});
 				if(p < pdist[!d][v])
 				{
 					pdist[!d][v] = p;
@@ -120,6 +124,7 @@ void parallel_toplesets_propagation_coalescence_cpu(const ptp_out_t & ptp_out, c
 
 void parallel_toplesets_propagation_cpu(const ptp_out_t & ptp_out, che * mesh, const std::vector<index_t> & sources, const toplesets_t & toplesets)
 {
+	CHE cmesh(mesh);
 	real_t * pdist[2] = {ptp_out.dist, new real_t[mesh->n_vertices]};
 	real_t * error = new real_t[mesh->n_vertices];
 
@@ -158,7 +163,10 @@ void parallel_toplesets_propagation_cpu(const ptp_out_t & ptp_out, che * mesh, c
 			real_t p;
 			for(const index_t & he: mesh->star(v))
 			{
-				p = update_step(mesh, pdist[d], he);
+				p = update_step(&cmesh, pdist[d], {	mesh->halfedge(next(he)),
+													mesh->halfedge(prev(he)),
+													mesh->halfedge(he)
+													});
 				if(p < pdist[!d][v])
 				{
 					pdist[!d][v] = p;
@@ -195,71 +203,6 @@ void parallel_toplesets_propagation_cpu(const ptp_out_t & ptp_out, che * mesh, c
 		delete [] pdist[!d];
 	}
 	else delete [] pdist[d];
-}
-
-real_t update_step(che * mesh, const real_t * dist, const index_t & he)
-{
-	index_t x[3];
-	x[0] = mesh->halfedge(next(he));
-	x[1] = mesh->halfedge(prev(he));
-	x[2] = mesh->halfedge(he);
-
-	vertex X[2];
-	X[0] = mesh->point(x[0]) - mesh->point(x[2]);
-	X[1] = mesh->point(x[1]) - mesh->point(x[2]);
-
-	real_t t[2];
-	t[0] = dist[x[0]];
-	t[1] = dist[x[1]];
-
-	real_t q[2][2];
-	q[0][0] = dot(X[0], X[0]);
-	q[0][1] = dot(X[0], X[1]);
-	q[1][0] = dot(X[1], X[0]);
-	q[1][1] = dot(X[1], X[1]);
-
-	real_t det = q[0][0] * q[1][1] - q[0][1] * q[1][0];
-	real_t Q[2][2];
-	Q[0][0] = q[1][1] / det;
-	Q[0][1] = -q[0][1] / det;
-	Q[1][0] = -q[1][0] / det;
-	Q[1][1] = q[0][0] / det;
-
-	real_t delta = t[0] * (Q[0][0] + Q[1][0]) + t[1] * (Q[0][1] + Q[1][1]);
-	real_t dis = delta * delta -
-					(Q[0][0] + Q[0][1] + Q[1][0] + Q[1][1]) *
-					(t[0] * t[0] * Q[0][0] + t[0] * t[1] * (Q[1][0] + Q[0][1]) + t[1] * t[1] * Q[1][1] - 1);
-
-	real_t p = (delta + sqrt(dis)) / (Q[0][0] + Q[0][1] + Q[1][0] + Q[1][1]);
-
-	real_t tp[2];
-	tp[0] = t[0] - p;
-	tp[1] = t[1] - p;
-
-	vertex n = {
-				tp[0] * (X[0][0]*Q[0][0] + X[1][0]*Q[1][0]) + tp[1] * (X[0][0]*Q[0][1] + X[1][0]*Q[1][1]),
-			 	tp[0] * (X[0][1]*Q[0][0] + X[1][1]*Q[1][0]) + tp[1] * (X[0][1]*Q[0][1] + X[1][1]*Q[1][1]),
-			 	tp[0] * (X[0][2]*Q[0][0] + X[1][2]*Q[1][0]) + tp[1] * (X[0][2]*Q[0][1] + X[1][2]*Q[1][1])
-				};
-
-	real_t cond[2];
-	cond[0] = dot(X[0] , n);
-	cond[1] = dot(X[1] , n);
-
-	real_t c[2];
-	c[0] = cond[0] * Q[0][0] + cond[1] * Q[0][1];
-	c[1] = cond[0] * Q[1][0] + cond[1] * Q[1][1];
-
-	if(t[0] == INFINITY || t[1] == INFINITY || dis < 0 || c[0] >= 0 || c[1] >= 0)
-	{
-		real_t dp[2];
-		dp[0] = dist[x[0]] + norm(X[0]);
-		dp[1] = dist[x[1]] + norm(X[1]);
-
-		p = dp[dp[1] < dp[0]];
-	}
-
-	return p;
 }
 
 void normalize_ptp(real_t * dist, const size_t & n)
