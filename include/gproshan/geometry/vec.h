@@ -132,16 +132,6 @@ class vec
 			return norm();
 		}
 
-		///< dot product
-		__host__ __device__
-		T operator , (const vec<T, N> & v) const
-		{
-			T res = 0;
-			for(index_t i = 0; i < N; ++i)
-				res += values[i] * v[i];
-			return res;
-		}
-
 		///< scalar product
 		__host__ __device__
 		vec<T, N> operator * (const T & a) const
@@ -151,7 +141,17 @@ class vec
 				res[i] = values[i] * a;
 			return res;
 		}
-
+/*
+		///< element wise product
+		__host__ __device__
+		vec<T, N> operator * (const vec<T, N> & v) const
+		{
+			vec<T, N> res;
+			for(index_t i = 0; i < N; ++i)
+				res[i] = values[i] * v[i];
+			return res;
+		}
+*/
 		///< scalar division
 		__host__ __device__
 		vec<T, N> operator / (const T & a) const
@@ -274,7 +274,7 @@ vec<T, N> operator * (const T & a, const vec<T, N> & v)
 ///< cross product
 template<class T>
 __host__ __device__
-vec<T, 3> operator * (const vec<T, 3> & u, const vec<T, 3> & v)
+vec<T, 3> cross(const vec<T, 3> & u, const vec<T, 3> & v)
 {
 	const T & ux = u[0];
 	const T & uy = u[1];
@@ -286,20 +286,15 @@ vec<T, 3> operator * (const vec<T, 3> & u, const vec<T, 3> & v)
 	return {uy * vz - uz * vy, uz * vx - ux * vz, ux * vy - uy * vx};
 }
 
-///< cross product
-template<class T>
-__host__ __device__
-vec<T, 3> cross(const vec<T, 3> & u, const vec<T, 3> & v)
-{
-	return u * v;
-}
-
 ///< dot product
 template<class T, size_t N>
 __host__ __device__
 T dot(const vec<T, N> & u, const vec<T, N> & v)
 {
-	return (u, v);
+	T res = 0;
+	for(index_t i = 0; i < N; ++i)
+		res += u[i] * v[i];
+	return res;
 }
 
 ///< norm

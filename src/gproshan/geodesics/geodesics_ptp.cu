@@ -313,10 +313,10 @@ real_t cu_update_step(CHE * mesh, const real_t * dist, const index_t & he)
 	t[1] = dist[x[1]];
 
 	real_t q[2][2];
-	q[0][0] = (X[0], X[0]);
-	q[0][1] = (X[0], X[1]);
-	q[1][0] = (X[1], X[0]);
-	q[1][1] = (X[1], X[1]);
+	q[0][0] = dot(X[0], X[0]);
+	q[0][1] = dot(X[0], X[1]);
+	q[1][0] = dot(X[1], X[0]);
+	q[1][1] = dot(X[1], X[1]);
 
 	real_t det = q[0][0] * q[1][1] - q[0][1] * q[1][0];
 	real_t Q[2][2];
@@ -348,8 +348,8 @@ real_t cu_update_step(CHE * mesh, const real_t * dist, const index_t & he)
 					};
 
 	real_t cond[2];
-	cond[0] = (X[0] , n);
-	cond[1] = (X[1] , n);
+	cond[0] = dot(X[0], n);
+	cond[1] = dot(X[1], n);
 
 	real_t c[2];
 	c[0] = cond[0] * Q[0][0] + cond[1] * Q[0][1];

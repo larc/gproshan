@@ -95,7 +95,7 @@ void compute_divergence(const che * mesh, const a_mat & u, a_mat & div)
 			const vertex & nhe = mesh->normal_he(he);
 			const vertex & vhe = mesh->vertex_he(prev(he)) - mesh->vertex_he(next(he));
 			const vertex & ghe = mesh->gradient_he(he, u.memptr());
-			sum += (nhe * vhe , -ghe);
+			sum += dot(cross(nhe, vhe), -ghe);
 		}
 	}
 }

@@ -115,7 +115,7 @@ vertex che::normal_he(const index_t & he) const
 	const vertex & b = GT[VT[next(he)]];
 	const vertex & c = GT[VT[prev(he)]];
 
-	return normalize((b - a) * (c - a));
+	return normalize(cross(b - a, c - a));
 }
 
 vertex che::gradient_he(const index_t & he, const real_t * f) const
@@ -130,9 +130,9 @@ vertex che::gradient_he(const index_t & he, const real_t * f) const
 
 	vertex n = normal_he(he);
 
-	vertex pij = n * (xj - xi);
-	vertex pjk = n * (xk - xj);
-	vertex pki = n * (xi - xk);
+	vertex pij = cross(n, xj - xi);
+	vertex pjk = cross(n, xk - xj);
+	vertex pki = cross(n, xi - xk);
 
 	return normalize(f[i] * pjk + f[j] * pki + f[k] * pij);
 }
@@ -906,7 +906,7 @@ real_t che::cotan(const index_t & he) const
 	vertex a = GT[VT[he]] - GT[VT[prev(he)]];
 	vertex b = GT[VT[next(he)]] - GT[VT[prev(he)]];
 
-	return (a, b) / norm(a * b);
+	return dot(a, b) / norm(cross(a, b));
 }
 
 // https://www.mathworks.com/help/pde/ug/pdetriq.html
@@ -930,7 +930,7 @@ real_t che::area_trig(const index_t & t) const
 	vertex a = GT[VT[next(he)]] - GT[VT[he]];
 	vertex b = GT[VT[prev(he)]] - GT[VT[he]];
 
-	return norm(a * b) / 2;
+	return norm(cross(a, b)) / 2;
 }
 
 real_t che::area_vertex(const index_t & v) const
@@ -951,7 +951,7 @@ real_t che::mean_curvature(const index_t & v) const
 	for(const index_t & he: star(v))
 	{
 		a += area_trig(trig(he));
-		h += norm(GT[VT[next(he)]] - GT[v]) * (normal(v), normal_he(he));
+		h += norm(GT[VT[next(he)]] - GT[v]) * dot(normal(v), normal_he(he));
 	}
 
 	return 0.75 * h / a;

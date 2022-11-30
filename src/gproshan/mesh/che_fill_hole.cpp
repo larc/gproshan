@@ -36,7 +36,7 @@ che * mesh_simple_fill_hole(che * mesh, const std::vector<index_t> & border_vert
 		v = mesh->point(b);
 		normal_v = mesh->normal(b);
 		edge_v = mesh->vertex_he(next(mesh->evt(b))) - v;
-		edge_v -= (normal_v, edge_v) * normal_v;
+		edge_v -= dot(normal_v, edge_v) * normal_v;
 
 		E(0, 2) = normal_v.x();
 		E(1, 2) = normal_v.y();

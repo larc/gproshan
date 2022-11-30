@@ -74,7 +74,7 @@ bool scene::load_obj(const std::string & file)
 	{
 		const index_t & trig = 3 * (i / 3);
 		const index_t & n = p.trigs[i].z();
-		VN[i] = n != NIL ? p.vnormals[n] : normalize((GT[trig + 1] - GT[trig]) * (GT[trig + 2] - GT[trig]));
+		VN[i] = n != NIL ? p.vnormals[n] : normalize(cross(GT[trig + 1] - GT[trig], GT[trig + 2] - GT[trig]));
 	}
 
 	for(auto & obj: p.objects)

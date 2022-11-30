@@ -48,6 +48,11 @@ che * app_viewer::load_mesh(const std::string & file_path)
 
 int app_viewer::main(int nargs, const char ** args)
 {
+	//vec3 a = {2, 1, 4};
+	//vec3 b = {3, 5, 7};
+	//gproshan_log_var(a * b);
+	//gproshan_log_var(a * b);
+
 	if(nargs < 2)
 	{
 		printf("%s [mesh_paths.(off,obj,ply)]\n", args[0]);
@@ -245,7 +250,7 @@ bool app_viewer::process_gaussian_curvature(viewer * p_view)
 		{
 			a = mesh->vertex_he(next(he)) - mesh->point(v);
 			b = mesh->vertex_he(prev(he)) - mesh->point(v);
-			g += acos((a,b) / (norm(a) * norm(b)));
+			g += acos(dot(a, b) / (norm(a) * norm(b)));
 		}
 		//gv(v) = (2 * M_PI - g) / mesh->area_vertex(v);
 		gv(v) = mesh->mean_curvature(v);
