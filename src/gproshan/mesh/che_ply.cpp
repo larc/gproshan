@@ -3,7 +3,7 @@
 #include <cstring>
 #include <cstdio>
 #include <cassert>
-#include <map>
+#include <unordered_map>
 
 
 // geometry processing and shape analysis framework
@@ -17,18 +17,18 @@ che_ply::che_ply(const std::string & file)
 
 void che_ply::read_file(const std::string & file)
 {
-	std::map<std::string, size_t> bytes = {
-									{"char", 1},
-									{"uchar", 1},
-									{"short", 2},
-									{"ushort", 2},
-									{"int", 4},
-									{"uint", 4},
-									{"float", 4},
-									{"float32", 4},
-									{"float64", 8},
-									{"double", 8}
-								};
+	std::unordered_map<std::string, size_t> bytes = {
+														{"char", 1},
+														{"uchar", 1},
+														{"short", 2},
+														{"ushort", 2},
+														{"int", 4},
+														{"uint", 4},
+														{"float", 4},
+														{"float32", 4},
+														{"float64", 8},
+														{"double", 8}
+													};
 
 	FILE * fp = fopen(file.c_str(), "rb");
 	assert(fp);
@@ -97,9 +97,12 @@ void che_ply::read_file(const std::string & file)
 	if(format[0] == 'a')	// ascii
 	{
 		float x, y, z;
+		unsigned char r, g, b;
 		for(index_t v = 0; v < n_vertices; ++v)
 		{
-			fscanf(fp, "%f %f %f", &x, &y, &z);
+			fgets(line, sizeof(line), fp);
+			if(sscanf(line, "%f %f %f %hhu %hhu %hhu", &x, &y, &z, &r, &g, &b) > 5)
+				VC[v] = {r, g, b};
 			GT[v] = {x, y, z};
 		}
 
