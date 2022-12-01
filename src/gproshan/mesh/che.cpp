@@ -112,8 +112,8 @@ vertex che::normal_trig(const index_t & f) const
 vertex che::normal_he(const index_t & he) const
 {
 	const vertex & a = GT[VT[he]];
-	const vertex & b = GT[VT[next(he)]];
-	const vertex & c = GT[VT[prev(he)]];
+	const vertex & b = GT[VT[he_next(he)]];
+	const vertex & c = GT[VT[he_prev(he)]];
 
 	return normalize(cross(b - a, c - a));
 }
@@ -121,8 +121,8 @@ vertex che::normal_he(const index_t & he) const
 vertex che::gradient_he(const index_t & he, const real_t * f) const
 {
 	index_t i = VT[he];
-	index_t j = VT[next(he)];
-	index_t k = VT[prev(he)];
+	index_t j = VT[he_next(he)];
+	index_t k = VT[he_prev(he)];
 
 	vertex xi = GT[i];
 	vertex xj = GT[j];
@@ -144,7 +144,7 @@ vertex che::gradient(const index_t & v, const real_t * f)
 
 	for(const index_t & he: star(v))
 	{
-		area = area_trig(trig(he));
+		area = area_trig(he_trig(he));
 		area_star += area;
 		g += area * gradient_he(he, f);
 	}
@@ -332,7 +332,7 @@ void che::update_normals()
 
 		n = 0;
 		for(const index_t & he: star(v))
-			n += area_trig(trig(he)) * normal_he(he);
+			n += area_trig(he_trig(he)) * normal_he(he);
 
 		n /= norm(n);
 	}
@@ -406,12 +406,12 @@ void che::remove_vertices(const std::vector<index_t> & vertices)
 		for(const index_t & he: star(v))
 		{
 			VT[he] = NIL;
-			VT[prev(he)] = NIL;
-			VT[next(he)] = NIL;
+			VT[he_prev(he)] = NIL;
+			VT[he_next(he)] = NIL;
 
 			gproshan_debug_var(he);
-			gproshan_debug_var(next(he));
-			gproshan_debug_var(prev(he));
+			gproshan_debug_var(he_next(he));
+			gproshan_debug_var(he_prev(he));
 		}
 
 		gproshan_debug_var(EVT[v]);
@@ -572,7 +572,7 @@ const index_t & che::edge_u(const index_t & e) const
 const index_t & che::edge_v(const index_t & e) const
 {
 	assert(e < n_edges);
-	return VT[next(ET[e])];
+	return VT[he_next(ET[e])];
 }
 
 const index_t & che::edge_he_0(const index_t & e) const
@@ -602,7 +602,7 @@ const vertex & che::vertex_edge_u(const index_t & e) const
 const vertex & che::vertex_edge_v(const index_t & e) const
 {
 	assert(e < n_edges);
-	return GT[VT[next(ET[e])]];
+	return GT[VT[he_next(ET[e])]];
 }
 
 const index_t & che::evt(const index_t & v) const
@@ -626,10 +626,10 @@ std::vector<index_t> che::link(const index_t & v) const
 	std::vector<index_t> vlink;
 
 	if(is_vertex_bound(v))
-		vlink.push_back(VT[next(EVT[v])]);
+		vlink.push_back(VT[he_next(EVT[v])]);
 
 	for(const index_t & he: star(v))
-		vlink.push_back(VT[prev(he)]);
+		vlink.push_back(VT[he_prev(he)]);
 
 	return vlink;
 }
@@ -720,7 +720,7 @@ std::vector<index_t> che::boundary(const index_t & v) const
 	do
 	{
 		vbound.push_back(VT[he]);
-		he = EVT[VT[next(he)]];
+		he = EVT[VT[he_next(he)]];
 	}
 	while(he != NIL && he != he_end);
 
@@ -809,7 +809,7 @@ real_t che::mean_edge() const
 
 	#pragma omp parallel for reduction(+: m)
 	for(index_t e = 0; e < n_edges; ++e)
-		m += norm(GT[VT[ET[e]]] - GT[VT[next(ET[e])]]);
+		m += norm(GT[VT[ET[e]]] - GT[VT[he_next(ET[e])]]);
 
 	return m / n_edges;
 }
@@ -853,58 +853,58 @@ void che::flip(const index_t & e)
 
 	index_t va = VT[ha];
 	index_t vb = VT[hb];
-	index_t vc = VT[prev(ha)];
-	index_t vd = VT[prev(hb)];
+	index_t vc = VT[he_prev(ha)];
+	index_t vd = VT[he_prev(hb)];
 
-	index_t et_pa = EHT[prev(ha)];
-	index_t et_na = EHT[next(ha)];
-	index_t et_pb = EHT[prev(hb)];
-	index_t et_nb = EHT[next(hb)];
+	index_t et_pa = EHT[he_prev(ha)];
+	index_t et_na = EHT[he_next(ha)];
+	index_t et_pb = EHT[he_prev(hb)];
+	index_t et_nb = EHT[he_next(hb)];
 
-	index_t ot_pa = OT[prev(ha)];
-	index_t ot_na = OT[next(ha)];
-	index_t ot_pb = OT[prev(hb)];
-	index_t ot_nb = OT[next(hb)];
+	index_t ot_pa = OT[he_prev(ha)];
+	index_t ot_na = OT[he_next(ha)];
+	index_t ot_pb = OT[he_prev(hb)];
+	index_t ot_nb = OT[he_next(hb)];
 
-	VT[prev(ha)] = vb;
+	VT[he_prev(ha)] = vb;
 	VT[ha] = vc;
-	VT[next(ha)] = vd;
-	VT[prev(hb)] = va;
+	VT[he_next(ha)] = vd;
+	VT[he_prev(hb)] = va;
 	VT[hb] = vd;
-	VT[next(hb)] = vc;
+	VT[he_next(hb)] = vc;
 
-	if(ot_pa != NIL) OT[ot_pa] = next(hb);
-	if(ot_na != NIL) OT[ot_na] = prev(ha);
-	if(ot_pb != NIL) OT[ot_pb] = next(ha);
-	if(ot_nb != NIL) OT[ot_nb] = prev(hb);
+	if(ot_pa != NIL) OT[ot_pa] = he_next(hb);
+	if(ot_na != NIL) OT[ot_na] = he_prev(ha);
+	if(ot_pb != NIL) OT[ot_pb] = he_next(ha);
+	if(ot_nb != NIL) OT[ot_nb] = he_prev(hb);
 
-	OT[prev(ha)] = ot_na;
-	OT[next(ha)] = ot_pb;
-	OT[prev(hb)] = ot_nb;
-	OT[next(hb)] = ot_pa;
+	OT[he_prev(ha)] = ot_na;
+	OT[he_next(ha)] = ot_pb;
+	OT[he_prev(hb)] = ot_nb;
+	OT[he_next(hb)] = ot_pa;
 
-	ET[et_pa] = prev(ha);
-	ET[et_na] = next(ha);
-	ET[et_pb] = prev(hb);
-	ET[et_nb] = next(hb);
+	ET[et_pa] = he_prev(ha);
+	ET[et_na] = he_next(ha);
+	ET[et_pb] = he_prev(hb);
+	ET[et_nb] = he_next(hb);
 
-	EHT[prev(ha)] = EHT[OT[prev(ha)]] = et_pa;
-	EHT[next(ha)] = EHT[OT[next(ha)]] = et_na;
-	EHT[prev(hb)] = EHT[OT[prev(hb)]] = et_pb;
-	EHT[next(hb)] = EHT[OT[next(hb)]] = et_nb;
+	EHT[he_prev(ha)] = EHT[OT[he_prev(ha)]] = et_pa;
+	EHT[he_next(ha)] = EHT[OT[he_next(ha)]] = et_na;
+	EHT[he_prev(hb)] = EHT[OT[he_prev(hb)]] = et_pb;
+	EHT[he_next(hb)] = EHT[OT[he_next(hb)]] = et_nb;
 
-	if(EVT[va] == next(hb) || EVT[va] == ha) EVT[va] = prev(hb);
-	if(EVT[vb] == next(ha) || EVT[vb] == hb) EVT[vb] = prev(ha);
-	if(EVT[vc] == prev(ha)) EVT[vc] = next(hb);
-	if(EVT[vd] == prev(hb)) EVT[vd] = next(ha);
+	if(EVT[va] == he_next(hb) || EVT[va] == ha) EVT[va] = he_prev(hb);
+	if(EVT[vb] == he_next(ha) || EVT[vb] == hb) EVT[vb] = he_prev(ha);
+	if(EVT[vc] == he_prev(ha)) EVT[vc] = he_next(hb);
+	if(EVT[vd] == he_prev(hb)) EVT[vd] = he_next(ha);
 }
 
 real_t che::cotan(const index_t & he) const
 {
 	if(he == NIL) return 0;
 
-	vertex a = GT[VT[he]] - GT[VT[prev(he)]];
-	vertex b = GT[VT[next(he)]] - GT[VT[prev(he)]];
+	vertex a = GT[VT[he]] - GT[VT[he_prev(he)]];
+	vertex b = GT[VT[he_next(he)]] - GT[VT[he_prev(he)]];
 
 	return dot(a, b) / norm(cross(a, b));
 }
@@ -917,9 +917,9 @@ real_t che::pdetriq(const index_t & t) const
 {
 	index_t he = t * che::mtrig;
 	real_t h[3] = {
-					norm(GT[VT[next(he)]] - GT[VT[he]]),
-					norm(GT[VT[prev(he)]] - GT[VT[next(he)]]),
-					norm(GT[VT[he]] - GT[VT[prev(he)]])
+					norm(GT[VT[he_next(he)]] - GT[VT[he]]),
+					norm(GT[VT[he_prev(he)]] - GT[VT[he_next(he)]]),
+					norm(GT[VT[he]] - GT[VT[he_prev(he)]])
 					};
 	return (4 * sqrt(3) * area_trig(t)) / (h[0] * h[0] + h[1] * h[1] + h[2] * h[2]);
 }
@@ -927,8 +927,8 @@ real_t che::pdetriq(const index_t & t) const
 real_t che::area_trig(const index_t & t) const
 {
 	index_t he = t * che::mtrig;
-	vertex a = GT[VT[next(he)]] - GT[VT[he]];
-	vertex b = GT[VT[prev(he)]] - GT[VT[he]];
+	vertex a = GT[VT[he_next(he)]] - GT[VT[he]];
+	vertex b = GT[VT[he_prev(he)]] - GT[VT[he]];
 
 	return norm(cross(a, b)) / 2;
 }
@@ -937,7 +937,7 @@ real_t che::area_vertex(const index_t & v) const
 {
 	real_t area_star = 0;
 	for(const index_t & he: star(v))
-		area_star += area_trig(trig(he));
+		area_star += area_trig(he_trig(he));
 
 	return area_star / 3;
 }
@@ -950,8 +950,8 @@ real_t che::mean_curvature(const index_t & v) const
 
 	for(const index_t & he: star(v))
 	{
-		a += area_trig(trig(he));
-		h += norm(GT[VT[next(he)]] - GT[v]) * dot(normal(v), normal_he(he));
+		a += area_trig(he_trig(he));
+		h += norm(GT[VT[he_next(he)]] - GT[v]) * dot(normal(v), normal_he(he));
 	}
 
 	return 0.75 * h / a;
@@ -1042,7 +1042,7 @@ void che::update_evt_ot_et()
 	for(index_t ohe, he = 0; he < n_half_edges; ++he)
 	{
 		const index_t & u = VT[he];
-		const index_t & v = VT[next(he)];
+		const index_t & v = VT[he_next(he)];
 
 		EVT[u] = he;
 
@@ -1052,7 +1052,7 @@ void che::update_evt_ot_et()
 			for(index_t j = 0; j < vnhe[v]; ++j)
 			{
 				index_t & h = vhe[v][j];
-				if(VT[next(h)] == u)
+				if(VT[he_next(h)] == u)
 				{
 					ohe = h;
 					break;
@@ -1138,7 +1138,7 @@ che::star_he::iterator::iterator(const che * p_mesh, const index_t & p_he, const
 
 che::star_he::iterator & che::star_he::iterator::operator ++ ()
 {
-	he = mesh->OT[prev(he)];
+	he = mesh->OT[he_prev(he)];
 	he = he != he_end ? he : NIL;
 	return *this;
 }

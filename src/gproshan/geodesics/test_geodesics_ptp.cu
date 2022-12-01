@@ -187,7 +187,7 @@ std::vector<std::pair<index_t, real_t> > iter_error_run_ptp_gpu(CHE * d_mesh, co
 		end = limits[j];
 		n_cond = limits[i + 1] - start;
 
-		relax_ptp <<< NB(end - start), NT >>> (d_mesh, d_dist[!d], d_dist[d], d_sorted, end, start);
+		relax_ptp <<< NB(end - start), NT >>> (d_mesh, d_dist[!d], d_dist[d], nullptr, nullptr, start, end, d_sorted);
 
 		// begin calculating iteration error
 		cudaMemcpy(h_dist, d_dist[!d], sizeof(real_t) * n_vertices, cudaMemcpyDeviceToHost);

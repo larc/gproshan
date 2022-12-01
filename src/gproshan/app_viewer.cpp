@@ -243,8 +243,8 @@ bool app_viewer::process_gaussian_curvature(viewer * p_view)
 		g = 0;
 		for(const index_t & he: mesh->star(v))
 		{
-			a = mesh->vertex_he(next(he)) - mesh->point(v);
-			b = mesh->vertex_he(prev(he)) - mesh->point(v);
+			a = mesh->vertex_he(he_next(he)) - mesh->point(v);
+			b = mesh->vertex_he(he_prev(he)) - mesh->point(v);
 			g += acos(dot(a, b) / (norm(a) * norm(b)));
 		}
 		//gv(v) = (2 * M_PI - g) / mesh->area_vertex(v);

@@ -53,7 +53,7 @@ void key_components::compute_kcs(che * mesh, const std::vector<index_t> & kps)
 	radio *= fm.radio();
 	for(index_t i = 0; i < n_vertices && fm[fm(i)] <= radio; ++i)
 		for(const index_t & he: mesh->star(fm(i)))
-			join(fm(i), mesh->halfedge(next(he)));
+			join(fm(i), mesh->halfedge(he_next(he)));
 
 	for(index_t i = 0; i < n_vertices; ++i)
 		if(comp[i] == i && comp_size[i] > 1)

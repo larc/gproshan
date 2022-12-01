@@ -209,10 +209,8 @@ index_t run_ptp_gpu(CHE * d_mesh, const index_t & n_vertices, real_t * h_dist, r
 		end = limits[j];
 		n_cond = limits[i + 1] - start;
 
-		if(h_clusters)
-			relax_ptp <<< NB(end - start), NT >>> (d_mesh, d_dist[!d], d_dist[d], d_clusters[!d], d_clusters[d], d_sorted, end, start);
-		else
-			relax_ptp <<< NB(end - start), NT >>> (d_mesh, d_dist[!d], d_dist[d], d_sorted, end, start);
+		h_clusters ? relax_ptp <<< NB(end - start), NT >>> (d_mesh, d_dist[!d], d_dist[d], d_clusters[!d], d_clusters[d], start, end, d_sorted)
+					: relax_ptp <<< NB(end - start), NT >>> (d_mesh, d_dist[!d], d_dist[d], nullptr, nullptr, start, end, d_sorted);
 
 		cudaDeviceSynchronize();
 
@@ -229,60 +227,14 @@ index_t run_ptp_gpu(CHE * d_mesh, const index_t & n_vertices, real_t * h_dist, r
 	return d;
 }
 
+
 __global__
-void relax_ptp(CHE * mesh, real_t * new_dist, real_t * old_dist, index_t * sorted, index_t end, index_t start)
+void relax_ptp(const CHE * mesh, real_t * new_dist, real_t * old_dist, index_t * new_clusters, index_t * old_clusters, const index_t start, const index_t end, const index_t * sorted)
 {
 	index_t v = blockDim.x * blockIdx.x + threadIdx.x + start;
 
 	if(v < end)
-	{
-		v = sorted[v];
-		if(v < mesh->n_vertices)
-		{
-			new_dist[v] = old_dist[v];
-
-			real_t d;
-			cu_for_star(he, mesh, v)
-			{
-				d = update_step(mesh, old_dist, {	mesh->VT[cu_next(he)],
-													mesh->VT[cu_prev(he)],
-													mesh->VT[he]
-													});
-				if(d < new_dist[v]) new_dist[v] = d;
-			}
-		}
-	}
-}
-
-
-__global__
-void relax_ptp(CHE * mesh, real_t * new_dist, real_t * old_dist, index_t * new_clusters, index_t * old_clusters, index_t * sorted, index_t end, index_t start)
-{
-	index_t v = blockDim.x * blockIdx.x + threadIdx.x + start;
-
-	if(v < end)
-	{
-		v = sorted[v];
-		if(v < mesh->n_vertices)
-		{
-			new_dist[v] = old_dist[v];
-			new_clusters[v] = old_clusters[v];
-
-			real_t d;
-			cu_for_star(he, mesh, v)
-			{
-				d = update_step(mesh, old_dist, {	mesh->VT[cu_next(he)],
-													mesh->VT[cu_prev(he)],
-													mesh->VT[he]
-													});
-				if(d < new_dist[v])
-				{
-					new_dist[v] = d;
-					new_clusters[v] = old_dist[mesh->VT[cu_prev(he)]] < old_dist[mesh->VT[cu_next(he)]] ? old_clusters[mesh->VT[cu_prev(he)]] : old_clusters[mesh->VT[cu_next(he)]];
-				}
-			}
-		}
-	}
+		relax_ptp(mesh, new_dist, old_dist, new_clusters, old_clusters, sorted ? sorted[v] : v);
 }
 
 __global__

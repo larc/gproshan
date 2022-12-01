@@ -9,6 +9,12 @@
 #include <string>
 
 
+#define he_trig(he) ((he) / 3)
+#define he_next(he) (3 * he_trig(he) + ((he) + 1) % 3)
+#define he_prev(he) (3 * he_trig(he) + ((he) + 2) % 3)
+#define for_star(he, mesh, v) for(index_t stop = mesh->EVT[v], he = mesh->EVT[v]; he != NIL; he = (he = mesh->OT[he_prev(he)]) != stop ? he : NIL)
+
+
 // geometry processing and shape analysis framework
 namespace gproshan {
 
@@ -191,27 +197,6 @@ class che::star_he::iterator
 		bool operator != (const iterator & it) const;
 		const index_t & operator * ();
 };
-
-
-// che halfedge functions
-
-inline index_t trig(const index_t & he)
-{
-	if(he == NIL) return NIL;
-	return he / che::mtrig;
-}
-
-inline index_t next(const index_t & he)
-{
-	if(he == NIL) return NIL;
-	return che::mtrig * trig(he) + (he + 1) % che::mtrig;
-}
-
-inline index_t prev(const index_t & he)
-{
-	if(he == NIL) return NIL;
-	return che::mtrig * trig(he) + (he + che::mtrig - 1) % che::mtrig;
-}
 
 
 // simple che data structure

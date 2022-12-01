@@ -93,8 +93,8 @@ bool patch::add_vertex_by_trigs(vertex & n, std::vector<vertex> & N, double thr_
 
 	for(const index_t & he: mesh->star(v))
 	{
-		a = mesh->halfedge(next(he)); //index of the next vertex index_t
-		b = mesh->halfedge(prev(he));
+		a = mesh->halfedge(he_next(he)); //index of the next vertex index_t
+		b = mesh->halfedge(he_prev(he));
 		va = mesh->point(a);
 		vb = mesh->point(b);
 		vv = mesh->point(v);
@@ -411,8 +411,8 @@ void patch::add_extra_xyz_disjoint(che * mesh, std::vector<vpatches_t> & vpatche
 		for(const index_t & he: mesh->star(min_v))
 		{
 			//discard triangles outside the patch
-			vpatches_t & ma = vpatches[mesh->halfedge(next(he))];
-			vpatches_t & mb = vpatches[mesh->halfedge(prev(he))];
+			vpatches_t & ma = vpatches[mesh->halfedge(he_next(he))];
+			vpatches_t & mb = vpatches[mesh->halfedge(he_prev(he))];
 
 			if(ma.find(p) != ma.end() && mb.find(p) != mb.end())
 			{
@@ -632,8 +632,8 @@ void patch::normal_fit_directions(che * mesh, const index_t & v)
 
 
 	vertex nz = mesh->normal(v);
-	vertex nx = mesh->vertex_he(next(mesh->evt(v)));
-//	GT[VT[next(EVT[v]]]
+	vertex nx = mesh->vertex_he(he_next(mesh->evt(v)));
+//	GT[VT[he_next(EVT[v]]]
 	vertex c = mesh->point(v);
 	vertex ny;
 	nx = nx - c ;

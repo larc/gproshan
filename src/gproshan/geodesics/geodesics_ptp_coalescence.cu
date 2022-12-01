@@ -139,10 +139,8 @@ index_t run_ptp_coalescence_gpu(CHE * d_mesh, const index_t & n_vertices, real_t
 		end = inv.limits[j];
 		n_cond = inv.limits[i + 1] - start;
 
-		if(h_clusters)
-			relax_ptp_coalescence <<< NB(end - start), NT >>> (d_mesh, d_dist[!d], d_dist[d], d_clusters[!d], d_clusters[d], end, start);
-		else
-			relax_ptp_coalescence <<< NB(end - start), NT >>> (d_mesh, d_dist[!d], d_dist[d], end, start);
+		h_clusters ? relax_ptp <<< NB(end - start), NT >>> (d_mesh, d_dist[!d], d_dist[d], d_clusters[!d], d_clusters[d], start, end)
+					: relax_ptp <<< NB(end - start), NT >>> (d_mesh, d_dist[!d], d_dist[d], nullptr, nullptr, start, end);
 
 		cudaDeviceSynchronize();
 
@@ -158,133 +156,6 @@ index_t run_ptp_coalescence_gpu(CHE * d_mesh, const index_t & n_vertices, real_t
 	}
 
 	return d;
-}
-
-__global__
-void relax_ptp_coalescence(CHE * mesh, real_t * new_dist, real_t * old_dist, index_t end, index_t start)
-{
-	index_t v = blockDim.x * blockIdx.x + threadIdx.x + start;
-
-	if(v < end)
-	{
-		if(v < mesh->n_vertices)
-		{
-			new_dist[v] = old_dist[v];
-
-			real_t d;
-			cu_for_star(he, mesh, v)
-			{
-				d = update_step(mesh, old_dist, {	mesh->VT[cu_next(he)],
-													mesh->VT[cu_prev(he)],
-													mesh->VT[he]
-													});
-				if(d < new_dist[v]) new_dist[v] = d;
-			}
-		}
-	}
-}
-
-
-__global__
-void relax_ptp_coalescence(CHE * mesh, real_t * new_dist, real_t * old_dist, index_t * new_clusters, index_t * old_clusters, index_t end, index_t start)
-{
-	index_t v = blockDim.x * blockIdx.x + threadIdx.x + start;
-
-	if(v < end)
-	{
-		if(v < mesh->n_vertices)
-		{
-			new_dist[v] = old_dist[v];
-			new_clusters[v] = old_clusters[v];
-
-			real_t d;
-			cu_for_star(he, mesh, v)
-			{
-				d = update_step(mesh, old_dist, {	mesh->VT[cu_next(he)],
-													mesh->VT[cu_prev(he)],
-													mesh->VT[he]
-													});
-				if(d < new_dist[v])
-				{
-					new_dist[v] = d;
-					new_clusters[v] = old_dist[mesh->VT[cu_prev(he)]] < old_dist[mesh->VT[cu_next(he)]] ? old_clusters[mesh->VT[cu_prev(he)]] : old_clusters[mesh->VT[cu_next(he)]];
-				}
-			}
-		}
-	}
-}
-
-__forceinline__ __device__
-real_t cu_update_step(CHE * mesh, const real_t * dist, const index_t & he)
-{
-	index_t x[3];
-	x[0] = mesh->VT[cu_next(he)];
-	x[1] = mesh->VT[cu_prev(he)];
-	x[2] = mesh->VT[he];
-
-	vertex X[2];
-	X[0] = mesh->GT[x[0]] - mesh->GT[x[2]];
-	X[1] = mesh->GT[x[1]] - mesh->GT[x[2]];
-
-	real_t t[2];
-	t[0] = dist[x[0]];
-	t[1] = dist[x[1]];
-
-	real_t q[2][2];
-	q[0][0] = dot(X[0], X[0]);
-	q[0][1] = dot(X[0], X[1]);
-	q[1][0] = dot(X[1], X[0]);
-	q[1][1] = dot(X[1], X[1]);
-
-	real_t det = q[0][0] * q[1][1] - q[0][1] * q[1][0];
-	real_t Q[2][2];
-	Q[0][0] = q[1][1] / det;
-	Q[0][1] = -q[0][1] / det;
-	Q[1][0] = -q[1][0] / det;
-	Q[1][1] = q[0][0] / det;
-
-	real_t delta = t[0] * (Q[0][0] + Q[1][0]) + t[1] * (Q[0][1] + Q[1][1]);
-	real_t dis = delta * delta - (Q[0][0] + Q[0][1] + Q[1][0] + Q[1][1]) * (t[0]*t[0]*Q[0][0] + t[0]*t[1]*(Q[1][0] + Q[0][1]) + t[1]*t[1]*Q[1][1] - 1);
-
-	real_t p;
-
-	if(dis >= 0)
-	{
-		#ifdef GPROSHAN_FLOAT
-			p = delta + sqrtf(dis);
-		#else
-			p = delta + sqrt(dis);
-		#endif
-		p /= Q[0][0] + Q[0][1] + Q[1][0] + Q[1][1];
-	}
-
-	real_t tp[2];
-	tp[0] = t[0] - p;
-	tp[1] = t[1] - p;
-
-	vertex n = {	tp[0] * (X[0][0]*Q[0][0] + X[1][0]*Q[1][0]) + tp[1] * (X[0][0]*Q[0][1] + X[1][0]*Q[1][1]),
-					tp[0] * (X[0][1]*Q[0][0] + X[1][1]*Q[1][0]) + tp[1] * (X[0][1]*Q[0][1] + X[1][1]*Q[1][1]),
-					tp[0] * (X[0][2]*Q[0][0] + X[1][2]*Q[1][0]) + tp[1] * (X[0][2]*Q[0][1] + X[1][2]*Q[1][1])
-					};
-
-	real_t cond[2];
-	cond[0] = dot(X[0] , n);
-	cond[1] = dot(X[1] , n);
-
-	real_t c[2];
-	c[0] = cond[0] * Q[0][0] + cond[1] * Q[0][1];
-	c[1] = cond[0] * Q[1][0] + cond[1] * Q[1][1];
-
-	if(t[0] == INFINITY || t[1] == INFINITY || dis < 0 || c[0] >= 0 || c[1] >= 0)
-	{
-		real_t dp[2];
-		dp[0] = dist[x[0]] + norm(X[0]);
-		dp[1] = dist[x[1]] + norm(X[1]);
-
-		p = dp[dp[1] < dp[0]];
-	}
-
-	return p;
 }
 
 

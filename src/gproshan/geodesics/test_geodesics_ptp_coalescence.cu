@@ -238,7 +238,7 @@ std::vector<std::pair<index_t, real_t> > iter_error_run_ptp_coalescence_gpu(CHE 
 		end = limits[j];
 		n_cond = limits[i + 1] - start;
 
-		relax_ptp_coalescence <<< NB(end - start), NT >>> (d_mesh, d_dist[!d], d_dist[d], end, start);
+		relax_ptp <<< NB(end - start), NT >>> (d_mesh, d_dist[!d], d_dist[d], nullptr, nullptr, start, end);
 		// print band info
 		os << n_iter << " " << i << " " << j << " " << end - start << std::endl;
 

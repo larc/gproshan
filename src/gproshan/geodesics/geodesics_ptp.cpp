@@ -30,7 +30,7 @@ che * ptp_coalescence(index_t * & inv, const che * mesh, const toplesets_t & top
 	}
 
 	for(index_t he = 0; he < mesh->n_half_edges; ++he)
-		if(inv[mesh->halfedge(he)] != NIL && inv[mesh->halfedge(prev(he))] != NIL && inv[mesh->halfedge(next(he))] != NIL)
+		if(inv[mesh->halfedge(he)] != NIL && inv[mesh->halfedge(he_prev(he))] != NIL && inv[mesh->halfedge(he_next(he))] != NIL)
 			F.push_back(inv[mesh->halfedge(he)]);
 
 	return new che(V.data(), toplesets.limits.back(), F.data(), F.size() / che::mtrig);
@@ -82,8 +82,8 @@ void parallel_toplesets_propagation_coalescence_cpu(const ptp_out_t & ptp_out, c
 			real_t p;
 			for(const index_t & he: mesh->star(v))
 			{
-				p = update_step(&cmesh, pdist[d], {	mesh->halfedge(next(he)),
-													mesh->halfedge(prev(he)),
+				p = update_step(&cmesh, pdist[d], {	mesh->halfedge(he_next(he)),
+													mesh->halfedge(he_prev(he)),
 													mesh->halfedge(he)
 													});
 				if(p < pdist[!d][v])
@@ -91,7 +91,7 @@ void parallel_toplesets_propagation_coalescence_cpu(const ptp_out_t & ptp_out, c
 					pdist[!d][v] = p;
 
 					if(ptp_out.clusters)
-						ptp_out.clusters[v] = ptp_out.clusters[mesh->halfedge(prev(he))] != NIL ? ptp_out.clusters[mesh->halfedge(prev(he))] : ptp_out.clusters[mesh->halfedge(next(he))];
+						ptp_out.clusters[v] = ptp_out.clusters[mesh->halfedge(he_prev(he))] != NIL ? ptp_out.clusters[mesh->halfedge(he_prev(he))] : ptp_out.clusters[mesh->halfedge(he_next(he))];
 				}
 			}
 		}
@@ -163,8 +163,8 @@ void parallel_toplesets_propagation_cpu(const ptp_out_t & ptp_out, che * mesh, c
 			real_t p;
 			for(const index_t & he: mesh->star(v))
 			{
-				p = update_step(&cmesh, pdist[d], {	mesh->halfedge(next(he)),
-													mesh->halfedge(prev(he)),
+				p = update_step(&cmesh, pdist[d], {	mesh->halfedge(he_next(he)),
+													mesh->halfedge(he_prev(he)),
 													mesh->halfedge(he)
 													});
 				if(p < pdist[!d][v])
@@ -172,7 +172,7 @@ void parallel_toplesets_propagation_cpu(const ptp_out_t & ptp_out, che * mesh, c
 					pdist[!d][v] = p;
 
 					if(ptp_out.clusters)
-						ptp_out.clusters[v] = ptp_out.clusters[mesh->halfedge(prev(he))] != NIL ? ptp_out.clusters[mesh->halfedge(prev(he))] : ptp_out.clusters[mesh->halfedge(next(he))];
+						ptp_out.clusters[v] = ptp_out.clusters[mesh->halfedge(he_prev(he))] != NIL ? ptp_out.clusters[mesh->halfedge(he_prev(he))] : ptp_out.clusters[mesh->halfedge(he_next(he))];
 				}
 			}
 		}

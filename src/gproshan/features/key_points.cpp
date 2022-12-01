@@ -46,7 +46,7 @@ void key_points::compute_kps_areas(che * mesh, const real_t & percent)
 				kps.push_back(v);
 				is_kp[v] = true;
 			}
-			he = next(he);
+			he = he_next(he);
 		}
 	}
 

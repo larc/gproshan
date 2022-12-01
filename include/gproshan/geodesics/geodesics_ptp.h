@@ -91,6 +91,28 @@ real_t update_step(const CHE * mesh, const T * dist, const uvec3 & x)
 	return p;
 }
 
+template<class T>
+__host__ __device__
+void relax_ptp(const CHE * mesh, T * new_dist, T * old_dist, index_t * new_clusters, index_t * old_clusters, const index_t v)
+{
+	real_t & ndv = new_dist[v] = old_dist[v];
+
+	real_t d;
+	for_star(he, mesh, v)
+	{
+		const uvec3 i = {mesh->VT[he_next(he)], mesh->VT[he_prev(he)], mesh->VT[he]};
+
+		d = update_step(mesh, old_dist, i);
+
+		if(d < ndv)
+		{
+			ndv = d;
+			if(new_clusters)
+				new_clusters[v] = old_dist[i.y()] < old_dist[i.x()] ? old_clusters[i.y()] : old_clusters[i.x()];
+		}
+	}
+}
+
 
 } // namespace gproshan
 

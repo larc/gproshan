@@ -101,7 +101,7 @@ void che_ptx::read_file(const std::string & file)
 		VT[he++] = j;
 		VT[he++] = k;
 
-		if(pdetriq(trig(he - 1)) < 0.1)
+		if(pdetriq(he_trig(he - 1)) < 0.1)
 			he -= 3;
 	};
 
