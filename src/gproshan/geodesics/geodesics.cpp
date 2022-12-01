@@ -41,7 +41,6 @@ geodesics::~geodesics()
 
 const real_t & geodesics::operator[](const index_t & i) const
 {
-
 	assert(i < n_vertices);
 	return dist[i];
 }
@@ -229,9 +228,9 @@ void geodesics::run_parallel_toplesets_propagation_gpu(che * mesh, const std::ve
 	mesh->compute_toplesets(toplesets, sorted_index, limits, sources);
 
 	double time_ptp;
-	if(sources.size() > 1)
-		time_ptp = parallel_toplesets_propagation_gpu({dist, clusters}, mesh, sources, {limits, sorted_index});
-	else
+	//if(sources.size() > 1)
+	//	time_ptp = parallel_toplesets_propagation_gpu({dist, clusters}, mesh, sources, {limits, sorted_index});
+	//else
 		time_ptp = parallel_toplesets_propagation_coalescence_gpu({dist, clusters}, mesh, sources, {limits, sorted_index});
 
 	gproshan_log_var(time_ptp);

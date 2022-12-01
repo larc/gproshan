@@ -76,25 +76,7 @@ void parallel_toplesets_propagation_coalescence_cpu(const ptp_out_t & ptp_out, c
 
 		#pragma omp parallel for
 		for(index_t v = start; v < end; ++v)
-		{
-			pdist[!d][v] = pdist[d][v];
-
-			real_t p;
-			for(const index_t & he: mesh->star(v))
-			{
-				p = update_step(&cmesh, pdist[d], {	mesh->halfedge(he_next(he)),
-													mesh->halfedge(he_prev(he)),
-													mesh->halfedge(he)
-													});
-				if(p < pdist[!d][v])
-				{
-					pdist[!d][v] = p;
-
-					if(ptp_out.clusters)
-						ptp_out.clusters[v] = ptp_out.clusters[mesh->halfedge(he_prev(he))] != NIL ? ptp_out.clusters[mesh->halfedge(he_prev(he))] : ptp_out.clusters[mesh->halfedge(he_next(he))];
-				}
-			}
-		}
+			relax_ptp(&cmesh, pdist[!d], pdist[d], ptp_out.clusters, ptp_out.clusters, v);
 
 		#pragma omp parallel for
 		for(index_t v = start; v < start + n_cond; ++v)
@@ -156,26 +138,7 @@ void parallel_toplesets_propagation_cpu(const ptp_out_t & ptp_out, che * mesh, c
 
 		#pragma omp parallel for
 		for(index_t vi = start; vi < end; ++vi)
-		{
-			const index_t & v = toplesets.index[vi];
-			pdist[!d][v] = pdist[d][v];
-
-			real_t p;
-			for(const index_t & he: mesh->star(v))
-			{
-				p = update_step(&cmesh, pdist[d], {	mesh->halfedge(he_next(he)),
-													mesh->halfedge(he_prev(he)),
-													mesh->halfedge(he)
-													});
-				if(p < pdist[!d][v])
-				{
-					pdist[!d][v] = p;
-
-					if(ptp_out.clusters)
-						ptp_out.clusters[v] = ptp_out.clusters[mesh->halfedge(he_prev(he))] != NIL ? ptp_out.clusters[mesh->halfedge(he_prev(he))] : ptp_out.clusters[mesh->halfedge(he_next(he))];
-				}
-			}
-		}
+			relax_ptp(&cmesh, pdist[!d], pdist[d], ptp_out.clusters, ptp_out.clusters, toplesets.index[vi]);
 
 		#pragma omp parallel for
 		for(index_t vi = start; vi < start + n_cond; ++vi)

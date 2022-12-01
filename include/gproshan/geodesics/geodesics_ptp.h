@@ -44,6 +44,9 @@ real_t farthest_point_sampling_ptp_gpu(che * mesh, std::vector<index_t> & sample
 void normalize_ptp(real_t * dist, const size_t & n);
 
 template<class T>
+#ifdef __CUDACC__
+__forceinline__
+#endif
 __host__ __device__
 real_t update_step(const CHE * mesh, const T * dist, const uvec3 & x)
 {
@@ -72,7 +75,11 @@ real_t update_step(const CHE * mesh, const T * dist, const uvec3 & x)
 								(Q[0][0] + Q[0][1] + Q[1][0] + Q[1][1]) *
 								(t[0] * t[0] * Q[0][0] + t[0] * t[1] * (Q[1][0] + Q[0][1]) + t[1] * t[1] * Q[1][1] - 1);
 
+#ifdef GPROSHAN_FLOAT
+	T p = (delta + sqrtf(dis)) / (Q[0][0] + Q[0][1] + Q[1][0] + Q[1][1]);
+#else
 	T p = (delta + sqrt(dis)) / (Q[0][0] + Q[0][1] + Q[1][0] + Q[1][1]);
+#endif
 
 	const vec<T, 2> & tp = t - p;
 	const vec<T, 3> & n = {	tp[0] * (X[0][0]*Q[0][0] + X[1][0]*Q[1][0]) + tp[1] * (X[0][0]*Q[0][1] + X[1][0]*Q[1][1]),
@@ -92,6 +99,9 @@ real_t update_step(const CHE * mesh, const T * dist, const uvec3 & x)
 }
 
 template<class T>
+#ifdef __CUDACC__
+__forceinline__
+#endif
 __host__ __device__
 void relax_ptp(const CHE * mesh, T * new_dist, T * old_dist, index_t * new_clusters, index_t * old_clusters, const index_t v)
 {

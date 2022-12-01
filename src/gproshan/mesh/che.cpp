@@ -651,9 +651,7 @@ void che::compute_toplesets(index_t *& toplesets, index_t *& sorted, std::vector
 	for(const index_t & s: sources)
 	{
 		sorted[p++] = s;
-
-		if(toplesets[s] == NIL)
-			toplesets[s] = level;
+		toplesets[s] = level;
 	}
 
 	limits.push_back(0);
@@ -664,7 +662,6 @@ void che::compute_toplesets(index_t *& toplesets, index_t *& sorted, std::vector
 		if(toplesets[v] > level)
 		{
 			if(++level > k) break;
-
 			limits.push_back(i);
 		}
 
