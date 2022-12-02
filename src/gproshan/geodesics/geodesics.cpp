@@ -199,7 +199,7 @@ void geodesics::run_parallel_toplesets_propagation_cpu(che * mesh, const std::ve
 	double time_ptp;
 
 	TIC(time_ptp)
-		parallel_toplesets_propagation_coalescence_cpu({dist, clusters}, mesh, sources, {limits, sorted_index});
+		parallel_toplesets_propagation_cpu({dist, clusters}, mesh, sources, {limits, sorted_index}, sources.size() == 1);
 	TOC(time_ptp)
 
 	gproshan_log_var(time_ptp);

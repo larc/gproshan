@@ -11,51 +11,64 @@ namespace gproshan {
 
 ptp_out_t::ptp_out_t(real_t *const & d, index_t *const & c): dist(d), clusters(c) {}
 
-che * ptp_coalescence(index_t * & inv, const che * mesh, const toplesets_t & toplesets)
+
+void parallel_toplesets_propagation_cpu(const ptp_out_t & ptp_out, che * mesh, const std::vector<index_t> & sources, const toplesets_t & toplesets, const bool & coalescence, const bool & set_inf)
 {
-	// sort data by levels, must be improve the coalescence
-
-	std::vector<vertex> V(toplesets.limits.back());
-	std::vector<index_t> F;
-	F.reserve(mesh->n_half_edges);
-
-	inv = !inv ? new index_t[mesh->n_vertices] : inv;
-	memset(inv, -1, sizeof(index_t) * mesh->n_vertices);
-
-	#pragma omp parallel for
-	for(index_t i = 0; i < toplesets.limits.back(); ++i)
-	{
-		V[i] = mesh->point(toplesets.index[i]);
-		inv[toplesets.index[i]] = i;
-	}
-
-	for(index_t he = 0; he < mesh->n_half_edges; ++he)
-		if(inv[mesh->halfedge(he)] != NIL && inv[mesh->halfedge(he_prev(he))] != NIL && inv[mesh->halfedge(he_next(he))] != NIL)
-			F.push_back(inv[mesh->halfedge(he)]);
-
-	return new che(V.data(), toplesets.limits.back(), F.data(), F.size() / che::mtrig);
-}
-
-void parallel_toplesets_propagation_coalescence_cpu(const ptp_out_t & ptp_out, che * mesh, const std::vector<index_t> & sources, const toplesets_t & toplesets)
-{
-	const size_t n_vertices = mesh->n_vertices;
+	CHE h_mesh(mesh);
+	const size_t & n_vertices = h_mesh.n_vertices;
 
 	index_t * inv = nullptr;
-	mesh = ptp_coalescence(inv, mesh, toplesets);
-	CHE cmesh(mesh);
+	if(coalescence)
+	{
+		inv = new index_t[n_vertices];
+		h_mesh.GT = new vertex[n_vertices];
+		h_mesh.EVT = new index_t[n_vertices];
+		h_mesh.VT = new index_t[h_mesh.n_half_edges];
 
-	// ------------------------------------------------------
-	real_t * pdist[2] = {new real_t[mesh->n_vertices], new real_t[mesh->n_vertices]};
-	real_t * error = new real_t[mesh->n_vertices];
+		#pragma omp parallel for
+		for(index_t i = 0; i < toplesets.limits.back(); ++i)
+		{
+			h_mesh.GT[i] = mesh->point(toplesets.index[i]);
+			inv[toplesets.index[i]] = i;
+		}
 
-	#pragma omp parallel for
-	for(index_t v = 0; v < mesh->n_vertices; ++v)
-		pdist[0][v] = pdist[1][v] = INFINITY;
+		#pragma omp parallel for
+		for(index_t he = 0; he < mesh->n_half_edges; ++he)
+		{
+			const index_t & v = mesh->halfedge(he);
+			if(v != NIL)
+			{
+				h_mesh.VT[he] = inv[v];
+				if(mesh->evt(v) == he)
+					h_mesh.EVT[inv[v]] = he;
+			}
+		}
+	}
+
+	real_t * error = new real_t[n_vertices];
+	real_t * dist[2] = {	coalescence ? new real_t[n_vertices] : ptp_out.dist,
+							new real_t[n_vertices]
+							};
+	index_t * clusters[2] = {	coalescence && ptp_out.clusters ? new index_t[n_vertices] : ptp_out.clusters,
+								ptp_out.clusters ? new index_t[n_vertices] : nullptr
+								};
+
+	if(set_inf)
+	{
+		#pragma omp parallel for
+		for(index_t v = 0; v < n_vertices; ++v)
+			dist[0][v] = dist[1][v] = INFINITY;
+	}
 
 	for(index_t i = 0; i < sources.size(); ++i)
 	{
-		pdist[0][inv[sources[i]]] = pdist[1][inv[sources[i]]] = 0;
-		if(ptp_out.clusters) ptp_out.clusters[inv[sources[i]]] = i + 1;
+		const index_t & s = sources[i];
+		const index_t & v = inv ? inv[s] : s;
+
+		dist[0][v] = dist[1][v] = 0;
+
+		if(ptp_out.clusters)
+			clusters[0][inv[s]] = clusters[0][inv[s]] = i + 1;
 	}
 
 	index_t d = 0;
@@ -76,11 +89,11 @@ void parallel_toplesets_propagation_coalescence_cpu(const ptp_out_t & ptp_out, c
 
 		#pragma omp parallel for
 		for(index_t v = start; v < end; ++v)
-			relax_ptp(&cmesh, pdist[!d], pdist[d], ptp_out.clusters, ptp_out.clusters, v);
+			relax_ptp(&h_mesh, dist[!d], dist[d], clusters[!d], clusters[d], inv ? inv[v] : v);
 
 		#pragma omp parallel for
 		for(index_t v = start; v < start + n_cond; ++v)
-			error[v] = abs(pdist[!d][v] - pdist[d][v]) / pdist[d][v];
+			error[v] = abs(dist[!d][v] - dist[d][v]) / dist[d][v];
 
 		count = 0;
 		#pragma omp parallel for reduction(+: count)
@@ -95,77 +108,21 @@ void parallel_toplesets_propagation_coalescence_cpu(const ptp_out_t & ptp_out, c
 
 	#pragma omp parallel for
 	for(index_t v = 0; v < n_vertices; ++v)
-		ptp_out.dist[v] = inv[v] != NIL ? pdist[!d][inv[v]] : INFINITY;
+		dist[!d][v] = dist[d][v];
+
+	if(inv)
+	{
+		#pragma omp parallel for
+		for(index_t v = 0; v < n_vertices; ++v)
+			dist[!d][v] = dist[d][inv[v]];
+	}
 
 	delete [] error;
-	delete [] pdist[0];
-	delete [] pdist[1];
+	delete [] dist[0];
+	delete [] dist[1];
+	delete [] clusters[0];
+	delete [] clusters[1];
 	delete [] inv;
-	delete mesh;
-}
-
-void parallel_toplesets_propagation_cpu(const ptp_out_t & ptp_out, che * mesh, const std::vector<index_t> & sources, const toplesets_t & toplesets)
-{
-	CHE cmesh(mesh);
-	real_t * pdist[2] = {ptp_out.dist, new real_t[mesh->n_vertices]};
-	real_t * error = new real_t[mesh->n_vertices];
-
-	#pragma omp parallel for
-	for(index_t v = 0; v < mesh->n_vertices; ++v)
-		pdist[0][v] = pdist[1][v] = INFINITY;
-
-	for(index_t i = 0; i < sources.size(); ++i)
-	{
-		pdist[0][sources[i]] = pdist[1][sources[i]] = 0;
-		if(ptp_out.clusters) ptp_out.clusters[sources[i]] = i + 1;
-	}
-
-	index_t d = 0;
-	index_t start, end, n_cond, count;
-	index_t i = 1, j = 2;
-
-	// maximum number of iterations
-	index_t iter = 0;
-	index_t max_iter = toplesets.limits.size() << 1;
-
-	while(i < j && iter++ < max_iter)
-	{
-		if(i < (j >> 1)) i = (j >> 1); // K/2 limit band size
-
-		start = toplesets.limits[i];
-		end = toplesets.limits[j];
-		n_cond = toplesets.limits[i + 1] - start;
-
-		#pragma omp parallel for
-		for(index_t vi = start; vi < end; ++vi)
-			relax_ptp(&cmesh, pdist[!d], pdist[d], ptp_out.clusters, ptp_out.clusters, toplesets.index[vi]);
-
-		#pragma omp parallel for
-		for(index_t vi = start; vi < start + n_cond; ++vi)
-		{
-			const index_t & v = toplesets.index[vi];
-			error[vi] = abs(pdist[!d][v] - pdist[d][v]) / pdist[d][v];
-		}
-
-		count = 0;
-		#pragma omp parallel for reduction(+: count)
-		for(index_t vi = start; vi < start + n_cond; ++vi)
-			count += error[vi] < PTP_TOL;
-
-		if(n_cond == count) ++i;
-		if(j < toplesets.limits.size() - 1) ++j;
-
-		d = !d;
-	}
-
-	delete [] error;
-
-	if(ptp_out.dist != pdist[!d])
-	{
-		memcpy(ptp_out.dist, pdist[!d], mesh->n_vertices * sizeof(real_t));
-		delete [] pdist[!d];
-	}
-	else delete [] pdist[d];
 }
 
 void normalize_ptp(real_t * dist, const size_t & n)
