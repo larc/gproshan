@@ -68,7 +68,7 @@ void parallel_toplesets_propagation_cpu(const ptp_out_t & ptp_out, che * mesh, c
 		dist[0][v] = dist[1][v] = 0;
 
 		if(ptp_out.clusters)
-			clusters[0][inv[s]] = clusters[0][inv[s]] = i + 1;
+			clusters[0][v] = clusters[1][v] = i + 1;
 	}
 
 	index_t d = 0;
@@ -89,7 +89,7 @@ void parallel_toplesets_propagation_cpu(const ptp_out_t & ptp_out, che * mesh, c
 
 		#pragma omp parallel for
 		for(index_t v = start; v < end; ++v)
-			relax_ptp(&h_mesh, dist[!d], dist[d], clusters[!d], clusters[d], inv ? inv[v] : v);
+			relax_ptp(&h_mesh, dist[!d], dist[d], clusters[!d], clusters[d], inv ? v : toplesets.index[v]);
 
 		#pragma omp parallel for
 		for(index_t v = start; v < start + n_cond; ++v)
@@ -114,13 +114,13 @@ void parallel_toplesets_propagation_cpu(const ptp_out_t & ptp_out, che * mesh, c
 	{
 		#pragma omp parallel for
 		for(index_t v = 0; v < n_vertices; ++v)
-			dist[!d][v] = dist[d][inv[v]];
+			ptp_out.dist[v] = dist[1][inv[v]];
+		
+		delete [] dist[0];
 	}
 
 	delete [] error;
-	delete [] dist[0];
 	delete [] dist[1];
-	delete [] clusters[0];
 	delete [] clusters[1];
 	delete [] inv;
 }

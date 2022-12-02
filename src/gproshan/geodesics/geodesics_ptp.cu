@@ -55,42 +55,38 @@ double parallel_toplesets_propagation_gpu(const ptp_out_t & ptp_out, const che *
 	cudaEventCreate(&stop);
 	cudaEventRecord(start, 0);
 
-
 	CHE * dd_mesh, * d_mesh;
 	cuda_create_CHE(&h_mesh, dd_mesh, d_mesh);
 
-	real_t * h_dist = coalescence ? new real_t[h_mesh.n_vertices] : ptp_out.dist;
+	real_t * h_dist = coalescence ? new real_t[n_vertices] : ptp_out.dist;
+	index_t * h_clusters = coalescence && ptp_out.clusters ? new index_t[n_vertices]
+															: ptp_out.clusters;
+
+	real_t * d_error = nullptr;
+	real_t * d_dist[2] = {};
+	index_t * d_clusters[2] = {};
+	index_t * d_sorted = nullptr;
+	
+	cudaMalloc(&d_error, sizeof(real_t) * n_vertices);
+	cudaMalloc(&d_dist[0], sizeof(real_t) * n_vertices);
+	cudaMalloc(&d_dist[1], sizeof(real_t) * n_vertices);
+	
+	if(h_clusters)
+	{
+		cudaMalloc(&d_clusters[0], sizeof(index_t) * n_vertices);
+		cudaMalloc(&d_clusters[1], sizeof(index_t) * n_vertices);
+	}
+	
+	if(!coalescence)
+	{
+		cudaMalloc(&d_sorted, sizeof(index_t) * n_vertices);
+	}
 
 	if(set_inf)
 	{
 		#pragma omp parallel for
-		for(index_t v = 0; v < h_mesh.n_vertices; ++v)
+		for(index_t v = 0; v < n_vertices; ++v)
 			h_dist[v] = INFINITY;
-	}
-
-	real_t * d_dist[2];
-	cudaMalloc(&d_dist[0], sizeof(real_t) * h_mesh.n_vertices);
-	cudaMalloc(&d_dist[1], sizeof(real_t) * h_mesh.n_vertices);
-
-	index_t * d_sorted = nullptr;
-	if(!coalescence)
-	{
-		cudaMalloc(&d_sorted, sizeof(index_t) * h_mesh.n_vertices);
-	}
-
-	real_t * d_error;
-	cudaMalloc(&d_error, sizeof(real_t) * h_mesh.n_vertices);
-
-
-	index_t * h_clusters = coalescence && ptp_out.clusters ? new index_t[h_mesh.n_vertices]
-															: ptp_out.clusters;
-
-	index_t * d_clusters[2] = {};
-
-	if(h_clusters)
-	{
-		cudaMalloc(&d_clusters[0], sizeof(index_t) * h_mesh.n_vertices);
-		cudaMalloc(&d_clusters[1], sizeof(index_t) * h_mesh.n_vertices);
 	}
 
 	const index_t & d = run_ptp_gpu(d_mesh, sources, h_mesh.n_vertices,
@@ -100,36 +96,37 @@ double parallel_toplesets_propagation_gpu(const ptp_out_t & ptp_out, const che *
 									h_clusters, d_clusters,
 									d_sorted);
 
-	cudaMemcpy(h_dist, d_dist[d], sizeof(real_t) * h_mesh.n_vertices, cudaMemcpyDeviceToHost);
+	cudaMemcpy(h_dist, d_dist[d], sizeof(real_t) * n_vertices, cudaMemcpyDeviceToHost);
 	if(coalescence)
 	{
 		#pragma omp parallel for
-		for(index_t i = 0; i < toplesets.limits.back(); ++i)
-			ptp_out.dist[toplesets.index[i]] = h_dist[i];
+		for(index_t v = 0; v < n_vertices; ++v)
+			ptp_out.dist[v] = h_dist[inv[v]];
 
 		delete [] h_dist;
 	}
 
 	if(h_clusters)
 	{
-		cudaMemcpy(h_clusters, d_clusters[d], sizeof(index_t) * h_mesh.n_vertices, cudaMemcpyDeviceToHost);
+		cudaMemcpy(h_clusters, d_clusters[d], sizeof(index_t) * n_vertices, cudaMemcpyDeviceToHost);
 
 		if(coalescence)
 		{
 			#pragma omp parallel for
-			for(index_t i = 0; i < h_mesh.n_vertices; ++i)
-				ptp_out.clusters[toplesets.index[i]] = h_clusters[i];
+			for(index_t v = 0; v < n_vertices; ++v)
+				ptp_out.clusters[v] = h_clusters[inv[v]];
 
 			delete [] h_clusters;
 		}
 
-		cudaFree(d_clusters[0]);
-		cudaFree(d_clusters[1]);
 	}
 
 	cudaFree(d_error);
 	cudaFree(d_dist[0]);
 	cudaFree(d_dist[1]);
+	cudaFree(d_clusters[0]);
+	cudaFree(d_clusters[1]);
+	cudaFree(d_sorted);
 	cuda_free_CHE(dd_mesh, d_mesh);
 
 	if(coalescence)
@@ -137,10 +134,6 @@ double parallel_toplesets_propagation_gpu(const ptp_out_t & ptp_out, const che *
 		delete [] h_mesh.GT;
 		delete [] h_mesh.VT;
 		delete [] h_mesh.EVT;
-	}
-	else
-	{
-		cudaFree(d_sorted);
 	}
 
 	delete [] inv;
@@ -164,12 +157,12 @@ index_t run_ptp_gpu(const CHE * d_mesh, const std::vector<index_t> & sources, co
 	for(index_t i = 0; i < sources.size(); ++i)
 	{
 		const index_t & s = sources[i];
-		const index_t & v = d_sorted ? s: inv.index[s];
+		const index_t & v = d_sorted ? s : inv.index[s];
 
 		h_dist[v] = 0;
 
 		if(h_clusters)
-			h_clusters[v] = i;
+			h_clusters[v] = i + 1;
 	}
 
 	cudaMemcpy(d_dist[0], h_dist, sizeof(real_t) * n_vertices, cudaMemcpyHostToDevice);
@@ -179,7 +172,6 @@ index_t run_ptp_gpu(const CHE * d_mesh, const std::vector<index_t> & sources, co
 	{
 		cudaMemcpy(d_sorted, inv.index, sizeof(index_t) * n_vertices, cudaMemcpyHostToDevice);
 	}
-
 
 	if(h_clusters)
 	{
@@ -325,16 +317,14 @@ void relax_ptp(const CHE * mesh, real_t * new_dist, real_t * old_dist, index_t *
 __global__
 void relative_error(real_t * error, const real_t * new_dist, const real_t * old_dist, const index_t start, const index_t end, const index_t * sorted)
 {
-	index_t i = blockDim.x * blockIdx.x + threadIdx.x + start;
+	index_t v = blockDim.x * blockIdx.x + threadIdx.x + start;
 
-	if(i < end)
+	if(v < end)
 	{
-		index_t v = sorted ? sorted[i] : i;
-
 		#ifdef GPROSHAN_FLOAT
-			error[i] = fabsf(new_dist[v] - old_dist[v]) / old_dist[v];
+			error[v] = fabsf(new_dist[v] - old_dist[v]) / old_dist[v];
 		#else
-			error[i] = fabs(new_dist[v] - old_dist[v]) / old_dist[v];
+			error[v] = fabs(new_dist[v] - old_dist[v]) / old_dist[v];
 		#endif
 	}
 }

@@ -86,7 +86,7 @@ void geodesics::normalize()
 
 	#pragma omp parallel for
 	for(size_t i = 0; i < n_sorted; ++i)
-		dist[sorted_index[i]] /= max;
+		dist[i] /= max;
 }
 
 void geodesics::execute(che * mesh, const std::vector<index_t> & sources, const params & p)
