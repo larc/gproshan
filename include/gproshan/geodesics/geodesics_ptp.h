@@ -41,6 +41,7 @@ real_t farthest_point_sampling_ptp_gpu(che * mesh, std::vector<index_t> & sample
 
 void normalize_ptp(real_t * dist, const size_t & n);
 
+
 template<class T>
 #ifdef __CUDACC__
 __forceinline__
@@ -96,6 +97,7 @@ real_t update_step(const CHE * mesh, const T * dist, const uvec3 & x)
 	return p;
 }
 
+
 template<class T>
 #ifdef __CUDACC__
 __forceinline__
@@ -104,6 +106,7 @@ __host__ __device__
 void relax_ptp(const CHE * mesh, T * new_dist, T * old_dist, index_t * new_clusters, index_t * old_clusters, const index_t v)
 {
 	real_t & ndv = new_dist[v] = old_dist[v];
+	if(new_clusters) new_clusters[v] = old_clusters[v];
 
 	real_t d;
 	for_star(he, mesh, v)

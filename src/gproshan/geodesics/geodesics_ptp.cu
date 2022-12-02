@@ -85,7 +85,7 @@ double parallel_toplesets_propagation_gpu(const ptp_out_t & ptp_out, const che *
 	index_t * h_clusters = coalescence && ptp_out.clusters ? new index_t[h_mesh.n_vertices]
 															: ptp_out.clusters;
 
-	index_t * d_clusters[2] = {nullptr, nullptr};
+	index_t * d_clusters[2] = {};
 
 	if(h_clusters)
 	{
@@ -93,8 +93,22 @@ double parallel_toplesets_propagation_gpu(const ptp_out_t & ptp_out, const che *
 		cudaMalloc(&d_clusters[1], sizeof(index_t) * h_mesh.n_vertices);
 	}
 
-	index_t d = run_ptp_gpu(d_mesh, sources, h_mesh.n_vertices, h_dist, d_dist, {toplesets.limits, coalescence ? inv : toplesets.index}, d_error, h_clusters, d_clusters, d_sorted);
+	const index_t & d = run_ptp_gpu(d_mesh, sources, h_mesh.n_vertices,
+									h_dist, d_dist,
+									{toplesets.limits, coalescence ? inv : toplesets.index},
+									d_error,
+									h_clusters, d_clusters,
+									d_sorted);
 
+	cudaMemcpy(h_dist, d_dist[d], sizeof(real_t) * h_mesh.n_vertices, cudaMemcpyDeviceToHost);
+	if(coalescence)
+	{
+		#pragma omp parallel for
+		for(index_t i = 0; i < toplesets.limits.back(); ++i)
+			ptp_out.dist[toplesets.index[i]] = h_dist[i];
+
+		delete [] h_dist;
+	}
 
 	if(h_clusters)
 	{
@@ -113,8 +127,6 @@ double parallel_toplesets_propagation_gpu(const ptp_out_t & ptp_out, const che *
 		cudaFree(d_clusters[1]);
 	}
 
-	cudaMemcpy(h_dist, d_dist[d], sizeof(real_t) * h_mesh.n_vertices, cudaMemcpyDeviceToHost);
-
 	cudaFree(d_error);
 	cudaFree(d_dist[0]);
 	cudaFree(d_dist[1]);
@@ -132,15 +144,6 @@ double parallel_toplesets_propagation_gpu(const ptp_out_t & ptp_out, const che *
 	}
 
 	delete [] inv;
-
-	if(coalescence)
-	{
-		#pragma omp parallel for
-		for(index_t i = 0; i < toplesets.limits.back(); ++i)
-			ptp_out.dist[toplesets.index[i]] = h_dist[i];
-
-		delete [] h_dist;
-	}
 
 	cudaEventRecord(stop, 0);
 	cudaEventSynchronize(stop);
@@ -204,12 +207,12 @@ index_t run_ptp_gpu(const CHE * d_mesh, const std::vector<index_t> & sources, co
 		end = inv.limits[j];
 		n_cond = inv.limits[i + 1] - start;
 
-		h_clusters ? relax_ptp <<< NB(end - start), NT >>> (d_mesh, d_dist[!d], d_dist[d], d_clusters[!d], d_clusters[d], start, end, d_sorted)
-					: relax_ptp <<< NB(end - start), NT >>> (d_mesh, d_dist[!d], d_dist[d], nullptr, nullptr, start, end, d_sorted);
+		h_clusters ? relax_ptp<<< NB(end - start), NT >>>(d_mesh, d_dist[!d], d_dist[d], d_clusters[!d], d_clusters[d], start, end, d_sorted)
+					: relax_ptp<<< NB(end - start), NT >>>(d_mesh, d_dist[!d], d_dist[d], nullptr, nullptr, start, end, d_sorted);
 
 		cudaDeviceSynchronize();
 
-		relative_error <<< NB(n_cond), NT >>>(d_error, d_dist[!d], d_dist[d], start, start + n_cond);
+		relative_error<<< NB(n_cond), NT >>>(d_error, d_dist[!d], d_dist[d], start, start + n_cond);
 		cudaDeviceSynchronize();
 
 		if(n_cond == thrust::count_if(thrust::device, d_error + start, d_error + start + n_cond, is_ok()))
