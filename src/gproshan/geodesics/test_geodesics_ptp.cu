@@ -118,7 +118,7 @@ double * times_farthest_point_sampling_ptp_gpu(che * mesh, std::vector<index_t> 
 		limits.clear();
 		mesh->compute_toplesets(toplesets, sorted_index, limits, samples);
 
-		d = run_ptp_gpu(d_mesh, h_mesh->n_vertices, h_dist, d_dist, samples, limits, sorted_index, d_sorted, d_error);
+		d = run_ptp_gpu(d_mesh, samples, h_mesh->n_vertices, h_dist, d_dist, {limits, sorted_index}, d_error, nullptr, nullptr, d_sorted);
 
 		// 1 indexing
 		#ifdef GPROSHAN_FLOAT
