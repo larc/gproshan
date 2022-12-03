@@ -8,11 +8,38 @@
 
 #include <gproshan/mesh/che.h>
 
+
+#ifdef __CUDACC__
+	#include <thrust/count.h>
+	#include <thrust/device_vector.h>
+	#include <thrust/execution_policy.h>
+
+	#define NT 64
+	#define NB(x) (x + NT - 1) / NT
+#endif // __CUDACC__
+
 #define PTP_TOL 1e-4
 
 
 // geometry processing and shape analysis framework
 namespace gproshan {
+
+
+#ifdef __CUDACC__
+
+__global__
+void relax_ptp(const CHE * mesh, real_t * new_dist, real_t * old_dist, index_t * new_clusters, index_t * old_clusters, const index_t start, const index_t end, const index_t * sorted = nullptr);
+
+__global__
+void relative_error(real_t * error, const real_t * new_dist, const real_t * old_dist, const index_t start, const index_t end, const index_t * sorted = nullptr);
+
+struct is_ok
+{
+	__host__ __device__
+	bool operator()(const real_t & val) const;
+};
+
+#endif // __CUDACC__
 
 
 struct ptp_out_t
@@ -120,6 +147,99 @@ void relax_ptp(const CHE * mesh, T * new_dist, T * old_dist, index_t * new_clust
 				new_clusters[v] = old_dist[i.y()] < old_dist[i.x()] ? old_clusters[i.y()] : old_clusters[i.x()];
 		}
 	}
+}
+
+template<class T>
+#ifdef __CUDACC__
+__forceinline__
+#else
+inline
+#endif
+index_t run_ptp(const CHE * mesh, const index_t & n_vertices,
+				const std::vector<index_t> & sources, const std::vector<index_t> & limits, 
+				T * error, T ** dist, index_t ** clusters, const index_t * idx, index_t * sorted)
+{
+#ifdef __CUDACC__
+	T * h_dist = dist[2];
+	index_t * h_clusters = clusters ? clusters[2] : nullptr;
+#endif
+
+	for(index_t i = 0; i < sources.size(); ++i)
+	{					// !coalescence ?
+		const index_t & v = sorted ? sources[i] : idx[sources[i]];
+
+	#ifdef __CUDACC__
+		h_dist[v] = 0;
+		if(h_clusters) h_clusters[v] = i + 1;
+	#else
+		dist[0][v] = dist[1][v] = 0;
+		if(clusters && clusters[0])
+			clusters[0][v] = clusters[1][v] = i + 1;
+	#endif
+	}
+
+#ifdef __CUDACC__
+	cudaMemcpy(dist[0], h_dist, sizeof(T) * n_vertices, cudaMemcpyHostToDevice);
+	cudaMemcpy(dist[1], h_dist, sizeof(T) * n_vertices, cudaMemcpyHostToDevice);
+	if(sorted)
+	{
+		cudaMemcpy(sorted, idx, sizeof(index_t) * n_vertices, cudaMemcpyHostToDevice);
+	}
+	if(clusters)
+	{
+		cudaMemcpy(clusters[0], h_clusters, sizeof(index_t) * n_vertices, cudaMemcpyHostToDevice);
+		cudaMemcpy(clusters[1], h_clusters, sizeof(index_t) * n_vertices, cudaMemcpyHostToDevice);
+	}
+#endif
+
+	const int & max_iter = limits.size() << 1;
+
+	int iter = -1;
+	index_t count = 0;
+	index_t i = 1;
+	index_t j = 2;
+	while(i < j && ++iter < max_iter)
+	{
+		if(i < (j >> 1)) i = (j >> 1);	// K/2 limit band size
+
+		const index_t & start	= limits[i];
+		const index_t & end		= limits[j];
+		const index_t & n_cond	= limits[i + 1] - start;
+
+		real_t *& new_dist = dist[iter & 1];
+		real_t *& old_dist = dist[!(iter & 1)];
+
+		index_t *& new_cluster = clusters[iter & 1];
+		index_t *& old_cluster = clusters[!(iter & 1)];
+
+	#ifdef __CUDACC__
+		relax_ptp<<< NB(end - start), NT >>>(mesh, new_dist, old_dist, new_cluster, old_cluster, start, end, sorted);
+		cudaDeviceSynchronize();
+
+		relative_error<<< NB(n_cond), NT >>>(error, new_dist, old_dist, start, start + n_cond);
+		cudaDeviceSynchronize();
+
+		count = thrust::count_if(thrust::device, error + start, error + start + n_cond, is_ok());
+	#else
+		#pragma omp parallel for
+		for(index_t v = start; v < end; ++v)
+			relax_ptp(mesh, new_dist, old_dist, new_cluster, old_cluster, sorted ? idx[v] : v);
+
+		#pragma omp parallel for
+		for(index_t v = start; v < start + n_cond; ++v)
+			error[v] = abs(new_dist[v] - old_dist[v]) / old_dist[v];
+
+		count = 0;
+		#pragma omp parallel for reduction(+: count)
+		for(index_t v = start; v < start + n_cond; ++v)
+			count += error[v] < PTP_TOL;
+	#endif
+
+		if(n_cond == count)			++i;
+		if(j < limits.size() - 1) 	++j;
+	}
+
+	return !(iter & 1);
 }
 
 

@@ -71,51 +71,57 @@ void parallel_toplesets_propagation_cpu(const ptp_out_t & ptp_out, che * mesh, c
 			clusters[0][v] = clusters[1][v] = i + 1;
 	}
 
-	index_t d = 0;
-	index_t start, end, n_cond, count;
-	index_t i = 1, j = 2;
+	const int & max_iter = toplesets.limits.size() << 1;
 
-	// maximum number of iterations
-	index_t iter = 0;
-	index_t max_iter = toplesets.limits.size() << 1;
-
-	while(i < j && iter++ < max_iter)
+	int iter = -1;
+	index_t i = 1;
+	index_t j = 2;
+	while(i < j && ++iter < max_iter)
 	{
 		if(i < (j >> 1)) i = (j >> 1); // K/2 limit band size
 
-		start = toplesets.limits[i];
-		end = toplesets.limits[j];
-		n_cond = toplesets.limits[i + 1] - start;
+		const index_t & start	= toplesets.limits[i];
+		const index_t & end		= toplesets.limits[j];
+		const index_t & n_cond	= toplesets.limits[i + 1] - start;
+
+		real_t *& new_dist = dist[iter & 1];
+		real_t *& old_dist = dist[!(iter & 1)];
+
+		index_t *& new_cluster = clusters[iter & 1];
+		index_t *& old_cluster = clusters[!(iter & 1)];
 
 		#pragma omp parallel for
 		for(index_t v = start; v < end; ++v)
-			relax_ptp(&h_mesh, dist[!d], dist[d], clusters[!d], clusters[d], inv ? v : toplesets.index[v]);
+			relax_ptp(&h_mesh, new_dist, old_dist, new_cluster, old_cluster, inv ? v : toplesets.index[v]);
 
 		#pragma omp parallel for
 		for(index_t v = start; v < start + n_cond; ++v)
-			error[v] = abs(dist[!d][v] - dist[d][v]) / dist[d][v];
+			error[v] = abs(new_dist[v] - old_dist[v]) / old_dist[v];
 
-		count = 0;
+		index_t count = 0;
 		#pragma omp parallel for reduction(+: count)
 		for(index_t v = start; v < start + n_cond; ++v)
 			count += error[v] < PTP_TOL;
 
 		if(n_cond == count) ++i;
 		if(j < toplesets.limits.size() - 1) ++j;
-
-		d = !d;
 	}
 
 	#pragma omp parallel for
 	for(index_t v = 0; v < n_vertices; ++v)
-		dist[!d][v] = dist[d][v];
-
+		dist[iter & 1][v] = dist[!(iter & 1)][v];
+/*
+	for(index_t v = 0; v < n_vertices; ++v)
+		gproshan_error_var(dist[d][v]);
+	gproshan_error_var(ptp_out.dist);
+	gproshan_error_var(dist[0]);
+	*/
 	if(inv)
 	{
 		#pragma omp parallel for
 		for(index_t v = 0; v < n_vertices; ++v)
 			ptp_out.dist[v] = dist[1][inv[v]];
-		
+
 		delete [] dist[0];
 	}
 
