@@ -159,7 +159,7 @@ index_t run_ptp(const CHE * mesh, const std::vector<index_t> & sources,
 {
 #ifdef __CUDACC__
 	T * h_dist = dist[2];
-	index_t * h_clusters = clusters ? clusters[2] : nullptr;
+	index_t * h_clusters = clusters[2];
 #endif
 
 	for(index_t i = 0; i < sources.size(); ++i)
