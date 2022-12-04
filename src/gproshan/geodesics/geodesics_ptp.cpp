@@ -60,56 +60,13 @@ void parallel_toplesets_propagation_cpu(const ptp_out_t & ptp_out, che * mesh, c
 			dist[0][v] = dist[1][v] = INFINITY;
 	}
 
-	for(index_t i = 0; i < sources.size(); ++i)
-	{
-		const index_t & s = sources[i];
-		const index_t & v = inv ? inv[s] : s;
-
-		dist[0][v] = dist[1][v] = 0;
-
-		if(ptp_out.clusters)
-			clusters[0][v] = clusters[1][v] = i + 1;
-	}
-
-	const int & max_iter = toplesets.limits.size() << 1;
-
-	int iter = -1;
-	index_t i = 1;
-	index_t j = 2;
-	while(i < j && ++iter < max_iter)
-	{
-		if(i < (j >> 1)) i = (j >> 1); // K/2 limit band size
-
-		const index_t & start	= toplesets.limits[i];
-		const index_t & end		= toplesets.limits[j];
-		const index_t & n_cond	= toplesets.limits[i + 1] - start;
-
-		real_t *& new_dist = dist[iter & 1];
-		real_t *& old_dist = dist[!(iter & 1)];
-
-		index_t *& new_cluster = clusters[iter & 1];
-		index_t *& old_cluster = clusters[!(iter & 1)];
-
-		#pragma omp parallel for
-		for(index_t v = start; v < end; ++v)
-			relax_ptp(&h_mesh, new_dist, old_dist, new_cluster, old_cluster, inv ? v : toplesets.index[v]);
-
-		#pragma omp parallel for
-		for(index_t v = start; v < start + n_cond; ++v)
-			error[v] = abs(new_dist[v] - old_dist[v]) / old_dist[v];
-
-		index_t count = 0;
-		#pragma omp parallel for reduction(+: count)
-		for(index_t v = start; v < start + n_cond; ++v)
-			count += error[v] < PTP_TOL;
-
-		if(n_cond == count) ++i;
-		if(j < toplesets.limits.size() - 1) ++j;
-	}
+	const index_t & i = run_ptp(&h_mesh, sources, toplesets.limits, error, dist, clusters,
+								coalescence ? inv : toplesets.index,
+								coalescence ? nullptr : (index_t *) toplesets.index);
 
 	#pragma omp parallel for
 	for(index_t v = 0; v < n_vertices; ++v)
-		dist[iter & 1][v] = dist[!(iter & 1)][v];
+		dist[!i][v] = dist[i][v];
 /*
 	for(index_t v = 0; v < n_vertices; ++v)
 		gproshan_error_var(dist[d][v]);

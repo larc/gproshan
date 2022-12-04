@@ -56,8 +56,6 @@ struct toplesets_t
 	const index_t *const & index;
 };
 
-che * ptp_coalescence(index_t * & inv, const che * mesh, const toplesets_t & toplesets);
-
 double parallel_toplesets_propagation_gpu(const ptp_out_t & ptp_out, const che * mesh, const std::vector<index_t> & sources, const toplesets_t & toplesets, const bool & coalescence = true, const bool & set_inf = true);
 
 void parallel_toplesets_propagation_cpu(const ptp_out_t & ptp_out, che * mesh, const std::vector<index_t> & sources, const toplesets_t & toplesets, const bool & coalescence = false, const bool & set_inf = true);
@@ -128,7 +126,7 @@ template<class T>
 __forceinline__
 #endif
 __host__ __device__
-void relax_ptp(const CHE * mesh, T * new_dist, T * old_dist, index_t * new_clusters, index_t * old_clusters, const index_t v)
+void relax_ptp(const CHE * mesh, T * new_dist, T * old_dist, index_t * new_clusters, index_t * old_clusters, const index_t & v)
 {
 	real_t & ndv = new_dist[v] = old_dist[v];
 	if(new_clusters) new_clusters[v] = old_clusters[v];
@@ -155,9 +153,9 @@ __forceinline__
 #else
 inline
 #endif
-index_t run_ptp(const CHE * mesh, const index_t & n_vertices,
-				const std::vector<index_t> & sources, const std::vector<index_t> & limits, 
-				T * error, T ** dist, index_t ** clusters, const index_t * idx, index_t * sorted)
+index_t run_ptp(const CHE * mesh, const std::vector<index_t> & sources,
+				const std::vector<index_t> & limits, T * error, T ** dist, index_t ** clusters,
+				const index_t * idx, index_t * sorted)
 {
 #ifdef __CUDACC__
 	T * h_dist = dist[2];
@@ -179,6 +177,7 @@ index_t run_ptp(const CHE * mesh, const index_t & n_vertices,
 	}
 
 #ifdef __CUDACC__
+	const size_t & n_vertices = limits.back();
 	cudaMemcpy(dist[0], h_dist, sizeof(T) * n_vertices, cudaMemcpyHostToDevice);
 	cudaMemcpy(dist[1], h_dist, sizeof(T) * n_vertices, cudaMemcpyHostToDevice);
 	if(sorted)
@@ -206,8 +205,8 @@ index_t run_ptp(const CHE * mesh, const index_t & n_vertices,
 		const index_t & end		= limits[j];
 		const index_t & n_cond	= limits[i + 1] - start;
 
-		real_t *& new_dist = dist[iter & 1];
-		real_t *& old_dist = dist[!(iter & 1)];
+		T *& new_dist = dist[iter & 1];
+		T *& old_dist = dist[!(iter & 1)];
 
 		index_t *& new_cluster = clusters[iter & 1];
 		index_t *& old_cluster = clusters[!(iter & 1)];
@@ -223,7 +222,7 @@ index_t run_ptp(const CHE * mesh, const index_t & n_vertices,
 	#else
 		#pragma omp parallel for
 		for(index_t v = start; v < end; ++v)
-			relax_ptp(mesh, new_dist, old_dist, new_cluster, old_cluster, sorted ? idx[v] : v);
+			relax_ptp(mesh, new_dist, old_dist, new_cluster, old_cluster, sorted ? sorted[v] : v);
 
 		#pragma omp parallel for
 		for(index_t v = start; v < start + n_cond; ++v)

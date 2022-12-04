@@ -88,15 +88,16 @@ double parallel_toplesets_propagation_gpu(const ptp_out_t & ptp_out, const che *
 			h_dist[v] = INFINITY;
 	}
 
-	const index_t & i = run_ptp(d_mesh, n_vertices, sources, toplesets.limits, d_error,
-								d_dist, d_clusters, coalescence ? inv : toplesets.index, d_sorted);
+	const index_t & i = run_ptp(d_mesh, sources, toplesets.limits, d_error, d_dist, d_clusters,
+								coalescence ? inv : toplesets.index, d_sorted);
 
 	cudaMemcpy(h_dist, d_dist[i], sizeof(real_t) * n_vertices, cudaMemcpyDeviceToHost);
+
 	if(coalescence)
 	{
 		#pragma omp parallel for
 		for(index_t v = 0; v < n_vertices; ++v)
-			ptp_out.dist[i] = h_dist[inv[i]];
+			ptp_out.dist[v] = h_dist[inv[v]];
 
 		delete [] h_dist;
 	}
@@ -109,11 +110,10 @@ double parallel_toplesets_propagation_gpu(const ptp_out_t & ptp_out, const che *
 		{
 			#pragma omp parallel for
 			for(index_t v = 0; v < n_vertices; ++v)
-				ptp_out.clusters[i] = h_clusters[inv[i]];
+				ptp_out.clusters[v] = h_clusters[inv[v]];
 
 			delete [] h_clusters;
 		}
-
 	}
 
 	cudaFree(d_error);
@@ -147,7 +147,6 @@ double parallel_toplesets_propagation_gpu(const ptp_out_t & ptp_out, const che *
 
 real_t farthest_point_sampling_ptp_gpu(che * mesh, std::vector<index_t> & samples, double & time_fps, size_t n, real_t radio)
 {
-	const size_t & n_vertices = mesh->n_vertices;
 	cudaDeviceReset();
 
 	float time;
@@ -199,8 +198,8 @@ real_t farthest_point_sampling_ptp_gpu(che * mesh, std::vector<index_t> & sample
 		limits.clear();
 		mesh->compute_toplesets(toplesets, sorted_index, limits, samples);
 
-		const index_t & i = run_ptp(d_mesh, n_vertices, samples, limits, d_error,
-									d_dist, nullptr, sorted_index, d_sorted);
+		const index_t & i = run_ptp(d_mesh, samples, limits, d_error, d_dist, nullptr,
+									sorted_index, d_sorted);
 
 		// 1 indexing
 		#ifdef GPROSHAN_FLOAT
@@ -255,6 +254,8 @@ void relative_error(real_t * error, const real_t * new_dist, const real_t * old_
 
 	if(v < end)
 	{
+		v = sorted ? sorted[v] : v;
+
 		#ifdef GPROSHAN_FLOAT
 			error[v] = fabsf(new_dist[v] - old_dist[v]) / old_dist[v];
 		#else
