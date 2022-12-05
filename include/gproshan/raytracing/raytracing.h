@@ -42,6 +42,7 @@ class raytracing
 											const vertex &, // dir
 											const vertex *, // lights
 											const int &, // n_lights
+											const vertex &, // cam_pos
 											const bool & // flat
 											) { return {}; };
 
