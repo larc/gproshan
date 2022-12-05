@@ -5,6 +5,7 @@
 #include <gproshan/geometry/mat.h>
 
 #include <gproshan/mesh/che.cuh>
+#include <gproshan/scenes/scene.h>
 
 
 // geometry processing and shape analysis framework
@@ -54,7 +55,7 @@ struct t_eval_hit
 	t_eval_hit() {}
 
 	__host__ __device__
-	t_eval_hit(const CHE & mesh, const index_t & aprimID, const T & au, const T & av, void * mat = nullptr)
+	t_eval_hit(const CHE & mesh, const index_t & aprimID, const T & au, const T & av, const params_scene & sc)
 	{
 		primID = aprimID;
 		u = au;
@@ -73,8 +74,13 @@ struct t_eval_hit
 		Kd = ((1.f - u - v) * ca + u * cb + v * cc) / 255;
 		normal = (1.f - u - v) * mesh.VN[a] + u * mesh.VN[b] + v * mesh.VN[c];
 
-		if(mat)
-		{/*
+		if(!sc.trig_mat) return;
+		if(sc.trig_mat[primID] == NIL) return;
+
+		const scene::material & mat = sc.materials[sc.trig_mat[primID]];
+
+		Kd = mat.Kd;
+		/*
 			Ka = mat.Ka;
 			if(mat.map_Ka != -1)
 				Ka *= texture(tex_Ka, texcoord).rgb;
@@ -88,7 +94,7 @@ struct t_eval_hit
 				Ks *= texture(tex_Ks, texcoord).rgb;
 
 			Ns = mat.Ns;
-		*/}
+		*/
 	}
 };
 

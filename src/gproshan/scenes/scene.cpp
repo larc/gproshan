@@ -20,6 +20,8 @@ scene::~scene()
 {
 	for(texture & tex: textures)
 		delete tex.data;
+
+	delete [] trig_mat;
 	delete [] texcoords;
 }
 
@@ -81,6 +83,19 @@ bool scene::load_obj(const std::string & file)
 		objects.push_back({obj.second, material_id[obj.first]});
 
 	gproshan_log_var(objects.size());
+
+	trig_mat = new index_t[n_vertices / 3];
+	memset(trig_mat, -1, sizeof(index_t) * n_vertices / 3);
+
+	#pragma omp parallel for
+	for(index_t i = 0; i < objects.size() - 1; ++i)
+	{
+		const object & obj = objects[i];
+		const index_t & n = objects[i + 1].begin;
+
+		for(index_t t = obj.begin; t < n; t += 3)
+			trig_mat[t / 3] = obj.material_id;
+	}
 
 	return true;
 }

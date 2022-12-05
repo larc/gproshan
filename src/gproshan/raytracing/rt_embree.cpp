@@ -115,7 +115,7 @@ eval_hit embree::intersect(const vertex & org, const vertex & dir)
 	ray_hit r(org, dir);
 	if(!intersect(r)) return {};
 
-	eval_hit hit(*g_meshes[r.hit.geomID], r.hit.primID, r.hit.u, r.hit.v);
+	eval_hit hit(*g_meshes[r.hit.geomID], r.hit.primID, r.hit.u, r.hit.v, params_scene{});
 	hit.dist = r.ray.tfar;
 	hit.position = r.position();
 
@@ -246,7 +246,7 @@ vec3 embree::closesthit_radiance(const vertex & org, const vertex & dir, const v
 	ray_hit r(org, dir);
 	if(!intersect(r)) return {};
 
-	eval_hit hit(*g_meshes[r.hit.geomID], r.hit.primID, r.hit.u, r.hit.v);
+	eval_hit hit(*g_meshes[r.hit.geomID], r.hit.primID, r.hit.u, r.hit.v, params_scene{});
 	hit.position = r.position();
 	hit.normal = flat ? r.normal() : hit.normal;
 

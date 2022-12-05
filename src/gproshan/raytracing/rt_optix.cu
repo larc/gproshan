@@ -54,7 +54,7 @@ extern "C" __global__ void __closesthit__radiance()
 	const vertex & B = data[1];
 	const vertex & C = data[2];
 
-	eval_hit hit(mesh, primID, bar.x, bar.y);
+	eval_hit hit(mesh, primID, bar.x, bar.y, optix_params.sc);
 	hit.normal = optix_params.flat ? normalize(cross(B - A, C - A)) : hit.normal;
 	hit.position = (1.f - hit.u - hit.v) * A + hit.u * B + hit.v * C;
 
