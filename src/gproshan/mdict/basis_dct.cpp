@@ -28,18 +28,18 @@ void basis_dct::d_discrete(a_mat & phi, const a_vec & x, const a_vec & y, const 
 		phi.col(k) = !b ? dct(x, y, nx, ny) : dct(y, x, ny, nx);
 }
 
-void basis_dct::plot_basis(ostream & os)
+void basis_dct::plot_basis(std::ostream & os)
 {
-	os << "set multiplot layout " << n_freq << "," << n_freq << " rowsfirst scale 1.2;" << endl;
+	os << "set multiplot layout " << n_freq << "," << n_freq << " rowsfirst scale 1.2;" << std::endl;
 
 	for(index_t nx = 0; nx < n_freq; ++nx)
 	for(index_t ny = 0; ny < n_freq; ++ny)
 	{
-		os << "splot v * cos(u), v * sin(u), "; dct(os, nx, ny); os << ";" << endl;
+		os << "splot v * cos(u), v * sin(u), "; dct(os, nx, ny); os << ";" << std::endl;
 	}
 }
 
-void basis_dct::plot_atoms(ostream & os, const a_vec & A)
+void basis_dct::plot_atoms(std::ostream & os, const a_vec & A)
 {
 	for(index_t k = 0, nx = 0; nx < n_freq; ++nx)
 	for(index_t ny = 0; ny < n_freq; ++ny, ++k)
@@ -59,7 +59,7 @@ a_vec basis_dct::d_dct(const a_vec & x, const a_vec & y, const index_t & nx, con
 	return - (M_PI * nx / _radio) * (sin(M_PI * nx * x / _radio) % cos(M_PI * ny * y / _radio));
 }
 
-void basis_dct::dct(ostream & os, const index_t & nx, const index_t & ny)
+void basis_dct::dct(std::ostream & os, const index_t & nx, const index_t & ny)
 {
 	os << "cos( (pi * v * cos(u) * " << nx << " ) / " << _radio << " ) *";
 	os << "cos( (pi * v * sin(u) * " << ny << " ) / " << _radio << " )";
@@ -67,7 +67,7 @@ void basis_dct::dct(ostream & os, const index_t & nx, const index_t & ny)
 
 real_t basis_dct::freq(const index_t & idx)
 {
-	return !idx ? INFINITY : 2 * _radio / max(idx / n_freq, idx % n_freq);
+	return !idx ? INFINITY : 2 * _radio / std::max(idx / n_freq, idx % n_freq);
 }
 
 

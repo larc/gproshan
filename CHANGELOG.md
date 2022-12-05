@@ -2,6 +2,7 @@ Version History
 ---------------
 
 ### gproshan 3.14
+- Added scene rendering: loader from .obj files and .mtl, handling textures
 - Exporting gproshan as cmake library, use find_package(gproshan) in your project.
 - Added Intel Embree as default ray tracing library, for ray casting operations and as rendering option with shadows.
 - Adding Scenes module, virtual point cloud scanners and point cloud normals computation for 3D scenes.
@@ -15,5 +16,5 @@ Version History
 - Implemented the loading and rendering of point clouds.
 - Added heatmap viewer options and loading vertex color from a file.
 - New user interface implemented with [ImGui](https://github.com/ocornut/imgui).
-- Viewer upgraded using GLEW, GLFW, and GLM.
+- Viewer upgraded using GLEW and GLFW3.
 

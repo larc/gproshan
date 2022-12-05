@@ -8,12 +8,17 @@
 #include <gproshan/raytracing/rt_embree.h>
 
 
-using namespace std;
-
-
 // geometry processing and shape analysis framework
 namespace gproshan {
 
+
+che_viewer::che_viewer(che * m): mesh(m)
+{
+	glGenVertexArrays(1, &vao);
+	glGenBuffers(6, vbo);
+
+	update();
+}
 
 che_viewer::~che_viewer()
 {
@@ -39,20 +44,9 @@ che_viewer::operator che *& ()
 	return mesh;
 }
 
-void che_viewer::init(che * m, const bool & center)
-{
-	glGenVertexArrays(1, &vao);
-	glGenBuffers(6, vbo);
-
-	mesh = m;
-	center_mesh = center;
-
-	update();
-}
-
 void che_viewer::update()
 {
-	model_mat = center_mesh ? mesh->normalize_box(2) : mat4::identity();
+	update_model_mat();
 
 	render_pointcloud = mesh->is_pointcloud();
 	selected_xyz.clear();
@@ -60,6 +54,22 @@ void che_viewer::update()
 
 	delete rt_embree;
 	rt_embree = new rt::embree({mesh}, {model_mat});
+}
+
+void che_viewer::update_model_mat()
+{
+	switch(opt_fit_screen)
+	{
+		case none:
+			model_mat = mat4::identity();
+			break;
+		case box:
+			model_mat = mesh->normalize_box();
+			break;
+		case sphere:
+			model_mat = mesh->normalize_sphere();
+			break;
+	}
 }
 
 void che_viewer::update_vbo()
@@ -140,7 +150,7 @@ void che_viewer::update_vbo_heatmap(const real_t * vheatmap)
 	glBindVertexArray(0);
 }
 
-void che_viewer::update_instances_positions(const vector<vertex> & translations)
+void che_viewer::update_instances_positions(const std::vector<vertex> & translations)
 {
 	n_instances = translations.size();
 	if(!n_instances) return;
@@ -175,13 +185,13 @@ void che_viewer::draw(shader & program)
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[4]);
 
 	if(n_instances) glDrawElementsInstanced(GL_TRIANGLES, mesh->n_half_edges, GL_UNSIGNED_INT, 0, n_instances);
-	else if(materials.size())
+	/*else if(materials.size())
 	{
 		for(auto & m: materials)
 		{
 			glDrawElementsBaseVertex(GL_TRIANGLES, mesh->n_half_edges, GL_UNSIGNED_INT, 0, 0);
 		}
-	}
+	}*/
 	else glDrawElements(GL_TRIANGLES, mesh->n_half_edges, GL_UNSIGNED_INT, 0);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -190,7 +200,7 @@ void che_viewer::draw(shader & program)
 	program.disable();
 }
 
-void che_viewer::draw_point_cloud(shader & program)
+void che_viewer::draw_pointcloud(shader & program)
 {
 	glProgramUniformMatrix4fv(program, program("model_mat"), 1, true, &model_mat[0][0]);
 	glProgramUniform1ui(program, program("idx_colormap"), idx_colormap);
@@ -201,11 +211,7 @@ void che_viewer::draw_point_cloud(shader & program)
 	program.enable();
 
 	glBindVertexArray(vao);
-	glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
-
 	glDrawArrays(GL_POINTS, 0, mesh->n_vertices);
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 
 	program.disable();
@@ -244,7 +250,7 @@ void che_viewer::log_info()
 
 	gproshan_log_var(mesh->filename);
 	gproshan_log_var(mesh->n_vertices);
-	gproshan_log_var(mesh->n_faces);
+	gproshan_log_var(mesh->n_trigs);
 	gproshan_log_var(mesh->n_half_edges);
 	gproshan_log_var(mesh->n_edges);
 	gproshan_log_var(mesh->area_surface());

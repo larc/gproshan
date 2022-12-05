@@ -3,8 +3,6 @@
 #include <gproshan/laplacian/laplacian.h>
 #include <gproshan/include_arma.h>
 
-using namespace std;
-
 
 // geometry processing and shape analysis framework
 namespace gproshan {
@@ -97,18 +95,18 @@ void biharmonic_interp_2(a_mat & P, a_mat & H)
 }
 
 //fill one hole and fit with biharmonic_interp_2
-void biharmonic_interp_2(che * mesh, const size_t & old_n_vertices, const size_t & n_vertices, const vector<index_t> & border_vertices, const index_t & k)
+void biharmonic_interp_2(che * mesh, const size_t & old_n_vertices, const size_t & n_vertices, const std::vector<index_t> & border_vertices, const index_t & k)
 {
 	if(old_n_vertices == n_vertices) return;
 
 	index_t * rings = new index_t[mesh->n_vertices];
 	index_t * sorted = new index_t[mesh->n_vertices];
-	vector<index_t> limites;
+	std::vector<index_t> limites;
 	mesh->compute_toplesets(rings, sorted, limites, border_vertices, k);
 
 	const size_t n_border_vertices = limites.back();
 
-	vector<index_t> sub_mesh_hole;
+	std::vector<index_t> sub_mesh_hole;
 	sub_mesh_hole.reserve(n_border_vertices);
 
 	for(index_t b = 0; b < n_border_vertices; ++b)

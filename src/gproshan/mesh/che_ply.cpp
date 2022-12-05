@@ -3,35 +3,32 @@
 #include <cstring>
 #include <cstdio>
 #include <cassert>
-#include <map>
-
-
-using namespace std;
+#include <unordered_map>
 
 
 // geometry processing and shape analysis framework
 namespace gproshan {
 
 
-che_ply::che_ply(const string & file)
+che_ply::che_ply(const std::string & file)
 {
 	init(file);
 }
 
-void che_ply::read_file(const string & file)
+void che_ply::read_file(const std::string & file)
 {
-	map<string, size_t> bytes = {
-									{"char", 1},
-									{"uchar", 1},
-									{"short", 2},
-									{"ushort", 2},
-									{"int", 4},
-									{"uint", 4},
-									{"float", 4},
-									{"float32", 4},
-									{"float64", 8},
-									{"double", 8}
-								};
+	std::unordered_map<std::string, size_t> bytes = {
+														{"char", 1},
+														{"uchar", 1},
+														{"short", 2},
+														{"ushort", 2},
+														{"int", 4},
+														{"uint", 4},
+														{"float", 4},
+														{"float32", 4},
+														{"float64", 8},
+														{"double", 8}
+													};
 
 	FILE * fp = fopen(file.c_str(), "rb");
 	assert(fp);
@@ -94,15 +91,18 @@ void che_ply::read_file(const string & file)
 
 	alloc(nv, nf);
 
-	vector<index_t> faces;
-	faces.reserve(che::mtrig * n_faces);
+	std::vector<index_t> trigs;
+	trigs.reserve(che::mtrig * n_trigs);
 
 	if(format[0] == 'a')	// ascii
 	{
 		float x, y, z;
+		unsigned char r, g, b;
 		for(index_t v = 0; v < n_vertices; ++v)
 		{
-			fscanf(fp, "%f %f %f", &x, &y, &z);
+			fgets(line, sizeof(line), fp);
+			if(sscanf(line, "%f %f %f %hhu %hhu %hhu", &x, &y, &z, &r, &g, &b) > 5)
+				VC[v] = {r, g, b};
 			GT[v] = {x, y, z};
 		}
 
@@ -113,7 +113,7 @@ void che_ply::read_file(const string & file)
 				fscanf(fp, "%u", P + i);
 
 			for(const index_t & v: trig_convex_polygon(P, nv))
-				faces.push_back(v);
+				trigs.push_back(v);
 		}
 	}
 	else // binary_little_endian or binary_big_endian
@@ -122,7 +122,7 @@ void che_ply::read_file(const string & file)
 		auto big_to_little = [](char * buffer, const index_t & n)
 		{
 			for(index_t i = 0, j = n - 1; i < j; ++i, --j)
-				swap(buffer[i], buffer[j]);
+				std::swap(buffer[i], buffer[j]);
 		};
 
 		char * buffer = vbytes == sizeof(vertex) ? (char *) GT : new char[vbytes * n_vertices];
@@ -201,29 +201,29 @@ void che_ply::read_file(const string & file)
 			}
 
 			for(const index_t & v: trig_convex_polygon(P, nv))
-				faces.push_back(v);
+				trigs.push_back(v);
 		}
 	}
 
 	fclose(fp);
 
 
-	if(faces.size() != che::mtrig * n_faces)
+	if(trigs.size() != che::mtrig * n_trigs)
 	{
 		vertex * tGT = GT; GT = nullptr;
 		rgb_t * tVC = VC; VC = nullptr;
 
 		free();
-		alloc(nv, faces.size() / che::mtrig);
+		alloc(nv, trigs.size() / che::mtrig);
 
 		GT = tGT;
 		VC = tVC;
 	}
 
-	memcpy(VT, faces.data(), faces.size() * sizeof(index_t));
+	memcpy(VT, trigs.data(), trigs.size() * sizeof(index_t));
 }
 
-void che_ply::write_file(const che * mesh, const string & file, const bool & color)
+void che_ply::write_file(const che * mesh, const std::string & file, const bool & color)
 {
 	FILE * fp = fopen((file + ".ply").c_str(), "wb");
 	assert(fp);
@@ -243,7 +243,7 @@ void che_ply::write_file(const che * mesh, const string & file, const bool & col
 		fprintf(fp, "property uchar green\n");
 		fprintf(fp, "property uchar blue\n");
 	}
-	fprintf(fp, "element face %lu\n", mesh->n_faces);
+	fprintf(fp, "element face %lu\n", mesh->n_trigs);
 	fprintf(fp, "property list uchar uint vertex_index\n");
 	fprintf(fp, "end_header\n");
 

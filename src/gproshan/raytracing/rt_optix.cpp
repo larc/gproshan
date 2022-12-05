@@ -35,7 +35,7 @@ struct __align__(OPTIX_SBT_RECORD_ALIGNMENT) HitgroupRecord
 };
 
 
-void optix_log(unsigned int level, const char * tag, const char * message, void *)
+void optix_log(index_t level, const char * tag, const char * message, void *)
 {
 	fprintf(stderr, "OptiX [%2u][%12s]: %s\n", level, tag, message);
 }
@@ -113,6 +113,11 @@ optix::~optix()
 
 	for(index_t i = 0; i < dd_mesh.size(); ++i)
 		cuda_free_CHE(dd_mesh[i], d_mesh[i]);
+
+	cudaFree(optix_params.sc.materials);
+	cudaFree(optix_params.sc.textures);
+	cudaFree(optix_params.sc.trig_mat);
+	cudaFree(optix_params.sc.texcoords);
 }
 
 void optix::render(vec4 * img, const render_params & params, const bool & flat)
@@ -412,6 +417,17 @@ void optix::add_mesh(OptixBuildInput & optix_mesh, CUdeviceptr & d_vertex_ptr, u
 	CHE * dd_m, * d_m;
 	CHE h_m(mesh);
 
+	if(mesh->is_scene())
+	{
+		h_m.n_half_edges = mesh->n_vertices;
+		h_m.n_trigs = mesh->n_vertices / 3;
+		h_m.VT = new index_t[mesh->n_vertices];
+
+		#pragma omp parallel for
+		for(index_t i = 0; i < mesh->n_vertices; ++i)
+			h_m.VT[i] = i;
+	}
+
 	cuda_create_CHE(&h_m, dd_m, d_m, true, true);
 	dd_mesh.push_back(dd_m);
 	d_mesh.push_back(d_m);
@@ -427,12 +443,12 @@ void optix::add_mesh(OptixBuildInput & optix_mesh, CUdeviceptr & d_vertex_ptr, u
 
 	optix_mesh.triangleArray.vertexFormat			= OPTIX_VERTEX_FORMAT_FLOAT3;
 	optix_mesh.triangleArray.vertexStrideInBytes	= 3 * sizeof(float);
-	optix_mesh.triangleArray.numVertices			= mesh->n_vertices;
+	optix_mesh.triangleArray.numVertices			= h_m.n_vertices;
 	optix_mesh.triangleArray.vertexBuffers			= &d_vertex_ptr;
 
 	optix_mesh.triangleArray.indexFormat			= OPTIX_INDICES_FORMAT_UNSIGNED_INT3;
 	optix_mesh.triangleArray.indexStrideInBytes		= 3 * sizeof(index_t);
-	optix_mesh.triangleArray.numIndexTriplets		= mesh->n_faces;
+	optix_mesh.triangleArray.numIndexTriplets		= h_m.n_trigs;
 	optix_mesh.triangleArray.indexBuffer			= (CUdeviceptr) dd_m->VT;
 
 	optix_mesh.triangleArray.transformFormat		= OPTIX_TRANSFORM_FORMAT_MATRIX_FLOAT12;
@@ -445,6 +461,22 @@ void optix::add_mesh(OptixBuildInput & optix_mesh, CUdeviceptr & d_vertex_ptr, u
 	optix_mesh.triangleArray.sbtIndexOffsetBuffer			= 0;
 	optix_mesh.triangleArray.sbtIndexOffsetSizeInBytes		= 0;
 	optix_mesh.triangleArray.sbtIndexOffsetStrideInBytes	= 0;
+
+	if(mesh->is_scene())
+	{
+		delete [] h_m.VT;
+
+		scene * sc = (scene *) mesh;
+		cudaMalloc(&optix_params.sc.materials, sc->materials.size() * sizeof(scene::material));
+		cudaMalloc(&optix_params.sc.textures, sc->textures.size() * sizeof(scene::texture));
+		cudaMalloc(&optix_params.sc.trig_mat, mesh->n_vertices / 3 * sizeof(index_t));
+		cudaMalloc(&optix_params.sc.texcoords, mesh->n_vertices * sizeof(vec2));
+
+		cudaMemcpy(optix_params.sc.materials, sc->materials.data(), sc->materials.size() * sizeof(scene::material), cudaMemcpyHostToDevice);
+		cudaMemcpy(optix_params.sc.textures, sc->textures.data(), sc->textures.size() * sizeof(scene::texture), cudaMemcpyHostToDevice);
+		cudaMemcpy(optix_params.sc.trig_mat, sc->trig_mat, mesh->n_vertices / 3 * sizeof(index_t), cudaMemcpyHostToDevice);
+		cudaMemcpy(optix_params.sc.texcoords, sc->texcoords, mesh->n_vertices * sizeof(vec2), cudaMemcpyHostToDevice);
+	}
 }
 
 

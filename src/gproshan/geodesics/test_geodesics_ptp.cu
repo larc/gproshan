@@ -1,7 +1,6 @@
 #include <gproshan/geodesics/test_geodesics_ptp.cuh>
 #include <gproshan/geodesics/test_geodesics_ptp.h>
 
-#include <gproshan/geodesics/geodesics_ptp.cuh>
 #include <gproshan/geodesics/geodesics_ptp.h>
 
 #include <fstream>
@@ -11,14 +10,12 @@
 #include <thrust/device_vector.h>
 #include <thrust/execution_policy.h>
 
-using namespace std;
-
 
 // geometry processing and shape analysis framework
 namespace gproshan {
 
 
-vector<pair<index_t, real_t> > iter_error_parallel_toplesets_propagation_gpu(che * mesh, const vector<index_t> & sources, const vector<index_t> & limits, const index_t * sorted_index, const real_t * exact_dist, double & time_ptp)
+std::vector<std::pair<index_t, real_t> > iter_error_parallel_toplesets_propagation_gpu(che * mesh, const std::vector<index_t> & sources, const std::vector<index_t> & limits, const index_t * sorted_index, const real_t * exact_dist, double & time_ptp)
 {
 	cudaDeviceReset();
 
@@ -46,7 +43,7 @@ vector<pair<index_t, real_t> > iter_error_parallel_toplesets_propagation_gpu(che
 	real_t * d_error;
 	cudaMalloc(&d_error, sizeof(real_t) * h_mesh->n_vertices);
 
-	vector<pair<index_t, real_t> > iter_error = iter_error_run_ptp_gpu(d_mesh, h_mesh->n_vertices, h_dist, d_dist, sources, limits, sorted_index, d_sorted, exact_dist, d_error);
+	std::vector<std::pair<index_t, real_t> > iter_error = iter_error_run_ptp_gpu(d_mesh, h_mesh->n_vertices, h_dist, d_dist, sources, limits, sorted_index, d_sorted, exact_dist, d_error);
 
 	delete [] h_dist;
 	cudaFree(d_error);
@@ -69,7 +66,7 @@ vector<pair<index_t, real_t> > iter_error_parallel_toplesets_propagation_gpu(che
 }
 
 /// Return an array of time in seconds.
-double * times_farthest_point_sampling_ptp_gpu(che * mesh, vector<index_t> & samples, size_t n, real_t radio)
+double * times_farthest_point_sampling_ptp_gpu(che * mesh, std::vector<index_t> & samples, size_t n, real_t radio)
 {
 	cudaDeviceReset();
 
@@ -95,7 +92,7 @@ double * times_farthest_point_sampling_ptp_gpu(che * mesh, vector<index_t> & sam
 	index_t * d_sorted;
 	cudaMalloc(&d_sorted, sizeof(index_t) * h_mesh->n_vertices);
 
-	vector<index_t> limits;
+	std::vector<index_t> limits;
 	index_t * toplesets = new index_t[h_mesh->n_vertices];
 	index_t * sorted_index = new index_t[h_mesh->n_vertices];
 
@@ -120,7 +117,7 @@ double * times_farthest_point_sampling_ptp_gpu(che * mesh, vector<index_t> & sam
 		limits.clear();
 		mesh->compute_toplesets(toplesets, sorted_index, limits, samples);
 
-		d = run_ptp_gpu(d_mesh, h_mesh->n_vertices, h_dist, d_dist, samples, limits, sorted_index, d_sorted, d_error);
+//		d = run_ptp_gpu(d_mesh, samples, h_mesh->n_vertices, h_dist, d_dist, {limits, sorted_index}, d_error, nullptr, nullptr, d_sorted);
 
 		// 1 indexing
 		#ifdef GPROSHAN_FLOAT
@@ -161,7 +158,7 @@ double * times_farthest_point_sampling_ptp_gpu(che * mesh, vector<index_t> & sam
 	return times;
 }
 
-vector<pair<index_t, real_t> > iter_error_run_ptp_gpu(CHE * d_mesh, const index_t & n_vertices, real_t * h_dist, real_t ** d_dist, const vector<index_t> & sources, const vector<index_t> & limits, const index_t * h_sorted, index_t * d_sorted, const real_t * exact_dist, real_t * d_error)
+std::vector<std::pair<index_t, real_t> > iter_error_run_ptp_gpu(CHE * d_mesh, const index_t & n_vertices, real_t * h_dist, real_t ** d_dist, const std::vector<index_t> & sources, const std::vector<index_t> & limits, const index_t * h_sorted, index_t * d_sorted, const real_t * exact_dist, real_t * d_error)
 {
 	#pragma omp parallel for
 	for(index_t v = 0; v < n_vertices; ++v)
@@ -174,7 +171,7 @@ vector<pair<index_t, real_t> > iter_error_run_ptp_gpu(CHE * d_mesh, const index_
 	cudaMemcpy(d_dist[1], h_dist, sizeof(real_t) * n_vertices, cudaMemcpyHostToDevice);
 	cudaMemcpy(d_sorted, h_sorted, sizeof(index_t) * n_vertices, cudaMemcpyHostToDevice);
 
-	vector<pair<index_t, real_t> > iter_error;
+	std::vector<std::pair<index_t, real_t> > iter_error;
 	iter_error.reserve(limits.size());
 
 	index_t d = 0;
@@ -189,12 +186,12 @@ vector<pair<index_t, real_t> > iter_error_run_ptp_gpu(CHE * d_mesh, const index_
 		end = limits[j];
 		n_cond = limits[i + 1] - start;
 
-		relax_ptp <<< NB(end - start), NT >>> (d_mesh, d_dist[!d], d_dist[d], d_sorted, end, start);
+		relax_ptp <<< NB(end - start), NT >>> (d_mesh, d_dist[!d], d_dist[d], nullptr, nullptr, start, end, d_sorted);
 
 		// begin calculating iteration error
 		cudaMemcpy(h_dist, d_dist[!d], sizeof(real_t) * n_vertices, cudaMemcpyDeviceToHost);
 		if(j == limits.size() - 1)
-			iter_error.push_back(make_pair(n_iter, compute_error(h_dist, exact_dist, n_vertices, sources.size())));
+			iter_error.push_back({n_iter, compute_error(h_dist, exact_dist, n_vertices, sources.size())});
 		// end
 
 		relative_error <<< NB(n_cond), NT >>> (d_error, d_dist[!d], d_dist[d], start, start + n_cond, d_sorted);

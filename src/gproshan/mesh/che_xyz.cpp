@@ -5,19 +5,16 @@
 #include <cassert>
 
 
-using namespace std;
-
-
 // geometry processing and shape analysis framework
 namespace gproshan {
 
 
-che_xyz::che_xyz(const string & file)
+che_xyz::che_xyz(const std::string & file)
 {
 	init(file);
 }
 
-void che_xyz::read_file(const string & file)
+void che_xyz::read_file(const std::string & file)
 {
 	FILE * fp = fopen(file.c_str(), "r");
 	assert(fp);
@@ -27,8 +24,8 @@ void che_xyz::read_file(const string & file)
 	unsigned char r, g, b;
 	size_t n;
 
-	vector<vertex> vertices;
-	vector<rgb_t> vertices_color;
+	std::vector<vertex> vertices;
+	std::vector<rgb_t> vertices_color;
 
 	while(fgets(line, sizeof(line), fp))
 	{
@@ -47,7 +44,7 @@ void che_xyz::read_file(const string & file)
 	memcpy(VC, vertices_color.data(), n_vertices * sizeof(rgb_t));
 }
 
-void che_xyz::write_file(const che * mesh, const string & file, const bool & color)
+void che_xyz::write_file(const che * mesh, const std::string & file, const bool & color)
 {
 	FILE * fp = fopen((file + ".xyz").c_str(), "w");
 	assert(fp);

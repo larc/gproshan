@@ -2,7 +2,6 @@
 #include <gproshan/raytracing/rt_utils.h>
 #include <gproshan/raytracing/rt_optix_params.h>
 
-
 #include <optix_device.h>
 #include <cuda_runtime.h>
 
@@ -45,7 +44,7 @@ extern "C" __global__ void __closesthit__radiance()
 	float2 bar = optixGetTriangleBarycentrics();
 
 	OptixTraversableHandle gas = optixGetGASTraversableHandle();
-	const unsigned int sbtID = optixGetSbtGASIndex();
+	const index_t sbtID = optixGetSbtGASIndex();
 	const float time = optixGetRayTime();
 
 	vertex data[3];
@@ -55,14 +54,14 @@ extern "C" __global__ void __closesthit__radiance()
 	const vertex & B = data[1];
 	const vertex & C = data[2];
 
-	eval_hit hit(mesh, primID, bar.x, bar.y);
-	hit.normal = optix_params.flat ? normalize((B - A) * (C - A)) : hit.normal;
+	eval_hit hit(mesh, primID, bar.x, bar.y, optix_params.sc);
+	hit.normal = optix_params.flat ? normalize(cross(B - A, C - A)) : hit.normal;
 	hit.position = (1.f - hit.u - hit.v) * A + hit.u * B + hit.v * C;
 
-	vertex li = eval_li(hit, optix_params.lights, optix_params.n_lights,
+	vertex li = eval_li(hit, optix_params.lights, optix_params.n_lights, optix_params.cam_pos,
 						[&](const vec3 & position, const vec3 & wi, const float & light_dist) -> bool
 						{
-							unsigned int occluded = 1;
+							uint32_t occluded = 1;
 							optixTrace( optix_params.traversable,
 										* (float3 *) &position,
 										* (float3 *) &wi,

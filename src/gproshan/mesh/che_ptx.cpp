@@ -8,37 +8,37 @@
 #include <CImg.h>
 
 using namespace cimg_library;
-using namespace std;
 
 
 // geometry processing and shape analysis framework
 namespace gproshan {
 
 
-che_ptx::che_ptx(const string & file)
+che_ptx::che_ptx(const std::string & file)
 {
 	init(file);
 }
 
-void che_ptx::read_file(const string & file)
+void che_ptx::read_file(const std::string & file)
 {
 	FILE * fp = fopen(file.c_str(), "r");
 	assert(fp);
 
 	size_t n_rows, n_cols;
-	float T[12], R[12], tr[4];
+	vertex p;	// scanner position
+	mat3 A;		// scanner axis
+	mat4 T;		// transformation matrix
 
 	fscanf(fp, "%lu %lu", &n_rows, &n_cols);
+	fscanf(fp, "%f %f %f", &p.x(), &p.y(), &p.z());
 
-	for(index_t i = 0; i < 12; ++i)
-		fscanf(fp, "%f", T + i);
-
-	for(index_t i = 0; i < 12; ++i)
-		fscanf(fp, "%f", R + i);
+	for(index_t i = 0; i < 3; ++i)
+	for(index_t j = 0; j < 3; ++j)
+		fscanf(fp, "%f", &A(i, j));
 
 	for(index_t i = 0; i < 4; ++i)
-		fscanf(fp, "%f", tr + i);
-
+	for(index_t j = 0; j < 4; ++j)
+		fscanf(fp, "%f", &T(i, j));
 
 	alloc(n_rows * n_cols, 2 * (n_rows - 1) * (n_cols - 1));
 
@@ -55,16 +55,16 @@ void che_ptx::read_file(const string & file)
 
 	if(rgb)
 	{
-		GT[0] = { x, y, z };
-		VC[0] = { r, g, b };
+		GT[0] = {x, y, z};
+		VC[0] = {r, g, b};
 		VHC[0] = intensity;
 
 		for(index_t v = 1; v < n_vertices; ++v)
 		{
 			fgets(line, sizeof(line), fp);
 			sscanf(line, "%f %f %f %f %hhu %hhu %hhu", &x, &y, &z, &intensity, &r, &g, &b);
-			GT[v] = { x, y, z };
-			VC[v] = { r, g, b };
+			GT[v] = {x, y, z};
+			VC[v] = {r, g, b};
 			VHC[v] = intensity;
 		}
 
@@ -72,18 +72,18 @@ void che_ptx::read_file(const string & file)
 		img.permute_axes("zycx");
 		img.save((file + ".jpg").c_str());
 
-		thread([](CImg<real_t> img) { img.mirror("y").display(); }, img).detach();
+		std::thread([](CImg<real_t> img) { img.mirror("y").display(); }, img).detach();
 	}
 	else
 	{
-		GT[0] = { x, y, z };
+		GT[0] = {x, y, z};
 		VHC[0] = intensity;
 
 		for(index_t v = 1; v < n_vertices; ++v)
 		{
 			fgets(line, sizeof(line), fp);
 			sscanf(line, "%f %f %f %f", &x, &y, &z, &intensity);
-			GT[v] = { x, y, z };
+			GT[v] = {x, y, z};
 			VHC[v] = intensity;
 		}
 	}
@@ -101,7 +101,7 @@ void che_ptx::read_file(const string & file)
 		VT[he++] = j;
 		VT[he++] = k;
 
-		if(pdetriq(trig(he - 1)) < 0.1)
+		if(pdetriq(he_trig(he - 1)) < 0.1)
 			he -= 3;
 	};
 
@@ -118,7 +118,7 @@ void che_ptx::read_file(const string & file)
 	}
 
 	rw(n_half_edges)	= he;
-	rw(n_faces)			= he / che::mtrig;
+	rw(n_trigs)			= he / che::mtrig;
 }
 
 void che_ptx::write_file(const che * mesh, const std::string & file, const size_t & n_rows, const size_t & n_cols)
@@ -141,8 +141,9 @@ void che_ptx::write_file(const che * mesh, const std::string & file, const size_
 	{
 		const vertex & v = mesh->point(i);
 		const rgb_t & c = mesh->rgb(i);
+		const real_t & h = mesh->heatmap(i);
 
-		fprintf(fp, "%f %f %f %f %hhu %hhu %hhu\n", (float) v.x(), (float) v.y(), (float) v.z(), (float) 0, c.r, c.g, c.b );
+		fprintf(fp, "%f %f %f %f %hhu %hhu %hhu\n", (float) v.x(), (float) v.y(), (float) v.z(), (float) h, c.r, c.g, c.b );
 	}
 }
 

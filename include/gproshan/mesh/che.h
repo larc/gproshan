@@ -9,6 +9,12 @@
 #include <string>
 
 
+#define he_trig(he) ((he) / 3)
+#define he_next(he) (3 * he_trig(he) + ((he) + 1) % 3)
+#define he_prev(he) (3 * he_trig(he) + ((he) + 2) % 3)
+#define for_star(he, mesh, v) for(index_t stop = mesh->EVT[v], he = mesh->EVT[v]; he != NIL; he = (he = mesh->OT[he_prev(he)]) != stop ? he : NIL)
+
+
 // geometry processing and shape analysis framework
 namespace gproshan {
 
@@ -32,12 +38,16 @@ class che
 			unsigned char g = 240;
 			unsigned char b = 250;
 
+			rgb_t() = default;
+			rgb_t(const vertex & v);
+			rgb_t(const float & fr, const float & fg, const float & fb);
+			rgb_t(const unsigned char & cr, const unsigned char & cg, const unsigned char & cb);
 			unsigned char & operator [] (const index_t & i);
 			operator vertex () const;
 		};
 
 		const size_t n_vertices		= 0;
-		const size_t n_faces		= 0;
+		const size_t n_trigs		= 0;
 		const size_t n_half_edges	= 0;
 		const size_t n_edges		= 0;
 
@@ -45,7 +55,7 @@ class che
 
 	protected:
 		vertex * GT		= nullptr;	///< geometry table			: v		-> vertex
-		index_t * VT	= nullptr;	///< vertex table (faces)	: he	-> v
+		index_t * VT	= nullptr;	///< vertex table (trigs)	: he	-> v
 		index_t * OT	= nullptr;	///< opposite table			: he	-> he
 		index_t * EVT	= nullptr;	///< extra vertex table		: v		-> he
 		index_t * ET	= nullptr;	///< edge table				: e		-> he
@@ -53,14 +63,14 @@ class che
 
 		vertex * VN		= nullptr;	///< vertex normals			: v		-> normal(v)
 		rgb_t * VC		= nullptr;	///< vertex color			: v		-> color(v)
-		real_t * VHC	= nullptr;	///< vertex color heat map	: v		-> heatmap(v)
+		real_t * VHC	= nullptr;	///< vertex color heatmap	: v		-> heatmap(v)
 
 		bool manifold = true;
 
 	public:
 		che(const che & mesh);
 		che(const size_t & n_v = 0, const size_t & n_f = 0);
-		che(const vertex * vertices, const index_t & n_v, const index_t * faces, const index_t & n_f);
+		che(const vertex * vertices, const index_t & n_v, const index_t * trigs, const index_t & n_f);
 		virtual ~che();
 
 		// vertex access geometry methods to xyz point values, normals, and gradient
@@ -84,7 +94,7 @@ class che
 
 		// update methods
 		void reload();
-		void normalize_sphere(const real_t & r = 1);
+		mat4 normalize_sphere(const real_t & r = 1) const;
 		mat4 normalize_box(const real_t & side = 2) const;
 		che * merge(const che * mesh, const std::vector<index_t> & com_vertices);
 		void update_vertices(const vertex * positions, const size_t & n = 0, const index_t & v_i = 0);
@@ -96,7 +106,7 @@ class che
 		void remove_non_manifold_vertices();
 		void set_head_vertices(index_t * head, const size_t & n);
 
-		// half edge access methods triangular faces and navigation
+		// half edge access methods triangular trigs and navigation
 		const index_t & halfedge(const index_t & he) const;
 		const index_t & twin_he(const index_t & he) const;
 		const index_t &	edge_u(const index_t & e) const;
@@ -133,7 +143,8 @@ class che
 		real_t mean_edge() const;
 		real_t area_surface() const;
 		bool is_manifold() const;
-		bool is_pointcloud() const;
+		virtual bool is_scene() const;
+		virtual bool is_pointcloud() const;
 
 		// operation methods
 		void flip(const index_t & e);
@@ -144,7 +155,7 @@ class che
 		real_t mean_curvature(const index_t & v) const;
 
 	protected:
-		void init(const vertex * vertices, const index_t & n_v, const index_t * faces, const index_t & n_f);
+		void init(const vertex * vertices, const index_t & n_v, const index_t * trigs, const index_t & n_f);
 		void init(const std::string & file);
 		void alloc(const size_t & n_v, const size_t & n_f);
 		void free();
@@ -188,32 +199,11 @@ class che::star_he::iterator
 };
 
 
-// che halfedge functions
-
-inline index_t trig(const index_t & he)
-{
-	if(he == NIL) return NIL;
-	return he / che::mtrig;
-}
-
-inline index_t next(const index_t & he)
-{
-	if(he == NIL) return NIL;
-	return che::mtrig * trig(he) + (he + 1) % che::mtrig;
-}
-
-inline index_t prev(const index_t & he)
-{
-	if(he == NIL) return NIL;
-	return che::mtrig * trig(he) + (he + che::mtrig - 1) % che::mtrig;
-}
-
-
 // simple che data structure
 struct CHE
 {
 	size_t n_vertices = 0;
-	size_t n_faces = 0;
+	size_t n_trigs = 0;
 	size_t n_half_edges = 0;
 
 	vertex * GT	= nullptr;

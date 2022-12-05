@@ -5,33 +5,11 @@
 namespace gproshan {
 
 
-__host__ __device__
-index_t cu_trig(index_t he)
-{
-	if(he == NIL) return NIL;
-	return he / che::mtrig;
-}
-
-__host__ __device__
-index_t cu_next(index_t he)
-{
-	if(he == NIL) return NIL;
-	return che::mtrig * cu_trig(he) + (he + 1) % che::mtrig;
-}
-
-__host__ __device__
-index_t cu_prev(index_t he)
-{
-	if(he == NIL) return NIL;
-	return che::mtrig * cu_trig(he) + (he + che::mtrig - 1) % che::mtrig;
-}
-
-
 void cuda_create_CHE(CHE * h_che, CHE *& dd_che, CHE *& d_che, const bool & normal, const bool & color)
 {
 	dd_che = new CHE;
 	dd_che->n_vertices = h_che->n_vertices;
-	dd_che->n_faces = h_che->n_faces;
+	dd_che->n_trigs = h_che->n_trigs;
 	dd_che->n_half_edges = h_che->n_half_edges;
 
 	cudaMalloc(&dd_che->GT, sizeof(vertex) * h_che->n_vertices);

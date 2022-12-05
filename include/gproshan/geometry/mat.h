@@ -59,7 +59,7 @@ class mat
 			mat<T, N> bt = transpose(b);
 			for(index_t i = 0; i < N; ++i)
 			for(index_t j = 0; j < N; ++j)
-				res[i][j] = (rows[i], bt[j]);
+				res[i][j] = dot(rows[i], bt[j]);
 			return res;
 		}
 
@@ -68,7 +68,7 @@ class mat
 		{
 			vec<T, N> res;
 			for(index_t i = 0; i < N; ++i)
-				res[i] = (rows[i], v);
+				res[i] = dot(rows[i], v);
 			return res;
 		}
 
@@ -92,7 +92,7 @@ class mat
 		}
 };
 
-///< std ostream
+///< std std::ostream
 template<class T, size_t N>
 std::ostream & operator << (std::ostream & os, const mat<T, N> & m)
 {
@@ -101,7 +101,7 @@ std::ostream & operator << (std::ostream & os, const mat<T, N> & m)
 	return os;
 }
 
-///< std istream
+///< std std::istream
 template<class T, size_t N>
 std::istream & operator >> (std::istream & is, mat<T, N> & m)
 {

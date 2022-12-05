@@ -6,9 +6,6 @@
 #include <algorithm>
 
 
-using namespace std;
-
-
 // geometry processing and shape analysis framework
 namespace gproshan {
 
@@ -18,6 +15,17 @@ size_t & che::rw(const size_t & n)
 	return const_cast<size_t&>(n);
 }
 
+
+che::rgb_t::rgb_t(const vertex & v): rgb_t(v.x(), v.y(), v.z()) {}
+
+che::rgb_t::rgb_t(const float & fr, const float & fg, const float & fb)
+{
+	r = (unsigned char) (fr * 255);
+	g = (unsigned char) (fg * 255);
+	b = (unsigned char) (fb * 255);
+}
+
+che::rgb_t::rgb_t(const unsigned char & cr, const unsigned char & cg, const unsigned char & cb): r(cr), g(cg), b(cb) {}
 
 unsigned char & che::rgb_t::operator [] (const index_t & i)
 {
@@ -34,7 +42,7 @@ che::che(const che & mesh)
 {
 	filename = mesh.filename;
 
-	alloc(mesh.n_vertices, mesh.n_faces);
+	alloc(mesh.n_vertices, mesh.n_trigs);
 	rw(n_edges)	= mesh.n_edges;
 
 	memcpy(GT, mesh.GT, n_vertices * sizeof(vertex));
@@ -53,9 +61,9 @@ che::che(const size_t & n_v, const size_t & n_f)
 	alloc(n_v, n_f);
 }
 
-che::che(const vertex * vertices, const index_t & n_v, const index_t * faces, const index_t & n_f)
+che::che(const vertex * vertices, const index_t & n_v, const index_t * trigs, const index_t & n_f)
 {
-	init(vertices, n_v, faces, n_f);
+	init(vertices, n_v, trigs, n_f);
 }
 
 che::~che()
@@ -104,17 +112,17 @@ vertex che::normal_trig(const index_t & f) const
 vertex che::normal_he(const index_t & he) const
 {
 	const vertex & a = GT[VT[he]];
-	const vertex & b = GT[VT[next(he)]];
-	const vertex & c = GT[VT[prev(he)]];
+	const vertex & b = GT[VT[he_next(he)]];
+	const vertex & c = GT[VT[he_prev(he)]];
 
-	return normalize((b - a) * (c - a));
+	return normalize(cross(b - a, c - a));
 }
 
 vertex che::gradient_he(const index_t & he, const real_t * f) const
 {
 	index_t i = VT[he];
-	index_t j = VT[next(he)];
-	index_t k = VT[prev(he)];
+	index_t j = VT[he_next(he)];
+	index_t k = VT[he_prev(he)];
 
 	vertex xi = GT[i];
 	vertex xj = GT[j];
@@ -122,9 +130,9 @@ vertex che::gradient_he(const index_t & he, const real_t * f) const
 
 	vertex n = normal_he(he);
 
-	vertex pij = n * (xj - xi);
-	vertex pjk = n * (xk - xj);
-	vertex pki = n * (xi - xk);
+	vertex pij = cross(n, xj - xi);
+	vertex pjk = cross(n, xk - xj);
+	vertex pki = cross(n, xi - xk);
 
 	return normalize(f[i] * pjk + f[j] * pki + f[k] * pij);
 }
@@ -136,7 +144,7 @@ vertex che::gradient(const index_t & v, const real_t * f)
 
 	for(const index_t & he: star(v))
 	{
-		area = area_trig(trig(he));
+		area = area_trig(he_trig(he));
 		area_star += area;
 		g += area * gradient_he(he, f);
 	}
@@ -192,31 +200,44 @@ void che::reload()
 	init(filename);
 }
 
-void che::normalize_sphere(const real_t & r)
+mat4 che::normalize_sphere(const real_t & r) const
 {
 	vertex center;
-
 	#pragma omp parallel for
 	for(index_t v = 0; v < n_vertices; ++v)
 	{
 		#pragma omp critical
 		center += GT[v];
 	}
-
 	center /= n_vertices;
 
-	real_t max_norm = 0;
+	real_t mean_dist = 0;
+	#pragma omp parallel for reduction(+: mean_dist)
+	for(index_t v = 0; v < n_vertices; ++v)
+		mean_dist += length(GT[v] - center);
+	mean_dist /= n_vertices;
 
-	#pragma omp parallel for reduction(max: max_norm)
+	real_t sigma_dist = 0;
+	#pragma omp parallel for reduction(+: sigma_dist)
 	for(index_t v = 0; v < n_vertices; ++v)
 	{
-		GT[v] -= center;
-		max_norm = std::max(max_norm, norm(GT[v]));
+		const real_t & diff = mean_dist - length(GT[v] - center);
+		sigma_dist += diff * diff;
 	}
+	sigma_dist = sqrt(sigma_dist / n_vertices);
 
-	#pragma omp parallel for
-	for(index_t v = 0; v < n_vertices; ++v)
-		GT[v] *= r / max_norm;
+	mat4 model_mat;
+
+	const real_t & scale = r / (mean_dist + sigma_dist);
+	model_mat(0, 0) = model_mat(1, 1) = model_mat(2, 2) = scale;
+
+	center *= -scale;
+	model_mat(0, 3) = center.x();
+	model_mat(1, 3) = center.y();
+	model_mat(2, 3) = center.z();
+	model_mat(3, 3) = 1;
+
+	return model_mat;
 }
 
 mat4 che::normalize_box(const real_t & side) const
@@ -228,13 +249,13 @@ mat4 che::normalize_box(const real_t & side) const
 	{
 		const vertex & p = point(v);
 
-		pmin.x() = min(pmin.x(), p.x());
-		pmin.y() = min(pmin.y(), p.y());
-		pmin.z() = min(pmin.z(), p.z());
+		pmin.x() = std::min(pmin.x(), p.x());
+		pmin.y() = std::min(pmin.y(), p.y());
+		pmin.z() = std::min(pmin.z(), p.z());
 
-		pmax.x() = max(pmax.x(), p.x());
-		pmax.y() = max(pmax.y(), p.y());
-		pmax.z() = max(pmax.z(), p.z());
+		pmax.x() = std::max(pmax.x(), p.x());
+		pmax.y() = std::max(pmax.y(), p.y());
+		pmax.z() = std::max(pmax.z(), p.z());
 	}
 
 	mat4 model_mat;
@@ -252,12 +273,12 @@ mat4 che::normalize_box(const real_t & side) const
 }
 
 ///< vcommon correspond to the first vertices of the mesh with indices to the main mesh (this)
-che * che::merge(const che * mesh, const vector<index_t> & vcommon)
+che * che::merge(const che * mesh, const std::vector<index_t> & vcommon)
 {
 	const size_t & n_vcommon = vcommon.size();
 	const size_t & n_vnew = mesh->n_vertices - n_vcommon;
 
-	che * new_mesh = new che(n_vertices + n_vnew, n_faces + mesh->n_faces);
+	che * new_mesh = new che(n_vertices + n_vnew, n_trigs + mesh->n_trigs);
 
 	memcpy(new_mesh->GT, GT, sizeof(vertex) * n_vertices);
 	memcpy(new_mesh->GT + n_vertices, mesh->GT + n_vcommon, sizeof(vertex) * n_vnew);
@@ -302,7 +323,7 @@ void che::update_heatmap(const real_t * hm)
 
 void che::update_normals()
 {
-	if(!n_faces) return;
+	if(!n_trigs) return;
 
 	#pragma omp parallel for
 	for(index_t v = 0; v < n_vertices; ++v)
@@ -311,7 +332,7 @@ void che::update_normals()
 
 		n = 0;
 		for(const index_t & he: star(v))
-			n += area_trig(trig(he)) * normal_he(he);
+			n += area_trig(he_trig(he)) * normal_he(he);
 
 		n /= norm(n);
 	}
@@ -329,7 +350,7 @@ void che::multiplicate_vertices()
 	vertex * old_GT = GT;
 	index_t * old_VT = VT;
 	size_t nv = n_vertices;
-	size_t nf = n_faces;
+	size_t nf = n_trigs;
 
 	GT = nullptr;
 	VT = nullptr;
@@ -375,7 +396,7 @@ void che::multiplicate_vertices()
 	}
 }
 
-void che::remove_vertices(const vector<index_t> & vertices)
+void che::remove_vertices(const std::vector<index_t> & vertices)
 {
 	if(!vertices.size()) return;
 
@@ -385,21 +406,21 @@ void che::remove_vertices(const vector<index_t> & vertices)
 		for(const index_t & he: star(v))
 		{
 			VT[he] = NIL;
-			VT[prev(he)] = NIL;
-			VT[next(he)] = NIL;
+			VT[he_prev(he)] = NIL;
+			VT[he_next(he)] = NIL;
 
 			gproshan_debug_var(he);
-			gproshan_debug_var(next(he));
-			gproshan_debug_var(prev(he));
+			gproshan_debug_var(he_next(he));
+			gproshan_debug_var(he_prev(he));
 		}
 
 		gproshan_debug_var(EVT[v]);
 		EVT[v] = NIL;
 	}
 	/* save in vectors */
-	vector<vertex> new_vertices;
-	vector<index_t> removed;
-	vector<index_t> new_faces; // each 3
+	std::vector<vertex> new_vertices;
+	std::vector<index_t> removed;
+	std::vector<index_t> new_trigs; // each 3
 
 	gproshan_debug(removing vertex);
 	for(index_t v = 0; v < n_vertices; ++v)
@@ -431,15 +452,15 @@ void che::remove_vertices(const vector<index_t> & vertices)
 
 	for(index_t he = 0; he < n_half_edges; ++he)
 		if(VT[he] != NIL)
-			new_faces.push_back(VT[he]);
+			new_trigs.push_back(VT[he]);
 		else gproshan_error_var(he);
 
 	gproshan_debug_var(new_vertices.size());
-	gproshan_debug_var(new_faces.size());
+	gproshan_debug_var(new_trigs.size());
 	gproshan_debug(removing vertex);
 	free();
 	gproshan_debug(removing vertex);
-	init(new_vertices.data(), new_vertices.size(), new_faces.data(), new_faces.size() / che::mtrig);
+	init(new_vertices.data(), new_vertices.size(), new_trigs.data(), new_trigs.size() / che::mtrig);
 	gproshan_debug(removing vertex);
 }
 
@@ -456,9 +477,9 @@ void che::remove_non_manifold_vertices()
 	}
 
 	/* save in vectors */
-	vector<vertex> new_vertices;
-	vector<index_t> removed;
-	vector<index_t> new_faces; // each 3
+	std::vector<vertex> new_vertices;
+	std::vector<index_t> removed;
+	std::vector<index_t> new_trigs; // each 3
 
 	gproshan_debug(removing vertex);
 	for(index_t v = 0; v < n_vertices; ++v)
@@ -490,15 +511,15 @@ void che::remove_non_manifold_vertices()
 
 	for(index_t he = 0; he < n_half_edges; ++he)
 		if(VT[he] != NIL)
-			new_faces.push_back(VT[he]);
+			new_trigs.push_back(VT[he]);
 		else gproshan_error_var(he);
 
 	gproshan_debug_var(new_vertices.size());
-	gproshan_debug_var(new_faces.size());
+	gproshan_debug_var(new_trigs.size());
 	gproshan_debug(removing vertex);
 	free();
 	gproshan_debug(removing vertex);
-	init(new_vertices.data(), new_vertices.size(), new_faces.data(), new_faces.size() / che::mtrig);
+	init(new_vertices.data(), new_vertices.size(), new_trigs.data(), new_trigs.size() / che::mtrig);
 	gproshan_debug(removing vertex);
 }
 
@@ -515,7 +536,7 @@ void che::set_head_vertices(index_t * head, const size_t & n)
 				break;
 			}
 
-		swap(GT[v], GT[i]);
+		std::swap(GT[v], GT[i]);
 
 		for(const index_t & he: star(v))
 			VT[he] = i;
@@ -523,12 +544,12 @@ void che::set_head_vertices(index_t * head, const size_t & n)
 		for(const index_t & he: star(i))
 			VT[he] = i;
 
-		swap(EVT[v], EVT[i]);
+		std::swap(EVT[v], EVT[i]);
 	}
 }
 
 
-// half edge access methods triangular faces and navigation
+// half edge access methods triangular trigs and navigation
 
 const index_t & che::halfedge(const index_t & he) const
 {
@@ -551,7 +572,7 @@ const index_t & che::edge_u(const index_t & e) const
 const index_t & che::edge_v(const index_t & e) const
 {
 	assert(e < n_edges);
-	return VT[next(ET[e])];
+	return VT[he_next(ET[e])];
 }
 
 const index_t & che::edge_he_0(const index_t & e) const
@@ -581,7 +602,7 @@ const vertex & che::vertex_edge_u(const index_t & e) const
 const vertex & che::vertex_edge_v(const index_t & e) const
 {
 	assert(e < n_edges);
-	return GT[VT[next(ET[e])]];
+	return GT[VT[he_next(ET[e])]];
 }
 
 const index_t & che::evt(const index_t & v) const
@@ -598,17 +619,17 @@ che::star_he che::star(const index_t & v) const
 	return {this, v};
 }
 
-vector<index_t> che::link(const index_t & v) const
+std::vector<index_t> che::link(const index_t & v) const
 {
 	assert(v < n_vertices);
 
-	vector<index_t> vlink;
+	std::vector<index_t> vlink;
 
 	if(is_vertex_bound(v))
-		vlink.push_back(VT[next(EVT[v])]);
+		vlink.push_back(VT[he_next(EVT[v])]);
 
 	for(const index_t & he: star(v))
-		vlink.push_back(VT[prev(he)]);
+		vlink.push_back(VT[he_prev(he)]);
 
 	return vlink;
 }
@@ -618,7 +639,7 @@ void che::edge_collapse(const std::vector<index_t> & sort_edges)
 	// TODO
 }
 
-void che::compute_toplesets(index_t *& toplesets, index_t *& sorted, vector<index_t> & limits, const vector<index_t> & sources, const index_t & k)
+void che::compute_toplesets(index_t *& toplesets, index_t *& sorted, std::vector<index_t> & limits, const std::vector<index_t> & sources, const index_t & k)
 {
 	if(!sources.size()) return;
 
@@ -630,9 +651,7 @@ void che::compute_toplesets(index_t *& toplesets, index_t *& sorted, vector<inde
 	for(const index_t & s: sources)
 	{
 		sorted[p++] = s;
-
-		if(toplesets[s] == NIL)
-			toplesets[s] = level;
+		toplesets[s] = level;
 	}
 
 	limits.push_back(0);
@@ -643,7 +662,6 @@ void che::compute_toplesets(index_t *& toplesets, index_t *& sorted, vector<inde
 		if(toplesets[v] > level)
 		{
 			if(++level > k) break;
-
 			limits.push_back(i);
 		}
 
@@ -665,12 +683,12 @@ void che::compute_toplesets(index_t *& toplesets, index_t *& sorted, vector<inde
 // boundary methods
 
 ///< return a vector of indices of one vertex per boundary
-vector<index_t> che::bounds() const
+std::vector<index_t> che::bounds() const
 {
-	if(!n_faces) return {};
+	if(!n_trigs) return {};
 	if(!manifold) return {};
 
-	vector<index_t> vbounds;
+	std::vector<index_t> vbounds;
 
 	bool * is_bound = new bool[n_vertices];
 	memset(is_bound, 0, sizeof(bool) * n_vertices);
@@ -690,16 +708,16 @@ vector<index_t> che::bounds() const
 }
 
 ///< return a vector of the indices of the boundary where v belongs
-vector<index_t> che::boundary(const index_t & v) const
+std::vector<index_t> che::boundary(const index_t & v) const
 {
-	vector<index_t> vbound;
+	std::vector<index_t> vbound;
 
 	index_t he_end = EVT[v];
 	index_t he = he_end;
 	do
 	{
 		vbound.push_back(VT[he]);
-		he = EVT[VT[next(he)]];
+		he = EVT[VT[he_next(he)]];
 	}
 	while(he != NIL && he != he_end);
 
@@ -721,21 +739,21 @@ bool che::is_edge_bound(const index_t & e) const
 
 // file, name, and system methods
 
-const string che::name() const
+const std::string che::name() const
 {
 	index_t p = filename.find_last_of('/');
 	index_t q = filename.find_last_of('.');
 	return filename.substr(p + 1, q - p - 1);
 }
 
-const string che::name_size() const
+const std::string che::name_size() const
 {
-	return name() + "_" + to_string(n_vertices);
+	return name() + "_" + std::to_string(n_vertices);
 }
 
-const string che::filename_size() const
+const std::string che::filename_size() const
 {
-	return filename + "_" + to_string(n_vertices);
+	return filename + "_" + std::to_string(n_vertices);
 }
 
 
@@ -743,7 +761,7 @@ const string che::filename_size() const
 
 size_t che::genus() const
 {
-	size_t g = n_vertices - n_edges + n_faces;
+	size_t g = n_vertices - n_edges + n_trigs;
 	return (g - 2) / (-2);
 }
 
@@ -765,7 +783,7 @@ size_t che::max_degree() const
 		d = 0;
 		for([[maybe_unused]] const index_t & he: star(v)) ++d;
 		d += is_vertex_bound(v);
-		md = max(md, d);
+		md = std::max(md, d);
 	}
 
 	return md;
@@ -776,10 +794,10 @@ real_t che::quality() const
 	real_t q = 0;
 
 	#pragma omp parallel for reduction(+: q)
-	for(index_t t = 0; t < n_faces; ++t)
+	for(index_t t = 0; t < n_trigs; ++t)
 		q += pdetriq(t) > 0.6; // is confederating good triangle
 
-	return q * 100 / n_faces;
+	return q * 100 / n_trigs;
 }
 
 real_t che::mean_edge() const
@@ -788,7 +806,7 @@ real_t che::mean_edge() const
 
 	#pragma omp parallel for reduction(+: m)
 	for(index_t e = 0; e < n_edges; ++e)
-		m += norm(GT[VT[ET[e]]] - GT[VT[next(ET[e])]]);
+		m += norm(GT[VT[ET[e]]] - GT[VT[he_next(ET[e])]]);
 
 	return m / n_edges;
 }
@@ -798,7 +816,7 @@ real_t che::area_surface() const
 	real_t area = 0;
 
 	#pragma omp parallel for reduction(+: area)
-	for(index_t i = 0; i < n_faces; ++i)
+	for(index_t i = 0; i < n_trigs; ++i)
 		area += area_trig(i);
 
 	return area;
@@ -809,9 +827,14 @@ bool che::is_manifold() const
 	return manifold;
 }
 
+bool che::is_scene() const
+{
+	return false;
+}
+
 bool che::is_pointcloud() const
 {
-	return n_faces == 0;
+	return n_trigs == 0;
 }
 
 
@@ -827,60 +850,60 @@ void che::flip(const index_t & e)
 
 	index_t va = VT[ha];
 	index_t vb = VT[hb];
-	index_t vc = VT[prev(ha)];
-	index_t vd = VT[prev(hb)];
+	index_t vc = VT[he_prev(ha)];
+	index_t vd = VT[he_prev(hb)];
 
-	index_t et_pa = EHT[prev(ha)];
-	index_t et_na = EHT[next(ha)];
-	index_t et_pb = EHT[prev(hb)];
-	index_t et_nb = EHT[next(hb)];
+	index_t et_pa = EHT[he_prev(ha)];
+	index_t et_na = EHT[he_next(ha)];
+	index_t et_pb = EHT[he_prev(hb)];
+	index_t et_nb = EHT[he_next(hb)];
 
-	index_t ot_pa = OT[prev(ha)];
-	index_t ot_na = OT[next(ha)];
-	index_t ot_pb = OT[prev(hb)];
-	index_t ot_nb = OT[next(hb)];
+	index_t ot_pa = OT[he_prev(ha)];
+	index_t ot_na = OT[he_next(ha)];
+	index_t ot_pb = OT[he_prev(hb)];
+	index_t ot_nb = OT[he_next(hb)];
 
-	VT[prev(ha)] = vb;
+	VT[he_prev(ha)] = vb;
 	VT[ha] = vc;
-	VT[next(ha)] = vd;
-	VT[prev(hb)] = va;
+	VT[he_next(ha)] = vd;
+	VT[he_prev(hb)] = va;
 	VT[hb] = vd;
-	VT[next(hb)] = vc;
+	VT[he_next(hb)] = vc;
 
-	if(ot_pa != NIL) OT[ot_pa] = next(hb);
-	if(ot_na != NIL) OT[ot_na] = prev(ha);
-	if(ot_pb != NIL) OT[ot_pb] = next(ha);
-	if(ot_nb != NIL) OT[ot_nb] = prev(hb);
+	if(ot_pa != NIL) OT[ot_pa] = he_next(hb);
+	if(ot_na != NIL) OT[ot_na] = he_prev(ha);
+	if(ot_pb != NIL) OT[ot_pb] = he_next(ha);
+	if(ot_nb != NIL) OT[ot_nb] = he_prev(hb);
 
-	OT[prev(ha)] = ot_na;
-	OT[next(ha)] = ot_pb;
-	OT[prev(hb)] = ot_nb;
-	OT[next(hb)] = ot_pa;
+	OT[he_prev(ha)] = ot_na;
+	OT[he_next(ha)] = ot_pb;
+	OT[he_prev(hb)] = ot_nb;
+	OT[he_next(hb)] = ot_pa;
 
-	ET[et_pa] = prev(ha);
-	ET[et_na] = next(ha);
-	ET[et_pb] = prev(hb);
-	ET[et_nb] = next(hb);
+	ET[et_pa] = he_prev(ha);
+	ET[et_na] = he_next(ha);
+	ET[et_pb] = he_prev(hb);
+	ET[et_nb] = he_next(hb);
 
-	EHT[prev(ha)] = EHT[OT[prev(ha)]] = et_pa;
-	EHT[next(ha)] = EHT[OT[next(ha)]] = et_na;
-	EHT[prev(hb)] = EHT[OT[prev(hb)]] = et_pb;
-	EHT[next(hb)] = EHT[OT[next(hb)]] = et_nb;
+	EHT[he_prev(ha)] = EHT[OT[he_prev(ha)]] = et_pa;
+	EHT[he_next(ha)] = EHT[OT[he_next(ha)]] = et_na;
+	EHT[he_prev(hb)] = EHT[OT[he_prev(hb)]] = et_pb;
+	EHT[he_next(hb)] = EHT[OT[he_next(hb)]] = et_nb;
 
-	if(EVT[va] == next(hb) || EVT[va] == ha) EVT[va] = prev(hb);
-	if(EVT[vb] == next(ha) || EVT[vb] == hb) EVT[vb] = prev(ha);
-	if(EVT[vc] == prev(ha)) EVT[vc] = next(hb);
-	if(EVT[vd] == prev(hb)) EVT[vd] = next(ha);
+	if(EVT[va] == he_next(hb) || EVT[va] == ha) EVT[va] = he_prev(hb);
+	if(EVT[vb] == he_next(ha) || EVT[vb] == hb) EVT[vb] = he_prev(ha);
+	if(EVT[vc] == he_prev(ha)) EVT[vc] = he_next(hb);
+	if(EVT[vd] == he_prev(hb)) EVT[vd] = he_next(ha);
 }
 
 real_t che::cotan(const index_t & he) const
 {
 	if(he == NIL) return 0;
 
-	vertex a = GT[VT[he]] - GT[VT[prev(he)]];
-	vertex b = GT[VT[next(he)]] - GT[VT[prev(he)]];
+	vertex a = GT[VT[he]] - GT[VT[he_prev(he)]];
+	vertex b = GT[VT[he_next(he)]] - GT[VT[he_prev(he)]];
 
-	return (a, b) / norm(a * b);
+	return dot(a, b) / norm(cross(a, b));
 }
 
 // https://www.mathworks.com/help/pde/ug/pdetriq.html
@@ -891,9 +914,9 @@ real_t che::pdetriq(const index_t & t) const
 {
 	index_t he = t * che::mtrig;
 	real_t h[3] = {
-					norm(GT[VT[next(he)]] - GT[VT[he]]),
-					norm(GT[VT[prev(he)]] - GT[VT[next(he)]]),
-					norm(GT[VT[he]] - GT[VT[prev(he)]])
+					norm(GT[VT[he_next(he)]] - GT[VT[he]]),
+					norm(GT[VT[he_prev(he)]] - GT[VT[he_next(he)]]),
+					norm(GT[VT[he]] - GT[VT[he_prev(he)]])
 					};
 	return (4 * sqrt(3) * area_trig(t)) / (h[0] * h[0] + h[1] * h[1] + h[2] * h[2]);
 }
@@ -901,17 +924,17 @@ real_t che::pdetriq(const index_t & t) const
 real_t che::area_trig(const index_t & t) const
 {
 	index_t he = t * che::mtrig;
-	vertex a = GT[VT[next(he)]] - GT[VT[he]];
-	vertex b = GT[VT[prev(he)]] - GT[VT[he]];
+	vertex a = GT[VT[he_next(he)]] - GT[VT[he]];
+	vertex b = GT[VT[he_prev(he)]] - GT[VT[he]];
 
-	return norm(a * b) / 2;
+	return norm(cross(a, b)) / 2;
 }
 
 real_t che::area_vertex(const index_t & v) const
 {
 	real_t area_star = 0;
 	for(const index_t & he: star(v))
-		area_star += area_trig(trig(he));
+		area_star += area_trig(he_trig(he));
 
 	return area_star / 3;
 }
@@ -924,8 +947,8 @@ real_t che::mean_curvature(const index_t & v) const
 
 	for(const index_t & he: star(v))
 	{
-		a += area_trig(trig(he));
-		h += norm(GT[VT[next(he)]] - GT[v]) * (normal(v), normal_he(he));
+		a += area_trig(he_trig(he));
+		h += norm(GT[VT[he_next(he)]] - GT[v]) * dot(normal(v), normal_he(he));
 	}
 
 	return 0.75 * h / a;
@@ -934,18 +957,18 @@ real_t che::mean_curvature(const index_t & v) const
 
 // protected
 
-void che::init(const vertex * vertices, const index_t & n_v, const index_t * faces, const index_t & n_f)
+void che::init(const vertex * vertices, const index_t & n_v, const index_t * trigs, const index_t & n_f)
 {
 	alloc(n_v, n_f);
 
 	memcpy(GT, vertices, n_vertices * sizeof(vertex));
-	memcpy(VT, faces, n_half_edges * sizeof(index_t));
+	memcpy(VT, trigs, n_half_edges * sizeof(index_t));
 
 	update_evt_ot_et();
 	update_eht();
 }
 
-void che::init(const string & file)
+void che::init(const std::string & file)
 {
 	filename = file;
 	read_file(filename);
@@ -957,8 +980,8 @@ void che::init(const string & file)
 void che::alloc(const size_t & n_v, const size_t & n_f)
 {
 	rw(n_vertices)		= n_v;
-	rw(n_faces)			= n_f;
-	rw(n_half_edges)	= che::mtrig * n_faces;
+	rw(n_trigs)			= n_f;
+	rw(n_half_edges)	= che::mtrig * n_trigs;
 	rw(n_edges)			= n_half_edges;				// max number of edges
 
 	if(n_vertices)		GT	= new vertex[n_vertices];
@@ -988,22 +1011,22 @@ void che::free()
 	delete [] VHC;	VHC = nullptr;
 }
 
-void che::read_file(const string & ) {}		/* virtual */
+void che::read_file(const std::string & ) {}		/* virtual */
 
 void che::update_evt_ot_et()
 {
-	if(!n_faces) return;
+	if(!n_trigs) return;
 
 	memset(EVT, -1, sizeof(index_t) * n_vertices);
 	memset(OT, -1, sizeof(index_t) * n_half_edges);
 
-	vector<index_t> vnhe;
+	std::vector<index_t> vnhe;
 	vnhe.assign(n_vertices, 0);
 
 	for(index_t he = 0; he < n_half_edges; ++he)
 		++vnhe[VT[he]];
 
-	vector<index_t *> vhe(n_vertices);
+	std::vector<index_t *> vhe(n_vertices);
 	vhe[0] = new index_t[n_half_edges];
 	for(index_t v = 1; v < n_vertices; ++v)
 		vhe[v] = vhe[v - 1] + vnhe[v - 1];
@@ -1016,7 +1039,7 @@ void che::update_evt_ot_et()
 	for(index_t ohe, he = 0; he < n_half_edges; ++he)
 	{
 		const index_t & u = VT[he];
-		const index_t & v = VT[next(he)];
+		const index_t & v = VT[he_next(he)];
 
 		EVT[u] = he;
 
@@ -1026,7 +1049,7 @@ void che::update_evt_ot_et()
 			for(index_t j = 0; j < vnhe[v]; ++j)
 			{
 				index_t & h = vhe[v][j];
-				if(VT[next(h)] == u)
+				if(VT[he_next(h)] == u)
 				{
 					ohe = h;
 					break;
@@ -1073,9 +1096,9 @@ void che::update_eht()
 
 // static
 
-vector<index_t> che::trig_convex_polygon(const index_t * P, const size_t & n)
+std::vector<index_t> che::trig_convex_polygon(const index_t * P, const size_t & n)
 {
-	vector<index_t> trigs;
+	std::vector<index_t> trigs;
 	trigs.reserve(che::mtrig * (n - 2));
 
 	index_t a = n - 1;
@@ -1112,7 +1135,7 @@ che::star_he::iterator::iterator(const che * p_mesh, const index_t & p_he, const
 
 che::star_he::iterator & che::star_he::iterator::operator ++ ()
 {
-	he = mesh->OT[prev(he)];
+	he = mesh->OT[he_prev(he)];
 	he = he != he_end ? he : NIL;
 	return *this;
 }
@@ -1130,7 +1153,7 @@ const index_t & che::star_he::iterator::operator * ()
 CHE::CHE(const che * mesh)
 {
 	n_vertices = mesh->n_vertices;
-	n_faces = mesh->n_faces;
+	n_trigs = mesh->n_trigs;
 	n_half_edges = mesh->n_half_edges;
 
 	GT = mesh->GT;

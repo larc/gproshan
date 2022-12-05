@@ -1,9 +1,6 @@
 #include <gproshan/mesh/simplification.h>
 
 
-using namespace std;
-
-
 // geometry processing and shape analysis framework
 namespace gproshan {
 
@@ -44,7 +41,7 @@ void simplification::compute_quadrics()
 			p(0) = n.x();
 			p(1) = n.y();
 			p(2) = n.z();
-			p(3) = -(n, mesh->point(v));
+			p(3) = -dot(n, mesh->point(v));
 
 			Q[v] += p * p.t();
 		}
@@ -60,7 +57,7 @@ void simplification::order_edges(index_t * const & sort_edges, real_t * const & 
 		error_edges[e] = compute_error(e);
 	}
 
-	sort(sort_edges, sort_edges + mesh->n_edges,
+	std::sort(sort_edges, sort_edges + mesh->n_edges,
 		[&error_edges](const index_t & a, const index_t & b)
 		{
 			return error_edges[a] < error_edges[b];

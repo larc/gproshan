@@ -1,12 +1,12 @@
 #include <gproshan/app_viewer.h>
 
 #include <gproshan/geometry/vec.h>
+#include <gproshan/scenes/scene.h>
 
 #include <random>
 #include <queue>
 
 
-using namespace std;
 using namespace gproshan::mdict;
 
 
@@ -16,19 +16,28 @@ namespace gproshan {
 
 app_viewer::~app_viewer()
 {
-	for(index_t i = 0; i < n_meshes; ++i)
-		delete meshes[i];
+	for(auto & m: meshes)
+		delete *m;
 }
 
-che * app_viewer::load_mesh(const string & file_path)
+che * app_viewer::load_mesh(const std::string & file_path)
 {
 	size_t pos = file_path.rfind('.');
-	assert(pos != string::npos);
+	assert(pos != std::string::npos);
 
-	string extension = file_path.substr(pos + 1);
+	std::string extension = file_path.substr(pos + 1);
 
+	if(extension == "obj")
+	{
+		scene * sc = new scene(file_path);
+		if(!sc->is_scene())
+		{
+			delete sc;
+			return new che_obj(file_path);
+		}
+		return sc;
+	}
 	if(extension == "off") return new che_off(file_path);
-	if(extension == "obj") return new che_obj(file_path);
 	if(extension == "ply") return new che_ply(file_path);
 	if(extension == "ptx") return new che_ptx(file_path);
 	if(extension == "xyz") return new che_xyz(file_path);
@@ -234,15 +243,15 @@ bool app_viewer::process_gaussian_curvature(viewer * p_view)
 		g = 0;
 		for(const index_t & he: mesh->star(v))
 		{
-			a = mesh->vertex_he(next(he)) - mesh->point(v);
-			b = mesh->vertex_he(prev(he)) - mesh->point(v);
-			g += acos((a,b) / (norm(a) * norm(b)));
+			a = mesh->vertex_he(he_next(he)) - mesh->point(v);
+			b = mesh->vertex_he(he_prev(he)) - mesh->point(v);
+			g += acos(dot(a, b) / (norm(a) * norm(b)));
 		}
 		//gv(v) = (2 * M_PI - g) / mesh->area_vertex(v);
 		gv(v) = mesh->mean_curvature(v);
 
-		g_max = max(g_max, gv(v));
-		g_min = min(g_min, gv(v));
+		g_max = std::max(g_max, gv(v));
+		g_min = std::min(g_min, gv(v));
 	}
 
 	g = g_max - g_min;
@@ -283,7 +292,7 @@ bool app_viewer::process_edge_collapse(viewer * p_view)
 	che_viewer & mesh = view->active_mesh();
 
 	index_t levels;
-	cin >> levels;
+	std::cin >> levels;
 
 	TIC(view->time) simplification sampling(mesh, levels); TOC(view->time)
 	gproshan_debug_var(view->time);
@@ -346,7 +355,7 @@ bool app_viewer::process_fairing_spectral(viewer * p_view)
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
-	static vector<vertex> vertices;
+	static std::vector<vertex> vertices;
 	static size_t min_neigs = 1;
 	static size_t max_neigs = std::min(1000lu, mesh->n_vertices);
 	static fairing_spectral fair(max_neigs);
@@ -377,7 +386,7 @@ bool app_viewer::process_fairing_taubin(viewer * p_view)
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
-	static vector<vertex> vertices;
+	static std::vector<vertex> vertices;
 	static fairing_taubin fair(0);
 
 	if(ImGui_InputReal("step", &fair.step, 0.001))
@@ -500,7 +509,7 @@ bool app_viewer::process_compute_toplesets(viewer * p_view)
 
 	index_t * toplesets = new index_t[mesh->n_vertices];
 	index_t * sorted = new index_t[mesh->n_vertices];
-	vector<index_t> limites;
+	std::vector<index_t> limites;
 	mesh->compute_toplesets(toplesets, sorted, limites, mesh.selected);
 
 	size_t n_toplesets = limites.size() - 1;
@@ -630,7 +639,7 @@ bool app_viewer::process_mask(viewer * p_view)
 		msc.init_radial_feature_patches();
 		//dict.init_voronoi_patches();
 		mesh->update_heatmap(&msc[0]);
-		string f_points = tmp_file_path(string(msc) + ".rsampl");
+		std::string f_points = tmp_file_path(std::string(msc) + ".rsampl");
 
 		a_vec points_out;
 		gproshan_debug_var(f_points);
@@ -687,9 +696,8 @@ bool app_viewer::process_eigenfuntions(viewer * p_view)
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
-	static unsigned int n_eigs = 20;
-
-	ImGui::InputInt("eigenvectors", (int *) &n_eigs);
+	static size_t n_eigs = 20;
+	ImGui::InputScalar("n_eigs", ImGuiDataType_U64, &n_eigs);
 
 	if(ImGui::Button("Run"))
 	{
@@ -701,7 +709,7 @@ bool app_viewer::process_eigenfuntions(viewer * p_view)
 			n_eigs = eigs_laplacian(mesh, eigval, eigvec, L, A, n_eigs);
 		TOC(view->time)
 
-		sprintf(view->status_message, "computing %u eigs in %.3fs", n_eigs, view->time);
+		sprintf(view->status_message, "computing %lu eigs in %.3fs", n_eigs, view->time);
 
 		for(index_t k = 0; k < n_eigs; ++k)
 		{
@@ -757,7 +765,7 @@ bool app_viewer::process_descriptor_heatmap(viewer * p_view)
 			for(index_t v = 0; v < mesh->n_vertices; ++v)
 			{
 				mesh->heatmap(v) = features(v);
-				max_s = max(max_s, mesh->heatmap(v));
+				max_s = std::max(max_s, mesh->heatmap(v));
 			}
 
 			#pragma omp parallel for
@@ -858,7 +866,7 @@ bool app_viewer::process_fill_holes(viewer * p_view)
 	{
 		const std::vector<index_t> & vbounds = mesh->boundary(v);
 		std::vector<vertex> vertices;
-		std::vector<index_t> faces;
+		std::vector<index_t> trigs;
 
 		vertex center;
 		for(const index_t & v: vbounds)
@@ -911,7 +919,7 @@ bool app_viewer::process_fill_holes(viewer * p_view)
 		// vertices.push_back(center);
 
 		che * old = fill_mesh;
-		che * hole = new che(vertices.data(), vertices.size(), faces.data(), faces.size() / 3);
+		che * hole = new che(vertices.data(), vertices.size(), trigs.data(), trigs.size() / 3);
 		fill_mesh = old->merge(hole, vbounds);
 		delete old;
 		delete hole;
@@ -932,9 +940,7 @@ bool app_viewer::process_fill_holes_biharmonic_splines(viewer * p_view)
 	size_t old_n_vertices, n_vertices = mesh->n_vertices;
 	size_t n_holes = 0; // FIX_BOUND mesh->n_borders;
 
-	vector<index_t> * border_vertices;
-	che ** holes;
-	tie(border_vertices, holes) = fill_all_holes_meshes(mesh);
+	const auto & [border_vertices, holes] = fill_all_holes_meshes(mesh);
 	if(!holes) return true;
 
 	index_t k = 2;
@@ -969,7 +975,7 @@ bool app_viewer::process_select_multiple(viewer * p_view)
 
 	if(ImGui::Button("Add"))
 	{
-		stringstream ss(line);
+		std::stringstream ss(line);
 		index_t v;
 		while(ss >> v)
 			mesh.selected.push_back(v);

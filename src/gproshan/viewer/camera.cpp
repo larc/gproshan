@@ -3,9 +3,6 @@
 #include <cmath>
 
 
-using namespace std;
-
-
 // geometry processing and shape analysis framework
 namespace gproshan {
 
@@ -18,15 +15,20 @@ mat4 camera::look_at(const quaternion & r)
 	Z = normalize(Z);
 	vec3 Y = r.conj() * up * r;
 	Y = normalize(Y);
-	vec3 X = Z * Y;
+	vec3 X = cross(Z, Y);
 
 	mat4 view;
-	view[0] = {X, -(X, eye)};
-	view[1] = {Y, -(Y, eye)};
-	view[2] = {-Z, (Z, eye)};
+	view[0] = {X, -dot(X, eye.v)};
+	view[1] = {Y, -dot(Y, eye.v)};
+	view[2] = {-Z, dot(Z, eye.v)};
 	view[3] = {0, 0, 0, 1};
 
 	return view;
+}
+
+mat4 camera::perspective()
+{
+	return perspective(fovy, aspect, near, far);
 }
 
 mat4 camera::perspective(const real_t & fovy, const real_t & aspect, const real_t & near, const real_t & far)
@@ -99,7 +101,7 @@ real_t camera::zoom() const
 	return -pos.v.z();
 }
 
-ostream & operator << (ostream & os, const camera & cam)
+std::ostream & operator << (std::ostream & os, const camera & cam)
 {
 	return os << cam.p_click << "\n"
 			<< cam.p_drag << "\n"
@@ -108,7 +110,7 @@ ostream & operator << (ostream & os, const camera & cam)
 			<< cam.pos << "\n";
 }
 
-istream & operator >> (istream & is, camera & cam)
+std::istream & operator >> (std::istream & is, camera & cam)
 {
 	return is >> cam.p_click
 			>> cam.p_drag

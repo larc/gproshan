@@ -1,16 +1,18 @@
 #ifndef VIEWER_H
 #define VIEWER_H
 
-#include <cstring>
-#include <functional>
-#include <map>
-
+#include <gproshan/mesh/che_sphere.h>
 #include <gproshan/viewer/camera.h>
 #include <gproshan/viewer/shader.h>
 #include <gproshan/viewer/frame.h>
 #include <gproshan/viewer/che_viewer.h>
 #include <gproshan/viewer/include_opengl.h>
+#include <gproshan/scenes/scene.h>
 #include <gproshan/raytracing/render_params.h>
+
+#include <cstring>
+#include <functional>
+#include <map>
 
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_glfw.h>
@@ -49,8 +51,9 @@ class viewer
 		};
 
 		static const std::vector<ivec2> m_window_split;
-		static const size_t max_n_meshes;
+		static const size_t max_meshes;
 		static const std::vector<std::string> colormap;
+		static che_sphere sphere_data;
 
 		bool apply_all_meshes = false;
 
@@ -61,6 +64,7 @@ class viewer
 		int & window_height = render_params.window_height;
 		int & viewport_width = render_params.viewport_width;
 		int & viewport_height = render_params.viewport_height;
+		mat4 proj_mat;
 		mat4 proj_view_mat;
 
 		bool hide_imgui = false;
@@ -69,14 +73,14 @@ class viewer
 		shader shader_normals;
 		shader shader_gradient;
 		shader shader_pointcloud;
+		scene::material mat;
 
 		camera cam;
 		quaternion cam_light;
 
 		double render_time = 0;
 
-		che_viewer * meshes = nullptr;
-		size_t n_meshes	= 0;
+		std::vector<che_viewer *> meshes;
 		index_t idx_active_mesh = 0;
 
 		frame * frames = nullptr;
@@ -85,7 +89,7 @@ class viewer
 
 		std::map<int, process_t> processes;
 
-		che_viewer sphere;
+		che_viewer * sphere = nullptr;
 		shader shader_sphere;
 		std::vector<vertex> sphere_points;
 

@@ -1,10 +1,11 @@
 #ifndef SHADER_H
 #define SHADER_H
 
+#include <gproshan/viewer/include_opengl.h>
+
 #include <string>
 #include <map>
 
-#include <gproshan/viewer/include_opengl.h>
 
 // geometry processing and shape analysis framework
 namespace gproshan {

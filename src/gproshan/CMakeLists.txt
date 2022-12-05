@@ -6,13 +6,12 @@ add_library(gproshan SHARED ${cpp_sources})
 
 target_link_libraries(gproshan embree)
 target_link_libraries(gproshan OpenMP::OpenMP_CXX)
-target_link_libraries(gproshan GLEW::GLEW)
 target_link_libraries(gproshan OpenGL::GL)
+target_link_libraries(gproshan GLEW::GLEW)
 target_link_libraries(gproshan glfw)
-target_link_libraries(gproshan ${X11_X11_LIB})
 target_link_libraries(gproshan ${ARMADILLO_LIBRARIES})
-target_link_libraries(gproshan ${SuiteSparse_LIBRARIES})
 target_link_libraries(gproshan CGAL::CGAL)
+target_link_libraries(gproshan ${SuiteSparse_LIBRARIES})
 target_link_libraries(gproshan ${OptiX_LIBRARY})
 target_link_libraries(gproshan imgui)
 
@@ -37,7 +36,7 @@ if(OptiX_INCLUDE)
 	set_property(TARGET optix_ptx PROPERTY CUDA_PTX_COMPILATION ON)
 	add_custom_target(	copy_optix_ptx ALL
 						DEPENDS optix_ptx
-    					COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_OBJECTS:optix_ptx> ${gproshan_SOURCE_DIR}/src/)
+						COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_OBJECTS:optix_ptx> ${gproshan_SOURCE_DIR}/src/)
 endif(OptiX_INCLUDE)
 
 

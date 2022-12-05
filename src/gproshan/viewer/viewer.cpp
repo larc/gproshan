@@ -13,7 +13,7 @@
 #include <gproshan/mesh/che_ply.h>
 #include <gproshan/mesh/che_xyz.h>
 #include <gproshan/mesh/che_pts.h>
-#include <gproshan/mesh/che_sphere.h>
+#include <gproshan/viewer/scene_viewer.h>
 
 #include <gproshan/raytracing/rt_embree.h>
 #include <gproshan/raytracing/rt_embree_splat_ch.h>
@@ -25,12 +25,9 @@
 	#include <gproshan/raytracing/rt_optix.h>
 #endif // GPROSHAN_OPTIX
 
-
 #include <CImg.h>
 
-
 using namespace cimg_library;
-using namespace std;
 
 
 // geometry processing and shape analysis framework
@@ -46,14 +43,17 @@ const std::vector<ivec2> viewer::m_window_split = {	{1, 1},
 													{4, 5}, {4, 5}, {4, 5}, {4, 5}
 													};
 
-const size_t viewer::max_n_meshes = m_window_split.size() - 1;
+const size_t viewer::max_meshes = m_window_split.size() - 1;
 
 const std::vector<std::string> viewer::colormap = { "vertex color",
-													"blue",
-													"red",
-													"blue/read",
-													"set"
+													"blue heatmap",
+													"red heatmap",
+													"blue/read heatmap",
+													"set heatmap",
+													"material scene",
 													};
+
+che_sphere viewer::sphere_data{0.01};
 
 viewer::viewer(const int & width, const int & height)
 {
@@ -68,14 +68,12 @@ viewer::viewer(const int & width, const int & height)
 	info_gl();
 	gproshan_log_var(sizeof(real_t));
 
-	che * s = new che_sphere(0.01);
-	s->update_normals();
-	sphere.init(s, false);
+	sphere_data.update_normals();
+	sphere = new che_viewer(&sphere_data);;
 
-	frames = new frame[max_n_meshes];
-	meshes = new che_viewer[max_n_meshes];
+	frames = new frame[max_meshes];
 
-	render_params.add_light({-1, 1, -2});
+	render_params.add_light({-1, 1, -4});
 }
 
 viewer::~viewer()
@@ -88,8 +86,11 @@ viewer::~viewer()
 	glfwTerminate();
 
 	delete sphere;
+
 	delete [] frames;
-	delete [] meshes;
+
+	for(che_viewer * m: meshes)
+		delete m;
 }
 
 bool viewer::run()
@@ -103,7 +104,7 @@ bool viewer::run()
 		cam_light = render_params.lights[0];
 		cam_light = r.conj() * cam_light * r;
 
-		proj_view_mat = camera::perspective(45, real_t(viewport_width) / real_t(viewport_height), 0.01, 1000) * cam.look_at(r);
+		proj_view_mat = proj_mat * cam.look_at(r);
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		render_gl();
@@ -133,12 +134,15 @@ void viewer::imgui()
 	{
 		if(ImGui::BeginMenu("Select"))
 		{
-			for(index_t i = 0; i < n_meshes; ++i)
-				if(ImGui::MenuItem((to_string(i) + ": " + meshes[i]->filename).c_str(), nullptr, i == idx_active_mesh, i != idx_active_mesh))
+			for(index_t i = 0; i < meshes.size(); ++i)
+			{
+				const che_viewer & m = *meshes[i];
+				if(ImGui::MenuItem((std::to_string(i) + ": " + m->filename).c_str(), nullptr, i == idx_active_mesh, i != idx_active_mesh))
 				{
 					idx_active_mesh = i;
-					glfwSetWindowTitle(window, mesh->filename.c_str());
+					glfwSetWindowTitle(window, m->filename.c_str());
 				}
+			}
 
 			ImGui::EndMenu();
 		}
@@ -196,20 +200,31 @@ void viewer::imgui()
 	{
 		ImGui::Text("%13lu fps", size_t(1.0 / render_time));
 		ImGui::Text("%13lu vertices", mesh->n_vertices);
-		ImGui::Text("%13lu faces", mesh->n_faces);
+		ImGui::Text("%13lu trigs", mesh->is_scene() ? mesh->n_vertices / 3 : mesh->n_trigs);
 
+		ImGui::Indent();
+		if(ImGui::Combo("fit screen", (int *) &mesh.opt_fit_screen, "none\0box (2x2x2)\0sphere (97.72%)\0\0"))
+		{
+			mesh.update_model_mat();
+		}
 		if(mesh.render_pointcloud)
 		{
-			ImGui::Indent();
 			ImGui::Checkbox("point_normals", &mesh.point_normals);
 			ImGui::SliderInt("point_size", (int *) &mesh.point_size, 1, 32);
-			ImGui::Unindent();
 		}
+		ImGui::Unindent();
+	}
+
+	static real_t pos_min = -10;
+	static real_t pos_max = 10;
+	if(ImGui::CollapsingHeader("Camera"))
+	{
+		ImGui::Indent();
+		ImGui::SliderScalarN("position", ImGuiDataType_Real, &cam.pos[0], 3, &pos_min, &pos_max);
+		ImGui::Unindent();
 	}
 
 	static char slight[32];
-	static real_t light_min = -2;
-	static real_t light_max = 2;
 	if(ImGui::CollapsingHeader("Scene Lights"))
 	{
 		ImGui::Indent();
@@ -217,7 +232,7 @@ void viewer::imgui()
 		for(int i = 0; i < render_params.n_lights; ++i)
 		{
 			sprintf(slight, "light %d", i);
-			ImGui::SliderScalarN(slight, ImGuiDataType_Real, &render_params.lights[i], 3, &light_min, &light_max);
+			ImGui::SliderScalarN(slight, ImGuiDataType_Real, &render_params.lights[i], 3, &pos_min, &pos_max);
 		}
 
 		if(ImGui::Button("add light"))
@@ -271,7 +286,7 @@ void viewer::imgui()
 
 che_viewer & viewer::active_mesh()
 {
-	return meshes[idx_active_mesh];
+	return *meshes[idx_active_mesh];
 }
 
 void viewer::info_gl()
@@ -399,42 +414,44 @@ void viewer::init_glsl()
 	shader_pointcloud.load_fragment(shaders_path("fragment_pointcloud.glsl"));
 }
 
-void viewer::add_process(const int & key, const string & skey, const string & name, const function_t & f)
+void viewer::add_process(const int & key, const std::string & skey, const std::string & name, const function_t & f)
 {
 	if(processes.find(key) == processes.end())
 	{
 		processes[key] = {skey, name, f};
 		processes[key].sub_menu = sub_menus.size() - 1;
 	}
-	else cerr << "Repeat key: " << key << endl;
+	else std::cerr << "Repeat key: " << key << std::endl;
 }
 
 bool viewer::add_mesh(che * p_mesh, const bool & reset_normals)
 {
-	if(n_meshes == max_n_meshes)
+	if(meshes.size() == max_meshes)
 		return false;
 
 	if(reset_normals)
 		p_mesh->update_normals();
 
-	che_viewer & mesh = meshes[n_meshes];
-	mesh.init(p_mesh);
+	meshes.push_back(p_mesh->is_scene() ? new scene_viewer((scene *) p_mesh) : new che_viewer(p_mesh));
+	che_viewer & mesh = *meshes.back();
 	mesh.log_info();
 
-	idx_active_mesh = n_meshes++;
+	idx_active_mesh = meshes.size() - 1;
 	glfwSetWindowTitle(window, mesh->filename.c_str());
 
-	const int & rows = m_window_split[n_meshes].x();
-	const int & cols = m_window_split[n_meshes].y();
-	for(index_t m = 0; m < n_meshes; ++m)
+	const int & rows = m_window_split[meshes.size()].x();
+	const int & cols = m_window_split[meshes.size()].y();
+	for(index_t m = 0; m < meshes.size(); ++m)
 	{
-		meshes[m].vx = m % cols;
-		meshes[m].vy = rows - (m / cols) - 1;
+		meshes[m]->vx = m % cols;
+		meshes[m]->vy = rows - (m / cols) - 1;
 	}
 
 	glfwGetFramebufferSize(window, &viewport_width, &viewport_height);
 	viewport_width /= cols;
 	viewport_height /= rows;
+	cam.aspect = real_t(viewport_width) / viewport_height;
+	proj_mat = cam.perspective();
 
 	return true;
 }
@@ -442,8 +459,10 @@ bool viewer::add_mesh(che * p_mesh, const bool & reset_normals)
 void viewer::framebuffer_size_callback(GLFWwindow * window, int width, int height)
 {
 	viewer * view = (viewer *) glfwGetWindowUserPointer(window);
-	view->viewport_width = width / m_window_split[view->n_meshes].y();
-	view->viewport_height = height / m_window_split[view->n_meshes].x();
+	view->viewport_width = width / m_window_split[view->meshes.size()].y();
+	view->viewport_height = height / m_window_split[view->meshes.size()].x();
+	view->cam.aspect = real_t(view->viewport_width) / view->viewport_height;
+	view->proj_mat = view->cam.perspective();
 }
 
 void viewer::window_size_callback(GLFWwindow * window, int width, int height)
@@ -486,9 +505,9 @@ void viewer::mouse_callback(GLFWwindow * window, int button, int action, int mod
 
 		const index_t & ix = xpos * xscale;
 		const index_t & iy = ypos * yscale;
-		const int & cols = m_window_split[view->n_meshes].y();
+		const int & cols = m_window_split[view->meshes.size()].y();
 		const index_t & idx_mesh = cols * (iy / view->viewport_height) + ix / view->viewport_width;
-		if(idx_mesh < view->n_meshes)
+		if(idx_mesh < view->meshes.size())
 			view->idx_active_mesh = idx_mesh;
 
 		if(mods == GLFW_MOD_SHIFT)
@@ -560,7 +579,7 @@ bool viewer::m_hide_show_imgui(viewer * view)
 
 bool viewer::m_save_load_view(viewer * view)
 {
-	filesystem::create_directory(tmp_file_path("views/"));
+	std::filesystem::create_directory(tmp_file_path("views/"));
 
 	static char file[128] = "new_view";
 
@@ -569,16 +588,16 @@ bool viewer::m_save_load_view(viewer * view)
 
 	if(ImGui::Button("Save"))
 	{
-		ofstream os(tmp_file_path(std::string("views/") + file));
+		std::ofstream os(tmp_file_path(std::string("views/") + file));
 		os << view->cam;
 		os.close();
 	}
 
 	static index_t select = 0;
-	static vector<string> vfiles;
+	static std::vector<std::string> vfiles;
 
 	vfiles.clear();
-	for(auto & p: filesystem::directory_iterator(tmp_file_path("views/")))
+	for(auto & p: std::filesystem::directory_iterator(tmp_file_path("views/")))
 		vfiles.push_back(p.path().string());
 
 	if(!vfiles.size()) return true;
@@ -601,7 +620,7 @@ bool viewer::m_save_load_view(viewer * view)
 
 	if(ImGui::Button("Load"))
 	{
-		ifstream is(vfiles[select]);
+		std::ifstream is(vfiles[select]);
 		is >> view->cam;
 		is.close();
 	}
@@ -1007,9 +1026,9 @@ void viewer::render_gl()
 	glProgramUniform1f(shader_sphere, shader_sphere("scale"), cam.zoom());
 
 
-	for(index_t i = 0; i < n_meshes; ++i)
+	for(index_t i = 0; i < meshes.size(); ++i)
 	{
-		che_viewer & mesh = meshes[i];
+		che_viewer & mesh = *meshes[i];
 
 		glViewport(mesh.vx * viewport_width, mesh.vy * viewport_height, viewport_width, viewport_height);
 
@@ -1020,23 +1039,23 @@ void viewer::render_gl()
 		}
 
 		if(mesh->is_pointcloud() || mesh.render_pointcloud)
-			mesh.draw_point_cloud(shader_pointcloud);
+			mesh.draw_pointcloud(shader_pointcloud);
 		else
 			mesh.draw(shader_triangles);
 
 		if(mesh.render_normals)
-			mesh.draw_point_cloud(shader_normals);
+			mesh.draw_pointcloud(shader_normals);
 
 		if(mesh.render_gradients)
 			mesh.draw(shader_gradient);
 
-		mesh.draw_selected_vertices(sphere, shader_sphere);
+		mesh.draw_selected_vertices(*sphere, shader_sphere);
 
 		if(sphere_points.size())
 		{
-			sphere.model_mat = mat4::identity();
-			sphere.update_instances_positions(sphere_points);
-			sphere.draw(shader_sphere);
+			sphere->model_mat = mat4::identity();
+			sphere->update_instances_positions(sphere_points);
+			sphere->draw(shader_sphere);
 		}
 	}
 
@@ -1080,8 +1099,8 @@ void viewer::check_apply_all_meshes(const std::function<void(che_viewer &)> & fu
 		return;
 	}
 
-	for(index_t i = 0; i < n_meshes; ++i)
-		fun(meshes[i]);
+	for(auto & m: meshes)
+		fun(*m);
 }
 
 

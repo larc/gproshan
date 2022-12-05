@@ -13,6 +13,7 @@
 	#define __device__
 #endif
 
+
 // geometry processing and shape analysis framework
 namespace gproshan {
 
@@ -131,16 +132,6 @@ class vec
 			return norm();
 		}
 
-		///< dot product
-		__host__ __device__
-		T operator , (const vec<T, N> & v) const
-		{
-			T res = 0;
-			for(index_t i = 0; i < N; ++i)
-				res += values[i] * v[i];
-			return res;
-		}
-
 		///< scalar product
 		__host__ __device__
 		vec<T, N> operator * (const T & a) const
@@ -148,6 +139,16 @@ class vec
 			vec<T, N> res;
 			for(index_t i = 0; i < N; ++i)
 				res[i] = values[i] * a;
+			return res;
+		}
+
+		///< element wise product
+		__host__ __device__
+		vec<T, N> operator * (const vec<T, N> & v) const
+		{
+			vec<T, N> res;
+			for(index_t i = 0; i < N; ++i)
+				res[i] = values[i] * v[i];
 			return res;
 		}
 
@@ -197,6 +198,15 @@ class vec
 		{
 			for(T & v: values)
 				v *= a;
+			return *this;
+		}
+
+		///< element wise product self assign
+		__host__ __device__
+		const vec<T, N> & operator *= (const vec<T, N> & v)
+		{
+			for(index_t i = 0; i < N; ++i)
+				values[i] *= v[i];
 			return *this;
 		}
 
@@ -252,7 +262,7 @@ class vec
 		__host__ __device__
 		bool is_zero()
 		{
-			double eps = std::numeric_limits<double>::epsilon();
+			T eps = std::numeric_limits<T>::epsilon();
 			for(index_t i = 0; i < N; ++i)
 				if(abs(values[i]) > eps)
 					return false;
@@ -273,7 +283,7 @@ vec<T, N> operator * (const T & a, const vec<T, N> & v)
 ///< cross product
 template<class T>
 __host__ __device__
-vec<T, 3> operator * (const vec<T, 3> & u, const vec<T, 3> & v)
+vec<T, 3> cross(const vec<T, 3> & u, const vec<T, 3> & v)
 {
 	const T & ux = u[0];
 	const T & uy = u[1];
@@ -285,20 +295,15 @@ vec<T, 3> operator * (const vec<T, 3> & u, const vec<T, 3> & v)
 	return {uy * vz - uz * vy, uz * vx - ux * vz, ux * vy - uy * vx};
 }
 
-///< cross product
-template<class T>
-__host__ __device__
-vec<T, 3> cross(const vec<T, 3> & u, const vec<T, 3> & v)
-{
-	return u * v;
-}
-
 ///< dot product
 template<class T, size_t N>
 __host__ __device__
 T dot(const vec<T, N> & u, const vec<T, N> & v)
 {
-	return (u, v);
+	T res = 0;
+	for(index_t i = 0; i < N; ++i)
+		res += u[i] * v[i];
+	return res;
 }
 
 ///< norm
@@ -325,7 +330,7 @@ vec<T, N> normalize(const vec<T, N> & v)
 	return v / norm(v);
 }
 
-///< std ostream
+///< std std::ostream
 template<class T, size_t N>
 __host__ __device__
 std::ostream & operator << (std::ostream & os, const vec<T, N> & v)
@@ -335,7 +340,7 @@ std::ostream & operator << (std::ostream & os, const vec<T, N> & v)
 	return os << v[N - 1];
 }
 
-///< std istream
+///< std std::istream
 template<class T, size_t N>
 __host__ __device__
 std::istream & operator >> (std::istream & is, vec<T, N> & v)

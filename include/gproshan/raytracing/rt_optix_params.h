@@ -4,6 +4,7 @@
 
 #include <gproshan/include.h>
 #include <gproshan/geometry/mat.h>
+#include <gproshan/scenes/scene.h>
 
 
 #ifdef GPROSHAN_OPTIX
@@ -31,6 +32,8 @@ struct launch_params
 	bool flat;
 
 	OptixTraversableHandle traversable;
+
+	params_scene sc;
 };
 
 
