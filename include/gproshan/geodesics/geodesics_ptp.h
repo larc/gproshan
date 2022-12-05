@@ -35,8 +35,13 @@ void relative_error(real_t * error, const real_t * new_dist, const real_t * old_
 
 struct is_ok
 {
+	const real_t * error = nullptr;
+
 	__host__ __device__
 	bool operator()(const real_t & val) const;
+
+	__host__ __device__
+	bool operator()(const index_t & val) const;
 };
 
 #endif // __CUDACC__
@@ -215,10 +220,11 @@ index_t run_ptp(const CHE * mesh, const std::vector<index_t> & sources,
 		relax_ptp<<< NB(end - start), NT >>>(mesh, new_dist, old_dist, new_cluster, old_cluster, start, end, sorted);
 		cudaDeviceSynchronize();
 
-		relative_error<<< NB(n_cond), NT >>>(error, new_dist, old_dist, start, start + n_cond);
+		relative_error<<< NB(n_cond), NT >>>(error, new_dist, old_dist, start, start + n_cond, sorted);
 		cudaDeviceSynchronize();
 
-		count = thrust::count_if(thrust::device, error + start, error + start + n_cond, is_ok());
+		count = sorted ? thrust::count_if(thrust::device, sorted + start, sorted + start + n_cond, is_ok{error})
+						: thrust::count_if(thrust::device, error + start, error + start + n_cond, is_ok{});
 	#else
 		#pragma omp parallel for
 		for(index_t v = start; v < end; ++v)
@@ -227,7 +233,7 @@ index_t run_ptp(const CHE * mesh, const std::vector<index_t> & sources,
 		#pragma omp parallel for
 		for(index_t i = start; i < start + n_cond; ++i)
 		{
-			const index_t & v = sorted ? sorted[v] : i;
+			const index_t & v = sorted ? sorted[i] : i;
 			error[v] = abs(new_dist[v] - old_dist[v]) / old_dist[v];
 		}
 
@@ -235,7 +241,7 @@ index_t run_ptp(const CHE * mesh, const std::vector<index_t> & sources,
 		#pragma omp parallel for reduction(+: count)
 		for(index_t v = start; v < start + n_cond; ++v)
 		{
-			const index_t & v = sorted ? sorted[v] : i;
+			const index_t & v = sorted ? sorted[i] : i;
 			count += error[v] < PTP_TOL;
 		}
 	#endif

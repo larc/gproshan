@@ -227,7 +227,7 @@ void geodesics::run_parallel_toplesets_propagation_gpu(che * mesh, const std::ve
 	std::vector<index_t> limits;
 	mesh->compute_toplesets(toplesets, sorted_index, limits, sources);
 
-	double time_ptp = parallel_toplesets_propagation_gpu({dist, clusters}, mesh, sources, {limits, sorted_index}, true);
+	double time_ptp = parallel_toplesets_propagation_gpu({dist, clusters}, mesh, sources, {limits, sorted_index});
 
 	gproshan_log_var(time_ptp);
 

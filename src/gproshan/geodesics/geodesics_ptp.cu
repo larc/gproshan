@@ -268,6 +268,12 @@ bool is_ok::operator()(const real_t & val) const
 	return val < PTP_TOL;
 }
 
+__host__ __device__
+bool is_ok::operator()(const index_t & i) const
+{
+	return error[i] < PTP_TOL;
+}
+
 
 } // namespace gproshan
 
