@@ -20,12 +20,14 @@ scene::~scene()
 {
 	for(texture & tex: textures)
 		delete tex.data;
+
+	delete [] trig_mat;
 	delete [] texcoords;
 }
 
 bool scene::is_scene() const
 {
-	return true;
+	return load_scene && objects.size() > 1;
 }
 
 bool scene::is_pointcloud() const
@@ -35,7 +37,7 @@ bool scene::is_pointcloud() const
 
 void scene::read_file(const std::string & file)
 {
-	load_obj(file);
+	load_scene = load_obj(file);
 }
 
 bool scene::load_obj(const std::string & file)
@@ -74,13 +76,26 @@ bool scene::load_obj(const std::string & file)
 	{
 		const index_t & trig = 3 * (i / 3);
 		const index_t & n = p.trigs[i].z();
-		VN[i] = n != NIL ? p.vnormals[n] : normalize((GT[trig + 1] - GT[trig]) * (GT[trig + 2] - GT[trig]));
+		VN[i] = n != NIL ? p.vnormals[n] : normalize(cross(GT[trig + 1] - GT[trig], GT[trig + 2] - GT[trig]));
 	}
 
 	for(auto & obj: p.objects)
 		objects.push_back({obj.second, material_id[obj.first]});
 
 	gproshan_log_var(objects.size());
+
+	trig_mat = new index_t[n_vertices / 3];
+	memset(trig_mat, -1, sizeof(index_t) * n_vertices / 3);
+
+	#pragma omp parallel for
+	for(index_t i = 0; i < objects.size() - 1; ++i)
+	{
+		const object & obj = objects[i];
+		const index_t & n = objects[i + 1].begin;
+
+		for(index_t t = obj.begin; t < n; t += 3)
+			trig_mat[t / 3] = obj.material_id;
+	}
 
 	return true;
 }
@@ -198,17 +213,25 @@ bool scene::load_mtl(const std::string & file)
 
 bool scene::load_texture(const std::string & file)
 {
-	CImg<unsigned char> img(file.c_str());
-	img.mirror('y');
+	try
+	{
+		CImg<unsigned char> img(file.c_str());
+		img.mirror('y');
 
-	textures.emplace_back();
-	texture & tex = textures.back();
-	tex.width = img.width();
-	tex.height = img.height();
-	tex.spectrum = img.spectrum();
-	tex.data = new unsigned char[tex.width * tex.height * tex.spectrum];
-	img.permute_axes("cxyz");
-	memcpy(tex.data, img.data(), tex.width * tex.height * tex.spectrum);
+		textures.emplace_back();
+		texture & tex = textures.back();
+		tex.width = img.width();
+		tex.height = img.height();
+		tex.spectrum = img.spectrum();
+		tex.data = new unsigned char[tex.width * tex.height * tex.spectrum];
+		img.permute_axes("cxyz");
+		memcpy(tex.data, img.data(), tex.width * tex.height * tex.spectrum);
+	}
+	catch(CImgException & e)
+	{
+		gproshan_error_var(e.what());
+		return false;
+	}
 
 	return true;
 }

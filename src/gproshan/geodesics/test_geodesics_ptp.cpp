@@ -302,7 +302,7 @@ double test_ptp_gpu(real_t & error, const real_t * exact, che * mesh, const std:
 	real_t * dist = new real_t[mesh->n_vertices];
 	for(int i = 0; i < n_test; ++i)
 	{
-		t = parallel_toplesets_propagation_coalescence_gpu(dist, mesh, source, toplesets);
+		t = parallel_toplesets_propagation_gpu(dist, mesh, source, toplesets);
 		seconds = std::min(seconds, t);
 	}
 

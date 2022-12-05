@@ -55,7 +55,9 @@ class scene: public che
 
 		std::vector<object> objects;
 
+		index_t * trig_mat = nullptr;
 		vec2 * texcoords = nullptr;
+		bool load_scene = true;
 
 	public:
 		scene(const std::string & file);
@@ -66,6 +68,14 @@ class scene: public che
 		bool load_obj(const std::string & file);
 		bool load_mtl(const std::string & file);
 		bool load_texture(const std::string & file);
+};
+
+struct params_scene
+{
+	scene::material * materials = nullptr;
+	scene::texture * textures = nullptr;
+	index_t * trig_mat = nullptr;
+	vec2 * texcoords = nullptr;
 };
 
 

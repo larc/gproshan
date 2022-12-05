@@ -46,8 +46,8 @@ void scene_viewer::draw(shader & program)
 {
 	glProgramUniformMatrix4fv(program, program("model_mat"), 1, true, &model_mat[0][0]);
 	glProgramUniform1ui(program, program("idx_colormap"), idx_colormap);
-	glProgramUniform1i(program, program("render_flat"), render_flat);
 	glProgramUniform1i(program, program("render_lines"), render_lines);
+	glProgramUniform1i(program, program("render_flat"), render_flat);
 	glProgramUniform1i(program, program("render_wireframe"), render_triangles);
 
 	glPolygonMode(GL_FRONT_AND_BACK, render_wireframe ? GL_LINE : GL_FILL);
@@ -68,6 +68,43 @@ void scene_viewer::draw(shader & program)
 
 			gl_uniform_material(program, mat);
 			glDrawArrays(GL_TRIANGLES, obj.begin, sc->objects[i + 1].begin - obj.begin);
+
+			for(auto & gltex_num: gltex_nums)
+			{
+				glActiveTexture(gltex_num);
+				glBindTexture(GL_TEXTURE_2D, 0);
+			}
+		}
+	}
+	glBindVertexArray(0);
+
+	program.disable();
+}
+
+void scene_viewer::draw_pointcloud(shader & program)
+{
+	glProgramUniformMatrix4fv(program, program("model_mat"), 1, true, &model_mat[0][0]);
+	glProgramUniform1ui(program, program("idx_colormap"), idx_colormap);
+	glProgramUniform1i(program, program("render_lines"), render_lines);
+	glProgramUniform1i(program, program("point_normals"), point_normals);
+	glProgramUniform1ui(program, program("point_size"), point_size);
+
+	program.enable();
+
+	glBindVertexArray(vao);
+	if(sc->objects.size() == 1)
+	{
+		glDrawArrays(GL_POINTS, 0, mesh->n_vertices);
+	}
+	else
+	{
+		for(index_t i = 0; i < sc->objects.size() - 1; ++i)
+		{
+			const scene::object & obj = sc->objects[i];
+			const scene::material & mat = sc->materials[obj.material_id];
+
+			gl_uniform_material(program, mat);
+			glDrawArrays(GL_POINTS, obj.begin, sc->objects[i + 1].begin - obj.begin);
 
 			for(auto & gltex_num: gltex_nums)
 			{

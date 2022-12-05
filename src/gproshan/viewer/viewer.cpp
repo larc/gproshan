@@ -984,12 +984,12 @@ void viewer::render_gl()
 		}
 
 		if(mesh->is_pointcloud() || mesh.render_pointcloud)
-			mesh.draw_point_cloud(shader_pointcloud);
+			mesh.draw_pointcloud(shader_pointcloud);
 		else
 			mesh.draw(shader_triangles);
 
 		if(mesh.render_normals)
-			mesh.draw_point_cloud(shader_normals);
+			mesh.draw_pointcloud(shader_normals);
 
 		if(mesh.render_gradients)
 			mesh.draw(shader_gradient);

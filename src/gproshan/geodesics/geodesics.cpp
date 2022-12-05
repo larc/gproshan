@@ -41,7 +41,6 @@ geodesics::~geodesics()
 
 const real_t & geodesics::operator[](const index_t & i) const
 {
-
 	assert(i < n_vertices);
 	return dist[i];
 }
@@ -87,7 +86,7 @@ void geodesics::normalize()
 
 	#pragma omp parallel for
 	for(size_t i = 0; i < n_sorted; ++i)
-		dist[sorted_index[i]] /= max;
+		dist[i] /= max;
 }
 
 void geodesics::execute(che * mesh, const std::vector<index_t> & sources, const params & p)
@@ -112,6 +111,8 @@ void geodesics::execute(che * mesh, const std::vector<index_t> & sources, const 
 
 void geodesics::run_fastmarching(che * mesh, const std::vector<index_t> & sources, const size_t & n_iter, const real_t & radio, const fm_function_t & fun)
 {
+	CHE cmesh(mesh);
+
 	index_t BLACK = 0, GREEN = 1, RED = 2;
 	index_t * color = new index_t[n_vertices];
 
@@ -167,13 +168,16 @@ void geodesics::run_fastmarching(che * mesh, const std::vector<index_t> & source
 				dv = dist[v];
 				for(const index_t & he: mesh->star(v))
 				{
-					dp = update_step(mesh, dist, he);
+					dp = update_step(&cmesh, dist, {mesh->halfedge(he_next(he)),
+													mesh->halfedge(he_prev(he)),
+													mesh->halfedge(he)
+													});
 					if(dp < dv)
 					{
 						dv = dp;
 
 						if(clusters)
-							clusters[v] = clusters[mesh->halfedge(prev(he))] ? clusters[mesh->halfedge(prev(he))] : clusters[mesh->halfedge(next(he))];
+							clusters[v] = clusters[mesh->halfedge(he_prev(he))] ? clusters[mesh->halfedge(he_prev(he))] : clusters[mesh->halfedge(he_next(he))];
 					}
 				}
 
@@ -195,7 +199,7 @@ void geodesics::run_parallel_toplesets_propagation_cpu(che * mesh, const std::ve
 	double time_ptp;
 
 	TIC(time_ptp)
-		parallel_toplesets_propagation_coalescence_cpu({dist, clusters}, mesh, sources, {limits, sorted_index});
+		parallel_toplesets_propagation_cpu({dist, clusters}, mesh, sources, {limits, sorted_index}, sources.size() == 1);
 	TOC(time_ptp)
 
 	gproshan_log_var(time_ptp);
@@ -223,11 +227,7 @@ void geodesics::run_parallel_toplesets_propagation_gpu(che * mesh, const std::ve
 	std::vector<index_t> limits;
 	mesh->compute_toplesets(toplesets, sorted_index, limits, sources);
 
-	double time_ptp;
-	if(sources.size() > 1)
-		time_ptp = parallel_toplesets_propagation_gpu({dist, clusters}, mesh, sources, {limits, sorted_index});
-	else
-		time_ptp = parallel_toplesets_propagation_coalescence_gpu({dist, clusters}, mesh, sources, {limits, sorted_index});
+	double time_ptp = parallel_toplesets_propagation_gpu({dist, clusters}, mesh, sources, {limits, sorted_index});
 
 	gproshan_log_var(time_ptp);
 

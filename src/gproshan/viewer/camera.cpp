@@ -15,12 +15,12 @@ mat4 camera::look_at(const quaternion & r)
 	Z = normalize(Z);
 	vec3 Y = r.conj() * up * r;
 	Y = normalize(Y);
-	vec3 X = Z * Y;
+	vec3 X = cross(Z, Y);
 
 	mat4 view;
-	view[0] = {X, -(X, eye)};
-	view[1] = {Y, -(Y, eye)};
-	view[2] = {-Z, (Z, eye)};
+	view[0] = {X, -dot(X, eye.v)};
+	view[1] = {Y, -dot(Y, eye.v)};
+	view[2] = {-Z, dot(Z, eye.v)};
 	view[3] = {0, 0, 0, 1};
 
 	return view;

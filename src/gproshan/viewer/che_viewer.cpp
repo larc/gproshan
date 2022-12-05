@@ -200,7 +200,7 @@ void che_viewer::draw(shader & program)
 	program.disable();
 }
 
-void che_viewer::draw_point_cloud(shader & program)
+void che_viewer::draw_pointcloud(shader & program)
 {
 	glProgramUniformMatrix4fv(program, program("model_mat"), 1, true, &model_mat[0][0]);
 	glProgramUniform1ui(program, program("idx_colormap"), idx_colormap);
@@ -211,11 +211,7 @@ void che_viewer::draw_point_cloud(shader & program)
 	program.enable();
 
 	glBindVertexArray(vao);
-	glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
-
 	glDrawArrays(GL_POINTS, 0, mesh->n_vertices);
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 
 	program.disable();

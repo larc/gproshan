@@ -1,6 +1,5 @@
 #include <gproshan/geodesics/test_geodesics_ptp_coalescence.cuh>
 
-#include <gproshan/geodesics/geodesics_ptp_coalescence.cuh>
 #include <gproshan/geodesics/geodesics_ptp.h>
 #include <gproshan/geodesics/test_geodesics_ptp.h>
 
@@ -163,7 +162,7 @@ double * times_farthest_point_sampling_ptp_coalescence_gpu(che * mesh, std::vect
 		cuda_create_CHE(h_mesh, dd_mesh, d_mesh);
 
 		// exec algorithm
-		d = run_ptp_coalescence_gpu(d_mesh, h_mesh->n_vertices, h_dist, d_dist, samples, {limits, inv}, d_error);
+		//d = run_ptp_gpu(d_mesh, samples, h_mesh->n_vertices, h_dist, d_dist, {limits, inv}, d_error);
 
 		// free memory
 		cuda_free_CHE(dd_mesh, d_mesh);
@@ -238,7 +237,7 @@ std::vector<std::pair<index_t, real_t> > iter_error_run_ptp_coalescence_gpu(CHE 
 		end = limits[j];
 		n_cond = limits[i + 1] - start;
 
-		relax_ptp_coalescence <<< NB(end - start), NT >>> (d_mesh, d_dist[!d], d_dist[d], end, start);
+		relax_ptp <<< NB(end - start), NT >>> (d_mesh, d_dist[!d], d_dist[d], nullptr, nullptr, start, end);
 		// print band info
 		os << n_iter << " " << i << " " << j << " " << end - start << std::endl;
 

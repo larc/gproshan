@@ -41,7 +41,7 @@ void simplification::compute_quadrics()
 			p(0) = n.x();
 			p(1) = n.y();
 			p(2) = n.z();
-			p(3) = -(n, mesh->point(v));
+			p(3) = -dot(n, mesh->point(v));
 
 			Q[v] += p * p.t();
 		}

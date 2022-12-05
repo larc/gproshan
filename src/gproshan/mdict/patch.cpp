@@ -93,8 +93,8 @@ bool patch::add_vertex_by_trigs(vertex & n, std::vector<vertex> & N, double thr_
 
 	for(const index_t & he: mesh->star(v))
 	{
-		a = mesh->halfedge(next(he)); //index of the next vertex index_t
-		b = mesh->halfedge(prev(he));
+		a = mesh->halfedge(he_next(he)); //index of the next vertex index_t
+		b = mesh->halfedge(he_prev(he));
 		va = mesh->point(a);
 		vb = mesh->point(b);
 		vv = mesh->point(v);
@@ -110,17 +110,17 @@ bool patch::add_vertex_by_trigs(vertex & n, std::vector<vertex> & N, double thr_
 			else
 				i = find(vertices.data(), vertices.size(), b);
 
-			tmp_angle = acos( (mesh->normal_he(he), N[i]) );
+			tmp_angle = acos(dot(mesh->normal_he(he), N[i]));
 
-			if(angle > tmp_angle && tmp_angle < thr_angle && acos( (mesh->normal_he(he), N[0]) ) < deviation) // Fullfill conditions
+			if(angle > tmp_angle && tmp_angle < thr_angle && acos(dot(mesh->normal_he(he), N[0])) < deviation) // Fullfill conditions
 			{
 				angle = tmp_angle;
 				area_face = mesh->area_trig(he / 3);
 
 				// compute projected area
-				pav = va - vv + ( (n,vv) - (n,va) ) * n;
-				pbv = vb - vv + ( (n,vv) - (n,vb) ) * n;
-				proj_area_face = norm(pav * pbv) / 2;
+				pav = va - vv + (dot(n, vv) - dot(n, va)) * n;
+				pbv = vb - vv + (dot(n, vv) - dot(n, vb)) * n;
+				proj_area_face = norm(cross(pav, pbv)) / 2;
 
 				min_he = mesh->normal_he(he);
 				added = true;
@@ -213,7 +213,7 @@ void patch::recover_radial_disjoint(che * mesh, const real_t & radio_, const ind
 			c = mesh->point(v); // central vertices
 
 			p = p - c ;
-			p = p - ((p,n)*n);
+			p = p - dot(p, n) * n;
 
 			if(norm(p) > radio)
 			{
@@ -296,7 +296,7 @@ void patch::init_radial_disjoint(	real_t & euc_radio,
 		p = mesh->point(vi);
 
 		p = p - c ;
-		p = p - ((p, n) * n);
+		p = p - dot(p, n) * n;
 
 		radio = std::max(radio, norm(p));
 	}
@@ -411,8 +411,8 @@ void patch::add_extra_xyz_disjoint(che * mesh, std::vector<vpatches_t> & vpatche
 		for(const index_t & he: mesh->star(min_v))
 		{
 			//discard triangles outside the patch
-			vpatches_t & ma = vpatches[mesh->halfedge(next(he))];
-			vpatches_t & mb = vpatches[mesh->halfedge(prev(he))];
+			vpatches_t & ma = vpatches[mesh->halfedge(he_next(he))];
+			vpatches_t & mb = vpatches[mesh->halfedge(he_prev(he))];
 
 			if(ma.find(p) != ma.end() && mb.find(p) != mb.end())
 			{
@@ -632,14 +632,14 @@ void patch::normal_fit_directions(che * mesh, const index_t & v)
 
 
 	vertex nz = mesh->normal(v);
-	vertex nx = mesh->vertex_he(next(mesh->evt(v)));
-//	GT[VT[next(EVT[v]]]
+	vertex nx = mesh->vertex_he(he_next(mesh->evt(v)));
+//	GT[VT[he_next(EVT[v]]]
 	vertex c = mesh->point(v);
 	vertex ny;
 	nx = nx - c ;
-	nx = nx - ((nx,nz)*nz);
+	nx = nx - dot(nx, nz) * nz;
 
-	ny = (nz * nx);
+	ny = cross(nz, nx);
 	nx = normalize(nx);
 	ny = normalize(ny);
 	nz = normalize(nz);

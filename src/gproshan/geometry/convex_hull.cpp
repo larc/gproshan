@@ -58,7 +58,7 @@ void convex_hull::andrew_algorithm(const vertex * points, const size_t & n_point
 bool convex_hull::ccw(const vertex & p, const vertex & q, const vertex & r)
 {
 	// TODO vec2
-	return ((q - p) * (r - p)).z() > 0;
+	return cross(q - p, r - p).z() > 0;
 }
 
 

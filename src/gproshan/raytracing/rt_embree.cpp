@@ -115,7 +115,7 @@ eval_hit embree::intersect(const vertex & org, const vertex & dir)
 	ray_hit r(org, dir);
 	if(!intersect(r)) return {};
 
-	eval_hit hit(*g_meshes[r.hit.geomID], r.hit.primID, r.hit.u, r.hit.v);
+	eval_hit hit(*g_meshes[r.hit.geomID], r.hit.primID, r.hit.u, r.hit.v, params_scene{});
 	hit.dist = r.ray.tfar;
 	hit.position = r.position();
 
@@ -241,16 +241,16 @@ index_t embree::add_pointcloud(const che * mesh, const mat4 & model_mat)
 	return geom_id;
 }
 
-vec3 embree::closesthit_radiance(const vertex & org, const vertex & dir, const vertex * lights, const int & n_lights, const bool & flat)
+vec3 embree::closesthit_radiance(const vertex & org, const vertex & dir, const vertex * lights, const int & n_lights, const vertex & cam_pos, const bool & flat)
 {
 	ray_hit r(org, dir);
 	if(!intersect(r)) return {};
 
-	eval_hit hit(*g_meshes[r.hit.geomID], r.hit.primID, r.hit.u, r.hit.v);
+	eval_hit hit(*g_meshes[r.hit.geomID], r.hit.primID, r.hit.u, r.hit.v, params_scene{});
 	hit.position = r.position();
 	hit.normal = flat ? r.normal() : hit.normal;
 
-	return eval_li(	hit, lights, n_lights,
+	return eval_li(	hit, lights, n_lights, cam_pos,
 					[&](const vec3 & position, const vec3 & wi, const float & light_dist) -> bool
 					{
 						ray_hit ro(position, wi, 1e-3f, light_dist - 1e-3f);

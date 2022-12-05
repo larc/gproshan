@@ -3,6 +3,7 @@
 
 #include <gproshan/mesh/che.h>
 #include <gproshan/mesh/che.cuh>
+#include <gproshan/scenes/scene.h>
 #include <gproshan/raytracing/raytracing.h>
 #include <gproshan/raytracing/rt_optix_params.h>
 
