@@ -28,7 +28,7 @@ struct splats_data
 // Expands a 10-bit integer into 30 bits
 // by inserting 2 zeros after each bit.
 template <class T>
-__host__ __device__
+__host_device__
 unsigned int expand_bits(const T & fv)
 {
 	unsigned int v = (unsigned int) fv;
@@ -42,7 +42,7 @@ unsigned int expand_bits(const T & fv)
 // Calculates a 30-bit Morton code for the
 // given 2D point located within the unit square [0,1].
 template <class T>
-__host__ __device__
+__host_device__
 unsigned int morton_2d(T x, T y)
 {
 	unsigned int xx = expand_bits(x * 1023 + 0.5);

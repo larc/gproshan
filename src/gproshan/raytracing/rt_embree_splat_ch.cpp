@@ -123,26 +123,26 @@ index_t embree_splat_ch::add_pointcloud(const che * mesh, const mat4 & model_mat
 	return add_mesh(&ch_mesh, mat4::identity());
 }
 
-vec3 embree_splat_ch::closesthit_radiance(const vertex & org, const vertex & dir, const vertex * lights, const int & n_lights, const bool & flat)
+vec3 embree_splat_ch::closesthit_radiance(const vertex & org, const vertex & dir, const vertex * lights, const int & n_lights, const vertex & eye, const bool & flat)
 {
 	ray_hit r(org, dir);
 	if(!intersect(r)) return {};
 
-	eval_hit hit(*g_meshes[r.hit.geomID], r.hit.primID, r.hit.u, r.hit.v);
+	eval_hit hit(*g_meshes[r.hit.geomID], r.hit.primID, r.hit.u, r.hit.v, sc);
 	hit.position = r.position();
 	hit.normal = flat ? r.normal() : hit.normal;
 
 	if(show_chsplats)
 	{
 		hit.normal = normalize(vec3{r.hit.Ng_x, r.hit.Ng_y, r.hit.Ng_z});
-		hit.color = colormap(csplat[primID_splat[r.hit.primID]]);
+		hit.Kd = colormap(csplat[primID_splat[r.hit.primID]]);
 	}
 	else
 	{
-		vsplat[primID_splat[r.hit.primID]].shading(g_meshes[r.hit.geomID], hit.position, hit.normal, hit.color);
+		vsplat[primID_splat[r.hit.primID]].shading(g_meshes[r.hit.geomID], hit.position, hit.normal, hit.Kd);
 	}
 
-	return eval_li(	hit, lights,  n_lights,
+	return eval_li(	hit, lights, n_lights, eye,
 					[&](const vec3 & position, const vec3 & wi, const float & light_dist) -> bool
 					{
 						ray_hit ro(position, wi, 1e-3f, light_dist - 1e-3f);
@@ -174,10 +174,10 @@ void embree_splat_ch::init_splats(const che * mesh)
 		{
 			for(const index_t & he: mesh->star(q.front()))
 			{
-				const index_t & u = mesh->halfedge(prev(he));
+				const index_t & u = mesh->halfedge(he_prev(he));
 				if(!visited[u] && neigs.find(u) == neigs.end())
 				{
-					if((n, mesh->normal(u)) > n_threshold)
+					if(dot(n, mesh->normal(u)) > n_threshold)
 					{
 						q.push(u);
 						n += mesh->normal(u);

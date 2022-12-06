@@ -73,24 +73,24 @@ void splat::add_splats_mesh(che * mesh, const mat4 & model_mat)
 
 			for(const index_t & he: mesh->star(front))
 			{
-				const index_t & u = mesh->halfedge(prev(he));
+				const index_t & u = mesh->halfedge(he_prev(he));
 				if(visited[u] == NIL) q.push(u);
 			}
 		}
-	
+
 		center /= vertices.size() - idx_splats.back();
 		std::sort(vertices.begin() + idx_splats.back(), vertices.end(),
 					[&](const index_t & x, const index_t & y)
 					{
 						return length(mesh->point(x) - center) < length(mesh->point(y) - center);
 					});
-		
+
 
 		int idx_end = vertices.size();
 		for(index_t i = idx_splats.back(); i < vertices.size(); ++i)
 			for(const index_t & he: mesh->star(vertices[i]))
 			{
-				const index_t & u = mesh->halfedge(prev(he));
+				const index_t & u = mesh->halfedge(he_prev(he));
 				if(visited[u] != idx_splats.size() - 1)
 				{
 					idx_end = i;
@@ -99,12 +99,12 @@ void splat::add_splats_mesh(che * mesh, const mat4 & model_mat)
 			}
 
 		gproshan_error_var(idx_end < vertices.size());
-		
+
 		for(index_t i = idx_end; i < vertices.size(); ++i)
 			visited[vertices[i]] = NIL;
-			
+
 		vertices.resize(idx_end);
-		
+
 		// splat verification
 		if(vertices.size() - idx_splats.back() < 10)
 		{

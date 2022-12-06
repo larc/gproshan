@@ -115,7 +115,7 @@ class embree_splat_ch : public embree
 
 	private:
 		index_t add_pointcloud(const che * mesh, const mat4 & model_mat);
-		virtual vec3 closesthit_radiance(const vertex & org, const vertex & dir, const vertex * lights, const int & n_lights, const bool & flat);
+		virtual vec3 closesthit_radiance(const vertex & org, const vertex & dir, const vertex * lights, const int & n_lights, const vertex & eye, const bool & flat);
 
 		void init_splats(const che * mesh);
 };
