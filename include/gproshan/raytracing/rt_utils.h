@@ -38,6 +38,28 @@ struct random
 	}
 };
 
+template<class T>
+__host__ __device__
+vec<T, 3> texture(const scene::texture & tex, const vec<T, 2> & coord)
+{
+	const int i = (tex.width + int(coord.x() * (tex.width - 1))) % tex.width;
+	const int j = (tex.height + int(coord.y() * (tex.height -1))) % tex.height;
+	const int k = j * tex.width + i;
+
+	che::rgb_t color;
+	if(tex.spectrum == 3)
+	{
+		const che::rgb_t * img = (const che::rgb_t *) tex.data;
+		color = img[k];
+	}
+	if(tex.spectrum == 1)
+	{
+		color.r = color.g = color.b = tex.data[k];
+	}
+
+	return {T(color.r) / 255, T(color.g) / 255, T(color.b) / 255};
+}
+
 template <class T>
 struct t_eval_hit
 {
@@ -67,9 +89,9 @@ struct t_eval_hit
 		const index_t b = mesh.VT[he + 1];
 		const index_t c = mesh.VT[he + 2];
 
-		const vertex ca = {float(mesh.VC[a].r), float(mesh.VC[a].g), float(mesh.VC[a].b)};
-		const vertex cb = {float(mesh.VC[b].r), float(mesh.VC[b].g), float(mesh.VC[b].b)};
-		const vertex cc = {float(mesh.VC[c].r), float(mesh.VC[c].g), float(mesh.VC[c].b)};
+		const vec<T, 3> ca = {T(mesh.VC[a].r), T(mesh.VC[a].g), T(mesh.VC[a].b)};
+		const vec<T, 3> cb = {T(mesh.VC[b].r), T(mesh.VC[b].g), T(mesh.VC[b].b)};
+		const vec<T, 3> cc = {T(mesh.VC[c].r), T(mesh.VC[c].g), T(mesh.VC[c].b)};
 
 		Kd = ((1.f - u - v) * ca + u * cb + v * cc) / 255;
 		normal = (1.f - u - v) * mesh.VN[a] + u * mesh.VN[b] + v * mesh.VN[c];
@@ -78,23 +100,23 @@ struct t_eval_hit
 		if(sc.trig_mat[primID] == NIL) return;
 
 		const scene::material & mat = sc.materials[sc.trig_mat[primID]];
+		vec<T, 2> texcoord;
+		if(sc.texcoords)
+			texcoord = (1.f - u - v) * sc.texcoords[a] + u * sc.texcoords[b] + v * sc.texcoords[c];
+
+		Ka = mat.Ka;
+		if(mat.map_Ka != -1)
+			Ka *= texture(sc.textures[mat.map_Ka], texcoord);
 
 		Kd = mat.Kd;
-		/*
-			Ka = mat.Ka;
-			if(mat.map_Ka != -1)
-				Ka *= texture(tex_Ka, texcoord).rgb;
+		if(mat.map_Kd != -1)
+			Kd *= texture(sc.textures[mat.map_Kd], texcoord);
 
-			Kd = mat.Kd;
-			if(mat.map_Kd != -1)
-				Kd *= texture(tex_Kd, texcoord).rgb;
+		Ks = mat.Ks;
+		if(mat.map_Ks != -1)
+			Ks *= texture(sc.textures[mat.map_Ks], texcoord);
 
-			Ks = mat.Ks;
-			if(mat.map_Ks != -1)
-				Ks *= texture(tex_Ks, texcoord).rgb;
-
-			Ns = mat.Ns;
-		*/
+		Ns = mat.Ns;
 	}
 };
 
@@ -109,6 +131,8 @@ vec<T, 3> eval_li(const t_eval_hit<T> & hit, const vec<T, 3> * lights, const int
 	vec<T, 3> v = normalize(eye - hit.position);
 	const vec<T, 3> & n = hit.normal;
 
+	T lambertian;
+	T specular;
 	for(int i = 0; i < n_lights; ++i)
 	{
 		l = lights[i] - hit.position;
@@ -118,11 +142,11 @@ vec<T, 3> eval_li(const t_eval_hit<T> & hit, const vec<T, 3> * lights, const int
 		h = normalize(l + v);
 
 	#ifdef __CUDACC__
-		const T & lambertian = max(dot(l, n), 0.f);
-		const T & specular = pow(max(dot(h, n), 0.f), hit.Ns);
+		lambertian = max(dot(l, n), 0.f);
+		specular = pow(max(dot(h, n), 0.f), hit.Ns);
 	#else
-		const T & lambertian = std::max(dot(l, n), 0.f);
-		const T & specular = pow(std::max(dot(h, n), 0.f), hit.Ns);
+		lambertian = std::max(dot(l, n), 0.f);
+		specular = pow(std::max(dot(h, n), 0.f), hit.Ns);
 	#endif // __CUDACC__
 
 		const vec<T, 3> & color = hit.Ka * La + (lambertian * hit.Kd + specular * hit.Ks) * Lp / (r * r);

@@ -223,6 +223,7 @@ bool scene::load_texture(const std::string & file)
 		tex.width = img.width();
 		tex.height = img.height();
 		tex.spectrum = img.spectrum();
+		gproshan_error_var(tex.spectrum);
 		tex.data = new unsigned char[tex.width * tex.height * tex.spectrum];
 		img.permute_axes("cxyz");
 		memcpy(tex.data, img.data(), tex.width * tex.height * tex.spectrum);
