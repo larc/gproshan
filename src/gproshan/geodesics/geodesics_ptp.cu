@@ -262,13 +262,13 @@ void relative_error(real_t * error, const real_t * new_dist, const real_t * old_
 	}
 }
 
-__host__ __device__
+__host_device__
 bool is_ok::operator()(const real_t & val) const
 {
 	return val < PTP_TOL;
 }
 
-__host__ __device__
+__host_device__
 bool is_ok::operator()(const index_t & i) const
 {
 	return error[i] < PTP_TOL;
