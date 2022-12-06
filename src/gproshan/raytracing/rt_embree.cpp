@@ -59,13 +59,13 @@ void embree_error(void *, RTCError, const char * str)
 
 embree::embree()
 {
-	device = rtcNewDevice(NULL);
-	scene = rtcNewScene(device);
+	rtc_device = rtcNewDevice(NULL);
+	rtc_scene = rtcNewScene(rtc_device);
 
-	rtcSetSceneFlags(scene, RTC_SCENE_FLAG_COMPACT);
+	rtcSetSceneFlags(rtc_scene, RTC_SCENE_FLAG_COMPACT);
 
-	rtcInitIntersectContext(&intersect_context);
-	rtcSetDeviceErrorFunction(device, embree_error, NULL);
+	rtcInitIntersectContext(&rtc_intersect_context);
+	rtcSetDeviceErrorFunction(rtc_device, embree_error, NULL);
 }
 
 embree::embree(const std::vector<che *> & meshes, const std::vector<mat4> & model_mats, const bool & pointcloud, const float & pcr): embree()
@@ -79,8 +79,8 @@ embree::~embree()
 	for(CHE * m: g_meshes)
 		delete m;
 
-	rtcReleaseScene(scene);
-	rtcReleaseDevice(device);
+	rtcReleaseScene(rtc_scene);
+	rtcReleaseDevice(rtc_device);
 }
 
 index_t embree::closest_vertex(const vertex & org, const vertex & dir)
@@ -115,7 +115,7 @@ eval_hit embree::intersect(const vertex & org, const vertex & dir)
 	ray_hit r(org, dir);
 	if(!intersect(r)) return {};
 
-	eval_hit hit(*g_meshes[r.hit.geomID], r.hit.primID, r.hit.u, r.hit.v, params_scene{});
+	eval_hit hit(*g_meshes[r.hit.geomID], r.hit.primID, r.hit.u, r.hit.v, sc);
 	hit.dist = r.ray.tfar;
 	hit.position = r.position();
 
@@ -139,12 +139,12 @@ void embree::build_bvh(const std::vector<che *> & meshes, const std::vector<mat4
 		gproshan_error_var(i == geomID);
 	}
 
-	rtcCommitScene(scene);
+	rtcCommitScene(rtc_scene);
 }
 
 index_t embree::add_sphere(const vec4 & xyzr)
 {
-	RTCGeometry geom = rtcNewGeometry(device, RTC_GEOMETRY_TYPE_SPHERE_POINT);
+	RTCGeometry geom = rtcNewGeometry(rtc_device, RTC_GEOMETRY_TYPE_SPHERE_POINT);
 
 	vec4 * pxyzr = (vec4 *) rtcSetNewGeometryBuffer(	geom,
 														RTC_BUFFER_TYPE_VERTEX, 0,
@@ -154,7 +154,7 @@ index_t embree::add_sphere(const vec4 & xyzr)
 
 	rtcCommitGeometry(geom);
 
-	index_t geom_id = rtcAttachGeometry(scene, geom);
+	index_t geom_id = rtcAttachGeometry(rtc_scene, geom);
 	rtcReleaseGeometry(geom);
 
 	return geom_id;
@@ -162,7 +162,7 @@ index_t embree::add_sphere(const vec4 & xyzr)
 
 index_t embree::add_mesh(const che * mesh, const mat4 & model_mat)
 {
-	RTCGeometry geom = rtcNewGeometry(device, RTC_GEOMETRY_TYPE_TRIANGLE);
+	RTCGeometry geom = rtcNewGeometry(rtc_device, RTC_GEOMETRY_TYPE_TRIANGLE);
 
 	vertex * vertices = (vertex *) rtcSetNewGeometryBuffer(	geom,
 															RTC_BUFFER_TYPE_VERTEX, 0,
@@ -194,7 +194,7 @@ index_t embree::add_mesh(const che * mesh, const mat4 & model_mat)
 
 	rtcCommitGeometry(geom);
 
-	index_t geom_id = rtcAttachGeometry(scene, geom);
+	index_t geom_id = rtcAttachGeometry(rtc_scene, geom);
 	rtcReleaseGeometry(geom);
 
 	if(mesh->is_scene())
@@ -202,6 +202,12 @@ index_t embree::add_mesh(const che * mesh, const mat4 & model_mat)
 		g_meshes[geom_id]->VT = tri_idxs;
 		g_meshes[geom_id]->n_trigs = mesh->n_vertices / 3;
 		g_meshes[geom_id]->n_half_edges = mesh->n_vertices;
+
+		scene * psc = (scene *) mesh;
+		sc.materials = psc->materials.data();
+		sc.textures = psc->textures.data();
+		sc.trig_mat = psc->trig_mat;
+		sc.texcoords = psc->texcoords;
 	}
 
 	return geom_id;
@@ -209,7 +215,7 @@ index_t embree::add_mesh(const che * mesh, const mat4 & model_mat)
 
 index_t embree::add_pointcloud(const che * mesh, const mat4 & model_mat)
 {
-	RTCGeometry geom = rtcNewGeometry(device, RTC_GEOMETRY_TYPE_ORIENTED_DISC_POINT);
+	RTCGeometry geom = rtcNewGeometry(rtc_device, RTC_GEOMETRY_TYPE_ORIENTED_DISC_POINT);
 
 	vec4 * pxyzr = (vec4 *) rtcSetNewGeometryBuffer(	geom,
 														RTC_BUFFER_TYPE_VERTEX, 0,
@@ -235,7 +241,7 @@ index_t embree::add_pointcloud(const che * mesh, const mat4 & model_mat)
 
 	rtcCommitGeometry(geom);
 
-	index_t geom_id = rtcAttachGeometry(scene, geom);
+	index_t geom_id = rtcAttachGeometry(rtc_scene, geom);
 	rtcReleaseGeometry(geom);
 
 	return geom_id;
@@ -246,7 +252,7 @@ vec3 embree::closesthit_radiance(const vertex & org, const vertex & dir, const v
 	ray_hit r(org, dir);
 	if(!intersect(r)) return {};
 
-	eval_hit hit(*g_meshes[r.hit.geomID], r.hit.primID, r.hit.u, r.hit.v, params_scene{});
+	eval_hit hit(*g_meshes[r.hit.geomID], r.hit.primID, r.hit.u, r.hit.v, sc);
 	hit.position = r.position();
 	hit.normal = flat ? r.normal() : hit.normal;
 
@@ -266,13 +272,13 @@ float embree::intersect_depth(const vertex & org, const vertex & dir)
 
 bool embree::intersect(ray_hit & r)
 {
-	rtcIntersect1(scene, &intersect_context, &r);
+	rtcIntersect1(rtc_scene, &rtc_intersect_context, &r);
 	return r.hit.geomID != RTC_INVALID_GEOMETRY_ID;
 }
 
 bool embree::occluded(ray_hit & r)
 {
-	rtcIntersect1(scene, &intersect_context, &r);
+	rtcIntersect1(rtc_scene, &rtc_intersect_context, &r);
 	return r.hit.geomID != RTC_INVALID_GEOMETRY_ID;
 }
 

@@ -37,10 +37,10 @@ struct is_ok
 {
 	const real_t * error = nullptr;
 
-	__host__ __device__
+	__host_device__
 	bool operator()(const real_t & val) const;
 
-	__host__ __device__
+	__host_device__
 	bool operator()(const index_t & val) const;
 };
 
@@ -74,7 +74,7 @@ template<class T>
 #ifdef __CUDACC__
 __forceinline__
 #endif
-__host__ __device__
+__host_device__
 real_t update_step(const CHE * mesh, const T * dist, const uvec3 & x)
 {
 	const vec<T, 3> X[2] = {mesh->GT[x[0]] - mesh->GT[x[2]],
@@ -130,7 +130,7 @@ template<class T>
 #ifdef __CUDACC__
 __forceinline__
 #endif
-__host__ __device__
+__host_device__
 void relax_ptp(const CHE * mesh, T * new_dist, T * old_dist, index_t * new_clusters, index_t * old_clusters, const index_t & v)
 {
 	real_t & ndv = new_dist[v] = old_dist[v];

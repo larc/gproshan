@@ -118,6 +118,9 @@ optix::~optix()
 	cudaFree(optix_params.sc.textures);
 	cudaFree(optix_params.sc.trig_mat);
 	cudaFree(optix_params.sc.texcoords);
+
+	for(unsigned char * data: tex_data)
+		cudaFree(data);
 }
 
 void optix::render(vec4 * img, const render_params & params, const bool & flat)
@@ -472,8 +475,18 @@ void optix::add_mesh(OptixBuildInput & optix_mesh, CUdeviceptr & d_vertex_ptr, u
 		cudaMalloc(&optix_params.sc.trig_mat, mesh->n_vertices / 3 * sizeof(index_t));
 		cudaMalloc(&optix_params.sc.texcoords, mesh->n_vertices * sizeof(vec2));
 
+		std::vector<scene::texture> textures = sc->textures;
+		for(scene::texture & tex: textures)
+		{
+			unsigned char * h_data = tex.data;
+			cudaMalloc(&tex.data, tex.width * tex.height * tex.spectrum);
+			cudaMemcpy(tex.data, h_data, tex.width * tex.height * tex.spectrum, cudaMemcpyHostToDevice);
+			tex_data.push_back(tex.data);
+		}
+
+		gproshan_error_var(textures.size());
 		cudaMemcpy(optix_params.sc.materials, sc->materials.data(), sc->materials.size() * sizeof(scene::material), cudaMemcpyHostToDevice);
-		cudaMemcpy(optix_params.sc.textures, sc->textures.data(), sc->textures.size() * sizeof(scene::texture), cudaMemcpyHostToDevice);
+		cudaMemcpy(optix_params.sc.textures, textures.data(), textures.size() * sizeof(scene::texture), cudaMemcpyHostToDevice);
 		cudaMemcpy(optix_params.sc.trig_mat, sc->trig_mat, mesh->n_vertices / 3 * sizeof(index_t), cudaMemcpyHostToDevice);
 		cudaMemcpy(optix_params.sc.texcoords, sc->texcoords, mesh->n_vertices * sizeof(vec2), cudaMemcpyHostToDevice);
 	}

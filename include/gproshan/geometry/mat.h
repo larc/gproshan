@@ -18,7 +18,7 @@ class mat
 		row<T, N> rows[N];
 
 	public:
-		__host__ __device__
+		__host_device__
 		mat(const std::initializer_list<row<T, N> > & list = {})
 		{
 			int i = -1;
@@ -26,33 +26,33 @@ class mat
 				rows[++i] = r;
 		}
 
-		__host__ __device__
+		__host_device__
 		T & operator () (const index_t & i, const index_t & j)
 		{
 			return rows[i][j];
 		}
 
-		__host__ __device__
+		__host_device__
 		const T & operator () (const index_t & i, const index_t & j) const
 		{
 			return rows[i][j];
 		}
 
-		__host__ __device__
+		__host_device__
 		row<T, N> & operator [] (const index_t & i)
 		{
 			assert(i < N);
 			return rows[i];
 		}
 
-		__host__ __device__
+		__host_device__
 		const row<T, N> & operator [] (const index_t & i) const
 		{
 			assert(i < N);
 			return rows[i];
 		}
 
-		__host__ __device__
+		__host_device__
 		mat<T, N> operator * (const mat<T, N> & b) const
 		{
 			mat<T, N> res;
@@ -63,7 +63,7 @@ class mat
 			return res;
 		}
 
-		__host__ __device__
+		__host_device__
 		vec<T, N> operator * (const vec<T, N> & v) const
 		{
 			vec<T, N> res;
@@ -72,7 +72,7 @@ class mat
 			return res;
 		}
 
-		__host__ __device__
+		__host_device__
 		static mat<T, N> identity()
 		{
 			mat<T, N> res;
@@ -81,7 +81,7 @@ class mat
 			return res;
 		}
 
-		__host__ __device__
+		__host_device__
 		static mat<T, N> transpose(const mat<T, N> & m)
 		{
 			mat<T, N> res;

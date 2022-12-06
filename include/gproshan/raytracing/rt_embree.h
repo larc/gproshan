@@ -2,6 +2,7 @@
 #define RT_EMBREE_H
 
 #include <gproshan/mesh/che.h>
+#include <gproshan/scenes/scene.h>
 #include <gproshan/raytracing/raytracing.h>
 
 #include <cfloat>
@@ -30,11 +31,12 @@ class embree : public raytracing
 		};
 
 
-		RTCDevice device;
-		RTCScene scene;
-		RTCIntersectContext intersect_context;
+		RTCDevice rtc_device;
+		RTCScene rtc_scene;
+		RTCIntersectContext rtc_intersect_context;
 
 		std::vector<CHE *> g_meshes;
+		scene_data sc;
 
 		float pc_radius = 1;
 

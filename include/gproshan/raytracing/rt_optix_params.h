@@ -33,7 +33,7 @@ struct launch_params
 
 	OptixTraversableHandle traversable;
 
-	params_scene sc;
+	scene_data sc;
 };
 
 

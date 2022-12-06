@@ -70,7 +70,7 @@ class scene: public che
 		bool load_texture(const std::string & file);
 };
 
-struct params_scene
+struct scene_data
 {
 	scene::material * materials = nullptr;
 	scene::texture * textures = nullptr;
