@@ -38,6 +38,28 @@ struct random
 	}
 };
 
+template<class T>
+__host__ __device__
+vec<T, 3> texture(const scene::texture & tex, const vec<T, 2> & coord)
+{
+	const int i = (tex.width + int(coord.x() * (tex.width - 1))) % tex.width;
+	const int j = (tex.height + int(coord.y() * (tex.height -1))) % tex.height;
+	const int k = j * tex.width + i;
+
+	che::rgb_t color;
+	if(tex.spectrum == 3)
+	{
+		const che::rgb_t * img = (const che::rgb_t *) tex.data;
+		color = img[k];
+	}
+	if(tex.spectrum == 1)
+	{
+		color.r = color.g = color.b = tex.data[k];
+	}
+
+	return {T(color.r) / 255, T(color.g) / 255, T(color.b) / 255};
+}
+
 template <class T>
 struct t_eval_hit
 {
@@ -95,31 +117,6 @@ struct t_eval_hit
 			Ks *= texture(sc.textures[mat.map_Ks], texcoord);
 
 		Ns = mat.Ns;
-	}
-
-	__host__ __device__
-	vec<T, 3> texture(const scene::texture & tex, const vec<T, 2> & coord)
-	{
-		int i = coord.x() * ((int)tex.width);
-		int j = coord.y() * ((int)tex.height);
-		if(i < 0) i = 0;
-		if(i >= tex.width) i = tex.width - 1;
-		if(j < 0) j = 0;
-		if(j >= tex.height) j = tex.height - 1;
-
-		const int k = j * tex.width + i;
-
-		che::rgb_t color;
-		if(tex.spectrum == 3)
-		{
-			const che::rgb_t * img = (const che::rgb_t *) tex.data;
-			color = img[k];
-		}
-		if(tex.spectrum == 1)
-		{
-			color.r = color.g = color.b = tex.data[k];
-		}
-		return {T(color.r) / 255, T(color.g) / 255, T(color.b) / 255};
 	}
 };
 
