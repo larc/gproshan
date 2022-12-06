@@ -17,7 +17,7 @@ struct random
 {
 	uint32_t previous;
 
-	__host__ __device__
+	__host_device__
 	random(uint32_t v0, uint32_t v1)
 	{
 		uint32_t s = 0;
@@ -30,7 +30,7 @@ struct random
 		previous = v0;
 	}
 
-	__host__ __device__
+	__host_device__
 	T operator () ()
 	{
 		previous = previous * 1664525 + 1013904223;
@@ -39,7 +39,7 @@ struct random
 };
 
 template<class T>
-__host__ __device__
+__host_device__
 vec<T, 3> texture(const scene::texture & tex, const vec<T, 2> & coord)
 {
 	const int i = (tex.width + int(coord.x() * (tex.width - 1))) % tex.width;
@@ -73,10 +73,10 @@ struct t_eval_hit
 	vec<T, 3> Ks{0.2f, 0.2f, 0.2f};
 	T Ns = 4;
 
-	__host__ __device__
+	__host_device__
 	t_eval_hit() {}
 
-	__host__ __device__
+	__host_device__
 	t_eval_hit(const CHE & mesh, const index_t & aprimID, const T & au, const T & av, const params_scene & sc)
 	{
 		primID = aprimID;
@@ -121,7 +121,7 @@ struct t_eval_hit
 };
 
 template <class T, class Occluded>
-__host__ __device__
+__host_device__
 vec<T, 3> eval_li(const t_eval_hit<T> & hit, const vec<T, 3> * lights, const int & n_lights, const vec<T, 3> & eye, Occluded occluded)
 {
 	const T Lp = 10;
@@ -161,7 +161,7 @@ using eval_hit = t_eval_hit<float>;
 
 
 template <class T>
-__host__ __device__
+__host_device__
 vec<T, 3> ray_view_dir(const ivec2 & pos, const ivec2 & windows_size, const mat<T, 4> & inv_proj_view, const vec<T, 3> & cam_pos)
 {
 	vec2 screen = {	(float(pos.x()) + 0.5f) / windows_size.x(),
