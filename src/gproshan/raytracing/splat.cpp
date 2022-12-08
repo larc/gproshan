@@ -35,103 +35,113 @@ splat::~splat()
 
 void splat::add_splats_mesh(che * mesh, const mat4 & model_mat)
 {
-	const real_t n_threshold = 0.81;
-//	const real_t max_neigs = 1000;
+	const real_t n_threshold = 0.9;
+	const real_t max_neigs = 1000;
 
 	std::vector<index_t> vertices;
 	std::vector<index_t> idx_splats({0});
 	std::vector<vertex> centers;
 
-	std::vector<unsigned int> visited;
+	std::queue<index_t> q;
+	std::vector<index_t> visited;
 	visited.assign(mesh->n_vertices, -1);
 
-	for(index_t v = 0; v < mesh->n_vertices; ++v)
+	std::vector<index_t> shuffle(mesh->n_vertices);
+	std::iota(begin(shuffle), end(shuffle), 0);
+	std::random_shuffle(begin(shuffle), end(shuffle));
+
+	for(const index_t & v: shuffle)
 	{
 		if(visited[v] != NIL) continue;
 
 		const vertex & vnormal = mesh->normal(v);
 		const vertex & vpoint = mesh->point(v);
 
-		std::queue<index_t> q; q.push(v);
+		visited[v] = 0;		// in queue
+		q.push(v);
+
+		const index_t & idx = idx_splats.size();
 
 		vertex center = vpoint;
+		real_t radio = 0;
+		real_t sum_delta = 0;
+		size_t n_delta = 0;
 		while(!q.empty())
 		{
 			index_t front = q.front();
 			q.pop();
 
-			if(visited[front] != NIL)
-				continue;
-
 			//real_t dist = length(vec3(model_mat * vec4(vpoint, 1) - model_mat * vec4(mesh->point(front), 1))) / (2 * M_SQRT2);
-			if(dot(vnormal, mesh->normal(front)) < n_threshold) // vs n_threshold
-				break;
 
-			center += mesh->point(front);
+	//
+		//	radio = std::max(radio, length(vpoint - mesh->point(front)));
+/*
+			// density
+			const real_t d = sum_delta / n_delta;
+			if((n + 1) * d * d / (radio * radio) < 0.99)
+			{
+//		gproshan_error_var(n * d * d / (radio * radio));
+				break;
+			}
+*/
+			//center = (center * n + mesh->point(front)) / (n + 1);
 			vertices.push_back(front);
-			visited[front] = idx_splats.size() - 1;
+			visited[front] = idx;
+
+			const size_t & n = vertices.size() - idx_splats.back();
+			if(n == max_neigs)
+				break;
 
 			for(const index_t & he: mesh->star(front))
 			{
 				const index_t & u = mesh->halfedge(he_prev(he));
-				if(visited[u] == NIL) q.push(u);
+				if(visited[u] == NIL &&
+					dot(vnormal, mesh->normal(front)) > n_threshold)
+				{
+					sum_delta += length(mesh->point(front) - mesh->point(u));
+					++n_delta;
+					visited[u] = 0;		// in queue
+					q.push(u);
+				}
+
 			}
 		}
 
-		center /= vertices.size() - idx_splats.back();
-		std::sort(vertices.begin() + idx_splats.back(), vertices.end(),
-					[&](const index_t & x, const index_t & y)
-					{
-						return length(mesh->point(x) - center) < length(mesh->point(y) - center);
-					});
-
-
-		int idx_end = vertices.size();
-		for(index_t i = idx_splats.back(); i < vertices.size(); ++i)
-			for(const index_t & he: mesh->star(vertices[i]))
-			{
-				const index_t & u = mesh->halfedge(he_prev(he));
-				if(visited[u] != idx_splats.size() - 1)
-				{
-					idx_end = i;
-					break;
-				}
-			}
-
-		gproshan_error_var(idx_end < vertices.size());
-
-		for(index_t i = idx_end; i < vertices.size(); ++i)
-			visited[vertices[i]] = NIL;
-
-		vertices.resize(idx_end);
+		while(!q.empty())
+		{
+			visited[q.front()] = NIL;
+			q.pop();
+		}
 
 		// splat verification
-		if(vertices.size() - idx_splats.back() < 10)
+		if(vertices.size() - idx_splats.back() < 3)
 		{
 			for(index_t i = idx_splats.back(); i < vertices.size(); ++i)
 				visited[vertices[i]] = NIL;
 			vertices.resize(idx_splats.back());
 			continue;
 		}
-		for(index_t i = idx_splats.back(); i < vertices.size(); ++i)
-			gproshan_log_var(length(mesh->point(vertices[i]) - center));
+
+		const size_t & n = vertices.size() - idx_splats.back();
+		const real_t d = sum_delta / n_delta;
+		//gproshan_error_var(n * d * d / (radio * radio));
 
 		// new splat limit
 		idx_splats.push_back(vertices.size());
 		centers.push_back(center);
-
-		if(idx_splats.size() > 10) break;
 	}
 
 	std::vector<int> color(idx_splats.size() - 1);
 	std::iota(color.begin(), color.end(), 0);
-	//std::random_shuffle(color.begin(), color.end());
+	std::random_shuffle(color.begin(), color.end());
 	for(index_t i = 1; i < idx_splats.size(); ++i)
 	for(index_t j = idx_splats[i - 1]; j < idx_splats[i]; ++j)
 		mesh->heatmap(vertices[j]) = real_t(color[i - 1]) / (color.size() - 1);
 
 	gproshan_error_var(vertices.size());
 	gproshan_error_var(idx_splats.size());
+
+return;
 
 	std::vector<vertex> points(vertices.size());
 	std::vector<index_t> faces;
@@ -189,7 +199,6 @@ void splat::add_splats_mesh(che * mesh, const mat4 & model_mat)
 		{
 			vertex & p = points[j];
 			p = mat3::transpose(tbn) * p + center;
-if(abs(p.z()) > 1e-5) gproshan_error_var(p);
 		}
 	}
 
@@ -214,7 +223,6 @@ if(abs(p.z()) > 1e-5) gproshan_error_var(p);
 		index_t f = -1;
 		for(const index_t & v: che::trig_convex_polygon(sch.data(), sch.size()))
 		{
-if(v >= points.size()) gproshan_error_var(v < points.size());
 			faces.push_back(v + begin);
 			if(!(++f % 3))
 				primID_splat.push_back(i);
