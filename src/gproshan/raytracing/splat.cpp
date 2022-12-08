@@ -36,7 +36,6 @@ splat::~splat()
 void splat::add_splats_mesh(che * mesh, const mat4 & model_mat)
 {
 	const real_t n_threshold = 0.9;
-	const real_t max_neigs = mesh->n_vertices / 100;
 
 	std::vector<index_t> vertices;
 	std::vector<index_t> segmentation({0});
@@ -109,30 +108,50 @@ void splat::add_splats_mesh(che * mesh, const mat4 & model_mat)
 
 	std::vector<index_t> seeds;
 	std::vector<std::vector<index_t> > voronoi;
+	std::vector<real_t> dist;
+	dist.assign(mesh->n_vertices, INFINITY);
 
-	//#pragma omp parallel for private(seeds, voronoi)
 	for(index_t i = 1; i < segmentation.size(); ++i)
 	{
 		const index_t & begin = segmentation[i - 1];
 		const index_t & end = segmentation[i];
-		//fps
+
 		seeds.clear();
-		for(index_t j = begin; j < end; j += max_neigs)
-			seeds.push_back(vertices[j]);
+		seeds.push_back(vertices[begin]);
+
+		real_t radio = INFINITY;
+		index_t next_seed;
+		while(radio > 0.3)
+		{
+			radio = 0;
+
+			const index_t & s = seeds.back();
+			for(index_t j = begin; j < end; ++j)
+			{
+				const index_t & u = vertices[j];
+				const real_t & d = length(mesh->point(u) - mesh->point(s));
+
+				if(d < dist[u])
+				{
+					visited[u] = seeds.size() - 1;
+					dist[u] = d;
+				}
+
+				if(radio < dist[u])
+				{
+					radio = dist[u];
+					next_seed = u;
+				}
+			}
+
+			seeds.push_back(next_seed);
+		}
 
 		voronoi.assign(seeds.size(), {});
 		for(index_t j = begin; j < end; ++j)
 		{
 			const index_t & v = vertices[j];
-			const vertex & p = mesh->point(v);
-
-			index_t & sk = visited[v] = 0;
-			for(index_t k = 1; k < seeds.size(); ++k)
-				if(length(p - mesh->point(seeds[k])) <
-					length(p - mesh->point(seeds[sk])))
-					sk = k;
-
-			voronoi[sk].push_back(v);
+			voronoi[visited[v]].push_back(v);
 		}
 
 		for(auto & region: voronoi)
@@ -142,6 +161,7 @@ void splat::add_splats_mesh(che * mesh, const mat4 & model_mat)
 			idx_splats.push_back(idx_splats.back() + region.size());
 		}
 	}
+
 
 	auto display = [&mesh, &vertices](const std::vector<index_t> & sets)
 	{
@@ -159,6 +179,7 @@ void splat::add_splats_mesh(che * mesh, const mat4 & model_mat)
 	gproshan_error_var(idx_splats.size());
 
 return;
+
 
 	std::vector<vertex> points(vertices.size());
 	std::vector<index_t> trigs;
