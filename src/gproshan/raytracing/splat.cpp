@@ -42,7 +42,6 @@ void splat::add_splats_mesh(che * mesh, const mat4 & model_mat)
 	std::vector<index_t> segmentation({0});
 	std::vector<vertex> centers;
 
-	std::queue<index_t> q;
 	std::vector<index_t> visited;
 	visited.assign(mesh->n_vertices, -1);
 
@@ -89,7 +88,6 @@ void splat::add_splats_mesh(che * mesh, const mat4 & model_mat)
 			q.pop();
 		}
 
-		// splat verification
 		if(vertices.size() - segmentation.back() < 3)
 		{
 			for(index_t i = segmentation.back(); i < vertices.size(); ++i)
@@ -100,11 +98,6 @@ void splat::add_splats_mesh(che * mesh, const mat4 & model_mat)
 			continue;
 		}
 
-		const size_t & n = vertices.size() - idx_splats.back();
-		const real_t d = sum_delta / n_delta;
-		//gproshan_error_var(n * d * d / (radio * radio));
-
-		// new splat limit
 		segmentation.push_back(vertices.size());
 	}
 
@@ -125,7 +118,6 @@ void splat::add_splats_mesh(che * mesh, const mat4 & model_mat)
 		const size_t & n = segmentation[i] - segmentation[i - 1];
 
 		seeds.clear();
-		//std::random_shuffle(vertices.begin() + begin, vertices.begin() + end);
 		for(index_t j = begin; j < end; j += max_neigs)
 			seeds.push_back(vertices[j]);
 
@@ -159,7 +151,6 @@ void splat::add_splats_mesh(che * mesh, const mat4 & model_mat)
 
 	}
 
-
 	auto display = [&mesh, &vertices](const std::vector<index_t> & sets)
 	{
 		std::vector<int> color(sets.size() - 1);
@@ -175,7 +166,6 @@ void splat::add_splats_mesh(che * mesh, const mat4 & model_mat)
 
 	gproshan_error_var(vertices.size());
 	gproshan_error_var(idx_splats.size());
-
 
 return;
 
