@@ -36,102 +36,142 @@ splat::~splat()
 void splat::add_splats_mesh(che * mesh, const mat4 & model_mat)
 {
 	const real_t n_threshold = 0.81;
-//	const real_t max_neigs = 1000;
+	const real_t max_neigs = 1000;
 
 	std::vector<index_t> vertices;
-	std::vector<index_t> idx_splats({0});
+	std::vector<index_t> segmentation({0});
 	std::vector<vertex> centers;
 
 	std::vector<unsigned int> visited;
 	visited.assign(mesh->n_vertices, -1);
 
-	for(index_t v = 0; v < mesh->n_vertices; ++v)
+	std::vector<index_t> shuffle(mesh->n_vertices);
+	std::iota(begin(shuffle), end(shuffle), 0);
+	std::random_shuffle(begin(shuffle), end(shuffle));
+
+	const index_t & idx = segmentation.size();
+
+	std::queue<index_t> q;
+	for(const index_t & v: shuffle)
 	{
 		if(visited[v] != NIL) continue;
 
 		const vertex & vnormal = mesh->normal(v);
-		const vertex & vpoint = mesh->point(v);
 
-		std::queue<index_t> q; q.push(v);
+		q.push(v);
+		visited[v] = 0;
 
-		vertex center = vpoint;
 		while(!q.empty())
 		{
 			index_t front = q.front();
 			q.pop();
 
-			if(visited[front] != NIL)
-				continue;
-
-			//real_t dist = length(vec3(model_mat * vec4(vpoint, 1) - model_mat * vec4(mesh->point(front), 1))) / (2 * M_SQRT2);
-			if(dot(vnormal, mesh->normal(front)) < n_threshold) // vs n_threshold
-				break;
-
-			center += mesh->point(front);
 			vertices.push_back(front);
-			visited[front] = idx_splats.size() - 1;
+			visited[front] = idx;
 
 			for(const index_t & he: mesh->star(front))
 			{
 				const index_t & u = mesh->halfedge(he_prev(he));
-				if(visited[u] == NIL) q.push(u);
-			}
-		}
-
-		center /= vertices.size() - idx_splats.back();
-		std::sort(vertices.begin() + idx_splats.back(), vertices.end(),
-					[&](const index_t & x, const index_t & y)
-					{
-						return length(mesh->point(x) - center) < length(mesh->point(y) - center);
-					});
-
-
-		int idx_end = vertices.size();
-		for(index_t i = idx_splats.back(); i < vertices.size(); ++i)
-			for(const index_t & he: mesh->star(vertices[i]))
-			{
-				const index_t & u = mesh->halfedge(he_prev(he));
-				if(visited[u] != idx_splats.size() - 1)
+				if(visited[u] == NIL &&
+					dot(vnormal, mesh->normal(front)) > n_threshold)
 				{
-					idx_end = i;
-					break;
+					q.push(u);
+					visited[u] = 0;
 				}
 			}
+		}
 
-		gproshan_error_var(idx_end < vertices.size());
-
-		for(index_t i = idx_end; i < vertices.size(); ++i)
-			visited[vertices[i]] = NIL;
-
-		vertices.resize(idx_end);
+		while(!q.empty())
+		{
+			visited[q.front()] = NIL;
+			q.pop();
+		}
 
 		// splat verification
-		if(vertices.size() - idx_splats.back() < 10)
+		if(vertices.size() - segmentation.back() < 3)
 		{
-			for(index_t i = idx_splats.back(); i < vertices.size(); ++i)
+			for(index_t i = segmentation.back(); i < vertices.size(); ++i)
 				visited[vertices[i]] = NIL;
-			vertices.resize(idx_splats.back());
+
+			vertices.resize(segmentation.back());
+
 			continue;
 		}
-		for(index_t i = idx_splats.back(); i < vertices.size(); ++i)
-			gproshan_log_var(length(mesh->point(vertices[i]) - center));
 
 		// new splat limit
-		idx_splats.push_back(vertices.size());
-		centers.push_back(center);
-
-		if(idx_splats.size() > 10) break;
+		segmentation.push_back(vertices.size());
 	}
 
-	std::vector<int> color(idx_splats.size() - 1);
-	std::iota(color.begin(), color.end(), 0);
-	//std::random_shuffle(color.begin(), color.end());
-	for(index_t i = 1; i < idx_splats.size(); ++i)
-	for(index_t j = idx_splats[i - 1]; j < idx_splats[i]; ++j)
-		mesh->heatmap(vertices[j]) = real_t(color[i - 1]) / (color.size() - 1);
+	gproshan_error_var(vertices.size());
+	gproshan_error_var(segmentation.size());
+
+	std::vector<index_t> idx_splats({0});
+	visited.assign(mesh->n_vertices, -1);
+
+	std::vector<index_t> seeds;
+	std::vector<std::vector<index_t> > voronoi;
+
+	//#pragma omp parallel for private(seeds, voronoi)
+	for(index_t i = 1; i < segmentation.size(); ++i)
+	{
+		const index_t & begin = segmentation[i - 1];
+		const index_t & end = segmentation[i];
+		const size_t & n = segmentation[i] - segmentation[i - 1];
+
+		seeds.clear();
+		//std::random_shuffle(vertices.begin() + begin, vertices.begin() + end);
+		for(index_t j = begin; j < end; j += max_neigs)
+			seeds.push_back(vertices[j]);
+
+		gproshan_error_var(n);
+		gproshan_error_var(seeds.size());
+
+		voronoi.assign(seeds.size(), {});
+		for(index_t j = begin; j < end; ++j)
+		{
+			const index_t & v = vertices[j];
+			const vertex & p = mesh->point(v);
+
+			index_t & sk = visited[v] = 0;
+			for(index_t k = 1; k < seeds.size(); ++k)
+				if(length(p - mesh->point(seeds[k])) <
+					length(p - mesh->point(seeds[sk])))
+					sk = k;
+
+			voronoi[sk].push_back(v);
+		}
+		gproshan_error_var(seeds.size());
+		gproshan_error_var(voronoi.size());
+
+		for(auto & region: voronoi)
+		{
+		gproshan_error_var(region.size());
+			for(index_t i = 0; i < region.size(); ++i)
+				vertices[i + idx_splats.back()] = region[i];
+			idx_splats.push_back(idx_splats.back() + region.size());
+		}
+
+	}
+
+
+	auto display = [&mesh, &vertices](const std::vector<index_t> & sets)
+	{
+		std::vector<int> color(sets.size() - 1);
+		std::iota(color.begin(), color.end(), 0);
+		std::random_shuffle(color.begin(), color.end());
+
+		for(index_t i = 1; i < sets.size(); ++i)
+		for(index_t j = sets[i - 1]; j < sets[i]; ++j)
+			mesh->heatmap(vertices[j]) = real_t(color[i - 1]) / (color.size() - 1);
+	};
+
+	display(idx_splats);
 
 	gproshan_error_var(vertices.size());
 	gproshan_error_var(idx_splats.size());
+
+
+return;
 
 	std::vector<vertex> points(vertices.size());
 	std::vector<index_t> faces;
