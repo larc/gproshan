@@ -35,8 +35,8 @@ splat::~splat()
 
 void splat::add_splats_mesh(che * mesh, const mat4 & model_mat)
 {
-	const real_t n_threshold = 0.81;
-	const real_t max_neigs = 1000;
+	const real_t n_threshold = 0.9;
+	const real_t max_neigs = mesh->n_vertices / 100;
 
 	std::vector<index_t> vertices;
 	std::vector<index_t> segmentation({0});
@@ -115,14 +115,10 @@ void splat::add_splats_mesh(che * mesh, const mat4 & model_mat)
 	{
 		const index_t & begin = segmentation[i - 1];
 		const index_t & end = segmentation[i];
-		const size_t & n = segmentation[i] - segmentation[i - 1];
-
+		//fps
 		seeds.clear();
 		for(index_t j = begin; j < end; j += max_neigs)
 			seeds.push_back(vertices[j]);
-
-		gproshan_error_var(n);
-		gproshan_error_var(seeds.size());
 
 		voronoi.assign(seeds.size(), {});
 		for(index_t j = begin; j < end; ++j)
@@ -138,17 +134,13 @@ void splat::add_splats_mesh(che * mesh, const mat4 & model_mat)
 
 			voronoi[sk].push_back(v);
 		}
-		gproshan_error_var(seeds.size());
-		gproshan_error_var(voronoi.size());
 
 		for(auto & region: voronoi)
 		{
-		gproshan_error_var(region.size());
 			for(index_t i = 0; i < region.size(); ++i)
 				vertices[i + idx_splats.back()] = region[i];
 			idx_splats.push_back(idx_splats.back() + region.size());
 		}
-
 	}
 
 	auto display = [&mesh, &vertices](const std::vector<index_t> & sets)
@@ -164,13 +156,12 @@ void splat::add_splats_mesh(che * mesh, const mat4 & model_mat)
 
 	display(idx_splats);
 
-	gproshan_error_var(vertices.size());
 	gproshan_error_var(idx_splats.size());
 
 return;
 
 	std::vector<vertex> points(vertices.size());
-	std::vector<index_t> faces;
+	std::vector<index_t> trigs;
 
 	#pragma omp parallel for
 	for(index_t i = 0; i < vertices.size(); ++i)
@@ -191,9 +182,20 @@ return;
 		const unsigned int & end = idx_splats[i + 1];
 		vertex & center = spc->centers[i];
 		mat3 & tbn = spc->tbns[i];
+		vec3 & normal = tbn[2];
 
-		center = points[begin];
-		tbn[2] = mesh->normal(vertices[begin]);
+		center = {0, 0, 0};
+		normal = {0, 0, 0};
+		for(index_t j = begin; j < end; ++j)
+		{
+			const index_t & v = vertices[j];
+			center += mesh->point(v);
+			normal += mesh->normal(v);
+		}
+
+		center /= end - begin;
+		normal /= end - begin;
+
 		tbn[0] = points[end - 1] - center;
 		tbn[0] = normalize(tbn[0] - dot(tbn[0], tbn[2]) * tbn[2]);
 		tbn[1] = normalize(tbn[2] * tbn[0]);
@@ -249,7 +251,7 @@ return;
 		index_t f = -1;
 		for(const index_t & v: che::trig_convex_polygon(sch.data(), sch.size()))
 		{
-			faces.push_back(v + begin);
+			trigs.push_back(v + begin);
 			if(!(++f % 3))
 				primID_splat.push_back(i);
 		}
@@ -258,7 +260,7 @@ return;
 	for(convex_hull * ch: splat_chs)
 		delete ch;
 
-	che * pc = new che(points.data(), points.size(), faces.data(), faces.size() / 3);
+	che * pc = new che(points.data(), points.size(), trigs.data(), trigs.size() / 3);
 
 	#pragma omp parallel for
 	for(index_t i = 0; i < vertices.size(); ++i)
