@@ -144,7 +144,7 @@ void splat::add_splats_mesh(che * mesh, const mat4 & model_mat)
 					next_seed = u;
 				}
 			}
-			
+
 			if(seeds.size() == 1)
 				radio_threshold = std::max(0.2, radio * 0.1);
 
@@ -160,6 +160,8 @@ void splat::add_splats_mesh(che * mesh, const mat4 & model_mat)
 
 		for(auto & region: voronoi)
 		{
+			if(region.size() < 3) continue;
+
 			for(index_t i = 0; i < region.size(); ++i)
 				vertices[i + idx_splats.back()] = region[i];
 			idx_splats.push_back(idx_splats.back() + region.size());
@@ -184,23 +186,18 @@ void splat::add_splats_mesh(che * mesh, const mat4 & model_mat)
 
 return;
 
-
 	std::vector<vertex> points(vertices.size());
 	std::vector<index_t> trigs;
 
-	#pragma omp parallel for
-	for(index_t i = 0; i < vertices.size(); ++i)
-		points[i] = model_mat * vec4(mesh->point(vertices[i]), 1);
-
 	splats_data * spc = new splats_data;
-	spc->morton_codes = new unsigned int[vertices.size()];
+	spc->morton_codes = new unsigned int[mesh->n_vertices];
 	spc->n_splats = idx_splats.size() - 1;
 	spc->tbns = new mat3[spc->n_splats];
 	spc->centers = new vertex[spc->n_splats];
 
 	std::vector<convex_hull *> splat_chs(spc->n_splats);
 
-	#pragma omp parallel for
+	//#pragma omp parallel for
 	for(index_t i = 0; i < spc->n_splats; ++i)
 	{
 		const unsigned int & begin = idx_splats[i];
@@ -217,43 +214,53 @@ return;
 			center += mesh->point(v);
 			normal += mesh->normal(v);
 		}
-
+gproshan_error(ch splats);
 		center /= end - begin;
 		normal /= end - begin;
 
+gproshan_error(ch splats);
 		tbn[0] = points[end - 1] - center;
 		tbn[0] = normalize(tbn[0] - dot(tbn[0], tbn[2]) * tbn[2]);
 		tbn[1] = normalize(tbn[2] * tbn[0]);
 
+gproshan_error(ch splats);
 		for(index_t j = begin; j < end; ++j)
 		{
-			vertex & p = points[j];
+			const index_t & v = vertices[j];
+			vertex p = model_mat * vec4(mesh->point(v), 1);
 			p = tbn * (p - center);
-			spc->morton_codes[j] = morton_2d((p.x() + 1) / 2, (p.y() + 1) / 2);
+			spc->morton_codes[v] = morton_2d((p.x() + 1) / 2, (p.y() + 1) / 2);
 		}
 
+gproshan_error_var(begin);
+gproshan_error_var(end);
+gproshan_error_var(vertices.size());
 		std::sort(vertices.begin() + begin, vertices.begin() + end,
 					[&](const index_t & a, const index_t & b)
 					{
 						return spc->morton_codes[a] < spc->morton_codes[b];
 					});
 
+gproshan_error(ch splats);
 		for(index_t j = begin; j < end; ++j)
 		{
 			vertex & p = points[j];
 			p = model_mat * vec4(mesh->point(vertices[j]), 1);
 			p = tbn * (p - center);
-			spc->morton_codes[j] = morton_2d((p.x() + 1) / 2, (p.y() + 1) / 2);
 		}
 
+gproshan_error(ch splats);
 		splat_chs[i] = new convex_hull(points.data() + begin, end - begin);
+gproshan_error(ch splats);
 
 		for(index_t j = begin; j < end; ++j)
 		{
 			vertex & p = points[j];
 			p = mat3::transpose(tbn) * p + center;
 		}
+gproshan_error(ch splats);
 	}
+gproshan_error(ch splats);
 
 	std::vector<index_t> primID_splat;
 	for(index_t i = 0; i < spc->n_splats; ++i)
@@ -284,6 +291,9 @@ return;
 
 	for(convex_hull * ch: splat_chs)
 		delete ch;
+
+	gproshan_error_var(points.size());
+	gproshan_error_var(trigs.size());
 
 	che * pc = new che(points.data(), points.size(), trigs.data(), trigs.size() / 3);
 
