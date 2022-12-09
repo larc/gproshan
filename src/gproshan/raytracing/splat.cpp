@@ -120,8 +120,9 @@ void splat::add_splats_mesh(che * mesh, const mat4 & model_mat)
 		seeds.push_back(vertices[begin]);
 
 		real_t radio = INFINITY;
+		real_t radio_threshold = 0;
 		index_t next_seed;
-		while(radio > 0.3)
+		while(radio > radio_threshold)
 		{
 			radio = 0;
 
@@ -143,6 +144,9 @@ void splat::add_splats_mesh(che * mesh, const mat4 & model_mat)
 					next_seed = u;
 				}
 			}
+			
+			if(seeds.size() == 1)
+				radio_threshold = std::max(0.2, radio * 0.1);
 
 			seeds.push_back(next_seed);
 		}
