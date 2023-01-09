@@ -184,7 +184,6 @@ void splat::add_splats_mesh(che * mesh, const mat4 & model_mat)
 
 	gproshan_error_var(idx_splats.size());
 
-return;
 
 	std::vector<vertex> points(vertices.size());
 	std::vector<index_t> trigs;
@@ -216,12 +215,12 @@ return;
 		}
 gproshan_error(ch splats);
 		center /= end - begin;
-		normal /= end - begin;
+		normal /= length(normal);
 
 gproshan_error(ch splats);
 		tbn[0] = points[end - 1] - center;
 		tbn[0] = normalize(tbn[0] - dot(tbn[0], tbn[2]) * tbn[2]);
-		tbn[1] = normalize(tbn[2] * tbn[0]);
+		tbn[1] = normalize(cross(tbn[2], tbn[0]));
 
 gproshan_error(ch splats);
 		for(index_t j = begin; j < end; ++j)
