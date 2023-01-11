@@ -184,7 +184,11 @@ void splat::add_splats_mesh(che * mesh, const mat4 & model_mat)
 
 	gproshan_error_var(idx_splats.size());
 
+	init_splats(mesh, model_mat, vertices, idx_splats);
+}
 
+void splat::init_splats(const che * mesh, const mat4 & model_mat, std::vector<index_t> & vertices, const std::vector<index_t> & idx_splats)
+{
 	std::vector<vertex> points(vertices.size());
 	std::vector<index_t> trigs;
 
@@ -196,7 +200,7 @@ void splat::add_splats_mesh(che * mesh, const mat4 & model_mat)
 
 	std::vector<convex_hull *> splat_chs(spc->n_splats);
 
-	//#pragma omp parallel for
+	#pragma omp parallel for
 	for(index_t i = 0; i < spc->n_splats; ++i)
 	{
 		const unsigned int & begin = idx_splats[i];
@@ -213,16 +217,13 @@ void splat::add_splats_mesh(che * mesh, const mat4 & model_mat)
 			center += mesh->point(v);
 			normal += mesh->normal(v);
 		}
-gproshan_error(ch splats);
 		center /= end - begin;
 		normal /= length(normal);
 
-gproshan_error(ch splats);
 		tbn[0] = points[end - 1] - center;
 		tbn[0] = normalize(tbn[0] - dot(tbn[0], tbn[2]) * tbn[2]);
 		tbn[1] = normalize(cross(tbn[2], tbn[0]));
 
-gproshan_error(ch splats);
 		for(index_t j = begin; j < end; ++j)
 		{
 			const index_t & v = vertices[j];
@@ -231,16 +232,12 @@ gproshan_error(ch splats);
 			spc->morton_codes[v] = morton_2d((p.x() + 1) / 2, (p.y() + 1) / 2);
 		}
 
-gproshan_error_var(begin);
-gproshan_error_var(end);
-gproshan_error_var(vertices.size());
 		std::sort(vertices.begin() + begin, vertices.begin() + end,
 					[&](const index_t & a, const index_t & b)
 					{
 						return spc->morton_codes[a] < spc->morton_codes[b];
 					});
 
-gproshan_error(ch splats);
 		for(index_t j = begin; j < end; ++j)
 		{
 			vertex & p = points[j];
@@ -248,18 +245,14 @@ gproshan_error(ch splats);
 			p = tbn * (p - center);
 		}
 
-gproshan_error(ch splats);
 		splat_chs[i] = new convex_hull(points.data() + begin, end - begin);
-gproshan_error(ch splats);
 
 		for(index_t j = begin; j < end; ++j)
 		{
 			vertex & p = points[j];
 			p = mat3::transpose(tbn) * p + center;
 		}
-gproshan_error(ch splats);
 	}
-gproshan_error(ch splats);
 
 	std::vector<index_t> primID_splat;
 	for(index_t i = 0; i < spc->n_splats; ++i)
