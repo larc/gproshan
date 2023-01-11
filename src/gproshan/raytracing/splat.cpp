@@ -224,6 +224,7 @@ void splat::init_splats(const che * mesh, const mat4 & model_mat, std::vector<in
 		tbn[0] = normalize(tbn[0] - dot(tbn[0], tbn[2]) * tbn[2]);
 		tbn[1] = normalize(cross(tbn[2], tbn[0]));
 
+		center = model_mat * vec4(center, 1);
 		for(index_t j = begin; j < end; ++j)
 		{
 			const index_t & v = vertices[j];
@@ -262,20 +263,20 @@ void splat::init_splats(const che * mesh, const mat4 & model_mat, std::vector<in
 		const mat3 & tbn = spc->tbns[i];
 
 		std::vector<index_t> sch = *splat_chs[i];
-/*		for(index_t & v: sch)
+		for(index_t & v: sch)
 		{
-			vertex p = points[v + begin];// - center;
-//			p = p - dot(p, tbn[2]) * tbn[2];
-//			p = p + center;
+			vertex p = points[v + begin] - center;
+			p = p - dot(p, tbn[2]) * tbn[2];
+			p = p + center;
 
 			v = points.size();
 			points.push_back(p);
 		}
-*/
+
 		index_t f = -1;
 		for(const index_t & v: che::trig_convex_polygon(sch.data(), sch.size()))
 		{
-			trigs.push_back(v + begin);
+			trigs.push_back(v);
 			if(!(++f % 3))
 				primID_splat.push_back(i);
 		}
