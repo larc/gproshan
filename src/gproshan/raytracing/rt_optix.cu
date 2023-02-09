@@ -58,7 +58,7 @@ extern "C" __global__ void __closesthit__radiance()
 	hit.normal = optix_params.flat ? normalize(cross(B - A, C - A)) : hit.normal;
 	hit.position = (1.f - hit.u - hit.v) * A + hit.u * B + hit.v * C;
 
-	vertex li = eval_li(hit, optix_params.lights, optix_params.n_lights, optix_params.cam_pos,
+	vec3 li = eval_li(hit, optix_params.lights, optix_params.n_lights, optix_params.cam_pos,
 						[&](const vec3 & position, const vec3 & wi, const float & light_dist) -> bool
 						{
 							uint32_t occluded = 1;
@@ -80,8 +80,8 @@ extern "C" __global__ void __closesthit__radiance()
 							return occluded != 0;
 						});
 
-	vertex & pixel_color = *ray_data<vertex>();
-	pixel_color = (pixel_color * optix_params.n_samples + li) / (optix_params.n_samples + 1);
+	vec4 & pixel_color = *ray_data<vec4>();
+	pixel_color = (pixel_color * optix_params.n_samples + vec4(li, 1)) / (optix_params.n_samples + 1);
 }
 
 
@@ -92,8 +92,8 @@ extern "C" __global__ void __anyhit__shadow() {}
 
 extern "C" __global__ void __miss__radiance()
 {
-	vec3 & pixel_color = *ray_data<vertex>();
-	pixel_color = {0, 0, 0};
+	vec4 & pixel_color = *ray_data<vec4>();
+	pixel_color = {0, 0, 0, 0};
 }
 
 extern "C" __global__ void __miss__shadow()
@@ -130,8 +130,6 @@ extern "C" __global__ void __raygen__render_frame()
 				2,	// SBT stride
 				0,	// missSBTIndex
 				u0, u1);
-
-	pixel_color[3] = 1;
 }
 
 
