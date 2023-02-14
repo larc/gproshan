@@ -166,7 +166,7 @@ void viewer::imgui()
 					process_t & pro = p.second;
 					if(pro.function != nullptr && pro.sub_menu == i)
 						if(ImGui::MenuItem(pro.name.c_str(), ('[' + pro.key + ']').c_str(), &pro.selected))
-							sprintf(status_message, "%s", pro.selected ? pro.name.c_str() : "");
+							snprintf(status_message, sizeof(status_message), "%s", pro.selected ? pro.name.c_str() : "");
 
 					//ImGui::Separator();
 				}
@@ -227,7 +227,7 @@ void viewer::imgui()
 
 		for(int i = 0; i < render_params.n_lights; ++i)
 		{
-			sprintf(slight, "light %d", i);
+			snprintf(slight, sizeof(slight), "light %d", i);
 			ImGui::SliderScalarN(slight, ImGuiDataType_Real, &render_params.lights[i], 3, &pos_min, &pos_max);
 		}
 
@@ -480,7 +480,7 @@ void viewer::keyboard_callback(GLFWwindow * window, int key, int, int action, in
 	if(pro.function)
 	{
 		pro.selected = view->hide_imgui ? pro.function(view) && pro.selected : !pro.selected;
-		sprintf(view->status_message, "%s", pro.selected ? pro.name.c_str() : "");
+		snprintf(view->status_message, sizeof(view->status_message), "%s", pro.selected ? pro.name.c_str() : "");
 	}
 
 }
@@ -686,7 +686,7 @@ bool viewer::m_save_mesh(viewer * view)
 				break;
 		}
 
-		sprintf(view->status_message, "file '%s' saved.", file);
+		snprintf(view->status_message, sizeof(view->status_message), "file '%s' saved.", file);
 	}
 
 	return true;
@@ -773,7 +773,7 @@ bool viewer::m_setup_raytracing(viewer * view)
 				TIC(time);
 					mesh.rt_embree = new rt::embree({mesh}, {mesh.model_mat}, mesh.render_pointcloud, pc_radius);
 				TOC(time);
-				sprintf(view->status_message, "build embree in %.3fs", time);
+				snprintf(view->status_message, sizeof(view->status_message), "build embree in %.3fs", time);
 				break;
 
 			case R_OPTIX:
@@ -782,7 +782,7 @@ bool viewer::m_setup_raytracing(viewer * view)
 				TIC(time);
 					mesh.rt_optix = new rt::optix({mesh}, {mesh.model_mat});
 				TOC(time);
-				sprintf(view->status_message, "build optix in %.3fs", time);
+				snprintf(view->status_message, sizeof(view->status_message), "build optix in %.3fs", time);
 			#endif // GPROSHAN_OPTIX
 				break;
 		}
