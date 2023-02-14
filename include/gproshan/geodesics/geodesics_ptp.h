@@ -231,17 +231,17 @@ index_t run_ptp(const CHE * mesh, const std::vector<index_t> & sources,
 			relax_ptp(mesh, new_dist, old_dist, new_cluster, old_cluster, sorted ? sorted[v] : v);
 
 		#pragma omp parallel for
-		for(index_t i = start; i < start + n_cond; ++i)
+		for(index_t k = start; k < start + n_cond; ++k)
 		{
-			const index_t & v = sorted ? sorted[i] : i;
+			const index_t & v = sorted ? sorted[k] : k;
 			error[v] = abs(new_dist[v] - old_dist[v]) / old_dist[v];
 		}
 
 		count = 0;
 		#pragma omp parallel for reduction(+: count)
-		for(index_t v = start; v < start + n_cond; ++v)
+		for(index_t k = start; k < start + n_cond; ++k)
 		{
-			const index_t & v = sorted ? sorted[i] : i;
+			const index_t & v = sorted ? sorted[k] : k;
 			count += error[v] < PTP_TOL;
 		}
 	#endif
