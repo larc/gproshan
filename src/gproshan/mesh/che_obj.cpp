@@ -169,12 +169,12 @@ che_obj::parser::parser(const std::string & file)
 
 	objects.emplace_back("", trigs.size());
 
-	gproshan_error_var(vertices.size());
-	gproshan_error_var(vnormals.size());
-	gproshan_error_var(vtexcoords.size());
-	gproshan_error_var(vcolors.size());
-	gproshan_error_var(trigs.size());
-	gproshan_error_var(objects.size());
+	gproshan_log_var(vertices.size());
+	gproshan_log_var(vnormals.size());
+	gproshan_log_var(vtexcoords.size());
+	gproshan_log_var(vcolors.size());
+	gproshan_log_var(trigs.size());
+	gproshan_log_var(objects.size());
 }
 
 

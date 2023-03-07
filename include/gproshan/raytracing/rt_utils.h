@@ -72,6 +72,7 @@ struct t_eval_hit
 	vec<T, 3> Kd;
 	vec<T, 3> Ks{0.2f, 0.2f, 0.2f};
 	T Ns = 4;
+	T d = 1;
 
 	__host_device__
 	t_eval_hit() {}
@@ -117,6 +118,10 @@ struct t_eval_hit
 			Ks *= texture(sc.textures[mat.map_Ks], texcoord);
 
 		Ns = mat.Ns;
+
+		d = mat.d;
+//		if(mat.map_d != -1)
+//			d = texture(sc.textures[mat.map_d], texcoord);
 	}
 };
 
@@ -124,7 +129,7 @@ template <class T, class Occluded>
 __host_device__
 vec<T, 3> eval_li(const t_eval_hit<T> & hit, const vec<T, 3> * lights, const int & n_lights, const vec<T, 3> & eye, Occluded occluded)
 {
-	const T Lp = 10;
+	const T Lp = 8;
 	const vec<T, 3> La(0.2f);
 
 	vec<T, 3> li, l, h;
