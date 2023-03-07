@@ -188,6 +188,7 @@ bool scene::load_mtl(const std::string & file)
 			return false;
 	}
 
+/*
 	for(index_t i = 0; i < materials.size(); ++i)
 	{
 		const material & m = materials[i];
@@ -204,6 +205,7 @@ bool scene::load_mtl(const std::string & file)
 		if(m.map_d > -1)	gproshan_log_var(texture_name[m.map_d]);
 		if(m.map_bump > -1)	gproshan_log_var(texture_name[m.map_bump]);
 	}
+*/
 
 	gproshan_log_var(materials.size());
 	gproshan_log_var(textures.size());
@@ -223,7 +225,6 @@ bool scene::load_texture(const std::string & file)
 		tex.width = img.width();
 		tex.height = img.height();
 		tex.spectrum = img.spectrum();
-		gproshan_error_var(tex.spectrum);
 		tex.data = new unsigned char[tex.width * tex.height * tex.spectrum];
 		img.permute_axes("cxyz");
 		memcpy(tex.data, img.data(), tex.width * tex.height * tex.spectrum);
