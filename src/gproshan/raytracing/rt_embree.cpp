@@ -64,7 +64,6 @@ embree::embree()
 
 	rtcSetSceneFlags(rtc_scene, RTC_SCENE_FLAG_COMPACT);
 
-	rtcInitIntersectContext(&rtc_intersect_context);
 	rtcSetDeviceErrorFunction(rtc_device, embree_error, NULL);
 }
 
@@ -272,13 +271,13 @@ float embree::intersect_depth(const vertex & org, const vertex & dir)
 
 bool embree::intersect(ray_hit & r)
 {
-	rtcIntersect1(rtc_scene, &rtc_intersect_context, &r);
+	rtcIntersect1(rtc_scene, &r);
 	return r.hit.geomID != RTC_INVALID_GEOMETRY_ID;
 }
 
 bool embree::occluded(ray_hit & r)
 {
-	rtcIntersect1(rtc_scene, &rtc_intersect_context, &r);
+	rtcIntersect1(rtc_scene, &r);
 	return r.hit.geomID != RTC_INVALID_GEOMETRY_ID;
 }
 
