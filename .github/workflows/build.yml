@@ -47,10 +47,10 @@ jobs:
         sudo apt-get -y install cuda
 
     - name: Install Embree
+      working-directory: /opt
       run: |
         wget https://github.com/embree/embree/releases/download/v4.0.1/embree-4.0.1.x86_64.linux.tar.gz
         tar xzf embree-4.0.1.x86_64.linux.tar.gz
-        source embree-4.0.1.x86_64.linux/embree-vars.sh
 
     - name: Create Build Environment
       run: cmake -E make_directory ${{runner.workspace}}/build
@@ -59,6 +59,7 @@ jobs:
       shell: bash
       working-directory: ${{runner.workspace}}/build
       run: |
+        source /opt/embree-4.0.1.x86_64.linux/embree-vars.sh
         export PATH=${CUDA_BIN}:${PATH}
         cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{matrix.config}}
 
