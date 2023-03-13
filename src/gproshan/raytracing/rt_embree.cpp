@@ -25,7 +25,7 @@ embree::ray_hit::ray_hit(const vertex & p_org, const vertex & v_dir, float near,
 	ray.time = 0.0f;
 
 	ray.tfar = far;
-	ray.mask = 0;
+	ray.mask = -1;
 	ray.flags = 0;
 
 	hit.geomID = RTC_INVALID_GEOMETRY_ID;
