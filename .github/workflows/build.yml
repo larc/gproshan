@@ -33,7 +33,8 @@ jobs:
                           libopenblas-dev \
                           libglew-dev \
                           libglfw3-dev \
-                          cimg-dev
+                          cimg-dev \
+                          wget
 
     - name: Install Cuda
       if: matrix.cuda == 'cuda'
@@ -47,6 +48,7 @@ jobs:
 
     - name: Install Embree
       run: |
+        wget https://github.com/embree/embree/releases/download/v4.0.1/embree-4.0.1.x86_64.linux.tar.gz
         tar xzf embree-4.0.1.x86_64.linux.tar.gz
         source embree-4.0.1.x86_64.linux/embree-vars.sh
 
