@@ -2,12 +2,12 @@
 
 include(CMakeFindDependencyMacro)
 
-find_dependency(CUDAToolkit 11.7)
+find_dependency(CUDAToolkit 12)
 if(CUDAToolkit_FOUND)
 	add_definitions(-DGPROSHAN_CUDA)
 endif(CUDAToolkit_FOUND)
 
-find_dependency(embree 3.13 REQUIRED)
+find_dependency(embree 4 REQUIRED)
 find_dependency(Threads REQUIRED)
 find_dependency(OpenMP REQUIRED)
 find_dependency(OpenGL REQUIRED)
