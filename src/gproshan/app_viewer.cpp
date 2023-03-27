@@ -1,6 +1,5 @@
 #include <gproshan/app_viewer.h>
 
-#include <gproshan/geometry/vec.h>
 #include <gproshan/scenes/scene.h>
 
 #include <random>
@@ -169,7 +168,6 @@ bool app_viewer::process_simulate_scanner(viewer * p_view)
 
 bool app_viewer::process_convex_hull(viewer * p_view)
 {
-	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
@@ -181,7 +179,6 @@ bool app_viewer::process_convex_hull(viewer * p_view)
 
 bool app_viewer::process_connected_components(viewer * p_view)
 {
-	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
@@ -228,7 +225,6 @@ bool app_viewer::process_connected_components(viewer * p_view)
 
 bool app_viewer::process_gaussian_curvature(viewer * p_view)
 {
-	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
@@ -287,7 +283,6 @@ bool app_viewer::process_gaussian_curvature(viewer * p_view)
 
 bool app_viewer::process_edge_collapse(viewer * p_view)
 {
-	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
@@ -305,7 +300,6 @@ bool app_viewer::process_edge_collapse(viewer * p_view)
 
 bool app_viewer::process_multiplicate_vertices(viewer * p_view)
 {
-	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
@@ -320,7 +314,6 @@ bool app_viewer::process_multiplicate_vertices(viewer * p_view)
 
 bool app_viewer::process_delete_vertices(viewer * p_view)
 {
-	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
@@ -336,7 +329,6 @@ bool app_viewer::process_delete_vertices(viewer * p_view)
 
 bool app_viewer::process_delete_non_manifold_vertices(viewer * p_view)
 {
-	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
@@ -469,7 +461,6 @@ bool app_viewer::process_farthest_point_sampling(viewer * p_view)
 
 bool app_viewer::process_voronoi(viewer * p_view)
 {
-	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
@@ -500,7 +491,6 @@ bool app_viewer::process_voronoi(viewer * p_view)
 
 bool app_viewer::process_compute_toplesets(viewer * p_view)
 {
-	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
@@ -569,7 +559,6 @@ bool app_viewer::process_msparse_coding(viewer * p_view)
 
 bool app_viewer::process_mdict_patch(viewer * p_view)
 {
-	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
@@ -837,25 +826,21 @@ bool app_viewer::process_poisson(viewer * p_view, const index_t & k)
 
 bool app_viewer::process_poisson_laplacian_1(viewer * p_view)
 {
-	gproshan_log(APP_VIEWER);
 	return process_poisson(p_view, 1);
 }
 
 bool app_viewer::process_poisson_laplacian_2(viewer * p_view)
 {
-	gproshan_log(APP_VIEWER);
 	return process_poisson(p_view, 2);
 }
 
 bool app_viewer::process_poisson_laplacian_3(viewer * p_view)
 {
-	gproshan_log(APP_VIEWER);
 	return process_poisson(p_view, 3);
 }
 
 bool app_viewer::process_fill_holes(viewer * p_view)
 {
-	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
@@ -933,7 +918,6 @@ bool app_viewer::process_fill_holes(viewer * p_view)
 
 bool app_viewer::process_fill_holes_biharmonic_splines(viewer * p_view)
 {
-	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
@@ -986,7 +970,6 @@ bool app_viewer::process_select_multiple(viewer * p_view)
 
 bool app_viewer::process_threshold(viewer * p_view)
 {
-	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
@@ -998,7 +981,6 @@ bool app_viewer::process_threshold(viewer * p_view)
 
 bool app_viewer::process_noise(viewer * p_view)
 {
-	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
@@ -1020,7 +1002,6 @@ bool app_viewer::process_noise(viewer * p_view)
 
 bool app_viewer::process_black_noise(viewer * p_view)
 {
-	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
