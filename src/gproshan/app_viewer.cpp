@@ -72,6 +72,7 @@ void app_viewer::init()
 	add_process(1002, "", "Scan Scene", process_simulate_scanner);
 
 	sub_menus.push_back("Geometry");
+	add_process(1003, "", "Sampling 4points", process_sampling_4points);
 	add_process(GLFW_KEY_H, "H", "2D Convex Hull", process_convex_hull);
 	add_process(GLFW_KEY_O, "O", "Connected Components", process_connected_components);
 	add_process(GLFW_KEY_K, "K", "Gaussian curvature", process_gaussian_curvature);
@@ -165,6 +166,33 @@ bool app_viewer::process_simulate_scanner(viewer * p_view)
 
 
 // Geometry
+bool app_viewer::process_sampling_4points(viewer * p_view)
+{
+	app_viewer * view = (app_viewer *) p_view;
+	che_viewer & mesh = view->active_mesh();
+
+	static size_t n = 10;
+
+	if(mesh.selected.size() < 4)
+	{
+		ImGui::Text("Select 4 points.");
+		return true;
+	}
+
+	ImGui::InputScalar("resolution", ImGuiDataType_U64, &n);
+
+	if(ImGui::Button("Run"))
+	{
+		std::vector<vertex> points = sampling_4points(n, mesh.selected_point(0),
+														mesh.selected_point(1),
+														mesh.selected_point(2),
+														mesh.selected_point(3)
+														);
+		view->add_mesh(new che(points.data(), points.size(), nullptr, 0));
+	}
+
+	return true;
+}
 
 bool app_viewer::process_convex_hull(viewer * p_view)
 {

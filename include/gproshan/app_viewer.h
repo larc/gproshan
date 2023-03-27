@@ -22,6 +22,7 @@
 
 #include <gproshan/scenes/scanner.h>
 
+#include <gproshan/geometry/points.h>
 #include <gproshan/geometry/convex_hull.h>
 
 #include <gproshan/geodesics/dijkstra.h>
@@ -62,6 +63,7 @@ class app_viewer : public viewer
 		static bool process_simulate_scanner(viewer * p_view);
 
 		// Geometry
+		static bool process_sampling_4points(viewer * p_view);
 		static bool process_convex_hull(viewer * p_view);
 		static bool process_connected_components(viewer * p_view);
 		static bool process_gaussian_curvature(viewer * p_view);
