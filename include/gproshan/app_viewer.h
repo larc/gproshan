@@ -10,6 +10,7 @@
 #include <gproshan/mesh/che_ptx.h>
 #include <gproshan/mesh/che_xyz.h>
 #include <gproshan/mesh/che_pts.h>
+#include <gproshan/mesh/che_pcd.h>
 #include <gproshan/mesh/che_img.h>
 #include <gproshan/mesh/che_sphere.h>
 #include <gproshan/mesh/che_fill_hole.h>

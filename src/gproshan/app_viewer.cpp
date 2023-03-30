@@ -41,6 +41,7 @@ che * app_viewer::load_mesh(const std::string & file_path)
 	if(extension == "ptx") return new che_ptx(file_path);
 	if(extension == "xyz") return new che_xyz(file_path);
 	if(extension == "pts") return new che_pts(file_path);
+	if(extension == "pcd") return new che_pcd(file_path);
 
 	return new che_img(file_path);
 }
