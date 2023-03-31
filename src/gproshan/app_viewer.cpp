@@ -173,24 +173,34 @@ bool app_viewer::process_sampling_4points(viewer * p_view)
 	che_viewer & mesh = view->active_mesh();
 
 	static size_t n = 10;
-
-	if(mesh.selected.size() < 4)
-	{
-		ImGui::Text("Select 4 points.");
-		return true;
-	}
+	static std::vector<vertex> points;
 
 	ImGui::InputScalar("resolution", ImGuiDataType_U64, &n);
 
-	if(ImGui::Button("Run"))
+	if(ImGui::Button("Clean")) points.clear();
+
+	ImGui::SameLine();
+	if(mesh.selected.size() > 3)
 	{
-		std::vector<vertex> points = sampling_4points(n, mesh.selected_point(0),
-														mesh.selected_point(1),
-														mesh.selected_point(2),
-														mesh.selected_point(3)
-														);
-		view->add_mesh(new che(points.data(), points.size(), nullptr, 0));
+		if(ImGui::Button("Add Samples"))
+		{
+			std::vector<vertex> samples = sampling_4points(n, mesh.selected_point(0),
+															mesh.selected_point(1),
+															mesh.selected_point(2),
+															mesh.selected_point(3)
+															);
+
+			for(auto & p: samples)
+				points.push_back(p);
+
+			mesh.selected.clear();
+		}
 	}
+	else ImGui::Text("Select 4 points.");
+
+	ImGui::Text("Total added points: %lu", points.size());
+	if(ImGui::Button("Create Point Cloud"))
+		view->add_mesh(new che(points.data(), points.size(), nullptr, 0));
 
 	return true;
 }
