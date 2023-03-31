@@ -214,7 +214,7 @@ index_t embree::add_mesh(const che * mesh, const mat4 & model_mat)
 
 index_t embree::add_pointcloud(const che * mesh, const mat4 & model_mat)
 {
-	RTCGeometry geom = rtcNewGeometry(rtc_device, RTC_GEOMETRY_TYPE_ORIENTED_DISC_POINT);
+	RTCGeometry geom = rtcNewGeometry(rtc_device, RTC_GEOMETRY_TYPE_DISC_POINT);
 
 	vec4 * pxyzr = (vec4 *) rtcSetNewGeometryBuffer(	geom,
 														RTC_BUFFER_TYPE_VERTEX, 0,
@@ -222,20 +222,20 @@ index_t embree::add_pointcloud(const che * mesh, const mat4 & model_mat)
 														4 * sizeof(float),
 														mesh->n_vertices
 														);
-
+/*
 	vertex * normal = (vertex *) rtcSetNewGeometryBuffer(	geom,
 															RTC_BUFFER_TYPE_NORMAL, 0,
 															RTC_FORMAT_FLOAT3,
 															3 * sizeof(float),
 															mesh->n_vertices
 															);
-
+*/
 	#pragma omp parallel for
 	for(index_t i = 0; i < mesh->n_vertices; ++i)
 	{
 		pxyzr[i] = model_mat * vec4(mesh->point(i), 1);
 		pxyzr[i][3] = pc_radius;
-		normal[i] = mesh->normal(i);
+//		normal[i] = mesh->normal(i);
 	}
 
 	rtcCommitGeometry(geom);
