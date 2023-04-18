@@ -62,7 +62,7 @@ jobs:
       shell: bash
       working-directory: ${{runner.workspace}}/build
       run: |
-        source /opt/embree-4.0.1.x86_64.linux/embree-vars.sh
+        source /opt/intel/oneapi/setvars.sh
         export PATH=${CUDA_BIN}:${PATH}
         cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{matrix.config}}
 
