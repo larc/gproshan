@@ -49,8 +49,10 @@ jobs:
     - name: Install Embree
       working-directory: /opt
       run: |
-        wget https://github.com/embree/embree/releases/download/v4.0.1/embree-4.0.1.x86_64.linux.tar.gz
-        tar xzf embree-4.0.1.x86_64.linux.tar.gz
+        wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | gpg --dearmor | sudo tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
+        echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
+        sudo apt update
+        sudo apt install intel-renderkit
 
     - name: Create Build Environment
       run: cmake -E make_directory ${{runner.workspace}}/build
