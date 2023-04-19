@@ -14,7 +14,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_compile_options(-Wall -Wextra -Wno-unused-result)
 
 
-find_package(CUDAToolkit 11.8)
+find_package(CUDAToolkit 12)
 if(CUDAToolkit_FOUND)
 	enable_language(CUDA)
 	include_directories(SYSTEM ${CUDAToolkit_INCLUDE_DIRS})
@@ -49,7 +49,7 @@ configure_file(	${gproshan_SOURCE_DIR}/include/gproshan/config.h.in
 				)
 
 
-find_package(embree 3.13 REQUIRED)
+find_package(embree 4 REQUIRED)
 find_package(OpenMP REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)

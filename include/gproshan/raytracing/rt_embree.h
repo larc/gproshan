@@ -7,7 +7,7 @@
 
 #include <cfloat>
 
-#include <embree3/rtcore.h>
+#include <embree4/rtcore.h>
 
 
 // geometry processing and shape analysis framework
@@ -33,7 +33,6 @@ class embree : public raytracing
 
 		RTCDevice rtc_device;
 		RTCScene rtc_scene;
-		RTCIntersectContext rtc_intersect_context;
 
 		std::vector<CHE *> g_meshes;
 		scene_data sc;

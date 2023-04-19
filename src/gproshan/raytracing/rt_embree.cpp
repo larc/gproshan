@@ -25,7 +25,7 @@ embree::ray_hit::ray_hit(const vertex & p_org, const vertex & v_dir, float near,
 	ray.time = 0.0f;
 
 	ray.tfar = far;
-	ray.mask = 0;
+	ray.mask = -1;
 	ray.flags = 0;
 
 	hit.geomID = RTC_INVALID_GEOMETRY_ID;
@@ -64,7 +64,6 @@ embree::embree()
 
 	rtcSetSceneFlags(rtc_scene, RTC_SCENE_FLAG_COMPACT);
 
-	rtcInitIntersectContext(&rtc_intersect_context);
 	rtcSetDeviceErrorFunction(rtc_device, embree_error, NULL);
 }
 
@@ -215,7 +214,7 @@ index_t embree::add_mesh(const che * mesh, const mat4 & model_mat)
 
 index_t embree::add_pointcloud(const che * mesh, const mat4 & model_mat)
 {
-	RTCGeometry geom = rtcNewGeometry(rtc_device, RTC_GEOMETRY_TYPE_ORIENTED_DISC_POINT);
+	RTCGeometry geom = rtcNewGeometry(rtc_device, RTC_GEOMETRY_TYPE_DISC_POINT);
 
 	vec4 * pxyzr = (vec4 *) rtcSetNewGeometryBuffer(	geom,
 														RTC_BUFFER_TYPE_VERTEX, 0,
@@ -223,20 +222,20 @@ index_t embree::add_pointcloud(const che * mesh, const mat4 & model_mat)
 														4 * sizeof(float),
 														mesh->n_vertices
 														);
-
+/*
 	vertex * normal = (vertex *) rtcSetNewGeometryBuffer(	geom,
 															RTC_BUFFER_TYPE_NORMAL, 0,
 															RTC_FORMAT_FLOAT3,
 															3 * sizeof(float),
 															mesh->n_vertices
 															);
-
+*/
 	#pragma omp parallel for
 	for(index_t i = 0; i < mesh->n_vertices; ++i)
 	{
 		pxyzr[i] = model_mat * vec4(mesh->point(i), 1);
 		pxyzr[i][3] = pc_radius;
-		normal[i] = mesh->normal(i);
+//		normal[i] = mesh->normal(i);
 	}
 
 	rtcCommitGeometry(geom);
@@ -272,13 +271,13 @@ float embree::intersect_depth(const vertex & org, const vertex & dir)
 
 bool embree::intersect(ray_hit & r)
 {
-	rtcIntersect1(rtc_scene, &rtc_intersect_context, &r);
+	rtcIntersect1(rtc_scene, &r);
 	return r.hit.geomID != RTC_INVALID_GEOMETRY_ID;
 }
 
 bool embree::occluded(ray_hit & r)
 {
-	rtcIntersect1(rtc_scene, &rtc_intersect_context, &r);
+	rtcIntersect1(rtc_scene, &r);
 	return r.hit.geomID != RTC_INVALID_GEOMETRY_ID;
 }
 

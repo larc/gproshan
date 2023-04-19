@@ -13,6 +13,7 @@
 #include <gproshan/mesh/che_ply.h>
 #include <gproshan/mesh/che_xyz.h>
 #include <gproshan/mesh/che_pts.h>
+#include <gproshan/mesh/che_pcd.h>
 #include <gproshan/viewer/scene_viewer.h>
 
 #include <gproshan/raytracing/rt_embree.h>
@@ -650,7 +651,7 @@ bool viewer::m_save_mesh(viewer * view)
 	static bool vertex_color = false;
 
 	ImGui::InputText("file", file, sizeof(file));
-	ImGui::Combo("format", &format, ".off\0.obj\0.ply\0.xyz\0.pts\0");
+	ImGui::Combo("format", &format, ".off\0.obj\0.ply\0.xyz\0.pts\0.pcd\0");
 
 	switch(format)
 	{
@@ -683,6 +684,8 @@ bool viewer::m_save_mesh(viewer * view)
 			case 3: che_xyz::write_file(mesh, file, vertex_color);
 				break;
 			case 4: che_pts::write_file(mesh, file);
+				break;
+			case 5: che_pcd::write_file(mesh, file);
 				break;
 		}
 
