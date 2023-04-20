@@ -1,6 +1,5 @@
 #include <gproshan/app_viewer.h>
 
-#include <gproshan/geometry/vec.h>
 #include <gproshan/scenes/scene.h>
 
 #include <random>
@@ -42,6 +41,7 @@ che * app_viewer::load_mesh(const std::string & file_path)
 	if(extension == "ptx") return new che_ptx(file_path);
 	if(extension == "xyz") return new che_xyz(file_path);
 	if(extension == "pts") return new che_pts(file_path);
+	if(extension == "pcd") return new che_pcd(file_path);
 
 	return new che_img(file_path);
 }
@@ -73,6 +73,7 @@ void app_viewer::init()
 	add_process(1002, "", "Scan Scene", process_simulate_scanner);
 
 	sub_menus.push_back("Geometry");
+	add_process(1003, "", "Sampling 4points", process_sampling_4points);
 	add_process(GLFW_KEY_H, "H", "2D Convex Hull", process_convex_hull);
 	add_process(GLFW_KEY_O, "O", "Connected Components", process_connected_components);
 	add_process(GLFW_KEY_K, "K", "Gaussian curvature", process_gaussian_curvature);
@@ -166,10 +167,46 @@ bool app_viewer::process_simulate_scanner(viewer * p_view)
 
 
 // Geometry
+bool app_viewer::process_sampling_4points(viewer * p_view)
+{
+	app_viewer * view = (app_viewer *) p_view;
+	che_viewer & mesh = view->active_mesh();
+
+	static size_t n = 10;
+	static std::vector<vertex> points;
+
+	ImGui::InputScalar("resolution", ImGuiDataType_U64, &n);
+
+	if(ImGui::Button("Clean")) points.clear();
+
+	ImGui::SameLine();
+	if(mesh.selected.size() > 3)
+	{
+		if(ImGui::Button("Add Samples"))
+		{
+			std::vector<vertex> samples = sampling_4points(n, mesh.selected_point(0),
+															mesh.selected_point(1),
+															mesh.selected_point(2),
+															mesh.selected_point(3)
+															);
+
+			for(auto & p: samples)
+				points.push_back(p);
+
+			mesh.selected.clear();
+		}
+	}
+	else ImGui::Text("Select 4 points.");
+
+	ImGui::Text("Total added points: %lu", points.size());
+	if(ImGui::Button("Create Point Cloud"))
+		view->add_mesh(new che(points.data(), points.size(), nullptr, 0));
+
+	return true;
+}
 
 bool app_viewer::process_convex_hull(viewer * p_view)
 {
-	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
@@ -181,7 +218,6 @@ bool app_viewer::process_convex_hull(viewer * p_view)
 
 bool app_viewer::process_connected_components(viewer * p_view)
 {
-	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
@@ -228,7 +264,6 @@ bool app_viewer::process_connected_components(viewer * p_view)
 
 bool app_viewer::process_gaussian_curvature(viewer * p_view)
 {
-	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
@@ -287,7 +322,6 @@ bool app_viewer::process_gaussian_curvature(viewer * p_view)
 
 bool app_viewer::process_edge_collapse(viewer * p_view)
 {
-	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
@@ -305,7 +339,6 @@ bool app_viewer::process_edge_collapse(viewer * p_view)
 
 bool app_viewer::process_multiplicate_vertices(viewer * p_view)
 {
-	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
@@ -320,7 +353,6 @@ bool app_viewer::process_multiplicate_vertices(viewer * p_view)
 
 bool app_viewer::process_delete_vertices(viewer * p_view)
 {
-	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
@@ -336,7 +368,6 @@ bool app_viewer::process_delete_vertices(viewer * p_view)
 
 bool app_viewer::process_delete_non_manifold_vertices(viewer * p_view)
 {
-	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
@@ -469,7 +500,6 @@ bool app_viewer::process_farthest_point_sampling(viewer * p_view)
 
 bool app_viewer::process_voronoi(viewer * p_view)
 {
-	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
@@ -500,7 +530,6 @@ bool app_viewer::process_voronoi(viewer * p_view)
 
 bool app_viewer::process_compute_toplesets(viewer * p_view)
 {
-	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
@@ -569,7 +598,6 @@ bool app_viewer::process_msparse_coding(viewer * p_view)
 
 bool app_viewer::process_mdict_patch(viewer * p_view)
 {
-	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
@@ -837,25 +865,21 @@ bool app_viewer::process_poisson(viewer * p_view, const index_t & k)
 
 bool app_viewer::process_poisson_laplacian_1(viewer * p_view)
 {
-	gproshan_log(APP_VIEWER);
 	return process_poisson(p_view, 1);
 }
 
 bool app_viewer::process_poisson_laplacian_2(viewer * p_view)
 {
-	gproshan_log(APP_VIEWER);
 	return process_poisson(p_view, 2);
 }
 
 bool app_viewer::process_poisson_laplacian_3(viewer * p_view)
 {
-	gproshan_log(APP_VIEWER);
 	return process_poisson(p_view, 3);
 }
 
 bool app_viewer::process_fill_holes(viewer * p_view)
 {
-	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
@@ -933,7 +957,6 @@ bool app_viewer::process_fill_holes(viewer * p_view)
 
 bool app_viewer::process_fill_holes_biharmonic_splines(viewer * p_view)
 {
-	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
@@ -986,7 +1009,6 @@ bool app_viewer::process_select_multiple(viewer * p_view)
 
 bool app_viewer::process_threshold(viewer * p_view)
 {
-	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
@@ -998,7 +1020,6 @@ bool app_viewer::process_threshold(viewer * p_view)
 
 bool app_viewer::process_noise(viewer * p_view)
 {
-	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
@@ -1020,7 +1041,6 @@ bool app_viewer::process_noise(viewer * p_view)
 
 bool app_viewer::process_black_noise(viewer * p_view)
 {
-	gproshan_log(APP_VIEWER);
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 

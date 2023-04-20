@@ -169,6 +169,11 @@ void che_viewer::update_instances_positions(const std::vector<vertex> & translat
 	glBindVertexArray(0);
 }
 
+const vertex & che_viewer::selected_point(const index_t & i) const
+{
+	return mesh->point(selected[i]);
+}
+
 void che_viewer::draw(shader & program)
 {
 	glProgramUniformMatrix4fv(program, program("model_mat"), 1, true, &model_mat[0][0]);
