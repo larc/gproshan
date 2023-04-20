@@ -28,7 +28,7 @@ if(CUDAToolkit_FOUND)
 		set(CMAKE_CUDA_ARCHITECTURES native)
 	endif()
 
-	find_package(OptiX 7.6)
+	find_package(OptiX 7.7)
 	if(OptiX_INCLUDE)
 		include_directories(SYSTEM ${OptiX_INCLUDE})
 	endif(OptiX_INCLUDE)
