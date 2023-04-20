@@ -72,14 +72,14 @@ optix::optix()
 	const std::string str_ptx_code = std::string(std::istreambuf_iterator<char>(ptx_is), std::istreambuf_iterator<char>());
 	ptx_is.close();
 
-	optixModuleCreateFromPTX(	optix_context,
-								&optix_module_compile_opt,
-								&optix_pipeline_compile_opt,
-								str_ptx_code.c_str(),
-								str_ptx_code.size(),
-								nullptr, nullptr,	// log message
-								&optix_module
-								);
+	optixModuleCreate(	optix_context,
+						&optix_module_compile_opt,
+						&optix_pipeline_compile_opt,
+						str_ptx_code.c_str(),
+						str_ptx_code.size(),
+						nullptr, nullptr,	// log message
+						&optix_module
+						);
 
 
 	// create programs
