@@ -2,9 +2,10 @@
 #define SHADER_H
 
 #include <gproshan/viewer/include_opengl.h>
+#include <gproshan/geometry/vec.h>
+#include <gproshan/geometry/mat.h>
 
 #include <string>
-#include <map>
 
 
 // geometry processing and shape analysis framework
@@ -15,19 +16,26 @@ class shader
 {
 	protected:
 		GLuint program = 0;
-		std::map<std::string, GLint> uniform;
 		bool linked = false;
 
 	public:
 		shader() = default;
 		~shader();
-		const GLint & operator () (const std::string & name);
 		operator GLuint () const;
 		void load_vertex(const std::string & filename);
 		void load_fragment(const std::string & filename);
 		void load_geometry(const std::string & filename);
 		void enable();
 		void disable() const;
+
+		void uniform(const std::string & name, bool value);
+		void uniform(const std::string & name, int value);
+		void uniform(const std::string & name, unsigned int value);
+		void uniform(const std::string & name, float value);
+		void uniform(const std::string & name, const vec3 & value);
+		void uniform(const std::string & name, const vec4 & value);
+		void uniform(const std::string & name, const mat3 & value);
+		void uniform(const std::string & name, const mat4 & value);
 
 	protected:
 		bool load(GLenum shader_type, const std::string & filename);

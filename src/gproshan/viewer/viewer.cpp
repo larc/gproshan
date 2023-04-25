@@ -957,25 +957,25 @@ bool viewer::m_raycasting(viewer * view)
 
 void viewer::render_gl()
 {
-	glProgramUniform3f(shader_sphere, shader_sphere("eye"), cam.eye[0], cam.eye[1], cam.eye[2]);
-	glProgramUniform3f(shader_triangles, shader_triangles("eye"), cam.eye[0], cam.eye[1], cam.eye[2]);
-	glProgramUniform3f(shader_pointcloud, shader_pointcloud("eye"), cam.eye[0], cam.eye[1], cam.eye[2]);
+	shader_sphere.uniform("eye", cam.eye.v);
+	shader_triangles.uniform("eye", cam.eye.v);
+	shader_pointcloud.uniform("eye", cam.eye.v);
 
-	glProgramUniform3f(shader_sphere, shader_sphere("cam_light"), cam_light[0], cam_light[1], cam_light[2]);
-	glProgramUniform3f(shader_triangles, shader_triangles("cam_light"), cam_light[0], cam_light[1], cam_light[2]);
-	glProgramUniform3f(shader_pointcloud, shader_pointcloud("cam_light"), cam_light[0], cam_light[1], cam_light[2]);
+	shader_sphere.uniform("cam_light", cam_light);
+	shader_triangles.uniform("cam_light", cam_light);
+	shader_pointcloud.uniform("cam_light", cam_light);
 
-	glProgramUniformMatrix4fv(shader_sphere, shader_sphere("proj_view_mat"), 1, true, &proj_view_mat[0][0]);
-	glProgramUniformMatrix4fv(shader_triangles, shader_triangles("proj_view_mat"), 1, true, &proj_view_mat[0][0]);
-	glProgramUniformMatrix4fv(shader_pointcloud, shader_pointcloud("proj_view_mat"), 1, true, &proj_view_mat[0][0]);
-	glProgramUniformMatrix4fv(shader_normals, shader_normals("proj_view_mat"), 1, true, &proj_view_mat[0][0]);
-	glProgramUniformMatrix4fv(shader_gradient, shader_gradient("proj_view_mat"), 1, true, &proj_view_mat[0][0]);
-	glProgramUniformMatrix4fv(shader_depth, shader_depth("proj_view_mat"), 1, true, &proj_view_mat[0][0]);
+	shader_sphere.uniform("proj_view_mat", proj_view_mat);
+	shader_triangles.uniform("proj_view_mat", proj_view_mat);
+	shader_pointcloud.uniform("proj_view_mat", proj_view_mat);
+	shader_normals.uniform("proj_view_mat", proj_view_mat);
+	shader_gradient.uniform("proj_view_mat", proj_view_mat);
+	shader_depth.uniform("proj_view_mat", proj_view_mat);
 
-	glProgramUniform1f(shader_normals, shader_normals("length"), cam.zoom() * 0.02);
-	glProgramUniform1f(shader_gradient, shader_gradient("length"), cam.zoom() * 0.02);
+	shader_normals.uniform("length", cam.zoom() * 0.02f);
+	shader_gradient.uniform("length", cam.zoom() * 0.02f);
 
-	glProgramUniform1f(shader_sphere, shader_sphere("scale"), cam.zoom());
+	shader_sphere.uniform("scale", cam.zoom());
 
 
 	for(index_t i = 0; i < meshes.size(); ++i)

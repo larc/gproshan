@@ -44,11 +44,11 @@ void scene_viewer::init_texture(const GLuint & gltex, const scene::texture & tex
 
 void scene_viewer::draw(shader & program)
 {
-	glProgramUniformMatrix4fv(program, program("model_mat"), 1, true, &model_mat[0][0]);
-	glProgramUniform1ui(program, program("idx_colormap"), idx_colormap);
-	glProgramUniform1i(program, program("render_lines"), render_lines);
-	glProgramUniform1i(program, program("render_flat"), render_flat);
-	glProgramUniform1i(program, program("render_wireframe"), render_triangles);
+	program.uniform("model_mat", model_mat);
+	program.uniform("idx_colormap", idx_colormap);
+	program.uniform("render_lines", render_lines);
+	program.uniform("render_flat", render_flat);
+	program.uniform("render_wireframe", render_triangles);
 
 	glPolygonMode(GL_FRONT_AND_BACK, render_wireframe ? GL_LINE : GL_FILL);
 
@@ -83,11 +83,11 @@ void scene_viewer::draw(shader & program)
 
 void scene_viewer::draw_pointcloud(shader & program)
 {
-	glProgramUniformMatrix4fv(program, program("model_mat"), 1, true, &model_mat[0][0]);
-	glProgramUniform1ui(program, program("idx_colormap"), idx_colormap);
-	glProgramUniform1i(program, program("render_lines"), render_lines);
-	glProgramUniform1i(program, program("point_normals"), point_normals);
-	glProgramUniform1ui(program, program("point_size"), point_size);
+	program.uniform("model_mat", model_mat);
+	program.uniform("idx_colormap", idx_colormap);
+	program.uniform("render_lines", render_lines);
+	program.uniform("point_normals", point_normals);
+	program.uniform("point_size", point_size);
 
 	program.enable();
 
@@ -120,25 +120,25 @@ void scene_viewer::draw_pointcloud(shader & program)
 
 void scene_viewer::gl_uniform_material(shader & program, const scene::material & mat)
 {
-	glProgramUniform3f(program, program("mat.Ka"), mat.Ka.x(), mat.Ka.y(), mat.Ka.z());
-	glProgramUniform3f(program, program("mat.Kd"), mat.Kd.x(), mat.Kd.y(), mat.Kd.z());
-	glProgramUniform3f(program, program("mat.Ks"), mat.Ks.x(), mat.Ks.y(), mat.Ks.z());
-	glProgramUniform1f(program, program("mat.d"), mat.d);
-	glProgramUniform1f(program, program("mat.Ns"), mat.Ns);
-	glProgramUniform1f(program, program("mat.Ni"), mat.Ni);
-	glProgramUniform1i(program, program("mat.illum"), mat.illum);
-	glProgramUniform1i(program, program("mat.map_Ka"), mat.map_Ka);
-	glProgramUniform1i(program, program("mat.map_Kd"), mat.map_Kd);
-	glProgramUniform1i(program, program("mat.map_Ks"), mat.map_Ks);
-	glProgramUniform1i(program, program("mat.map_d"), mat.map_d);
-	glProgramUniform1i(program, program("mat.map_bump"), mat.map_bump);
+	program.uniform("mat.Ka", mat.Ka);
+	program.uniform("mat.Kd", mat.Kd);
+	program.uniform("mat.Ks", mat.Ks);
+	program.uniform("mat.d", mat.d);
+	program.uniform("mat.Ns", mat.Ns);
+	program.uniform("mat.Ni", mat.Ni);
+	program.uniform("mat.illum", mat.illum);
+	program.uniform("mat.map_Ka", mat.map_Ka);
+	program.uniform("mat.map_Kd", mat.map_Kd);
+	program.uniform("mat.map_Ks", mat.map_Ks);
+	program.uniform("mat.map_d", mat.map_d);
+	program.uniform("mat.map_bump", mat.map_bump);
 
 	static auto bind_texture = [&](const int & i, const int & map, const char * tex)
 	{
 		if(map < 0) return;
 		glActiveTexture(gltex_nums[i]);
 		glBindTexture(GL_TEXTURE_2D, gltextures[map]);
-		glProgramUniform1i(program, program(tex), i);
+		program.uniform(tex, i);
 	};
 
 	bind_texture(0, mat.map_Ka, "tex_Ka");

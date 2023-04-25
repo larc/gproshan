@@ -176,11 +176,11 @@ const vertex & che_viewer::selected_point(const index_t & i) const
 
 void che_viewer::draw(shader & program)
 {
-	glProgramUniformMatrix4fv(program, program("model_mat"), 1, true, &model_mat[0][0]);
-	glProgramUniform1ui(program, program("idx_colormap"), idx_colormap);
-	glProgramUniform1i(program, program("render_flat"), render_flat);
-	glProgramUniform1i(program, program("render_lines"), render_lines);
-	glProgramUniform1i(program, program("render_wireframe"), render_triangles);
+	program.uniform("model_mat", model_mat);
+	program.uniform("idx_colormap", idx_colormap);
+	program.uniform("render_lines", render_lines);
+	program.uniform("render_flat", render_flat);
+	program.uniform("render_wireframe", render_triangles);
 
 	glPolygonMode(GL_FRONT_AND_BACK, render_wireframe ? GL_LINE : GL_FILL);
 
@@ -200,11 +200,11 @@ void che_viewer::draw(shader & program)
 
 void che_viewer::draw_pointcloud(shader & program)
 {
-	glProgramUniformMatrix4fv(program, program("model_mat"), 1, true, &model_mat[0][0]);
-	glProgramUniform1ui(program, program("idx_colormap"), idx_colormap);
-	glProgramUniform1i(program, program("render_lines"), render_lines);
-	glProgramUniform1i(program, program("point_normals"), point_normals);
-	glProgramUniform1ui(program, program("point_size"), point_size);
+	program.uniform("model_mat", model_mat);
+	program.uniform("idx_colormap", idx_colormap);
+	program.uniform("render_lines", render_lines);
+	program.uniform("point_normals", point_normals);
+	program.uniform("point_size", point_size);
 
 	program.enable();
 
