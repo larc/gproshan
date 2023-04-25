@@ -73,6 +73,7 @@ class viewer
 		shader shader_normals;
 		shader shader_gradient;
 		shader shader_pointcloud;
+		shader shader_depth;
 		scene::material mat;
 
 		camera cam;

@@ -409,6 +409,9 @@ void viewer::init_glsl()
 
 	shader_pointcloud.load_vertex(shaders_path("vertex_pointcloud.glsl"));
 	shader_pointcloud.load_fragment(shaders_path("fragment_pointcloud.glsl"));
+
+	shader_depth.load_vertex(shaders_path("vertex_depth.glsl"));
+	shader_depth.load_fragment(shaders_path("fragment_depth.glsl"));
 }
 
 void viewer::add_process(const int & key, const std::string & skey, const std::string & name, const function_t & f)
@@ -967,6 +970,7 @@ void viewer::render_gl()
 	glProgramUniformMatrix4fv(shader_pointcloud, shader_pointcloud("proj_view_mat"), 1, true, &proj_view_mat[0][0]);
 	glProgramUniformMatrix4fv(shader_normals, shader_normals("proj_view_mat"), 1, true, &proj_view_mat[0][0]);
 	glProgramUniformMatrix4fv(shader_gradient, shader_gradient("proj_view_mat"), 1, true, &proj_view_mat[0][0]);
+	glProgramUniformMatrix4fv(shader_depth, shader_depth("proj_view_mat"), 1, true, &proj_view_mat[0][0]);
 
 	glProgramUniform1f(shader_normals, shader_normals("length"), cam.zoom() * 0.02);
 	glProgramUniform1f(shader_gradient, shader_gradient("length"), cam.zoom() * 0.02);
@@ -989,7 +993,7 @@ void viewer::render_gl()
 		if(mesh->is_pointcloud() || mesh.render_pointcloud)
 			mesh.draw_pointcloud(shader_pointcloud);
 		else
-			mesh.draw(shader_triangles);
+			mesh.draw(shader_depth);
 
 		if(mesh.render_normals)
 			mesh.draw_pointcloud(shader_normals);
