@@ -16,14 +16,6 @@ shader::~shader()
 	glDeleteProgram(program);
 }
 
-const GLint & shader::operator () (const std::string & name)
-{
-	if(uniform.find(name) != uniform.end())
-		uniform[name] = glGetUniformLocation(program, name.c_str());
-
-	return uniform[name];
-}
-
 shader::operator GLuint() const
 {
 	return program;
@@ -58,6 +50,46 @@ void shader::enable()
 void shader::disable() const
 {
 	glUseProgram(0);
+}
+
+void shader::uniform(const std::string & name, bool value)
+{
+	glProgramUniform1i(program, glGetUniformLocation(program, name.c_str()), value);
+}
+
+void shader::uniform(const std::string & name, int value)
+{
+	glProgramUniform1i(program, glGetUniformLocation(program, name.c_str()), value);
+}
+
+void shader::uniform(const std::string & name, unsigned int value)
+{
+	glProgramUniform1ui(program, glGetUniformLocation(program, name.c_str()), value);
+}
+
+void shader::uniform(const std::string & name, float value)
+{
+	glProgramUniform1f(program, glGetUniformLocation(program, name.c_str()), value);
+}
+
+void shader::uniform(const std::string & name, const vec3 & value)
+{
+	glProgramUniform3fv(program, glGetUniformLocation(program, name.c_str()), 1, &value[0]);
+}
+
+void shader::uniform(const std::string & name, const vec4 & value)
+{
+	glProgramUniform4fv(program, glGetUniformLocation(program, name.c_str()), 1, &value[0]);
+}
+
+void shader::uniform(const std::string & name, const mat3 & value)
+{
+	glProgramUniformMatrix3fv(program, glGetUniformLocation(program, name.c_str()), 1, true, &value[0][0]);
+}
+
+void shader::uniform(const std::string & name, const mat4 & value)
+{
+	glProgramUniformMatrix4fv(program, glGetUniformLocation(program, name.c_str()), 1, true, &value[0][0]);
 }
 
 bool shader::load(GLenum shader_type, const std::string & filename)
