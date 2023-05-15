@@ -49,7 +49,6 @@ void che_ply::read_file(const std::string & file)
 	{
 		p = nb;
 		i = vbytes;
-		vbytes += nb;
 	};
 
 	while(fgets(line, sizeof(line), fp) && line[1] != 'n')	// end_header
@@ -71,18 +70,20 @@ void che_ply::read_file(const std::string & file)
 		if(str[0] == 'p' && element[0] == 'v')	// property vertex
 		{
 			sscanf(line, "%*s %s %s", type, str);
+			const size_t & nb = bytes[type];
 
 			switch(str[0])
 			{
-				case 'x': add_vproperty(xyz, ixyz, bytes[type]);
+				case 'x': add_vproperty(xyz, ixyz, nb);
 					break;
-				case 'r': add_vproperty(rgb, irgb, bytes[type]);
+				case 'r': add_vproperty(rgb, irgb, nb);
 					break;
-				case 'n': add_vproperty(normal, inormal, bytes[type]);
-					break;
-				default: vbytes += bytes[type];
-					break;
+				case 'n':
+					if(str[1] == 'x')
+						add_vproperty(normal, inormal, nb);
 			}
+
+			vbytes += nb;
 		}
 
 		if(str[0] == 'p' && element[0] == 'f')	// property face
