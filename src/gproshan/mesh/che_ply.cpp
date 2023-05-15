@@ -18,28 +18,38 @@ che_ply::che_ply(const std::string & file)
 void che_ply::read_file(const std::string & file)
 {
 	std::unordered_map<std::string, size_t> bytes = {
-														{"char", 1},
-														{"uchar", 1},
-														{"short", 2},
-														{"ushort", 2},
-														{"int", 4},
-														{"uint", 4},
-														{"float", 4},
-														{"float32", 4},
-														{"float64", 8},
-														{"double", 8}
+														{"char"		, 1},
+														{"uchar"	, 1},
+														{"short"	, 2},
+														{"ushort"	, 2},
+														{"int"		, 4},
+														{"uint"		, 4},
+														{"float"	, 4},
+														{"float32"	, 4},
+														{"float64"	, 8},
+														{"double"	, 8}
 													};
 
 	FILE * fp = fopen(file.c_str(), "rb");
 	assert(fp);
 
-	size_t nv = 0, nf = 0;
-	size_t nb, xyz = 0, rgb = 0, vbytes = 0;
-	index_t ixyz = 0, irgb = 0;
+	size_t nv = 0;
+	size_t nf = 0;
+	size_t xyz = 0;
+	size_t rgb = 0;
+	size_t normal = 0;
+	size_t vbytes = 0;
+	index_t ixyz = 0, irgb = 0, inormal = 0;
 	size_t fn = 0, fbytes = 0;
 	index_t P[32];
 
 	char line[512], type[32], str[32], format[32], element[32];
+
+	auto add_vproperty = [&vbytes](size_t & p, index_t & i, const size_t & nb)
+	{
+		p = nb;
+		i = vbytes;
+	};
 
 	while(fgets(line, sizeof(line), fp) && line[1] != 'n')	// end_header
 	{
@@ -60,17 +70,17 @@ void che_ply::read_file(const std::string & file)
 		if(str[0] == 'p' && element[0] == 'v')	// property vertex
 		{
 			sscanf(line, "%*s %s %s", type, str);
-			nb = bytes[type];
+			const size_t & nb = bytes[type];
 
-			if(str[0] == 'x')
+			switch(str[0])
 			{
-				xyz = nb;
-				ixyz = vbytes;
-			}
-			if(str[0] == 'r')
-			{
-				rgb = nb;
-				irgb = vbytes;
+				case 'x': add_vproperty(xyz, ixyz, nb);
+					break;
+				case 'r': add_vproperty(rgb, irgb, nb);
+					break;
+				case 'n':
+					if(str[1] == 'x')
+						add_vproperty(normal, inormal, nb);
 			}
 
 			vbytes += nb;
@@ -130,12 +140,10 @@ void che_ply::read_file(const std::string & file)
 		fread(buffer, vbytes, n_vertices, fp);
 		if(big_endian)
 		{
-			char * pb;
-
-			#pragma omp parallel for private(pb)
+			#pragma omp parallel for
 			for(index_t v = 0; v < n_vertices; ++v)
 			{
-				pb = buffer + v * vbytes;
+				char * pb = buffer + v * vbytes;
 
 				for(index_t i = 0; i < 3; ++i)
 					big_to_little(pb + ixyz + i * xyz, xyz);
@@ -144,6 +152,12 @@ void che_ply::read_file(const std::string & file)
 				{
 					for(index_t i = 0; i < 3; ++i)
 						big_to_little(pb + irgb + i * rgb, rgb);
+				}
+
+				if(normal)
+				{
+					for(index_t i = 0; i < 3; ++i)
+						big_to_little(pb + inormal + i * normal, normal);
 				}
 			}
 		}
@@ -171,7 +185,18 @@ void che_ply::read_file(const std::string & file)
 						if(rgb == 1)
 							VC[v][i] = *(unsigned char *) (pb + irgb + i * rgb);
 						else
-							GT[v][i] = (unsigned char) (*(float *) (pb + irgb + i * rgb)) * 255;
+							VC[v][i] = (unsigned char) (*(float *) (pb + irgb + i * rgb)) * 255;
+				}
+
+				if(normal)
+				{
+					for(index_t i = 0; i < 3; ++i)
+					{
+						if(normal == 4)
+							VN[v][i] = (real_t) *(float *) (pb + inormal + i * normal);
+						else
+							VN[v][i] = (real_t) *(double *) (pb + inormal + i * normal);
+					}
 				}
 			}
 		}
