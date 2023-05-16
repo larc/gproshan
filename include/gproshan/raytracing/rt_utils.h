@@ -69,13 +69,20 @@ struct t_eval_hit
 	vec<T, 3> position;
 	vec<T, 3> normal;
 	vec<T, 3> Ka{0.4f, 0.4f, 0.4f};
-	vec<T, 3> Kd;
+	vec<T, 3> Kd{0.9f, 0.94f, 0.98f};
 	vec<T, 3> Ks{0.2f, 0.2f, 0.2f};
 	T Ns = 4;
 	T d = 1;
 
 	__host_device__
 	t_eval_hit() {}
+
+	__host_device__
+	t_eval_hit(const CHE & pc, const index_t & aprimID)
+	{
+		primID = aprimID;
+		normal = pc.VN[primID];
+	}
 
 	__host_device__
 	t_eval_hit(const CHE & mesh, const index_t & aprimID, const T & au, const T & av, const scene_data & sc)
