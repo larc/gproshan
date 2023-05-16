@@ -46,7 +46,7 @@ vertex embree::ray_hit::normal() const
 	return normalize(vec3{hit.Ng_x, hit.Ng_y, hit.Ng_z});
 }
 
-vertex embree::ray_hit::position() const
+vertex embree::ray_hit::pos() const
 {
 	return org() + ray.tfar * dir();
 }
@@ -116,7 +116,7 @@ eval_hit embree::intersect(const vertex & org, const vertex & dir)
 
 	eval_hit hit(*g_meshes[r.hit.geomID], r.hit.primID, r.hit.u, r.hit.v, sc);
 	hit.dist = r.ray.tfar;
-	hit.position = r.position();
+	hit.position = r.pos();
 
 	return hit;
 }
@@ -251,8 +251,12 @@ vec3 embree::closesthit_radiance(const vertex & org, const vertex & dir, const v
 	ray_hit r(org, dir);
 	if(!intersect(r)) return {};
 
-	eval_hit hit(*g_meshes[r.hit.geomID], r.hit.primID, r.hit.u, r.hit.v, sc);
-	hit.position = r.position();
+	const CHE * mesh = g_meshes[r.hit.geomID];
+
+	eval_hit hit;
+	if(mesh->n_trigs)
+		hit = {*mesh, r.hit.primID, r.hit.u, r.hit.v, sc};
+	hit.position = r.pos();
 	hit.normal = flat ? r.normal() : hit.normal;
 
 	return eval_li(	hit, lights, n_lights, cam_pos,

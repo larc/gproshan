@@ -26,7 +26,7 @@ class embree : public raytracing
 
 			vertex org() const;
 			vertex dir() const;
-			vertex position() const;
+			vertex pos() const;
 			vertex normal() const;
 		};
 
