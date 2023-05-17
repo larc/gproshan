@@ -1,6 +1,5 @@
-#ifndef RENDER_PARAMS_H
-#define RENDER_PARAMS_H
-
+#ifndef RT_RENDER_PARAMS_H
+#define RT_RENDER_PARAMS_H
 
 #include <gproshan/include.h>
 #include <gproshan/geometry/mat.h>
@@ -53,5 +52,5 @@ struct render_params
 } // namespace gproshan
 
 
-#endif // RENDER_PARAMS_H
+#endif // RT_RENDER_PARAMS_H
 

@@ -16,10 +16,10 @@
 #include <gproshan/mesh/che_pcd.h>
 #include <gproshan/viewer/scene_viewer.h>
 
-#include <gproshan/raytracing/rt_embree.h>
+#include <gproshan/raytracing/embree.h>
 
 #ifdef GPROSHAN_OPTIX
-	#include <gproshan/raytracing/rt_optix.h>
+	#include <gproshan/raytracing/optix.h>
 #endif // GPROSHAN_OPTIX
 
 #include <CImg.h>
