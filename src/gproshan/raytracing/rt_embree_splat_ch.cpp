@@ -129,7 +129,7 @@ vec3 embree_splat_ch::closesthit_radiance(const vertex & org, const vertex & dir
 	if(!intersect(r)) return {};
 
 	eval_hit hit(*g_meshes[r.hit.geomID], r.hit.primID, r.hit.u, r.hit.v, sc);
-	hit.position = r.position();
+	hit.position = r.pos();
 	hit.normal = flat ? r.normal() : hit.normal;
 
 	if(show_chsplats)

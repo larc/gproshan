@@ -7,6 +7,8 @@
 #include <numeric>
 #include <algorithm>
 
+#include <flann/flann.hpp>
+
 
 // geometry processing and shape analysis framework
 namespace gproshan::rt {
@@ -50,6 +52,37 @@ void splat::add_splats_mesh(che * mesh, const mat4 & model_mat)
 
 	const index_t & idx = segmentation.size();
 
+	double flann_time = 0;
+
+		const size_t nn = 10;
+
+		flann::Matrix<real_t> pc((real_t *) &mesh->point(0), mesh->n_vertices, 3);
+
+		flann::Matrix<int> indices(new int[mesh->n_vertices * nn], mesh->n_vertices, nn);
+		flann::Matrix<real_t> dists(new real_t[mesh->n_vertices * nn], mesh->n_vertices, nn);
+
+	TIC(flann_time);
+		// construct an randomized kd-tree index using 4 kd-trees
+		flann::KDTreeIndexParams iparams;
+
+		flann::Index<flann::L2<real_t> > index(pc, iparams);
+		index.buildIndex();
+	TOC(flann_time);
+	gproshan_log_var(flann_time);
+
+	TIC(flann_time);
+		// do a knn search, using 128 checks
+		flann::SearchParams sparams;
+		sparams.cores = 12;
+		index.knnSearch(pc, indices, dists, nn, sparams);
+
+		//delete [] indices.ptr();
+		delete [] dists.ptr();
+
+	TOC(flann_time);
+	gproshan_log_var(flann_time);
+
+
 	std::queue<index_t> q;
 	for(const index_t & v: shuffle)
 	{
@@ -68,16 +101,21 @@ void splat::add_splats_mesh(che * mesh, const mat4 & model_mat)
 			vertices.push_back(front);
 			visited[front] = idx;
 
+/*
 			for(const index_t & he: mesh->star(front))
 			{
 				const index_t & u = mesh->halfedge(he_prev(he));
+*/
+			for(index_t i = 0; i < nn; ++i)
+			{
+				const int & u = indices[front][i];
+
 				if(visited[u] == NIL &&
 					dot(vnormal, mesh->normal(front)) > n_threshold)
 				{
 					q.push(u);
 					visited[u] = 0;
 				}
-
 			}
 		}
 

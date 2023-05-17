@@ -13,6 +13,7 @@ target_link_libraries(gproshan X11::X11)
 target_link_libraries(gproshan ${ARMADILLO_LIBRARIES})
 target_link_libraries(gproshan CGAL::CGAL)
 target_link_libraries(gproshan ${SuiteSparse_LIBRARIES})
+target_link_libraries(gproshan flann::flann_cpp)
 target_link_libraries(gproshan ${OptiX_LIBRARY})
 target_link_libraries(gproshan imgui)
 
