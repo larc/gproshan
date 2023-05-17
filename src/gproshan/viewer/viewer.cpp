@@ -19,8 +19,8 @@
 #include <gproshan/raytracing/embree.h>
 #include <gproshan/raytracing/rt_embree_splat_ch.h>
 #include <gproshan/raytracing/splat.h>
-#include <gproshan/raytracing/rt_splat_embree.h>
-#include <gproshan/raytracing/rt_splat_optix.h>
+#include <gproshan/raytracing/splat_embree.h>
+#include <gproshan/raytracing/splat_optix.h>
 
 #ifdef GPROSHAN_OPTIX
 	#include <gproshan/raytracing/optix.h>
