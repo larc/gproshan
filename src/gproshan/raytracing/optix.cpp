@@ -1,4 +1,4 @@
-#include <gproshan/raytracing/rt_optix.h>
+#include <gproshan/raytracing/optix.h>
 
 
 #ifdef GPROSHAN_OPTIX

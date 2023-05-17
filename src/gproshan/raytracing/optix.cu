@@ -1,6 +1,6 @@
 #include <gproshan/mesh/che.cuh>
-#include <gproshan/raytracing/rt_utils.h>
-#include <gproshan/raytracing/rt_optix_params.h>
+#include <gproshan/raytracing/utils.h>
+#include <gproshan/raytracing/optix_params.h>
 
 #include <optix_device.h>
 #include <cuda_runtime.h>

@@ -3,7 +3,7 @@
 
 #include <gproshan/mesh/che.h>
 #include <gproshan/geometry/mat.h>
-#include <gproshan/raytracing/rt_utils.h>
+#include <gproshan/raytracing/utils.h>
 
 
 // geometry processing and shape analysis framework

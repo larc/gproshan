@@ -1,7 +1,7 @@
 #include <gproshan/mesh/che_ply.h>
 #include <gproshan/mesh/che_ptx.h>
 #include <gproshan/scenes/scanner.h>
-#include <gproshan/raytracing/rt_embree.h>
+#include <gproshan/raytracing/embree.h>
 
 #include <algorithm>
 #include <cstdlib>

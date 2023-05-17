@@ -2,7 +2,7 @@
 #define RT_SPLAT_EMBREE_H
 
 #include <gproshan/raytracing/splat.h>
-#include <gproshan/raytracing/rt_embree.h>
+#include <gproshan/raytracing/embree.h>
 
 
 // geometry processing and shape analysis framework

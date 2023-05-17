@@ -1,7 +1,7 @@
 #ifndef RT_EMBREE_SPLAT_CH_H
 #define RT_EMBREE_SPLAT_CH_H
 
-#include <gproshan/raytracing/rt_embree.h>
+#include <gproshan/raytracing/embree.h>
 #include <gproshan/geometry/convex_hull.h>
 
 #include <algorithm>

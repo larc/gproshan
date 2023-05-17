@@ -4,7 +4,7 @@
 #ifdef GPROSHAN_OPTIX
 
 #include <gproshan/raytracing/splat.h>
-#include <gproshan/raytracing/rt_optix.h>
+#include <gproshan/raytracing/optix.h>
 
 
 // geometry processing and shape analysis framework

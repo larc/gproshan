@@ -1,4 +1,4 @@
-#include <gproshan/raytracing/rt_embree.h>
+#include <gproshan/raytracing/embree.h>
 
 
 #include <gproshan/util.h>
