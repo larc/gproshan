@@ -54,7 +54,7 @@ void splat::add_splats_mesh(che * mesh, const mat4 & model_mat)
 
 	double flann_time = 0;
 
-		const size_t nn = 10;
+		const size_t nn = 6;
 
 		flann::Matrix<real_t> pc((real_t *) &mesh->point(0), mesh->n_vertices, 3);
 
@@ -63,9 +63,7 @@ void splat::add_splats_mesh(che * mesh, const mat4 & model_mat)
 
 	TIC(flann_time);
 		// construct an randomized kd-tree index using 4 kd-trees
-		flann::KDTreeIndexParams iparams;
-
-		flann::Index<flann::L2<real_t> > index(pc, iparams);
+		flann::Index<flann::L2<real_t> > index(pc, flann::KDTreeIndexParams(1));
 		index.buildIndex();
 	TOC(flann_time);
 	gproshan_log_var(flann_time);
@@ -73,7 +71,7 @@ void splat::add_splats_mesh(che * mesh, const mat4 & model_mat)
 	TIC(flann_time);
 		// do a knn search, using 128 checks
 		flann::SearchParams sparams;
-		sparams.cores = 12;
+		sparams.cores = 16;
 		index.knnSearch(pc, indices, dists, nn, sparams);
 
 		//delete [] indices.ptr();
