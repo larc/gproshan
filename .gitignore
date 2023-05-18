@@ -6,10 +6,11 @@ tmp/*
 *.swp
 *.swo
 *.user
+*.ptx
 *.vscode/*
 *.DS_Store
 
 
 include/gproshan/config.h
 
-src/rt_optix.ptx
+
