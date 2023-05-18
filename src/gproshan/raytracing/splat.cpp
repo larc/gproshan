@@ -14,6 +14,8 @@
 namespace gproshan::rt {
 
 
+int splat::k = 8;
+
 splat::splat(const std::vector<che *> & meshes, const std::vector<mat4> & model_mats)
 {
 	for(index_t i = 0; i < meshes.size(); ++i)
@@ -51,7 +53,7 @@ void splat::add_splats_mesh(che * mesh, const mat4 & model_mat)
 	std::random_shuffle(begin(shuffle), end(shuffle));
 
 	const index_t & idx = segmentation.size();
-
+/*
 	double flann_time = 0;
 
 		const size_t nn = 6;
@@ -79,7 +81,7 @@ void splat::add_splats_mesh(che * mesh, const mat4 & model_mat)
 
 	TOC(flann_time);
 	gproshan_log_var(flann_time);
-
+*/
 
 	std::queue<index_t> q;
 	for(const index_t & v: shuffle)
@@ -99,15 +101,16 @@ void splat::add_splats_mesh(che * mesh, const mat4 & model_mat)
 			vertices.push_back(front);
 			visited[front] = idx;
 
-/*
+
 			for(const index_t & he: mesh->star(front))
 			{
 				const index_t & u = mesh->halfedge(he_prev(he));
-*/
+
+/*
 			for(index_t i = 0; i < nn; ++i)
 			{
 				const int & u = indices[front][i];
-
+*/
 				if(visited[u] == NIL &&
 					dot(vnormal, mesh->normal(front)) > n_threshold)
 				{

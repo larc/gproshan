@@ -40,19 +40,19 @@ index_t binary_search(const T * data, index_t i, index_t j, const T & value)
 
 		data[m] < value ? i = m + 1 : j = m - 1;
 	}
-	
+
 	return m;
 }
 
 template <class T>
 __host_device__
-void splat_hit(t_eval_hit<T> & hit, const splats_data * splat, const index_t & aprimID, const vec<T, 3> & x)
+void splat_hit(t_eval_hit<T> & hit, const splats_data * splat, const index_t & aprimID, const vec<T, 3> & x, const int & k)
 {
 	hit.primID = aprimID;
 	const index_t s = splat->primID_splat[hit.primID];
-		
-	const index_t begin = splat->idx_splats[s];
-	const index_t end = splat->idx_splats[s + 1];
+
+	index_t begin = splat->idx_splats[s];
+	index_t end = splat->idx_splats[s + 1];
 
 	const vec<T, 3> & center = splat->centers[s];
 	const mat<T, 3> & tbn = splat->tbns[s];
@@ -61,12 +61,31 @@ void splat_hit(t_eval_hit<T> & hit, const splats_data * splat, const index_t & a
 	unsigned int code = morton_2d((p.x() + 1) / 2, (p.y() + 1) / 2);
 
 	const index_t h = binary_search(splat->morton_codes, begin, end - 1, code);
-	
-	hit.normal = splat->pc->VN[h];
+	T sigma = length(p - splat->pc->GT[h]) / 2;
+	sigma *= sigma;
 
-	const che::rgb_t & color = splat->pc->VC[h];
-	hit.Kd = {T(color.r), T(color.g), T(color.b)};
-	hit.Kd /= 255;
+	vec<T, 3> & color = hit.Kd;
+	vec<T, 3> & normal = hit.normal;
+
+	begin = h - k >= begin ? h - k : begin;
+	end = h + k <= end ? h + k : end;
+
+	T w, sum_w = 0;
+	for(index_t v = begin; v < end; ++v)
+	{
+		w = length(x - splat->pc->GT[v]); 
+		w = exp(-0.5 * w * w / sigma);
+		sum_w += w;
+
+		const che::rgb_t & c = splat->pc->VC[v];
+		vec<T, 3> vc = {T(c.r), T(c.g), T(c.b)};
+		vc /= 255;
+		normal += w * splat->pc->VN[v];
+		color += w * vc;
+	}
+
+	normal /= sum_w;
+	color /= sum_w;
 
 	hit.position = x;
 }

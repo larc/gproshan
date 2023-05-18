@@ -41,10 +41,17 @@ void che_img::read_file(const std::string & file)
 			VT[he++] = (i - 1) * img.height() + j - 1;
 		}
 
-		GT[v++] = {real_t(i), real_t(j), img(i, j)};
+		GT[v] = {real_t(i), real_t(j), 0};
+		VC[v] = {
+					img(i, j, 0) * 255,
+					img(i, j, 1) * 255,
+					img(i, j, 2) * 255
+				};
+
+		++v;
 	}
 
-	std::thread([](CImg<real_t> img) { img.display(); }, img).detach();
+//	std::thread([](CImg<real_t> img) { img.display(); }, img).detach();
 }
 
 

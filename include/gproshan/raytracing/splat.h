@@ -11,6 +11,7 @@ class splat
 {
 	public:
 		std::vector<che *> pointclouds;
+		static int k;
 
 	protected:
 		std::vector<splats_data *> splats_pcs;

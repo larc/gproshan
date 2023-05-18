@@ -23,8 +23,8 @@ class splat_embree: public splat, public embree
 			if(!intersect(r)) return {};
 
 			eval_hit hit;
-			splat_hit(hit, splats_pcs[r.hit.geomID], r.hit.primID, r.pos());
-			
+			splat_hit(hit, splats_pcs[r.hit.geomID], r.hit.primID, r.pos(), k);
+
 			return eval_li(	hit, lights, n_lights, cam_pos,
 							[&](const vec3 & position, const vec3 & wi, const float & light_dist) -> bool
 							{
