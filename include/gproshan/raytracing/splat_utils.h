@@ -10,6 +10,11 @@
 namespace gproshan::rt {
 
 
+template <class T>
+__host_device__
+unsigned int morton_2d(T x, T y);
+
+
 struct splats_data
 {
 	CHE * pc = nullptr;
@@ -21,6 +26,50 @@ struct splats_data
 	vertex * centers = nullptr;
 	mat3 * tbns = nullptr;
 };
+
+template <class T>
+__host_device__
+index_t binary_search(const T * data, index_t i, index_t j, const T & value)
+{
+	index_t m = 0;
+	while(i < j)
+	{
+		m = (i + j) >> 1;
+		if(data[m] == value)
+			break;
+
+		data[m] < value ? i = m + 1 : j = m - 1;
+	}
+	
+	return m;
+}
+
+template <class T>
+__host_device__
+void splat_hit(t_eval_hit<T> & hit, const splats_data * splat, const index_t & aprimID, const vec<T, 3> & x)
+{
+	hit.primID = aprimID;
+	const index_t s = splat->primID_splat[hit.primID];
+		
+	const index_t begin = splat->idx_splats[s];
+	const index_t end = splat->idx_splats[s + 1];
+
+	const vec<T, 3> & center = splat->centers[s];
+	const mat<T, 3> & tbn = splat->tbns[s];
+
+	const vec<T, 3> & p = tbn * (x - center);  
+	unsigned int code = morton_2d((p.x() + 1) / 2, (p.y() + 1) / 2);
+
+	const index_t h = binary_search(splat->morton_codes, begin, end - 1, code);
+	
+	hit.normal = splat->pc->VN[h];
+
+	const che::rgb_t & color = splat->pc->VC[h];
+	hit.Kd = {T(color.r), T(color.g), T(color.b)};
+	hit.Kd /= 255;
+
+	hit.position = x;
+}
 
 
 // FROM: https://developer.nvidia.com/blog/thinking-parallel-part-iii-tree-construction-gpu/

@@ -22,15 +22,9 @@ class splat_embree: public splat, public embree
 			ray_hit r(org, dir);
 			if(!intersect(r)) return {};
 
-			const CHE * mesh = g_meshes[r.hit.geomID];
-
 			eval_hit hit;
-			/*
-			if(mesh->n_trigs)
-				hit = {*mesh, r.hit.primID, r.hit.u, r.hit.v, sc};
-			hit.position = r.pos();
-			hit.normal = flat ? r.normal() : hit.normal;
-			*/
+			splat_hit(hit, splats_pcs[r.hit.geomID], r.hit.primID, r.pos());
+			
 			return eval_li(	hit, lights, n_lights, cam_pos,
 							[&](const vec3 & position, const vec3 & wi, const float & light_dist) -> bool
 							{
