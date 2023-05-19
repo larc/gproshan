@@ -225,7 +225,7 @@ void splat::init_splats(const che * mesh, const mat4 & model_mat, std::vector<in
 	std::vector<vertex> points(vertices.size());
 	std::vector<index_t> trigs;
 
-	splats_data * spc = new splats_data(points.size(), idx_splats.size() - 1);
+	splats_data * spc = new splats_data(mesh->n_vertices, idx_splats.size() - 1);
 
 	std::vector<convex_hull *> splat_chs(spc->n_splats);
 
@@ -257,38 +257,39 @@ void splat::init_splats(const che * mesh, const mat4 & model_mat, std::vector<in
 		tbn[0] = normalize(tbn[0] - dot(tbn[0], tbn[2]) * tbn[2]);
 		tbn[1] = normalize(cross(tbn[2], tbn[0]));
 
+		s.radius = 0;
 		for(index_t j = s.begin; j < s.end; ++j)
-		{
-			const index_t & v = vertices[j];
-			spc->morton_codes[v] = s.morton2d(points[j]);
-		}
+			s.radius = std::max(s.radius, length(points[j] - center));
 
 		std::sort(vertices.begin() + s.begin, vertices.begin() + s.end,
 					[&](const index_t & a, const index_t & b)
 					{
-						return spc->morton_codes[a] < spc->morton_codes[b];
+						const vertex & p = model_mat * vec4(mesh->point(a), 1);
+						const vertex & q = model_mat * vec4(mesh->point(b), 1);
+						return s.morton2d(p) < s.morton2d(q);
 					});
-
-
-		{
-			for(index_t j = s.begin + 1; j < s.end; ++j)
-			{
-				const index_t & u = vertices[j - 1];
-				const index_t & v = vertices[j];
-				if(spc->morton_codes[u] > spc->morton_codes[v])
-				{
-					gproshan_error(FATAL ERROR);
-					break;
-				}
-			}
-		}
 
 		for(index_t j = s.begin; j < s.end; ++j)
 		{
 			vertex & p = points[j];
 			p = model_mat * vec4(mesh->point(vertices[j]), 1);
+			spc->morton_codes[j] = s.morton2d(p);
 			p = tbn * (p - center);
 		}
+
+		{
+			for(index_t j = s.begin + 1; j < s.end; ++j)
+			{
+				if(spc->morton_codes[j - 1] > spc->morton_codes[j])
+				{
+					gproshan_error(FATAL ERROR);
+					gproshan_log_var(spc->morton_codes[j - 1]);
+					gproshan_log_var(spc->morton_codes[j]);
+					break;
+				}
+			}
+		}
+
 
 		splat_chs[i] = new convex_hull(points.data() + s.begin, s.end - s.begin);
 

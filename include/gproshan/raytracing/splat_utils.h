@@ -88,17 +88,17 @@ void splat_hit(t_eval_hit<T> & hit, const splats_data * sd, const index_t & apri
 	index_t end = s.end;
 
 	const index_t h = binary_search(sd->morton_codes, begin, end - 1, s.morton2d(x));
-	T sigma = length(x - sd->pc->GT[h]) / 2;
+	T sigma = length(x - sd->pc->GT[h]);
 	sigma *= sigma;
 
-	vec<T, 3> & color = hit.Kd;
-	vec<T, 3> & normal = hit.normal;
+	vec<T, 3> & color = hit.Kd = {0, 0, 0};
+	vec<T, 3> & normal = hit.normal = {0, 0, 0};
 
 	begin = h - k >= begin ? h - k : begin;
 	end = h + k <= end ? h + k : end;
 
 	T w, sum_w = 0;
-	for(index_t v = begin; v < end; ++v)
+	for(index_t v = h; v < h + 1; ++v)
 	{
 		w = length(x - sd->pc->GT[v]);
 		w = exp(-0.5 * w * w / sigma);
