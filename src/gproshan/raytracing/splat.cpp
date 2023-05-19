@@ -28,13 +28,7 @@ splat::~splat()
 		delete m;
 
 	for(splats_data * spc: splats_pcs)
-	{
-		delete [] spc->pc;
-		delete [] spc->morton_codes;
-		delete [] spc->idx_splats;
-		delete [] spc->tbns;
-		delete [] spc->centers;
-	}
+		delete spc;
 }
 
 void splat::add_splats_mesh(che * mesh, const mat4 & model_mat)
@@ -231,63 +225,59 @@ void splat::init_splats(const che * mesh, const mat4 & model_mat, std::vector<in
 	std::vector<vertex> points(vertices.size());
 	std::vector<index_t> trigs;
 
-	splats_data * spc = new splats_data;
-	spc->morton_codes = new unsigned int[mesh->n_vertices];
-	spc->n_splats = idx_splats.size() - 1;
-	spc->tbns = new mat3[spc->n_splats];
-	spc->centers = new vertex[spc->n_splats];
+	splats_data * spc = new splats_data(points.size(), idx_splats.size() - 1);
 
 	std::vector<convex_hull *> splat_chs(spc->n_splats);
 
 	#pragma omp parallel for
 	for(index_t i = 0; i < spc->n_splats; ++i)
 	{
-		const unsigned int & begin = idx_splats[i];
-		const unsigned int & end = idx_splats[i + 1];
-		vertex & center = spc->centers[i];
-		mat3 & tbn = spc->tbns[i];
-		vec3 & normal = tbn[2];
+		splat_t<real_t> & s = spc->splats[i];
+
+		s.begin = idx_splats[i];
+		s.end = idx_splats[i + 1];
+		vertex & center = s.center;
+		mat3 & tbn = s.tbn;
+		vec3 & normal = s.tbn[2];
 
 		center = {0, 0, 0};
 		normal = {0, 0, 0};
-		for(index_t j = begin; j < end; ++j)
+		for(index_t j = s.begin; j < s.end; ++j)
 		{
 			const index_t & v = vertices[j];
 			center += mesh->point(v);
 			normal += mesh->normal(v);
 		}
-		center /= end - begin;
+		center /= s.end - s.begin;
 		normal /= length(normal);
 
-		tbn[0] = points[end - 1] - center;
+		tbn[0] = points[s.end - 1] - center;
 		tbn[0] = normalize(tbn[0] - dot(tbn[0], tbn[2]) * tbn[2]);
 		tbn[1] = normalize(cross(tbn[2], tbn[0]));
 
 		center = model_mat * vec4(center, 1);
-		for(index_t j = begin; j < end; ++j)
+		for(index_t j = s.begin; j < s.end; ++j)
 		{
 			const index_t & v = vertices[j];
-			vertex p = model_mat * vec4(mesh->point(v), 1);
-			p = tbn * (p - center);
-			spc->morton_codes[v] = morton_2d((p.x() + 1) / 2, (p.y() + 1) / 2);
+			spc->morton_codes[v] = s.morton2d(model_mat * vec4(mesh->point(v), 1));
 		}
 
-		std::sort(vertices.begin() + begin, vertices.begin() + end,
+		std::sort(vertices.begin() + s.begin, vertices.begin() + s.end,
 					[&](const index_t & a, const index_t & b)
 					{
 						return spc->morton_codes[a] < spc->morton_codes[b];
 					});
 
-		for(index_t j = begin; j < end; ++j)
+		for(index_t j = s.begin; j < s.end; ++j)
 		{
 			vertex & p = points[j];
 			p = model_mat * vec4(mesh->point(vertices[j]), 1);
 			p = tbn * (p - center);
 		}
 
-		splat_chs[i] = new convex_hull(points.data() + begin, end - begin);
+		splat_chs[i] = new convex_hull(points.data() + s.begin, s.end - s.begin);
 
-		for(index_t j = begin; j < end; ++j)
+		for(index_t j = s.begin; j < s.end; ++j)
 		{
 			vertex & p = points[j];
 			p = mat3::transpose(tbn) * p + center;
@@ -297,16 +287,14 @@ void splat::init_splats(const che * mesh, const mat4 & model_mat, std::vector<in
 	std::vector<index_t> primID_splat;
 	for(index_t i = 0; i < spc->n_splats; ++i)
 	{
-		const index_t & begin = idx_splats[i];
-		const vertex & center = spc->centers[i];
-		const mat3 & tbn = spc->tbns[i];
+		const splat_t<real_t> & s = spc->splats[i];
 
 		std::vector<index_t> sch = *splat_chs[i];
 		for(index_t & v: sch)
 		{
-			vertex p = points[v + begin] - center;
-			p = p - dot(p, tbn[2]) * tbn[2];
-			p = p + center;
+			vertex p = points[v + s.begin] - s.center;
+			p = p - dot(p, s.tbn[2]) * s.tbn[2];
+			p = p + s.center;
 
 			v = points.size();
 			points.push_back(p);
@@ -339,9 +327,6 @@ void splat::init_splats(const che * mesh, const mat4 & model_mat, std::vector<in
 
 	spc->primID_splat = new unsigned int[primID_splat.size()];
 	memcpy(spc->primID_splat, primID_splat.data(), sizeof(unsigned int) * primID_splat.size());
-
-	spc->idx_splats = new unsigned int[idx_splats.size()];
-	memcpy(spc->idx_splats, idx_splats.data(), sizeof(unsigned int) * idx_splats.size());
 
 	spc->pc = new CHE(pc);
 

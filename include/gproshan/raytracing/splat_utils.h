@@ -15,17 +15,48 @@ __host_device__
 unsigned int morton_2d(T x, T y);
 
 
+template <class T>
+struct splat_t
+{
+	index_t begin = 0;
+	index_t end = 0;
+	T radius = 1;
+	vec<T, 3> center;
+	mat<T, 3> tbn;
+
+	__host_device__
+	unsigned int morton2d(vec<T, 3> p) const
+	{
+		p = (tbn * (p - center)) / radius;
+		return morton_2d((p.x() + 1) / 2, (p.y() + 1) / 2);
+	}
+};
+
+
 struct splats_data
 {
 	CHE * pc = nullptr;
 	unsigned int * morton_codes = nullptr;
-	unsigned int * primID_splat = nullptr;
+	index_t * primID_splat = nullptr;
 
-	unsigned int n_splats = 0;
-	unsigned int * idx_splats = nullptr;
-	vertex * centers = nullptr;
-	mat3 * tbns = nullptr;
+	splat_t<real_t> * splats = nullptr;
+	size_t n_splats = 0;
+
+	splats_data(const size_t & np, const size_t & ns): n_splats(ns)
+	{
+		morton_codes = new unsigned int[np];
+		splats = new splat_t<real_t>[n_splats];
+	}
+
+	~splats_data()
+	{
+		delete pc;
+		delete morton_codes;
+		delete primID_splat;
+		delete splats;
+	}
 };
+
 
 template <class T>
 __host_device__
@@ -44,24 +75,20 @@ int binary_search(const T * data, int i, int j, const T & value)
 	return m;
 }
 
+
 template <class T>
 __host_device__
-void splat_hit(t_eval_hit<T> & hit, const splats_data * splat, const index_t & aprimID, const vec<T, 3> & x, const int & k)
+void splat_hit(t_eval_hit<T> & hit, const splats_data * sd, const index_t & aprimID, const vec<T, 3> & x, const int & k)
 {
 	hit.primID = aprimID;
-	const index_t s = splat->primID_splat[hit.primID];
+	const index_t sid = sd->primID_splat[hit.primID];
+	const splat_t<T> & s = sd->splats[sid];
 
-	index_t begin = splat->idx_splats[s];
-	index_t end = splat->idx_splats[s + 1];
+	index_t begin = s.begin;
+	index_t end = s.end;
 
-	const vec<T, 3> & center = splat->centers[s];
-	const mat<T, 3> & tbn = splat->tbns[s];
-
-	const vec<T, 3> & p = tbn * (x - center);  
-	unsigned int code = morton_2d((p.x() + 1) / 2, (p.y() + 1) / 2);
-
-	const index_t h = binary_search(splat->morton_codes, begin, end - 1, code);
-	T sigma = length(p - splat->pc->GT[h]) / 2;
+	const index_t h = binary_search(sd->morton_codes, begin, end - 1, s.morton2d(x));
+	T sigma = length(x - sd->pc->GT[h]) / 2;
 	sigma *= sigma;
 
 	vec<T, 3> & color = hit.Kd;
@@ -73,14 +100,14 @@ void splat_hit(t_eval_hit<T> & hit, const splats_data * splat, const index_t & a
 	T w, sum_w = 0;
 	for(index_t v = begin; v < end; ++v)
 	{
-		w = length(x - splat->pc->GT[v]); 
+		w = length(x - sd->pc->GT[v]); 
 		w = exp(-0.5 * w * w / sigma);
 		sum_w += w;
 
-		const che::rgb_t & c = splat->pc->VC[v];
+		const che::rgb_t & c = sd->pc->VC[v];
 		vec<T, 3> vc = {T(c.r), T(c.g), T(c.b)};
 		vc /= 255;
-		normal += w * splat->pc->VN[v];
+		normal += w * sd->pc->VN[v];
 		color += w * vc;
 	}
 
