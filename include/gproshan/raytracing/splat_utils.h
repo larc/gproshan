@@ -100,7 +100,7 @@ void splat_hit(t_eval_hit<T> & hit, const splats_data * sd, const index_t & apri
 	T w, sum_w = 0;
 	for(index_t v = begin; v < end; ++v)
 	{
-		w = length(x - sd->pc->GT[v]); 
+		w = length(x - sd->pc->GT[v]);
 		w = exp(-0.5 * w * w / sigma);
 		sum_w += w;
 
@@ -124,13 +124,17 @@ void splat_hit(t_eval_hit<T> & hit, const splats_data * sd, const index_t & apri
 // by inserting 2 zeros after each bit.
 template <class T>
 __host_device__
-unsigned int expand_bits(const T & fv)
+unsigned int expand_bits(T f)
 {
-	unsigned int v = (unsigned int) fv;
-    v = (v * 0x00010001u) & 0xFF0000FFu;
-    v = (v * 0x00000101u) & 0x0F00F00Fu;
-    v = (v * 0x00000011u) & 0xC30C30C3u;
-    v = (v * 0x00000005u) & 0x49249249u;
+	f *= 1024;
+	f = f < 0 ? 0 : f;
+	f = f > 1023 ? 1023 : f;
+
+	unsigned int v = (unsigned int) f;
+    v = (v | (v << 8)) & 0x00FF00FFu;
+    v = (v | (v << 4)) & 0x0F0F0F0Fu;
+    v = (v | (v << 2)) & 0x33333333u;
+    v = (v | (v << 1)) & 0x55555555u;
     return v;
 }
 
@@ -140,9 +144,9 @@ template <class T>
 __host_device__
 unsigned int morton_2d(T x, T y)
 {
-	unsigned int xx = expand_bits(x * 1023 + 0.5);
-	unsigned int yy = expand_bits(y * 1023 + 0.5);
-	return (xx >> 1) + yy;
+	unsigned int xx = expand_bits(x);
+	unsigned int yy = expand_bits(y);
+	return (xx << 1) | yy;
 }
 
 

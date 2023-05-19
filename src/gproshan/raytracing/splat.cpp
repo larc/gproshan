@@ -245,7 +245,9 @@ void splat::init_splats(const che * mesh, const mat4 & model_mat, std::vector<in
 		for(index_t j = s.begin; j < s.end; ++j)
 		{
 			const index_t & v = vertices[j];
-			center += mesh->point(v);
+			vertex & p = points[j];
+			p = model_mat * vec4(mesh->point(v), 1);
+			center += p;
 			normal += mesh->normal(v);
 		}
 		center /= s.end - s.begin;
@@ -255,11 +257,10 @@ void splat::init_splats(const che * mesh, const mat4 & model_mat, std::vector<in
 		tbn[0] = normalize(tbn[0] - dot(tbn[0], tbn[2]) * tbn[2]);
 		tbn[1] = normalize(cross(tbn[2], tbn[0]));
 
-		center = model_mat * vec4(center, 1);
 		for(index_t j = s.begin; j < s.end; ++j)
 		{
 			const index_t & v = vertices[j];
-			spc->morton_codes[v] = s.morton2d(model_mat * vec4(mesh->point(v), 1));
+			spc->morton_codes[v] = s.morton2d(points[j]);
 		}
 
 		std::sort(vertices.begin() + s.begin, vertices.begin() + s.end,
@@ -267,6 +268,20 @@ void splat::init_splats(const che * mesh, const mat4 & model_mat, std::vector<in
 					{
 						return spc->morton_codes[a] < spc->morton_codes[b];
 					});
+
+
+		{
+			for(index_t j = s.begin + 1; j < s.end; ++j)
+			{
+				const index_t & u = vertices[j - 1];
+				const index_t & v = vertices[j];
+				if(spc->morton_codes[u] > spc->morton_codes[v])
+				{
+					gproshan_error(FATAL ERROR);
+					break;
+				}
+			}
+		}
 
 		for(index_t j = s.begin; j < s.end; ++j)
 		{

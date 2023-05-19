@@ -34,9 +34,9 @@ void scene_viewer::init_texture(const GLuint & gltex, const scene::texture & tex
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	tex.spectrum == 3 	? glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, tex.width, tex.height, 0, GL_RGB, GL_UNSIGNED_BYTE, tex.data) 
-	: tex.spectrum == 4	? glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tex.width, tex.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, tex.data) 
-	: glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, tex.width, tex.height, 0, GL_RED, GL_UNSIGNED_BYTE, tex.data); 
+	tex.spectrum == 3 	? glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, tex.width, tex.height, 0, GL_RGB, GL_UNSIGNED_BYTE, tex.data)
+	: tex.spectrum == 4	? glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tex.width, tex.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, tex.data)
+	: glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, tex.width, tex.height, 0, GL_RED, GL_UNSIGNED_BYTE, tex.data);
 	glGenerateMipmap(GL_TEXTURE_2D);
 
 	glBindTexture(GL_TEXTURE_2D, 0);
