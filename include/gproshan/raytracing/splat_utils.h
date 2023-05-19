@@ -29,10 +29,10 @@ struct splats_data
 
 template <class T>
 __host_device__
-index_t binary_search(const T * data, index_t i, index_t j, const T & value)
+int binary_search(const T * data, int i, int j, const T & value)
 {
-	index_t m = 0;
-	while(i < j)
+	int m = 0;
+	while(i <= j)
 	{
 		m = (i + j) >> 1;
 		if(data[m] == value)
