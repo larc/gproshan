@@ -297,7 +297,17 @@ void splat::init_splats(const che * mesh, const mat4 & model_mat, std::vector<in
 				}
 			}
 		}
-
+	
+	if(i == 0)
+	{
+		gproshan_log_var(s.end - s.begin);
+		for(index_t j = s.begin; j < 100; ++j)
+		{
+			const vertex & p = 0.98f * points[j] + 0.02f * s.center;
+			gproshan_log_var(s.morton2d(p));
+			gproshan_log_var(binary_search(spc->morton_codes, s.begin, s.end - 1, s.morton2d(p)) - s.begin);
+		}
+	}
 	}
 
 	std::vector<index_t> primID_splat;
