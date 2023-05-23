@@ -777,7 +777,7 @@ bool viewer::m_setup_raytracing(viewer * view)
 	static const size_t min_neighbors = 1 << 3;
 	static const size_t max_neighbors = 1 << 10;
 
-	ImGui::SliderInt("k_neighbors", &rt::splat::k, 1 << 2, 1 << 8);
+	ImGui::SliderInt("k_neighbors", &rt::splat::k, 1, 1 << 8);
 	ImGui::Combo("splat_opt", &rt_opt, "Mesh\0Splat\0\0");
 	if(rt_opt)
 	{

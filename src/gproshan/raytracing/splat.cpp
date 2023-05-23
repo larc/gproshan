@@ -20,22 +20,6 @@ splat::splat(const std::vector<che *> & meshes, const std::vector<mat4> & model_
 {
 	for(index_t i = 0; i < meshes.size(); ++i)
 		add_splats_mesh(meshes[i], model_mats[i]);
-
-	auto & s = splats_pcs[0]->splats[30];
-
-	gproshan_log_var(s.end - s.begin);
-	for(index_t j = s.begin; j < s.begin + 100; ++j)
-	{
-		const vertex & p = 0.98f * pointclouds[0]->point(j) + 0.02f * s.center;
-		gproshan_log_var(s.morton2d(p));
-		gproshan_log_var(binary_search(splats_pcs[0]->morton_codes, s.begin, s.end - 1, s.morton2d(p)) - s.begin);
-	}
-
-	gproshan_log_var(s.center);
-	gproshan_log_var(s.morton2d(s.center));
-	gproshan_log_var(1 << 20);
-	gproshan_log_var(morton_2d(0.5, 0.5));
-	gproshan_log_var(morton_2d(0.5f, 0.5f));
 }
 
 splat::~splat()

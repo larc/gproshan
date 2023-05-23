@@ -66,19 +66,18 @@ struct splats_data
 
 template <class T>
 __host_device__
-int binary_search(const T * data, int i, int j, const T & value)
+index_t binary_search(const T * data, index_t i, index_t j, const T & value)
 {
-	int m = 0;
-	while(i <= j)
+	while(i < j)
 	{
-		m = (i + j) >> 1;
+		const index_t & m = (i + j) >> 1;
 		if(data[m] == value)
-			break;
+			return m;
 
 		data[m] < value ? i = m + 1 : j = m - 1;
 	}
 
-	return m;
+	return i;
 }
 
 
@@ -93,22 +92,24 @@ void splat_hit(t_eval_hit<T> & hit, const splats_data * sd, const index_t & apri
 	index_t begin = s.begin;
 	index_t end = s.end;
 
-	const int h = binary_search(sd->morton_codes, begin, end - 1, s.morton2d(x));
-	//const int h = rand() % (s.end - s.begin) + s.begin;
-	T sigma = length(x - sd->pc->GT[h]);
+	const index_t & h = binary_search(sd->morton_codes, begin, end - 1, s.morton2d(x));
+	T sigma = 1; //length(x - sd->pc->GT[h]);
 	sigma *= sigma;
 
 	vec<T, 3> & color = hit.Kd = {0, 0, 0};
 	vec<T, 3> & normal = hit.normal = {0, 0, 0};
+	vec<T, 3> & position = hit.position = {0, 0, 0};
 
-	begin = h - k >= begin ? h - k : begin;
-	end = h + k <= end ? h + k : end;
+	begin = begin + k < h ? h - k : begin;
+	end = h + k < end ? h + k : end;
 
 	T w, sum_w = 0;
 	for(index_t v = h; v < h + 1; ++v)
 	{
-		w = length(x - sd->pc->GT[v]);
-		w = exp(-0.5 * w * w / sigma);
+		const vec<T, 3> & p = sd->pc->GT[v];
+
+		w = length(x - p);
+		w = exp(- w * w / sigma);
 		sum_w += w;
 
 		const che::rgb_t & c = sd->pc->VC[v];
@@ -116,12 +117,12 @@ void splat_hit(t_eval_hit<T> & hit, const splats_data * sd, const index_t & apri
 		vc /= 255;
 		normal += w * sd->pc->VN[v];
 		color += w * vc;
+		position += p;
 	}
 
 	normal /= sum_w;
 	color /= sum_w;
-
-	hit.position = x;
+	position /= sum_w;
 
 	return;
 
