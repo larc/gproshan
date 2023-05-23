@@ -30,6 +30,13 @@ class vec
 
 	public:
 		__host_device__
+		vec(const T & val = 0)
+		{
+			for(T & v: values)
+				v = val;
+		}
+
+		__host_device__
 		vec(const std::initializer_list<T> & list)
 		{
 			int i = -1;
@@ -50,13 +57,6 @@ class vec
 		{
 			for(index_t i = 0; i < N; ++i)
 				values[i] = v[i];
-		}
-
-		__host_device__
-		vec(const T & val = 0)
-		{
-			for(T & v: values)
-				v = val;
 		}
 
 		__host_device__

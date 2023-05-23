@@ -15,7 +15,7 @@ template<class T, size_t N>
 class mat
 {
 	public:
-		row<T, N> rows[N];
+		row<T, N> rows[N] = {};
 
 	public:
 		__host_device__
