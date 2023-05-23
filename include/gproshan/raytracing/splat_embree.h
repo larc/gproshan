@@ -28,7 +28,7 @@ class splat_embree: public splat, public embree
 			return eval_li(	hit, lights, n_lights, cam_pos,
 							[&](const vec3 & position, const vec3 & wi, const float & light_dist) -> bool
 							{
-								ray_hit ro(position, wi, 1e-3f, light_dist - 1e-3f);
+								ray_hit ro(r.pos(), wi, 1e-3f, light_dist - 1e-3f);
 								return occluded(ro);
 							});
 		}

@@ -225,7 +225,7 @@ void splat::init_splats(const che * mesh, const mat4 & model_mat, std::vector<in
 	std::vector<vertex> points(vertices.size());
 	std::vector<index_t> trigs;
 
-	splats_data * spc = new splats_data(mesh->n_vertices, idx_splats.size() - 1);
+	splats_data * spc = new splats_data(points.size(), idx_splats.size() - 1);
 
 	std::vector<convex_hull *> splat_chs(spc->n_splats);
 
@@ -295,9 +295,10 @@ void splat::init_splats(const che * mesh, const mat4 & model_mat, std::vector<in
 					gproshan_log_var(spc->morton_codes[j]);
 					break;
 				}
-				if(spc->morton_codes[i] >= (1 << 20))
+				if(spc->morton_codes[j] >= (1 << 20))
 				{
 					gproshan_error(FATAL ERROR);
+					gproshan_error(scp->morton_codes[j]);
 					exit(0);
 				}
 			}
