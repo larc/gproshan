@@ -9,6 +9,9 @@
 // geometry processing and shape analysis framework
 namespace gproshan::rt {
 
+template <class T>
+__host_device__
+unsigned int expand_bits(T f);
 
 template <class T>
 __host_device__
@@ -28,7 +31,10 @@ struct splat_t
 	unsigned int morton2d(vec<T, 3> p) const
 	{
 		p = (tbn * (p - center)) / radius;
-		return morton_2d((p.x() + 1) / 2, (p.y() + 1) / 2);
+		p = (p + 1) / 2;
+		unsigned int xx = expand_bits(p.x());
+		unsigned int yy = expand_bits(p.y());
+		return (xx << 1) | yy;
 	}
 };
 
@@ -87,8 +93,8 @@ void splat_hit(t_eval_hit<T> & hit, const splats_data * sd, const index_t & apri
 	index_t begin = s.begin;
 	index_t end = s.end;
 
-	//const int h = binary_search(sd->morton_codes, begin, end - 1, s.morton2d(0.5 * x + 0.5 * s.center));
-	const int h = rand() % s.end + s.begin;
+	const int h = binary_search(sd->morton_codes, begin, end - 1, s.morton2d(x));
+	//const int h = rand() % (s.end - s.begin) + s.begin;
 	T sigma = length(x - sd->pc->GT[h]);
 	sigma *= sigma;
 
@@ -116,6 +122,27 @@ void splat_hit(t_eval_hit<T> & hit, const splats_data * sd, const index_t & apri
 	color /= sum_w;
 
 	hit.position = x;
+
+	return;
+
+
+	color = length(x - s.center) / s.radius;
+
+	static int a = 0;
+	if(!sid && a < 100)
+	{
+		gproshan_log_var(length(x - s.center) / s.radius);
+		gproshan_log_var(s.morton2d(x));
+		vertex p = (s.tbn * (x - s.center)) / s.radius;
+		gproshan_log_var(((p + 1)/2) * 1024);
+		gproshan_log_var((p.x() + 1) / 2);
+		unsigned int aa, bb;
+		gproshan_log_var(aa = expand_bits((p.x() + 1) / 2));
+		gproshan_log_var(bb = expand_bits((p.y() + 1) / 2));
+		gproshan_log_var((aa << 1) | bb);
+		gproshan_log_var(morton_2d((p.x() + 1) / 2, (p.y() + 1) / 2));
+		++a;
+	}
 }
 
 
