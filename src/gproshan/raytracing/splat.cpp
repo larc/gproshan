@@ -16,6 +16,7 @@ namespace gproshan::rt {
 
 int splat::k = 8;
 real_t splat::n_threshold = 0.9;
+real_t splat::delta = 0.01;
 
 splat::splat(const std::vector<che *> & pcs, const std::vector<mat4> & model_mats)
 {
@@ -42,14 +43,6 @@ void splat::add_splats(che * pc, const mat4 & model_mat)
 	gproshan_error_var(segs.size() - 1);
 	gproshan_error_var(vertices.size());
 
-	std::vector<index_t> voronois[segs.size() - 1];
-	std::vector<index_t> voronoi_sets[segs.size() - 1];
-
-	#pragma omp parallel for
-	for(index_t i = 1; i < segs.size(); ++i)
-		voronois[i - 1] = voronoi_subdivision(voronoi_sets[i - 1], &pc->point(0), vertices, segs[i - 1], segs[i]);
-
-	gproshan_log(DONE);
 	/* ---------------------------------------------------------------------- */
 
 	auto display = [&pc, &vertices](const std::vector<index_t> & sets)
@@ -64,6 +57,39 @@ void splat::add_splats(che * pc, const mat4 & model_mat)
 	};
 
 	display(segs);
+
+	/* ---------------------------------------------------------------------- */
+
+
+	std::vector<index_t> voronois[segs.size() - 1];
+	std::vector<index_t> voronoi_sets[segs.size() - 1];
+
+	#pragma omp parallel for
+	for(index_t i = 1; i < segs.size(); ++i)
+		voronois[i - 1] = voronoi_subdivision(voronoi_sets[i - 1], &pc->point(0), vertices, segs[i - 1], segs[i]);
+
+	size_t n_points = 0;
+	for(const auto & vs: voronoi_sets)
+		n_points += vs.size();
+
+	std::vector<index_t> splats({0});
+	for(const auto & voronoi: voronois)
+	for(const auto & size: voronoi)
+		splats.push_back(splats.back() + size);
+
+	gproshan_error_var(n_points);
+	gproshan_error_var(splats.size() - 1);
+
+	vertices.resize(n_points);
+
+	n_points = 0;
+	for(const auto & vs: voronoi_sets)
+	{
+		memcpy(vertices.data() + n_points, vs.data(), sizeof(index_t) * vs.size());
+		n_points += vs.size();
+	}
+
+	init_splats(pc, model_mat, vertices, splats);
 }
 
 std::vector<index_t> splat::planar_segmentation(che * pc, std::vector<index_t> & vertices)
@@ -144,8 +170,7 @@ std::vector<index_t> splat::voronoi_subdivision(std::vector<index_t> & voronoi_s
 												const vertex * points,
 												const std::vector<index_t> & vertices,
 												const index_t & seg_begin,
-												const index_t & seg_end,
-												const real_t & delta
+												const index_t & seg_end
 												)
 {
 	std::vector<real_t> dist;
@@ -197,12 +222,12 @@ std::vector<index_t> splat::voronoi_subdivision(std::vector<index_t> & voronoi_s
 		const index_t & v = vertices[i];
 		const real_t & d = length(points[v] - points[s]);
 
-		if(d < dist[i - seg_begin] + delta)
+		if(d < dist[i - seg_begin] + delta * radio)
 			regions[j].push_back(v);
 	}
 
 
-	std::vector<index_t> voronoi({0});
+	std::vector<index_t> voronoi;
 	voronoi_set.clear();
 
 	for(const auto & r: regions)
@@ -212,7 +237,7 @@ std::vector<index_t> splat::voronoi_subdivision(std::vector<index_t> & voronoi_s
 		for(const index_t & v: r)
 			voronoi_set.push_back(v);
 
-		voronoi.push_back(voronoi.back() + r.size());
+		voronoi.push_back(r.size());
 	}
 
 	return voronoi;

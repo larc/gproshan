@@ -13,6 +13,7 @@ class splat
 		std::vector<che *> pointclouds;
 		static int k;
 		static real_t n_threshold;
+		static real_t delta;
 
 	protected:
 		std::vector<splats_data *> splats_pcs;
@@ -30,8 +31,7 @@ class splat
 													const vertex * points,
 													const std::vector<index_t> & vertices,
 													const index_t & seg_begin,
-													const index_t & seg_end,
-													const real_t & delta = 0.01		// overlapping
+													const index_t & seg_end
 													);
 
 		void init_splats(const che * mesh, const mat4 & model_mat, std::vector<index_t> & vertices, const std::vector<index_t> & idx_splats);
