@@ -89,6 +89,10 @@ void splat::add_splats(che * pc, const mat4 & model_mat)
 		n_points += vs.size();
 	}
 
+	gproshan_log_var(n_points);
+	gproshan_log_var(vertices.size());
+
+
 	init_splats(pc, model_mat, vertices, splats);
 }
 
@@ -427,11 +431,18 @@ void splat::init_splats(const che * mesh, const mat4 & model_mat, std::vector<in
 	che * pc = new che(points.data(), points.size(), trigs.data(), trigs.size() / 3);
 
 	#pragma omp parallel for
-	for(index_t i = 0; i < vertices.size(); ++i)
+	for(index_t i = 0; i < spc->n_splats; ++i)
 	{
-		pc->heatmap(i) = mesh->heatmap(vertices[i]);
-		pc->normal(i) = mesh->normal(vertices[i]);
-		pc->rgb(i) = mesh->rgb(vertices[i]);
+		splat_t<real_t> & s = spc->splats[i];
+
+		for(index_t j = s.begin + 1; j < s.end; ++j)
+		{
+			const index_t & v = vertices[j];
+
+			pc->heatmap(j) = real_t(i) / spc->n_splats;
+			pc->normal(j) = mesh->normal(v);
+			pc->rgb(j) = mesh->rgb(v);
+		}
 	}
 
 	spc->primID_splat = new unsigned int[primID_splat.size()];

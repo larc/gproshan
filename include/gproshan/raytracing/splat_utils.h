@@ -93,6 +93,11 @@ void splat_hit(t_eval_hit<T> & hit, const splats_data * sd, const index_t & apri
 	index_t end = s.end;
 
 	const index_t & h = binary_search(sd->morton_codes, begin, end - 1, s.morton2d(x));
+	if(h >= end)
+	{
+		hit.Kd = {1, 0, 0};
+		return;
+	}
 	T sigma = 1; //length(x - sd->pc->GT[h]);
 	sigma *= sigma;
 
