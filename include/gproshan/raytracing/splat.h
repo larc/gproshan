@@ -12,6 +12,7 @@ class splat
 	public:
 		std::vector<che *> pointclouds;
 		static int k;
+		static real_t n_threshold;
 
 	protected:
 		std::vector<splats_data *> splats_pcs;
@@ -21,7 +22,9 @@ class splat
 		virtual ~splat();
 
 	private:
-		void add_splats_mesh(che * mesh, const mat4 & model_mat);
+		void add_splats(che * pc, const mat4 & model_mat);
+		std::vector<index_t> planar_segmentation(che * pc, std::vector<index_t> & vertices);
+		std::vector<index_t> voronoi_subdivision(che * pc, real_t * dist, const std::vector<index_t> & vertices, const index_t & seg_begin, const index_t & seg_end, const real_t & delta = 0.001);
 		void init_splats(const che * mesh, const mat4 & model_mat, std::vector<index_t> & vertices, const std::vector<index_t> & idx_splats);
 
 };

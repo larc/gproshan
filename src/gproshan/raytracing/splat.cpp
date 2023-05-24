@@ -15,11 +15,12 @@ namespace gproshan::rt {
 
 
 int splat::k = 8;
+real_t splat::n_threshold = 0.9;
 
-splat::splat(const std::vector<che *> & meshes, const std::vector<mat4> & model_mats)
+splat::splat(const std::vector<che *> & pcs, const std::vector<mat4> & model_mats)
 {
-	for(index_t i = 0; i < meshes.size(); ++i)
-		add_splats_mesh(meshes[i], model_mats[i]);
+	for(index_t i = 0; i < pcs.size(); ++i)
+		add_splats(pcs[i], model_mats[i]);
 }
 
 splat::~splat()
@@ -31,22 +32,155 @@ splat::~splat()
 		delete spc;
 }
 
-void splat::add_splats_mesh(che * mesh, const mat4 & model_mat)
+void splat::add_splats(che * pc, const mat4 & model_mat)
 {
-	const real_t n_threshold = 0.9;
-
 	std::vector<index_t> vertices;
-	std::vector<index_t> segmentation({0});
-	std::vector<vertex> centers;
+	vertices.reserve(pc->n_vertices);
 
-	std::vector<index_t> visited;
-	visited.assign(mesh->n_vertices, -1);
+	std::vector<index_t> segs = planar_segmentation(pc, vertices);
 
-	std::vector<index_t> shuffle(mesh->n_vertices);
+	gproshan_error_var(segs.size() - 1);
+	gproshan_error_var(vertices.size());
+
+	std::vector<index_t> voronois[segs.size() - 1];
+	std::vector<real_t> dist;
+	dist.assign(vertices.size(), INFINITY);
+
+	#pragma omp parallel for
+	for(index_t i = 1; i < segs.size(); ++i)
+		voronois[i - 1] = voronoi_subdivision(pc, dist.data(), vertices, segs[i - 1], segs[i]);
+
+	gproshan_log(DONE);
+	/* ---------------------------------------------------------------------- */
+
+	auto display = [&pc, &vertices](const std::vector<index_t> & sets)
+	{
+		std::vector<int> color(sets.size() - 1);
+		std::iota(color.begin(), color.end(), 0);
+		std::random_shuffle(color.begin(), color.end());
+
+		for(index_t i = 1; i < sets.size(); ++i)
+		for(index_t j = sets[i - 1]; j < sets[i]; ++j)
+			pc->heatmap(vertices[j]) = real_t(color[i - 1]) / (color.size() - 1);
+	};
+
+	display(segs);
+}
+
+std::vector<index_t> splat::planar_segmentation(che * pc, std::vector<index_t> & vertices)
+{
+	vertices.clear();
+	vertices.reserve(pc->n_vertices);
+
+	std::vector<index_t> shuffle(pc->n_vertices);
 	std::iota(begin(shuffle), end(shuffle), 0);
 	std::random_shuffle(begin(shuffle), end(shuffle));
 
-	const index_t & idx = segmentation.size();
+	std::vector<index_t> segs({0});
+	const index_t & idx = segs.size();
+
+	std::vector<index_t> visited;
+	visited.assign(pc->n_vertices, -1);
+
+	std::queue<index_t> q;
+	for(const index_t & v: shuffle)
+	{
+		if(visited[v] != NIL) continue;
+
+		const vertex & vnormal = pc->normal(v);
+
+		q.push(v);
+		visited[v] = 0;
+
+		while(!q.empty())
+		{
+			index_t front = q.front();
+			q.pop();
+
+			vertices.push_back(front);
+			visited[front] = idx;
+
+
+			for(const index_t & he: pc->star(front))
+			{
+				const index_t & u = pc->halfedge(he_prev(he));
+
+/*
+			for(index_t i = 0; i < nn; ++i)
+			{
+				const int & u = indices[front][i];
+*/
+				if(visited[u] == NIL &&
+					dot(vnormal, pc->normal(front)) > n_threshold)
+				{
+					q.push(u);
+					visited[u] = 0;
+				}
+			}
+		}
+
+		while(!q.empty())
+		{
+			visited[q.front()] = NIL;
+			q.pop();
+		}
+
+		if(vertices.size() - segs.back() < 3)
+		{
+			for(index_t i = segs.back(); i < vertices.size(); ++i)
+				visited[vertices[i]] = NIL;
+
+			vertices.resize(segs.back());
+
+			continue;
+		}
+
+		segs.push_back(vertices.size());
+	}
+
+	return segs;
+}
+
+std::vector<index_t> splat::voronoi_subdivision(che * pc, real_t * dist, const std::vector<index_t> & vertices, const index_t & seg_begin, const index_t & seg_end, const real_t & delta)
+{
+	std::vector<index_t> seeds;
+	seeds.push_back(vertices[seg_begin]);
+
+	real_t radio = INFINITY;
+	real_t radio_threshold = 0;
+	index_t new_seed;
+
+	while(radio > radio_threshold)
+	{
+		radio = 0;
+
+		const index_t & s = seeds.back();
+		for(index_t j = seg_begin; j < seg_end; ++j)
+		{
+			const index_t & v = vertices[j];
+			const real_t & d = length(pc->point(v) - pc->point(s));
+
+			if(d < dist[j])
+			{
+				dist[j] = d;
+				if(radio < d)
+				{
+					radio = d;
+					new_seed = v;
+				}
+			}
+		}
+
+		if(seeds.size() == 1)
+			radio_threshold = std::max(0.2, radio * 0.1);
+
+		seeds.push_back(new_seed);
+	}
+
+	return seeds;
+}
+
+
 /*
 	double flann_time = 0;
 
@@ -76,113 +210,14 @@ void splat::add_splats_mesh(che * mesh, const mat4 & model_mat)
 	TOC(flann_time);
 	gproshan_log_var(flann_time);
 */
-
-	std::queue<index_t> q;
-	for(const index_t & v: shuffle)
-	{
-		if(visited[v] != NIL) continue;
-
-		const vertex & vnormal = mesh->normal(v);
-
-		q.push(v);
-		visited[v] = 0;
-
-		while(!q.empty())
-		{
-			index_t front = q.front();
-			q.pop();
-
-			vertices.push_back(front);
-			visited[front] = idx;
-
-
-			for(const index_t & he: mesh->star(front))
-			{
-				const index_t & u = mesh->halfedge(he_prev(he));
-
 /*
-			for(index_t i = 0; i < nn; ++i)
-			{
-				const int & u = indices[front][i];
-*/
-				if(visited[u] == NIL &&
-					dot(vnormal, mesh->normal(front)) > n_threshold)
-				{
-					q.push(u);
-					visited[u] = 0;
-				}
-			}
-		}
-
-		while(!q.empty())
-		{
-			visited[q.front()] = NIL;
-			q.pop();
-		}
-
-		if(vertices.size() - segmentation.back() < 3)
-		{
-			for(index_t i = segmentation.back(); i < vertices.size(); ++i)
-				visited[vertices[i]] = NIL;
-
-			vertices.resize(segmentation.back());
-
-			continue;
-		}
-
-		segmentation.push_back(vertices.size());
-	}
-
-	gproshan_error_var(vertices.size());
-	gproshan_error_var(segmentation.size());
-
 	std::vector<index_t> idx_splats({0});
-	visited.assign(mesh->n_vertices, -1);
 
-	std::vector<index_t> seeds;
-	std::vector<std::vector<index_t> > voronoi;
-	std::vector<real_t> dist;
-	dist.assign(mesh->n_vertices, INFINITY);
-
-	for(index_t i = 1; i < segmentation.size(); ++i)
+	for(index_t i = 1; i < segs.size(); ++i)
 	{
-		const index_t & begin = segmentation[i - 1];
-		const index_t & end = segmentation[i];
+		const index_t & begin = segs[i - 1];
+		const index_t & end = segs[i];
 
-		seeds.clear();
-		seeds.push_back(vertices[begin]);
-
-		real_t radio = INFINITY;
-		real_t radio_threshold = 0;
-		index_t next_seed;
-		while(radio > radio_threshold)
-		{
-			radio = 0;
-
-			const index_t & s = seeds.back();
-			for(index_t j = begin; j < end; ++j)
-			{
-				const index_t & u = vertices[j];
-				const real_t & d = length(mesh->point(u) - mesh->point(s));
-
-				if(d < dist[u])
-				{
-					visited[u] = seeds.size() - 1;
-					dist[u] = d;
-				}
-
-				if(radio < dist[u])
-				{
-					radio = dist[u];
-					next_seed = u;
-				}
-			}
-
-			if(seeds.size() == 1)
-				radio_threshold = std::max(0.2, radio * 0.1);
-
-			seeds.push_back(next_seed);
-		}
 
 		voronoi.assign(seeds.size(), {});
 		for(index_t j = begin; j < end; ++j)
@@ -202,24 +237,14 @@ void splat::add_splats_mesh(che * mesh, const mat4 & model_mat)
 	}
 
 
-	auto display = [&mesh, &vertices](const std::vector<index_t> & sets)
-	{
-		std::vector<int> color(sets.size() - 1);
-		std::iota(color.begin(), color.end(), 0);
-		std::random_shuffle(color.begin(), color.end());
 
-		for(index_t i = 1; i < sets.size(); ++i)
-		for(index_t j = sets[i - 1]; j < sets[i]; ++j)
-			mesh->heatmap(vertices[j]) = real_t(color[i - 1]) / (color.size() - 1);
-	};
-
-	display(idx_splats);
+//	display(idx_splats);
 
 	gproshan_error_var(idx_splats.size());
 
-	init_splats(mesh, model_mat, vertices, idx_splats);
+	//init_splats(pc, model_mat, vertices, idx_splats);
 }
-
+*/
 void splat::init_splats(const che * mesh, const mat4 & model_mat, std::vector<index_t> & vertices, const std::vector<index_t> & idx_splats)
 {
 	std::vector<vertex> points(vertices.size());
