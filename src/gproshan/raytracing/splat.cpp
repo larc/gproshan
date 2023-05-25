@@ -195,18 +195,14 @@ std::vector<index_t> splat::voronoi_subdivision(std::vector<index_t> & voronoi_s
 		for(index_t i = seg_begin; i < seg_end; ++i)
 		{
 			const index_t & v = vertices[i];
-			const real_t & d = length(points[v] - points[s]);
 
 			real_t & vdist = dist[i - seg_begin];
+			vdist = std::min(vdist, length(points[v] - points[s]));
 
-			if(d < vdist)
+			if(radio < vdist)
 			{
-				vdist = d;
-				if(radio < d)
-				{
-					radio = d;
-					new_seed = v;
-				}
+				radio = vdist;
+				new_seed = v;
 			}
 		}
 
