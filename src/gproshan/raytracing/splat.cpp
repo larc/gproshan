@@ -43,22 +43,7 @@ void splat::add_splats(che * pc, const mat4 & model_mat)
 	gproshan_error_var(segs.size() - 1);
 	gproshan_error_var(vertices.size());
 
-	/* ---------------------------------------------------------------------- */
-
-	auto display = [&pc, &vertices](const std::vector<index_t> & sets)
-	{
-		std::vector<int> color(sets.size() - 1);
-		std::iota(color.begin(), color.end(), 0);
-		std::random_shuffle(color.begin(), color.end());
-
-		for(index_t i = 1; i < sets.size(); ++i)
-		for(index_t j = sets[i - 1]; j < sets[i]; ++j)
-			pc->heatmap(vertices[j]) = real_t(color[i - 1]) / (color.size() - 1);
-	};
-
-	display(segs);
-
-	/* ---------------------------------------------------------------------- */
+	display_sets(pc, segs, vertices.data());
 
 
 	std::vector<index_t> voronois[segs.size() - 1];
@@ -78,6 +63,7 @@ void splat::add_splats(che * pc, const mat4 & model_mat)
 		splats.push_back(splats.back() + size);
 
 	gproshan_error_var(n_points);
+	gproshan_error_var(splats.back());
 	gproshan_error_var(splats.size() - 1);
 
 	vertices.resize(n_points);
@@ -427,18 +413,13 @@ void splat::init_splats(const che * mesh, const mat4 & model_mat, std::vector<in
 	che * pc = new che(points.data(), points.size(), trigs.data(), trigs.size() / 3);
 
 	#pragma omp parallel for
-	for(index_t i = 0; i < spc->n_splats; ++i)
+	for(index_t i = 0; i < vertices.size(); ++i)
 	{
-		splat_t<real_t> & s = spc->splats[i];
+		const index_t & v = vertices[i];
 
-		for(index_t j = s.begin + 1; j < s.end; ++j)
-		{
-			const index_t & v = vertices[j];
-
-			pc->heatmap(j) = real_t(i) / spc->n_splats;
-			pc->normal(j) = mesh->normal(v);
-			pc->rgb(j) = mesh->rgb(v);
-		}
+		pc->heatmap(i) = mesh->heatmap(v);
+		pc->normal(i) = mesh->normal(v);
+		pc->rgb(i) = mesh->rgb(v);
 	}
 
 	spc->primID_splat = new unsigned int[primID_splat.size()];
@@ -448,6 +429,19 @@ void splat::init_splats(const che * mesh, const mat4 & model_mat, std::vector<in
 
 	pointclouds.push_back(pc);
 	splats_pcs.push_back(spc);
+
+	display_sets(pc, idx_splats);
+}
+
+void splat::display_sets(che * pc, const std::vector<index_t> & sets, const index_t * mapid)
+{
+	std::vector<int> color(sets.size() - 1);
+	std::iota(color.begin(), color.end(), 0);
+	std::random_shuffle(color.begin(), color.end());
+
+	for(index_t i = 1; i < sets.size(); ++i)
+	for(index_t j = sets[i - 1]; j < sets[i]; ++j)
+		pc->heatmap(mapid ? mapid[j] : j) = real_t(color[i - 1]) / (color.size() - 1);
 }
 
 

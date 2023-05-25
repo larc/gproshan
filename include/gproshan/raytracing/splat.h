@@ -36,6 +36,7 @@ class splat
 
 		void init_splats(const che * mesh, const mat4 & model_mat, std::vector<index_t> & vertices, const std::vector<index_t> & idx_splats);
 
+		void display_sets(che * mesh, const std::vector<index_t> & sets, const index_t * mapid = nullptr);
 };
 
 
