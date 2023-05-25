@@ -86,28 +86,13 @@ __host_device__
 void splat_hit(t_eval_hit<T> & hit, const splats_data * sd, const index_t & aprimID, const vec<T, 3> & x, const int & k)
 {
 	hit.primID = aprimID;
-	if(aprimID >= sd->pc->n_trigs)
-	{
-		hit.Kd = {0, 0, 1};
-		return;
-	}
 	const index_t sid = sd->primID_splat[hit.primID];
-	if(sid >= sd->n_splats)
-	{
-		hit.Kd = {0, 1, 0};
-		return;
-	}
 	const splat_t<T> & s = sd->splats[sid];
 
 	index_t begin = s.begin;
 	index_t end = s.end;
 
 	const index_t & h = binary_search(sd->morton_codes, begin, end - 1, s.morton2d(x));
-	if(h >= end)
-	{
-		hit.Kd = {1, 0, 0};
-		return;
-	}
 	T sigma = 1; //length(x - sd->pc->GT[h]);
 	sigma *= sigma;
 

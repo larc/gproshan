@@ -97,6 +97,36 @@ std::vector<index_t> splat::planar_segmentation(che * pc, std::vector<index_t> &
 	std::vector<index_t> visited;
 	visited.assign(pc->n_vertices, -1);
 
+
+	double flann_time = 0;
+
+		const size_t nn = 6;
+
+		flann::Matrix<real_t> kpc((real_t *) &pc->point(0), pc->n_vertices, 3);
+
+		flann::Matrix<int> indices(new int[pc->n_vertices * nn], pc->n_vertices, nn);
+		flann::Matrix<real_t> dists(new real_t[pc->n_vertices * nn], pc->n_vertices, nn);
+
+	TIC(flann_time);
+		// construct an randomized kd-tree index using 4 kd-trees
+		flann::Index<flann::L2<real_t> > index(kpc, flann::KDTreeIndexParams(1));
+		index.buildIndex();
+	TOC(flann_time);
+	gproshan_log_var(flann_time);
+
+	TIC(flann_time);
+		// do a knn search, using 128 checks
+		flann::SearchParams sparams;
+		sparams.cores = 16;
+		index.knnSearch(kpc, indices, dists, nn, sparams);
+
+		//delete [] indices.ptr();
+		delete [] dists.ptr();
+
+	TOC(flann_time);
+	gproshan_log_var(flann_time);
+
+
 	std::queue<index_t> q;
 	for(const index_t & v: shuffle)
 	{
@@ -115,16 +145,16 @@ std::vector<index_t> splat::planar_segmentation(che * pc, std::vector<index_t> &
 			vertices.push_back(front);
 			visited[front] = idx;
 
-
+/*
 			for(const index_t & he: pc->star(front))
 			{
 				const index_t & u = pc->halfedge(he_prev(he));
 
-/*
+*/
 			for(index_t i = 0; i < nn; ++i)
 			{
 				const int & u = indices[front][i];
-*/
+
 				if(visited[u] == NIL &&
 					dot(vnormal, pc->normal(front)) > n_threshold)
 				{
@@ -229,71 +259,6 @@ std::vector<index_t> splat::voronoi_subdivision(std::vector<index_t> & voronoi_s
 	return voronoi;
 }
 
-
-/*
-	double flann_time = 0;
-
-		const size_t nn = 6;
-
-		flann::Matrix<real_t> pc((real_t *) &mesh->point(0), mesh->n_vertices, 3);
-
-		flann::Matrix<int> indices(new int[mesh->n_vertices * nn], mesh->n_vertices, nn);
-		flann::Matrix<real_t> dists(new real_t[mesh->n_vertices * nn], mesh->n_vertices, nn);
-
-	TIC(flann_time);
-		// construct an randomized kd-tree index using 4 kd-trees
-		flann::Index<flann::L2<real_t> > index(pc, flann::KDTreeIndexParams(1));
-		index.buildIndex();
-	TOC(flann_time);
-	gproshan_log_var(flann_time);
-
-	TIC(flann_time);
-		// do a knn search, using 128 checks
-		flann::SearchParams sparams;
-		sparams.cores = 16;
-		index.knnSearch(pc, indices, dists, nn, sparams);
-
-		//delete [] indices.ptr();
-		delete [] dists.ptr();
-
-	TOC(flann_time);
-	gproshan_log_var(flann_time);
-*/
-/*
-	std::vector<index_t> idx_splats({0});
-
-	for(index_t i = 1; i < segs.size(); ++i)
-	{
-		const index_t & begin = segs[i - 1];
-		const index_t & end = segs[i];
-
-
-		voronoi.assign(seeds.size(), {});
-		for(index_t j = begin; j < end; ++j)
-		{
-			const index_t & v = vertices[j];
-			voronoi[visited[v]].push_back(v);
-		}
-
-		for(auto & region: voronoi)
-		{
-			if(region.size() < 3) continue;
-
-			for(index_t i = 0; i < region.size(); ++i)
-				vertices[i + idx_splats.back()] = region[i];
-			idx_splats.push_back(idx_splats.back() + region.size());
-		}
-	}
-
-
-
-//	display(idx_splats);
-
-	gproshan_error_var(idx_splats.size());
-
-	//init_splats(pc, model_mat, vertices, idx_splats);
-}
-*/
 void splat::init_splats(const che * mesh, const mat4 & model_mat, std::vector<index_t> & vertices, const std::vector<index_t> & idx_splats)
 {
 	std::vector<vertex> points(vertices.size());
