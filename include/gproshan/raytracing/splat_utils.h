@@ -93,8 +93,7 @@ void splat_hit(t_eval_hit<T> & hit, const splats_data * sd, const index_t & apri
 	index_t end = s.end;
 
 	const index_t & h = binary_search(sd->morton_codes, begin, end - 1, s.morton2d(x));
-	T sigma = 1; //length(x - sd->pc->GT[h]);
-	sigma *= sigma;
+	const real_t & sigma2 = 0.5;
 
 	vec<T, 3> & color = hit.Kd = {0, 0, 0};
 	vec<T, 3> & normal = hit.normal = {0, 0, 0};
@@ -108,8 +107,8 @@ void splat_hit(t_eval_hit<T> & hit, const splats_data * sd, const index_t & apri
 	{
 		const vec<T, 3> & p = sd->pc->GT[v];
 
-		w = length(x - p);
-		w = exp(- w * w / sigma);
+		w = length(x - p) / s.radius;
+		w = exp(- w * w / sigma2);
 		sum_w += w;
 
 		const che::rgb_t & c = sd->pc->VC[v];

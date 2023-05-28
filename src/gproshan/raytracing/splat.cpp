@@ -15,8 +15,8 @@ namespace gproshan::rt {
 
 
 int splat::k = 8;
-real_t splat::n_threshold = 0.9;
-real_t splat::delta = 0.01;
+real_t splat::n_threshold = 0.95;
+real_t splat::delta = 0.1;
 
 splat::splat(const std::vector<che *> & pcs, const std::vector<mat4> & model_mats)
 {
@@ -149,8 +149,8 @@ std::vector<index_t> splat::planar_segmentation(che * pc, std::vector<index_t> &
 			for(const index_t & he: pc->star(front))
 			{
 				const index_t & u = pc->halfedge(he_prev(he));
-
 */
+
 			for(index_t i = 0; i < nn; ++i)
 			{
 				const int & u = indices[front][i];
@@ -318,11 +318,15 @@ void splat::init_splats(const che * mesh, const mat4 & model_mat, std::vector<in
 
 		splat_chs[i] = new convex_hull(points.data() + s.begin, s.end - s.begin);
 
+		real_t h = INFINITY;
 		for(index_t j = s.begin; j < s.end; ++j)
 		{
 			vertex & p = points[j];
 			p = mat3::transpose(tbn) * p + center;
+			h = std::min(h, dot(p - center, normal));
 		}
+
+		center += h * normal;
 
 		{
 			for(index_t j = s.begin + 1; j < s.end; ++j)
