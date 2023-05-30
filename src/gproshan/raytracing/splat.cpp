@@ -97,7 +97,7 @@ std::vector<index_t> splat::planar_segmentation(che * pc, std::vector<index_t> &
 	std::vector<index_t> visited;
 	visited.assign(pc->n_vertices, -1);
 
-
+/*
 	double flann_time = 0;
 
 		const size_t nn = 6;
@@ -125,7 +125,7 @@ std::vector<index_t> splat::planar_segmentation(che * pc, std::vector<index_t> &
 
 	TOC(flann_time);
 	gproshan_log_var(flann_time);
-
+*/
 
 	std::queue<index_t> q;
 	for(const index_t & v: shuffle)
@@ -145,16 +145,16 @@ std::vector<index_t> splat::planar_segmentation(che * pc, std::vector<index_t> &
 			vertices.push_back(front);
 			visited[front] = idx;
 
-/*
+
 			for(const index_t & he: pc->star(front))
 			{
 				const index_t & u = pc->halfedge(he_prev(he));
-*/
 
+/*
 			for(index_t i = 0; i < nn; ++i)
 			{
 				const int & u = indices[front][i];
-
+*/
 				if(visited[u] == NIL &&
 					dot(vnormal, pc->normal(front)) > n_threshold)
 				{

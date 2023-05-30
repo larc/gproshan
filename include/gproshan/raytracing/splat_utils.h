@@ -93,22 +93,24 @@ void splat_hit(t_eval_hit<T> & hit, const splats_data * sd, const index_t & apri
 	index_t end = s.end;
 
 	const index_t & h = binary_search(sd->morton_codes, begin, end - 1, s.morton2d(x));
-	const real_t & sigma2 = 0.5;
+	const real_t & sigma2 = 0.1;
 
 	vec<T, 3> & color = hit.Kd = {0, 0, 0};
 	vec<T, 3> & normal = hit.normal = {0, 0, 0};
 	vec<T, 3> & position = hit.position = {0, 0, 0};
 
-	begin = begin + k < h ? h - k : begin;
-	end = h + k < end ? h + k : end;
+	begin = h - k;
+	end = h + k;
+	begin = begin < s.begin || begin > end ? s.begin : begin;
+	end = end > s.end ? s.end : end;
 
-	T w, sum_w = 0;
-	for(index_t v = h; v < h + 1; ++v)
+	T w, sum_w = 1e-5;
+	for(index_t v = begin; v < end; ++v)
 	{
 		const vec<T, 3> & p = sd->pc->GT[v];
 
-		w = length(x - p) / s.radius;
-		w = exp(- w * w / sigma2);
+		w = 1 - length(x - p) / s.radius;
+		//w = exp(- w * w / sigma2);
 		sum_w += w;
 
 		const che::rgb_t & c = sd->pc->VC[v];
@@ -116,7 +118,7 @@ void splat_hit(t_eval_hit<T> & hit, const splats_data * sd, const index_t & apri
 		vc /= 255;
 		normal += w * sd->pc->VN[v];
 		color += w * vc;
-		position += p;
+		position += w * p;
 	}
 
 	normal /= sum_w;
