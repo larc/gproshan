@@ -15,7 +15,7 @@ namespace gproshan::rt {
 
 
 int splat::k = 8;
-real_t splat::n_threshold = 0.95;
+real_t splat::n_threshold = 0.9;
 real_t splat::delta = 0.1;
 
 splat::splat(const std::vector<che *> & pcs, const std::vector<mat4> & model_mats)
@@ -127,12 +127,14 @@ std::vector<index_t> splat::planar_segmentation(che * pc, std::vector<index_t> &
 	gproshan_log_var(flann_time);
 */
 
+	vertex vnormal;
+
 	std::queue<index_t> q;
 	for(const index_t & v: shuffle)
 	{
 		if(visited[v] != NIL) continue;
 
-		const vertex & vnormal = pc->normal(v);
+		vnormal = 0;
 
 		q.push(v);
 		visited[v] = 0;
@@ -145,6 +147,8 @@ std::vector<index_t> splat::planar_segmentation(che * pc, std::vector<index_t> &
 			vertices.push_back(front);
 			visited[front] = idx;
 
+			const size_t & n = vertices.size() - segs.back();
+			vnormal = (vnormal * (n - 1) + pc->normal(front)) / n;
 
 			for(const index_t & he: pc->star(front))
 			{
