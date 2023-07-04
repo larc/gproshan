@@ -398,8 +398,6 @@ void splat::init_splats(const che * mesh, const mat4 & model_mat, std::vector<in
 	spc->primID_splat = new unsigned int[primID_splat.size()];
 	memcpy(spc->primID_splat, primID_splat.data(), sizeof(unsigned int) * primID_splat.size());
 
-	spc->pc = new CHE(pc);
-
 	pointclouds.push_back(pc);
 	splats_pcs.push_back(spc);
 
