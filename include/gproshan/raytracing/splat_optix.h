@@ -14,7 +14,7 @@ namespace gproshan::rt {
 class splat_optix: public splat, public optix
 {
 	public:
-		splat_optix(const std::vector<che *> & meshes, const std::vector<mat4> & model_mats): splat(meshes, model_mats)
+		splat_optix(const std::vector<che *> & meshes, const std::vector<mat4> & model_mats): splat(meshes, model_mats), optix("/src/splat_optix.ptx")
 		{
 			optix_params.traversable = build_as(pointclouds, {mat4::identity()});
 			build_sbt();
