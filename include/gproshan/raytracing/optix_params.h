@@ -34,6 +34,8 @@ struct launch_params
 	OptixTraversableHandle traversable;
 
 	scene_data sc;
+
+	void * other = nullptr;
 };
 
 
