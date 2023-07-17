@@ -5,7 +5,7 @@
 #include <numeric>
 #include <algorithm>
 
-#include <gproshan/raytracing/rt_embree.h>
+#include <gproshan/raytracing/embree.h>
 
 
 // geometry processing and shape analysis framework

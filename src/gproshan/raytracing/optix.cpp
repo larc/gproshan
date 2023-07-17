@@ -1,4 +1,4 @@
-#include <gproshan/raytracing/rt_optix.h>
+#include <gproshan/raytracing/optix.h>
 
 
 #ifdef GPROSHAN_OPTIX
@@ -40,7 +40,7 @@ void optix_log(index_t level, const char * tag, const char * message, void *)
 	fprintf(stderr, "OptiX [%2u][%12s]: %s\n", level, tag, message);
 }
 
-optix::optix()
+optix::optix(const std::string & ptx)
 {
 	optixInit();
 
@@ -68,7 +68,7 @@ optix::optix()
 
 	optix_pipeline_link_opt.maxTraceDepth = 2;
 
-	std::ifstream ptx_is(std::string(GPROSHAN_DIR) + "/src/rt_optix.ptx");
+	std::ifstream ptx_is(std::string(GPROSHAN_DIR) + ptx);
 	const std::string str_ptx_code = std::string(std::istreambuf_iterator<char>(ptx_is), std::istreambuf_iterator<char>());
 	ptx_is.close();
 

@@ -22,7 +22,7 @@ che_img::che_img(const std::string & file)
 
 void che_img::read_file(const std::string & file)
 {
-	CImg<real_t> img(file.c_str());
+	CImg<unsigned char> img(file.c_str());
 
 	alloc(img.height() * img.width(), 2 * (img.height() - 1) * (img.width() - 1));
 
@@ -32,19 +32,27 @@ void che_img::read_file(const std::string & file)
 	{
 		if(i && j)
 		{
+			VT[he++] = i * img.height() + j - 1;
+			VT[he++] = (i - 1) * img.height() + j;
 			VT[he++] = v;
-			VT[he++] = (i - 1) * img.height() + j;
-			VT[he++] = i * img.height() + j - 1;
 
-			VT[he++] = i * img.height() + j - 1;
-			VT[he++] = (i - 1) * img.height() + j;
 			VT[he++] = (i - 1) * img.height() + j - 1;
+			VT[he++] = (i - 1) * img.height() + j;
+			VT[he++] = i * img.height() + j - 1;
 		}
 
-		GT[v++] = {real_t(i), real_t(j), img(i, j)};
+		const int & c = img.width() - i - 1;
+		const int & r = img.height() - j - 1;
+
+		GT[v] = {real_t(i), real_t(j), real_t(img.spectrum() == 1 ? - img(c, r) : 0)};
+
+		if(img.spectrum() == 3)
+			VC[v] = {img(c, r, 0), img(c, r, 1), img(c, r, 2)};
+
+		++v;
 	}
 
-	std::thread([](CImg<real_t> img) { img.display(); }, img).detach();
+//	std::thread([](CImg<real_t> img) { img.display(); }, img).detach();
 }
 
 

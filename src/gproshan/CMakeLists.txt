@@ -18,7 +18,7 @@ target_link_libraries(gproshan imgui)
 
 if(CUDAToolkit_FOUND)
 	FILE(GLOB_RECURSE cu_sources ${CMAKE_CURRENT_SOURCE_DIR}/*.cu)
-	list(REMOVE_ITEM cu_sources ${CMAKE_CURRENT_SOURCE_DIR}/raytracing/rt_optix.cu)
+	list(REMOVE_ITEM cu_sources ${CMAKE_CURRENT_SOURCE_DIR}/raytracing/optix.cu)
 
 	add_library(gproshan_cuda SHARED ${cu_sources})
 
@@ -33,7 +33,7 @@ endif(CUDAToolkit_FOUND)
 
 
 if(OptiX_INCLUDE)
-	add_library(optix_ptx OBJECT ${gproshan_SOURCE_DIR}/src/gproshan/raytracing/rt_optix.cu)
+	add_library(optix_ptx OBJECT ${gproshan_SOURCE_DIR}/src/gproshan/raytracing/optix.cu)
 	set_property(TARGET optix_ptx PROPERTY CUDA_PTX_COMPILATION ON)
 	add_custom_target(	copy_optix_ptx ALL
 						DEPENDS optix_ptx

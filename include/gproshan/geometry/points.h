@@ -23,7 +23,7 @@ std::vector<vec<T, N> > sampling_4points(const size_t & n, const vec<T, N> & a, 
 	const size_t n2 = n * n;
 	for(index_t i = 0; i <= n; ++i)
 	for(index_t j = 0; j <= n; ++j)
-		points.push_back((j * (i * a + (n - i) * d) + 
+		points.push_back((j * (i * a + (n - i) * d) +
 					(n - j) * (i * b + (n - i) * c)) / n2);
 
 	return points;

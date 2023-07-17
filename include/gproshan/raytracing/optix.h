@@ -5,7 +5,7 @@
 #include <gproshan/mesh/che.cuh>
 #include <gproshan/scenes/scene.h>
 #include <gproshan/raytracing/raytracing.h>
-#include <gproshan/raytracing/rt_optix_params.h>
+#include <gproshan/raytracing/optix_params.h>
 
 
 #ifdef GPROSHAN_OPTIX
@@ -54,7 +54,7 @@ class optix : public raytracing
 		std::vector<unsigned char *> tex_data;
 
 	public:
-		optix();
+		optix(const std::string & ptx = "/src/optix.ptx");
 		optix(const std::vector<che *> & meshes, const std::vector<mat4> & model_mats);
 		~optix();
 

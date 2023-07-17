@@ -3,7 +3,7 @@
 
 #include <gproshan/mesh/che.h>
 #include <gproshan/raytracing/render_params.h>
-#include <gproshan/raytracing/rt_utils.h>
+#include <gproshan/raytracing/utils.h>
 
 #include <vector>
 
