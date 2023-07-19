@@ -53,6 +53,19 @@ struct splats_data
 		splats = new splat_t<real_t>[n_splats];
 	}
 
+	splats_data(splats_data && sd)
+	{
+		morton_codes = sd.morton_codes;
+		primID_splat = sd.primID_splat;
+		splats = sd.splats;
+		n_splats = sd.n_splats;
+
+		sd.morton_codes = nullptr;
+		sd.primID_splat = nullptr;
+		sd.splats = nullptr;
+		n_splats = 0;
+	}
+
 	~splats_data()
 	{
 		delete morton_codes;
@@ -81,16 +94,16 @@ index_t binary_search(const T * data, index_t i, index_t j, const T & value)
 
 template <class T>
 __host_device__
-void splat_hit(t_eval_hit<T> & hit, const CHE & pc, const splats_data * sd, const index_t & aprimID, const vec<T, 3> & x, const int & k)
+void splat_hit(t_eval_hit<T> & hit, const CHE & pc, const splats_data & sd, const index_t & aprimID, const vec<T, 3> & x, const int & k)
 {
 	hit.primID = aprimID;
-	const index_t sid = sd->primID_splat[hit.primID];
-	const splat_t<T> & s = sd->splats[sid];
+	const index_t sid = sd.primID_splat[hit.primID];
+	const splat_t<T> & s = sd.splats[sid];
 
 	index_t begin = s.begin;
 	index_t end = s.end;
 
-	const index_t & h = binary_search(sd->morton_codes, begin, end - 1, s.morton2d(x));
+	const index_t & h = binary_search(sd.morton_codes, begin, end - 1, s.morton2d(x));
 	const real_t & sigma2 = 0.1;
 
 	vec<T, 3> & color = hit.Kd = {0, 0, 0};

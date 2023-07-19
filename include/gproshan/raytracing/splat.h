@@ -16,7 +16,7 @@ class splat
 		static real_t delta;
 
 	protected:
-		std::vector<splats_data *> splats_pcs;
+		std::vector<splats_data> splats_pcs;
 
 	public:
 		splat(const std::vector<che *> & meshes, const std::vector<mat4> & model_mats);

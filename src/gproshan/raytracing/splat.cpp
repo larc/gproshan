@@ -28,9 +28,6 @@ splat::~splat()
 {
 	for(che * m: pointclouds)
 		delete m;
-
-	for(splats_data * spc: splats_pcs)
-		delete spc;
 }
 
 void splat::add_splats(che * pc, const mat4 & model_mat)
@@ -268,14 +265,14 @@ void splat::init_splats(const che * mesh, const mat4 & model_mat, std::vector<in
 	std::vector<vertex> points(vertices.size());
 	std::vector<index_t> trigs;
 
-	splats_data * spc = new splats_data(points.size(), idx_splats.size() - 1);
+	splats_data spc(points.size(), idx_splats.size() - 1);
 
-	std::vector<convex_hull *> splat_chs(spc->n_splats);
+	std::vector<convex_hull *> splat_chs(spc.n_splats);
 
 	#pragma omp parallel for
-	for(index_t i = 0; i < spc->n_splats; ++i)
+	for(index_t i = 0; i < spc.n_splats; ++i)
 	{
-		splat_t<real_t> & s = spc->splats[i];
+		splat_t<real_t> & s = spc.splats[i];
 
 		s.begin = idx_splats[i];
 		s.end = idx_splats[i + 1];
@@ -316,7 +313,7 @@ void splat::init_splats(const che * mesh, const mat4 & model_mat, std::vector<in
 		{
 			vertex & p = points[j];
 			p = model_mat * vec4(mesh->point(vertices[j]), 1);
-			spc->morton_codes[j] = s.morton2d(p);
+			spc.morton_codes[j] = s.morton2d(p);
 			p = tbn * (p - center);
 		}
 
@@ -335,17 +332,17 @@ void splat::init_splats(const che * mesh, const mat4 & model_mat, std::vector<in
 		{
 			for(index_t j = s.begin + 1; j < s.end; ++j)
 			{
-				if(spc->morton_codes[j - 1] > spc->morton_codes[j])
+				if(spc.morton_codes[j - 1] > spc.morton_codes[j])
 				{
 					gproshan_error(FATAL ERROR);
-					gproshan_log_var(spc->morton_codes[j - 1]);
-					gproshan_log_var(spc->morton_codes[j]);
+					gproshan_log_var(spc.morton_codes[j - 1]);
+					gproshan_log_var(spc.morton_codes[j]);
 					break;
 				}
-				if(spc->morton_codes[j] >= (1 << 20))
+				if(spc.morton_codes[j] >= (1 << 20))
 				{
 					gproshan_error(FATAL ERROR);
-					gproshan_error(scp->morton_codes[j]);
+					gproshan_error(spc.morton_codes[j]);
 					exit(0);
 				}
 			}
@@ -353,9 +350,9 @@ void splat::init_splats(const che * mesh, const mat4 & model_mat, std::vector<in
 	}
 
 	std::vector<index_t> primID_splat;
-	for(index_t i = 0; i < spc->n_splats; ++i)
+	for(index_t i = 0; i < spc.n_splats; ++i)
 	{
-		const splat_t<real_t> & s = spc->splats[i];
+		const splat_t<real_t> & s = spc.splats[i];
 
 		std::vector<index_t> sch = *splat_chs[i];
 		for(index_t & v: sch)
@@ -395,11 +392,11 @@ void splat::init_splats(const che * mesh, const mat4 & model_mat, std::vector<in
 		pc->rgb(i) = mesh->rgb(v);
 	}
 
-	spc->primID_splat = new unsigned int[primID_splat.size()];
-	memcpy(spc->primID_splat, primID_splat.data(), sizeof(unsigned int) * primID_splat.size());
+	spc.primID_splat = new unsigned int[primID_splat.size()];
+	memcpy(spc.primID_splat, primID_splat.data(), sizeof(unsigned int) * primID_splat.size());
 
 	pointclouds.push_back(pc);
-	splats_pcs.push_back(spc);
+	splats_pcs.emplace_back(std::move(spc));
 
 	display_sets(pc, idx_splats);
 }
