@@ -21,6 +21,7 @@ splat_optix::splat_optix(const std::vector<che *> & meshes, const std::vector<ma
 		const splats_data & h = splats_pcs[i];
 		splats_data & d = d_splats_pcs[i];
 
+
 		d.n_splats = h.n_splats;
 		cudaMalloc(&d.morton_codes, sizeof(unsigned int) * p.n_vertices);
 		cudaMalloc(&d.primID_splat, sizeof(index_t) * p.n_trigs);
@@ -29,6 +30,9 @@ splat_optix::splat_optix(const std::vector<che *> & meshes, const std::vector<ma
 		cudaMemcpy(d.morton_codes, h.morton_codes, sizeof(unsigned int) * p.n_vertices, cudaMemcpyHostToDevice);
 		cudaMemcpy(d.primID_splat, h.primID_splat, sizeof(index_t) * p.n_trigs, cudaMemcpyHostToDevice);
 		cudaMemcpy(d.splats, h.splats, sizeof(splat_t<real_t>) * d.n_splats, cudaMemcpyHostToDevice);
+
+		gproshan_error_var(d.n_splats);
+		gproshan_error_var(h.n_splats);
 	}
 
 	cudaMalloc(&dd_splats_pcs, sizeof(splats_data) * splats_pcs.size());

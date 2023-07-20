@@ -65,7 +65,7 @@ struct splats_data
 		sd.morton_codes = nullptr;
 		sd.primID_splat = nullptr;
 		sd.splats = nullptr;
-		n_splats = 0;
+		sd.n_splats = 0;
 	}
 
 	~splats_data()
@@ -140,7 +140,7 @@ void splat_hit(t_eval_hit<T> & hit, const CHE & pc, const splats_data & sd, cons
 
 	return;
 
-
+/*
 	color = length(x - s.center) / s.radius;
 
 	static int a = 0;
@@ -158,6 +158,7 @@ void splat_hit(t_eval_hit<T> & hit, const CHE & pc, const splats_data & sd, cons
 		gproshan_log_var(morton_2d((p.x() + 1) / 2, (p.y() + 1) / 2));
 		++a;
 	}
+*/
 }
 
 

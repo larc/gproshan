@@ -54,9 +54,10 @@ extern "C" __global__ void __closesthit__radiance()
 	const vertex & B = data[1];
 	const vertex & C = data[2];
 
-	eval_hit hit(mesh, primID, bar.x, bar.y, optix_params.sc);
-	hit.normal = optix_params.flat ? normalize(cross(B - A, C - A)) : hit.normal;
-	hit.position = (1.f - hit.u - hit.v) * A + hit.u * B + hit.v * C;
+	splats_data * splats_pcs = (splats_data *) optix_params.other;
+
+	eval_hit hit;
+	splat_hit(hit, mesh, splats_pcs[sbtID], primID, (1.f - bar.x - bar.y) * A + bar.x * B + bar.y * C, 1);
 
 	vec3 li = eval_li(hit, optix_params.lights, optix_params.n_lights, optix_params.cam_pos,
 						[&](const vec3 & position, const vec3 & wi, const float & light_dist) -> bool
