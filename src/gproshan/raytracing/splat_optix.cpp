@@ -12,12 +12,46 @@ splat_optix::splat_optix(const std::vector<che *> & meshes, const std::vector<ma
 {
 	optix_params.traversable = build_as(pointclouds, {mat4::identity()});
 	build_sbt();
+
+	d_splats_pcs.resize(splats_pcs.size());
+
+	for(index_t i = 0; i < splats_pcs.size(); ++i)
+	{
+		const che & p = *pointclouds[i];
+		const splats_data & h = splats_pcs[i];
+		splats_data & d = d_splats_pcs[i];
+
+		d.n_splats = h.n_splats;
+		cudaMalloc(&d.morton_codes, sizeof(unsigned int) * p.n_vertices);
+		cudaMalloc(&d.primID_splat, sizeof(index_t) * p.n_trigs);
+		cudaMalloc(&d.splats, sizeof(splat_t<real_t>) * d.n_splats);
+
+		cudaMemcpy(d.morton_codes, h.morton_codes, sizeof(unsigned int) * p.n_vertices, cudaMemcpyHostToDevice);
+		cudaMemcpy(d.primID_splat, h.primID_splat, sizeof(index_t) * p.n_trigs, cudaMemcpyHostToDevice);
+		cudaMemcpy(d.splats, h.splats, sizeof(splat_t<real_t>) * d.n_splats, cudaMemcpyHostToDevice);
+	}
+
+	cudaMalloc(&dd_splats_pcs, sizeof(splats_data) * splats_pcs.size());
+	cudaMemcpy(dd_splats_pcs, d_splats_pcs.data(), sizeof(splats_data) * splats_pcs.size(), cudaMemcpyHostToDevice);
+
+	optix_params.other = dd_splats_pcs;
 }
 
 
 splat_optix::~splat_optix()
 {
-	cudaFree(d_splats_pcs);
+	for(splats_data & sd: d_splats_pcs)
+	{
+		cudaFree(sd.morton_codes);
+		cudaFree(sd.primID_splat);
+		cudaFree(sd.splats);
+
+		sd.morton_codes = nullptr;
+		sd.primID_splat = nullptr;
+		sd.splats = nullptr;
+	}
+
+	cudaFree(dd_splats_pcs);
 }
 
 

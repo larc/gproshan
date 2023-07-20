@@ -47,6 +47,8 @@ struct splats_data
 	splat_t<real_t> * splats = nullptr;
 	size_t n_splats = 0;
 
+	splats_data() = default;
+
 	splats_data(const size_t & np, const size_t & ns): n_splats(ns)
 	{
 		morton_codes = new unsigned int[np];

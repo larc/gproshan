@@ -15,7 +15,8 @@ namespace gproshan::rt {
 class splat_optix: public splat, public optix
 {
 	private:
-		splats_data ** d_splats_pcs = nullptr;
+		splats_data * dd_splats_pcs = nullptr;
+		std::vector<splats_data> d_splats_pcs;
 
 	public:
 		splat_optix(const std::vector<che *> & meshes, const std::vector<mat4> & model_mats);
