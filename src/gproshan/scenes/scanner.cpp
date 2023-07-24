@@ -26,7 +26,7 @@ che * scanner_ptx(rt::raytracing * rt, const size_t & n_rows, const size_t & n_c
 
 		const real_t & phi = i * delta_phi;
 		const real_t & theta = j * delta_theta;
-		const vertex & dir = {std::sin(theta) * std::cos(phi), std::sin(theta) * std::sin(phi), std::cos(theta)};
+		const vertex & dir = {std::sin(theta) * std::cos(phi), std::cos(theta), std::sin(theta) * std::sin(phi)};
 
 		const rt::eval_hit & h = rt->intersect(cam_pos, dir);
 
