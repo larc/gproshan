@@ -19,6 +19,14 @@ unsigned int morton_2d(T x, T y);
 
 
 template <class T>
+__host_device__
+T gaussian(const T & x, const T & std)
+{
+	return exp(- x * x / std);
+}
+
+
+template <class T>
 struct splat_t
 {
 	index_t begin = 0;

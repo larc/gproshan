@@ -14,7 +14,7 @@
 namespace gproshan::rt {
 
 
-int splat::k = 8;
+int splat::k = 1;
 real_t splat::n_threshold = 0.9;
 real_t splat::delta = 0.1;
 
@@ -35,7 +35,7 @@ void splat::add_splats(che * pc, const mat4 & model_mat)
 	std::vector<index_t> vertices;
 	vertices.reserve(pc->n_vertices);
 
-	std::vector<index_t> segs = planar_segmentation(pc, vertices);
+	std::vector<index_t> segs = planar_segmentation(pc, vertices, model_mat);
 
 	gproshan_error_var(segs.size() - 1);
 	gproshan_error_var(vertices.size());
@@ -79,7 +79,7 @@ void splat::add_splats(che * pc, const mat4 & model_mat)
 	init_splats(pc, model_mat, vertices, splats);
 }
 
-std::vector<index_t> splat::planar_segmentation(che * pc, std::vector<index_t> & vertices)
+std::vector<index_t> splat::planar_segmentation(che * pc, std::vector<index_t> & vertices, const mat4 & model_mat)
 {
 	vertices.clear();
 	vertices.reserve(pc->n_vertices);
@@ -125,6 +125,7 @@ std::vector<index_t> splat::planar_segmentation(che * pc, std::vector<index_t> &
 */
 
 	vertex vnormal;
+	vertex vcenter;
 
 	std::queue<index_t> q;
 	for(const index_t & v: shuffle)
@@ -146,6 +147,7 @@ std::vector<index_t> splat::planar_segmentation(che * pc, std::vector<index_t> &
 
 			const size_t & n = vertices.size() - segs.back();
 			vnormal = (vnormal * (n - 1) + pc->normal(front)) / n;
+			vcenter = (vcenter * (n - 1) + pc->point(front)) / n;
 
 			for(const index_t & he: pc->star(front))
 			{
@@ -156,6 +158,7 @@ std::vector<index_t> splat::planar_segmentation(che * pc, std::vector<index_t> &
 			{
 				const int & u = indices[front][i];
 */
+				const vertex & p = model_mat * vec4(pc->point(u), 1);
 				if(visited[u] == NIL &&
 					dot(vnormal, pc->normal(front)) > n_threshold)
 				{
@@ -171,7 +174,7 @@ std::vector<index_t> splat::planar_segmentation(che * pc, std::vector<index_t> &
 			q.pop();
 		}
 
-		if(vertices.size() - segs.back() < 3)
+		if(vertices.size() - segs.back() < 100)
 		{
 			for(index_t i = segs.back(); i < vertices.size(); ++i)
 				visited[vertices[i]] = NIL;
@@ -249,7 +252,7 @@ std::vector<index_t> splat::voronoi_subdivision(std::vector<index_t> & voronoi_s
 
 	for(const auto & r: regions)
 	{
-		if(r.size() < 3) continue;
+		if(r.size() < 100) continue;
 
 		for(const index_t & v: r)
 			voronoi_set.push_back(v);

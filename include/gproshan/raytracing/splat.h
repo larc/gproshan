@@ -25,7 +25,7 @@ class splat
 	private:
 		void add_splats(che * pc, const mat4 & model_mat);
 
-		std::vector<index_t> planar_segmentation(che * pc, std::vector<index_t> & vertices);
+		std::vector<index_t> planar_segmentation(che * pc, std::vector<index_t> & vertices, const mat4 & model_mat);
 
 		std::vector<index_t> voronoi_subdivision(	std::vector<index_t> & voronoi_set,
 													const vertex * points,
