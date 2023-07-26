@@ -16,7 +16,7 @@ namespace gproshan::rt {
 
 int splat::k = 1;
 real_t splat::n_threshold = 0.9;
-real_t splat::delta = 0.1;
+real_t splat::delta = 0.01;
 
 splat::splat(const std::vector<che *> & pcs, const std::vector<mat4> & model_mats)
 {
@@ -94,7 +94,7 @@ std::vector<index_t> splat::planar_segmentation(che * pc, std::vector<index_t> &
 	std::vector<index_t> visited;
 	visited.assign(pc->n_vertices, -1);
 
-/*
+
 	double flann_time = 0;
 
 		const size_t nn = 6;
@@ -113,7 +113,7 @@ std::vector<index_t> splat::planar_segmentation(che * pc, std::vector<index_t> &
 
 	TIC(flann_time);
 		// do a knn search, using 128 checks
-		flann::SearchParams sparams;
+		flann::SearchParams sparams(128);
 		sparams.cores = 16;
 		index.knnSearch(kpc, indices, dists, nn, sparams);
 
@@ -122,7 +122,7 @@ std::vector<index_t> splat::planar_segmentation(che * pc, std::vector<index_t> &
 
 	TOC(flann_time);
 	gproshan_log_var(flann_time);
-*/
+
 
 	vertex vnormal;
 	vertex vcenter;
@@ -148,16 +148,16 @@ std::vector<index_t> splat::planar_segmentation(che * pc, std::vector<index_t> &
 			const size_t & n = vertices.size() - segs.back();
 			vnormal = (vnormal * (n - 1) + pc->normal(front)) / n;
 			vcenter = (vcenter * (n - 1) + pc->point(front)) / n;
-
+/*
 			for(const index_t & he: pc->star(front))
 			{
 				const index_t & u = pc->halfedge(he_prev(he));
+*/
 
-/*
 			for(index_t i = 0; i < nn; ++i)
 			{
 				const int & u = indices[front][i];
-*/
+
 				const vertex & p = model_mat * vec4(pc->point(u), 1);
 				if(visited[u] == NIL &&
 					dot(vnormal, pc->normal(front)) > n_threshold)
