@@ -2,6 +2,7 @@
 
 #include <gproshan/raytracing/splat_utils.h>
 #include <gproshan/geometry/convex_hull.h>
+#include <gproshan/pointcloud/knn.h>
 
 #include <queue>
 #include <numeric>
@@ -95,23 +96,23 @@ std::vector<index_t> splat::planar_segmentation(che * pc, std::vector<index_t> &
 	visited.assign(pc->n_vertices, -1);
 
 
-	double flann_time = 0;
+	double nn_time = 0;
+	const size_t nn = 8;
 
-		const size_t nn = 6;
-
+/*
+	TIC(nn_time);
 		flann::Matrix<real_t> kpc((real_t *) &pc->point(0), pc->n_vertices, 3);
 
 		flann::Matrix<int> indices(new int[pc->n_vertices * nn], pc->n_vertices, nn);
 		flann::Matrix<real_t> dists(new real_t[pc->n_vertices * nn], pc->n_vertices, nn);
 
-	TIC(flann_time);
 		// construct an randomized kd-tree index using 4 kd-trees
-		flann::Index<flann::L2<real_t> > index(kpc, flann::KDTreeIndexParams(1));
+		flann::Index<flann::L2<real_t> > index(kpc, flann::KDTreeIndexParams(4));
 		index.buildIndex();
-	TOC(flann_time);
-	gproshan_log_var(flann_time);
+	TOC(nn_time);
+	gproshan_log_var(nn_time);
 
-	TIC(flann_time);
+	TIC(nn_time);
 		// do a knn search, using 128 checks
 		flann::SearchParams sparams(128);
 		sparams.cores = 16;
@@ -120,8 +121,20 @@ std::vector<index_t> splat::planar_segmentation(che * pc, std::vector<index_t> &
 		//delete [] indices.ptr();
 		delete [] dists.ptr();
 
-	TOC(flann_time);
-	gproshan_log_var(flann_time);
+	TOC(nn_time);
+	gproshan_log_var(nn_time);
+*/
+
+	grid_knn knn(&pc->point(0), pc->n_vertices, model_mat);
+	std::vector<std::vector<index_t> > kpc(pc->n_vertices);
+
+	TIC(nn_time);
+	#pragma omp parallel for
+	for(index_t v = 0; v < pc->n_vertices; ++v)
+		kpc[v] = knn(vec3(model_mat * vec4(pc->point(v), 1)), nn);
+
+	TOC(nn_time);
+	gproshan_log_var(nn_time);
 
 
 	vertex vnormal;
@@ -153,14 +166,17 @@ std::vector<index_t> splat::planar_segmentation(che * pc, std::vector<index_t> &
 			{
 				const index_t & u = pc->halfedge(he_prev(he));
 */
-
+/*
 			for(index_t i = 0; i < nn; ++i)
 			{
 				const int & u = indices[front][i];
+*/
 
-				const vertex & p = model_mat * vec4(pc->point(u), 1);
+			for(const index_t & u: kpc[front])
+			{
+				const vertex & p = model_mat * vec4(pc->point(u), 1);	// for adapt noisy
 				if(visited[u] == NIL &&
-					dot(vnormal, pc->normal(front)) > n_threshold)
+					dot(vnormal, pc->normal(u)) > n_threshold)
 				{
 					q.push(u);
 					visited[u] = 0;
@@ -174,7 +190,7 @@ std::vector<index_t> splat::planar_segmentation(che * pc, std::vector<index_t> &
 			q.pop();
 		}
 
-		if(vertices.size() - segs.back() < 100)
+		if(vertices.size() - segs.back() < 16)
 		{
 			for(index_t i = segs.back(); i < vertices.size(); ++i)
 				visited[vertices[i]] = NIL;
@@ -252,7 +268,7 @@ std::vector<index_t> splat::voronoi_subdivision(std::vector<index_t> & voronoi_s
 
 	for(const auto & r: regions)
 	{
-		if(r.size() < 100) continue;
+		if(r.size() < 16) continue;
 
 		for(const index_t & v: r)
 			voronoi_set.push_back(v);
