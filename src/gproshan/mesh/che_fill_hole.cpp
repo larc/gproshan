@@ -65,7 +65,7 @@ che * mesh_fill_hole(che * mesh, const std::vector<index_t> & border_vertices, c
 	vertex normal;
 
 	size_t size = border_vertices.size();
-	index_t i, j, n_v;
+	index_t i = NIL, j, n_v;
 	che * hole = nullptr;
 	che * aux_hole;
 
@@ -205,7 +205,7 @@ che * mesh_fill_hole(che * mesh, const std::vector<index_t> & border_vertices, c
 	return hole;
 }
 
-void split_border(std::vector<std::pair<index_t, index_t> > & split_indices, che * mesh, const std::vector<index_t> & border_vertices)
+void split_border(std::vector<std::pair<index_t, index_t> > & , che * mesh, const std::vector<index_t> & border_vertices)
 {
 	size_t n = border_vertices.size();
 	a_mat data(3, n);
@@ -878,7 +878,7 @@ void get_real_tri(che * mesh, std::vector<index_t> & select_vertices, std::vecto
 	triangle.push_back( (wp * tri[2]) + wo * (tri[0] + tri[1]) );
 }
 
-che * fill_hole_center_triangle(che * mesh, std::vector<index_t> & select_vertices, index_t index)
+che * fill_hole_center_triangle(che * mesh, std::vector<index_t> & select_vertices, index_t )
 {
 	size_t n_vertices = select_vertices.size() + 3;
 	size_t n_trigs = select_vertices.size() + 4;
