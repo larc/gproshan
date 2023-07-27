@@ -1,6 +1,7 @@
 #include <gproshan/app_viewer.h>
 
 #include <gproshan/scenes/scene.h>
+#include <gproshan/pointcloud/knn.h>
 
 #include <random>
 #include <queue>
@@ -128,6 +129,8 @@ bool app_viewer::process_compute_normals(viewer * p_view)
 
 	gproshan_log_var(mesh->n_vertices);
 	// TODO
+
+	knn grid(&mesh->point(0), mesh->n_vertices, mesh.model_mat);
 
 	return false;
 }
