@@ -130,7 +130,14 @@ bool app_viewer::process_compute_normals(viewer * p_view)
 	gproshan_log_var(mesh->n_vertices);
 	// TODO
 
-	knn grid(&mesh->point(0), mesh->n_vertices, mesh.model_mat);
+	grid_knn knn(&mesh->point(0), mesh->n_vertices, mesh.model_mat);
+
+	if(mesh.selected.size())
+	{
+		const index_t & p = mesh.selected.back();
+		for(const index_t & v: knn(vec3(mesh.model_mat * vec4(mesh->point(p), 1)), 9))
+			mesh.selected.push_back(v);
+	}
 
 	return false;
 }
