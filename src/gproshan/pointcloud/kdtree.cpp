@@ -1,4 +1,4 @@
-#include <gproshan/mesh/kdtree.h>
+#include <gproshan/pointcloud/kdtree.h>
 
 #include <algorithm>
 
@@ -19,12 +19,11 @@ kdtree::~kdtree()
 	delete [] nodes;
 }
 
-void kdtree::build(const index_t & n, const vertex * pc, const index_t & i, const index_t & j, const index_t & d)
+void kdtree::build(const index_t & n, const vertex * , const index_t & i, const index_t & j, const index_t & )
 {
-
 	if(i == j)
 	{
-		nodes[i] = i;
+		nodes[n] = i;
 		return;
 	}
 }

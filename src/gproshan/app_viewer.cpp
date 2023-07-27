@@ -126,6 +126,9 @@ bool app_viewer::process_compute_normals(viewer * p_view)
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
+	gproshan_log_var(mesh->n_vertices);
+	// TODO
+
 	return false;
 }
 
@@ -883,6 +886,7 @@ bool app_viewer::process_fill_holes(viewer * p_view)
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
+	// TODO
 	//	fill_all_holes(mesh);
 	/*********************************************************************/
 	che * fill_mesh = new che(*mesh);
@@ -902,7 +906,7 @@ bool app_viewer::process_fill_holes(viewer * p_view)
 
 		std::priority_queue<std::pair<real_t, index_t> > front;
 		std::vector<uvec2> neigs(vertices.size());
-
+/*
 		auto bprev = [&](const index_t & v) -> index_t &
 		{
 			return neigs[v].x();
@@ -911,6 +915,7 @@ bool app_viewer::process_fill_holes(viewer * p_view)
 		{
 			return neigs[v].y();
 		};
+*/
 		auto push = [&](const uvec3 & p)
 		{
 			neigs[p.x()] = {p.y(), p.z()};
@@ -928,11 +933,11 @@ bool app_viewer::process_fill_holes(viewer * p_view)
 		std::vector<bool> border;
 		border.assign(true, vertices.size());
 
-		real_t angle;
+//		real_t angle;
 		index_t v0, v1, v2;
 		while(!front.empty())
 		{
-			angle = front.top().first;
+//			angle = front.top().first;
 
 			if(!(border[v0] && border[v1] && border[v2]))
 				continue;
