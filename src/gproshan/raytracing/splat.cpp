@@ -131,7 +131,7 @@ std::vector<index_t> splat::planar_segmentation(che * pc, std::vector<index_t> &
 	TIC(nn_time);
 	#pragma omp parallel for
 	for(index_t v = 0; v < pc->n_vertices; ++v)
-		kpc[v] = knn(vec3(model_mat * vec4(pc->point(v), 1)), nn);
+		kpc[v] = knn(vec3(model_mat * (pc->point(v), 1)), nn);
 
 	TOC(nn_time);
 	gproshan_log_var(nn_time);
@@ -174,7 +174,7 @@ std::vector<index_t> splat::planar_segmentation(che * pc, std::vector<index_t> &
 
 			for(const index_t & u: kpc[front])
 			{
-				const vertex & p = model_mat * vec4(pc->point(u), 1);	// for adapt noisy
+				const vertex & p = model_mat * (pc->point(u), 1);	// for adapt noisy
 				if(visited[u] == NIL &&
 					dot(vnormal, pc->normal(u)) > n_threshold)
 				{
@@ -305,7 +305,7 @@ void splat::init_splats(const che * mesh, const mat4 & model_mat, std::vector<in
 		{
 			const index_t & v = vertices[j];
 			vertex & p = points[j];
-			p = model_mat * vec4(mesh->point(v), 1);
+			p = model_mat * (mesh->point(v), 1);
 			center += p;
 			normal += mesh->normal(v);
 		}
@@ -323,15 +323,15 @@ void splat::init_splats(const che * mesh, const mat4 & model_mat, std::vector<in
 		std::sort(vertices.begin() + s.begin, vertices.begin() + s.end,
 					[&](const index_t & a, const index_t & b)
 					{
-						const vertex & p = model_mat * vec4(mesh->point(a), 1);
-						const vertex & q = model_mat * vec4(mesh->point(b), 1);
+						const vertex & p = model_mat * (mesh->point(a), 1);
+						const vertex & q = model_mat * (mesh->point(b), 1);
 						return s.morton2d(p) < s.morton2d(q);
 					});
 
 		for(index_t j = s.begin; j < s.end; ++j)
 		{
 			vertex & p = points[j];
-			p = model_mat * vec4(mesh->point(vertices[j]), 1);
+			p = model_mat * (mesh->point(vertices[j]), 1);
 			spc.morton_codes[j] = s.morton2d(p);
 			p = tbn * (p - center);
 		}
