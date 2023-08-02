@@ -49,6 +49,19 @@ che * app_viewer::load_mesh(const std::string & file_path)
 
 int app_viewer::main(int nargs, const char ** args)
 {
+	vec3 a(1);
+	vec3 b = 1;
+	vec3 c{1.1};
+	vec3 d = {1};
+	gproshan_log_var(a * 1);
+	gproshan_log_var(b *= 2);
+	gproshan_log_var(c);
+	gproshan_log_var(3 * c);
+	auto q = 3.f * c;
+	gproshan_log_var(q);
+	std::cout << typeid(3.f * c).name() << "\n";
+	gproshan_log_var(d);
+return 0;
 	if(nargs < 2)
 	{
 		printf("%s [mesh_paths.(off,obj,ply)]\n", args[0]);

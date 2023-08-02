@@ -133,17 +133,7 @@ class vec
 			return norm();
 		}
 
-		///< scalar product
-		__host_device__
-		vec<T, N> operator * (const T & a) const
-		{
-			vec<T, N> res;
-			for(index_t i = 0; i < N; ++i)
-				res[i] = values[i] * a;
-			return res;
-		}
-
-		///< element wise product
+		///< element wise product & scalar product
 		__host_device__
 		vec<T, N> operator * (const vec<T, N> & v) const
 		{
@@ -191,15 +181,6 @@ class vec
 			for(index_t i = 0; i < N; ++i)
 				res[i] = - values[i];
 			return res;
-		}
-
-		///< scalar product self assign
-		__host_device__
-		const vec<T, N> & operator *= (const T & a)
-		{
-			for(T & v: values)
-				v *= a;
-			return *this;
 		}
 
 		///< element wise product self assign
@@ -281,6 +262,7 @@ vec<T, N> operator * (const T & a, const vec<T, N> & v)
 	return v * a;
 }
 
+
 ///< cross product
 template<class T>
 __host_device__
@@ -336,9 +318,10 @@ template<class T, size_t N>
 __host_device__
 std::ostream & operator << (std::ostream & os, const vec<T, N> & v)
 {
-	for(index_t i = 0; i < N - 1; ++i)
-		os << v[i] << " ";
-	return os << v[N - 1];
+	os << v[0];
+	for(index_t i = 1; i < N; ++i)
+		os << " " << v[i];
+	return os;
 }
 
 ///< std std::istream
