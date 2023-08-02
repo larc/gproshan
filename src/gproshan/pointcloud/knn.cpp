@@ -19,7 +19,7 @@ grid_knn::grid_knn(const point * pc, const size_t & n_points, const mat4 & trans
 	for(index_t i = 0; i < n_points; ++i)
 	{
 		point & p = points[i];
-		p = transform * vec4(pc[i], 1);
+		p = transform * (pc[i], 1);
 
 		grid[hash(p, res)].push_back(i); 
 	}

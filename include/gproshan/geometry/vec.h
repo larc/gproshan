@@ -73,6 +73,13 @@ class vec
 			return values[i];
 		}
 
+		///< concatenate with comma operator
+		__host_device__
+		vec<T, N + 1> operator , (const T & a) const
+		{
+			return {*this, a};
+		}
+
 		__host_device__
 		T & x()
 		{

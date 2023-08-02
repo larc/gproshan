@@ -81,7 +81,7 @@ extern "C" __global__ void __closesthit__radiance()
 						});
 
 	vec4 & pixel_color = *ray_data<vec4>();
-	pixel_color = (pixel_color * optix_params.n_samples + vec4(li, 1)) / (optix_params.n_samples + 1);
+	pixel_color = (pixel_color * optix_params.n_samples + (li, 1)) / (optix_params.n_samples + 1);
 }
 
 
