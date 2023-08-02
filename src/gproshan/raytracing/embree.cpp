@@ -171,7 +171,7 @@ index_t embree::add_mesh(const che * mesh, const mat4 & model_mat)
 
 	#pragma omp parallel for
 	for(index_t i = 0; i < mesh->n_vertices; ++i)
-		vertices[i] = model_mat * vec4(mesh->point(i), 1);
+		vertices[i] = model_mat * (mesh->point(i), 1);
 
 	index_t * tri_idxs = (index_t *) rtcSetNewGeometryBuffer(	geom,
 																RTC_BUFFER_TYPE_INDEX, 0,
@@ -233,7 +233,7 @@ index_t embree::add_pointcloud(const che * mesh, const mat4 & model_mat)
 	#pragma omp parallel for
 	for(index_t i = 0; i < mesh->n_vertices; ++i)
 	{
-		pxyzr[i] = model_mat * vec4(mesh->point(i), 1);
+		pxyzr[i] = model_mat * (mesh->point(i), 1);
 		pxyzr[i][3] = pc_radius;
 //		normal[i] = mesh->normal(i);
 	}

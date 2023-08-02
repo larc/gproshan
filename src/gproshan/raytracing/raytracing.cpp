@@ -35,8 +35,7 @@ void raytracing::render(vec4 * img, const render_params & params, const bool & f
 
 		vec3 li = closesthit_radiance(params.cam_pos, dir, params.lights, params.n_lights, params.cam_pos, flat);
 
-		color = (color * n_samples + li) / (n_samples + 1);
-		color[3] = 1;
+		color = (color * n_samples + (li, 1)) / (n_samples + 1);
 	}
 
 	++n_samples;

@@ -135,7 +135,7 @@ bool app_viewer::process_compute_normals(viewer * p_view)
 	if(mesh.selected.size())
 	{
 		const index_t & p = mesh.selected.back();
-		for(const index_t & v: knn(vec3(mesh.model_mat * vec4(mesh->point(p), 1)), 9))
+		for(const index_t & v: knn(mesh.model_mat * (mesh->point(p), 1), 9))
 			mesh.selected.push_back(v);
 	}
 
