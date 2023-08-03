@@ -636,6 +636,7 @@ std::vector<index_t> che::link(const index_t & v) const
 
 void che::edge_collapse(const std::vector<index_t> & sort_edges)
 {
+	gproshan_error_var(sort_edges.size());
 	// TODO
 }
 

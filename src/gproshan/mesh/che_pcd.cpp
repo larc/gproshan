@@ -34,7 +34,7 @@ void che_pcd::read_file(const std::string & file)
 	assert(fp);
 
 	size_t n_points = 0;
-	char line[512], type[32], str[32], format[32], element[32];
+	char line[512], str[32], format[32];
 
 	while(fgets(line, sizeof(line), fp) && str[0] != 'D')	// DATA is the end header
 	{
@@ -80,7 +80,7 @@ void che_pcd::read_file(const std::string & file)
 	}
 }
 
-void che_pcd::write_file(const che * mesh, const std::string & file, const bool & color)
+void che_pcd::write_file(const che * mesh, const std::string & file)
 {
 	FILE * fp = fopen((file + ".pcd").c_str(), "wb");
 	assert(fp);

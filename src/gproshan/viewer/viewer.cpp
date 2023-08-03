@@ -253,7 +253,7 @@ void viewer::imgui()
 		if(ImGui::Button("add selected points as lights"))
 		{
 			for(const index_t & v: mesh.selected)
-				if(!render_params.add_light(mesh.model_mat * vec4(mesh->point(v), 1)))
+				if(!render_params.add_light(mesh.model_mat * (mesh->point(v), 1)))
 					break;
 		}
 

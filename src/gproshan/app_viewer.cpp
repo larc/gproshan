@@ -1,6 +1,7 @@
 #include <gproshan/app_viewer.h>
 
 #include <gproshan/scenes/scene.h>
+#include <gproshan/pointcloud/knn.h>
 
 #include <random>
 #include <queue>
@@ -126,6 +127,18 @@ bool app_viewer::process_compute_normals(viewer * p_view)
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
+	gproshan_log_var(mesh->n_vertices);
+	// TODO
+
+	grid_knn knn(&mesh->point(0), mesh->n_vertices, mesh.model_mat);
+
+	if(mesh.selected.size())
+	{
+		const index_t & p = mesh.selected.back();
+		for(const index_t & v: knn(mesh.model_mat * (mesh->point(p), 1), 9))
+			mesh.selected.push_back(v);
+	}
+
 	return false;
 }
 
@@ -134,10 +147,10 @@ bool app_viewer::process_simulate_scanner(viewer * p_view)
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
-	static size_t n_rows = 4000;
+	static size_t n_rows = 5000;
 	static size_t n_cols = 2000;
-	static const size_t n_min = 1000;
-	static const size_t n_max = 1000000;
+	static const size_t n_min = 100;
+	static const size_t n_max = 10000;
 	static vertex cam_pos = {0, 0, 0};
 
 	if(view->sphere_points.size() != 1)
@@ -883,6 +896,7 @@ bool app_viewer::process_fill_holes(viewer * p_view)
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
 
+	// TODO
 	//	fill_all_holes(mesh);
 	/*********************************************************************/
 	che * fill_mesh = new che(*mesh);
@@ -902,7 +916,7 @@ bool app_viewer::process_fill_holes(viewer * p_view)
 
 		std::priority_queue<std::pair<real_t, index_t> > front;
 		std::vector<uvec2> neigs(vertices.size());
-
+/*
 		auto bprev = [&](const index_t & v) -> index_t &
 		{
 			return neigs[v].x();
@@ -911,6 +925,7 @@ bool app_viewer::process_fill_holes(viewer * p_view)
 		{
 			return neigs[v].y();
 		};
+*/
 		auto push = [&](const uvec3 & p)
 		{
 			neigs[p.x()] = {p.y(), p.z()};
@@ -928,11 +943,11 @@ bool app_viewer::process_fill_holes(viewer * p_view)
 		std::vector<bool> border;
 		border.assign(true, vertices.size());
 
-		real_t angle;
+//		real_t angle;
 		index_t v0, v1, v2;
 		while(!front.empty())
 		{
-			angle = front.top().first;
+//			angle = front.top().first;
 
 			if(!(border[v0] && border[v1] && border[v2]))
 				continue;

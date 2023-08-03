@@ -26,21 +26,14 @@ che * scanner_ptx(rt::raytracing * rt, const size_t & n_rows, const size_t & n_c
 
 		const real_t & phi = i * delta_phi;
 		const real_t & theta = j * delta_theta;
-		const vertex & dir = {std::sin(theta) * std::cos(phi), std::sin(theta) * std::sin(phi), std::cos(theta)};
+		const vertex & dir = {std::sin(theta) * std::sin(phi), std::cos(theta), std::sin(theta) * std::cos(phi)};
 
 		const rt::eval_hit & h = rt->intersect(cam_pos, dir);
 
-		if(h.primID != NIL)
-		{
-			mesh_ptx->point(v) = h.position;
-			mesh_ptx->normal(v) = h.normal;
-			mesh_ptx->heatmap(v) = h.dist / M_SQRT2;
-			mesh_ptx->rgb(v) = h.Kd;
-		}
-		else
-		{
-			mesh_ptx->rgb(v) = vertex{0, 0, 0};
-		}
+		mesh_ptx->point(v) = h.position;
+		mesh_ptx->normal(v) = h.normal;
+		mesh_ptx->heatmap(v) = h.dist / M_SQRT2;
+		mesh_ptx->rgb(v) = h.Kd;
 	}
 
 	return mesh_ptx;
