@@ -69,12 +69,15 @@ int app_viewer::main(int nargs, const char ** args)
 
 void app_viewer::init()
 {
+	sub_menus.push_back("Point Cloud");
+	add_process(1001, "", "KNN", process_knn);
+	add_process(1002, "", "Compute Normals", process_compute_normals);
+
 	sub_menus.push_back("Scenes");
-	add_process(1001, "", "Compute Normals", process_compute_normals);
-	add_process(1002, "", "Scan Scene", process_simulate_scanner);
+	add_process(1003, "", "Scan Scene", process_simulate_scanner);
 
 	sub_menus.push_back("Geometry");
-	add_process(1003, "", "Sampling 4points", process_sampling_4points);
+	add_process(1004, "", "Sampling 4points", process_sampling_4points);
 	add_process(GLFW_KEY_H, "H", "2D Convex Hull", process_convex_hull);
 	add_process(GLFW_KEY_O, "O", "Connected Components", process_connected_components);
 	add_process(GLFW_KEY_K, "K", "Gaussian curvature", process_gaussian_curvature);
@@ -120,15 +123,12 @@ void app_viewer::init()
 }
 
 
-// Scenes
+// Point Cloud
 
-bool app_viewer::process_compute_normals(viewer * p_view)
+bool app_viewer::process_knn(viewer * p_view)
 {
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->active_mesh();
-
-	gproshan_log_var(mesh->n_vertices);
-	// TODO
 
 	grid_knn knn(&mesh->point(0), mesh->n_vertices, mesh.model_mat);
 
@@ -141,6 +141,21 @@ bool app_viewer::process_compute_normals(viewer * p_view)
 
 	return false;
 }
+
+bool app_viewer::process_compute_normals(viewer * p_view)
+{
+	app_viewer * view = (app_viewer *) p_view;
+	che_viewer & mesh = view->active_mesh();
+
+	gproshan_log_var(mesh->n_vertices);
+
+	// TODO
+
+	return false;
+}
+
+
+// Scenes
 
 bool app_viewer::process_simulate_scanner(viewer * p_view)
 {
