@@ -125,7 +125,7 @@ void viewer::imgui()
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
 
-	che_viewer & mesh = active_mesh();
+	che_viewer & mesh = selected_mesh();
 
 	if(ImGui::BeginMainMenuBar())
 	{
@@ -134,9 +134,9 @@ void viewer::imgui()
 			for(index_t i = 0; i < meshes.size(); ++i)
 			{
 				const che_viewer & m = *meshes[i];
-				if(ImGui::MenuItem((std::to_string(i) + ": " + m->filename).c_str(), nullptr, i == idx_active_mesh, i != idx_active_mesh))
+				if(ImGui::MenuItem((std::to_string(i) + ": " + m->filename).c_str(), nullptr, i == idx_selected_mesh, i != idx_selected_mesh))
 				{
-					idx_active_mesh = i;
+					idx_selected_mesh = i;
 					glfwSetWindowTitle(window, m->filename.c_str());
 				}
 			}
@@ -177,6 +177,12 @@ void viewer::imgui()
 
 		ImGui::EndMainMenuBar();
 	}
+
+	ImGui::SetNextWindowSize(ImVec2(72, -1));
+	ImGui::SetNextWindowPos(ImVec2((mesh.vx + 1) * viewport_width - 72, (m_window_split[meshes.size()].y() - mesh.vy) * viewport_height - 100));
+	ImGui::Begin("selected model", nullptr, ImGuiWindowFlags_NoTitleBar);
+	ImGui::TextColored({0, 1, 0, 1}, "SELECTED");
+	ImGui::End();
 
 	ImGui::SetNextWindowSize(ImVec2(window_width, -1));
 	ImGui::SetNextWindowPos(ImVec2(0, window_height - 32));
@@ -281,9 +287,9 @@ void viewer::imgui()
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
-che_viewer & viewer::active_mesh()
+che_viewer & viewer::selected_mesh()
 {
-	return *meshes[idx_active_mesh];
+	return *meshes[idx_selected_mesh];
 }
 
 void viewer::info_gl()
@@ -436,7 +442,7 @@ bool viewer::add_mesh(che * p_mesh, const bool & reset_normals)
 	che_viewer & mesh = *meshes.back();
 	mesh.log_info();
 
-	idx_active_mesh = meshes.size() - 1;
+	idx_selected_mesh = meshes.size() - 1;
 	glfwSetWindowTitle(window, mesh->filename.c_str());
 
 	const int & rows = m_window_split[meshes.size()].x();
@@ -508,7 +514,7 @@ void viewer::mouse_callback(GLFWwindow * window, int button, int action, int mod
 		const int & cols = m_window_split[view->meshes.size()].y();
 		const index_t & idx_mesh = cols * (iy / view->viewport_height) + ix / view->viewport_width;
 		if(idx_mesh < view->meshes.size())
-			view->idx_active_mesh = idx_mesh;
+			view->idx_selected_mesh = idx_mesh;
 
 		if(mods == GLFW_MOD_SHIFT)
 			view->pick_vertex(ix % view->viewport_width, iy % view->viewport_height);
@@ -645,7 +651,7 @@ bool viewer::m_reset_mesh(viewer * view)
 
 bool viewer::m_save_mesh(viewer * view)
 {
-	const che * mesh = view->active_mesh();
+	const che * mesh = view->selected_mesh();
 
 	static char file[128] = "copy";
 	static int format = 0;
@@ -759,7 +765,7 @@ bool viewer::m_bgc_black(viewer * view)
 
 bool viewer::m_setup_raytracing(viewer * view)
 {
-	che_viewer & mesh = view->active_mesh();
+	che_viewer & mesh = view->selected_mesh();
 
 	static int rt = 0;
 	static double time = 0;
@@ -935,7 +941,7 @@ bool viewer::m_render_flat(viewer * view)
 
 bool viewer::m_raycasting(viewer * view)
 {
-	che_viewer & mesh = view->active_mesh();
+	che_viewer & mesh = view->selected_mesh();
 
 	rt::embree rc({mesh}, {mesh.model_mat});
 
@@ -1038,7 +1044,7 @@ void viewer::render_rt(che_viewer & mesh, frame & rt_frame)
 
 void viewer::pick_vertex(const int & x, const int & y)
 {
-	che_viewer & mesh = active_mesh();
+	che_viewer & mesh = selected_mesh();
 
 	mesh.select({x, y}, {viewport_width, viewport_height}, inverse(proj_view_mat), cam.eye);
 }
@@ -1047,7 +1053,7 @@ void viewer::check_apply_all_meshes(const std::function<void(che_viewer &)> & fu
 {
 	if(!apply_all_meshes)
 	{
-		fun(active_mesh());
+		fun(selected_mesh());
 		return;
 	}
 
