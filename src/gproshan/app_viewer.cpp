@@ -769,7 +769,7 @@ bool app_viewer::process_eigenfuntions(viewer * p_view)
 
 		for(index_t k = 0; k < n_eigs; ++k)
 		{
-			if(n_eigs)
+			if(k)
 			{
 				if(!view->add_mesh(new che(*mesh)))
 					break;
