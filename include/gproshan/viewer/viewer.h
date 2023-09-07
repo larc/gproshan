@@ -82,7 +82,7 @@ class viewer
 		double render_time = 0;
 
 		std::vector<che_viewer *> meshes;
-		index_t idx_active_mesh = 0;
+		index_t idx_selected_mesh = 0;
 
 		frame * frames = nullptr;
 
@@ -103,7 +103,7 @@ class viewer
 		viewer(const int & width = 1920, const int & height = 1080);
 		virtual ~viewer();
 
-		che_viewer & active_mesh();
+		che_viewer & selected_mesh();
 		void add_process(const int & key, const std::string & skey, const std::string & name, const function_t & f);
 		bool add_mesh(che * p_mesh, const bool & reset_normals = true);
 

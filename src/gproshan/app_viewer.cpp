@@ -69,12 +69,15 @@ int app_viewer::main(int nargs, const char ** args)
 
 void app_viewer::init()
 {
+	sub_menus.push_back("Point Cloud");
+	add_process(1001, "", "KNN", process_knn);
+	add_process(1002, "", "Compute Normals", process_compute_normals);
+
 	sub_menus.push_back("Scenes");
-	add_process(1001, "", "Compute Normals", process_compute_normals);
-	add_process(1002, "", "Scan Scene", process_simulate_scanner);
+	add_process(1003, "", "Scan Scene", process_simulate_scanner);
 
 	sub_menus.push_back("Geometry");
-	add_process(1003, "", "Sampling 4points", process_sampling_4points);
+	add_process(1004, "", "Sampling 4points", process_sampling_4points);
 	add_process(GLFW_KEY_H, "H", "2D Convex Hull", process_convex_hull);
 	add_process(GLFW_KEY_O, "O", "Connected Components", process_connected_components);
 	add_process(GLFW_KEY_K, "K", "Gaussian curvature", process_gaussian_curvature);
@@ -120,15 +123,12 @@ void app_viewer::init()
 }
 
 
-// Scenes
+// Point Cloud
 
-bool app_viewer::process_compute_normals(viewer * p_view)
+bool app_viewer::process_knn(viewer * p_view)
 {
 	app_viewer * view = (app_viewer *) p_view;
-	che_viewer & mesh = view->active_mesh();
-
-	gproshan_log_var(mesh->n_vertices);
-	// TODO
+	che_viewer & mesh = view->selected_mesh();
 
 	grid_knn knn(&mesh->point(0), mesh->n_vertices, mesh.model_mat);
 
@@ -142,10 +142,25 @@ bool app_viewer::process_compute_normals(viewer * p_view)
 	return false;
 }
 
+bool app_viewer::process_compute_normals(viewer * p_view)
+{
+	app_viewer * view = (app_viewer *) p_view;
+	che_viewer & mesh = view->selected_mesh();
+
+	gproshan_log_var(mesh->n_vertices);
+
+	// TODO
+
+	return false;
+}
+
+
+// Scenes
+
 bool app_viewer::process_simulate_scanner(viewer * p_view)
 {
 	app_viewer * view = (app_viewer *) p_view;
-	che_viewer & mesh = view->active_mesh();
+	che_viewer & mesh = view->selected_mesh();
 
 	static size_t n_rows = 5000;
 	static size_t n_cols = 2000;
@@ -183,7 +198,7 @@ bool app_viewer::process_simulate_scanner(viewer * p_view)
 bool app_viewer::process_sampling_4points(viewer * p_view)
 {
 	app_viewer * view = (app_viewer *) p_view;
-	che_viewer & mesh = view->active_mesh();
+	che_viewer & mesh = view->selected_mesh();
 
 	static size_t n = 10;
 	static std::vector<vertex> points;
@@ -221,7 +236,7 @@ bool app_viewer::process_sampling_4points(viewer * p_view)
 bool app_viewer::process_convex_hull(viewer * p_view)
 {
 	app_viewer * view = (app_viewer *) p_view;
-	che_viewer & mesh = view->active_mesh();
+	che_viewer & mesh = view->selected_mesh();
 
 	convex_hull ch(&mesh->point(0), mesh->n_vertices);
 	mesh.selected = ch;
@@ -232,7 +247,7 @@ bool app_viewer::process_convex_hull(viewer * p_view)
 bool app_viewer::process_connected_components(viewer * p_view)
 {
 	app_viewer * view = (app_viewer *) p_view;
-	che_viewer & mesh = view->active_mesh();
+	che_viewer & mesh = view->selected_mesh();
 
 	real_t * label = &mesh->heatmap(0);
 
@@ -278,7 +293,7 @@ bool app_viewer::process_connected_components(viewer * p_view)
 bool app_viewer::process_gaussian_curvature(viewer * p_view)
 {
 	app_viewer * view = (app_viewer *) p_view;
-	che_viewer & mesh = view->active_mesh();
+	che_viewer & mesh = view->selected_mesh();
 
 	real_t g, g_max = -INFINITY, g_min = INFINITY;
 	vertex a, b;
@@ -336,7 +351,7 @@ bool app_viewer::process_gaussian_curvature(viewer * p_view)
 bool app_viewer::process_edge_collapse(viewer * p_view)
 {
 	app_viewer * view = (app_viewer *) p_view;
-	che_viewer & mesh = view->active_mesh();
+	che_viewer & mesh = view->selected_mesh();
 
 	index_t levels;
 	std::cin >> levels;
@@ -353,7 +368,7 @@ bool app_viewer::process_edge_collapse(viewer * p_view)
 bool app_viewer::process_multiplicate_vertices(viewer * p_view)
 {
 	app_viewer * view = (app_viewer *) p_view;
-	che_viewer & mesh = view->active_mesh();
+	che_viewer & mesh = view->selected_mesh();
 
 	mesh->multiplicate_vertices();
 	mesh->update_normals();
@@ -367,7 +382,7 @@ bool app_viewer::process_multiplicate_vertices(viewer * p_view)
 bool app_viewer::process_delete_vertices(viewer * p_view)
 {
 	app_viewer * view = (app_viewer *) p_view;
-	che_viewer & mesh = view->active_mesh();
+	che_viewer & mesh = view->selected_mesh();
 
 	if(!mesh.selected.size()) return true;
 
@@ -382,7 +397,7 @@ bool app_viewer::process_delete_vertices(viewer * p_view)
 bool app_viewer::process_delete_non_manifold_vertices(viewer * p_view)
 {
 	app_viewer * view = (app_viewer *) p_view;
-	che_viewer & mesh = view->active_mesh();
+	che_viewer & mesh = view->selected_mesh();
 
 	gproshan_debug(removing vertex);
 	mesh->remove_non_manifold_vertices();
@@ -397,7 +412,7 @@ bool app_viewer::process_delete_non_manifold_vertices(viewer * p_view)
 bool app_viewer::process_fairing_spectral(viewer * p_view)
 {
 	app_viewer * view = (app_viewer *) p_view;
-	che_viewer & mesh = view->active_mesh();
+	che_viewer & mesh = view->selected_mesh();
 
 	static std::vector<vertex> vertices;
 	static size_t min_neigs = 1;
@@ -428,7 +443,7 @@ bool app_viewer::process_fairing_spectral(viewer * p_view)
 bool app_viewer::process_fairing_taubin(viewer * p_view)
 {
 	app_viewer * view = (app_viewer *) p_view;
-	che_viewer & mesh = view->active_mesh();
+	che_viewer & mesh = view->selected_mesh();
 
 	static std::vector<vertex> vertices;
 	static fairing_taubin fair(0);
@@ -460,7 +475,7 @@ bool app_viewer::process_fairing_taubin(viewer * p_view)
 bool app_viewer::process_geodesics(viewer * p_view)
 {
 	app_viewer * view = (app_viewer *) p_view;
-	che_viewer & mesh = view->active_mesh();
+	che_viewer & mesh = view->selected_mesh();
 
 	static geodesics::params params;
 
@@ -492,7 +507,7 @@ bool app_viewer::process_geodesics(viewer * p_view)
 bool app_viewer::process_farthest_point_sampling(viewer * p_view)
 {
 	app_viewer * view = (app_viewer *) p_view;
-	che_viewer & mesh = view->active_mesh();
+	che_viewer & mesh = view->selected_mesh();
 
 	static int n = 10;
 	static real_t radio;
@@ -514,7 +529,7 @@ bool app_viewer::process_farthest_point_sampling(viewer * p_view)
 bool app_viewer::process_voronoi(viewer * p_view)
 {
 	app_viewer * view = (app_viewer *) p_view;
-	che_viewer & mesh = view->active_mesh();
+	che_viewer & mesh = view->selected_mesh();
 
 	geodesics::params params;
 	params.cluster = true;
@@ -544,7 +559,7 @@ bool app_viewer::process_voronoi(viewer * p_view)
 bool app_viewer::process_compute_toplesets(viewer * p_view)
 {
 	app_viewer * view = (app_viewer *) p_view;
-	che_viewer & mesh = view->active_mesh();
+	che_viewer & mesh = view->selected_mesh();
 
 	if(!mesh.selected.size())
 		mesh.selected.push_back(0);
@@ -579,7 +594,7 @@ bool app_viewer::process_compute_toplesets(viewer * p_view)
 bool app_viewer::process_msparse_coding(viewer * p_view)
 {
 	app_viewer * view = (app_viewer *) p_view;
-	che_viewer & mesh = view->active_mesh();
+	che_viewer & mesh = view->selected_mesh();
 
 	static msparse_coding::params params;
 	static size_t n = 12;
@@ -612,7 +627,7 @@ bool app_viewer::process_msparse_coding(viewer * p_view)
 bool app_viewer::process_mdict_patch(viewer * p_view)
 {
 	app_viewer * view = (app_viewer *) p_view;
-	che_viewer & mesh = view->active_mesh();
+	che_viewer & mesh = view->selected_mesh();
 
 	TIC(view->time)
 	index_t * toplevel = new index_t[mesh->n_vertices];
@@ -658,7 +673,7 @@ bool app_viewer::process_mdict_patch(viewer * p_view)
 bool app_viewer::process_mask(viewer * p_view)
 {
 	app_viewer * view = (app_viewer *) p_view;
-	che_viewer & mesh = view->active_mesh();
+	che_viewer & mesh = view->selected_mesh();
 
 	static msparse_coding::params params;
 	static size_t n = 12;
@@ -699,7 +714,7 @@ bool app_viewer::process_mask(viewer * p_view)
 bool app_viewer::process_pc_reconstruction(viewer * p_view)
 {
 	app_viewer * view = (app_viewer *) p_view;
-	che_viewer & mesh = view->active_mesh();
+	che_viewer & mesh = view->selected_mesh();
 
 	static msparse_coding::params params;
 	static size_t n = 12;
@@ -735,7 +750,7 @@ bool app_viewer::process_pc_reconstruction(viewer * p_view)
 bool app_viewer::process_eigenfuntions(viewer * p_view)
 {
 	app_viewer * view = (app_viewer *) p_view;
-	che_viewer & mesh = view->active_mesh();
+	che_viewer & mesh = view->selected_mesh();
 
 	static size_t n_eigs = 20;
 	ImGui::InputScalar("n_eigs", ImGuiDataType_U64, &n_eigs);
@@ -754,14 +769,14 @@ bool app_viewer::process_eigenfuntions(viewer * p_view)
 
 		for(index_t k = 0; k < n_eigs; ++k)
 		{
-			if(n_eigs)
+			if(k)
 			{
 				if(!view->add_mesh(new che(*mesh)))
 					break;
 			}
 
-			view->idx_active_mesh = k;
-			che_viewer & mesh = view->active_mesh();
+			view->idx_selected_mesh = k;
+			che_viewer & mesh = view->selected_mesh();
 
 			eigvec.col(k) -= eigvec.col(k).min();
 			eigvec.col(k) /= eigvec.col(k).max();
@@ -773,7 +788,7 @@ bool app_viewer::process_eigenfuntions(viewer * p_view)
 			mesh.update_vbo();
 		}
 
-		view->idx_active_mesh = 0;
+		view->idx_selected_mesh = 0;
 	}
 
 	return true;
@@ -782,7 +797,7 @@ bool app_viewer::process_eigenfuntions(viewer * p_view)
 bool app_viewer::process_descriptor_heatmap(viewer * p_view)
 {
 	app_viewer * view = (app_viewer *) p_view;
-	che_viewer & mesh = view->active_mesh();
+	che_viewer & mesh = view->selected_mesh();
 
 	static int n_eigs = 50;
 	static bool status = true;
@@ -824,7 +839,7 @@ bool app_viewer::process_descriptor_heatmap(viewer * p_view)
 bool app_viewer::process_key_points(viewer * p_view)
 {
 	app_viewer * view = (app_viewer *) p_view;
-	che_viewer & mesh = view->active_mesh();
+	che_viewer & mesh = view->selected_mesh();
 
 	static real_t percent = 0.1;
 	if(ImGui_InputReal("percent", &percent, 0.01, 0.1, "%.2f"))
@@ -839,7 +854,7 @@ bool app_viewer::process_key_points(viewer * p_view)
 bool app_viewer::process_key_components(viewer * p_view)
 {
 	app_viewer * view = (app_viewer *) p_view;
-	che_viewer & mesh = view->active_mesh();
+	che_viewer & mesh = view->selected_mesh();
 
 	static real_t radio = 0.25;
 	if(ImGui_InputReal("radio", &radio, 0.01, 0.1, "%.2f"))
@@ -863,7 +878,7 @@ bool app_viewer::process_key_components(viewer * p_view)
 bool app_viewer::process_poisson(viewer * p_view, const index_t & k)
 {
 	app_viewer * view = (app_viewer *) p_view;
-	che_viewer & mesh = view->active_mesh();
+	che_viewer & mesh = view->selected_mesh();
 
 	size_t old_n_vertices = mesh->n_vertices;
 	delete [] fill_all_holes(mesh);
@@ -894,7 +909,7 @@ bool app_viewer::process_poisson_laplacian_3(viewer * p_view)
 bool app_viewer::process_fill_holes(viewer * p_view)
 {
 	app_viewer * view = (app_viewer *) p_view;
-	che_viewer & mesh = view->active_mesh();
+	che_viewer & mesh = view->selected_mesh();
 
 	// TODO
 	//	fill_all_holes(mesh);
@@ -973,7 +988,7 @@ bool app_viewer::process_fill_holes(viewer * p_view)
 bool app_viewer::process_fill_holes_biharmonic_splines(viewer * p_view)
 {
 	app_viewer * view = (app_viewer *) p_view;
-	che_viewer & mesh = view->active_mesh();
+	che_viewer & mesh = view->selected_mesh();
 
 	size_t old_n_vertices, n_vertices = mesh->n_vertices;
 	size_t n_holes = 0; // FIX_BOUND mesh->n_borders;
@@ -1005,7 +1020,7 @@ bool app_viewer::process_fill_holes_biharmonic_splines(viewer * p_view)
 bool app_viewer::process_select_multiple(viewer * p_view)
 {
 	app_viewer * view = (app_viewer *) p_view;
-	che_viewer & mesh = view->active_mesh();
+	che_viewer & mesh = view->selected_mesh();
 
 	static char line[128] = "";
 
@@ -1025,7 +1040,7 @@ bool app_viewer::process_select_multiple(viewer * p_view)
 bool app_viewer::process_threshold(viewer * p_view)
 {
 	app_viewer * view = (app_viewer *) p_view;
-	che_viewer & mesh = view->active_mesh();
+	che_viewer & mesh = view->selected_mesh();
 
 	for(index_t v = 0; v < mesh->n_vertices; ++v)
 		mesh->heatmap(v) = mesh->heatmap(v) > 0.5 ? 1 : 0.5;
@@ -1036,7 +1051,7 @@ bool app_viewer::process_threshold(viewer * p_view)
 bool app_viewer::process_noise(viewer * p_view)
 {
 	app_viewer * view = (app_viewer *) p_view;
-	che_viewer & mesh = view->active_mesh();
+	che_viewer & mesh = view->selected_mesh();
 
 	std::default_random_engine generator;
 	std::uniform_int_distribution<int> d_mod_5(0, 4);
@@ -1057,7 +1072,7 @@ bool app_viewer::process_noise(viewer * p_view)
 bool app_viewer::process_black_noise(viewer * p_view)
 {
 	app_viewer * view = (app_viewer *) p_view;
-	che_viewer & mesh = view->active_mesh();
+	che_viewer & mesh = view->selected_mesh();
 
 	std::default_random_engine generator;
 	std::uniform_int_distribution<int> d_mod_5(0, 4);
