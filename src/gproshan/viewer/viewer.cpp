@@ -181,7 +181,8 @@ void viewer::imgui()
 	if(meshes.size() > 1)
 	{
 		ImGui::SetNextWindowSize(ImVec2(72, -1));
-		ImGui::SetNextWindowPos(ImVec2((mesh.vx + 1) * viewport_width - 72, (m_window_split[meshes.size()].x() - mesh.vy) * viewport_height - 100));
+		ImGui::SetNextWindowPos(ImVec2((mesh.vx + 1) * viewport_width - 72, (m_window_split[meshes.size()].x() - mesh.vy) * viewport_height - 70));
+		ImGui::SetNextWindowBgAlpha(0.0f);
 		ImGui::Begin("selected model", nullptr, ImGuiWindowFlags_NoTitleBar);
 		ImGui::TextColored({0, 1, 0, 1}, "SELECTED");
 		ImGui::End();
