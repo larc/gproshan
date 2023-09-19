@@ -130,13 +130,18 @@ bool app_viewer::process_knn(viewer * p_view)
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->selected_mesh();
 
-	grid_knn knn(&mesh->point(0), mesh->n_vertices, mesh.model_mat);
+	//grid_knn knn(&mesh->point(0), mesh->n_vertices, mesh.model_mat);
+	knn::k3tree nn(&mesh->point(0), mesh->n_vertices);
 
 	if(mesh.selected.size())
 	{
 		const index_t & p = mesh.selected.back();
-		for(const index_t & v: knn(mesh.model_mat * (mesh->point(p), 1), 9))
-			mesh.selected.push_back(v);
+		//for(const index_t & v: knn(mesh.model_mat * (mesh->point(p), 1), 9))
+		//	mesh.selected.push_back(v);
+
+		const int * result = nn(p);
+		for(index_t i = 0; i < 8; ++i)
+			mesh.selected.push_back(result[i]);
 	}
 
 	return false;
