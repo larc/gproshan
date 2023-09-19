@@ -33,7 +33,7 @@ grid::grid(const point * pc, const size_t & n_points, const mat4 & transform): p
 	gproshan_log_var(double(n_points) / voxels.size());
 }
 
-std::vector<index_t> grid::operator () (const point & p, int k)
+std::vector<index_t> grid::operator () (const point & p, int k) const
 {
 	const uvec3 key = hash(p, res);
 
@@ -47,7 +47,7 @@ std::vector<index_t> grid::operator () (const point & p, int k)
 
 		if(pos.x() == NIL || pos.y() == NIL || pos.z() == NIL)
 			continue;
-		
+
 		const auto & iter = voxels.find(pos);
 		if(iter == voxels.end())
 			continue;
@@ -86,21 +86,19 @@ k3tree::k3tree(const point * pc, const size_t & n_points, const size_t & k, cons
 	TIC(time_query);
 		const point * q = query.size() ? query.data() : pc;
 		const size_t & n_results = query.size() ? query.size() : n_points;
-		
+
 		flann::Matrix<real_t> mq((real_t *) q, n_results, 3);
 
 		indices = flann::Matrix(new int[n_results * k], n_results, k);
 		flann::Matrix dists(new real_t[n_results * k], n_results, k);
-		
+
 		flann::SearchParams params;
 		params.cores = 16;
 		index.knnSearch(mq, indices, dists, k, params);
 	TOC(time_query);
 	gproshan_log_var(time_query);
 
-
 	gproshan_log_var(time_build + time_query);
-
 
 	delete [] dists.ptr();
 }
@@ -110,7 +108,7 @@ k3tree::~k3tree()
 	delete [] indices.ptr();
 }
 
-int * k3tree::operator () (const index_t & i)
+int * k3tree::operator () (const index_t & i) const
 {
 	return indices[i];
 }

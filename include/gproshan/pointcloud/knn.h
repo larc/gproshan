@@ -45,7 +45,7 @@ class grid
 		grid(const point * pc, const size_t & n_points, const mat4 & transform);
 		~grid() = default;
 
-		std::vector<index_t> operator () (const point & p, int k);
+		std::vector<index_t> operator () (const point & p, int k) const;
 };
 
 
@@ -53,12 +53,12 @@ class k3tree
 {
 	private:
 		flann::Matrix<int> indices;
-	
+
 	public:
 		k3tree(const point * pc, const size_t & n_points, const size_t & k = 8, const std::vector<point> & query = {});
 		~k3tree();
 
-		int * operator () (const index_t & i);
+		int * operator () (const index_t & i) const;
 };
 
 

@@ -130,21 +130,48 @@ bool app_viewer::process_knn(viewer * p_view)
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->selected_mesh();
 
-	//grid_knn knn(&mesh->point(0), mesh->n_vertices, mesh.model_mat);
-	knn::k3tree nn(&mesh->point(0), mesh->n_vertices);
+	static int alg = 0;
+	static int k = 9;
+	ImGui::Combo("algorithm", &alg, "select\0grid\0k3tree\0\0");
+	ImGui::InputInt("k", &k);
 
-	if(mesh.selected.size())
+	if(ImGui::Button("Run"))
 	{
-		const index_t & p = mesh.selected.back();
-		//for(const index_t & v: knn(mesh.model_mat * (mesh->point(p), 1), 9))
-		//	mesh.selected.push_back(v);
+		auto query = mesh.selected;
+		if(!query.size()) query.push_back(0);
 
-		const int * result = nn(p);
-		for(index_t i = 0; i < 8; ++i)
-			mesh.selected.push_back(result[i]);
+		mesh.selected.clear();
+
+		switch(alg)
+		{
+			case 1:
+			{
+				knn::grid grid(&mesh->point(0), mesh->n_vertices, mesh.model_mat);
+				for(const index_t & p: query)
+				{
+					for(const index_t & v: grid(mesh.model_mat * (mesh->point(p), 1), k))
+						mesh.selected.push_back(v);
+				}
+			}
+			break;
+
+			case 2:
+			{
+				knn::k3tree k3tree(&mesh->point(0), mesh->n_vertices, k);
+				for(const index_t & p: query)
+				{
+					const int * result = k3tree(p);
+					for(index_t i = 0; i < 8; ++i)
+						mesh.selected.push_back(result[i]);
+				}
+			}
+			break;
+
+			default: break;
+		}
 	}
 
-	return false;
+	return true;
 }
 
 bool app_viewer::process_compute_normals(viewer * p_view)
