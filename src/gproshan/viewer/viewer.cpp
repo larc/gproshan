@@ -205,7 +205,9 @@ void viewer::imgui()
 	ImGui::Checkbox("apply options to all meshes\nmenus: [color, render, mesh]", &apply_all_meshes);
 	if(ImGui::CollapsingHeader(mesh->filename.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
 	{
+		frame_time[(++nframes) % max_nframes] = render_time;
 		ImGui::Text("%13lu fps", size_t(1.0 / render_time));
+		ImGui::Text("%13.4f ms", render_time);
 		ImGui::Text("%13lu vertices", mesh->n_vertices);
 		ImGui::Text("%13lu trigs", mesh->is_scene() ? mesh->n_vertices / 3 : mesh->n_trigs);
 

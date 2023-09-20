@@ -31,6 +31,7 @@
 // geometry processing and shape analysis framework
 namespace gproshan {
 
+const size_t max_nframes = 1000;
 
 class viewer
 {
@@ -80,6 +81,8 @@ class viewer
 		quaternion cam_light;
 
 		double render_time = 0;
+		double frame_time[max_nframes] = {};
+		index_t nframes = 0;
 
 		std::vector<che_viewer *> meshes;
 		index_t idx_selected_mesh = 0;
@@ -120,6 +123,8 @@ class viewer
 
 		void render_gl();
 		void render_rt(che_viewer & mesh, frame & rt_frame);
+
+		void save_frametime();
 
 		static void framebuffer_size_callback(GLFWwindow * window, int width, int height);
 		static void window_size_callback(GLFWwindow * window, int width, int height);
