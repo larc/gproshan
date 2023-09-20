@@ -114,6 +114,8 @@ bool viewer::run()
 		glfwPollEvents();
 	}
 
+	save_frametime(tmp_file_path("frametime"));
+
 	return true;
 }
 
@@ -205,7 +207,7 @@ void viewer::imgui()
 	ImGui::Checkbox("apply options to all meshes\nmenus: [color, render, mesh]", &apply_all_meshes);
 	if(ImGui::CollapsingHeader(mesh->filename.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
 	{
-		frame_time[(++nframes) % max_nframes] = render_time;
+		frametime[(++nframes) % max_nframes] = render_time;
 		ImGui::Text("%13lu fps", size_t(1.0 / render_time));
 		ImGui::Text("%13.4f ms", render_time);
 		ImGui::Text("%13lu vertices", mesh->n_vertices);
@@ -466,6 +468,18 @@ bool viewer::add_mesh(che * p_mesh, const bool & reset_normals)
 	proj_mat = cam.perspective();
 
 	return true;
+}
+
+void viewer::save_frametime(const std::string & file)
+{
+	gproshan_error_var(file);
+
+	FILE * fp = fopen(file.c_str(), "w");
+
+	for(index_t i = 0; i < max_nframes; ++i)
+		fprintf(fp, "%.3f\n", frametime[(nframes + i) % max_nframes]);
+	
+	fclose(fp);
 }
 
 void viewer::framebuffer_size_callback(GLFWwindow * window, int width, int height)

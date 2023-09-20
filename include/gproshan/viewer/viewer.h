@@ -81,7 +81,7 @@ class viewer
 		quaternion cam_light;
 
 		double render_time = 0;
-		double frame_time[max_nframes] = {};
+		double frametime[max_nframes] = {};
 		index_t nframes = 0;
 
 		std::vector<che_viewer *> meshes;
@@ -124,7 +124,7 @@ class viewer
 		void render_gl();
 		void render_rt(che_viewer & mesh, frame & rt_frame);
 
-		void save_frametime();
+		void save_frametime(const std::string & file);
 
 		static void framebuffer_size_callback(GLFWwindow * window, int width, int height);
 		static void window_size_callback(GLFWwindow * window, int width, int height);
