@@ -124,6 +124,7 @@ class viewer
 		void render_gl();
 		void render_rt(che_viewer & mesh, frame & rt_frame);
 
+		void save_history(const std::string & file);
 		void save_frametime(const std::string & file);
 
 		static void framebuffer_size_callback(GLFWwindow * window, int width, int height);

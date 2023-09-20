@@ -75,6 +75,9 @@ viewer::viewer(const int & width, const int & height)
 
 viewer::~viewer()
 {
+	save_history(tmp_file_path("history"));
+	save_frametime(tmp_file_path("frametime_" + selected_mesh()->name_size()));
+
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
@@ -113,8 +116,6 @@ bool viewer::run()
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
-
-	save_frametime(tmp_file_path("frametime"));
 
 	return true;
 }
@@ -470,6 +471,21 @@ bool viewer::add_mesh(che * p_mesh, const bool & reset_normals)
 	return true;
 }
 
+void viewer::save_history(const std::string & file)
+{
+	gproshan_error_var(file);
+
+	FILE * fp = fopen(file.c_str(), "a");
+
+	const che_viewer & m = *meshes[0];
+	fprintf(fp, "%s ", m->name().c_str());
+	fprintf(fp, "%lu ", m->n_vertices);
+	fprintf(fp, "%lu ", m->n_trigs);
+	fprintf(fp, "%p\n", this);
+
+	fclose(fp);
+}
+
 void viewer::save_frametime(const std::string & file)
 {
 	gproshan_error_var(file);
@@ -477,8 +493,8 @@ void viewer::save_frametime(const std::string & file)
 	FILE * fp = fopen(file.c_str(), "w");
 
 	for(index_t i = 0; i < max_nframes; ++i)
-		fprintf(fp, "%.3f\n", frametime[(nframes + i) % max_nframes]);
-	
+		fprintf(fp, "%f\n", frametime[(nframes + i) % max_nframes]);
+
 	fclose(fp);
 }
 
@@ -512,7 +528,6 @@ void viewer::keyboard_callback(GLFWwindow * window, int key, int, int action, in
 		pro.selected = view->hide_imgui ? pro.function(view) && pro.selected : !pro.selected;
 		snprintf(view->status_message, sizeof(view->status_message), "%s", pro.selected ? pro.name.c_str() : "");
 	}
-
 }
 
 void viewer::mouse_callback(GLFWwindow * window, int button, int action, int mods)
