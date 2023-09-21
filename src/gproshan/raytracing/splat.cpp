@@ -96,19 +96,6 @@ std::vector<index_t> splat::planar_segmentation(che * pc, std::vector<index_t> &
 	const size_t KNN = 8;
 
 	knn::k3tree k3tree(&pc->point(0), pc->n_vertices, KNN);
-/*
-	double nn_time = 0;
-	knn::grid nn(&pc->point(0), pc->n_vertices, model_mat);
-	std::vector<std::vector<index_t> > kpc(pc->n_vertices);
-
-	TIC(nn_time);
-	#pragma omp parallel for
-	for(index_t v = 0; v < pc->n_vertices; ++v)
-		kpc[v] = nn(vec3(model_mat * (pc->point(v), 1)), KNN);
-
-	TOC(nn_time);
-	gproshan_log_var(nn_time);
-*/
 
 	vertex vnormal;
 	vertex vcenter;
@@ -135,17 +122,10 @@ std::vector<index_t> splat::planar_segmentation(che * pc, std::vector<index_t> &
 			vnormal = (vnormal * (n - 1) + pc->normal(front)) / n;
 			vcenter = (vcenter * (n - 1) + pc->point(front)) / n;
 
-/*
-			for(const index_t & he: pc->star(front))
-			{
-				const index_t & u = pc->halfedge(he_prev(he));
-*/
-
-//			for(const index_t & u: kpc[front])
-//			{
+			const int * nn = k3tree(front);
 			for(index_t i = 0; i < KNN; ++i)
 			{
-				const int & u = k3tree(front)[i];
+				const int & u = nn[i];
 
 				const vertex & p = model_mat * (pc->point(u), 1);	// for adapt noisy
 				if(visited[u] == NIL &&
