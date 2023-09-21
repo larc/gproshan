@@ -1,7 +1,7 @@
 #include <gproshan/raytracing/splat_optix.h>
 
 
-//#ifdef GPROSHAN_OPTIX
+#ifdef GPROSHAN_OPTIX
 
 
 // geometry processing and shape analysis framework
@@ -61,5 +61,5 @@ splat_optix::~splat_optix()
 
 } // namespace gproshan
 
-//#endif // GPROSHAN_OPTIX
+#endif // GPROSHAN_OPTIX
 
