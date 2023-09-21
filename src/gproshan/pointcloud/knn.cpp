@@ -5,10 +5,10 @@
 
 
 // geometry processing and shape analysis framework
-namespace gproshan {
+namespace gproshan::knn {
 
 
-grid_knn::grid_knn(const point * pc, const size_t & n_points, const mat4 & transform): points(n_points)
+grid::grid(const point * pc, const size_t & n_points, const mat4 & transform): points(n_points)
 {
 	double build_time = 0;
 
@@ -21,7 +21,7 @@ grid_knn::grid_knn(const point * pc, const size_t & n_points, const mat4 & trans
 		point & p = points[i];
 		p = transform * (pc[i], 1);
 
-		grid[hash(p, res)].push_back(i); 
+		voxels[hash(p, res)].push_back(i); 
 	}
 
 	TOC(build_time);
@@ -29,11 +29,11 @@ grid_knn::grid_knn(const point * pc, const size_t & n_points, const mat4 & trans
 	gproshan_log_var(sizeof(size_t));
 	gproshan_log_var(build_time);
 	gproshan_log_var(res);
-	gproshan_log_var(grid.size());
-	gproshan_log_var(double(n_points) / grid.size());
+	gproshan_log_var(voxels.size());
+	gproshan_log_var(double(n_points) / voxels.size());
 }
 
-std::vector<index_t> grid_knn::operator () (const point & p, int knn)
+std::vector<index_t> grid::operator () (const point & p, int k) const
 {
 	const uvec3 key = hash(p, res);
 
@@ -43,30 +43,74 @@ std::vector<index_t> grid_knn::operator () (const point & p, int knn)
 	for(int j = -1; j < 2; ++j)
 	for(int k = -1; k < 2; ++k)
 	{
-		const uvec3 cell = {key.x() + i, key.y() + j, key.z() + k};
+		const uvec3 pos = {key.x() + i, key.y() + j, key.z() + k};
 
-		if(cell.x() == NIL || cell.y() == NIL || cell.z() == NIL)
+		if(pos.x() == NIL || pos.y() == NIL || pos.z() == NIL)
 			continue;
 
-		if(grid.find(cell) == grid.end())
+		const auto & iter = voxels.find(pos);
+		if(iter == voxels.end())
 			continue;
 
-		for(const index_t & v: grid[cell])
+		for(const index_t & v: iter->second)
 			q.push({-length(p - points[v]), v});
 	}
 
 	std::vector<index_t> nn;
-	nn.reserve(knn);
+	nn.reserve(k);
 
-	while(!q.empty() && knn)
+	while(!q.empty() && k)
 	{
 		nn.push_back(q.top().second);
 		q.pop();
 
-		--knn;
+		--k;
 	}
 
 	return nn;
+}
+
+
+///< Implementation using flann, by default compute all knn
+k3tree::k3tree(const point * pc, const size_t & n_points, const size_t & k, const std::vector<point> & query)
+{
+	double time_build, time_query;
+
+	TIC(time_build);
+		flann::Matrix<real_t> mpc((real_t *) pc, n_points, 3);
+		flann::Index<flann::L2<real_t> > index(mpc, flann::KDTreeSingleIndexParams());
+		index.buildIndex();
+	TOC(time_build);
+	gproshan_log_var(time_build);
+
+	TIC(time_query);
+		const point * q = query.size() ? query.data() : pc;
+		const size_t & n_results = query.size() ? query.size() : n_points;
+
+		flann::Matrix<real_t> mq((real_t *) q, n_results, 3);
+
+		indices = flann::Matrix(new int[n_results * k], n_results, k);
+		flann::Matrix dists(new real_t[n_results * k], n_results, k);
+
+		flann::SearchParams params;
+		params.cores = 16;
+		index.knnSearch(mq, indices, dists, k, params);
+	TOC(time_query);
+	gproshan_log_var(time_query);
+
+	gproshan_log_var(time_build + time_query);
+
+	delete [] dists.ptr();
+}
+
+k3tree::~k3tree()
+{
+	delete [] indices.ptr();
+}
+
+int * k3tree::operator () (const index_t & i) const
+{
+	return indices[i];
 }
 
 
