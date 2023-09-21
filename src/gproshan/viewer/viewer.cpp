@@ -75,8 +75,8 @@ viewer::viewer(const int & width, const int & height)
 
 viewer::~viewer()
 {
-	save_history(tmp_file_path("history"));
-	save_frametime(tmp_file_path("frametime_" + selected_mesh()->name_size()));
+	sprintf(status_message, "frametime_%p", this);
+	save_frametime(tmp_file_path(status_message));
 
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
@@ -468,6 +468,8 @@ bool viewer::add_mesh(che * p_mesh, const bool & reset_normals)
 	cam.aspect = real_t(viewport_width) / viewport_height;
 	proj_mat = cam.perspective();
 
+	save_history(tmp_file_path("history"));
+
 	return true;
 }
 
@@ -478,10 +480,10 @@ void viewer::save_history(const std::string & file)
 	FILE * fp = fopen(file.c_str(), "a");
 
 	const che_viewer & m = *meshes[0];
+	fprintf(fp, "%p ", this);
 	fprintf(fp, "%s ", m->name().c_str());
 	fprintf(fp, "%lu ", m->n_vertices);
-	fprintf(fp, "%lu ", m->n_trigs);
-	fprintf(fp, "%p\n", this);
+	fprintf(fp, "%lu\n", m->n_trigs);
 
 	fclose(fp);
 }
