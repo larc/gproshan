@@ -8,8 +8,6 @@
 #include <numeric>
 #include <algorithm>
 
-#include <flann/flann.hpp>
-
 
 // geometry processing and shape analysis framework
 namespace gproshan::rt {
@@ -95,47 +93,22 @@ std::vector<index_t> splat::planar_segmentation(che * pc, std::vector<index_t> &
 	std::vector<index_t> visited;
 	visited.assign(pc->n_vertices, -1);
 
+	const size_t KNN = 8;
 
-	double nn_time = 0;
-	const size_t nn = 8;
-
+	knn::k3tree k3tree(&pc->point(0), pc->n_vertices, KNN);
 /*
-	TIC(nn_time);
-		flann::Matrix<real_t> kpc((real_t *) &pc->point(0), pc->n_vertices, 3);
-
-		flann::Matrix<int> indices(new int[pc->n_vertices * nn], pc->n_vertices, nn);
-		flann::Matrix<real_t> dists(new real_t[pc->n_vertices * nn], pc->n_vertices, nn);
-
-		// construct an randomized kd-tree index using 4 kd-trees
-		flann::Index<flann::L2<real_t> > index(kpc, flann::KDTreeIndexParams(4));
-		index.buildIndex();
-	TOC(nn_time);
-	gproshan_log_var(nn_time);
-
-	TIC(nn_time);
-		// do a knn search, using 128 checks
-		flann::SearchParams sparams(128);
-		sparams.cores = 16;
-		index.knnSearch(kpc, indices, dists, nn, sparams);
-
-		//delete [] indices.ptr();
-		delete [] dists.ptr();
-
-	TOC(nn_time);
-	gproshan_log_var(nn_time);
-*/
-
-	grid_knn knn(&pc->point(0), pc->n_vertices, model_mat);
+	double nn_time = 0;
+	knn::grid nn(&pc->point(0), pc->n_vertices, model_mat);
 	std::vector<std::vector<index_t> > kpc(pc->n_vertices);
 
 	TIC(nn_time);
 	#pragma omp parallel for
 	for(index_t v = 0; v < pc->n_vertices; ++v)
-		kpc[v] = knn(vec3(model_mat * (pc->point(v), 1)), nn);
+		kpc[v] = nn(vec3(model_mat * (pc->point(v), 1)), KNN);
 
 	TOC(nn_time);
 	gproshan_log_var(nn_time);
-
+*/
 
 	vertex vnormal;
 	vertex vcenter;
@@ -161,19 +134,19 @@ std::vector<index_t> splat::planar_segmentation(che * pc, std::vector<index_t> &
 			const size_t & n = vertices.size() - segs.back();
 			vnormal = (vnormal * (n - 1) + pc->normal(front)) / n;
 			vcenter = (vcenter * (n - 1) + pc->point(front)) / n;
+
 /*
 			for(const index_t & he: pc->star(front))
 			{
 				const index_t & u = pc->halfedge(he_prev(he));
 */
-/*
-			for(index_t i = 0; i < nn; ++i)
-			{
-				const int & u = indices[front][i];
-*/
 
-			for(const index_t & u: kpc[front])
+//			for(const index_t & u: kpc[front])
+//			{
+			for(index_t i = 0; i < KNN; ++i)
 			{
+				const int & u = k3tree(front)[i];
+
 				const vertex & p = model_mat * (pc->point(u), 1);	// for adapt noisy
 				if(visited[u] == NIL &&
 					dot(vnormal, pc->normal(u)) > n_threshold)
