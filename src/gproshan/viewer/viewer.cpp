@@ -75,6 +75,9 @@ viewer::viewer(const int & width, const int & height)
 
 viewer::~viewer()
 {
+	sprintf(status_message, "frametime_%p", this);
+	save_frametime(tmp_file_path(status_message));
+
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
@@ -181,7 +184,8 @@ void viewer::imgui()
 	if(meshes.size() > 1)
 	{
 		ImGui::SetNextWindowSize(ImVec2(72, -1));
-		ImGui::SetNextWindowPos(ImVec2((mesh.vx + 1) * viewport_width - 72, (m_window_split[meshes.size()].x() - mesh.vy) * viewport_height - 100));
+		ImGui::SetNextWindowPos(ImVec2((mesh.vx + 1) * viewport_width - 72, (m_window_split[meshes.size()].x() - mesh.vy) * viewport_height - 70));
+		ImGui::SetNextWindowBgAlpha(0.0f);
 		ImGui::Begin("selected model", nullptr, ImGuiWindowFlags_NoTitleBar);
 		ImGui::TextColored({0, 1, 0, 1}, "SELECTED");
 		ImGui::End();
@@ -204,7 +208,9 @@ void viewer::imgui()
 	ImGui::Checkbox("apply options to all meshes\nmenus: [color, render, mesh]", &apply_all_meshes);
 	if(ImGui::CollapsingHeader(mesh->filename.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
 	{
+		frametime[(++nframes) % max_nframes] = render_time;
 		ImGui::Text("%13lu fps", size_t(1.0 / render_time));
+		ImGui::Text("%13.4f ms", render_time);
 		ImGui::Text("%13lu vertices", mesh->n_vertices);
 		ImGui::Text("%13lu trigs", mesh->is_scene() ? mesh->n_vertices / 3 : mesh->n_trigs);
 
@@ -462,7 +468,36 @@ bool viewer::add_mesh(che * p_mesh, const bool & reset_normals)
 	cam.aspect = real_t(viewport_width) / viewport_height;
 	proj_mat = cam.perspective();
 
+	save_history(tmp_file_path("history"));
+
 	return true;
+}
+
+void viewer::save_history(const std::string & file)
+{
+	gproshan_error_var(file);
+
+	FILE * fp = fopen(file.c_str(), "a");
+
+	const che_viewer & m = *meshes[0];
+	fprintf(fp, "%p ", this);
+	fprintf(fp, "%s ", m->name().c_str());
+	fprintf(fp, "%lu ", m->n_vertices);
+	fprintf(fp, "%lu\n", m->n_trigs);
+
+	fclose(fp);
+}
+
+void viewer::save_frametime(const std::string & file)
+{
+	gproshan_error_var(file);
+
+	FILE * fp = fopen(file.c_str(), "w");
+
+	for(index_t i = 0; i < max_nframes; ++i)
+		fprintf(fp, "%f\n", frametime[(nframes + i) % max_nframes]);
+
+	fclose(fp);
 }
 
 void viewer::framebuffer_size_callback(GLFWwindow * window, int width, int height)
@@ -495,7 +530,6 @@ void viewer::keyboard_callback(GLFWwindow * window, int key, int, int action, in
 		pro.selected = view->hide_imgui ? pro.function(view) && pro.selected : !pro.selected;
 		snprintf(view->status_message, sizeof(view->status_message), "%s", pro.selected ? pro.name.c_str() : "");
 	}
-
 }
 
 void viewer::mouse_callback(GLFWwindow * window, int button, int action, int mods)

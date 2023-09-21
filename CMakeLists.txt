@@ -59,6 +59,7 @@ find_package(Armadillo REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(CGAL REQUIRED)
 find_package(SuiteSparse REQUIRED)
+find_package(flann REQUIRED)
 
 
 include_directories(SYSTEM ${embree_INCLUDE_DIRS})
@@ -68,6 +69,7 @@ include_directories(SYSTEM ${AMADILLO_INCLUDE_DIR})
 include_directories(SYSTEM ${EIGEN3_INCLUDE_DIRS})
 include_directories(SYSTEM ${CGAL_INCLUDE_DIRS})
 include_directories(SYSTEM ${SuiteSparse_INCLUDE_DIRS})
+include_directories(SYSTEM ${flann_INCLUDE_DIRS})
 
 
 add_subdirectory(src)			# gproshan library
