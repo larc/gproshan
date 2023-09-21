@@ -108,9 +108,19 @@ k3tree::~k3tree()
 	delete [] indices.ptr();
 }
 
-int * k3tree::operator () (const index_t & i) const
+const int * k3tree::operator [] (const index_t & i) const
 {
 	return indices[i];
+}
+
+const int * k3tree::operator () (const index_t & i) const
+{
+	return indices[i];
+}
+
+const int & k3tree::operator () (const index_t & i, const index_t & j) const
+{
+	return indices[i][j];
 }
 
 

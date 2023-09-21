@@ -161,7 +161,7 @@ bool app_viewer::process_knn(viewer * p_view)
 				for(const index_t & p: query)
 				{
 					const int * result = k3tree(p);
-					for(index_t i = 0; i < 8; ++i)
+					for(int i = 0; i < k; ++i)
 						mesh.selected.push_back(result[i]);
 				}
 			}
