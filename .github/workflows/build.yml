@@ -37,9 +37,9 @@ jobs:
                           wget
         wget http://mirrors.kernel.org/ubuntu/pool/universe/f/flann/libflann-dev_1.9.2+dfsg-1_amd64.deb
         wget http://mirrors.kernel.org/ubuntu/pool/universe/f/flann/libflann1.9_1.9.2+dfsg-1_amd64.deb
-        sudo dpkg -i libflann1.9_1.9.2+dfsg-1_amd64.deb
-        sudo dpkg -i libflann-dev_1.9.2+dfsg-1_amd64.deb
-        sudo apt install -f
+        sudo dpkg -i libflann1.9_1.9.2+dfsg-1_amd64.deb || sudo apt install -f
+        sudo dpkg -i libflann-dev_1.9.2+dfsg-1_amd64.deb || sudo apt install -f
+        
 
     - name: Install Cuda
       if: matrix.cuda == 'cuda'
