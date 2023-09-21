@@ -58,7 +58,9 @@ class k3tree
 		k3tree(const point * pc, const size_t & n_points, const size_t & k = 8, const std::vector<point> & query = {});
 		~k3tree();
 
-		int * operator () (const index_t & i) const;
+		const int * operator [] (const index_t & i) const;
+		const int * operator () (const index_t & i) const;
+		const int & operator () (const index_t & i, const index_t & j) const;
 };
 
 
