@@ -126,7 +126,7 @@ void splat_hit(t_eval_hit<T> & hit, const CHE & pc, const splats_data & sd, cons
 	end = end > s.end ? s.end : end;
 
 	T w, sum_w = 1e-5;
-	for(index_t v = begin; v < end; ++v)
+	for(index_t v = s.begin; v < s.end; ++v)
 	{
 		vec<T, 3> p = pc.GT[v];
 		p.z() = p.x() * p.x() + p.y() * p.y();
@@ -145,7 +145,7 @@ void splat_hit(t_eval_hit<T> & hit, const CHE & pc, const splats_data & sd, cons
 		position += w * q;
 	}
 
-	normal = {0,0,-1};//normalize(normal);
+	normal = normalize(normal);
 	color /= sum_w;
 	position /= sum_w;
 
