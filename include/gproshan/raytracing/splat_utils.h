@@ -104,7 +104,7 @@ index_t binary_search(const T * data, index_t i, index_t j, const T & value)
 
 template <class T>
 __host_device__
-void splat_hit(t_eval_hit<T> & hit, const CHE & pc, const splats_data & sd, const index_t & aprimID, const vec<T, 3> & x, const int & k)
+void splat_hit(t_eval_hit<T> & hit, const CHE & pc, const splats_data & sd, const index_t & aprimID, const vec<T, 3> & x, const vec<T, 3> & d, const int & k)
 {
 	hit.primID = aprimID;
 	const index_t sid = sd.primID_splat[hit.primID];
@@ -129,17 +129,18 @@ void splat_hit(t_eval_hit<T> & hit, const CHE & pc, const splats_data & sd, cons
 	for(index_t v = begin; v < end; ++v)
 	{
 		const vec<T, 3> & p = pc.GT[v];
+		const vec<T, 3> & q = dot(d, p - x) * d + x;
 
-		w = 1 - length(x - p) / s.radius;
-		//w = exp(- w * w / sigma2);
+		w = length(p - q);
 		sum_w += w;
 
 		const che::rgb_t & c = pc.VC[v];
 		vec<T, 3> vc = {T(c.r), T(c.g), T(c.b)};
 		vc /= 255;
+		
 		normal += w * pc.VN[v];
 		color += w * vc;
-		position += w * p;
+		position += w * q;
 	}
 
 	normal /= sum_w;

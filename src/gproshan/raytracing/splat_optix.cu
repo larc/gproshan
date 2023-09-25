@@ -41,7 +41,7 @@ extern "C" __global__ void __closesthit__radiance()
 	const CHE & mesh = **(const CHE **) optixGetSbtDataPointer();
 
 	const int primID = optixGetPrimitiveIndex();
-	float2 bar = optixGetTriangleBarycentrics();
+	const float2 bar = optixGetTriangleBarycentrics();
 
 	OptixTraversableHandle gas = optixGetGASTraversableHandle();
 	const index_t sbtID = optixGetSbtGASIndex();
@@ -56,8 +56,10 @@ extern "C" __global__ void __closesthit__radiance()
 
 	splats_data * splats_pcs = (splats_data *) optix_params.other;
 
+	const float3 dir = optixGetWorldRayDirection();
+
 	eval_hit hit;
-	splat_hit(hit, mesh, splats_pcs[sbtID], primID, (1.f - bar.x - bar.y) * A + bar.x * B + bar.y * C, 1);
+	splat_hit(hit, mesh, splats_pcs[sbtID], primID, (1.f - bar.x - bar.y) * A + bar.x * B + bar.y * C, {dir.x, dir.y, dir.z}, 1);
 
 	vec3 li = eval_li(hit, optix_params.lights, optix_params.n_lights, optix_params.cam_pos,
 						[&](const vec3 & position, const vec3 & wi, const float & light_dist) -> bool

@@ -221,7 +221,7 @@ std::vector<index_t> splat::voronoi_subdivision(std::vector<index_t> & voronoi_s
 
 	for(const auto & r: regions)
 	{
-		if(r.size() < 16) continue;
+		if(r.size() < 3) continue;
 
 		for(const index_t & v: r)
 			voronoi_set.push_back(v);
