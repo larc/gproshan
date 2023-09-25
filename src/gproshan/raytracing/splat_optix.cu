@@ -80,7 +80,7 @@ extern "C" __global__ void __closesthit__radiance()
 										1,	// missSBTIndex
 										occluded);
 
-							return occluded != 0;
+							return 0;
 						});
 
 	vec4 & pixel_color = *ray_data<vec4>();
