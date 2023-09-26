@@ -15,7 +15,7 @@ namespace gproshan::rt {
 
 int splat::k = 1;
 real_t splat::n_threshold = 0.9;
-real_t splat::delta = 0.01;
+real_t splat::delta = 0.05;
 
 splat::splat(const std::vector<che *> & pcs, const std::vector<mat4> & model_mats)
 {
