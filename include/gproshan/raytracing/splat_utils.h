@@ -106,7 +106,7 @@ template <class T>
 __host_device__
 void splat_hit(t_eval_hit<T> & hit, const CHE & pc, const splats_data & sd, const index_t & aprimID, const vec<T, 3> & x, const vec<T, 3> & d, const T & tray)
 {
-	const index_t k = 1 << ((8 - int(4 * tray)) + 2);
+	const index_t k = powf(2, 10 - 4 * tray) + 2;
 
 	hit.primID = aprimID;
 	const index_t sid = sd.primID_splat[hit.primID];
@@ -149,26 +149,6 @@ void splat_hit(t_eval_hit<T> & hit, const CHE & pc, const splats_data & sd, cons
 	position /= sum_w;
 
 	return;
-
-/*
-	color = length(x - s.center) / s.radius;
-
-	static int a = 0;
-	if(!sid && a < 100)
-	{
-		gproshan_log_var(length(x - s.center) / s.radius);
-		gproshan_log_var(s.morton2d(x));
-		vertex p = (s.tbn * (x - s.center)) / s.radius;
-		gproshan_log_var(((p + 1)/2) * 1024);
-		gproshan_log_var((p.x() + 1) / 2);
-		unsigned int aa, bb;
-		gproshan_log_var(aa = expand_bits((p.x() + 1) / 2));
-		gproshan_log_var(bb = expand_bits((p.y() + 1) / 2));
-		gproshan_log_var((aa << 1) | bb);
-		gproshan_log_var(morton_2d((p.x() + 1) / 2, (p.y() + 1) / 2));
-		++a;
-	}
-*/
 }
 
 
