@@ -56,10 +56,15 @@ extern "C" __global__ void __closesthit__radiance()
 
 	splats_data * splats_pcs = (splats_data *) optix_params.other;
 
-	const float3 dir = optixGetWorldRayDirection();
+	const float3 o = optixGetWorldRayOrigin();
+	const float3 d = optixGetWorldRayDirection();
+	const vertex org = {o.x, o.y, o.z};
+	const vertex dir = {d.x, d.y, d.z};
+	const vertex x = (1.f - bar.x - bar.y) * A + bar.x * B + bar.y * C;
+	const int k = 10 - 4 * length(x - org);
 
 	eval_hit hit;
-	splat_hit(hit, mesh, splats_pcs[sbtID], primID, (1.f - bar.x - bar.y) * A + bar.x * B + bar.y * C, {dir.x, dir.y, dir.z}, 64);
+	splat_hit(hit, mesh, splats_pcs[sbtID], primID, x, dir, 1 << ((k < 2) ? 2 : k));
 
 	vec3 li = eval_li(hit, optix_params.lights, optix_params.n_lights, optix_params.cam_pos,
 						[&](const vec3 & position, const vec3 & wi, const float & light_dist) -> bool
