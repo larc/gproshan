@@ -37,7 +37,7 @@ class embree : public raytracing
 		std::vector<CHE *> g_meshes;
 		scene_data sc;
 
-		float pc_radius = 1;
+		float pc_radius = 0.01;
 
 	public:
 		embree();
