@@ -812,11 +812,12 @@ bool viewer::m_setup_raytracing(viewer * view)
 
 	ImGui::Combo("rt", &rt, "Select\0Embree\0OptiX\0Splat Test\0Splat Embree\0Splat OptiX\0\0");
 
-	//static const size_t min_neighbors = 1 << 3;
-	//static const size_t max_neighbors = 1 << 10;
-
 	if(rt > 2)
-		ImGui::SliderInt("k_neighbors", &rt::splat::k, 1, 1 << 8);
+	{
+		ImGui::SliderInt("k_nn", &rt::splat::k_nn, 1, 1 << 10);
+		ImGui::SliderFloat("t_normal", &rt::splat::t_normal, 0, 1);
+		ImGui::SliderFloat("d_overlap", &rt::splat::d_overlap, 0, 1);
+	}
 
 	if(ImGui::Button("Build"))
 	{

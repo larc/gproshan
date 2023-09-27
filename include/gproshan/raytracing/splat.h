@@ -11,9 +11,9 @@ class splat
 {
 	public:
 		std::vector<che *> pointclouds;
-		static int k;
-		static real_t n_threshold;
-		static real_t delta;
+		static int k_nn;
+		static real_t t_normal;
+		static real_t d_overlap;
 
 	protected:
 		std::vector<splats_data> splats_pcs;

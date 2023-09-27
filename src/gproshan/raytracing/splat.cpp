@@ -13,9 +13,9 @@
 namespace gproshan::rt {
 
 
-int splat::k = 1;
-real_t splat::n_threshold = 0.9;
-real_t splat::delta = 0.05;
+int splat::k_nn = 8;
+real_t splat::t_normal = 0.9;
+real_t splat::d_overlap = 0.05;
 
 splat::splat(const std::vector<che *> & pcs, const std::vector<mat4> & model_mats)
 {
@@ -93,9 +93,7 @@ std::vector<index_t> splat::planar_segmentation(che * pc, std::vector<index_t> &
 	std::vector<index_t> visited;
 	visited.assign(pc->n_vertices, -1);
 
-	const size_t KNN = 8;
-
-	knn::k3tree k3tree(&pc->point(0), pc->n_vertices, KNN);
+	knn::k3tree k3tree(&pc->point(0), pc->n_vertices, k_nn);
 
 	vertex vnormal;
 	vertex vcenter;
@@ -123,13 +121,13 @@ std::vector<index_t> splat::planar_segmentation(che * pc, std::vector<index_t> &
 			vcenter = (vcenter * (n - 1) + pc->point(front)) / n;
 
 			const int * nn = k3tree(front);
-			for(index_t i = 0; i < KNN; ++i)
+			for(int i = 0; i < k_nn; ++i)
 			{
 				const int & u = nn[i];
 
 				const vertex & p = model_mat * (pc->point(u), 1);	// for adapt noisy
 				if(visited[u] == NIL &&
-					dot(vnormal, pc->normal(u)) > n_threshold)
+					dot(vnormal, pc->normal(u)) > t_normal)
 				{
 					q.push(u);
 					visited[u] = 0;
@@ -211,7 +209,7 @@ std::vector<index_t> splat::voronoi_subdivision(std::vector<index_t> & voronoi_s
 		const index_t & v = vertices[i];
 		const real_t & d = length(points[v] - points[s]);
 
-		if(d < dist[i - seg_begin] + delta * radio)
+		if(d < dist[i - seg_begin] + d_overlap * radio)
 			regions[j].push_back(v);
 	}
 
