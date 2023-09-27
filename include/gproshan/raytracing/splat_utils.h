@@ -104,8 +104,10 @@ index_t binary_search(const T * data, index_t i, index_t j, const T & value)
 
 template <class T>
 __host_device__
-void splat_hit(t_eval_hit<T> & hit, const CHE & pc, const splats_data & sd, const index_t & aprimID, const vec<T, 3> & x, const vec<T, 3> & d, const int & k)
+void splat_hit(t_eval_hit<T> & hit, const CHE & pc, const splats_data & sd, const index_t & aprimID, const vec<T, 3> & x, const vec<T, 3> & d, const T & tray)
 {
+	const index_t k = 1 << ((8 - int(4 * tray)) + 2);
+
 	hit.primID = aprimID;
 	const index_t sid = sd.primID_splat[hit.primID];
 	const splat_t<T> & s = sd.splats[sid];
