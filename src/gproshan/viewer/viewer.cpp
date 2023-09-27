@@ -809,10 +809,8 @@ bool viewer::m_setup_raytracing(viewer * view)
 
 	static int rt = 0;
 	static double time = 0;
-	static float pc_radius = 0.01;
 
 	ImGui::Combo("rt", &rt, "Select\0Embree\0OptiX\0Splat Test\0Splat Embree\0Splat OptiX\0\0");
-	ImGui::InputFloat("pc_radius (if render_pointcloud)", &pc_radius, 0, 0, "%.3f");
 
 	//static const size_t min_neighbors = 1 << 3;
 	//static const size_t max_neighbors = 1 << 10;
@@ -829,7 +827,7 @@ bool viewer::m_setup_raytracing(viewer * view)
 			case R_EMBREE:
 				delete mesh.rt_embree;
 				TIC(time);
-					mesh.rt_embree = new rt::embree({mesh}, {mesh.model_mat}, mesh.render_pointcloud, pc_radius);
+					mesh.rt_embree = new rt::embree({mesh}, {mesh.model_mat}, mesh.render_pointcloud);
 				TOC(time);
 				snprintf(view->status_message, sizeof(view->status_message), "build embree in %.3fs", time);
 				break;
@@ -876,6 +874,18 @@ bool viewer::m_setup_raytracing(viewer * view)
 			#endif // GPROSHAN_OPTIX
 				break;
 		}
+
+
+		FILE * fp = fopen(tmp_file_path("rt_build_times").c_str(), "a");
+
+		fprintf(fp, "dev %p ", view);
+		fprintf(fp, "%s ", mesh->name().c_str());
+		fprintf(fp, "%lu ", mesh->n_vertices);
+		fprintf(fp, "%lu ", mesh->n_trigs);
+		fprintf(fp, "%u ", rt);
+		fprintf(fp, "%f\n", time);
+
+		fclose(fp);
 	}
 
 	return true;

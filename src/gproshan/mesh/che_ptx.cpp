@@ -144,6 +144,8 @@ void che_ptx::write_file(const che * mesh, const std::string & file, const size_
 
 		fprintf(fp, "%f %f %f %f %hhu %hhu %hhu\n", (float) v.x(), (float) v.y(), (float) v.z(), (float) h, c.r, c.g, c.b );
 	}
+
+	fclose(fp);
 }
 
 
