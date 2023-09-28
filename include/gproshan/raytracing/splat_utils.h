@@ -60,6 +60,7 @@ struct splats_data
 	splats_data(const size_t & np, const size_t & ns): n_splats(ns)
 	{
 		morton_codes = new unsigned int[np];
+		gproshan_error_var(np);
 		splats = new splat_t<real_t>[n_splats];
 	}
 
@@ -78,6 +79,7 @@ struct splats_data
 
 	~splats_data()
 	{
+		gproshan_error_var(morton_codes);
 		delete morton_codes;
 		delete primID_splat;
 		delete splats;
@@ -124,7 +126,7 @@ void splat_hit(t_eval_hit<T> & hit, const CHE & pc, const splats_data & sd, cons
 
 	begin = h - k;
 	end = h + k;
-	begin = begin < s.begin || begin > end ? s.begin : begin;
+	begin = (begin < s.begin || begin > s.end) ? s.begin : begin;
 	end = end > s.end ? s.end : end;
 
 	T w, sum_w = 1e-5;
