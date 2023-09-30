@@ -57,10 +57,8 @@ struct splats_data
 
 	splats_data() = default;
 
-	splats_data(const size_t & np, const size_t & ns): n_splats(ns)
+	splats_data(const size_t & ns): n_splats(ns)
 	{
-		morton_codes = new unsigned int[np];
-		gproshan_error_var(np);
 		splats = new splat_t<real_t>[n_splats];
 	}
 
@@ -79,7 +77,6 @@ struct splats_data
 
 	~splats_data()
 	{
-		gproshan_error_var(morton_codes);
 		delete morton_codes;
 		delete primID_splat;
 		delete splats;

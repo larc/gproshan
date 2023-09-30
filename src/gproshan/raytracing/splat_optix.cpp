@@ -13,8 +13,6 @@ splat_optix::splat_optix(const std::vector<che *> & meshes, const std::vector<ma
 	optix_params.traversable = build_as(pointclouds, {mat4::identity()});
 	build_sbt();
 
-	gproshan_error_var(splats_pcs.size());
-
 	d_splats_pcs.resize(splats_pcs.size());
 
 	for(index_t i = 0; i < splats_pcs.size(); ++i)
@@ -23,21 +21,13 @@ splat_optix::splat_optix(const std::vector<che *> & meshes, const std::vector<ma
 		const splats_data & h = splats_pcs[i];
 		splats_data & d = d_splats_pcs[i];
 
-	gproshan_error_var(p.n_vertices);	
-
 		d.n_splats = h.n_splats;
-	gproshan_error(SO);	
 		cudaMalloc(&d.morton_codes, sizeof(unsigned int) * p.n_vertices);
-	gproshan_error(SO);	
 		cudaMalloc(&d.primID_splat, sizeof(index_t) * p.n_trigs);
-	gproshan_error(SO);	
 		cudaMalloc(&d.splats, sizeof(splat_t<real_t>) * d.n_splats);
-	gproshan_error(SO);	
 
 		cudaMemcpy(d.morton_codes, h.morton_codes, sizeof(unsigned int) * p.n_vertices, cudaMemcpyHostToDevice);
-	gproshan_error(SO);	
 		cudaMemcpy(d.primID_splat, h.primID_splat, sizeof(index_t) * p.n_trigs, cudaMemcpyHostToDevice);
-	gproshan_error(SO);	
 		cudaMemcpy(d.splats, h.splats, sizeof(splat_t<real_t>) * d.n_splats, cudaMemcpyHostToDevice);
 
 		gproshan_error_var(d.n_splats);
