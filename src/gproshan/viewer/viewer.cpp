@@ -814,7 +814,9 @@ bool viewer::m_setup_raytracing(viewer * view)
 
 	if(rt > 2)
 	{
-		ImGui::SliderInt("k_nn", &rt::splat::k_nn, 1, 1 << 10);
+		const static size_t knn_min = 1;
+		const static size_t knn_max = 1 << 10;
+		ImGui::SliderScalar("k_nn", ImGuiDataType_U64, &rt::splat::k_nn, &knn_min, &knn_max);
 		ImGui::SliderFloat("t_normal", &rt::splat::t_normal, 0, 1);
 		ImGui::SliderFloat("d_overlap", &rt::splat::d_overlap, 0, 1);
 	}

@@ -2,6 +2,8 @@
 #define SPLAT_H
 
 #include <gproshan/raytracing/splat_utils.h>
+#include <gproshan/pointcloud/knn.h>
+
 
 // geometry processing and shape analysis framework
 namespace gproshan::rt {
@@ -11,11 +13,12 @@ class splat
 {
 	public:
 		std::vector<che *> pointclouds;
-		static int k_nn;
+		static size_t k_nn;
 		static real_t t_normal;
 		static real_t d_overlap;
-	
+
 	private:
+		double time = 0;
 		double time_knn = 0;
 		double time_segmentation = 0;
 		double time_subdivision = 0;
@@ -31,7 +34,10 @@ class splat
 	private:
 		void add_splats(che * pc, const mat4 & model_mat);
 
-		std::vector<index_t> planar_segmentation(che * pc, std::vector<index_t> & vertices, const mat4 & model_mat);
+		std::vector<index_t> planar_segmentation(	const che * pc,
+													std::vector<index_t> & vertices,
+													const knn::k3tree & k3tree
+													);
 
 		std::vector<index_t> voronoi_subdivision(	std::vector<index_t> & voronoi_set,
 													const vertex * points,
@@ -40,7 +46,11 @@ class splat
 													const index_t & seg_end
 													);
 
-		void init_splats(const che * mesh, const mat4 & model_mat, std::vector<index_t> & vertices, const std::vector<index_t> & idx_splats);
+		che * init_splats(	const che * mesh,
+							const mat4 & model_mat,
+							std::vector<index_t> & vertices,
+							const std::vector<index_t> & idx_splats
+							);
 
 		void display_sets(che * mesh, const std::vector<index_t> & sets, const index_t * mapid = nullptr);
 

@@ -2,7 +2,6 @@
 
 #include <gproshan/raytracing/splat_utils.h>
 #include <gproshan/geometry/convex_hull.h>
-#include <gproshan/pointcloud/knn.h>
 
 #include <queue>
 #include <numeric>
@@ -13,9 +12,9 @@
 namespace gproshan::rt {
 
 
-int splat::k_nn = 8;
+size_t splat::k_nn = 8;
 real_t splat::t_normal = 0.9;
-real_t splat::d_overlap = 0.05;
+real_t splat::d_overlap = 0.1;
 
 splat::splat(const std::vector<che *> & pcs, const std::vector<mat4> & model_mats)
 {
@@ -31,10 +30,20 @@ splat::~splat()
 
 void splat::add_splats(che * pc, const mat4 & model_mat)
 {
+	TIC(time);
+	knn::k3tree k3tree(&pc->point(0), pc->n_vertices, splat::k_nn);
+	TOC(time);
+	time_knn += time;
+
+
+	TIC(time);
 	std::vector<index_t> vertices;
 	vertices.reserve(pc->n_vertices);
 
-	std::vector<index_t> segs = planar_segmentation(pc, vertices, model_mat);
+	const std::vector<index_t> segs = planar_segmentation(pc, vertices, k3tree);
+	TOC(time);
+	time_segmentation += time;
+
 
 	gproshan_error_var(segs.size() - 1);
 	gproshan_error_var(vertices.size());
@@ -42,13 +51,18 @@ void splat::add_splats(che * pc, const mat4 & model_mat)
 	display_sets(pc, segs, vertices.data());
 
 
+	TIC(time);
 	std::vector<index_t> voronois[segs.size() - 1];
 	std::vector<index_t> voronoi_sets[segs.size() - 1];
 
 	#pragma omp parallel for
 	for(index_t i = 1; i < segs.size(); ++i)
 		voronois[i - 1] = voronoi_subdivision(voronoi_sets[i - 1], &pc->point(0), vertices, segs[i - 1], segs[i]);
+	TOC(time);
+	time_subdivision += time;
 
+
+	TIC(time);
 	size_t n_points = 0;
 	for(const auto & vs: voronoi_sets)
 		n_points += vs.size();
@@ -57,10 +71,6 @@ void splat::add_splats(che * pc, const mat4 & model_mat)
 	for(const auto & voronoi: voronois)
 	for(const auto & size: voronoi)
 		splats.push_back(splats.back() + size);
-
-	gproshan_error_var(n_points);
-	gproshan_error_var(splats.back());
-	gproshan_error_var(splats.size() - 1);
 
 	vertices.resize(n_points);
 
@@ -71,14 +81,27 @@ void splat::add_splats(che * pc, const mat4 & model_mat)
 		n_points += vs.size();
 	}
 
-	gproshan_log_var(n_points);
-	gproshan_log_var(vertices.size());
+	che * new_pc = init_splats(pc, model_mat, vertices, splats);
+	pointclouds.push_back(new_pc);
+	TOC(time);
+	time_initsplats += time;
 
 
-	init_splats(pc, model_mat, vertices, splats);
+	display_sets(new_pc, splats);
+
+	gproshan_error_var(vertices.size());
+	gproshan_error_var(splats.back());
+	gproshan_error_var(splats.size() - 1);
+
+	gproshan_error_var(new_pc->n_vertices);
+	gproshan_error_var(new_pc->n_trigs);
+
+	time = time_knn + time_segmentation + time_subdivision + time_initsplats;
+
+	gproshan_error_var(time);
 }
 
-std::vector<index_t> splat::planar_segmentation(che * pc, std::vector<index_t> & vertices, const mat4 & model_mat)
+std::vector<index_t> splat::planar_segmentation(const che * pc, std::vector<index_t> & vertices, const knn::k3tree & k3tree)
 {
 	vertices.clear();
 	vertices.reserve(pc->n_vertices);
@@ -93,7 +116,6 @@ std::vector<index_t> splat::planar_segmentation(che * pc, std::vector<index_t> &
 	std::vector<index_t> visited;
 	visited.assign(pc->n_vertices, -1);
 
-	knn::k3tree k3tree(&pc->point(0), pc->n_vertices, k_nn);
 
 	vertex vnormal;
 	vertex vcenter;
@@ -121,13 +143,12 @@ std::vector<index_t> splat::planar_segmentation(che * pc, std::vector<index_t> &
 			vcenter = (vcenter * (n - 1) + pc->point(front)) / n;
 
 			const int * nn = k3tree(front);
-			for(int i = 0; i < k_nn; ++i)
+			for(index_t i = 0; i < k_nn; ++i)
 			{
 				const int & u = nn[i];
 
-				const vertex & p = model_mat * (pc->point(u), 1);	// for adapt noisy
-				if(visited[u] == NIL &&
-					dot(vnormal, pc->normal(u)) > t_normal)
+//				const vertex & p = model_mat * (pc->point(u), 1);	// for adapt noisy
+				if(visited[u] == NIL && dot(vnormal, pc->normal(u)) > splat::t_normal)
 				{
 					q.push(u);
 					visited[u] = 0;
@@ -141,7 +162,7 @@ std::vector<index_t> splat::planar_segmentation(che * pc, std::vector<index_t> &
 			q.pop();
 		}
 
-		if(vertices.size() - segs.back() < 16)
+		if(vertices.size() - segs.back() < splat::k_nn)
 		{
 			for(index_t i = segs.back(); i < vertices.size(); ++i)
 				visited[vertices[i]] = NIL;
@@ -209,7 +230,7 @@ std::vector<index_t> splat::voronoi_subdivision(std::vector<index_t> & voronoi_s
 		const index_t & v = vertices[i];
 		const real_t & d = length(points[v] - points[s]);
 
-		if(d < dist[i - seg_begin] + d_overlap * radio)
+		if(d < dist[i - seg_begin] + splat::d_overlap * radio)
 			regions[j].push_back(v);
 	}
 
@@ -219,7 +240,7 @@ std::vector<index_t> splat::voronoi_subdivision(std::vector<index_t> & voronoi_s
 
 	for(const auto & r: regions)
 	{
-		if(r.size() < 16) continue;
+		if(r.size() < splat::k_nn) continue;
 
 		for(const index_t & v: r)
 			voronoi_set.push_back(v);
@@ -230,7 +251,7 @@ std::vector<index_t> splat::voronoi_subdivision(std::vector<index_t> & voronoi_s
 	return voronoi;
 }
 
-void splat::init_splats(const che * mesh, const mat4 & model_mat, std::vector<index_t> & vertices, const std::vector<index_t> & idx_splats)
+che * splat::init_splats(const che * mesh, const mat4 & model_mat, std::vector<index_t> & vertices, const std::vector<index_t> & idx_splats)
 {
 	std::vector<vertex> points(vertices.size());
 	std::vector<index_t> trigs;
@@ -327,9 +348,6 @@ void splat::init_splats(const che * mesh, const mat4 & model_mat, std::vector<in
 	for(convex_hull * ch: splat_chs)
 		delete ch;
 
-	gproshan_error_var(points.size());
-	gproshan_error_var(trigs.size());
-
 	che * pc = new che(points.data(), points.size(), trigs.data(), trigs.size() / 3);
 
 	#pragma omp parallel for
@@ -358,21 +376,20 @@ void splat::init_splats(const che * mesh, const mat4 & model_mat, std::vector<in
 			spc.morton_codes[j] = s.morton2d(points[j]);
 	}
 
-	pointclouds.push_back(pc);
 	splats_pcs.emplace_back(std::move(spc));
 
-	display_sets(pc, idx_splats);
+	return pc;
 }
 
 void splat::display_sets(che * pc, const std::vector<index_t> & sets, const index_t * mapid)
 {
-	std::vector<int> color(sets.size() - 1);
+	std::vector<int> color(sets.size());
 	std::iota(color.begin(), color.end(), 0);
 	std::random_shuffle(color.begin(), color.end());
 
 	for(index_t i = 1; i < sets.size(); ++i)
 	for(index_t j = sets[i - 1]; j < sets[i]; ++j)
-		pc->heatmap(mapid ? mapid[j] : j) = real_t(color[i - 1]) / (color.size() - 1);
+		pc->heatmap(mapid ? mapid[j] : j) = real_t(color[i]) / color.size();
 }
 
 void splat::save_stats(const std::string & file) const
@@ -381,11 +398,7 @@ void splat::save_stats(const std::string & file) const
 
 	FILE * fp = fopen(file.c_str(), "a");
 
-	const che_viewer & m = *meshes[0];
 	fprintf(fp, "%p ", this);
-	fprintf(fp, "%s ", m->name().c_str());
-	fprintf(fp, "%lu ", m->n_vertices);
-	fprintf(fp, "%lu\n", m->n_trigs);
 
 	fclose(fp);
 }
