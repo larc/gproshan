@@ -288,15 +288,15 @@ void splat::init_splats(const che * mesh, const mat4 & model_mat, std::vector<in
 
 		splat_chs[i] = new convex_hull(points.data() + s.begin, s.end - s.begin);
 
-		real_t h = INFINITY;
+//		real_t h = INFINITY;
 		for(index_t j = s.begin; j < s.end; ++j)
 		{
 			vertex & p = points[j];
 			p = mat3::transpose(tbn) * p + center;
-			h = std::min(h, dot(p - center, normal));
+//			h = std::min(h, dot(p - center, normal));
 		}
 
-		center += h * normal;
+//		center += h * normal;
 	}
 
 	std::vector<index_t> primID_splat;

@@ -94,7 +94,7 @@ index_t binary_search(const T * data, index_t i, index_t j, const T & value)
 		if(data[m] == value)
 			return m;
 
-		data[m] < value ? i = m + 1 : j = m - 1;
+		data[m] < value ? i = m + 1 : j = m;
 	}
 
 	return i;
@@ -105,7 +105,7 @@ template <class T>
 __host_device__
 void splat_hit(t_eval_hit<T> & hit, const CHE & pc, const splats_data & sd, const index_t & aprimID, const vec<T, 3> & x, const vec<T, 3> & d, const T & tray)
 {
-	const index_t k = powf(2, 10 - 4 * tray) + 2;
+	const index_t k = powf(2, 10 - 4 * tray) + 1;
 
 	hit.primID = aprimID;
 	const index_t sid = sd.primID_splat[hit.primID];
@@ -117,9 +117,9 @@ void splat_hit(t_eval_hit<T> & hit, const CHE & pc, const splats_data & sd, cons
 	const index_t & h = binary_search(sd.morton_codes, begin, end - 1, s.morton2d(x));
 	const real_t & sigma2 = length(pc.GT[h] - x) / 1000;
 
-	vec<T, 3> & color = hit.Kd = {0, 0, 0};
-	vec<T, 3> & normal = hit.normal = {0, 0, 0};
-	vec<T, 3> & position = hit.position = {0, 0, 0};
+	vec<T, 3> & color = hit.Kd = 0;
+	vec<T, 3> & normal = hit.normal = 0;
+	vec<T, 3> & position = hit.position = 0;
 
 	begin = h - k;
 	end = h + k;
@@ -146,6 +146,13 @@ void splat_hit(t_eval_hit<T> & hit, const CHE & pc, const splats_data & sd, cons
 	normal = normalize(normal);
 	color /= sum_w;
 	position /= sum_w;
+
+	if(sum_w <= 2e-5)
+	{
+		normal = pc.VN[h];
+		color = 0;
+		position = x;
+	}
 
 	return;
 }
