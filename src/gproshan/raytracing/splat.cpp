@@ -375,6 +375,21 @@ void splat::display_sets(che * pc, const std::vector<index_t> & sets, const inde
 		pc->heatmap(mapid ? mapid[j] : j) = real_t(color[i - 1]) / (color.size() - 1);
 }
 
+void splat::save_stats(const std::string & file) const
+{
+	gproshan_error_var(file);
+
+	FILE * fp = fopen(file.c_str(), "a");
+
+	const che_viewer & m = *meshes[0];
+	fprintf(fp, "%p ", this);
+	fprintf(fp, "%s ", m->name().c_str());
+	fprintf(fp, "%lu ", m->n_vertices);
+	fprintf(fp, "%lu\n", m->n_trigs);
+
+	fclose(fp);
+}
+
 
 } // namespace gproshan
 

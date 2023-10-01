@@ -14,6 +14,12 @@ class splat
 		static int k_nn;
 		static real_t t_normal;
 		static real_t d_overlap;
+	
+	private:
+		double time_knn = 0;
+		double time_segmentation = 0;
+		double time_subdivision = 0;
+		double time_initsplats = 0;
 
 	protected:
 		std::vector<splats_data> splats_pcs;
@@ -37,6 +43,8 @@ class splat
 		void init_splats(const che * mesh, const mat4 & model_mat, std::vector<index_t> & vertices, const std::vector<index_t> & idx_splats);
 
 		void display_sets(che * mesh, const std::vector<index_t> & sets, const index_t * mapid = nullptr);
+
+		void save_stats(const std::string & file) const;
 };
 
 
