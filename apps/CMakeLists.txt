@@ -16,3 +16,6 @@ target_link_libraries(test_image_denoising gproshan)
 add_executable(test_scanner test_scanner.cpp)
 target_link_libraries(test_scanner gproshan)
 
+add_executable(test_splats test_splats.cpp)
+target_link_libraries(test_splats gproshan)
+
