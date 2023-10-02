@@ -17,14 +17,12 @@ class splat
 		static real_t t_normal;
 		static real_t d_overlap;
 
-	private:
 		double time = 0;
 		double time_knn = 0;
 		double time_segmentation = 0;
 		double time_subdivision = 0;
 		double time_initsplats = 0;
 
-	protected:
 		std::vector<splats_data> splats_pcs;
 
 	public:
