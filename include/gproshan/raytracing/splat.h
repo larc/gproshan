@@ -29,6 +29,8 @@ class splat
 		splat(const std::vector<che *> & meshes, const std::vector<mat4> & model_mats);
 		virtual ~splat();
 
+		void save_histogram(const std::string & file) const;
+
 	private:
 		void add_splats(che * pc, const mat4 & model_mat);
 
@@ -51,8 +53,6 @@ class splat
 							);
 
 		void display_sets(che * mesh, const std::vector<index_t> & sets, const index_t * mapid = nullptr);
-
-		void save_stats(const std::string & file) const;
 };
 
 

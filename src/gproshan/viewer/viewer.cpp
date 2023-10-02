@@ -852,7 +852,7 @@ bool viewer::m_setup_raytracing(viewer * view)
 					splat_test = new rt::splat({mesh}, {mesh.model_mat});
 				TOC(time);
 				mesh.update_vbo_heatmap();
-				sprintf(view->status_message, "build splats in %.3fs", time);
+				snprintf(view->status_message, sizeof(view->status_message), "build splats in %.3fs", time);
 				for(che * pc: splat_test->pointclouds)
 					view->add_mesh(new che(*pc), false);
 				break;
@@ -867,7 +867,7 @@ bool viewer::m_setup_raytracing(viewer * view)
 				}
 				TOC(time);
 				mesh.update_vbo_heatmap();
-				sprintf(view->status_message, "build splat embree in %.3fs", time);
+				snprintf(view->status_message, sizeof(view->status_message), "build splat embree in %.3fs", time);
 				break;
 
 			case 5:
@@ -881,7 +881,7 @@ bool viewer::m_setup_raytracing(viewer * view)
 				}
 				TOC(time);
 				mesh.update_vbo_heatmap();
-				sprintf(view->status_message, "build splat optix in %.3fs", time);
+				snprintf(view->status_message, sizeof(view->status_message), "build splat optix in %.3fs", time);
 			#endif // GPROSHAN_OPTIX
 				break;
 		}
@@ -909,6 +909,13 @@ bool viewer::m_setup_raytracing(viewer * view)
 		}
 		else fprintf(fp, "%f\n", time);
 		fclose(fp);
+
+		if(rt > 2)
+		{
+			static char histogram[32];
+			snprintf(histogram, sizeof(histogram), "histogram_%p", splat_test);
+			splat_test->save_histogram(tmp_file_path(histogram));
+		}
 
 		if(rt == 3) delete splat_test;
 		splat_test = nullptr;

@@ -263,7 +263,7 @@ che * splat::init_splats(const che * mesh, const mat4 & model_mat, std::vector<i
 	#pragma omp parallel for
 	for(index_t i = 0; i < spc.n_splats; ++i)
 	{
-		splat_t<real_t> & s = spc.splats[i];
+		auto & s = spc.splats[i];
 
 		s.begin = idx_splats[i];
 		s.end = idx_splats[i + 1];
@@ -323,7 +323,7 @@ che * splat::init_splats(const che * mesh, const mat4 & model_mat, std::vector<i
 	std::vector<index_t> primID_splat;
 	for(index_t i = 0; i < spc.n_splats; ++i)
 	{
-		const splat_t<real_t> & s = spc.splats[i];
+		const auto & s = spc.splats[i];
 
 		std::vector<index_t> sch = *splat_chs[i];
 		for(index_t & v: sch)
@@ -368,7 +368,7 @@ che * splat::init_splats(const che * mesh, const mat4 & model_mat, std::vector<i
 	#pragma omp parallel for
 	for(index_t i = 0; i < spc.n_splats; ++i)
 	{
-		splat_t<real_t> & s = spc.splats[i];
+		auto & s = spc.splats[i];
 
 		s.begin = idx_splats[i];
 		s.end = idx_splats[i + 1];
@@ -392,13 +392,18 @@ void splat::display_sets(che * pc, const std::vector<index_t> & sets, const inde
 		pc->heatmap(mapid ? mapid[j] : j) = real_t(color[i]) / color.size();
 }
 
-void splat::save_stats(const std::string & file) const
+void splat::save_histogram(const std::string & file) const
 {
 	gproshan_error_var(file);
 
 	FILE * fp = fopen(file.c_str(), "a");
 
-	fprintf(fp, "%p ", this);
+	const splats_data & spc = splats_pcs.back();
+	for(index_t i = 0; i < spc.n_splats; ++i)
+	{
+		auto & s = spc.splats[i];
+		fprintf(fp, "%u %u\n", i, s.end - s.begin);
+	}
 
 	fclose(fp);
 }
