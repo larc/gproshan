@@ -69,7 +69,7 @@ int main()
 
 		fprintf(fp, "%20s & embree & %16lu & %16lu & %16lu & %16lu \\\\        %% %12f %12f %12f %12f %12f\n",
 					s.c_str(), e.mnv, e.pnv, e.pnt, e.ns, e.tknn, e.tseg, e.tvor, e.tisp, e.time);
-		fprintf(fp, "%20s &  optix & %16lu & %16lu & %16lu & %16lu \\\\\\hline  %% %12f %12f %12f %12f %12f\n", 
+		fprintf(fp, "%20s &  optix & %16lu & %16lu & %16lu & %16lu \\\\\\hline  %% %12f %12f %12f %12f %12f\n\n\n", 
 					s.c_str(), o.mnv, o.pnv, o.pnt, o.ns, o.tknn, o.tseg, o.tvor, o.tisp, o.time);
 	
 		printf("cp %s_%p results/frametime_%s_embree\n", tmp_file_path("frametime").c_str(), e.view, s.c_str());
