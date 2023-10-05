@@ -109,6 +109,7 @@ class viewer
 		che_viewer & selected_mesh();
 		void add_process(const int & key, const std::string & skey, const std::string & name, const function_t & f);
 		bool add_mesh(che * p_mesh, const bool & reset_normals = true);
+		void update_status_message(const char * format, ...);
 
 	protected:
 		virtual bool run();
