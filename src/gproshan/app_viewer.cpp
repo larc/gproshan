@@ -59,7 +59,7 @@ int app_viewer::main(int nargs, const char ** args)
 	for(int i = 1; i < nargs; ++i)
 		add_mesh(load_mesh(args[i]));
 	TOC(time)
-	snprintf(status_message, sizeof(status_message), "meshes loaded in %.3fs", time);
+	update_status_message("meshes loaded in %.3fs", time);
 
 	init();
 	run();
@@ -316,7 +316,7 @@ bool app_viewer::process_connected_components(viewer * p_view)
 	for(index_t v = 0; v < mesh->n_vertices; ++v)
 		label[v] /= nc;
 
-	snprintf(view->status_message, sizeof(view->status_message), "found %d connected components", nc);
+	view->update_status_message("found %d connected components", nc);
 	mesh.update_vbo_heatmap();
 
 	return false;
@@ -527,7 +527,7 @@ bool app_viewer::process_geodesics(viewer * p_view)
 		TIC(view->time)
 			geodesics dm(mesh, mesh.selected, params);
 		TOC(view->time)
-		snprintf(view->status_message, sizeof(view->status_message), "geodesics time: %.3fs", view->time);
+		view->update_status_message("geodesics time: %.3fs", view->time);
 
 		dm.normalize();
 		mesh.update_vbo_heatmap();
@@ -797,7 +797,7 @@ bool app_viewer::process_eigenfuntions(viewer * p_view)
 			n_eigs = eigs_laplacian(mesh, eigval, eigvec, L, A, n_eigs);
 		TOC(view->time)
 
-		snprintf(view->status_message, sizeof(view->status_message), "computing %lu eigs in %.3fs", n_eigs, view->time);
+		view->update_status_message("computing %lu eigs in %.3fs", n_eigs, view->time);
 
 		for(index_t k = 0; k < n_eigs; ++k)
 		{

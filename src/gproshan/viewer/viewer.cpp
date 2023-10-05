@@ -75,7 +75,7 @@ viewer::viewer(const int & width, const int & height)
 
 viewer::~viewer()
 {
-	sprintf(status_message, "frametime_%p", this);
+	update_status_message("frametime_%p", this);
 	save_frametime(tmp_file_path(status_message));
 
 	ImGui_ImplOpenGL3_Shutdown();
@@ -170,7 +170,7 @@ void viewer::imgui()
 					process_t & pro = p.second;
 					if(pro.function != nullptr && pro.sub_menu == i)
 						if(ImGui::MenuItem(pro.name.c_str(), ('[' + pro.key + ']').c_str(), &pro.selected))
-							snprintf(status_message, sizeof(status_message), "%s", pro.selected ? pro.name.c_str() : "");
+							update_status_message("%s", pro.selected ? pro.name.c_str() : "");
 
 					//ImGui::Separator();
 				}
@@ -473,6 +473,14 @@ bool viewer::add_mesh(che * p_mesh, const bool & reset_normals)
 	return true;
 }
 
+void viewer::update_status_message(const char * format, ...)
+{
+	va_list args;
+	va_start(args, format);
+	vsnprintf(status_message, sizeof(status_message), format, args);
+}
+
+
 void viewer::save_history(const std::string & file)
 {
 	gproshan_error_var(file);
@@ -528,7 +536,7 @@ void viewer::keyboard_callback(GLFWwindow * window, int key, int, int action, in
 	if(pro.function)
 	{
 		pro.selected = view->hide_imgui ? pro.function(view) && pro.selected : !pro.selected;
-		snprintf(view->status_message, sizeof(view->status_message), "%s", pro.selected ? pro.name.c_str() : "");
+		view->update_status_message("%s", pro.selected ? pro.name.c_str() : "");
 	}
 }
 
@@ -735,7 +743,7 @@ bool viewer::m_save_mesh(viewer * view)
 				break;
 		}
 
-		snprintf(view->status_message, sizeof(view->status_message), "file '%s' saved.", file);
+		view->update_status_message("file '%s' saved.", file);
 	}
 
 	return true;
@@ -820,7 +828,7 @@ bool viewer::m_setup_raytracing(viewer * view)
 				TIC(time);
 					mesh.rt_embree = new rt::embree({mesh}, {mesh.model_mat}, mesh.render_pointcloud);
 				TOC(time);
-				snprintf(view->status_message, sizeof(view->status_message), "build embree in %.3fs", time);
+				view->update_status_message("build embree in %.3fs", time);
 				break;
 
 			case R_OPTIX:
@@ -829,7 +837,7 @@ bool viewer::m_setup_raytracing(viewer * view)
 				TIC(time);
 					mesh.rt_optix = new rt::optix({mesh}, {mesh.model_mat});
 				TOC(time);
-				snprintf(view->status_message, sizeof(view->status_message), "build optix in %.3fs", time);
+				view->update_status_message("build optix in %.3fs", time);
 			#endif // GPROSHAN_OPTIX
 				break;
 		}
