@@ -53,7 +53,7 @@ int main()
 
 		fscanf(fp, "%p %lu %lu %lu", &r.splat, &r.pnv, &r.pnt, &r.ns);
 		fscanf(fp, "%lf %lf %lf %lf %lf", &r.tknn, &r.tseg, &r.tvor, &r.tisp, &r.time);
-	
+
 		if(set_pcs.find(str) != set_pcs.end())
 			table[rt - 4][str] = r;
 	}
@@ -67,14 +67,14 @@ int main()
 		const row & e = table[0][s];
 		const row & o = table[1][s];
 
-		fprintf(fp, "%20s & embree & %16lu & %16lu & %16lu & %16lu \\\\        %% %12f %12f %12f %12f %12f\n",
+		fprintf(fp, "\\filename{%20s} & embree & %16lu & %16lu & %16lu & %16lu \\\\        %% %12f %12f %12f %12f %12f\n",
 					s.c_str(), e.mnv, e.pnv, e.pnt, e.ns, e.tknn, e.tseg, e.tvor, e.tisp, e.time);
-		fprintf(fp, "%20s &  optix & %16lu & %16lu & %16lu & %16lu \\\\\\hline  %% %12f %12f %12f %12f %12f\n\n\n", 
+		fprintf(fp, "\\filename{%20s} &  optix & %16lu & %16lu & %16lu & %16lu \\\\\\hline  %% %12f %12f %12f %12f %12f\n\n\n", 
 					s.c_str(), o.mnv, o.pnv, o.pnt, o.ns, o.tknn, o.tseg, o.tvor, o.tisp, o.time);
-	
+
 		printf("cp %s_%p results/frametime_%s_embree\n", tmp_file_path("frametime").c_str(), e.view, s.c_str());
 		printf("cp %s_%p results/frametime_%s_optix\n", tmp_file_path("frametime").c_str(), o.view, s.c_str());
-	
+
 		printf("cp %s_%p results/histogram_%s_embree\n", tmp_file_path("histogram").c_str(), e.splat, s.c_str());
 		printf("cp %s_%p results/histogram_%s_optix\n", tmp_file_path("histogram").c_str(), o.splat, s.c_str());
 	}
