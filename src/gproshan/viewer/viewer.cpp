@@ -331,6 +331,8 @@ void viewer::init_gl()
 		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	#endif
 
+	gproshan_log_var(window_width);
+	gproshan_log_var(window_height);
 	window = glfwCreateWindow(window_width, window_height, "gproshan", NULL, NULL);
 
 	glfwSetWindowUserPointer(window, this);
