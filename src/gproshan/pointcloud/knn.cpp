@@ -21,7 +21,7 @@ grid::grid(const point * pc, const size_t & n_points, const mat4 & transform): p
 		point & p = points[i];
 		p = transform * (pc[i], 1);
 
-		voxels[hash(p, res)].push_back(i); 
+		voxels[hash(p, res)].push_back(i);
 	}
 
 	TOC(build_time);
