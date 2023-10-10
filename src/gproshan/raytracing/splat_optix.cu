@@ -70,7 +70,7 @@ extern "C" __global__ void __closesthit__radiance()
 						{
 							uint32_t occluded = 1;
 							optixTrace( optix_params.traversable,
-										* (float3 *) &position,
+										* (float3 *) &(dot(position - x, dir) < 0 ? position : x),
 										* (float3 *) &wi,
 										1e-3f,					// tmin
 										light_dist - 1e-3f,		// tmax
@@ -84,7 +84,7 @@ extern "C" __global__ void __closesthit__radiance()
 										1,	// missSBTIndex
 										occluded);
 
-							return 0;
+							return occluded != 0;
 						});
 
 	vec4 & pixel_color = *ray_data<vec4>();
