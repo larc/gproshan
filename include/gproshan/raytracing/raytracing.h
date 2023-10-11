@@ -40,7 +40,8 @@ class raytracing
 	protected:
 		virtual vec3 closesthit_radiance(	const vertex &, // org
 											const vertex &, // dir
-											const vertex *, // lights
+											const light &, // ambient light
+											const light *, // lights
 											const int &, // n_lights
 											const vertex &, // cam_pos
 											const bool & // flat

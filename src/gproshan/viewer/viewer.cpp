@@ -73,7 +73,7 @@ viewer::viewer(const int & width, const int & height)
 
 	frames = new frame[max_meshes];
 
-	render_params.add_light({-1, 1, -4});
+	render_params.add_light({{-1, 1, -4}});
 }
 
 viewer::~viewer()
@@ -104,7 +104,7 @@ bool viewer::run()
 
 		const quaternion & r = cam.current_rotation();
 
-		cam_light = render_params.lights[0];
+		cam_light = render_params.lights[0].pos;
 		cam_light = r.conj() * cam_light * r;
 
 		proj_view_mat = proj_mat * cam.look_at(r);
@@ -244,14 +244,32 @@ void viewer::imgui()
 	{
 		ImGui::Indent();
 
+		light & ambient = render_params.ambient;
+		bool & update = render_params.restart;
+
+		update |= ImGui::ColorEdit3("ambient.color", (float *) &ambient.color);
+		update |= ImGui::SliderFloat("ambient.power", &ambient.power, 0, 1);
+
+		ImGui::Separator();
+
 		for(int i = 0; i < render_params.n_lights; ++i)
 		{
-			snprintf(slight, sizeof(slight), "light %d", i);
-			ImGui::SliderScalarN(slight, ImGuiDataType_Real, &render_params.lights[i], 3, &pos_min, &pos_max);
+			light & l = render_params.lights[i];
+
+			snprintf(slight, sizeof(slight), "light_%d.pos", i);
+			update |= ImGui::SliderScalarN(slight, ImGuiDataType_Real, &l.pos, 3, &pos_min, &pos_max);
+
+			snprintf(slight, sizeof(slight), "light_%d.color", i);
+			update |= ImGui::ColorEdit3(slight, (float *) &l.color);
+
+			snprintf(slight, sizeof(slight), "light_%d.power", i);
+			update |= ImGui::SliderFloat(slight, &l.power, 0, 100);
+
+			ImGui::Separator();
 		}
 
 		if(ImGui::Button("add light"))
-			render_params.add_light({0, 0, 0});
+			render_params.add_light({0});
 
 		if(render_params.n_lights > 1)
 		{
@@ -265,13 +283,13 @@ void viewer::imgui()
 		{
 			sphere_points.clear();
 			for(int i = 0; i < render_params.n_lights; ++i)
-				sphere_points.push_back(render_params.lights[i]);
+				sphere_points.push_back(render_params.lights[i].pos);
 		}
 
 		if(ImGui::Button("add selected points as lights"))
 		{
 			for(const index_t & v: mesh.selected)
-				if(!render_params.add_light(mesh.model_mat * (mesh->point(v), 1)))
+				if(!render_params.add_light({vec3(mesh.model_mat * (mesh->point(v), 1))}))
 					break;
 		}
 
@@ -1098,9 +1116,18 @@ void viewer::render_gl()
 	shader_triangles.uniform("eye", cam.eye.v);
 	shader_pointcloud.uniform("eye", cam.eye.v);
 
-	shader_sphere.uniform("cam_light", cam_light);
-	shader_triangles.uniform("cam_light", cam_light);
-	shader_pointcloud.uniform("cam_light", cam_light);
+	const light & ambient = render_params.ambient;
+	const light & l = render_params.lights[0];
+	for(shader * program: {&shader_sphere, &shader_triangles, &shader_pointcloud})
+	{
+		program->uniform("ambient.pos", ambient.pos);
+		program->uniform("ambient.color", ambient.color);
+		program->uniform("ambient.power", ambient.power);
+
+		program->uniform("cam_light.pos", cam_light);
+		program->uniform("cam_light.color", l.color);
+		program->uniform("cam_light.power", l.power);
+	}
 
 	shader_sphere.uniform("proj_view_mat", proj_view_mat);
 	shader_triangles.uniform("proj_view_mat", proj_view_mat);
