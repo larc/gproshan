@@ -69,10 +69,10 @@ struct t_eval_hit
 	T u = 0, v = 0;
 	vec<T, 3> position;
 	vec<T, 3> normal;
-	vec<T, 3> Ka{0.4f, 0.4f, 0.4f};
-	vec<T, 3> Kd{0.9f, 0.94f, 0.98f};
-	vec<T, 3> Ks{0.2f, 0.2f, 0.2f};
-	T Ns = 4;
+	vec<T, 3> Ka = 1;
+	vec<T, 3> Kd = 0.5;
+	vec<T, 3> Ks = 0.2;
+	T Ns = 10;
 	T d = 1;
 
 	__host_device__

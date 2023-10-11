@@ -1024,9 +1024,18 @@ void viewer::render_gl()
 	shader_triangles.uniform("eye", cam.eye.v);
 	shader_pointcloud.uniform("eye", cam.eye.v);
 
-	shader_sphere.uniform("cam_light", cam_light);
-	shader_triangles.uniform("cam_light", cam_light);
-	shader_pointcloud.uniform("cam_light", cam_light);
+	const light & ambient = render_params.ambient;
+	const light & l = render_params.lights[0];
+	for(shader * program: {&shader_sphere, &shader_triangles, &shader_pointcloud})
+	{
+		program->uniform("ambient.pos", ambient.pos);
+		program->uniform("ambient.color", ambient.color);
+		program->uniform("ambient.power", ambient.power);
+
+		program->uniform("cam_light.pos", cam_light);
+		program->uniform("cam_light.color", l.color);
+		program->uniform("cam_light.power", l.power);
+	}
 
 	shader_sphere.uniform("proj_view_mat", proj_view_mat);
 	shader_triangles.uniform("proj_view_mat", proj_view_mat);

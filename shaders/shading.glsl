@@ -5,7 +5,6 @@ uniform uint idx_colormap;
 uniform bool render_lines;
 
 uniform vec3 eye;
-uniform vec3 cam_light;
 
 uniform sampler2D tex_Ka;
 uniform sampler2D tex_Kd;
@@ -13,9 +12,15 @@ uniform sampler2D tex_Ks;
 
 uniform material mat;
 
-const float Lp = 10;
-const vec3 La = vec3(0.1);
+struct light
+{
+	vec3 pos;
+	vec3 color;
+	float power;
+};
 
+uniform light ambient;
+uniform light cam_light;
 
 vec3 lines_colormap(vec3 color, float h)
 {
@@ -57,7 +62,7 @@ vec3 shading(vec3 color, vec3 n, vec3 pos, vec2 texcoord)
 		Ns = mat.Ns;
 	}
 
-	vec3 l = cam_light - pos;
+	vec3 l = cam_light.pos - pos;
 	float r = length(l);
 	l /= r;
 	vec3 v = normalize(eye - pos);
@@ -65,7 +70,8 @@ vec3 shading(vec3 color, vec3 n, vec3 pos, vec2 texcoord)
 	float lambertian = max(dot(l, n), 0.0);
 	float specular = pow(max(dot(h, n), 0.0), Ns);
 
-	return Ka * La + (lambertian * Kd + specular * Ks) * Lp / (r * r);
+	return Ka * ambient.color * ambient.power +
+			(lambertian * Kd + specular * Ks) * cam_light.color * cam_light.power / (r * r);
 }
 
 
