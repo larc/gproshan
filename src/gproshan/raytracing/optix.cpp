@@ -142,10 +142,11 @@ void optix::render(vec4 * img, const render_params & params, const bool & flat)
 	optix_params.viewport_y = params.viewport_y;
 
 	optix_params.flat = flat;
+	optix_params.cam_pos = params.cam_pos;
+	optix_params.inv_proj_view = params.inv_proj_view;
+	optix_params.ambient = params.ambient;
 	optix_params.n_lights = params.n_lights;
 	memcpy(optix_params.lights, params.lights, sizeof(optix_params.lights));
-	memcpy(&optix_params.cam_pos, &params.cam_pos, sizeof(optix_params.cam_pos));
-	memcpy(&optix_params.inv_proj_view, &params.inv_proj_view, sizeof(optix_params.inv_proj_view));
 
 	cudaMemcpy(optix_params_buffer, &optix_params, sizeof(launch_params), cudaMemcpyHostToDevice);
 
