@@ -136,11 +136,11 @@ template <class T, class Occluded>
 __host_device__
 vec<T, 3> eval_li(const t_eval_hit<T> & hit, const vec<T, 3> * lights, const int & n_lights, const vec<T, 3> & eye, Occluded occluded)
 {
-	const T Lp = 8;
+	const T Lp = 4;
 	const vec<T, 3> La(0.2f);
 
 	vec<T, 3> li, l, h;
-	vec<T, 3> v = normalize(eye - hit.position);
+	const vec<T, 3> v = normalize(eye - hit.position);
 	const vec<T, 3> & n = hit.normal;
 
 	T lambertian;
@@ -155,10 +155,10 @@ vec<T, 3> eval_li(const t_eval_hit<T> & hit, const vec<T, 3> * lights, const int
 
 	#ifdef __CUDACC__
 		lambertian = max(dot(l, n), 0.f);
-		specular = pow(max(dot(h, n), 0.f), hit.Ns);
+		specular = powf(max(dot(h, n), 0.f), hit.Ns);
 	#else
 		lambertian = std::max(dot(l, n), 0.f);
-		specular = pow(std::max(dot(h, n), 0.f), hit.Ns);
+		specular = powf(std::max(dot(h, n), 0.f), hit.Ns);
 	#endif // __CUDACC__
 
 		const vec<T, 3> & color = hit.Ka * La + (lambertian * hit.Kd + specular * hit.Ks) * Lp / (r * r);
