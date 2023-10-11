@@ -241,14 +241,32 @@ void viewer::imgui()
 	{
 		ImGui::Indent();
 
+		light & ambient = render_params.ambient;
+		bool & update = render_params.restart;
+
+		update |= ImGui::ColorEdit3("ambient.color", (float *) &ambient.color);
+		update |= ImGui::SliderFloat("ambient.power", &ambient.power, 0, 1);
+
+		ImGui::Separator();
+
 		for(int i = 0; i < render_params.n_lights; ++i)
 		{
-			snprintf(slight, sizeof(slight), "light %d", i);
-			ImGui::SliderScalarN(slight, ImGuiDataType_Real, &render_params.lights[i], 3, &pos_min, &pos_max);
+			light & l = render_params.lights[i];
+
+			snprintf(slight, sizeof(slight), "light_%d.pos", i);
+			update |= ImGui::SliderScalarN(slight, ImGuiDataType_Real, &l.pos, 3, &pos_min, &pos_max);
+
+			snprintf(slight, sizeof(slight), "light_%d.color", i);
+			update |= ImGui::ColorEdit3(slight, (float *) &l.color);
+
+			snprintf(slight, sizeof(slight), "light_%d.power", i);
+			update |= ImGui::SliderFloat(slight, &l.power, 0, 100);
+
+			ImGui::Separator();
 		}
 
 		if(ImGui::Button("add light"))
-			render_params.add_light({0, 0, 0});
+			render_params.add_light({0});
 
 		if(render_params.n_lights > 1)
 		{
