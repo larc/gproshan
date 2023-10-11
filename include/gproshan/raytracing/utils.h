@@ -162,8 +162,10 @@ vec<T, 3> eval_li(const t_eval_hit<T> & hit, const light & ambient, const light 
 		specular = powf(std::max(dot(h, n), 0.f), hit.Ns);
 	#endif // __CUDACC__
 
-		const vec<T, 3> & color = hit.Ka * ambient.color * ambient.power + (lambertian * hit.Kd + specular * hit.Ks) * L.color * L.power / (r * r);
-		li += (occluded(hit.position, l, r) ? 0.4f : 1.0f) * color;
+		const vec<T, 3> & color = hit.Ka * ambient.color * ambient.power +
+									(lambertian * hit.Kd + specular * hit.Ks) * L.color * L.power / (r * r);
+
+		li += (dot(v, n) < 0 || occluded(hit.position, l, r) ? 0.4f : 1.0f) * color;
 	}
 
 	return li / n_lights;
