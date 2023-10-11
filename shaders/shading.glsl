@@ -13,7 +13,7 @@ uniform sampler2D tex_Ks;
 
 uniform material mat;
 
-const float Lp = 4;
+const float Lp = 10;
 const vec3 La = vec3(0.1);
 
 
@@ -35,7 +35,7 @@ vec3 lines_colormap(vec3 color, float h)
 
 vec3 shading(vec3 color, vec3 n, vec3 pos, vec2 texcoord)
 {
-	vec3 Ka = vec3(1,0,0);
+	vec3 Ka = vec3(1);
 	vec3 Kd = color;
 	vec3 Ks = vec3(0.2);
 	float Ns = 10;

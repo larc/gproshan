@@ -25,11 +25,11 @@ class scene: public che
 
 		struct material
 		{
-			vec3 Ka = {0.2f, 0.2f, 0.2f};
-			vec3 Kd = {0.8f, 0.8f, 0.8f};
-			vec3 Ks = {1, 1, 1};
+			vec3 Ka = 1;
+			vec3 Kd = 0.8;
+			vec3 Ks = 0.2;
 			real_t d = 1;	// Tr = 0, opposite
-			real_t Ns = 0;
+			real_t Ns = 10;
 			real_t Ni = 0;
 			int illum = 1;
 			int map_Ka = -1;

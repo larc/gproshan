@@ -136,8 +136,8 @@ template <class T, class Occluded>
 __host_device__
 vec<T, 3> eval_li(const t_eval_hit<T> & hit, const vec<T, 3> * lights, const int & n_lights, const vec<T, 3> & eye, Occluded occluded)
 {
-	const T Lp = 4;
-	const vec<T, 3> La(0.2f);
+	const T Lp = 10;
+	const vec<T, 3> La(0.1f);
 
 	vec<T, 3> li, l, h;
 	const vec<T, 3> v = normalize(eye - hit.position);
