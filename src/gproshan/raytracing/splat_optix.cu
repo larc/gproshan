@@ -65,7 +65,7 @@ extern "C" __global__ void __closesthit__radiance()
 	eval_hit hit;
 	splat_hit(hit, mesh, splats_pcs[sbtID], primID, x, dir, length(x - org));
 
-	vec3 li = eval_li(hit, optix_params.lights, optix_params.n_lights, optix_params.cam_pos,
+	vec3 li = eval_li(hit, optix_params.ambient, optix_params.lights, optix_params.n_lights, optix_params.cam_pos,
 						[&](const vec3 & position, const vec3 & wi, const float & light_dist) -> bool
 						{
 							uint32_t occluded = 1;

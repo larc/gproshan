@@ -17,7 +17,7 @@ class splat_embree: public splat, public embree
 			build_bvh(pointclouds, {mat4::identity()});
 		}
 
-		vec3 closesthit_radiance(const vertex & org, const vertex & dir, const vertex * lights, const int & n_lights, const vertex & cam_pos, const bool & flat)
+		vec3 closesthit_radiance(const vertex & org, const vertex & dir, const light & ambient, const light * lights, const int & n_lights, const vertex & cam_pos, const bool & flat)
 		{
 			ray_hit r(org, dir);
 			if(!intersect(r)) return {};
@@ -25,7 +25,7 @@ class splat_embree: public splat, public embree
 			eval_hit hit;
 			splat_hit(hit, *g_meshes[r.hit.geomID], splats_pcs[r.hit.geomID], r.hit.primID, r.pos(), dir, r.ray.tfar);
 
-			return eval_li(	hit, lights, n_lights, cam_pos,
+			return eval_li(	hit, ambient, lights, n_lights, cam_pos,
 							[&](const vec3 & position, const vec3 & wi, const float & light_dist) -> bool
 							{
 //								ray_hit ro(r.pos(), wi, 1e-3f, light_dist - 1e-3f);
