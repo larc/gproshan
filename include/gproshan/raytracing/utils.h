@@ -6,6 +6,7 @@
 
 #include <gproshan/mesh/che.cuh>
 #include <gproshan/scenes/scene.h>
+#include <gproshan/raytracing/light.h>
 
 
 // geometry processing and shape analysis framework
@@ -134,20 +135,20 @@ struct t_eval_hit
 
 template <class T, class Occluded>
 __host_device__
-vec<T, 3> eval_li(const t_eval_hit<T> & hit, const vec<T, 3> * lights, const int & n_lights, const vec<T, 3> & eye, Occluded occluded)
+vec<T, 3> eval_li(const t_eval_hit<T> & hit, const light & ambient, const light * lights, const int & n_lights, const vec<T, 3> & eye, Occluded occluded)
 {
-	const T Lp = 10;
-	const vec<T, 3> La(0.1f);
-
-	vec<T, 3> li, l, h;
 	const vec<T, 3> v = normalize(eye - hit.position);
 	const vec<T, 3> & n = hit.normal;
 
 	T lambertian;
 	T specular;
+	vec<T, 3> li, l, h;
+
 	for(int i = 0; i < n_lights; ++i)
 	{
-		l = lights[i] - hit.position;
+		const light & L = lights[i];
+
+		l = L.pos - hit.position;
 		const T & r = length(l);
 
 		l /= r;
@@ -161,7 +162,7 @@ vec<T, 3> eval_li(const t_eval_hit<T> & hit, const vec<T, 3> * lights, const int
 		specular = powf(std::max(dot(h, n), 0.f), hit.Ns);
 	#endif // __CUDACC__
 
-		const vec<T, 3> & color = hit.Ka * La + (lambertian * hit.Kd + specular * hit.Ks) * Lp / (r * r);
+		const vec<T, 3> & color = hit.Ka * ambient.color * ambient.power + (lambertian * hit.Kd + specular * hit.Ks) * L.color * L.power / (r * r);
 		li += (occluded(hit.position, l, r) ? 0.4f : 1.0f) * color;
 	}
 

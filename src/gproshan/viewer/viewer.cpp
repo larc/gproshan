@@ -70,7 +70,7 @@ viewer::viewer(const int & width, const int & height)
 
 	frames = new frame[max_meshes];
 
-	render_params.add_light({-1, 1, -4});
+	render_params.add_light({{-1, 1, -4}});
 }
 
 viewer::~viewer()
@@ -101,7 +101,7 @@ bool viewer::run()
 
 		const quaternion & r = cam.current_rotation();
 
-		cam_light = render_params.lights[0];
+		cam_light = render_params.lights[0].pos;
 		cam_light = r.conj() * cam_light * r;
 
 		proj_view_mat = proj_mat * cam.look_at(r);
@@ -262,13 +262,13 @@ void viewer::imgui()
 		{
 			sphere_points.clear();
 			for(int i = 0; i < render_params.n_lights; ++i)
-				sphere_points.push_back(render_params.lights[i]);
+				sphere_points.push_back(render_params.lights[i].pos);
 		}
 
 		if(ImGui::Button("add selected points as lights"))
 		{
 			for(const index_t & v: mesh.selected)
-				if(!render_params.add_light(mesh.model_mat * (mesh->point(v), 1)))
+				if(!render_params.add_light({vec3(mesh.model_mat * (mesh->point(v), 1))}))
 					break;
 		}
 

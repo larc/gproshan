@@ -5,6 +5,7 @@
 #include <gproshan/include.h>
 #include <gproshan/geometry/mat.h>
 #include <gproshan/scenes/scene.h>
+#include <gproshan/raytracing/render_params.h>
 
 
 #ifdef GPROSHAN_OPTIX
@@ -26,7 +27,8 @@ struct launch_params
 	int viewport_y = 0;
 	int n_samples = 0;
 	int n_lights = 0;
-	vec3 lights[16];
+	light lights[NL];
+	light ambient;
 	vec3 cam_pos;
 	mat4 inv_proj_view;
 	bool flat;
