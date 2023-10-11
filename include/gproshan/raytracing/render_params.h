@@ -3,11 +3,14 @@
 
 #include <gproshan/include.h>
 #include <gproshan/geometry/mat.h>
+#include <gproshan/raytracing/light.h>
 
 
 // geometry processing and shape analysis framework
 namespace gproshan::rt {
 
+
+const size_t NL = 16;	// number of lights
 
 struct render_params
 {
@@ -18,18 +21,19 @@ struct render_params
 	int viewport_x = 0;
 	int viewport_y = 0;
 	int n_lights = 0;
-	vertex lights[16];
+	light lights[NL];
+	light ambient = {0, 1, 0.1};
 	vertex cam_pos;
 	mat4 inv_proj_view;
 	bool restart = false;
 	bool viewport_is_window = true;
 
-	bool add_light(const vertex & light)
+	bool add_light(const light & l)
 	{
-		if(n_lights == sizeof(lights) / sizeof(vertex))
+		if(n_lights == NL)
 			return false;
 
-		lights[n_lights++] = light;
+		lights[n_lights++] = l;
 		return true;
 	}
 

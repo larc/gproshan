@@ -78,6 +78,8 @@ void che_pcd::read_file(const std::string & file)
 			GT[v] = {x, y, z};
 		}
 	}
+
+	fclose(fp);
 }
 
 void che_pcd::write_file(const che * mesh, const std::string & file)

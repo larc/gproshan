@@ -246,7 +246,7 @@ index_t embree::add_pointcloud(const che * mesh, const mat4 & model_mat)
 	return geom_id;
 }
 
-vec3 embree::closesthit_radiance(const vertex & org, const vertex & dir, const vertex * lights, const int & n_lights, const vertex & cam_pos, const bool & flat)
+vec3 embree::closesthit_radiance(const vertex & org, const vertex & dir, const light & ambient, const light * lights, const int & n_lights, const vertex & cam_pos, const bool & flat)
 {
 	ray_hit r(org, dir);
 	if(!intersect(r)) return {};
@@ -259,7 +259,7 @@ vec3 embree::closesthit_radiance(const vertex & org, const vertex & dir, const v
 	hit.position = r.pos();
 	hit.normal = flat ? r.normal() : hit.normal;
 
-	return eval_li(	hit, lights, n_lights, cam_pos,
+	return eval_li(	hit, ambient, lights, n_lights, cam_pos,
 					[&](const vec3 & position, const vec3 & wi, const float & light_dist) -> bool
 					{
 						ray_hit ro(position, wi, 1e-3f, light_dist - 1e-3f);

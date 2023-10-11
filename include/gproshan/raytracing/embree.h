@@ -37,7 +37,7 @@ class embree : public raytracing
 		std::vector<CHE *> g_meshes;
 		scene_data sc;
 
-		float pc_radius = 1;
+		float pc_radius = 0.01;
 
 	public:
 		embree();
@@ -59,7 +59,7 @@ class embree : public raytracing
 
 		virtual index_t add_pointcloud(const che * mesh, const mat4 & model_mat);
 
-		virtual vec3 closesthit_radiance(const vertex & org, const vertex & dir, const vertex * lights, const int & n_lights, const vertex & cam_pos, const bool & flat);
+		virtual vec3 closesthit_radiance(const vertex & org, const vertex & dir, const light & ambient, const light * lights, const int & n_lights, const vertex & cam_pos, const bool & flat);
 
 		float intersect_depth(const vertex & org, const vertex & dir);
 

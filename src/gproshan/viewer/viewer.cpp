@@ -70,12 +70,12 @@ viewer::viewer(const int & width, const int & height)
 
 	frames = new frame[max_meshes];
 
-	render_params.add_light({-1, 1, -4});
+	render_params.add_light({{-1, 1, -4}});
 }
 
 viewer::~viewer()
 {
-	sprintf(status_message, "frametime_%p", this);
+	update_status_message("frametime_%p", this);
 	save_frametime(tmp_file_path(status_message));
 
 	ImGui_ImplOpenGL3_Shutdown();
@@ -101,7 +101,7 @@ bool viewer::run()
 
 		const quaternion & r = cam.current_rotation();
 
-		cam_light = render_params.lights[0];
+		cam_light = render_params.lights[0].pos;
 		cam_light = r.conj() * cam_light * r;
 
 		proj_view_mat = proj_mat * cam.look_at(r);
@@ -170,7 +170,7 @@ void viewer::imgui()
 					process_t & pro = p.second;
 					if(pro.function != nullptr && pro.sub_menu == i)
 						if(ImGui::MenuItem(pro.name.c_str(), ('[' + pro.key + ']').c_str(), &pro.selected))
-							snprintf(status_message, sizeof(status_message), "%s", pro.selected ? pro.name.c_str() : "");
+							update_status_message("%s", pro.selected ? pro.name.c_str() : "");
 
 					//ImGui::Separator();
 				}
@@ -241,14 +241,32 @@ void viewer::imgui()
 	{
 		ImGui::Indent();
 
+		light & ambient = render_params.ambient;
+		bool & update = render_params.restart;
+
+		update |= ImGui::ColorEdit3("ambient.color", (float *) &ambient.color);
+		update |= ImGui::SliderFloat("ambient.power", &ambient.power, 0, 1);
+
+		ImGui::Separator();
+
 		for(int i = 0; i < render_params.n_lights; ++i)
 		{
-			snprintf(slight, sizeof(slight), "light %d", i);
-			ImGui::SliderScalarN(slight, ImGuiDataType_Real, &render_params.lights[i], 3, &pos_min, &pos_max);
+			light & l = render_params.lights[i];
+
+			snprintf(slight, sizeof(slight), "light_%d.pos", i);
+			update |= ImGui::SliderScalarN(slight, ImGuiDataType_Real, &l.pos, 3, &pos_min, &pos_max);
+
+			snprintf(slight, sizeof(slight), "light_%d.color", i);
+			update |= ImGui::ColorEdit3(slight, (float *) &l.color);
+
+			snprintf(slight, sizeof(slight), "light_%d.power", i);
+			update |= ImGui::SliderFloat(slight, &l.power, 0, 100);
+
+			ImGui::Separator();
 		}
 
 		if(ImGui::Button("add light"))
-			render_params.add_light({0, 0, 0});
+			render_params.add_light({0});
 
 		if(render_params.n_lights > 1)
 		{
@@ -262,13 +280,13 @@ void viewer::imgui()
 		{
 			sphere_points.clear();
 			for(int i = 0; i < render_params.n_lights; ++i)
-				sphere_points.push_back(render_params.lights[i]);
+				sphere_points.push_back(render_params.lights[i].pos);
 		}
 
 		if(ImGui::Button("add selected points as lights"))
 		{
 			for(const index_t & v: mesh.selected)
-				if(!render_params.add_light(mesh.model_mat * (mesh->point(v), 1)))
+				if(!render_params.add_light({vec3(mesh.model_mat * (mesh->point(v), 1))}))
 					break;
 		}
 
@@ -331,6 +349,8 @@ void viewer::init_gl()
 		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	#endif
 
+	gproshan_log_var(window_width);
+	gproshan_log_var(window_height);
 	window = glfwCreateWindow(window_width, window_height, "gproshan", NULL, NULL);
 
 	glfwSetWindowUserPointer(window, this);
@@ -473,6 +493,14 @@ bool viewer::add_mesh(che * p_mesh, const bool & reset_normals)
 	return true;
 }
 
+void viewer::update_status_message(const char * format, ...)
+{
+	va_list args;
+	va_start(args, format);
+	vsnprintf(status_message, sizeof(status_message), format, args);
+}
+
+
 void viewer::save_history(const std::string & file)
 {
 	gproshan_error_var(file);
@@ -528,7 +556,7 @@ void viewer::keyboard_callback(GLFWwindow * window, int key, int, int action, in
 	if(pro.function)
 	{
 		pro.selected = view->hide_imgui ? pro.function(view) && pro.selected : !pro.selected;
-		snprintf(view->status_message, sizeof(view->status_message), "%s", pro.selected ? pro.name.c_str() : "");
+		view->update_status_message("%s", pro.selected ? pro.name.c_str() : "");
 	}
 }
 
@@ -735,7 +763,7 @@ bool viewer::m_save_mesh(viewer * view)
 				break;
 		}
 
-		snprintf(view->status_message, sizeof(view->status_message), "file '%s' saved.", file);
+		view->update_status_message("file '%s' saved.", file);
 	}
 
 	return true;
@@ -806,10 +834,8 @@ bool viewer::m_setup_raytracing(viewer * view)
 
 	static int rt = 0;
 	static double time = 0;
-	static float pc_radius = 0.01;
 
 	ImGui::Combo("rt", &rt, "Select\0Embree\0OptiX\0\0");
-	ImGui::InputFloat("pc_radius (if render_pointcloud)", &pc_radius, 0, 0, "%.3f");
 
 	if(ImGui::Button("Build"))
 	{
@@ -820,9 +846,9 @@ bool viewer::m_setup_raytracing(viewer * view)
 			case R_EMBREE:
 				delete mesh.rt_embree;
 				TIC(time);
-					mesh.rt_embree = new rt::embree({mesh}, {mesh.model_mat}, mesh.render_pointcloud, pc_radius);
+					mesh.rt_embree = new rt::embree({mesh}, {mesh.model_mat}, mesh.render_pointcloud);
 				TOC(time);
-				snprintf(view->status_message, sizeof(view->status_message), "build embree in %.3fs", time);
+				view->update_status_message("build embree in %.3fs", time);
 				break;
 
 			case R_OPTIX:
@@ -831,10 +857,22 @@ bool viewer::m_setup_raytracing(viewer * view)
 				TIC(time);
 					mesh.rt_optix = new rt::optix({mesh}, {mesh.model_mat});
 				TOC(time);
-				snprintf(view->status_message, sizeof(view->status_message), "build optix in %.3fs", time);
+				view->update_status_message("build optix in %.3fs", time);
 			#endif // GPROSHAN_OPTIX
 				break;
 		}
+
+
+		FILE * fp = fopen(tmp_file_path("rt_build_times").c_str(), "a");
+
+		fprintf(fp, "dev %p ", view);
+		fprintf(fp, "%s ", mesh->name().c_str());
+		fprintf(fp, "%lu ", mesh->n_vertices);
+		fprintf(fp, "%lu ", mesh->n_trigs);
+		fprintf(fp, "%u ", rt);
+		fprintf(fp, "%f\n", time);
+
+		fclose(fp);
 	}
 
 	return true;
@@ -1004,9 +1042,18 @@ void viewer::render_gl()
 	shader_triangles.uniform("eye", cam.eye.v);
 	shader_pointcloud.uniform("eye", cam.eye.v);
 
-	shader_sphere.uniform("cam_light", cam_light);
-	shader_triangles.uniform("cam_light", cam_light);
-	shader_pointcloud.uniform("cam_light", cam_light);
+	const light & ambient = render_params.ambient;
+	const light & l = render_params.lights[0];
+	for(shader * program: {&shader_sphere, &shader_triangles, &shader_pointcloud})
+	{
+		program->uniform("ambient.pos", ambient.pos);
+		program->uniform("ambient.color", ambient.color);
+		program->uniform("ambient.power", ambient.power);
+
+		program->uniform("cam_light.pos", cam_light);
+		program->uniform("cam_light.color", l.color);
+		program->uniform("cam_light.power", l.power);
+	}
 
 	shader_sphere.uniform("proj_view_mat", proj_view_mat);
 	shader_triangles.uniform("proj_view_mat", proj_view_mat);
