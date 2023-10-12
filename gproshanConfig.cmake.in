@@ -15,9 +15,10 @@ find_dependency(GLEW REQUIRED)
 find_dependency(glfw3 REQUIRED)
 find_dependency(X11 REQUIRED)
 find_dependency(Armadillo REQUIRED)
-find_dependency(CGAL REQUIRED)
 find_dependency(Eigen3 REQUIRED)
+find_dependency(CGAL REQUIRED)
 find_dependency(SuiteSparse REQUIRED)
+find_dependency(flann REQUIRED)
 find_dependency(Boost COMPONENTS thread system)
 
 
