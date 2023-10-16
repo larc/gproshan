@@ -105,11 +105,7 @@ template <class T>
 __host_device__
 void splat_hit(t_eval_hit<T> & hit, const CHE & pc, const splats_data & sd, const index_t & aprimID, const vec<T, 3> & x, const vec<T, 3> & d, const T & tray)
 {
-	#ifdef __CUDAACC__
-		const index_t k = powf(2, 10 - 4 * tray) + 2;
-	#else
-		const index_t k = 2;
-	#endif // __CUDAACC__
+	const index_t k = powf(2, 10 - 4 * tray) + 2;
 
 	hit.primID = aprimID;
 	const index_t sid = sd.primID_splat[hit.primID];
