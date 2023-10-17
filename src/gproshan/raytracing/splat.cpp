@@ -57,7 +57,7 @@ void splat::add_splats(che * pc, const mat4 & model_mat)
 
 	#pragma omp parallel for
 	for(index_t i = 1; i < segs.size(); ++i)
-		voronois[i - 1] = voronoi_subdivision(voronoi_sets[i - 1], &pc->point(0), vertices, segs[i - 1], segs[i]);
+		voronois[i - 1] = voronoi_subdivision(voronoi_sets[i - 1], vertices, &pc->point(0), k3tree, segs[i - 1], segs[i]);
 	TOC(time);
 	time_subdivision += time;
 
@@ -145,7 +145,7 @@ std::vector<index_t> splat::planar_segmentation(const che * pc, std::vector<inde
 			vcenter = (vcenter * (n - 1) + pc->point(front)) / n;
 
 			const int * nn = k3tree(front);
-			for(index_t i = 0; i < k_nn; ++i)
+			for(index_t i = 0; i < splat::k_nn; ++i)
 			{
 				const int & u = nn[i];
 
@@ -181,8 +181,9 @@ std::vector<index_t> splat::planar_segmentation(const che * pc, std::vector<inde
 }
 
 std::vector<index_t> splat::voronoi_subdivision(std::vector<index_t> & voronoi_set,
-												const vertex * points,
 												const std::vector<index_t> & vertices,
+												const vertex * points,
+												const knn::k3tree & k3tree,
 												const index_t & seg_begin,
 												const index_t & seg_end
 												)
@@ -225,15 +226,24 @@ std::vector<index_t> splat::voronoi_subdivision(std::vector<index_t> & voronoi_s
 
 	std::vector<std::vector<index_t> > regions(seeds.size());
 
+	bool in = false;
 	for(index_t i = seg_begin; i < seg_end; ++i)
 	for(index_t j = 0; j < seeds.size(); ++j)
 	{
 		const index_t & s = seeds[j];
 		const index_t & v = vertices[i];
-		const real_t & d = length(points[v] - points[s]);
 
-		if(d < dist[i - seg_begin] + splat::d_overlap * radio)
-			regions[j].push_back(v);
+		in = false;
+
+		const int * nn = k3tree(v);
+		for(index_t k = 0; k < splat::k_nn; ++k)
+		{
+			const int & u = nn[k];
+			const real_t & d = length(points[u] - points[s]);
+			in |= d < (dist[i - seg_begin] + 1e-5);
+		}
+
+		if(in) regions[j].push_back(v);
 	}
 
 

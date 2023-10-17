@@ -40,8 +40,9 @@ class splat
 													);
 
 		std::vector<index_t> voronoi_subdivision(	std::vector<index_t> & voronoi_set,
-													const vertex * points,
 													const std::vector<index_t> & vertices,
+													const vertex * points,
+													const knn::k3tree & nn,
 													const index_t & seg_begin,
 													const index_t & seg_end
 													);
