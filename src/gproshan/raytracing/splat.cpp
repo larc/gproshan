@@ -108,14 +108,16 @@ std::vector<index_t> splat::planar_segmentation(const che * pc, std::vector<inde
 
 	std::vector<index_t> shuffle(pc->n_vertices);
 	std::iota(begin(shuffle), end(shuffle), 0);
-	std::random_shuffle(begin(shuffle), end(shuffle));
+
+	std::random_device rd;
+	std::mt19937 gen{rd()};
+	std::shuffle(begin(shuffle), end(shuffle), gen);
 
 	std::vector<index_t> segs({0});
 	const index_t & idx = segs.size();
 
 	std::vector<index_t> visited;
 	visited.assign(pc->n_vertices, -1);
-
 
 	vertex vnormal;
 	vertex vcenter;
@@ -385,7 +387,10 @@ void splat::display_sets(che * pc, const std::vector<index_t> & sets, const inde
 {
 	std::vector<int> color(sets.size());
 	std::iota(color.begin(), color.end(), 0);
-	std::random_shuffle(color.begin(), color.end());
+
+	std::random_device rd;
+	std::mt19937 gen{rd()};
+	std::shuffle(color.begin(), color.end(), gen);
 
 	for(index_t i = 1; i < sets.size(); ++i)
 	for(index_t j = sets[i - 1]; j < sets[i]; ++j)
