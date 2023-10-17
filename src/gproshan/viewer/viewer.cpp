@@ -22,7 +22,11 @@
 	#include <gproshan/raytracing/optix.h>
 #endif // GPROSHAN_OPTIX
 
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-truncation"
 #include <CImg.h>
+#pragma GCC diagnostic pop
 
 using namespace cimg_library;
 
@@ -1025,7 +1029,7 @@ bool viewer::m_raycasting(viewer * view)
 									view->cam.eye
 									);
 
-	std::thread([](CImg<float> img)
+	std::thread([](const CImg<float> & img)
 	{
 		img.display();
 	},
