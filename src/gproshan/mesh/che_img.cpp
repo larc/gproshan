@@ -52,7 +52,7 @@ void che_img::read_file(const std::string & file)
 		++v;
 	}
 
-//	std::thread([](CImg<real_t> img) { img.display(); }, img).detach();
+//	std::thread([](const CImg<unsigned char> & img) { img.display(); }, img).detach();
 }
 
 

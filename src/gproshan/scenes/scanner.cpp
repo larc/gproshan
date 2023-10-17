@@ -2,7 +2,11 @@
 
 #include <cmath>
 #include <thread>
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-truncation"
 #include <CImg.h>
+#pragma GCC diagnostic pop
 
 using namespace cimg_library;
 
@@ -49,7 +53,7 @@ che * scanner_ptx(const che * mesh, rt::raytracing * rt, const size_t & n_rows, 
 	std::string img_filename = file_jpg + mesh->name() + ".jpg";
 	img.save(img_filename.c_str());
 
-	std::thread([](CImg<real_t> img) { img.display(); }, img).detach();
+	std::thread([](const CImg<unsigned char> & img) { img.display(); }, img).detach();
 
 	return mesh_ptx;
 }

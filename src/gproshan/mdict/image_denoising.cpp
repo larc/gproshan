@@ -1,6 +1,9 @@
 #include <gproshan/mdict/image_denoising.h>
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-truncation"
 #include <CImg.h>
+#pragma GCC diagnostic pop
 
 using namespace cimg_library;
 
