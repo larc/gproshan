@@ -991,7 +991,9 @@ bool app_viewer::process_fill_holes(viewer * p_view)
 		border.assign(true, vertices.size());
 
 //		real_t angle;
-		index_t v0, v1, v2;
+		index_t v0 = NIL;
+		index_t v1 = NIL;
+		index_t v2 = NIL;
 		while(!front.empty())
 		{
 //			angle = front.top().first;
