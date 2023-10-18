@@ -73,7 +73,7 @@ void che_ptx::read_file(const std::string & file)
 		img.permute_axes("zycx");
 		img.save((file + ".jpg").c_str());
 
-		std::thread([](const CImg<unsigned char> & img) { img.mirror("y").display(); }, img).detach();
+		std::thread([](CImg<unsigned char> img) { img.mirror("y").display(); }, img).detach();
 	#endif // NDEBUG
 	}
 	else
