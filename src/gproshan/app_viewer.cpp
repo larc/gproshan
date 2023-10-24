@@ -693,11 +693,11 @@ bool app_viewer::process_mdict_patch(viewer * p_view)
 	}
 
 	avg_nvp /= mesh.selected.size();
-	gproshan_debug_var(avg_nvp);
+	gproshan_log_var(avg_nvp);
 
 	delete [] toplevel;
 	TOC(view->time)
-	gproshan_debug_var(view->time);
+	gproshan_log_var(view->time);
 
 	return false;
 }
