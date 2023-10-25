@@ -1,5 +1,16 @@
 #include <gproshan/mesh/che.h>
 
+#include <gproshan/mesh/che_obj.h>
+#include <gproshan/mesh/che_off.h>
+#include <gproshan/mesh/che_ply.h>
+#include <gproshan/mesh/che_ptx.h>
+#include <gproshan/mesh/che_xyz.h>
+#include <gproshan/mesh/che_pts.h>
+#include <gproshan/mesh/che_pcd.h>
+#include <gproshan/mesh/che_img.h>
+
+#include <gproshan/scenes/scene.h>
+
 #include <cassert>
 #include <cstring>
 #include <cmath>
@@ -1115,6 +1126,33 @@ std::vector<index_t> che::trig_convex_polygon(const index_t * P, const size_t & 
 	}
 
 	return trigs;
+}
+
+che * che::load_mesh(const std::string & file_path)
+{
+	size_t pos = file_path.rfind('.');
+	assert(pos != std::string::npos);
+
+	std::string extension = file_path.substr(pos + 1);
+
+	if(extension == "obj")
+	{
+		scene * sc = new scene(file_path);
+		if(!sc->is_scene())
+		{
+			delete sc;
+			return new che_obj(file_path);
+		}
+		return sc;
+	}
+	if(extension == "off") return new che_off(file_path);
+	if(extension == "ply") return new che_ply(file_path);
+	if(extension == "ptx") return new che_ptx(file_path);
+	if(extension == "xyz") return new che_xyz(file_path);
+	if(extension == "pts") return new che_pts(file_path);
+	if(extension == "pcd") return new che_pcd(file_path);
+
+	return new che_img(file_path);
 }
 
 

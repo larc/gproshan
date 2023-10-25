@@ -168,6 +168,7 @@ class che
 
 	public:
 		static std::vector<index_t> trig_convex_polygon(const index_t * P, const size_t & n);
+		static che * load_mesh(const std::string & file_path);
 
 	friend struct CHE;
 };
