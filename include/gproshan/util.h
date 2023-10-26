@@ -3,9 +3,70 @@
 
 #include <gproshan/include.h>
 
+#include <cassert>
+#include <vector>
+
 
 // geometry processing and shape analysis framework
 namespace gproshan {
+
+
+class partitions
+{
+	struct part;
+
+	std::vector<index_t> splits;
+	index_t * sorted = nullptr;
+
+	public:
+		part operator () (const index_t & i) const;
+};
+
+struct partitions::part
+{
+	struct iterator
+	{
+		index_t i = 0;
+		const index_t * sorted = nullptr;
+
+		__host_device__
+		iterator & operator ++ ()
+		{
+			++i;
+			return *this;
+		}
+
+		__host_device__
+		bool operator != (const iterator & it) const
+		{
+			return i != it.i;
+		}
+
+		__host_device__
+		const index_t & operator * ()
+		{
+			return sorted ? sorted[i] : i;
+		}
+	};
+
+
+	index_t _begin = 0;
+	index_t _end = 0;
+	const index_t * sorted = nullptr;
+
+
+	__host_device__
+	iterator begin() const
+	{
+		return {_begin, sorted};
+	}
+
+	__host_device__
+	iterator end() const
+	{
+		return {_end, sorted};
+	}
+};
 
 
 void copy_real_t_array(float * destination, const float * source, const size_t & n_elem);

@@ -254,8 +254,8 @@ void msparse_coding::load_sampling()
 	S.save(tmp_file_path(key_name + ".rsampl"));
 
 	gproshan_debug_var(m_params.sum_thres);
-	gproshan_debug_var(count);
-	gproshan_debug_var(count_cov);
+	gproshan_log_var(count);
+	gproshan_log_var(count_cov);
 	gproshan_debug_var(seeds.size());
 	gproshan_debug_var(m_params.n_patches);
 

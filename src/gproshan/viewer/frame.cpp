@@ -66,33 +66,33 @@ frame::operator const GLuint & () const
 
 vec4 * frame::map_pbo(bool cuda)
 {
-#ifdef GPROSHAN_CUDA
-	if(cuda)
+	if(!cuda)
 	{
-		vec4 * img = nullptr;
+		glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
+		return (vec4 *) glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_READ_WRITE);
+	}
+
+	vec4 * img = nullptr;
+	#ifdef GPROSHAN_CUDA
 		size_t num_bytes = 0;
 		cudaGraphicsMapResources(1, &pbo_cuda, 0);
 		cudaGraphicsResourceGetMappedPointer((void **) &img, &num_bytes, pbo_cuda);
-		return img;
-	}
-#endif // GPROSHAN_CUDA
-
-	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
-	return (vec4 *) glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_READ_WRITE);
+	#endif // GPROSHAN_CUDA
+	return img;
 }
 
 void frame::unmap_pbo(bool cuda)
 {
-#ifdef GPROSHAN_CUDA
-	if(cuda)
+	if(!cuda)
 	{
-		cudaGraphicsUnmapResources(1, &pbo_cuda, 0);
+		glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
+		glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 		return;
 	}
-#endif // GPROSHAN_CUDA
 
-	glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
-	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+	#ifdef GPROSHAN_CUDA
+		cudaGraphicsUnmapResources(1, &pbo_cuda, 0);
+	#endif // GPROSHAN_CUDA
 }
 
 bool frame::resize(const size_t & w, const size_t & h)

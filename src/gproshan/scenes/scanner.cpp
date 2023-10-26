@@ -3,10 +3,14 @@
 #include <cmath>
 #include <thread>
 
+#ifndef __clang__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wformat-truncation"
-#include <CImg.h>
+	#include <CImg.h>
 #pragma GCC diagnostic pop
+#else
+	#include <CImg.h>
+#endif // __clang__
 
 using namespace cimg_library;
 

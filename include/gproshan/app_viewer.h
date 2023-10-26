@@ -4,8 +4,8 @@
 #include <gproshan/include.h>
 #include <gproshan/viewer/viewer.h>
 
-#include <gproshan/mesh/che_off.h>
 #include <gproshan/mesh/che_obj.h>
+#include <gproshan/mesh/che_off.h>
 #include <gproshan/mesh/che_ply.h>
 #include <gproshan/mesh/che_ptx.h>
 #include <gproshan/mesh/che_xyz.h>
