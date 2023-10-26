@@ -13,32 +13,6 @@ partitions::part partitions::operator () (const index_t & i) const
 	return {splits[i - 1], splits[i], sorted};
 }
 
-partitions::part::iterator partitions::part::begin() const
-{
-	return {_begin, sorted};
-}
-
-partitions::part::iterator partitions::part::end() const
-{
-	return {_end, sorted};
-}
-
-partitions::part::iterator & partitions::part::iterator::operator ++ ()
-{
-	++i;
-	return *this;
-}
-
-bool partitions::part::iterator::operator != (const iterator & it) const
-{
-	return i != it.i;
-}
-
-const index_t & partitions::part::iterator::operator * ()
-{
-	return sorted ? sorted[i] : i;
-}
-
 
 void copy_real_t_array(float * destination, const float * source, const size_t & n_elem)
 {

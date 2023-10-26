@@ -24,24 +24,48 @@ class partitions
 
 struct partitions::part
 {
-	struct iterator;
+	struct iterator
+	{
+		index_t i = 0;
+		const index_t * sorted = nullptr;
+
+		__host_device__
+		iterator & operator ++ ()
+		{
+			++i;
+			return *this;
+		}
+
+		__host_device__
+		bool operator != (const iterator & it) const
+		{
+			return i != it.i;
+		}
+
+		__host_device__
+		const index_t & operator * ()
+		{
+			return sorted ? sorted[i] : i;
+		}
+	};
+
 
 	index_t _begin = 0;
 	index_t _end = 0;
 	const index_t * sorted = nullptr;
 
-	iterator begin() const;
-	iterator end() const;
-};
 
-struct partitions::part::iterator
-{
-	index_t i = 0;
-	const index_t * sorted = nullptr;
+	__host_device__
+	iterator begin() const
+	{
+		return {_begin, sorted};
+	}
 
-	iterator & operator ++ ();
-	bool operator != (const iterator & it) const;
-	const index_t & operator * ();
+	__host_device__
+	iterator end() const
+	{
+		return {_end, sorted};
+	}
 };
 
 
