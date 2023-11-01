@@ -8,12 +8,6 @@
 #include <cmath>
 #include <iostream>
 
-#ifdef __CUDACC__
-	#define __host_device__ __host__ __device__
-#else
-	#define __host_device__
-#endif // __CUDACC__
-
 
 // geometry processing and shape analysis framework
 namespace gproshan {

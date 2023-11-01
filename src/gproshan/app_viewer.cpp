@@ -20,33 +20,6 @@ app_viewer::~app_viewer()
 		delete *m;
 }
 
-che * app_viewer::load_mesh(const std::string & file_path)
-{
-	size_t pos = file_path.rfind('.');
-	assert(pos != std::string::npos);
-
-	std::string extension = file_path.substr(pos + 1);
-
-	if(extension == "obj")
-	{
-		scene * sc = new scene(file_path);
-		if(!sc->is_scene())
-		{
-			delete sc;
-			return new che_obj(file_path);
-		}
-		return sc;
-	}
-	if(extension == "off") return new che_off(file_path);
-	if(extension == "ply") return new che_ply(file_path);
-	if(extension == "ptx") return new che_ptx(file_path);
-	if(extension == "xyz") return new che_xyz(file_path);
-	if(extension == "pts") return new che_pts(file_path);
-	if(extension == "pcd") return new che_pcd(file_path);
-
-	return new che_img(file_path);
-}
-
 int app_viewer::main(int nargs, const char ** args)
 {
 	if(nargs < 2)
@@ -57,7 +30,7 @@ int app_viewer::main(int nargs, const char ** args)
 
 	TIC(time)
 	for(int i = 1; i < nargs; ++i)
-		add_mesh(load_mesh(args[i]));
+		add_mesh(che::load_mesh(args[i]));
 	TOC(time)
 	update_status_message("meshes loaded in %.3fs", time);
 
@@ -693,11 +666,11 @@ bool app_viewer::process_mdict_patch(viewer * p_view)
 	}
 
 	avg_nvp /= mesh.selected.size();
-	gproshan_debug_var(avg_nvp);
+	gproshan_log_var(avg_nvp);
 
 	delete [] toplevel;
 	TOC(view->time)
-	gproshan_debug_var(view->time);
+	gproshan_log_var(view->time);
 
 	return false;
 }

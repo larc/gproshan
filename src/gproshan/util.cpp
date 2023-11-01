@@ -7,6 +7,13 @@
 namespace gproshan {
 
 
+partitions::part partitions::operator () (const index_t & i) const
+{
+	assert(i > 0 && i < splits.size());
+	return {splits[i - 1], splits[i], sorted};
+}
+
+
 void copy_real_t_array(float * destination, const float * source, const size_t & n_elem)
 {
 	memcpy(destination, source, n_elem * sizeof(float));
