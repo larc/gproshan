@@ -293,6 +293,8 @@ che * che::merge(const che * mesh, const std::vector<index_t> & vcommon)
 
 	memcpy(new_mesh->GT, GT, sizeof(vertex) * n_vertices);
 	memcpy(new_mesh->GT + n_vertices, mesh->GT + n_vcommon, sizeof(vertex) * n_vnew);
+	memcpy(new_mesh->VN, VN, sizeof(vertex) * n_vertices);
+	memcpy(new_mesh->VN + n_vertices, mesh->VN + n_vcommon, sizeof(vertex) * n_vnew);
 	memcpy(new_mesh->VC, VC, sizeof(rgb_t) * n_vertices);
 	memcpy(new_mesh->VC + n_vertices, mesh->VC + n_vcommon, sizeof(rgb_t) * n_vnew);
 	memcpy(new_mesh->VHC, VHC, sizeof(real_t) * n_vertices);
@@ -306,8 +308,6 @@ che * che::merge(const che * mesh, const std::vector<index_t> & vcommon)
 
 	new_mesh->update_evt_ot_et();
 	new_mesh->update_eht();
-
-	new_mesh->update_normals();
 
 	return new_mesh;
 }
