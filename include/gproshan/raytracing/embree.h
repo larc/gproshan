@@ -48,8 +48,8 @@ class embree : public raytracing
 				);
 		virtual ~embree();
 
-		virtual index_t closest_vertex(const vertex & org, const vertex & dir);
-		virtual eval_hit intersect(const vertex & org, const vertex & dir);
+		virtual index_t closest_vertex(const vertex & org, const vertex & dir) const;
+		virtual eval_hit intersect(const vertex & org, const vertex & dir) const;
 
 
 	protected:
@@ -59,12 +59,12 @@ class embree : public raytracing
 
 		virtual index_t add_pointcloud(const che * mesh, const mat4 & model_mat);
 
-		virtual vec3 closesthit_radiance(const vertex & org, const vertex & dir, const light & ambient, const light * lights, const int & n_lights, const vertex & cam_pos, const bool & flat);
+		virtual vec3 closesthit_radiance(const vertex & org, const vertex & dir, const light & ambient, const light * lights, const int & n_lights, const vertex & cam_pos, const bool & flat) const;
 
-		float intersect_depth(const vertex & org, const vertex & dir);
+		float intersect_depth(const vertex & org, const vertex & dir) const;
 
-		bool intersect(ray_hit & r);
-		bool occluded(ray_hit & r);
+		bool intersect(ray_hit & r) const;
+		bool occluded(ray_hit & r) const;
 };
 
 

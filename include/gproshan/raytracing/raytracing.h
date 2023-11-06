@@ -27,15 +27,15 @@ class raytracing
 									const mat4 & inv_proj_view,
 									const vertex & cam_pos,
 									const index_t & samples = 4
-									);
+									) const;
 
 		virtual eval_hit intersect(	const vertex &,	// org
 									const vertex &	//dir
-									) { return {}; }
+									) const { return {}; }
 
 		virtual index_t closest_vertex(	const vertex &,	// org,
 										const vertex &	// dir
-										) { return NIL; };
+										) const { return NIL; }
 
 	protected:
 		virtual vec3 closesthit_radiance(	const vertex &, // org
@@ -45,11 +45,11 @@ class raytracing
 											const int &, // n_lights
 											const vertex &, // cam_pos
 											const bool & // flat
-											) { return {}; };
+											) const { return {}; };
 
 		virtual float intersect_depth(	const vertex &,	// org,
 										const vertex &	// dir
-										) { return 0; };
+										) const { return 0; };
 };
 
 

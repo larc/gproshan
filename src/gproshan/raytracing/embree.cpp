@@ -82,7 +82,7 @@ embree::~embree()
 	rtcReleaseDevice(rtc_device);
 }
 
-index_t embree::closest_vertex(const vertex & org, const vertex & dir)
+index_t embree::closest_vertex(const vertex & org, const vertex & dir) const
 {
 	ray_hit r(org, dir);
 	if(!intersect(r)) return NIL;
@@ -109,7 +109,7 @@ index_t embree::closest_vertex(const vertex & org, const vertex & dir)
 	return mesh->VT[he];
 }
 
-eval_hit embree::intersect(const vertex & org, const vertex & dir)
+eval_hit embree::intersect(const vertex & org, const vertex & dir) const
 {
 	ray_hit r(org, dir);
 	if(!intersect(r)) return {};
@@ -246,7 +246,7 @@ index_t embree::add_pointcloud(const che * mesh, const mat4 & model_mat)
 	return geom_id;
 }
 
-vec3 embree::closesthit_radiance(const vertex & org, const vertex & dir, const light & ambient, const light * lights, const int & n_lights, const vertex & cam_pos, const bool & flat)
+vec3 embree::closesthit_radiance(const vertex & org, const vertex & dir, const light & ambient, const light * lights, const int & n_lights, const vertex & cam_pos, const bool & flat) const
 {
 	ray_hit r(org, dir);
 	if(!intersect(r)) return {};
@@ -267,19 +267,19 @@ vec3 embree::closesthit_radiance(const vertex & org, const vertex & dir, const l
 					});
 }
 
-float embree::intersect_depth(const vertex & org, const vertex & dir)
+float embree::intersect_depth(const vertex & org, const vertex & dir) const
 {
 	ray_hit r(org, dir);
 	return intersect(r) ? r.ray.tfar : 0.f;
 }
 
-bool embree::intersect(ray_hit & r)
+bool embree::intersect(ray_hit & r) const
 {
 	rtcIntersect1(rtc_scene, &r);
 	return r.hit.geomID != RTC_INVALID_GEOMETRY_ID;
 }
 
-bool embree::occluded(ray_hit & r)
+bool embree::occluded(ray_hit & r) const
 {
 	rtcIntersect1(rtc_scene, &r);
 	return r.hit.geomID != RTC_INVALID_GEOMETRY_ID;

@@ -19,7 +19,7 @@ using namespace cimg_library;
 namespace gproshan {
 
 
-che * scanner_ptx(rt::raytracing * rt, const size_t & n_rows, const size_t & n_cols, const vertex & cam_pos)
+che * scanner_ptx(const rt::raytracing * rt, const size_t & n_rows, const size_t & n_cols, const vertex & cam_pos)
 {
 	che * mesh_ptx = new che(n_cols * n_rows);
 
@@ -47,14 +47,14 @@ che * scanner_ptx(rt::raytracing * rt, const size_t & n_rows, const size_t & n_c
 	return mesh_ptx;
 }
 
-che * scanner_ptx(const che * mesh, rt::raytracing * rt, const size_t & n_rows, const size_t & n_cols, const vertex & cam_pos, const std::string & file_jpg)
+che * scanner_ptx_jpg(const rt::raytracing * rt, const size_t & n_rows, const size_t & n_cols, const vertex & cam_pos, const std::string & file_jpg)
 {
 	che * mesh_ptx = scanner_ptx(rt, n_rows, n_cols, cam_pos);
 
 	CImg<unsigned char> img((unsigned char *) &mesh_ptx->rgb(0), 3, n_cols, n_rows);
 	img.permute_axes("zycx");
 
-	std::string img_filename = file_jpg + mesh->name() + ".jpg";
+	std::string img_filename = file_jpg + ".jpg";
 	img.save(img_filename.c_str());
 
 	std::thread([](const CImg<unsigned char> & img) { img.display(); }, img).detach();
