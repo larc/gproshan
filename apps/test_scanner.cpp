@@ -32,10 +32,14 @@ int main(int argc, char* argv[])
 
 	gproshan::rt::raytracing * rt_embree = new gproshan::rt::embree({mesh_ply}, {model_mat}, false, pc_radius);
 
-	gproshan::che * ptx_mesh = scanner_ptx(mesh_ply, rt_embree, n_rows, n_cols, {0, 0, 0}, jpg_folder);
+	gproshan::che * ptx_mesh = gproshan::scanner_ptx_jpg(rt_embree, n_rows, n_cols, {0, 0, 0}, jpg_folder + mesh_ply->name());
 
 	std::string ptx_filename = ptx_folder + mesh_ply->name();
 	gproshan::che_ptx::write_file(ptx_mesh, ptx_filename, n_rows, n_cols);
+
+	delete mesh_ply;
+	delete rt_embree;
+	delete ptx_mesh;
 
 	return 0;
 }
