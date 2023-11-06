@@ -106,26 +106,18 @@ void che_ply::read_file(const std::string & file)
 
 	if(format[0] == 'a')	// ascii
 	{
-		float x, y, z;
+		float x, y, z, nx, ny, nz;
 		unsigned char r, g, b;
 		for(index_t v = 0; v < n_vertices; ++v)
 		{
 			fgets(line, sizeof(line), fp);
+			
+			rgb ? sscanf(line, "%f %f %f %hhu %hhu %hhu %f %f %f", &x, &y, &z, &r, &g, &b, &nx, &ny, &nz)
+				: sscanf(line, "%f %f %f %f %f %f", &x, &y, &z, &nx, &ny, &nz);
 
-			sscanf(line, "%f %f %f", &x, &y, &z);
 			GT[v] = {x, y, z};
-
-			if(rgb)
-			{
-				sscanf(line, "%hhu %hhu %hhu", &r, &g, &b);
-				VC[v] = {r, g, b};
-			}
-
-			if(normal)
-			{
-				sscanf(line, "%f %f %f", &x, &y, &z);
-				VN[v] = {x, y, z};
-			}
+			if(rgb) VC[v] = {r, g, b};
+			if(normal) VN[v] = {nx, ny, nz};
 		}
 
 		while(nf--)
