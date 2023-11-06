@@ -111,9 +111,21 @@ void che_ply::read_file(const std::string & file)
 		for(index_t v = 0; v < n_vertices; ++v)
 		{
 			fgets(line, sizeof(line), fp);
-			if(sscanf(line, "%f %f %f %hhu %hhu %hhu", &x, &y, &z, &r, &g, &b) > 5)
-				VC[v] = {r, g, b};
+
+			sscanf(line, "%f %f %f", &x, &y, &z);
 			GT[v] = {x, y, z};
+
+			if(rgb)
+			{
+				sscanf(line, "%hhu %hhu %hhu", &r, &g, &b);
+				VC[v] = {r, g, b};
+			}
+
+			if(normal)
+			{
+				sscanf(line, "%f %f %f", &x, &y, &z);
+				VN[v] = {x, y, z};
+			}
 		}
 
 		while(nf--)
