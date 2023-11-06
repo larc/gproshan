@@ -111,7 +111,7 @@ void che_ply::read_file(const std::string & file)
 		for(index_t v = 0; v < n_vertices; ++v)
 		{
 			fgets(line, sizeof(line), fp);
-			
+
 			rgb ? sscanf(line, "%f %f %f %hhu %hhu %hhu %f %f %f", &x, &y, &z, &r, &g, &b, &nx, &ny, &nz)
 				: sscanf(line, "%f %f %f %f %f %f", &x, &y, &z, &nx, &ny, &nz);
 
