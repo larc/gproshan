@@ -27,13 +27,11 @@ size_t & che::rw(const size_t & n)
 }
 
 
-che::rgb_t::rgb_t(const vertex & v): rgb_t(v.x(), v.y(), v.z()) {}
-
-che::rgb_t::rgb_t(const float & fr, const float & fg, const float & fb)
+che::rgb_t::rgb_t(const vertex & v)
 {
-	r = (unsigned char) (fr * 255);
-	g = (unsigned char) (fg * 255);
-	b = (unsigned char) (fb * 255);
+	r = (unsigned char) (v.x() * 255);
+	g = (unsigned char) (v.y() * 255);
+	b = (unsigned char) (v.z() * 255);
 }
 
 che::rgb_t::rgb_t(const unsigned char & cr, const unsigned char & cg, const unsigned char & cb): r(cr), g(cg), b(cb) {}
