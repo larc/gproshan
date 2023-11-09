@@ -19,6 +19,9 @@ class partitions
 	index_t * sorted = nullptr;
 
 	public:
+		partitions(index_t * s = nullptr);
+		void add(const index_t & size);
+		size_t size(const index_t & i) const;
 		part operator () (const index_t & i) const;
 };
 
