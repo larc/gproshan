@@ -121,7 +121,7 @@ extern "C" __global__ void __raygen__render_frame()
 	optixTrace(	optix_params.traversable,
 				* (float3 *) &optix_params.cam_pos,
 				* (float3 *) &ray_dir,
-				0.f,	// tmin
+				1e-5f,	// tmin
 				1e20f,	// tmax
 				0.0f,	// rayTime
 				OptixVisibilityMask(255),
