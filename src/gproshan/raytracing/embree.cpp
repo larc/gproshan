@@ -253,9 +253,7 @@ vec3 embree::closesthit_radiance(const vertex & org, const vertex & dir, const l
 
 	const CHE * mesh = g_meshes[r.hit.geomID];
 
-	eval_hit hit;
-	if(mesh->n_trigs)
-		hit = {*mesh, r.hit.primID, r.hit.u, r.hit.v, sc};
+	eval_hit hit(*mesh, r.hit.primID, r.hit.u, r.hit.v, sc);
 	hit.position = r.pos();
 	hit.normal = flat ? r.normal() : hit.normal;
 
