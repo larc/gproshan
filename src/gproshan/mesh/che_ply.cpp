@@ -266,6 +266,9 @@ void che_ply::write_file(const che * mesh, const std::string & file, const bool 
 	fprintf(fp, "property %s x\n", type);
 	fprintf(fp, "property %s y\n", type);
 	fprintf(fp, "property %s z\n", type);
+	fprintf(fp, "property %s nx\n", type);
+	fprintf(fp, "property %s ny\n", type);
+	fprintf(fp, "property %s nz\n", type);
 	if(color)
 	{
 		fprintf(fp, "property uchar red\n");
@@ -276,15 +279,12 @@ void che_ply::write_file(const che * mesh, const std::string & file, const bool 
 	fprintf(fp, "property list uchar uint vertex_index\n");
 	fprintf(fp, "end_header\n");
 
-	if(color)
+	for(index_t v = 0; v < mesh->n_vertices; ++v)
 	{
-		for(index_t v = 0; v < mesh->n_vertices; ++v)
-		{
-			fwrite(&mesh->point(v), sizeof(vertex), 1, fp);
-			fwrite(&mesh->rgb(v), sizeof(rgb_t), 1, fp);
-		}
+		fwrite(&mesh->point(v), sizeof(vertex), 1, fp);
+		fwrite(&mesh->normal(v), sizeof(vertex), 1, fp);
+		if(color) fwrite(&mesh->rgb(v), sizeof(rgb_t), 1, fp);
 	}
-	else fwrite(&mesh->point(0), sizeof(vertex), mesh->n_vertices, fp);
 
 	unsigned char mtrig = che::mtrig;
 	for(index_t he = 0; he < mesh->n_half_edges; he += che::mtrig)
