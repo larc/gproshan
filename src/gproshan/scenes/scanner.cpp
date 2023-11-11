@@ -40,9 +40,19 @@ che * scanner_ptx(const rt::raytracing * rt, const size_t & n_rows, const size_t
 
 		mesh_ptx->point(v) = h.position;
 		mesh_ptx->normal(v) = h.normal;
-		mesh_ptx->heatmap(v) = h.dist / M_SQRT2;
+		mesh_ptx->heatmap(v) = h.dist;
 		mesh_ptx->rgb(v) = h.Kd;
 	}
+
+	real_t max_dist = 0;
+
+	#pragma omp parallel for reduction(std::max: max_dist)
+	for(index_t v = 0; v < mesh_ptx->n_vertices; ++v)
+		max_dist = std::max(max_dist, mesh_ptx->heatmap(v));
+
+	#pragma omp parallel for
+	for(index_t v = 0; v < mesh_ptx->n_vertices; ++v)
+		mesh_ptx->heatmap(v) /= max_dist;
 
 	return mesh_ptx;
 }
