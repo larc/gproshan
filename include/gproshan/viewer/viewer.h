@@ -137,6 +137,7 @@ class viewer
 
 		static bool m_help(viewer * view);
 		static bool m_close(viewer * view);
+		static bool m_maximize(viewer * view);
 		static bool m_hide_show_imgui(viewer * view);
 
 		static bool m_save_load_view(viewer * view);

@@ -79,18 +79,20 @@ struct t_eval_hit
 	t_eval_hit() {}
 
 	__host_device__
-	t_eval_hit(const CHE & pc, const index_t & aprimID)
-	{
-		primID = aprimID;
-		normal = pc.VN[primID];
-	}
-
-	__host_device__
 	t_eval_hit(const CHE & mesh, const index_t & aprimID, const T & au, const T & av, const scene_data & sc)
 	{
 		primID = aprimID;
 		u = au;
 		v = av;
+
+		if(!mesh.n_trigs) // pointcloud
+		{
+			const che::rgb_t & c = mesh.VC[aprimID];
+			Kd = {T(c.r), T(c.g), T(c.b)};
+			Kd /= 255;
+			normal = mesh.VN[aprimID];
+			return;
+		}
 
 		const index_t he = primID * che::mtrig;
 

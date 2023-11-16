@@ -21,7 +21,7 @@ class embree : public raytracing
 		{
 			ray_hit(const vertex & p_org = {0, 0, 0},
 					const vertex & v_dir = {0, 0, 0},
-					float near = 0,
+					float near = 1e-5f,
 					float far = 1e20f);
 
 			vertex org() const;

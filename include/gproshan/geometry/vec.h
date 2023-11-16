@@ -144,13 +144,13 @@ class vec
 			return res;
 		}
 
-		///< scalar division
+		///< element wise division & scalar division
 		__host_device__
-		vec<T, N> operator / (const T & a) const
+		vec<T, N> operator / (const vec<T, N> & v) const
 		{
 			vec<T, N> res;
 			for(index_t i = 0; i < N; ++i)
-				res[i] = values[i] / a;
+				res[i] = values[i] / v[i];
 			return res;
 		}
 
@@ -193,12 +193,12 @@ class vec
 			return *this;
 		}
 
-		///< scalar division self assign
+		///< element wise division self assign
 		__host_device__
-		const vec<T, N> & operator /= (const T & a)
+		const vec<T, N> & operator /= (const vec<T, N> & v)
 		{
-			for(T & v: values)
-				v /= a;
+			for(index_t i = 0; i < N; ++i)
+				values[i] /= v[i];
 			return *this;
 		}
 
@@ -263,6 +263,16 @@ vec<T, N> operator * (const T & a, const vec<T, N> & v)
 	return v * a;
 }
 
+///< scalar product
+template<class T, size_t N>
+__host_device__
+vec<T, N> operator / (const T & a, const vec<T, N> & v)
+{
+	vec<T, N> res;
+	for(index_t i = 0; i < N; ++i)
+		res[i] = a / v[i];
+	return res;
+}
 
 ///< cross product
 template<class T>
