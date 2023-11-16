@@ -398,6 +398,7 @@ void viewer::init_menus()
 	sub_menus.push_back("Viewer");
 	add_process(GLFW_KEY_F1, "F1", "Help", m_help);
 	add_process(GLFW_KEY_ESCAPE, "ESCAPE", "Close", m_close);
+	add_process(GLFW_KEY_F11, "F11", "Maximize", m_maximize);
 	add_process(GLFW_KEY_I, "F1", "Hide/Show ImGui", m_hide_show_imgui);
 	add_process(GLFW_KEY_PERIOD, "PERIOD", "Save/Load view", m_save_load_view);
 	add_process(GLFW_KEY_UP, "UP", "Zoom in", m_zoom_in);
@@ -647,6 +648,12 @@ bool viewer::m_help(viewer * view)
 bool viewer::m_close(viewer * view)
 {
 	glfwSetWindowShouldClose(view->window, GLFW_TRUE);
+	return false;
+}
+
+bool viewer::m_maximize(viewer * view)
+{
+	glfwMaximizeWindow(view->window);
 	return false;
 }
 
