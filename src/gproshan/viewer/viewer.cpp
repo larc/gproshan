@@ -653,7 +653,9 @@ bool viewer::m_close(viewer * view)
 
 bool viewer::m_maximize(viewer * view)
 {
-	glfwMaximizeWindow(view->window);
+	GLFWmonitor * monitor = glfwGetPrimaryMonitor();
+	const GLFWvidmode * mode = glfwGetVideoMode(monitor);
+	glfwSetWindowSize(view->window, mode->width, mode->height);
 	return false;
 }
 
