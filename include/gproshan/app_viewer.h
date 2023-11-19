@@ -57,8 +57,6 @@ class app_viewer : public viewer
 	protected:
 		virtual void init();
 
-		che * load_mesh(const std::string & file_path);
-
 		// Point Cloud
 		static bool process_knn(viewer * p_view);
 		static bool process_compute_normals(viewer * p_view);
