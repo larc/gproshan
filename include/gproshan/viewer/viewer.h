@@ -31,7 +31,6 @@
 // geometry processing and shape analysis framework
 namespace gproshan {
 
-const size_t max_nframes = 1000;
 
 class viewer
 {
@@ -41,20 +40,20 @@ class viewer
 
 		struct process_t
 		{
-			std::string key;
-			std::string name;
-			function_t function;
-			index_t sub_menu;
+			const char * key = nullptr;
+			const char * name = nullptr;
+			function_t function = nullptr;
+			index_t sub_menu = NIL;
 			bool selected = false;
-
-			process_t() = default;
-			process_t(const std::string & k, const std::string & n, function_t f, const index_t & sm = NIL): key(k), name(n), function(f), sub_menu(sm) {};
 		};
 
 		static const std::vector<ivec2> m_window_split;
-		static const size_t max_meshes;
 		static const std::vector<std::string> colormap;
+		static const size_t max_meshes;
+		static const size_t max_nframes = 1000;
+
 		static che_sphere sphere_data;
+
 
 		bool apply_all_meshes = false;
 
@@ -91,7 +90,7 @@ class viewer
 
 		float bgc = 0;
 
-		std::map<int, process_t> processes;
+		std::unordered_map<int, process_t> processes;
 
 		che_viewer * sphere = nullptr;
 		shader shader_sphere;
@@ -107,8 +106,11 @@ class viewer
 		virtual ~viewer();
 
 		che_viewer & selected_mesh();
-		void add_process(const int & key, const std::string & skey, const std::string & name, const function_t & f);
+		void add_process(const char * name, const function_t & f, const int & key = -1);
 		bool add_mesh(che * p_mesh, const bool & reset_normals = true);
+		bool remove_mesh(const index_t & idx);
+		bool pop_mesh();
+		void update_viewport_meshes();
 		void update_status_message(const char * format, ...);
 
 	protected:
@@ -143,6 +145,8 @@ class viewer
 		static bool m_save_load_view(viewer * view);
 		static bool m_reset_mesh(viewer * view);
 		static bool m_save_mesh(viewer * view);
+		static bool m_remove_mesh(viewer * view);
+		static bool m_pop_mesh(viewer * view);
 		static bool m_normalize_mesh(viewer * view);
 		static bool m_zoom_in(viewer * view);
 		static bool m_zoom_out(viewer * view);
