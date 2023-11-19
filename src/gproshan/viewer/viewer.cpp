@@ -48,7 +48,6 @@ const std::vector<ivec2> viewer::m_window_split = {	{1, 1},
 													{4, 5}, {4, 5}, {4, 5}, {4, 5}
 													};
 
-const size_t viewer::max_meshes = m_window_split.size() - 1;
 
 const std::vector<std::string> viewer::colormap = { "vertex color",
 													"blue heatmap",
@@ -57,6 +56,8 @@ const std::vector<std::string> viewer::colormap = { "vertex color",
 													"set heatmap",
 													"material scene",
 													};
+
+const size_t viewer::max_meshes = m_window_split.size() - 1;
 
 che_sphere viewer::sphere_data{0.01};
 
@@ -424,8 +425,9 @@ void viewer::init_menus()
 #endif // GPROSHAN_OPTIX
 
 	sub_menus.push_back("Mesh");
-	add_process(GLFW_KEY_BACKSPACE, "BACKSPACE", "Reload/Reset", m_reset_mesh);
+	add_process(GLFW_KEY_R, "R", "Reload/Reset", m_reset_mesh);
 	add_process(GLFW_KEY_W, "W", "Save Mesh", m_save_mesh);
+	add_process(GLFW_KEY_BACKSPACE, "BACKSPACE", "Pop Mesh", m_pop_mesh);
 	add_process(0, "", "Normalize Mesh", m_normalize_mesh);
 	add_process(GLFW_KEY_F2, "F2", "Invert Normals", m_invert_normals);
 	add_process(GLFW_KEY_F3, "F3", "Gradient Field", m_render_gradients);
@@ -465,7 +467,7 @@ void viewer::add_process(const int & key, const std::string & skey, const std::s
 		processes[key] = {skey, name, f};
 		processes[key].sub_menu = sub_menus.size() - 1;
 	}
-	else std::cerr << "Repeat key: " << key << std::endl;
+	else fprintf(stderr, "repeated key: [%d] %s (%s)\n", key, skey.c_str(), name.c_str());
 }
 
 bool viewer::add_mesh(che * p_mesh, const bool & reset_normals)
@@ -483,6 +485,31 @@ bool viewer::add_mesh(che * p_mesh, const bool & reset_normals)
 	idx_selected_mesh = meshes.size() - 1;
 	glfwSetWindowTitle(window, mesh->filename.c_str());
 
+	update_viewport_meshes();
+
+	save_history(tmp_file_path("history"));
+
+	return true;
+}
+
+bool viewer::pop_mesh()
+{
+	if(meshes.size() == 1)
+		return false;
+
+	if(idx_selected_mesh == meshes.size() - 1)
+		--idx_selected_mesh;
+
+	delete meshes.back();
+	meshes.pop_back();
+
+	update_viewport_meshes();
+
+	return true;
+}
+
+void viewer::update_viewport_meshes()
+{
 	const int & rows = m_window_split[meshes.size()].x();
 	const int & cols = m_window_split[meshes.size()].y();
 	for(index_t m = 0; m < meshes.size(); ++m)
@@ -496,10 +523,6 @@ bool viewer::add_mesh(che * p_mesh, const bool & reset_normals)
 	viewport_height /= rows;
 	cam.aspect = real_t(viewport_width) / viewport_height;
 	proj_mat = cam.perspective();
-
-	save_history(tmp_file_path("history"));
-
-	return true;
 }
 
 void viewer::update_status_message(const char * format, ...)
@@ -728,6 +751,12 @@ bool viewer::m_reset_mesh(viewer * view)
 		mesh.update();
 	});
 
+	return false;
+}
+
+bool viewer::m_pop_mesh(viewer * view)
+{
+	view->pop_mesh();
 	return false;
 }
 

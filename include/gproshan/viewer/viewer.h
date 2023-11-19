@@ -31,7 +31,6 @@
 // geometry processing and shape analysis framework
 namespace gproshan {
 
-const size_t max_nframes = 1000;
 
 class viewer
 {
@@ -52,9 +51,12 @@ class viewer
 		};
 
 		static const std::vector<ivec2> m_window_split;
-		static const size_t max_meshes;
 		static const std::vector<std::string> colormap;
+		static const size_t max_meshes;
+		static const size_t max_nframes = 1000;
+
 		static che_sphere sphere_data;
+
 
 		bool apply_all_meshes = false;
 
@@ -109,6 +111,8 @@ class viewer
 		che_viewer & selected_mesh();
 		void add_process(const int & key, const std::string & skey, const std::string & name, const function_t & f);
 		bool add_mesh(che * p_mesh, const bool & reset_normals = true);
+		bool pop_mesh();
+		void update_viewport_meshes();
 		void update_status_message(const char * format, ...);
 
 	protected:
@@ -143,6 +147,7 @@ class viewer
 		static bool m_save_load_view(viewer * view);
 		static bool m_reset_mesh(viewer * view);
 		static bool m_save_mesh(viewer * view);
+		static bool m_pop_mesh(viewer * view);
 		static bool m_normalize_mesh(viewer * view);
 		static bool m_zoom_in(viewer * view);
 		static bool m_zoom_out(viewer * view);
