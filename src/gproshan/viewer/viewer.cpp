@@ -608,13 +608,12 @@ void viewer::keyboard_callback(GLFWwindow * window, int key, int, int action, in
 	if(action == GLFW_RELEASE) return;
 
 	viewer * view = (viewer *) glfwGetWindowUserPointer(window);
+	if(view->processes.find(key) == view->processes.end())
+		return;
 
 	process_t & pro = view->processes[key];
-	if(pro.function)
-	{
-		pro.selected = view->hide_imgui ? pro.function(view) && pro.selected : !pro.selected;
-		view->update_status_message("%s", pro.selected ? pro.name : "");
-	}
+	pro.selected = view->hide_imgui ? pro.function(view) && pro.selected : !pro.selected;
+	view->update_status_message("%s", pro.selected ? pro.name : "");
 }
 
 void viewer::mouse_callback(GLFWwindow * window, int button, int action, int mods)
