@@ -40,14 +40,11 @@ class viewer
 
 		struct process_t
 		{
-			std::string key;
-			std::string name;
-			function_t function;
-			index_t sub_menu;
+			const char * key = nullptr;
+			const char * name = nullptr;
+			function_t function = nullptr;
+			index_t sub_menu = NIL;
 			bool selected = false;
-
-			process_t() = default;
-			process_t(const std::string & k, const std::string & n, function_t f, const index_t & sm = NIL): key(k), name(n), function(f), sub_menu(sm) {};
 		};
 
 		static const std::vector<ivec2> m_window_split;
@@ -93,7 +90,7 @@ class viewer
 
 		float bgc = 0;
 
-		std::map<int, process_t> processes;
+		std::unordered_map<int, process_t> processes;
 
 		che_viewer * sphere = nullptr;
 		shader shader_sphere;
@@ -109,7 +106,7 @@ class viewer
 		virtual ~viewer();
 
 		che_viewer & selected_mesh();
-		void add_process(const int & key, const std::string & skey, const std::string & name, const function_t & f);
+		void add_process(const char * name, const function_t & f, const int & key = -1);
 		bool add_mesh(che * p_mesh, const bool & reset_normals = true);
 		bool remove_mesh(const index_t & idx);
 		bool pop_mesh();

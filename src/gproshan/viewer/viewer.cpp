@@ -15,6 +15,7 @@
 #include <gproshan/mesh/che_pts.h>
 #include <gproshan/mesh/che_pcd.h>
 #include <gproshan/viewer/scene_viewer.h>
+#include <gproshan/viewer/glfw_keys.h>
 
 #include <gproshan/raytracing/embree.h>
 
@@ -178,8 +179,8 @@ void viewer::imgui()
 				{
 					process_t & pro = p.second;
 					if(pro.function != nullptr && pro.sub_menu == i)
-						if(ImGui::MenuItem(pro.name.c_str(), ('[' + pro.key + ']').c_str(), &pro.selected))
-							update_status_message("%s", pro.selected ? pro.name.c_str() : "");
+						if(ImGui::MenuItem(pro.name, pro.key, &pro.selected))
+							update_status_message("%s", pro.selected ? pro.name : "");
 
 					//ImGui::Separator();
 				}
@@ -306,9 +307,10 @@ void viewer::imgui()
 	for(auto & p: processes)
 	{
 		process_t & pro = p.second;
-		if(ImGui::CollapsingHeader(("[" + pro.key + "] " + pro.name).c_str(), &pro.selected, ImGuiTreeNodeFlags_DefaultOpen))
+		const std::string hstr = "[";
+		if(ImGui::CollapsingHeader((hstr + pro.key + "] " + pro.name).c_str(), &pro.selected, ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			ImGui::PushID(pro.name.c_str());
+			ImGui::PushID(pro.name);
 			ImGui::Indent();
 			pro.selected = pro.selected && pro.function(this);
 			ImGui::Unindent();
@@ -397,44 +399,44 @@ void viewer::init_imgui()
 void viewer::init_menus()
 {
 	sub_menus.push_back("Viewer");
-	add_process(GLFW_KEY_F1, "F1", "Help", m_help);
-	add_process(GLFW_KEY_ESCAPE, "ESCAPE", "Close", m_close);
-	add_process(GLFW_KEY_F11, "F11", "Maximize", m_maximize);
-	add_process(GLFW_KEY_I, "F1", "Hide/Show ImGui", m_hide_show_imgui);
-	add_process(GLFW_KEY_PERIOD, "PERIOD", "Save/Load view", m_save_load_view);
-	add_process(GLFW_KEY_UP, "UP", "Zoom in", m_zoom_in);
-	add_process(GLFW_KEY_DOWN, "DOWN", "Zoom out", m_zoom_out);
-	add_process(GLFW_KEY_RIGHT, "RIGHT", "Background color inc", m_bgc_inc);
-	add_process(GLFW_KEY_LEFT, "LEFT", "Background color dec", m_bgc_dec);
-	add_process(GLFW_KEY_1, "1", "Background color white", m_bgc_white);
-	add_process(GLFW_KEY_0, "0", "Background color black", m_bgc_black);
+	add_process("Help", m_help, GLFW_KEY_F1);
+	add_process("Close", m_close, GLFW_KEY_ESCAPE);
+	add_process("Maximize", m_maximize, GLFW_KEY_F11);
+	add_process("Hide/Show ImGui", m_hide_show_imgui, GLFW_KEY_I);
+	add_process("Save/Load view", m_save_load_view, GLFW_KEY_PERIOD);
+	add_process("Zoom in", m_zoom_in, GLFW_KEY_UP);
+	add_process("Zoom out", m_zoom_out, GLFW_KEY_DOWN);
+	add_process("Background color inc", m_bgc_inc, GLFW_KEY_RIGHT);
+	add_process("Background color dec", m_bgc_dec, GLFW_KEY_LEFT);
+	add_process("Background color white", m_bgc_white, GLFW_KEY_1);
+	add_process("Background color black", m_bgc_black, GLFW_KEY_0);
 
 	sub_menus.push_back("Render");
-	add_process(GLFW_KEY_F5, "F5", "Render Point Cloud", m_render_pointcloud);
-	add_process(GLFW_KEY_F6, "F6", "Render Wireframe", m_render_wireframe);
-	add_process(GLFW_KEY_F7, "F7", "Render Triangles", m_render_triangles);
-	add_process(GLFW_KEY_F8, "F8", "Render GL", m_render_gl);
-	add_process(GLFW_KEY_SPACE, "SPACE", "Level Curves", m_render_lines);
-	add_process(GLFW_KEY_TAB, "TAB", "Render Flat", m_render_flat);
-	add_process(GLFW_KEY_R, "R", "Setup Raytracing", m_setup_raytracing);
-	add_process(GLFW_KEY_F9, "F9", "Render Embree", m_render_embree);
-	add_process(GLFW_KEY_ENTER, "ENTER", "Raycasting", m_raycasting);
+	add_process("Render Point Cloud", m_render_pointcloud, GLFW_KEY_F5);
+	add_process("Render Wireframe", m_render_wireframe, GLFW_KEY_F6);
+	add_process("Render Triangles", m_render_triangles, GLFW_KEY_F7);
+	add_process("Render GL", m_render_gl, GLFW_KEY_F8);
+	add_process("Level Curves", m_render_lines, GLFW_KEY_SPACE);
+	add_process("Render Flat", m_render_flat, GLFW_KEY_TAB);
+	add_process("Setup Raytracing", m_setup_raytracing, GLFW_KEY_R);
+	add_process("Render Embree", m_render_embree, GLFW_KEY_F9);
+	add_process("Raycasting", m_raycasting, GLFW_KEY_ENTER);
 
 #ifdef GPROSHAN_OPTIX
-	add_process(GLFW_KEY_F10, "F10", "Render OptiX", m_render_optix);
+	add_process("Render OptiX", m_render_optix, GLFW_KEY_F10);
 #endif // GPROSHAN_OPTIX
 
 	sub_menus.push_back("Mesh");
-	add_process(GLFW_KEY_R, "R", "Reload/Reset", m_reset_mesh);
-	add_process(GLFW_KEY_W, "W", "Save Mesh", m_save_mesh);
-	add_process(GLFW_KEY_DELETE, "DELETE", "Remove Selected Mesh", m_remove_mesh);
-	add_process(GLFW_KEY_BACKSPACE, "BACKSPACE", "Pop Mesh", m_pop_mesh);
-	add_process(0, "", "Normalize Mesh", m_normalize_mesh);
-	add_process(GLFW_KEY_F2, "F2", "Invert Normals", m_invert_normals);
-	add_process(GLFW_KEY_F3, "F3", "Gradient Field", m_render_gradients);
-	add_process(GLFW_KEY_F4, "F4", "Normal Field", m_render_normals);
-	add_process(GLFW_KEY_B, "B", "Select Border Vertices", m_select_border_vertices);
-	add_process(GLFW_KEY_C, "C", "Clean Selected Vertices", m_clean_selected_vertices);
+	add_process("Reload/Reset", m_reset_mesh, GLFW_KEY_INSERT);
+	add_process("Save Mesh", m_save_mesh, GLFW_KEY_W);
+	add_process("Remove Selected Mesh", m_remove_mesh, GLFW_KEY_DELETE);
+	add_process("Pop Mesh", m_pop_mesh, GLFW_KEY_BACKSPACE);
+	add_process("Normalize Mesh", m_normalize_mesh);
+	add_process("Invert Normals", m_invert_normals, GLFW_KEY_F2);
+	add_process("Gradient Field", m_render_gradients, GLFW_KEY_F3);
+	add_process("Normal Field", m_render_normals, GLFW_KEY_F4);
+	add_process("Select Border Vertices", m_select_border_vertices, GLFW_KEY_B);
+	add_process("Clean Selected Vertices", m_clean_selected_vertices, GLFW_KEY_C);
 }
 
 void viewer::init_glsl()
@@ -461,14 +463,17 @@ void viewer::init_glsl()
 	shader_depth.load_fragment(shaders_path("fragment_depth.glsl"));
 }
 
-void viewer::add_process(const int & key, const std::string & skey, const std::string & name, const function_t & f)
+void viewer::add_process(const char * name, const function_t & f, const int & key)
 {
-	if(processes.find(key) == processes.end())
+	static int nk = 1000;
+
+	const int fkey = key == -1 ? ++nk : key;
+	if(processes.find(fkey) == processes.end())
 	{
-		processes[key] = {skey, name, f};
-		processes[key].sub_menu = sub_menus.size() - 1;
+		processes[fkey] = {glfw_key_name.at(key), name, f};
+		processes[fkey].sub_menu = sub_menus.size() - 1;
 	}
-	else fprintf(stderr, "repeated key: [%d] %s (%s)\n", key, skey.c_str(), name.c_str());
+	else fprintf(stderr, "repeated key: [%d] %s (%s)\n", key, glfw_key_name.at(key), name);
 }
 
 bool viewer::add_mesh(che * p_mesh, const bool & reset_normals)
@@ -608,7 +613,7 @@ void viewer::keyboard_callback(GLFWwindow * window, int key, int, int action, in
 	if(pro.function)
 	{
 		pro.selected = view->hide_imgui ? pro.function(view) && pro.selected : !pro.selected;
-		view->update_status_message("%s", pro.selected ? pro.name.c_str() : "");
+		view->update_status_message("%s", pro.selected ? pro.name : "");
 	}
 }
 
@@ -683,7 +688,7 @@ bool viewer::m_help(viewer * view)
 {
 	for(auto & p: view->processes)
 		if(p.second.function != nullptr)
-			fprintf(stderr, "%16s: %s\n", ('[' + p.second.key + ']').c_str(), p.second.name.c_str());
+			fprintf(stderr, "%16s: %s\n", (std::string("[") + p.second.key + ']').c_str(), p.second.name);
 
 	return false;
 }
