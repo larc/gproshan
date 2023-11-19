@@ -427,6 +427,7 @@ void viewer::init_menus()
 	sub_menus.push_back("Mesh");
 	add_process(GLFW_KEY_R, "R", "Reload/Reset", m_reset_mesh);
 	add_process(GLFW_KEY_W, "W", "Save Mesh", m_save_mesh);
+	add_process(GLFW_KEY_DELETE, "DELETE", "Remove Selected Mesh", m_remove_mesh);
 	add_process(GLFW_KEY_BACKSPACE, "BACKSPACE", "Pop Mesh", m_pop_mesh);
 	add_process(0, "", "Normalize Mesh", m_normalize_mesh);
 	add_process(GLFW_KEY_F2, "F2", "Invert Normals", m_invert_normals);
@@ -488,6 +489,25 @@ bool viewer::add_mesh(che * p_mesh, const bool & reset_normals)
 	update_viewport_meshes();
 
 	save_history(tmp_file_path("history"));
+
+	return true;
+}
+
+bool viewer::remove_mesh(const index_t & idx)
+{
+	if(meshes.size() == 1)
+		return false;
+
+	if(idx_selected_mesh == meshes.size() - 1)
+		--idx_selected_mesh;
+
+	delete meshes[idx];
+	for(index_t i = idx; i < meshes.size() - 1; ++i)
+		meshes[i] = meshes[i + 1];
+
+	meshes.pop_back();
+
+	update_viewport_meshes();
 
 	return true;
 }
@@ -751,6 +771,12 @@ bool viewer::m_reset_mesh(viewer * view)
 		mesh.update();
 	});
 
+	return false;
+}
+
+bool viewer::m_remove_mesh(viewer * view)
+{
+	view->remove_mesh(view->idx_selected_mesh);
 	return false;
 }
 

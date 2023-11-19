@@ -111,6 +111,7 @@ class viewer
 		che_viewer & selected_mesh();
 		void add_process(const int & key, const std::string & skey, const std::string & name, const function_t & f);
 		bool add_mesh(che * p_mesh, const bool & reset_normals = true);
+		bool remove_mesh(const index_t & idx);
 		bool pop_mesh();
 		void update_viewport_meshes();
 		void update_status_message(const char * format, ...);
@@ -147,6 +148,7 @@ class viewer
 		static bool m_save_load_view(viewer * view);
 		static bool m_reset_mesh(viewer * view);
 		static bool m_save_mesh(viewer * view);
+		static bool m_remove_mesh(viewer * view);
 		static bool m_pop_mesh(viewer * view);
 		static bool m_normalize_mesh(viewer * view);
 		static bool m_zoom_in(viewer * view);

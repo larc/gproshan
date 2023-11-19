@@ -56,7 +56,7 @@ void app_viewer::init()
 	add_process(GLFW_KEY_K, "K", "Gaussian curvature", process_gaussian_curvature);
 	add_process(GLFW_KEY_Q, "Q", "Edge Collapse", process_edge_collapse);
 	add_process(GLFW_KEY_M, "M", "Multiplicate", process_multiplicate_vertices);
-	add_process(GLFW_KEY_DELETE, "DELETE", "Delete vertices", process_delete_vertices);
+	add_process(GLFW_KEY_SLASH, "SLASH", "Delete vertices", process_delete_vertices);
 	add_process(GLFW_KEY_MINUS, "MINUS", "Delete non-manifold vertices", process_delete_non_manifold_vertices);
 
 	sub_menus.push_back("Fairing");
@@ -90,7 +90,7 @@ void app_viewer::init()
 
 	sub_menus.push_back("Others");
 	add_process(GLFW_KEY_SEMICOLON, "SEMICOLON", "Select multiple vertices", process_select_multiple);
-	add_process(GLFW_KEY_SLASH, "SLASH", "Threshold", process_threshold);
+	add_process(GLFW_KEY_BACKSLASH, "BACKSLASH", "Threshold", process_threshold);
 	add_process(GLFW_KEY_N, "N", "Noise", process_noise);
 	add_process(GLFW_KEY_P, "P", "Black noise", process_black_noise);
 }
