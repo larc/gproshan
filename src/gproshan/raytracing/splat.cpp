@@ -45,22 +45,22 @@ void splat::add_splats(che * pc, const mat4 & model_mat)
 	time_segmentation += time;
 
 
+	display_sets(pc, segs, vertices.data());
 	gproshan_error_var(segs.size() - 1);
 	gproshan_error_var(vertices.size());
-
-	display_sets(pc, segs, vertices.data());
 
 
 	TIC(time);
 	std::vector<index_t> voronois[segs.size() - 1];
 	std::vector<index_t> voronoi_sets[segs.size() - 1];
 
-	#pragma omp parallel for
+//	#pragma omp parallel for
 	for(index_t i = 1; i < segs.size(); ++i)
 		voronois[i - 1] = voronoi_subdivision(voronoi_sets[i - 1], vertices, &pc->point(0), k3tree, segs[i - 1], segs[i]);
 	TOC(time);
 	time_subdivision += time;
 
+	gproshan_error_var(time);
 
 	TIC(time);
 	size_t n_points = 0;
