@@ -43,7 +43,7 @@ vertex embree::ray_hit::dir() const
 
 vertex embree::ray_hit::normal() const
 {
-	return normalize(vec3{hit.Ng_x, hit.Ng_y, hit.Ng_z});
+	return normalize(vertex{hit.Ng_x, hit.Ng_y, hit.Ng_z});
 }
 
 vertex embree::ray_hit::pos() const
@@ -109,7 +109,7 @@ index_t embree::closest_vertex(const vertex & org, const vertex & dir) const
 	return mesh->VT[he];
 }
 
-eval_hit embree::intersect(const vertex & org, const vertex & dir) const
+eval_hit embree::intersect(const vertex & org, const vertex & dir, const bool & flat) const
 {
 	ray_hit r(org, dir);
 	if(!intersect(r)) return {};
@@ -117,6 +117,7 @@ eval_hit embree::intersect(const vertex & org, const vertex & dir) const
 	eval_hit hit(*g_meshes[r.hit.geomID], r.hit.primID, r.hit.u, r.hit.v, sc);
 	hit.dist = r.ray.tfar;
 	hit.position = r.pos();
+	hit.normal = flat ? r.normal() : hit.normal;
 
 	return hit;
 }
