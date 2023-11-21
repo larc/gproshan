@@ -30,7 +30,8 @@ class raytracing
 									) const;
 
 		virtual eval_hit intersect(	const vertex &,	// org
-									const vertex &	//dir
+									const vertex &,	//dir
+									[[maybe_unused]] const bool & flat = true
 									) const { return {}; }
 
 		virtual index_t closest_vertex(	const vertex &,	// org,
