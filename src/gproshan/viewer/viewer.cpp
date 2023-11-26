@@ -142,7 +142,14 @@ void viewer::imgui()
 
 	if(ImGui::BeginPopupContextVoid("mesh"))
 	{
-		ImGui::Text("hola");
+		ImGui::TextDisabled(mesh->filename.c_str());
+		for(auto & p: menu_processes[2])	// init_menus
+		{
+			process_t & pro = processes[p];
+			if(pro.function != nullptr)
+				if(ImGui::MenuItem(pro.name, pro.key, &pro.selected))
+					update_status_message("%s", pro.selected ? pro.name : "");
+		}
 		ImGui::EndPopup();
 	}
 
@@ -187,8 +194,6 @@ void viewer::imgui()
 					if(pro.function != nullptr)
 						if(ImGui::MenuItem(pro.name, pro.key, &pro.selected))
 							update_status_message("%s", pro.selected ? pro.name : "");
-
-					//ImGui::Separator();
 				}
 				ImGui::EndMenu();
 			}
