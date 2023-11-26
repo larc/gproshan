@@ -336,6 +336,36 @@ void viewer::imgui()
 		}
 	}
 
+
+	if(removed_meshes.size())
+	{
+		if(ImGui::CollapsingHeader("Removed meshes", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			for(index_t i = 0; i < removed_meshes.size(); ++i)
+			{
+				che_viewer * m = removed_meshes[i];
+				ImGui::PushID(m);
+				if(ImGui::Button("add"))
+				{
+					meshes.push_back(m);
+					removed_meshes.erase(begin(removed_meshes) + i);
+
+					update_viewport_meshes();
+				}
+				ImGui::SameLine();
+				if(ImGui::Button("delete"))
+				{
+					delete m;
+					removed_meshes.erase(begin(removed_meshes) + i);
+				}
+				ImGui::SameLine();
+				ImGui::Selectable((*m)->filename.c_str());
+				ImGui::PopID();
+			}
+		}
+	}
+
+
 	ImGui::PopItemWidth();
 	ImGui::End();
 
@@ -525,7 +555,7 @@ bool viewer::add_mesh(che * p_mesh, const bool & reset_normals)
 	mesh.log_info();
 
 	idx_selected_mesh = meshes.size() - 1;
-	glfwSetWindowTitle(window, mesh->filename.c_str());
+	glfwSetWindowTitle(window, ("gproshan - " + mesh->filename).c_str());
 
 	update_viewport_meshes();
 
@@ -539,14 +569,11 @@ bool viewer::remove_mesh(const index_t & idx)
 	if(meshes.size() == 1)
 		return false;
 
-	if(idx_selected_mesh == meshes.size() - 1)
+	removed_meshes.push_back(meshes[idx]);
+	meshes.erase(begin(meshes) + idx);
+
+	if(idx_selected_mesh == meshes.size())
 		--idx_selected_mesh;
-
-	delete meshes[idx];
-	for(index_t i = idx; i < meshes.size() - 1; ++i)
-		meshes[i] = meshes[i + 1];
-
-	meshes.pop_back();
 
 	update_viewport_meshes();
 
@@ -558,11 +585,11 @@ bool viewer::pop_mesh()
 	if(meshes.size() == 1)
 		return false;
 
-	if(idx_selected_mesh == meshes.size() - 1)
-		--idx_selected_mesh;
-
-	delete meshes.back();
+	removed_meshes.push_back(meshes.back());
 	meshes.pop_back();
+
+	if(idx_selected_mesh == meshes.size())
+		--idx_selected_mesh;
 
 	update_viewport_meshes();
 

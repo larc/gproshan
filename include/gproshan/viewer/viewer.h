@@ -84,6 +84,7 @@ class viewer
 		index_t nframes = 0;
 
 		std::vector<che_viewer *> meshes;
+		std::vector<che_viewer *> removed_meshes;
 		index_t idx_selected_mesh = 0;
 
 		frame * frames = nullptr;
