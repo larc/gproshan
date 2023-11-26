@@ -43,7 +43,7 @@ class viewer
 			const char * key = nullptr;
 			const char * name = nullptr;
 			function_t function = nullptr;
-			index_t sub_menu = NIL;
+			index_t id_menu = NIL;
 			bool selected = false;
 		};
 
@@ -90,6 +90,8 @@ class viewer
 
 		float bgc = 0;
 
+		std::vector<std::string> menus;
+		std::vector<std::vector<int> > menu_processes;
 		std::unordered_map<int, process_t> processes;
 
 		che_viewer * sphere = nullptr;
@@ -97,7 +99,6 @@ class viewer
 		std::vector<vertex> sphere_points;
 
 		std::vector<vertex> vectors;
-		std::vector<std::string> sub_menus;
 
 		char status_message[1024] = {};
 
@@ -106,7 +107,8 @@ class viewer
 		virtual ~viewer();
 
 		che_viewer & selected_mesh();
-		void add_process(const char * name, const function_t & f, const int & key = -1);
+		void add_menu(const std::string & str, const std::vector<int> & vprocesses);
+		int add_process(const char * name, const function_t & f, const int & key = -1);
 		bool add_mesh(che * p_mesh, const bool & reset_normals = true);
 		bool remove_mesh(const index_t & idx);
 		bool pop_mesh();

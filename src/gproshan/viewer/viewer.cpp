@@ -140,6 +140,12 @@ void viewer::imgui()
 
 	che_viewer & mesh = selected_mesh();
 
+	if(ImGui::BeginPopupContextVoid("mesh"))
+	{
+		ImGui::Text("hola");
+		ImGui::EndPopup();
+	}
+
 	if(ImGui::BeginMainMenuBar())
 	{
 		if(ImGui::BeginMenu("Select"))
@@ -171,14 +177,14 @@ void viewer::imgui()
 			ImGui::EndMenu();
 		}
 
-		for(index_t i = 0; i < sub_menus.size(); ++i)
+		for(index_t i = 0; i < menus.size(); ++i)
 		{
-			if(ImGui::BeginMenu(sub_menus[i].c_str()))
+			if(ImGui::BeginMenu(menus[i].c_str()))
 			{
 				for(auto & p: processes)
 				{
 					process_t & pro = p.second;
-					if(pro.function != nullptr && pro.sub_menu == i)
+					if(pro.function != nullptr && pro.id_menu == i)
 						if(ImGui::MenuItem(pro.name, pro.key, &pro.selected))
 							update_status_message("%s", pro.selected ? pro.name : "");
 
@@ -398,7 +404,7 @@ void viewer::init_imgui()
 
 void viewer::init_menus()
 {
-	sub_menus.push_back("Viewer");
+	menus.push_back("Viewer");
 	add_process("Help", m_help, GLFW_KEY_F1);
 	add_process("Close", m_close, GLFW_KEY_ESCAPE);
 	add_process("Maximize", m_maximize, GLFW_KEY_F11);
@@ -411,7 +417,7 @@ void viewer::init_menus()
 	add_process("Background color white", m_bgc_white, GLFW_KEY_1);
 	add_process("Background color black", m_bgc_black, GLFW_KEY_0);
 
-	sub_menus.push_back("Render");
+	menus.push_back("Render");
 	add_process("Render Point Cloud", m_render_pointcloud, GLFW_KEY_F5);
 	add_process("Render Wireframe", m_render_wireframe, GLFW_KEY_F6);
 	add_process("Render Triangles", m_render_triangles, GLFW_KEY_F7);
@@ -426,7 +432,7 @@ void viewer::init_menus()
 	add_process("Render OptiX", m_render_optix, GLFW_KEY_F10);
 #endif // GPROSHAN_OPTIX
 
-	sub_menus.push_back("Mesh");
+	menus.push_back("Mesh");
 	add_process("Reload/Reset", m_reset_mesh, GLFW_KEY_INSERT);
 	add_process("Save Mesh", m_save_mesh, GLFW_KEY_W);
 	add_process("Remove Selected Mesh", m_remove_mesh, GLFW_KEY_DELETE);
@@ -463,17 +469,30 @@ void viewer::init_glsl()
 	shader_depth.load_fragment(shaders_path("fragment_depth.glsl"));
 }
 
-void viewer::add_process(const char * name, const function_t & f, const int & key)
+void viewer::add_menu(const std::string & str, const std::vector<int> & vprocesses)
+{
+	menus.push_back(str);
+	menu_processes.emplace_back(vprocesses);
+
+	const int & id_menu = menus.size() - 1;
+	for(const int & p: menu_processes.back())
+		processes[p].id_menu = id_menu;
+}
+
+int viewer::add_process(const char * name, const function_t & f, const int & key)
 {
 	static int nk = 1000;
 
-	const int fkey = key == -1 ? ++nk : key;
-	if(processes.find(fkey) == processes.end())
+	const int & fkey = key == -1 ? ++nk : key;
+	if(processes.find(fkey) != processes.end())
 	{
-		processes[fkey] = {glfw_key_name.at(key), name, f};
-		processes[fkey].sub_menu = sub_menus.size() - 1;
+		fprintf(stderr, "repeated key: [%d] %s (%s)\n", key, glfw_key_name.at(key), name);
+		return -1;
 	}
-	else fprintf(stderr, "repeated key: [%d] %s (%s)\n", key, glfw_key_name.at(key), name);
+
+	processes[fkey] = {glfw_key_name.at(key), name, f};
+
+	return fkey;
 }
 
 bool viewer::add_mesh(che * p_mesh, const bool & reset_normals)
@@ -625,7 +644,7 @@ void viewer::mouse_callback(GLFWwindow * window, int button, int action, int mod
 	double xpos, ypos;
 	glfwGetCursorPos(window, &xpos, &ypos);
 
-	if(button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE)
+	if(action == GLFW_RELEASE)
 	{
 		float xscale, yscale;
 		glfwGetWindowContentScale(window, &xscale, &yscale);
@@ -637,7 +656,7 @@ void viewer::mouse_callback(GLFWwindow * window, int button, int action, int mod
 		if(idx_mesh < view->meshes.size())
 			view->idx_selected_mesh = idx_mesh;
 
-		if(mods == GLFW_MOD_SHIFT)
+		if(mods == GLFW_MOD_SHIFT && button == GLFW_MOUSE_BUTTON_LEFT)
 			view->pick_vertex(ix % view->viewport_width, iy % view->viewport_height);
 	}
 
@@ -657,7 +676,7 @@ void viewer::cursor_callback(GLFWwindow * window, double x, double y)
 		view->render_params.restart = true;
 	}
 
-	if(GLFW_PRESS == glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT))
+	if(GLFW_PRESS == glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE))
 	{
 		view->cam.pos.im().x() = 2 * x / view->window_width - 1;
 		view->cam.pos.im().y() = 2 * y / view->window_height - 1;
@@ -667,8 +686,9 @@ void viewer::cursor_callback(GLFWwindow * window, double x, double y)
 
 void viewer::scroll_callback(GLFWwindow * window, double, double yoffset)
 {
-	viewer * view = (viewer *) glfwGetWindowUserPointer(window);
 	if(ImGui::GetIO().WantCaptureMouse) return;
+
+	viewer * view = (viewer *) glfwGetWindowUserPointer(window);
 
 	if(yoffset > 0)
 	{
