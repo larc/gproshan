@@ -181,10 +181,10 @@ void viewer::imgui()
 		{
 			if(ImGui::BeginMenu(menus[i].c_str()))
 			{
-				for(auto & p: processes)
+				for(auto & p: menu_processes[i])
 				{
-					process_t & pro = p.second;
-					if(pro.function != nullptr && pro.id_menu == i)
+					process_t & pro = processes[p];
+					if(pro.function != nullptr)
 						if(ImGui::MenuItem(pro.name, pro.key, &pro.selected))
 							update_status_message("%s", pro.selected ? pro.name : "");
 
@@ -404,45 +404,50 @@ void viewer::init_imgui()
 
 void viewer::init_menus()
 {
-	menus.push_back("Viewer");
-	add_process("Help", m_help, GLFW_KEY_F1);
-	add_process("Close", m_close, GLFW_KEY_ESCAPE);
-	add_process("Maximize", m_maximize, GLFW_KEY_F11);
-	add_process("Hide/Show ImGui", m_hide_show_imgui, GLFW_KEY_I);
-	add_process("Save/Load view", m_save_load_view, GLFW_KEY_PERIOD);
-	add_process("Zoom in", m_zoom_in, GLFW_KEY_UP);
-	add_process("Zoom out", m_zoom_out, GLFW_KEY_DOWN);
-	add_process("Background color inc", m_bgc_inc, GLFW_KEY_RIGHT);
-	add_process("Background color dec", m_bgc_dec, GLFW_KEY_LEFT);
-	add_process("Background color white", m_bgc_white, GLFW_KEY_1);
-	add_process("Background color black", m_bgc_black, GLFW_KEY_0);
+	add_menu("Viewer",
+	{
+		add_process("Help", m_help, GLFW_KEY_F1),
+		add_process("Close", m_close, GLFW_KEY_ESCAPE),
+		add_process("Maximize", m_maximize, GLFW_KEY_F11),
+		add_process("Hide/Show ImGui", m_hide_show_imgui, GLFW_KEY_I),
+		add_process("Save/Load view", m_save_load_view, GLFW_KEY_PERIOD),
+		add_process("Zoom in", m_zoom_in, GLFW_KEY_UP),
+		add_process("Zoom out", m_zoom_out, GLFW_KEY_DOWN),
+		add_process("Background color inc", m_bgc_inc, GLFW_KEY_RIGHT),
+		add_process("Background color dec", m_bgc_dec, GLFW_KEY_LEFT),
+		add_process("Background color white", m_bgc_white, GLFW_KEY_1),
+		add_process("Background color black", m_bgc_black, GLFW_KEY_0)
+	});
 
-	menus.push_back("Render");
-	add_process("Render Point Cloud", m_render_pointcloud, GLFW_KEY_F5);
-	add_process("Render Wireframe", m_render_wireframe, GLFW_KEY_F6);
-	add_process("Render Triangles", m_render_triangles, GLFW_KEY_F7);
-	add_process("Render GL", m_render_gl, GLFW_KEY_F8);
-	add_process("Level Curves", m_render_lines, GLFW_KEY_SPACE);
-	add_process("Render Flat", m_render_flat, GLFW_KEY_TAB);
-	add_process("Setup Raytracing", m_setup_raytracing, GLFW_KEY_R);
-	add_process("Render Embree", m_render_embree, GLFW_KEY_F9);
-	add_process("Raycasting", m_raycasting, GLFW_KEY_ENTER);
+	add_menu("Render",
+	{
+		add_process("Render Point Cloud", m_render_pointcloud, GLFW_KEY_F5),
+		add_process("Render Wireframe", m_render_wireframe, GLFW_KEY_F6),
+		add_process("Render Triangles", m_render_triangles, GLFW_KEY_F7),
+		add_process("Render GL", m_render_gl, GLFW_KEY_F8),
+		add_process("Level Curves", m_render_lines, GLFW_KEY_SPACE),
+		add_process("Render Flat", m_render_flat, GLFW_KEY_TAB),
+		add_process("Setup Raytracing", m_setup_raytracing, GLFW_KEY_R),
+		add_process("Render Embree", m_render_embree, GLFW_KEY_F9),
+	#ifdef GPROSHAN_OPTIX
+		add_process("Render OptiX", m_render_optix, GLFW_KEY_F10),
+	#endif // GPROSHAN_OPTIX
+		add_process("Raycasting", m_raycasting, GLFW_KEY_ENTER)
+	});
 
-#ifdef GPROSHAN_OPTIX
-	add_process("Render OptiX", m_render_optix, GLFW_KEY_F10);
-#endif // GPROSHAN_OPTIX
-
-	menus.push_back("Mesh");
-	add_process("Reload/Reset", m_reset_mesh, GLFW_KEY_INSERT);
-	add_process("Save Mesh", m_save_mesh, GLFW_KEY_W);
-	add_process("Remove Selected Mesh", m_remove_mesh, GLFW_KEY_DELETE);
-	add_process("Pop Mesh", m_pop_mesh, GLFW_KEY_BACKSPACE);
-	add_process("Normalize Mesh", m_normalize_mesh);
-	add_process("Invert Normals", m_invert_normals, GLFW_KEY_F2);
-	add_process("Gradient Field", m_render_gradients, GLFW_KEY_F3);
-	add_process("Normal Field", m_render_normals, GLFW_KEY_F4);
-	add_process("Select Border Vertices", m_select_border_vertices, GLFW_KEY_B);
-	add_process("Clean Selected Vertices", m_clean_selected_vertices, GLFW_KEY_C);
+	add_menu("Mesh",
+	{
+		add_process("Reload/Reset", m_reset_mesh, GLFW_KEY_INSERT),
+		add_process("Save Mesh", m_save_mesh, GLFW_KEY_W),
+		add_process("Remove Selected Mesh", m_remove_mesh, GLFW_KEY_DELETE),
+		add_process("Pop Mesh", m_pop_mesh, GLFW_KEY_BACKSPACE),
+		add_process("Normalize Mesh", m_normalize_mesh),
+		add_process("Invert Normals", m_invert_normals, GLFW_KEY_F2),
+		add_process("Gradient Field", m_render_gradients, GLFW_KEY_F3),
+		add_process("Normal Field", m_render_normals, GLFW_KEY_F4),
+		add_process("Select Border Vertices", m_select_border_vertices, GLFW_KEY_B),
+		add_process("Clean Selected Vertices", m_clean_selected_vertices, GLFW_KEY_C)
+	});
 }
 
 void viewer::init_glsl()
