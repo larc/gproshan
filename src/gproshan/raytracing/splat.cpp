@@ -18,7 +18,7 @@ real_t splat::d_overlap = 0.1;
 
 splat::splat(const std::vector<che *> & pcs, const std::vector<mat4> & model_mats)
 {
-	for(index_t i = 0; i < pcs.size(); ++i)
+	for(index_t i = 0; i < size(pcs); ++i)
 		add_splats(pcs[i], model_mats[i]);
 }
 
@@ -46,16 +46,16 @@ void splat::add_splats(che * pc, const mat4 & model_mat)
 
 
 	display_sets(pc, segs, vertices.data());
-	gproshan_error_var(segs.size() - 1);
-	gproshan_error_var(vertices.size());
+	gproshan_error_var(size(segs) - 1);
+	gproshan_error_var(size(vertices));
 
 
 	TIC(time);
-	std::vector<index_t> voronois[segs.size() - 1];
-	std::vector<index_t> voronoi_sets[segs.size() - 1];
+	std::vector<index_t> voronois[size(segs) - 1];
+	std::vector<index_t> voronoi_sets[size(segs) - 1];
 
 //	#pragma omp parallel for
-	for(index_t i = 1; i < segs.size(); ++i)
+	for(index_t i = 1; i < size(segs); ++i)
 		voronois[i - 1] = voronoi_subdivision(voronoi_sets[i - 1], vertices, &pc->point(0), k3tree, segs[i - 1], segs[i]);
 	TOC(time);
 	time_subdivision += time;
@@ -65,7 +65,7 @@ void splat::add_splats(che * pc, const mat4 & model_mat)
 	TIC(time);
 	size_t n_points = 0;
 	for(const auto & vs: voronoi_sets)
-		n_points += vs.size();
+		n_points += size(vs);
 
 	std::vector<index_t> splats({0});
 	for(const auto & voronoi: voronois)
@@ -77,8 +77,8 @@ void splat::add_splats(che * pc, const mat4 & model_mat)
 	n_points = 0;
 	for(const auto & vs: voronoi_sets)
 	{
-		memcpy(vertices.data() + n_points, vs.data(), sizeof(index_t) * vs.size());
-		n_points += vs.size();
+		memcpy(vertices.data() + n_points, vs.data(), sizeof(index_t) * size(vs));
+		n_points += size(vs);
 	}
 
 	che * new_pc = init_splats(pc, model_mat, vertices, splats);
@@ -89,9 +89,9 @@ void splat::add_splats(che * pc, const mat4 & model_mat)
 
 	display_sets(new_pc, splats);
 
-	gproshan_error_var(vertices.size());
+	gproshan_error_var(size(vertices));
 	gproshan_error_var(splats.back());
-	gproshan_error_var(splats.size() - 1);
+	gproshan_error_var(size(splats) - 1);
 
 	gproshan_error_var(new_pc->n_vertices);
 	gproshan_error_var(new_pc->n_trigs);
@@ -114,7 +114,7 @@ std::vector<index_t> splat::planar_segmentation(const che * pc, std::vector<inde
 	std::shuffle(begin(shuffle), end(shuffle), gen);
 
 	std::vector<index_t> segs({0});
-	const index_t & idx = segs.size();
+	const index_t & idx = size(segs);
 
 	std::vector<index_t> visited;
 	visited.assign(pc->n_vertices, -1);
@@ -140,7 +140,7 @@ std::vector<index_t> splat::planar_segmentation(const che * pc, std::vector<inde
 			vertices.push_back(front);
 			visited[front] = idx;
 
-			const size_t & n = vertices.size() - segs.back();
+			const size_t & n = size(vertices) - segs.back();
 			vnormal = (vnormal * (n - 1) + pc->normal(front)) / n;
 			vcenter = (vcenter * (n - 1) + pc->point(front)) / n;
 
@@ -164,9 +164,9 @@ std::vector<index_t> splat::planar_segmentation(const che * pc, std::vector<inde
 			q.pop();
 		}
 
-		if(vertices.size() - segs.back() < splat::k_nn)
+		if(size(vertices) - segs.back() < splat::k_nn)
 		{
-			for(index_t i = segs.back(); i < vertices.size(); ++i)
+			for(index_t i = segs.back(); i < size(vertices); ++i)
 				visited[vertices[i]] = NIL;
 
 			vertices.resize(segs.back());
@@ -174,7 +174,7 @@ std::vector<index_t> splat::planar_segmentation(const che * pc, std::vector<inde
 			continue;
 		}
 
-		segs.push_back(vertices.size());
+		segs.push_back(size(vertices));
 	}
 
 	return segs;
@@ -217,18 +217,18 @@ std::vector<index_t> splat::voronoi_subdivision(std::vector<index_t> & voronoi_s
 			}
 		}
 
-		if(seeds.size() == 1)
+		if(size(seeds) == 1)
 			radio_threshold = std::max(0.2, radio * 0.1);
 
 		seeds.push_back(new_seed);
 	}
 
 
-	std::vector<std::vector<index_t> > regions(seeds.size());
+	std::vector<std::vector<index_t> > regions(size(seeds));
 
 	bool in = false;
 	for(index_t i = seg_begin; i < seg_end; ++i)
-	for(index_t j = 0; j < seeds.size(); ++j)
+	for(index_t j = 0; j < size(seeds); ++j)
 	{
 		const index_t & s = seeds[j];
 		const index_t & v = vertices[i];
@@ -252,12 +252,12 @@ std::vector<index_t> splat::voronoi_subdivision(std::vector<index_t> & voronoi_s
 
 	for(const auto & r: regions)
 	{
-		if(r.size() < splat::k_nn) continue;
+		if(size(r) < splat::k_nn) continue;
 
 		for(const index_t & v: r)
 			voronoi_set.push_back(v);
 
-		voronoi.push_back(r.size());
+		voronoi.push_back(size(r));
 	}
 
 	return voronoi;
@@ -265,10 +265,10 @@ std::vector<index_t> splat::voronoi_subdivision(std::vector<index_t> & voronoi_s
 
 che * splat::init_splats(const che * mesh, const mat4 & model_mat, std::vector<index_t> & vertices, const std::vector<index_t> & idx_splats)
 {
-	std::vector<vertex> points(vertices.size());
+	std::vector<vertex> points(size(vertices));
 	std::vector<index_t> trigs;
 
-	splats_data spc(idx_splats.size() - 1);
+	splats_data spc(size(idx_splats) - 1);
 
 	std::vector<convex_hull *> splat_chs(spc.n_splats);
 
@@ -344,12 +344,12 @@ che * splat::init_splats(const che * mesh, const mat4 & model_mat, std::vector<i
 			p = p - dot(p, s.tbn[2]) * s.tbn[2];
 			p = p + s.center;
 
-			v = points.size();
+			v = size(points);
 			points.push_back(p);
 		}
 
 		index_t f = -1;
-		for(const index_t & v: che::trig_convex_polygon(sch.data(), sch.size()))
+		for(const index_t & v: che::trig_convex_polygon(sch.data(), size(sch)))
 		{
 			trigs.push_back(v);
 			if(!(++f % 3))
@@ -360,10 +360,10 @@ che * splat::init_splats(const che * mesh, const mat4 & model_mat, std::vector<i
 	for(convex_hull * ch: splat_chs)
 		delete ch;
 
-	che * pc = new che(points.data(), points.size(), trigs.data(), trigs.size() / 3);
+	che * pc = new che(points.data(), size(points), trigs.data(), size(trigs) / 3);
 
 	#pragma omp parallel for
-	for(index_t i = 0; i < vertices.size(); ++i)
+	for(index_t i = 0; i < size(vertices); ++i)
 	{
 		const index_t & v = vertices[i];
 
@@ -372,10 +372,10 @@ che * splat::init_splats(const che * mesh, const mat4 & model_mat, std::vector<i
 		pc->rgb(i) = mesh->rgb(v);
 	}
 
-	spc.primID_splat = new unsigned int[primID_splat.size()];
-	memcpy(spc.primID_splat, primID_splat.data(), sizeof(unsigned int) * primID_splat.size());
+	spc.primID_splat = new unsigned int[size(primID_splat)];
+	memcpy(spc.primID_splat, primID_splat.data(), sizeof(unsigned int) * size(primID_splat));
 
-	spc.morton_codes = new unsigned int[points.size()];
+	spc.morton_codes = new unsigned int[size(points)];
 
 	#pragma omp parallel for
 	for(index_t i = 0; i < spc.n_splats; ++i)
@@ -395,16 +395,16 @@ che * splat::init_splats(const che * mesh, const mat4 & model_mat, std::vector<i
 
 void splat::display_sets(che * pc, const std::vector<index_t> & sets, const index_t * mapid)
 {
-	std::vector<int> color(sets.size());
+	std::vector<int> color(size(sets));
 	std::iota(color.begin(), color.end(), 0);
 
 	std::random_device rd;
 	std::mt19937 gen{rd()};
 	std::shuffle(color.begin(), color.end(), gen);
 
-	for(index_t i = 1; i < sets.size(); ++i)
+	for(index_t i = 1; i < size(sets); ++i)
 	for(index_t j = sets[i - 1]; j < sets[i]; ++j)
-		pc->heatmap(mapid ? mapid[j] : j) = real_t(color[i]) / color.size();
+		pc->heatmap(mapid ? mapid[j] : j) = real_t(color[i]) / size(color);
 }
 
 void splat::save_histogram(const std::string & file) const
