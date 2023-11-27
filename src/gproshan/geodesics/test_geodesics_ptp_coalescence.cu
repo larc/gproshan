@@ -179,7 +179,7 @@ double * times_farthest_point_sampling_ptp_coalescence_gpu(che * mesh, std::vect
 		cudaEventSynchronize(stop);
 		cudaEventElapsedTime(&time_fps, start, stop);
 
-		times[samples.size()] = time_fps / 1000;
+		times[size(samples)] = time_fps / 1000;
 
 		if(radio > 0 || !n)
 			cudaMemcpy(&max_dist, d_dist[d] + f - 1, sizeof(real_t), cudaMemcpyDeviceToHost);

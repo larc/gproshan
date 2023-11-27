@@ -76,7 +76,7 @@ optix::optix(const std::string & ptx)
 						&optix_module_compile_opt,
 						&optix_pipeline_compile_opt,
 						str_ptx_code.c_str(),
-						str_ptx_code.size(),
+						size(str_ptx_code),
 						nullptr, nullptr,	// log message
 						&optix_module
 						);
@@ -280,7 +280,7 @@ void optix::create_pipeline()
 						&optix_pipeline_compile_opt,
 						&optix_pipeline_link_opt,
 						program_groups.data(),
-						program_groups.size(),
+						size(program_groups),
 						log, &sizeof_log,
 						&optix_pipeline
 						);
@@ -359,7 +359,7 @@ OptixTraversableHandle optix::build_as(const std::vector<che *> & meshes, const 
 	optixAccelComputeMemoryUsage(	optix_context,
 									&optix_accel_opt,
 									optix_meshes.data(),
-									optix_meshes.size(),
+									size(optix_meshes),
 									&optix_gas_buffer_size
 									);
 
@@ -382,7 +382,7 @@ OptixTraversableHandle optix::build_as(const std::vector<che *> & meshes, const 
 						0,	// stream
 						&optix_accel_opt,
 						optix_meshes.data(),
-						optix_meshes.size(),
+						size(optix_meshes),
 						(CUdeviceptr) d_temp_buffer,
 						optix_gas_buffer_size.tempSizeInBytes,
 						(CUdeviceptr) d_output_buffer,

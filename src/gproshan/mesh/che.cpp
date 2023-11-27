@@ -780,7 +780,7 @@ size_t che::memory() const
 	return	sizeof(*this) +
 			n_vertices * (2 * sizeof(vertex) + sizeof(index_t) + sizeof(real_t) + sizeof(rgb_t)) +
 			sizeof(index_t) * (3 * n_half_edges + n_edges) +
-			filename.size();
+			size(filename);
 }
 
 size_t che::max_degree() const
