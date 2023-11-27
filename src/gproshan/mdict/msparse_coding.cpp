@@ -221,7 +221,7 @@ void msparse_coding::load_sampling()
 				seeds.push_back(vsf);
 				radios.push_back(euc_radio);
 				geo_radios.push_back(geo_radio);
-				count += p.vertices.size();
+				count += size(p.vertices);
 
 				for(const index_t & v: p.vertices)
 				{
@@ -241,14 +241,14 @@ void msparse_coding::load_sampling()
 
 	delete [] invalid_seed;
 
-	m_params.n_patches = seeds.size();
+	m_params.n_patches = size(seeds);
 
 	gproshan_log(saving sampling);
 
 	S.resize(size(seeds));
 
 	#pragma omp parallel for
-	for(index_t i = 0; i < seeds.size(); ++i)
+	for(index_t i = 0; i < size(seeds); ++i)
 		S(i) = seeds[i];
 
 	S.save(tmp_file_path(key_name + ".rsampl"));
@@ -269,7 +269,7 @@ void msparse_coding::load_sampling()
 			outliers.push_back(i);
 
 	a_vec outlv(size(outliers));
-	for(index_t i = 0; i < outliers.size(); ++i)
+	for(index_t i = 0; i < size(outliers); ++i)
 		outlv(i) = outliers[i];
 
 	outlv.save(tmp_file_path(key_name + ".outlv"));
@@ -288,7 +288,7 @@ void msparse_coding::init_radial_feature_patches()
 
 		#pragma omp parallel for reduction(+: patch_avg_size)
 		for(index_t s = 0; s < m_params.n_patches; ++s)
-			patch_avg_size += patches[s].vertices.size();
+			patch_avg_size += size(patches[s].vertices);
 		#pragma omp parallel for reduction(min: patch_min_size)
 		for(index_t s = 0; s < m_params.n_patches; ++s)
 			patch_min_size = std::min(size(patches[s].vertices), patch_min_size);
@@ -425,7 +425,7 @@ void msparse_coding::init_voronoi_patches()
 
 			#pragma omp parallel for reduction(+: patch_avg_size)
 			for(index_t s = 0; s < m_params.n_patches; ++s)
-				patch_avg_size += patches[s].vertices.size();
+				patch_avg_size += size(patches[s].vertices);
 			#pragma omp parallel for reduction(min: patch_min_size)
 			for(index_t s = 0; s < m_params.n_patches; ++s)
 				patch_min_size = std::min(size(patches[s].vertices), patch_min_size);
@@ -587,7 +587,7 @@ che * msparse_coding::point_cloud_reconstruction(real_t per, real_t fr)
 								patches[i].xyz(2, j)
 								});
 
-	che * new_mesh = new che(point_cloud.data(), point_cloud.size(), nullptr, 0);
+	che * new_mesh = new che(point_cloud.data(), size(point_cloud), nullptr, 0);
 	new_mesh->update_normals();
 
 	a_vec n;
@@ -811,7 +811,7 @@ void msparse_coding::init_patches(const bool & reset, const fmask_t & mask)
 
 			#pragma omp parallel for reduction(+: patch_avg_size)
 			for(index_t s = 0; s < m_params.n_patches; ++s)
-				patch_avg_size += patches[s].vertices.size();
+				patch_avg_size += size(patches[s].vertices);
 			#pragma omp parallel for reduction(min: patch_min_size)
 			for(index_t s = 0; s < m_params.n_patches; ++s)
 				patch_min_size = std::min(size(patches[s].vertices), patch_min_size);
@@ -886,7 +886,7 @@ real_t msparse_coding::mesh_reconstruction(const fmask_t & mask)
 
 		a_vec x = rp.phi * A * alpha.col(p);
 
-		patches_error[p] = { accu(abs(x - rp.xyz.row(2).t())) / rp.vertices.size(), p };
+		patches_error[p] = { accu(abs(x - rp.xyz.row(2).t())) / size(rp.vertices), p };
 
 		rp.xyz.row(2) = x.t();
 	}
@@ -920,7 +920,7 @@ real_t msparse_coding::mesh_reconstruction(const fmask_t & mask)
 			for(auto p: patches_map[v])
 				mv += patches[p.first].xyz.col(p.second);
 
-			V.col(v) = mv / patches_map[v].size();
+			V.col(v) = mv / size(patches_map[v]);
 		}
 		else
 		{

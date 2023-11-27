@@ -284,7 +284,7 @@ mat4 che::normalize_box(const real_t & side) const
 ///< vcommon correspond to the first vertices of the mesh with indices to the main mesh (this)
 che * che::merge(const che * mesh, const std::vector<index_t> & vcommon)
 {
-	const size_t & n_vcommon = vcommon.size();
+	const size_t & n_vcommon = size(vcommon);
 	const size_t & n_vnew = mesh->n_vertices - n_vcommon;
 
 	che * new_mesh = new che(n_vertices + n_vnew, n_trigs + mesh->n_trigs);
@@ -302,7 +302,7 @@ che * che::merge(const che * mesh, const std::vector<index_t> & vcommon)
 
 	index_t * tVT = new_mesh->VT + n_half_edges;
 	for(index_t he = 0; he < mesh->n_half_edges; ++he)
-		tVT[he] = mesh->VT[he] < vcommon.size() ? vcommon[mesh->VT[he]] : mesh->VT[he] + n_vertices - n_vcommon;
+		tVT[he] = mesh->VT[he] < size(vcommon) ? vcommon[mesh->VT[he]] : mesh->VT[he] + n_vertices - n_vcommon;
 
 	new_mesh->update_evt_ot_et();
 	new_mesh->update_eht();
@@ -469,7 +469,7 @@ void che::remove_vertices(const std::vector<index_t> & vertices)
 	gproshan_debug(removing vertex);
 	free();
 	gproshan_debug(removing vertex);
-	init(new_vertices.data(), new_vertices.size(), new_trigs.data(), new_trigs.size() / che::mtrig);
+	init(new_vertices.data(), size(new_vertices), new_trigs.data(), size(new_trigs) / che::mtrig);
 	gproshan_debug(removing vertex);
 }
 
@@ -528,7 +528,7 @@ void che::remove_non_manifold_vertices()
 	gproshan_debug(removing vertex);
 	free();
 	gproshan_debug(removing vertex);
-	init(new_vertices.data(), new_vertices.size(), new_trigs.data(), new_trigs.size() / che::mtrig);
+	init(new_vertices.data(), size(new_vertices), new_trigs.data(), size(new_trigs) / che::mtrig);
 	gproshan_debug(removing vertex);
 }
 

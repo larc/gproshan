@@ -167,7 +167,7 @@ index_t run_ptp(const CHE * mesh, const std::vector<index_t> & sources,
 	index_t * h_clusters = clusters[2];
 #endif
 
-	for(index_t i = 0; i < sources.size(); ++i)
+	for(index_t i = 0; i < size(sources); ++i)
 	{					// !coalescence ?
 		const index_t & v = sorted ? sources[i] : idx[sources[i]];
 
@@ -196,7 +196,7 @@ index_t run_ptp(const CHE * mesh, const std::vector<index_t> & sources,
 	}
 #endif
 
-	const int & max_iter = limits.size() << 1;
+	const int & max_iter = size(limits) << 1;
 
 	int iter = -1;
 	index_t count = 0;
@@ -247,7 +247,7 @@ index_t run_ptp(const CHE * mesh, const std::vector<index_t> & sources,
 	#endif
 
 		if(n_cond == count)			++i;
-		if(j < limits.size() - 1) 	++j;
+		if(j < size(limits) - 1) 	++j;
 	}
 
 	return !(iter & 1);

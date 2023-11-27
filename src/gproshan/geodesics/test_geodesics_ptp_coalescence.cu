@@ -128,7 +128,7 @@ double * times_farthest_point_sampling_ptp_coalescence_gpu(che * mesh, std::vect
 
 	double * times = new double[n + 1];
 
-	n -= samples.size();
+	n -= size(samples);
 	samples.reserve(n);
 
 	float time_fps;
@@ -214,7 +214,7 @@ std::vector<std::pair<index_t, real_t> > iter_error_run_ptp_coalescence_gpu(CHE 
 	for(index_t v = 0; v < n_vertices; ++v)
 		h_dist[v] = INFINITY;
 
-	for(index_t i = 0; i < sources.size(); ++i)
+	for(index_t i = 0; i < size(sources); ++i)
 		h_dist[inv[sources[i]]] = 0;
 
 	cudaMemcpy(d_dist[0], h_dist, sizeof(real_t) * n_vertices, cudaMemcpyHostToDevice);
@@ -243,8 +243,8 @@ std::vector<std::pair<index_t, real_t> > iter_error_run_ptp_coalescence_gpu(CHE 
 
 		// begin calculating iteration error
 		cudaMemcpy(h_dist, d_dist[!d], sizeof(real_t) * n_vertices, cudaMemcpyDeviceToHost);
-		if(j == limits.size() - 1)
-			iter_error.push_back({n_iter, compute_error(h_dist, exact_dist, n_vertices, sources.size())});
+		if(j == size(limits) - 1)
+			iter_error.push_back({n_iter, compute_error(h_dist, exact_dist, n_vertices, size(sources))});
 		// end
 
 		relative_error <<< NB(n_cond), NT >>> (d_error, d_dist[!d], d_dist[d], start, start + n_cond);
@@ -252,7 +252,7 @@ std::vector<std::pair<index_t, real_t> > iter_error_run_ptp_coalescence_gpu(CHE 
 
 		if(n_cond == thrust::count_if(thrust::device, d_error + start, d_error + start + n_cond, is_ok()))
 			++i;
-		if(j < limits.size() - 1) ++j;
+		if(j < size(limits) - 1) ++j;
 
 		d = !d;
 	}

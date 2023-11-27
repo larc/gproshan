@@ -111,7 +111,7 @@ optix::~optix()
 	cudaFree(hitgroup_records_buffer);
 	cudaFree(as_buffer);
 
-	for(index_t i = 0; i < dd_mesh.size(); ++i)
+	for(index_t i = 0; i < size(dd_mesh); ++i)
 		cuda_free_CHE(dd_mesh[i], d_mesh[i]);
 
 	cudaFree(optix_params.sc.materials);
@@ -323,7 +323,7 @@ void optix::build_sbt()
 
 
 	std::vector<HitgroupRecord> hitgroup_records;
-	for(index_t i = 0; i < d_mesh.size(); ++i)
+	for(index_t i = 0; i < size(d_mesh); ++i)
 	for(index_t r = 0; r < 2; ++r)
 	{
 		HitgroupRecord rec;
@@ -332,11 +332,11 @@ void optix::build_sbt()
 		hitgroup_records.push_back(rec);
 	}
 
-	cudaMalloc(&hitgroup_records_buffer, hitgroup_records.size() * sizeof(HitgroupRecord));
-	cudaMemcpy(hitgroup_records_buffer, hitgroup_records.data(), hitgroup_records.size() * sizeof(HitgroupRecord), cudaMemcpyHostToDevice);
+	cudaMalloc(&hitgroup_records_buffer, size(hitgroup_records) * sizeof(HitgroupRecord));
+	cudaMemcpy(hitgroup_records_buffer, hitgroup_records.data(), size(hitgroup_records) * sizeof(HitgroupRecord), cudaMemcpyHostToDevice);
 	sbt.hitgroupRecordBase			= (CUdeviceptr) hitgroup_records_buffer;
 	sbt.hitgroupRecordStrideInBytes	= sizeof(HitgroupRecord);
-	sbt.hitgroupRecordCount			= hitgroup_records.size();
+	sbt.hitgroupRecordCount			= size(hitgroup_records);
 }
 
 OptixTraversableHandle optix::build_as(const std::vector<che *> & meshes, const std::vector<mat4> & model_mats)
@@ -347,7 +347,7 @@ OptixTraversableHandle optix::build_as(const std::vector<che *> & meshes, const 
 	std::vector<CUdeviceptr> optix_vertex_ptr(size(meshes));
 	std::vector<uint32_t> optix_trig_flags(size(meshes));
 
-	for(index_t i = 0; i < meshes.size(); ++i)
+	for(index_t i = 0; i < size(meshes); ++i)
 		add_mesh(optix_meshes[i], optix_vertex_ptr[i], optix_trig_flags[i], meshes[i], model_mats[i]);
 
 	OptixAccelBuildOptions optix_accel_opt	=	{};
@@ -471,8 +471,8 @@ void optix::add_mesh(OptixBuildInput & optix_mesh, CUdeviceptr & d_vertex_ptr, u
 		delete [] h_m.VT;
 
 		scene * sc = (scene *) mesh;
-		cudaMalloc(&optix_params.sc.materials, sc->materials.size() * sizeof(scene::material));
-		cudaMalloc(&optix_params.sc.textures, sc->textures.size() * sizeof(scene::texture));
+		cudaMalloc(&optix_params.sc.materials, size(sc->materials) * sizeof(scene::material));
+		cudaMalloc(&optix_params.sc.textures, size(sc->textures) * sizeof(scene::texture));
 		cudaMalloc(&optix_params.sc.trig_mat, mesh->n_vertices / 3 * sizeof(index_t));
 		cudaMalloc(&optix_params.sc.texcoords, mesh->n_vertices * sizeof(vec2));
 
@@ -486,8 +486,8 @@ void optix::add_mesh(OptixBuildInput & optix_mesh, CUdeviceptr & d_vertex_ptr, u
 		}
 
 		gproshan_error_var(size(textures));
-		cudaMemcpy(optix_params.sc.materials, sc->materials.data(), sc->materials.size() * sizeof(scene::material), cudaMemcpyHostToDevice);
-		cudaMemcpy(optix_params.sc.textures, textures.data(), textures.size() * sizeof(scene::texture), cudaMemcpyHostToDevice);
+		cudaMemcpy(optix_params.sc.materials, sc->materials.data(), size(sc->materials) * sizeof(scene::material), cudaMemcpyHostToDevice);
+		cudaMemcpy(optix_params.sc.textures, textures.data(), size(textures) * sizeof(scene::texture), cudaMemcpyHostToDevice);
 		cudaMemcpy(optix_params.sc.trig_mat, sc->trig_mat, mesh->n_vertices / 3 * sizeof(index_t), cudaMemcpyHostToDevice);
 		cudaMemcpy(optix_params.sc.texcoords, sc->texcoords, mesh->n_vertices * sizeof(vec2), cudaMemcpyHostToDevice);
 	}

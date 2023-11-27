@@ -77,7 +77,7 @@ che_sphere::che_sphere(const real_t & r, const size_t & n)
 	trigs.push_back(cols - 1);
 	trigs.push_back(v);
 
-	init(vertices.data(), vertices.size(), trigs.data(), trigs.size() / 3);
+	init(vertices.data(), size(vertices), trigs.data(), size(trigs) / 3);
 }
 
 

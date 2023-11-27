@@ -125,7 +125,7 @@ eval_hit embree::intersect(const vertex & org, const vertex & dir, const bool & 
 void embree::build_bvh(const std::vector<che *> & meshes, const std::vector<mat4> & model_mats, const bool & pointcloud)
 {
 	g_meshes.resize(size(meshes));
-	for(index_t i = 0; i < meshes.size(); ++i)
+	for(index_t i = 0; i < size(meshes); ++i)
 	{
 		g_meshes[i] = new CHE(meshes[i]);
 

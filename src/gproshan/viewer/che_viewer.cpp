@@ -152,7 +152,7 @@ void che_viewer::update_vbo_heatmap(const real_t * vheatmap)
 
 void che_viewer::update_instances_positions(const std::vector<vertex> & translations)
 {
-	n_instances = translations.size();
+	n_instances = size(translations);
 	if(!n_instances) return;
 
 	glBindVertexArray(vao);
@@ -217,7 +217,7 @@ void che_viewer::draw_pointcloud(shader & program)
 
 void che_viewer::draw_selected_vertices(che_viewer & sphere, shader & program)
 {
-	if(size(selected_xyz) != selected.size())
+	if(size(selected_xyz) != size(selected))
 	{
 		selected_xyz.clear();
 		selected_xyz.reserve(size(selected));

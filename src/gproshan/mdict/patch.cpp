@@ -61,7 +61,7 @@ void patch::init_disjoint(che * mesh, const index_t & v, const size_t & n_toplev
 
 bool patch::exists(index_t idx)
 {
-	for(size_t i=1; i < vertices.size(); ++i)
+	for(size_t i=1; i < size(vertices); ++i)
 	{
 		if(vertices[i] == idx)
 			return true;
@@ -106,9 +106,9 @@ bool patch::add_vertex_by_trigs(vertex & n, std::vector<vertex> & N, double thr_
 		if(geo[a] < geo[v] || geo[b] < geo[v] )
 		{
 			if(geo[a] < geo[v])
-				i = find(vertices.data(), vertices.size(), a);
+				i = find(vertices.data(), size(vertices), a);
 			else
-				i = find(vertices.data(), vertices.size(), b);
+				i = find(vertices.data(), size(vertices), b);
 
 			tmp_angle = acos(dot(mesh->normal_he(he), N[i]));
 
@@ -207,7 +207,7 @@ void patch::recover_radial_disjoint(che * mesh, const real_t & radio_, const ind
 		n.x() = T(0, 2); n.y() = T(1, 2); n.z() = T(2, 2);
 		radio = -INFINITY;
 
-		for(index_t i=1; i < vertices.size(); ++i)
+		for(index_t i=1; i < size(vertices); ++i)
 		{
 			p = mesh->point(indexes[i]);
 			c = mesh->point(v); // central vertices
@@ -320,17 +320,17 @@ void patch::itransform()
 
 void patch::reset_xyz(che * mesh, std::vector<vpatches_t> & vpatches, const index_t & p, const fmask_t & mask)
 {
-	size_t m = vertices.size();
+	size_t m = size(vertices);
 
 	if(mask)
 	{
 		m = 0;
-		for(index_t i = 0; i < vertices.size(); ++i)
+		for(index_t i = 0; i < size(vertices); ++i)
 			if(mask(vertices[i])) ++m;
 	}
 
 	xyz.set_size(3, m);
-	for(index_t j = 0, i = 0; i < vertices.size(); ++i)
+	for(index_t j = 0, i = 0; i < size(vertices); ++i)
 	{
 		if(!mask || mask(vertices[i]))
 		{
@@ -374,7 +374,7 @@ void patch::add_extra_xyz_disjoint(che * mesh, std::vector<vpatches_t> & vpatche
 	size_t m = std::max (size(vertices), min_nv);
 
 
-	size_t j = vertices.size();
+	size_t j = size(vertices);
 	std::random_device rd; //Will be used to obtain a seed for the random number engine
 	std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
 	std::uniform_real_distribution<> dis(0, 1);
@@ -462,11 +462,11 @@ void patch::add_extra_xyz_disjoint(che * mesh, std::vector<vpatches_t> & vpatche
 
 void patch::reset_xyz_disjoint(che * mesh, real_t * dist, size_t M, std::vector<vpatches_t> & vpatches, const index_t & p, const fmask_t & mask)
 {
-	size_t m = vertices.size();
+	size_t m = size(vertices);
 	if(mask)
 	{
 		m = 0;
-		for(index_t i = 0; i < vertices.size(); ++i)
+		for(index_t i = 0; i < size(vertices); ++i)
 			if(mask(i))
 			{
 				dist[vertices[i]] = float(p + 1) / M;
@@ -528,7 +528,7 @@ void patch::gather_vertices(che * mesh, const index_t & v, const size_t & n_topl
 	toplevel[v] = 0;
 	vertices.push_back(v);
 
-	for(index_t i = 0; i < vertices.size(); ++i)
+	for(index_t i = 0; i < size(vertices); ++i)
 	{
 		const index_t & v = vertices[i];
 		if(toplevel[v] == n_toplevels)
@@ -683,7 +683,7 @@ void patch::update_heights(real_t & min, real_t & max, bool flag)
 	}
 	else
 	{
-		for(index_t i = 0; i < vertices.size(); ++i)
+		for(index_t i = 0; i < size(vertices); ++i)
 		{
 			tmp = xyz.col(i)[2];
 			tmp = (max - min) * tmp + min;
@@ -696,7 +696,7 @@ void patch::update_heights(real_t & min, real_t & max, bool flag)
 void patch::save_z(std::ostream & os)
 {
 	index_t i;
-	for( i = 0; i < vertices.size()-1; ++i)
+	for( i = 0; i < size(vertices)-1; ++i)
 	{
 		os<<xyz.col(i)[2]<<"\t";
 	}
@@ -708,7 +708,7 @@ void patch::compute_avg_distance(che * mesh, std::vector<vpatches_t> & vpatches,
 	avg_dist = INFINITY;
 	std::vector<double> distances;
 
-	for(size_t i = 0; i < vertices.size(); ++i)
+	for(size_t i = 0; i < size(vertices); ++i)
 	{
 		for(const index_t & u: mesh->link(vertices[i]))
 		{
@@ -727,7 +727,7 @@ void patch::compute_avg_distance(che * mesh, std::vector<vpatches_t> & vpatches,
 		}
 	}
 	/*
-		for(size_t j = i+1; j < vertices.size(); ++j) // replace for 1 ring
+		for(size_t j = i+1; j < size(vertices); ++j) // replace for 1 ring
 		{
 			a_vec a = xyz.col(i);
 			a_vec b = xyz.col(j);
@@ -737,7 +737,7 @@ void patch::compute_avg_distance(che * mesh, std::vector<vpatches_t> & vpatches,
 		}
 	*/
 	std::sort(distances.begin(), distances.end());
-	size_t n_elem = distances.size();
+	size_t n_elem = size(distances);
 	if(size(distances)%2 ==0)
 	{
 		avg_dist = (distances[n_elem/2] + distances[(n_elem/2 -1)])/2;
@@ -751,7 +751,7 @@ void patch::compute_avg_distance(che * mesh, std::vector<vpatches_t> & vpatches,
 
 bool patch::is_covered( bool * covered)
 {
-	for(index_t i = 0; i < vertices.size(); ++i)
+	for(index_t i = 0; i < size(vertices); ++i)
 		if(!covered[i]) return false;
 
 	return true;

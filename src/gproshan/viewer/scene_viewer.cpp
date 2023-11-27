@@ -9,10 +9,10 @@ static const int gltex_nums[] = {GL_TEXTURE0, GL_TEXTURE1, GL_TEXTURE2, GL_TEXTU
 
 scene_viewer::scene_viewer(scene * p_sc): che_viewer(p_sc), sc(p_sc)
 {
-	gltextures = new GLuint[sc->textures.size()];
+	gltextures = new GLuint[size(sc->textures)];
 
 	glGenTextures(size(sc->textures), gltextures);
-	for(index_t i = 0; i < sc->textures.size(); ++i)
+	for(index_t i = 0; i < size(sc->textures); ++i)
 		init_texture(gltextures[i], sc->textures[i]);
 
 	glGenBuffers(1, &tex_vbo);
@@ -61,7 +61,7 @@ void scene_viewer::draw(shader & program)
 	}
 	else
 	{
-		for(index_t i = 0; i < sc->objects.size() - 1; ++i)
+		for(index_t i = 0; i < size(sc->objects) - 1; ++i)
 		{
 			const scene::object & obj = sc->objects[i];
 			const scene::material & mat = sc->materials[obj.material_id];
@@ -98,7 +98,7 @@ void scene_viewer::draw_pointcloud(shader & program)
 	}
 	else
 	{
-		for(index_t i = 0; i < sc->objects.size() - 1; ++i)
+		for(index_t i = 0; i < size(sc->objects) - 1; ++i)
 		{
 			const scene::object & obj = sc->objects[i];
 			const scene::material & mat = sc->materials[obj.material_id];

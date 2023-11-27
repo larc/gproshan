@@ -64,12 +64,12 @@ che * mesh_fill_hole(che * mesh, const std::vector<index_t> & border_vertices, c
 	std::vector<index_t> merge_vertices[2];
 	vertex normal;
 
-	size_t size = border_vertices.size();
+	size_t nb = size(border_vertices);
 	index_t i = NIL, j, n_v;
 	che * hole = nullptr;
 	che * aux_hole;
 
-	index_t * vmap_border = new index_t[size];
+	index_t * vmap_border = new index_t[nb];
 
 	index_t c = 1;
 	real_t mean_edge = mesh->mean_edge();
@@ -82,19 +82,19 @@ che * mesh_fill_hole(che * mesh, const std::vector<index_t> & border_vertices, c
 
 		while(--N)
 		{
-			merge_vertices.push_back(std::size(vertices) + delta_v);
+			merge_vertices.push_back(size(vertices) + delta_v);
 			vertices.push_back(vb + (N / L) * (va - vb));
 		}
 	};
 
 	auto add_border_vertices = [&](const index_t & i, const index_t & j, const index_t & delta_v = 0) -> index_t
 	{
-		index_t end_v = j < i ? j + size : j;
+		index_t end_v = j < i ? j + nb : j;
 		for(index_t v = i; v <= end_v; ++v)
 		{
-			vmap_border[v % size] = vertices[c].size() + delta_v;
-			vertices[c].push_back(mesh->point(border_vertices[v % size]));
-			normal += mesh->normal(border_vertices[v % size]);
+			vmap_border[v % nb] = size(vertices[c]) + delta_v;
+			vertices[c].push_back(mesh->point(border_vertices[v % nb]));
+			normal += mesh->normal(border_vertices[v % nb]);
 		}
 		return end_v - i + 1;
 	};
@@ -127,17 +127,17 @@ che * mesh_fill_hole(che * mesh, const std::vector<index_t> & border_vertices, c
 
 			if(j != p.second)
 			{
-				n_v = add_border_vertices((j + 1) % size, p.second, hole->n_vertices - merge_vertices[!c].size());
+				n_v = add_border_vertices((j + 1) % nb, p.second, hole->n_vertices - size(merge_vertices[!c]));
 				merge_vertices[c].push_back(hole->n_vertices + n_v - 1);
 			}
 			else merge_vertices[c].push_back(merge_vertices[!c].back());
 
-			gen_vertices(merge_vertices[c], vertices[c], mesh->point(border_vertices[p.second]), mesh->point(border_vertices[p.first]), hole->n_vertices - merge_vertices[!c].size());
+			gen_vertices(merge_vertices[c], vertices[c], mesh->point(border_vertices[p.second]), mesh->point(border_vertices[p.first]), hole->n_vertices - size(merge_vertices[!c]));
 
 			if(i != p.first)
 			{
-				merge_vertices[c].push_back(std::size(vertices[c]) + hole->n_vertices - merge_vertices[!c].size());
-				n_v += add_border_vertices(p.first, i > 0 ? i - 1 : size - 1, hole->n_vertices - merge_vertices[!c].size());
+				merge_vertices[c].push_back(std::size(vertices[c]) + hole->n_vertices - size(merge_vertices[!c]));
+				n_v += add_border_vertices(p.first, i > 0 ? i - 1 : nb - 1, hole->n_vertices - size(merge_vertices[!c]));
 			}
 			else merge_vertices[c].push_back(merge_vertices[!c].front());
 
@@ -166,7 +166,7 @@ che * mesh_fill_hole(che * mesh, const std::vector<index_t> & border_vertices, c
 			normal += mesh->normal(b);
 			vertices[c].push_back(mesh->point(b));
 		}
-		normal /= vertices[c].size();
+		normal /= size(vertices[c]);
 
 		hole = fill_hole_front_angles(vertices[c], mesh->mean_edge(), normal, max_iter);
 	}
@@ -177,18 +177,18 @@ che * mesh_fill_hole(che * mesh, const std::vector<index_t> & border_vertices, c
 		for(index_t v: merge_vertices[!c])
 			vertices[c].push_back(hole->point(v));
 
-		i = i > 0 ? i - 1 : size - 1;
-		j = (j + 1) % size;
+		i = i > 0 ? i - 1 : nb - 1;
+		j = (j + 1) % nb;
 
 		normal = 0;
-		n_v = add_border_vertices(j, i, hole->n_vertices - merge_vertices[!c].size());
+		n_v = add_border_vertices(j, i, hole->n_vertices - size(merge_vertices[!c]));
 		normal /= n_v;
 
 		aux_hole = nullptr;
 		aux_hole = fill_hole_front_angles(vertices[c], mesh->mean_edge(), normal, max_iter);
 
 		hole->merge(aux_hole, merge_vertices[!c]);
-		hole->set_head_vertices(vmap_border, size);
+		hole->set_head_vertices(vmap_border, nb);
 
 		delete aux_hole;
 		delete [] vmap_border;
@@ -207,7 +207,7 @@ che * mesh_fill_hole(che * mesh, const std::vector<index_t> & border_vertices, c
 
 void split_border(std::vector<std::pair<index_t, index_t> > & , che * mesh, const std::vector<index_t> & border_vertices)
 {
-	size_t n = border_vertices.size();
+	size_t n = size(border_vertices);
 	a_mat data(3, n);
 	a_mat means;
 
@@ -282,7 +282,7 @@ std::tuple<std::vector<index_t> *, che **> fill_all_holes_meshes(che * mesh, con
 	che ** holes = nullptr;
 
 	std::vector<index_t> bounds = mesh->bounds();
-	const size_t n_borders = bounds.size();
+	const size_t n_borders = size(bounds);
 
 	if(!n_borders) return make_tuple(border_vertices, holes);
 
@@ -342,7 +342,7 @@ che * fill_hole_front_angles_test(che * mesh, std::vector<index_t> & front_verti
 	std::vector<a_vec> tmp_normals(size(vertices));
 
 	vertex normal;
-	for(index_t v = 0; v < vertices.size(); ++v)
+	for(index_t v = 0; v < size(vertices); ++v)
 	{
 		normal = mesh->normal(front_vertices[v]);
 		if(is_grow) normal = -normal;
@@ -364,7 +364,7 @@ che * fill_hole_front_angles_test(che * mesh, std::vector<index_t> & front_verti
 	init_perimeter += norm(vertices.back() - vertices.front());
 	perimeter = init_perimeter;
 
-//	length = perimeter / vertices.size();
+//	length = perimeter / size(vertices);
 
 	bool o = is_grow;
 
@@ -372,10 +372,10 @@ che * fill_hole_front_angles_test(che * mesh, std::vector<index_t> & front_verti
 	std::vector<std::array<index_t, 2> > neighbors(size(vertices));
 
 	index_t v, p_v, n_v;
-	for(v = 0; v < vertices.size(); ++v)
+	for(v = 0; v < size(vertices); ++v)
 	{
-		n_v = (v + 1) % vertices.size();
-		p_v = v > 0 ? v - 1: vertices.size() - 1;
+		n_v = (v + 1) % size(vertices);
+		p_v = v > 0 ? v - 1: size(vertices) - 1;
 
 		is_border[v] = true;
 		neighbors[v][!o] = p_v;
@@ -453,7 +453,7 @@ che * fill_hole_front_angles_test(che * mesh, std::vector<index_t> & front_verti
 		}
 		else if(top.theta <= a135)
 		{
-			index_t m_v = tmp_vertices.size();
+			index_t m_v = size(tmp_vertices);
 
 			m_vec = top.new_vertex(tmp_vertices, 0.5, length, neighbors[v], o, tmp_normals[v]);
 			tmp_vertices.push_back(m_vec);
@@ -491,7 +491,7 @@ che * fill_hole_front_angles_test(che * mesh, std::vector<index_t> & front_verti
 		}
 		else if(top.theta <= M_PI)
 		{
-			index_t m_v = tmp_vertices.size();
+			index_t m_v = size(tmp_vertices);
 
 			m_vec = top.new_vertex(tmp_vertices, 1./3, length, neighbors[v], o, tmp_normals[v]);
 			tmp_vertices.push_back(m_vec);
@@ -554,14 +554,14 @@ che * fill_hole_front_angles_test(che * mesh, std::vector<index_t> & front_verti
 	for(a_vec r: tmp_vertices)
 		vertices.push_back({r[0], r[1], r[2]});
 
-	for(index_t v = 0; false && v < tmp_vertices.size(); ++v)
+	for(index_t v = 0; false && v < size(tmp_vertices); ++v)
 		a_vec normal = tmp_vertices[v] + length * 3 * normalise(tmp_normals[v]);
 
 	gproshan_debug_var(perimeter);
 //	gproshan_debug(filling holes);
 //	gproshan_debug_var(size(vertices));
 //	gproshan_debug_var(size(trigs));
-	return trigs.size() == 0 ? nullptr : new che(vertices.data(), vertices.size(), trigs.data(), trigs.size() / 3);
+	return size(trigs) == 0 ? nullptr : new che(vertices.data(), size(vertices), trigs.data(), size(trigs) / 3);
 }
 
 che * fill_hole_front_angles(std::vector<vertex> & vertices, const real_t & length, const vertex & normal, const size_t & max_iter, bool is_grow)
@@ -575,8 +575,8 @@ che * fill_hole_front_angles(std::vector<vertex> & vertices, const real_t & leng
 
 	// PCA --------------------------------------------------------------------------
 
-	a_mat V(3, vertices.size());
-	for(index_t v = 0; v < vertices.size(); ++v)
+	a_mat V(3, size(vertices));
+	for(index_t v = 0; v < size(vertices); ++v)
 	{
 		V(0,v) = vertices[v][0];
 		V(1,v) = vertices[v][1];
@@ -629,7 +629,7 @@ che * fill_hole_front_angles(std::vector<vertex> & vertices, const real_t & leng
 	std::vector<std::array<index_t, 2> > neighbors(size(vertices));
 
 	index_t v, p_v, n_v;
-	for(v = 0; v < vertices.size(); ++v)
+	for(v = 0; v < size(vertices); ++v)
 		tmp_vertices[v] = V.col(v);
 
 	auto push_front = [&front](const border_t & b)
@@ -637,10 +637,10 @@ che * fill_hole_front_angles(std::vector<vertex> & vertices, const real_t & leng
 		if(b.theta <= M_PI) front.push(b);
 	};
 
-	for(v = 0; v < vertices.size(); ++v)
+	for(v = 0; v < size(vertices); ++v)
 	{
-		n_v = (v + 1) % vertices.size();
-		p_v = v > 0 ? v - 1: vertices.size() - 1;
+		n_v = (v + 1) % size(vertices);
+		p_v = v > 0 ? v - 1: size(vertices) - 1;
 
 		is_border[v] = true;
 		neighbors[v][!o] = p_v;
@@ -721,7 +721,7 @@ che * fill_hole_front_angles(std::vector<vertex> & vertices, const real_t & leng
 		}
 		else if(top.theta <= a135)
 		{
-			index_t m_v = tmp_vertices.size();
+			index_t m_v = size(tmp_vertices);
 
 			m_vec = top.new_vertex(tmp_vertices, 0.5, length, neighbors[v], o);
 			tmp_vertices.push_back(m_vec);
@@ -757,7 +757,7 @@ che * fill_hole_front_angles(std::vector<vertex> & vertices, const real_t & leng
 		}
 		else if(top.theta <= M_PI)
 		{
-			index_t m_v = tmp_vertices.size();
+			index_t m_v = size(tmp_vertices);
 
 			m_vec = top.new_vertex(tmp_vertices, 1./3, length, neighbors[v], o);
 			tmp_vertices.push_back(m_vec);
@@ -821,19 +821,19 @@ che * fill_hole_front_angles(std::vector<vertex> & vertices, const real_t & leng
 		vertices.push_back({r[0], r[1], r[2]});
 	}
 
-	return trigs.size() ? new che(vertices.data(), vertices.size(), trigs.data(), trigs.size() / 3) : nullptr;
+	return size(trigs) ? new che(vertices.data(), size(vertices), trigs.data(), size(trigs) / 3) : nullptr;
 }
 
 void get_real_tri(che * mesh, std::vector<index_t> & select_vertices, std::vector<vertex> & triangle, std::vector<size_t> & tri_sizes )
 {
 	// Drawing a triangle in the middle of the border
-	size_t div = select_vertices.size() / 3;
-	size_t r = select_vertices.size() % 3;
+	size_t div = size(select_vertices) / 3;
+	size_t r = size(select_vertices) % 3;
 
 	//Defining the ranges
 	size_t b = div;
 	size_t c = 2 * div;
-	size_t d = select_vertices.size();
+	size_t d = size(select_vertices);
 
 	vertex tri[3];
 
@@ -861,7 +861,7 @@ void get_real_tri(che * mesh, std::vector<index_t> & select_vertices, std::vecto
 
 	real_t weight = 1.8;
 
-	real_t wp = weight / select_vertices.size();
+	real_t wp = weight / size(select_vertices);
 	real_t aux = wp * tri_sizes[0];
 	real_t wo = (1 - aux) / ( tri_sizes[1] + tri_sizes[2] );
 
@@ -880,8 +880,8 @@ void get_real_tri(che * mesh, std::vector<index_t> & select_vertices, std::vecto
 
 che * fill_hole_center_triangle(che * mesh, std::vector<index_t> & select_vertices, index_t )
 {
-	size_t n_vertices = select_vertices.size() + 3;
-	size_t n_trigs = select_vertices.size() + 4;
+	size_t n_vertices = size(select_vertices) + 3;
+	size_t n_trigs = size(select_vertices) + 4;
 
 	vertex * vertices = new vertex[n_vertices];
 	index_t * trigs = new index_t[n_trigs * che::mtrig];
@@ -899,7 +899,7 @@ che * fill_hole_center_triangle(che * mesh, std::vector<index_t> & select_vertic
 	vertices[i++] = triangle[1];
 	vertices[i++] = triangle[2];
 
-	size_t tri_init = select_vertices.size();
+	size_t tri_init = size(select_vertices);
 	index_t f = 0;
 
 	i = 0;
@@ -919,7 +919,7 @@ che * fill_hole_center_triangle(che * mesh, std::vector<index_t> & select_vertic
 	}
 
 	++i;
-	for( ; i < select_vertices.size() - 1; ++i)
+	for( ; i < size(select_vertices) - 1; ++i)
 	{
 		trigs[f++] = i;
 		trigs[f++] = tri_init + 2;
@@ -946,7 +946,7 @@ che * fill_hole_center_triangle(che * mesh, std::vector<index_t> & select_vertic
 		trigs[f++] = tri_init + 2;
 		trigs[f++] = aux_i;
 
-	aux_i = select_vertices.size();
+	aux_i = size(select_vertices);
 
 		trigs[f++] = aux_i - 1;
 		trigs[f++] = tri_init + 2;
