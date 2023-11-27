@@ -64,7 +64,7 @@ void che_off::read_file(const std::string & file)
 	fclose(fp);
 
 
-	if(trigs.size() != che::mtrig * n_trigs)
+	if(size(trigs) != che::mtrig * n_trigs)
 	{
 		vertex * tGT = GT; GT = nullptr;
 		vertex * tVN = VN; VN = nullptr;

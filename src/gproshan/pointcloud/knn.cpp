@@ -29,7 +29,7 @@ grid::grid(const point * pc, const size_t & n_points, const mat4 & transform): p
 	gproshan_log_var(sizeof(size_t));
 	gproshan_log_var(build_time);
 	gproshan_log_var(res);
-	gproshan_log_var(voxels.size());
+	gproshan_log_var(size(voxels));
 	gproshan_log_var(double(n_points) / voxels.size());
 }
 

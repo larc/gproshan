@@ -12,7 +12,7 @@ namespace gproshan {
 
 double heat_method(real_t * dist, const che * mesh, const std::vector<index_t> & sources, const heat_method_opt & opt)
 {
-	if(!sources.size()) return 0;
+	if(!size(sources)) return 0;
 
 	// build impulse signal
 	a_vec u0(mesh->n_vertices, arma::fill::zeros);

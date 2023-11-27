@@ -212,10 +212,10 @@ void viewer::imgui()
 		ImGui::EndMainMenuBar();
 	}
 
-	if(meshes.size() > 1)
+	if(size(meshes) > 1)
 	{
 		ImGui::SetNextWindowSize(ImVec2(72, -1));
-		ImGui::SetNextWindowPos(ImVec2((mesh.vx + 1) * viewport_width - 72, (m_window_split[meshes.size()].x() - mesh.vy) * viewport_height - 70));
+		ImGui::SetNextWindowPos(ImVec2((mesh.vx + 1) * viewport_width - 72, (m_window_split[size(meshes)].x() - mesh.vy) * viewport_height - 70));
 		ImGui::SetNextWindowBgAlpha(0.0f);
 		ImGui::Begin("selected model", nullptr, ImGuiWindowFlags_NoTitleBar);
 		ImGui::TextColored({0, 1, 0, 1}, "SELECTED");
@@ -340,7 +340,7 @@ void viewer::imgui()
 	}
 
 
-	if(removed_meshes.size())
+	if(size(removed_meshes))
 	{
 		if(ImGui::CollapsingHeader("Removed meshes", ImGuiTreeNodeFlags_DefaultOpen))
 		{
@@ -547,7 +547,7 @@ int viewer::add_process(const char * name, const function_t & f, const int & key
 
 bool viewer::add_mesh(che * p_mesh, const bool & reset_normals)
 {
-	if(meshes.size() == max_meshes)
+	if(size(meshes) == max_meshes)
 		return false;
 
 	if(reset_normals)
@@ -569,7 +569,7 @@ bool viewer::add_mesh(che * p_mesh, const bool & reset_normals)
 
 bool viewer::remove_mesh(const index_t & idx)
 {
-	if(meshes.size() == 1)
+	if(size(meshes) == 1)
 		return false;
 
 	removed_meshes.push_back(meshes[idx]);
@@ -585,7 +585,7 @@ bool viewer::remove_mesh(const index_t & idx)
 
 bool viewer::pop_mesh()
 {
-	if(meshes.size() == 1)
+	if(size(meshes) == 1)
 		return false;
 
 	removed_meshes.push_back(meshes.back());
@@ -802,7 +802,7 @@ bool viewer::m_save_load_view(viewer * view)
 	for(auto & p: std::filesystem::directory_iterator(tmp_file_path("views/")))
 		vfiles.push_back(p.path().string());
 
-	if(!vfiles.size()) return true;
+	if(!size(vfiles)) return true;
 
 	if(ImGui::BeginCombo("##loadfile", vfiles[select].c_str()))
 	{
@@ -1236,7 +1236,7 @@ void viewer::render_gl()
 
 		mesh.draw_selected_vertices(*sphere, shader_sphere);
 
-		if(sphere_points.size())
+		if(size(sphere_points))
 		{
 			sphere->model_mat = mat4::identity();
 			sphere->update_instances_positions(sphere_points);

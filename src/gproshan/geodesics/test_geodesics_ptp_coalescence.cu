@@ -221,7 +221,7 @@ std::vector<std::pair<index_t, real_t> > iter_error_run_ptp_coalescence_gpu(CHE 
 	cudaMemcpy(d_dist[1], h_dist, sizeof(real_t) * n_vertices, cudaMemcpyHostToDevice);
 
 	std::vector<std::pair<index_t, real_t> > iter_error;
-	iter_error.reserve(limits.size());
+	iter_error.reserve(size(limits));
 
 	std::ofstream os("band");
 

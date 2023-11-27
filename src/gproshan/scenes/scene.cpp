@@ -49,7 +49,7 @@ bool scene::load_obj(const std::string & file)
 		if(!load_mtl(path + m))
 			return false;
 
-	alloc(p.trigs.size(), 0);
+	alloc(size(p.trigs), 0);
 
 	#pragma omp parallel for
 	for(index_t i = 0; i < n_vertices; ++i)
@@ -59,7 +59,7 @@ bool scene::load_obj(const std::string & file)
 		VC[i] = p.vcolors[v];
 	}
 
-	if(p.vtexcoords.size())
+	if(size(p.vtexcoords))
 	{
 		texcoords = new vec2[n_vertices];
 
@@ -82,7 +82,7 @@ bool scene::load_obj(const std::string & file)
 	for(auto & obj: p.objects)
 		objects.push_back({obj.second, material_id[obj.first]});
 
-	gproshan_log_var(objects.size());
+	gproshan_log_var(size(objects));
 
 	trig_mat = new index_t[n_vertices / 3];
 	memset(trig_mat, -1, sizeof(index_t) * n_vertices / 3);
@@ -207,8 +207,8 @@ bool scene::load_mtl(const std::string & file)
 	}
 */
 
-	gproshan_log_var(materials.size());
-	gproshan_log_var(textures.size());
+	gproshan_log_var(size(materials));
+	gproshan_log_var(size(textures));
 
 	return true;
 }

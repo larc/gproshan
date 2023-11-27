@@ -107,7 +107,7 @@ void msparse_coding::load_mask(const std::vector<index_t> * vertices, const inde
 		#pragma omp for
 		for(index_t s = 0; s < m_params.n_patches; ++s)
 		{
-			percentages_size[s] = ceil(vertices[s].size() * (m_params.percent / 100.0)) ;
+			percentages_size[s] = ceil(size(vertices[s]) * (m_params.percent / 100.0)) ;
 			cover_cluster[s] = 0;
 		}
 
@@ -153,7 +153,7 @@ void msparse_coding::load_sampling()
 	std::vector<index_t> seeds;
 	load_features(all_sorted_features, featsize);
 
-	gproshan_debug_var(all_sorted_features.size());
+	gproshan_debug_var(size(all_sorted_features));
 
 	size_t count = 0;
 	real_t area_mesh = mesh->area_surface();
@@ -209,7 +209,7 @@ void msparse_coding::load_sampling()
 		p.init_radial_disjoint(euc_radio, geo_radio, mesh, vsf, m_params.delta, m_params.sum_thres, m_params.area_thres, area_mesh);
 
 		count_cov_patch = 0;
-		if(p.vertices.size() >= 7 )
+		if(size(p.vertices) >= 7 )
 		{
 			for(const index_t & v: p.vertices)
 				if(!covered[v]) ++count_cov_patch;
@@ -245,7 +245,7 @@ void msparse_coding::load_sampling()
 
 	gproshan_log(saving sampling);
 
-	S.resize(seeds.size());
+	S.resize(size(seeds));
 
 	#pragma omp parallel for
 	for(index_t i = 0; i < seeds.size(); ++i)
@@ -256,7 +256,7 @@ void msparse_coding::load_sampling()
 	gproshan_debug_var(m_params.sum_thres);
 	gproshan_log_var(count);
 	gproshan_log_var(count_cov);
-	gproshan_debug_var(seeds.size());
+	gproshan_debug_var(size(seeds));
 	gproshan_debug_var(m_params.n_patches);
 
 
@@ -268,7 +268,7 @@ void msparse_coding::load_sampling()
 		if(!covered[i])
 			outliers.push_back(i);
 
-	a_vec outlv(outliers.size());
+	a_vec outlv(size(outliers));
 	for(index_t i = 0; i < outliers.size(); ++i)
 		outlv(i) = outliers[i];
 
@@ -291,10 +291,10 @@ void msparse_coding::init_radial_feature_patches()
 			patch_avg_size += patches[s].vertices.size();
 		#pragma omp parallel for reduction(min: patch_min_size)
 		for(index_t s = 0; s < m_params.n_patches; ++s)
-			patch_min_size = std::min(patches[s].vertices.size(), patch_min_size);
+			patch_min_size = std::min(size(patches[s].vertices), patch_min_size);
 		#pragma omp parallel for reduction(max: patch_max_size)
 		for(index_t s = 0; s < m_params.n_patches; ++s)
-			patch_max_size = std::max(patches[s].vertices.size(), patch_max_size);
+			patch_max_size = std::max(size(patches[s].vertices), patch_max_size);
 
 		patch_avg_size /= m_params.n_patches;
 		gproshan_debug_var(patch_avg_size);
@@ -428,10 +428,10 @@ void msparse_coding::init_voronoi_patches()
 				patch_avg_size += patches[s].vertices.size();
 			#pragma omp parallel for reduction(min: patch_min_size)
 			for(index_t s = 0; s < m_params.n_patches; ++s)
-				patch_min_size = std::min(patches[s].vertices.size(), patch_min_size);
+				patch_min_size = std::min(size(patches[s].vertices), patch_min_size);
 			#pragma omp parallel for reduction(max: patch_max_size)
 			for(index_t s = 0; s < m_params.n_patches; ++s)
-				patch_max_size = std::max(patches[s].vertices.size(), patch_max_size);
+				patch_max_size = std::max(size(patches[s].vertices), patch_max_size);
 
 			patch_avg_size /= m_params.n_patches;
 			//gproshan_debug_var(patch_avg_size);
@@ -508,7 +508,7 @@ real_t msparse_coding::execute()
 	gproshan_debug_var(d_time);
 
 	arma::uvec non_zero = find( abs(alpha) > 0.00001);
-	gproshan_debug_var(non_zero.size());
+	gproshan_debug_var(size(non_zero));
 	real_t ratio = (m_params.n_patches * 13.0 + non_zero.size()) / (3 * mesh->n_vertices);
 	gproshan_log_var(ratio);
 
@@ -814,10 +814,10 @@ void msparse_coding::init_patches(const bool & reset, const fmask_t & mask)
 				patch_avg_size += patches[s].vertices.size();
 			#pragma omp parallel for reduction(min: patch_min_size)
 			for(index_t s = 0; s < m_params.n_patches; ++s)
-				patch_min_size = std::min(patches[s].vertices.size(), patch_min_size);
+				patch_min_size = std::min(size(patches[s].vertices), patch_min_size);
 			#pragma omp parallel for reduction(max: patch_max_size)
 			for(index_t s = 0; s < m_params.n_patches; ++s)
-				patch_max_size = std::max(patches[s].vertices.size(), patch_max_size);
+				patch_max_size = std::max(size(patches[s].vertices), patch_max_size);
 
 			patch_avg_size /= m_params.n_patches;
 			gproshan_debug_var(patch_avg_size);
@@ -914,7 +914,7 @@ real_t msparse_coding::mesh_reconstruction(const fmask_t & mask)
 	for(index_t v = 0; v < mesh->n_vertices; ++v)
 	{
 		// simple means vertex
-		if(patches_map[v].size() && (!mask || mask(v)))
+		if(size(patches_map[v]) && (!mask || mask(v)))
 		{
 			a_vec mv = arma::zeros<a_vec>(3);
 			for(auto p: patches_map[v])
@@ -1003,7 +1003,7 @@ void msparse_coding::update_alphas(a_mat & alpha, size_t threshold)
 index_t msparse_coding::sample(const index_t & s)
 {
 	assert(s < m_params.n_patches);
-	if(sampling.size()) return sampling[s];
+	if(size(sampling)) return sampling[s];
 	return s;
 }
 

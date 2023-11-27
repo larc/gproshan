@@ -407,7 +407,7 @@ void che::multiplicate_vertices()
 
 void che::remove_vertices(const std::vector<index_t> & vertices)
 {
-	if(!vertices.size()) return;
+	if(!size(vertices)) return;
 
 	gproshan_debug(removing vertex);
 	for(index_t v: vertices)
@@ -441,7 +441,7 @@ void che::remove_vertices(const std::vector<index_t> & vertices)
 	}
 	removed.push_back(n_vertices);
 
-	gproshan_debug_var(removed.size());
+	gproshan_debug_var(size(removed));
 	gproshan_debug_var(removed[0]);
 	index_t r = 1;
 	index_t d = 1;
@@ -464,8 +464,8 @@ void che::remove_vertices(const std::vector<index_t> & vertices)
 			new_trigs.push_back(VT[he]);
 		else gproshan_error_var(he);
 
-	gproshan_debug_var(new_vertices.size());
-	gproshan_debug_var(new_trigs.size());
+	gproshan_debug_var(size(new_vertices));
+	gproshan_debug_var(size(new_trigs));
 	gproshan_debug(removing vertex);
 	free();
 	gproshan_debug(removing vertex);
@@ -500,7 +500,7 @@ void che::remove_non_manifold_vertices()
 	}
 	removed.push_back(n_vertices);
 
-	gproshan_debug_var(removed.size());
+	gproshan_debug_var(size(removed));
 	gproshan_debug_var(removed[0]);
 	index_t r = 1;
 	index_t d = 1;
@@ -523,8 +523,8 @@ void che::remove_non_manifold_vertices()
 			new_trigs.push_back(VT[he]);
 		else gproshan_error_var(he);
 
-	gproshan_debug_var(new_vertices.size());
-	gproshan_debug_var(new_trigs.size());
+	gproshan_debug_var(size(new_vertices));
+	gproshan_debug_var(size(new_trigs));
 	gproshan_debug(removing vertex);
 	free();
 	gproshan_debug(removing vertex);
@@ -645,13 +645,13 @@ std::vector<index_t> che::link(const index_t & v) const
 
 void che::edge_collapse(const std::vector<index_t> & sort_edges)
 {
-	gproshan_error_var(sort_edges.size());
+	gproshan_error_var(size(sort_edges));
 	// TODO
 }
 
 void che::compute_toplesets(index_t *& toplesets, index_t *& sorted, std::vector<index_t> & limits, const std::vector<index_t> & sources, const index_t & k)
 {
-	if(!sources.size()) return;
+	if(!size(sources)) return;
 
 	memset(toplesets, -1, sizeof(index_t) * n_vertices);
 

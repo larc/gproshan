@@ -29,7 +29,7 @@ che * mesh_simple_fill_hole(che * mesh, const std::vector<index_t> & border_vert
 	a_mat E(3, 3);
 	a_vec ve(3);
 
-	vertices.reserve(border_vertices.size());
+	vertices.reserve(size(border_vertices));
 
 	for(const index_t & b: border_vertices)
 	{
@@ -82,7 +82,7 @@ che * mesh_fill_hole(che * mesh, const std::vector<index_t> & border_vertices, c
 
 		while(--N)
 		{
-			merge_vertices.push_back(vertices.size() + delta_v);
+			merge_vertices.push_back(std::size(vertices) + delta_v);
 			vertices.push_back(vb + (N / L) * (va - vb));
 		}
 	};
@@ -136,7 +136,7 @@ che * mesh_fill_hole(che * mesh, const std::vector<index_t> & border_vertices, c
 
 			if(i != p.first)
 			{
-				merge_vertices[c].push_back(vertices[c].size() + hole->n_vertices - merge_vertices[!c].size());
+				merge_vertices[c].push_back(std::size(vertices[c]) + hole->n_vertices - merge_vertices[!c].size());
 				n_v += add_border_vertices(p.first, i > 0 ? i - 1 : size - 1, hole->n_vertices - merge_vertices[!c].size());
 			}
 			else merge_vertices[c].push_back(merge_vertices[!c].front());
@@ -338,8 +338,8 @@ che * fill_hole_front_angles_test(che * mesh, std::vector<index_t> & front_verti
 	for(index_t v: front_vertices)
 		vertices.push_back(mesh->point(v));
 
-	std::vector<a_vec> tmp_vertices(vertices.size());
-	std::vector<a_vec> tmp_normals(vertices.size());
+	std::vector<a_vec> tmp_vertices(size(vertices));
+	std::vector<a_vec> tmp_normals(size(vertices));
 
 	vertex normal;
 	for(index_t v = 0; v < vertices.size(); ++v)
@@ -368,8 +368,8 @@ che * fill_hole_front_angles_test(che * mesh, std::vector<index_t> & front_verti
 
 	bool o = is_grow;
 
-	std::vector<bool> is_border(vertices.size());
-	std::vector<std::array<index_t, 2> > neighbors(vertices.size());
+	std::vector<bool> is_border(size(vertices));
+	std::vector<std::array<index_t, 2> > neighbors(size(vertices));
 
 	index_t v, p_v, n_v;
 	for(v = 0; v < vertices.size(); ++v)
@@ -559,8 +559,8 @@ che * fill_hole_front_angles_test(che * mesh, std::vector<index_t> & front_verti
 
 	gproshan_debug_var(perimeter);
 //	gproshan_debug(filling holes);
-//	gproshan_debug_var(vertices.size());
-//	gproshan_debug_var(trigs.size());
+//	gproshan_debug_var(size(vertices));
+//	gproshan_debug_var(size(trigs));
 	return trigs.size() == 0 ? nullptr : new che(vertices.data(), vertices.size(), trigs.data(), trigs.size() / 3);
 }
 
@@ -624,9 +624,9 @@ che * fill_hole_front_angles(std::vector<vertex> & vertices, const real_t & leng
 
 	// END PCA ----------------------------------------------------------------------
 
-	std::vector<a_vec> tmp_vertices(vertices.size());
-	std::vector<bool> is_border(vertices.size());
-	std::vector<std::array<index_t, 2> > neighbors(vertices.size());
+	std::vector<a_vec> tmp_vertices(size(vertices));
+	std::vector<bool> is_border(size(vertices));
+	std::vector<std::array<index_t, 2> > neighbors(size(vertices));
 
 	index_t v, p_v, n_v;
 	for(v = 0; v < vertices.size(); ++v)
@@ -813,7 +813,7 @@ che * fill_hole_front_angles(std::vector<vertex> & vertices, const real_t & leng
 	}
 
 	vertices.clear();
-	vertices.reserve(tmp_vertices.size());
+	vertices.reserve(size(tmp_vertices));
 
 	for(a_vec r: tmp_vertices)
 	{

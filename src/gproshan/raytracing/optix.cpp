@@ -343,9 +343,9 @@ OptixTraversableHandle optix::build_as(const std::vector<che *> & meshes, const 
 {
 	OptixTraversableHandle optix_as_handle = {};
 
-	std::vector<OptixBuildInput> optix_meshes(meshes.size());
-	std::vector<CUdeviceptr> optix_vertex_ptr(meshes.size());
-	std::vector<uint32_t> optix_trig_flags(meshes.size());
+	std::vector<OptixBuildInput> optix_meshes(size(meshes));
+	std::vector<CUdeviceptr> optix_vertex_ptr(size(meshes));
+	std::vector<uint32_t> optix_trig_flags(size(meshes));
 
 	for(index_t i = 0; i < meshes.size(); ++i)
 		add_mesh(optix_meshes[i], optix_vertex_ptr[i], optix_trig_flags[i], meshes[i], model_mats[i]);
@@ -485,7 +485,7 @@ void optix::add_mesh(OptixBuildInput & optix_mesh, CUdeviceptr & d_vertex_ptr, u
 			tex_data.push_back(tex.data);
 		}
 
-		gproshan_error_var(textures.size());
+		gproshan_error_var(size(textures));
 		cudaMemcpy(optix_params.sc.materials, sc->materials.data(), sc->materials.size() * sizeof(scene::material), cudaMemcpyHostToDevice);
 		cudaMemcpy(optix_params.sc.textures, textures.data(), textures.size() * sizeof(scene::texture), cudaMemcpyHostToDevice);
 		cudaMemcpy(optix_params.sc.trig_mat, sc->trig_mat, mesh->n_vertices / 3 * sizeof(index_t), cudaMemcpyHostToDevice);

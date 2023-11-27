@@ -17,7 +17,7 @@ che_obj::che_obj(const std::string & file)
 void che_obj::read_file(const std::string & file)
 {
 	parser p(file);
-	alloc(p.vertices.size(), p.trigs.size() / che::mtrig);
+	alloc(size(p.vertices), p.trigs.size() / che::mtrig);
 	memcpy(GT, p.vertices.data(), p.vertices.size() * sizeof(vertex));
 	memcpy(VC, p.vcolors.data(), p.vcolors.size() * sizeof(rgb_t));
 
@@ -169,12 +169,12 @@ che_obj::parser::parser(const std::string & file)
 
 	objects.emplace_back("", trigs.size());
 
-	gproshan_log_var(vertices.size());
-	gproshan_log_var(vnormals.size());
-	gproshan_log_var(vtexcoords.size());
-	gproshan_log_var(vcolors.size());
-	gproshan_log_var(trigs.size());
-	gproshan_log_var(objects.size());
+	gproshan_log_var(size(vertices));
+	gproshan_log_var(size(vnormals));
+	gproshan_log_var(size(vtexcoords));
+	gproshan_log_var(size(vcolors));
+	gproshan_log_var(size(trigs));
+	gproshan_log_var(size(objects));
 }
 
 

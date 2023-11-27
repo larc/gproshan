@@ -201,7 +201,7 @@ void patch::recover_radial_disjoint(che * mesh, const real_t & radio_, const ind
 	size_t d_fitting = 2;
 	vertex p, c, n;
 	size_t min_points = (d_fitting + 1) * (d_fitting + 2) / 2;
-	if(vertices.size() > min_points)
+	if(size(vertices) > min_points)
 	{
 		jet_fit_directions(mesh, v);
 		n.x() = T(0, 2); n.y() = T(1, 2); n.z() = T(2, 2);
@@ -223,7 +223,7 @@ void patch::recover_radial_disjoint(che * mesh, const real_t & radio_, const ind
 	}
 	else
 	{
-		gproshan_debug_var(vertices.size());
+		gproshan_debug_var(size(vertices));
 	}
 
 }
@@ -282,7 +282,7 @@ void patch::init_radial_disjoint(	real_t & euc_radio,
 	// Refit the points and update the radius
 	size_t d_fitting = 2;
 	size_t min_points = (d_fitting + 1) * (d_fitting + 2) / 2;
-	if(vertices.size() > min_points)
+	if(size(vertices) > min_points)
 		jet_fit_directions(mesh, v);
 	else
 		normal_fit_directions(mesh,v);
@@ -341,7 +341,7 @@ void patch::reset_xyz(che * mesh, std::vector<vpatches_t> & vpatches, const inde
 		//p idx patche where belongs to
 			//j: local index
 			//i: global index
-			//if(vpatches[vertices[i]].size() == 0)
+			//if(size(vpatches[vertices[i]]) == 0)
 			//vpatches[vertices[i]].push_back({p, j++});
 			vpatches[vertices[i]][p] = j++;
 		}
@@ -358,7 +358,7 @@ double area_tri(double x1, double y1, double x2, double y2, double x3, double y3
 
 void patch::remove_extra_xyz_disjoint(size_t & max_points)
 {
-	if(vertices.size() > max_points)
+	if(size(vertices) > max_points)
 	{
 		arma::uvec xi;
 		xi.zeros(max_points);
@@ -371,7 +371,7 @@ void patch::remove_extra_xyz_disjoint(size_t & max_points)
 void patch::add_extra_xyz_disjoint(che * mesh, std::vector<vpatches_t> & vpatches, const index_t & p)
 {
 
-	size_t m = std::max (vertices.size(), min_nv);
+	size_t m = std::max (size(vertices), min_nv);
 
 
 	size_t j = vertices.size();
@@ -479,10 +479,10 @@ void patch::reset_xyz_disjoint(che * mesh, real_t * dist, size_t M, std::vector<
 		/*gproshan_debug(number vertices considered);
 		gproshan_debug_var(m);
 		gproshan_debug(number vertices masked);
-		gproshan_debug_var(vertices.size() - m);*/
+		gproshan_debug_var(size(vertices) - m);*/
 	}
 
-	m = std::max(vertices.size(), min_nv);
+	m = std::max(size(vertices), min_nv);
 	xyz.set_size(3, m);
 
 	index_t i = 0;
@@ -520,7 +520,7 @@ const a_vec patch::normal()
 
 void patch::gather_vertices(che * mesh, const index_t & v, const size_t & n_toplevels, index_t * toplevel)
 {
-	if(vertices.size()) vertices.clear();
+	if(size(vertices)) vertices.clear();
 
 	vertices.reserve(expected_nv);
 	memset(toplevel, -1, sizeof(index_t) * mesh->n_vertices);
@@ -547,7 +547,7 @@ void patch::gather_vertices(che * mesh, const index_t & v, const real_t & radio,
 {
 	assert(x.n_elem == 3 && T.n_rows == 3 && T.n_cols == 3);
 
-	if(vertices.size()) vertices.clear();
+	if(size(vertices)) vertices.clear();
 	vertices.reserve(expected_nv);
 
 	std::priority_queue<std::pair<real_t, index_t> > qvertices;
@@ -591,10 +591,10 @@ void patch::jet_fit_directions(che * mesh, const index_t & v)
 	size_t d_fitting = 2;
 	size_t d_monge = 2;
 	//size_t min_points = (d_fitting + 1) * (d_fitting + 2) / 2;
-	//assert(vertices.size() > min_points);
+	//assert(size(vertices) > min_points);
 
 	std::vector<DPoint> in_points;
-	in_points.reserve(vertices.size());
+	in_points.reserve(size(vertices));
 	for(const index_t & u: vertices)
 		in_points.push_back(DPoint(mesh->point(u).x(), mesh->point(u).y(), mesh->point(u).z()));
 
@@ -738,7 +738,7 @@ void patch::compute_avg_distance(che * mesh, std::vector<vpatches_t> & vpatches,
 	*/
 	std::sort(distances.begin(), distances.end());
 	size_t n_elem = distances.size();
-	if(distances.size()%2 ==0)
+	if(size(distances)%2 ==0)
 	{
 		avg_dist = (distances[n_elem/2] + distances[(n_elem/2 -1)])/2;
 	}

@@ -11,7 +11,7 @@ scene_viewer::scene_viewer(scene * p_sc): che_viewer(p_sc), sc(p_sc)
 {
 	gltextures = new GLuint[sc->textures.size()];
 
-	glGenTextures(sc->textures.size(), gltextures);
+	glGenTextures(size(sc->textures), gltextures);
 	for(index_t i = 0; i < sc->textures.size(); ++i)
 		init_texture(gltextures[i], sc->textures[i]);
 
@@ -22,7 +22,7 @@ scene_viewer::scene_viewer(scene * p_sc): che_viewer(p_sc), sc(p_sc)
 scene_viewer::~scene_viewer()
 {
 	glDeleteBuffers(1, &tex_vbo);
-	glDeleteTextures(sc->textures.size(), gltextures);
+	glDeleteTextures(size(sc->textures), gltextures);
 	delete [] gltextures;
 }
 
@@ -55,7 +55,7 @@ void scene_viewer::draw(shader & program)
 	program.enable();
 
 	glBindVertexArray(vao);
-	if(sc->objects.size() == 1)
+	if(size(sc->objects) == 1)
 	{
 		glDrawArrays(GL_TRIANGLES, 0, mesh->n_vertices);
 	}
@@ -92,7 +92,7 @@ void scene_viewer::draw_pointcloud(shader & program)
 	program.enable();
 
 	glBindVertexArray(vao);
-	if(sc->objects.size() == 1)
+	if(size(sc->objects) == 1)
 	{
 		glDrawArrays(GL_POINTS, 0, mesh->n_vertices);
 	}

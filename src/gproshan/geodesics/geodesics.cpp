@@ -27,7 +27,7 @@ geodesics::geodesics(che * mesh, const std::vector<index_t> & sources, const par
 	for(index_t v = 0; v < n_vertices; ++v)
 		dist[v] = INFINITY;
 
-	assert(sources.size() > 0);
+	assert(size(sources) > 0);
 	execute(mesh, sources, p);
 }
 

@@ -60,7 +60,7 @@ bool load_sampling(std::vector<index_t> & points, real_t & radio, che * mesh, si
 	}
 	else
 	{
-		if(!points.size())
+		if(!size(points))
 			points.push_back(0);
 
 #ifdef GPROSHAN_CUDA

@@ -47,7 +47,7 @@ a_sp_mat OMP_all(std::vector<locval_t> & locval, const a_mat & X, const a_mat & 
 		OMP(locval, X.col(i), i, D, L);
 
 	arma::umat DI(2, locval.size());
-	a_vec DV(locval.size());
+	a_vec DV(size(locval));
 
 	#pragma omp parallel for
 	for(index_t k = 0; k < locval.size(); ++k)
@@ -84,7 +84,7 @@ void sp_KSVD(a_mat & D, const a_mat & X, const size_t & L, size_t k)
 			if(locval[k].i != locval[k - 1].i)
 				rows.push_back(k);
 
-		rows.push_back(locval.size());
+		rows.push_back(size(locval));
 
 		R = X - D * alpha;
 
@@ -329,7 +329,7 @@ a_sp_mat OMP_all(std::vector<locval_t> & locval, const std::vector<patch> & patc
 		OMP(locval, patches[i], i, A, L);
 
 	arma::umat DI(2, locval.size());
-	a_vec DV(locval.size());
+	a_vec DV(size(locval));
 
 	#pragma omp parallel for
 	for(index_t k = 0; k < locval.size(); ++k)
@@ -367,7 +367,7 @@ void sp_KSVD(a_mat & A, const std::vector<patch> & patches, const size_t & L, si
 			if(locval[k].i != locval[k - 1].i)
 				rows.push_back(k);
 
-		rows.push_back(locval.size());
+		rows.push_back(size(locval));
 
 		#pragma omp parallel for private(a, aj, D, e, sum, sum_error)
 		for(index_t j = 0; j < A.n_cols; ++j)

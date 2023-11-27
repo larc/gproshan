@@ -129,7 +129,7 @@ bool app_viewer::process_knn(viewer * p_view)
 	if(ImGui::Button("Run"))
 	{
 		auto query = mesh.selected;
-		if(!query.size()) query.push_back(0);
+		if(!size(query)) query.push_back(0);
 
 		mesh.selected.clear();
 
@@ -191,7 +191,7 @@ bool app_viewer::process_simulate_scanner(viewer * p_view)
 	static const size_t n_max = 10000;
 	static vertex cam_pos = {0, 0, 0};
 
-	if(view->sphere_points.size() != 1)
+	if(size(view->sphere_points) != 1)
 	{
 		view->sphere_points.clear();
 		view->sphere_points.push_back(cam_pos);
@@ -231,7 +231,7 @@ bool app_viewer::process_sampling_4points(viewer * p_view)
 	if(ImGui::Button("Clean")) points.clear();
 
 	ImGui::SameLine();
-	if(mesh.selected.size() > 3)
+	if(size(mesh.selected) > 3)
 	{
 		if(ImGui::Button("Add Samples"))
 		{
@@ -407,7 +407,7 @@ bool app_viewer::process_delete_vertices(viewer * p_view)
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->selected_mesh();
 
-	if(!mesh.selected.size()) return true;
+	if(!size(mesh.selected)) return true;
 
 	gproshan_debug(removing vertex);
 	mesh->remove_vertices(mesh.selected);
@@ -444,7 +444,7 @@ bool app_viewer::process_fairing_spectral(viewer * p_view)
 
 	if(ImGui::SliderScalar("n_eigs", ImGuiDataType_U64, &fair.n_eigs, &min_neigs, &max_neigs))
 	{
-		if(vertices.size() != mesh->n_vertices)
+		if(size(vertices) != mesh->n_vertices)
 		{
 			vertices.resize(mesh->n_vertices);
 			memcpy(vertices.data(), &mesh->point(0), mesh->n_vertices * sizeof(vertex));
@@ -473,7 +473,7 @@ bool app_viewer::process_fairing_taubin(viewer * p_view)
 
 	if(ImGui_InputReal("step", &fair.step, 0.001))
 	{
-		if(vertices.size() != mesh->n_vertices)
+		if(size(vertices) != mesh->n_vertices)
 		{
 			vertices.resize(mesh->n_vertices);
 			memcpy(vertices.data(), &mesh->point(0), mesh->n_vertices * sizeof(vertex));
@@ -510,7 +510,7 @@ bool app_viewer::process_geodesics(viewer * p_view)
 
 	if(ImGui::Button("Run"))
 	{
-		if(!mesh.selected.size())
+		if(!size(mesh.selected))
 			mesh.selected.push_back(0);
 
 		params.dist_alloc = &mesh->heatmap(0);
@@ -584,7 +584,7 @@ bool app_viewer::process_compute_toplesets(viewer * p_view)
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->selected_mesh();
 
-	if(!mesh.selected.size())
+	if(!size(mesh.selected))
 		mesh.selected.push_back(0);
 
 	index_t * toplesets = new index_t[mesh->n_vertices];
@@ -723,7 +723,7 @@ bool app_viewer::process_mask(viewer * p_view)
 		a_vec points_out;
 		gproshan_debug_var(f_points);
 		points_out.load(f_points);
-		gproshan_debug_var(points_out.size());
+		gproshan_debug_var(size(points_out));
 
 		for(index_t i = 0; i < points_out.size(); ++i)
 			mesh.selected.push_back(points_out(i));
@@ -953,7 +953,7 @@ bool app_viewer::process_fill_holes(viewer * p_view)
 		center /= vbounds.size();
 
 		std::priority_queue<std::pair<real_t, index_t> > front;
-		std::vector<uvec2> neigs(vertices.size());
+		std::vector<uvec2> neigs(size(vertices));
 /*
 		auto bprev = [&](const index_t & v) -> index_t &
 		{

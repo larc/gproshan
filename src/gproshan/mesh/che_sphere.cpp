@@ -44,12 +44,12 @@ che_sphere::che_sphere(const real_t & r, const size_t & n)
 		}
 
 		v = i * cols;
-		trigs.push_back(vertices.size() - 2);
+		trigs.push_back(size(vertices) - 2);
 		trigs.push_back(v);
 		trigs.push_back(v + cols);
 
 		v = (i + 1) * cols - 1;
-		trigs.push_back(vertices.size() - 1);
+		trigs.push_back(size(vertices) - 1);
 		trigs.push_back(v + cols);
 		trigs.push_back(v);
 	}
@@ -68,12 +68,12 @@ che_sphere::che_sphere(const real_t & r, const size_t & n)
 	}
 
 	v = (2 * n - 1) * cols;
-	trigs.push_back(vertices.size() - 2);
+	trigs.push_back(size(vertices) - 2);
 	trigs.push_back(v);
 	trigs.push_back(0);
 
 	v = (2 * n) * cols - 1;
-	trigs.push_back(vertices.size() - 1);
+	trigs.push_back(size(vertices) - 1);
 	trigs.push_back(cols - 1);
 	trigs.push_back(v);
 

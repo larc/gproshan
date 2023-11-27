@@ -237,7 +237,7 @@ void che_ply::read_file(const std::string & file)
 	fclose(fp);
 
 
-	if(trigs.size() != che::mtrig * n_trigs)
+	if(size(trigs) != che::mtrig * n_trigs)
 	{
 		vertex * tGT = GT; GT = nullptr;
 		rgb_t * tVC = VC; VC = nullptr;

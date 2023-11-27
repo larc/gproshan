@@ -172,7 +172,7 @@ std::vector<std::pair<index_t, real_t> > iter_error_run_ptp_gpu(CHE * d_mesh, co
 	cudaMemcpy(d_sorted, h_sorted, sizeof(index_t) * n_vertices, cudaMemcpyHostToDevice);
 
 	std::vector<std::pair<index_t, real_t> > iter_error;
-	iter_error.reserve(limits.size());
+	iter_error.reserve(size(limits));
 
 	index_t d = 0;
 	index_t start, end, n_cond;
