@@ -62,12 +62,12 @@ const size_t viewer::max_meshes = size(m_window_split) - 1;
 
 che_sphere viewer::sphere_data{0.01};
 
-viewer::viewer(const int & width, const int & height)
+viewer::viewer(const char * title, const int & width, const int & height)
 {
 	window_width = width;
 	window_height = height;
 
-	init_gl();
+	init_gl(title);
 	init_glsl();
 	init_imgui();
 	init_menus();
@@ -398,7 +398,7 @@ void error_callback(int error, const char* description)
 	fprintf(stderr, "Error %d: %s\n", error, description);
 }
 
-void viewer::init_gl()
+void viewer::init_gl(const char * title)
 {
 	glfwSetErrorCallback(error_callback);
 
@@ -413,7 +413,7 @@ void viewer::init_gl()
 
 	gproshan_log_var(window_width);
 	gproshan_log_var(window_height);
-	window = glfwCreateWindow(window_width, window_height, "gproshan", NULL, NULL);
+	window = glfwCreateWindow(window_width, window_height, title, NULL, NULL);
 
 	glfwSetWindowUserPointer(window, this);
 
