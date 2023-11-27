@@ -17,12 +17,12 @@ che_obj::che_obj(const std::string & file)
 void che_obj::read_file(const std::string & file)
 {
 	parser p(file);
-	alloc(p.vertices.size(), p.trigs.size() / che::mtrig);
-	memcpy(GT, p.vertices.data(), p.vertices.size() * sizeof(vertex));
-	memcpy(VC, p.vcolors.data(), p.vcolors.size() * sizeof(rgb_t));
+	alloc(size(p.vertices), size(p.trigs) / che::mtrig);
+	memcpy(GT, p.vertices.data(), size(p.vertices) * sizeof(vertex));
+	memcpy(VC, p.vcolors.data(), size(p.vcolors) * sizeof(rgb_t));
 
 	#pragma omp parallel for
-	for(index_t i = 0; i < p.trigs.size(); ++i)
+	for(index_t i = 0; i < size(p.trigs); ++i)
 		VT[i] = p.trigs[i].x();
 }
 
@@ -116,13 +116,13 @@ che_obj::parser::parser(const std::string & file)
 					}
 					switch(i)
 					{
-						case 0: f[i] += f[i] > vertices.size()		? vertices.size()	: -1;	break;
-						case 1: f[i] += f[i] > vtexcoords.size()	? vtexcoords.size()	: -1;	break;
-						case 2: f[i] += f[i] > vnormals.size()		? vnormals.size()	: -1;	break;
+						case 0: f[i] += f[i] > size(vertices)		? size(vertices)	: -1;	break;
+						case 1: f[i] += f[i] > size(vtexcoords)	? size(vtexcoords)	: -1;	break;
+						case 2: f[i] += f[i] > size(vnormals)		? size(vnormals)	: -1;	break;
 					}
 				}
 
-				for(index_t i = 2; i < P.size(); ++i)
+				for(index_t i = 2; i < size(P); ++i)
 				{
 					trigs.push_back(P[0]);
 					trigs.push_back(P[i - 1]);
@@ -153,7 +153,7 @@ che_obj::parser::parser(const std::string & file)
 			case 'u':	// usemtl
 			{
 				sscanf(line, "%*s %s", str);
-				objects.emplace_back(str, trigs.size());
+				objects.emplace_back(str, size(trigs));
 				break;
 			}
 			case 'm':	// mtllib
@@ -167,14 +167,14 @@ che_obj::parser::parser(const std::string & file)
 
 	fclose(fp);
 
-	objects.emplace_back("", trigs.size());
+	objects.emplace_back("", size(trigs));
 
-	gproshan_log_var(vertices.size());
-	gproshan_log_var(vnormals.size());
-	gproshan_log_var(vtexcoords.size());
-	gproshan_log_var(vcolors.size());
-	gproshan_log_var(trigs.size());
-	gproshan_log_var(objects.size());
+	gproshan_log_var(size(vertices));
+	gproshan_log_var(size(vnormals));
+	gproshan_log_var(size(vtexcoords));
+	gproshan_log_var(size(vcolors));
+	gproshan_log_var(size(trigs));
+	gproshan_log_var(size(objects));
 }
 
 

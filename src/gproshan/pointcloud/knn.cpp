@@ -29,8 +29,8 @@ grid::grid(const point * pc, const size_t & n_points, const mat4 & transform): p
 	gproshan_log_var(sizeof(size_t));
 	gproshan_log_var(build_time);
 	gproshan_log_var(res);
-	gproshan_log_var(voxels.size());
-	gproshan_log_var(double(n_points) / voxels.size());
+	gproshan_log_var(size(voxels));
+	gproshan_log_var(double(n_points) / size(voxels));
 }
 
 std::vector<index_t> grid::operator () (const point & p, int k) const
@@ -84,8 +84,8 @@ k3tree::k3tree(const point * pc, const size_t & n_points, const size_t & k, cons
 	gproshan_log_var(time_build);
 
 	TIC(time_query);
-		const point * q = query.size() ? query.data() : pc;
-		const size_t & n_results = query.size() ? query.size() : n_points;
+		const point * q = size(query) ? query.data() : pc;
+		const size_t & n_results = size(query) ? size(query) : n_points;
 
 		flann::Matrix<real_t> mq((real_t *) q, n_results, 3);
 

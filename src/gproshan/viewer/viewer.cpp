@@ -58,7 +58,7 @@ const std::vector<std::string> viewer::colormap = { "vertex color",
 													"material scene",
 													};
 
-const size_t viewer::max_meshes = m_window_split.size() - 1;
+const size_t viewer::max_meshes = size(m_window_split) - 1;
 
 che_sphere viewer::sphere_data{0.01};
 
@@ -140,9 +140,12 @@ void viewer::imgui()
 
 	che_viewer & mesh = selected_mesh();
 
+	ImGui::SetNextWindowSize(ImVec2(250, -1));
 	if(ImGui::BeginPopupContextVoid("mesh"))
 	{
-		ImGui::TextDisabled(mesh->filename.c_str());
+		const int & p = size(mesh->filename) - 31;
+
+		ImGui::TextDisabled("%s%30s", p < 0 ? "" : "<<", mesh->filename.substr(p < 0 ? 0 : p).c_str());
 		for(auto & p: menu_processes[1])	// init_menus
 		{
 			process_t & pro = processes[p];
@@ -164,7 +167,7 @@ void viewer::imgui()
 	{
 		if(ImGui::BeginMenu("Select"))
 		{
-			for(index_t i = 0; i < meshes.size(); ++i)
+			for(index_t i = 0; i < size(meshes); ++i)
 			{
 				const che_viewer & m = *meshes[i];
 				if(ImGui::MenuItem((std::to_string(i) + ": " + m->filename).c_str(), nullptr, i == idx_selected_mesh, i != idx_selected_mesh))
@@ -179,7 +182,7 @@ void viewer::imgui()
 
 		if(ImGui::BeginMenu("Color"))
 		{
-			for(index_t i = 0; i < colormap.size(); ++i)
+			for(index_t i = 0; i < size(colormap); ++i)
 			{
 				if(ImGui::MenuItem(colormap[i].c_str(), nullptr, i == mesh.idx_colormap, i != mesh.idx_colormap))
 					check_apply_all_meshes([&](che_viewer & mesh)
@@ -191,7 +194,7 @@ void viewer::imgui()
 			ImGui::EndMenu();
 		}
 
-		for(index_t i = 0; i < menus.size(); ++i)
+		for(index_t i = 0; i < size(menus); ++i)
 		{
 			if(ImGui::BeginMenu(menus[i].c_str()))
 			{
@@ -209,10 +212,10 @@ void viewer::imgui()
 		ImGui::EndMainMenuBar();
 	}
 
-	if(meshes.size() > 1)
+	if(size(meshes) > 1)
 	{
 		ImGui::SetNextWindowSize(ImVec2(72, -1));
-		ImGui::SetNextWindowPos(ImVec2((mesh.vx + 1) * viewport_width - 72, (m_window_split[meshes.size()].x() - mesh.vy) * viewport_height - 70));
+		ImGui::SetNextWindowPos(ImVec2((mesh.vx + 1) * viewport_width - 72, (m_window_split[size(meshes)].x() - mesh.vy) * viewport_height - 70));
 		ImGui::SetNextWindowBgAlpha(0.0f);
 		ImGui::Begin("selected model", nullptr, ImGuiWindowFlags_NoTitleBar);
 		ImGui::TextColored({0, 1, 0, 1}, "SELECTED");
@@ -337,11 +340,11 @@ void viewer::imgui()
 	}
 
 
-	if(removed_meshes.size())
+	if(size(removed_meshes))
 	{
 		if(ImGui::CollapsingHeader("Removed meshes", ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			for(index_t i = 0; i < removed_meshes.size(); ++i)
+			for(index_t i = 0; i < size(removed_meshes); ++i)
 			{
 				che_viewer * m = removed_meshes[i];
 				ImGui::PushID(m);
@@ -521,7 +524,7 @@ void viewer::add_menu(const std::string & str, const std::vector<int> & vprocess
 	menus.push_back(str);
 	menu_processes.emplace_back(vprocesses);
 
-	const int & id_menu = menus.size() - 1;
+	const int & id_menu = size(menus) - 1;
 	for(const int & p: menu_processes.back())
 		processes[p].id_menu = id_menu;
 }
@@ -544,7 +547,7 @@ int viewer::add_process(const char * name, const function_t & f, const int & key
 
 bool viewer::add_mesh(che * p_mesh, const bool & reset_normals)
 {
-	if(meshes.size() == max_meshes)
+	if(size(meshes) == max_meshes)
 		return false;
 
 	if(reset_normals)
@@ -554,7 +557,7 @@ bool viewer::add_mesh(che * p_mesh, const bool & reset_normals)
 	che_viewer & mesh = *meshes.back();
 	mesh.log_info();
 
-	idx_selected_mesh = meshes.size() - 1;
+	idx_selected_mesh = size(meshes) - 1;
 	glfwSetWindowTitle(window, ("gproshan - " + mesh->filename).c_str());
 
 	update_viewport_meshes();
@@ -566,13 +569,13 @@ bool viewer::add_mesh(che * p_mesh, const bool & reset_normals)
 
 bool viewer::remove_mesh(const index_t & idx)
 {
-	if(meshes.size() == 1)
+	if(size(meshes) == 1)
 		return false;
 
 	removed_meshes.push_back(meshes[idx]);
 	meshes.erase(begin(meshes) + idx);
 
-	if(idx_selected_mesh == meshes.size())
+	if(idx_selected_mesh == size(meshes))
 		--idx_selected_mesh;
 
 	update_viewport_meshes();
@@ -582,13 +585,13 @@ bool viewer::remove_mesh(const index_t & idx)
 
 bool viewer::pop_mesh()
 {
-	if(meshes.size() == 1)
+	if(size(meshes) == 1)
 		return false;
 
 	removed_meshes.push_back(meshes.back());
 	meshes.pop_back();
 
-	if(idx_selected_mesh == meshes.size())
+	if(idx_selected_mesh == size(meshes))
 		--idx_selected_mesh;
 
 	update_viewport_meshes();
@@ -598,9 +601,9 @@ bool viewer::pop_mesh()
 
 void viewer::update_viewport_meshes()
 {
-	const int & rows = m_window_split[meshes.size()].x();
-	const int & cols = m_window_split[meshes.size()].y();
-	for(index_t m = 0; m < meshes.size(); ++m)
+	const int & rows = m_window_split[size(meshes)].x();
+	const int & cols = m_window_split[size(meshes)].y();
+	for(index_t m = 0; m < size(meshes); ++m)
 	{
 		meshes[m]->vx = m % cols;
 		meshes[m]->vy = rows - (m / cols) - 1;
@@ -651,8 +654,8 @@ void viewer::save_frametime(const std::string & file)
 void viewer::framebuffer_size_callback(GLFWwindow * window, int width, int height)
 {
 	viewer * view = (viewer *) glfwGetWindowUserPointer(window);
-	view->viewport_width = width / m_window_split[view->meshes.size()].y();
-	view->viewport_height = height / m_window_split[view->meshes.size()].x();
+	view->viewport_width = width / m_window_split[size(view->meshes)].y();
+	view->viewport_height = height / m_window_split[size(view->meshes)].x();
 	view->cam.aspect = real_t(view->viewport_width) / view->viewport_height;
 	view->proj_mat = view->cam.perspective();
 }
@@ -695,9 +698,9 @@ void viewer::mouse_callback(GLFWwindow * window, int button, int action, int mod
 
 		const index_t & ix = xpos * xscale;
 		const index_t & iy = ypos * yscale;
-		const int & cols = m_window_split[view->meshes.size()].y();
+		const int & cols = m_window_split[size(view->meshes)].y();
 		const index_t & idx_mesh = cols * (iy / view->viewport_height) + ix / view->viewport_width;
-		if(idx_mesh < view->meshes.size())
+		if(idx_mesh < size(view->meshes))
 			view->idx_selected_mesh = idx_mesh;
 
 		if(mods == GLFW_MOD_SHIFT && button == GLFW_MOUSE_BUTTON_LEFT)
@@ -799,11 +802,11 @@ bool viewer::m_save_load_view(viewer * view)
 	for(auto & p: std::filesystem::directory_iterator(tmp_file_path("views/")))
 		vfiles.push_back(p.path().string());
 
-	if(!vfiles.size()) return true;
+	if(!size(vfiles)) return true;
 
 	if(ImGui::BeginCombo("##loadfile", vfiles[select].c_str()))
 	{
-		for(index_t i = 0; i < vfiles.size(); ++i)
+		for(index_t i = 0; i < size(vfiles); ++i)
 		{
 			if(ImGui::Selectable(vfiles[i].c_str(), select == i))
 				select = i;
@@ -1208,7 +1211,7 @@ void viewer::render_gl()
 	shader_sphere.uniform("scale", cam.zoom());
 
 
-	for(index_t i = 0; i < meshes.size(); ++i)
+	for(index_t i = 0; i < size(meshes); ++i)
 	{
 		che_viewer & mesh = *meshes[i];
 
@@ -1233,7 +1236,7 @@ void viewer::render_gl()
 
 		mesh.draw_selected_vertices(*sphere, shader_sphere);
 
-		if(sphere_points.size())
+		if(size(sphere_points))
 		{
 			sphere->model_mat = mat4::identity();
 			sphere->update_instances_positions(sphere_points);

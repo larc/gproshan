@@ -9,10 +9,10 @@ static const int gltex_nums[] = {GL_TEXTURE0, GL_TEXTURE1, GL_TEXTURE2, GL_TEXTU
 
 scene_viewer::scene_viewer(scene * p_sc): che_viewer(p_sc), sc(p_sc)
 {
-	gltextures = new GLuint[sc->textures.size()];
+	gltextures = new GLuint[size(sc->textures)];
 
-	glGenTextures(sc->textures.size(), gltextures);
-	for(index_t i = 0; i < sc->textures.size(); ++i)
+	glGenTextures(size(sc->textures), gltextures);
+	for(index_t i = 0; i < size(sc->textures); ++i)
 		init_texture(gltextures[i], sc->textures[i]);
 
 	glGenBuffers(1, &tex_vbo);
@@ -22,7 +22,7 @@ scene_viewer::scene_viewer(scene * p_sc): che_viewer(p_sc), sc(p_sc)
 scene_viewer::~scene_viewer()
 {
 	glDeleteBuffers(1, &tex_vbo);
-	glDeleteTextures(sc->textures.size(), gltextures);
+	glDeleteTextures(size(sc->textures), gltextures);
 	delete [] gltextures;
 }
 
@@ -55,13 +55,13 @@ void scene_viewer::draw(shader & program)
 	program.enable();
 
 	glBindVertexArray(vao);
-	if(sc->objects.size() == 1)
+	if(size(sc->objects) == 1)
 	{
 		glDrawArrays(GL_TRIANGLES, 0, mesh->n_vertices);
 	}
 	else
 	{
-		for(index_t i = 0; i < sc->objects.size() - 1; ++i)
+		for(index_t i = 0; i < size(sc->objects) - 1; ++i)
 		{
 			const scene::object & obj = sc->objects[i];
 			const scene::material & mat = sc->materials[obj.material_id];
@@ -92,13 +92,13 @@ void scene_viewer::draw_pointcloud(shader & program)
 	program.enable();
 
 	glBindVertexArray(vao);
-	if(sc->objects.size() == 1)
+	if(size(sc->objects) == 1)
 	{
 		glDrawArrays(GL_POINTS, 0, mesh->n_vertices);
 	}
 	else
 	{
-		for(index_t i = 0; i < sc->objects.size() - 1; ++i)
+		for(index_t i = 0; i < size(sc->objects) - 1; ++i)
 		{
 			const scene::object & obj = sc->objects[i];
 			const scene::material & mat = sc->materials[obj.material_id];

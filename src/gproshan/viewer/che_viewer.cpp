@@ -152,7 +152,7 @@ void che_viewer::update_vbo_heatmap(const real_t * vheatmap)
 
 void che_viewer::update_instances_positions(const std::vector<vertex> & translations)
 {
-	n_instances = translations.size();
+	n_instances = size(translations);
 	if(!n_instances) return;
 
 	glBindVertexArray(vao);
@@ -217,16 +217,16 @@ void che_viewer::draw_pointcloud(shader & program)
 
 void che_viewer::draw_selected_vertices(che_viewer & sphere, shader & program)
 {
-	if(selected_xyz.size() != selected.size())
+	if(size(selected_xyz) != size(selected))
 	{
 		selected_xyz.clear();
-		selected_xyz.reserve(selected.size());
+		selected_xyz.reserve(size(selected));
 
 		for(const index_t & v: selected)
 			selected_xyz.push_back(mesh->point(v));
 	}
 
-	if(selected_xyz.size())
+	if(size(selected_xyz))
 	{
 		sphere.model_mat = model_mat;
 		sphere.update_instances_positions(selected_xyz);
@@ -253,7 +253,7 @@ void che_viewer::log_info()
 	gproshan_log_var(mesh->n_edges);
 	gproshan_log_var(mesh->area_surface());
 	gproshan_log_var(mesh->is_manifold());
-	gproshan_log_var(mesh->bounds().size());
+	gproshan_log_var(size(mesh->bounds()));
 	gproshan_log_var(mesh->memory() / 1E6);
 	gproshan_log_var(mesh->quality());
 	gproshan_log_var(mesh->genus());

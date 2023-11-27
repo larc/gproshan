@@ -237,19 +237,19 @@ void che_ply::read_file(const std::string & file)
 	fclose(fp);
 
 
-	if(trigs.size() != che::mtrig * n_trigs)
+	if(size(trigs) != che::mtrig * n_trigs)
 	{
 		vertex * tGT = GT; GT = nullptr;
 		rgb_t * tVC = VC; VC = nullptr;
 
 		free();
-		alloc(nv, trigs.size() / che::mtrig);
+		alloc(nv, size(trigs) / che::mtrig);
 
 		GT = tGT;
 		VC = tVC;
 	}
 
-	memcpy(VT, trigs.data(), trigs.size() * sizeof(index_t));
+	memcpy(VT, trigs.data(), size(trigs) * sizeof(index_t));
 }
 
 void che_ply::write_file(const che * mesh, const std::string & file, const bool & color)

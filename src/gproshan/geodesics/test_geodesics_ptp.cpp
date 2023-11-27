@@ -170,20 +170,20 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 
 		// TOPLESETS DISTRIBUTION __________________________________________________________________
 
-		index_t * toplesets_dist = new index_t[limits.size() - 1];
+		index_t * toplesets_dist = new index_t[size(limits) - 1];
 
 		os.open(test_path + filename + "_toplesets.dist");
-		for(index_t i = 1; i < limits.size(); ++i)
+		for(index_t i = 1; i < size(limits); ++i)
 		{
 			toplesets_dist[i - 1] = limits[i] - limits[i - 1];
 			os << i - 1 << " " << toplesets_dist[i - 1] << std::endl;
 		}
 		os.close();
 
-		std::sort(toplesets_dist, toplesets_dist + limits.size() - 1);
+		std::sort(toplesets_dist, toplesets_dist + size(limits) - 1);
 
 		os.open(test_path + filename + "_toplesets_sorted.dist");
-		for(index_t i = 0; i < limits.size() - 1; ++i)
+		for(index_t i = 0; i < size(limits) - 1; ++i)
 			os << i << " " << toplesets_dist[i] << std::endl;
 		os.close();
 
@@ -213,7 +213,7 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 		// FARTHEST POINT SAMPLING _________________________________________________________________
 
 #ifdef GPROSHAN_CUDA	// IMPLEMENT: times_farthest_point_sampling_ptp_cpu
-		size_t i_samples = source.size();
+		size_t i_samples = size(source);
 		size_t n_samples = 1001;
 		double * times_fps = times_farthest_point_sampling_ptp_gpu(mesh, source, n_samples);
 
@@ -249,7 +249,7 @@ double test_fast_marching(real_t & error, const real_t * exact, che * mesh, cons
 
 	geodesics fm(mesh, source);
 
-	error = compute_error(&fm[0], exact, mesh->n_vertices, source.size());
+	error = compute_error(&fm[0], exact, mesh->n_vertices, size(source));
 
 	return seconds;
 }
@@ -265,7 +265,7 @@ double test_ptp_cpu(real_t & error, const real_t * exact, che * mesh, const std:
 		seconds = std::min(seconds, t);
 	}
 
-	error = compute_error(dist, exact, mesh->n_vertices, source.size());
+	error = compute_error(dist, exact, mesh->n_vertices, size(source));
 
 	delete [] dist;
 
@@ -285,7 +285,7 @@ double test_heat_method_cholmod(real_t & error, double & stime, const real_t * e
 		stime = std::min(st, stime);
 	}
 
-	error = compute_error(dist, exact, mesh->n_vertices, source.size());
+	error = compute_error(dist, exact, mesh->n_vertices, size(source));
 
 	delete [] dist;
 
@@ -306,7 +306,7 @@ double test_ptp_gpu(real_t & error, const real_t * exact, che * mesh, const std:
 		seconds = std::min(seconds, t);
 	}
 
-	error = compute_error(dist, exact, mesh->n_vertices, source.size());
+	error = compute_error(dist, exact, mesh->n_vertices, size(source));
 
 	delete [] dist;
 
@@ -328,7 +328,7 @@ double test_heat_method_gpu(real_t & error, double & stime, const real_t * exact
 		stime = std::min(st, stime);
 	}
 
-	error = compute_error(dist, exact, mesh->n_vertices, source.size());
+	error = compute_error(dist, exact, mesh->n_vertices, size(source));
 
 	delete [] dist;
 

@@ -284,7 +284,7 @@ mat4 che::normalize_box(const real_t & side) const
 ///< vcommon correspond to the first vertices of the mesh with indices to the main mesh (this)
 che * che::merge(const che * mesh, const std::vector<index_t> & vcommon)
 {
-	const size_t & n_vcommon = vcommon.size();
+	const size_t & n_vcommon = size(vcommon);
 	const size_t & n_vnew = mesh->n_vertices - n_vcommon;
 
 	che * new_mesh = new che(n_vertices + n_vnew, n_trigs + mesh->n_trigs);
@@ -302,7 +302,7 @@ che * che::merge(const che * mesh, const std::vector<index_t> & vcommon)
 
 	index_t * tVT = new_mesh->VT + n_half_edges;
 	for(index_t he = 0; he < mesh->n_half_edges; ++he)
-		tVT[he] = mesh->VT[he] < vcommon.size() ? vcommon[mesh->VT[he]] : mesh->VT[he] + n_vertices - n_vcommon;
+		tVT[he] = mesh->VT[he] < size(vcommon) ? vcommon[mesh->VT[he]] : mesh->VT[he] + n_vertices - n_vcommon;
 
 	new_mesh->update_evt_ot_et();
 	new_mesh->update_eht();
@@ -407,7 +407,7 @@ void che::multiplicate_vertices()
 
 void che::remove_vertices(const std::vector<index_t> & vertices)
 {
-	if(!vertices.size()) return;
+	if(!size(vertices)) return;
 
 	gproshan_debug(removing vertex);
 	for(index_t v: vertices)
@@ -441,7 +441,7 @@ void che::remove_vertices(const std::vector<index_t> & vertices)
 	}
 	removed.push_back(n_vertices);
 
-	gproshan_debug_var(removed.size());
+	gproshan_debug_var(size(removed));
 	gproshan_debug_var(removed[0]);
 	index_t r = 1;
 	index_t d = 1;
@@ -464,12 +464,12 @@ void che::remove_vertices(const std::vector<index_t> & vertices)
 			new_trigs.push_back(VT[he]);
 		else gproshan_error_var(he);
 
-	gproshan_debug_var(new_vertices.size());
-	gproshan_debug_var(new_trigs.size());
+	gproshan_debug_var(size(new_vertices));
+	gproshan_debug_var(size(new_trigs));
 	gproshan_debug(removing vertex);
 	free();
 	gproshan_debug(removing vertex);
-	init(new_vertices.data(), new_vertices.size(), new_trigs.data(), new_trigs.size() / che::mtrig);
+	init(new_vertices.data(), size(new_vertices), new_trigs.data(), size(new_trigs) / che::mtrig);
 	gproshan_debug(removing vertex);
 }
 
@@ -500,7 +500,7 @@ void che::remove_non_manifold_vertices()
 	}
 	removed.push_back(n_vertices);
 
-	gproshan_debug_var(removed.size());
+	gproshan_debug_var(size(removed));
 	gproshan_debug_var(removed[0]);
 	index_t r = 1;
 	index_t d = 1;
@@ -523,12 +523,12 @@ void che::remove_non_manifold_vertices()
 			new_trigs.push_back(VT[he]);
 		else gproshan_error_var(he);
 
-	gproshan_debug_var(new_vertices.size());
-	gproshan_debug_var(new_trigs.size());
+	gproshan_debug_var(size(new_vertices));
+	gproshan_debug_var(size(new_trigs));
 	gproshan_debug(removing vertex);
 	free();
 	gproshan_debug(removing vertex);
-	init(new_vertices.data(), new_vertices.size(), new_trigs.data(), new_trigs.size() / che::mtrig);
+	init(new_vertices.data(), size(new_vertices), new_trigs.data(), size(new_trigs) / che::mtrig);
 	gproshan_debug(removing vertex);
 }
 
@@ -645,13 +645,13 @@ std::vector<index_t> che::link(const index_t & v) const
 
 void che::edge_collapse(const std::vector<index_t> & sort_edges)
 {
-	gproshan_error_var(sort_edges.size());
+	gproshan_error_var(size(sort_edges));
 	// TODO
 }
 
 void che::compute_toplesets(index_t *& toplesets, index_t *& sorted, std::vector<index_t> & limits, const std::vector<index_t> & sources, const index_t & k)
 {
-	if(!sources.size()) return;
+	if(!size(sources)) return;
 
 	memset(toplesets, -1, sizeof(index_t) * n_vertices);
 
@@ -780,7 +780,7 @@ size_t che::memory() const
 	return	sizeof(*this) +
 			n_vertices * (2 * sizeof(vertex) + sizeof(index_t) + sizeof(real_t) + sizeof(rgb_t)) +
 			sizeof(index_t) * (3 * n_half_edges + n_edges) +
-			filename.size();
+			size(filename);
 }
 
 size_t che::max_degree() const
