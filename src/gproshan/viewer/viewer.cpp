@@ -140,9 +140,12 @@ void viewer::imgui()
 
 	che_viewer & mesh = selected_mesh();
 
+	ImGui::SetNextWindowSize(ImVec2(250, -1));
 	if(ImGui::BeginPopupContextVoid("mesh"))
 	{
-		ImGui::TextDisabled(mesh->filename.c_str());
+		const int & p = size(mesh->filename) - 31;
+
+		ImGui::TextDisabled("%s%30s", p < 0 ? "" : "<<", mesh->filename.substr(p < 0 ? 0 : p).c_str());
 		for(auto & p: menu_processes[1])	// init_menus
 		{
 			process_t & pro = processes[p];
