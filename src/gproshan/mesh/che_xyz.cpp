@@ -39,7 +39,7 @@ void che_xyz::read_file(const std::string & file)
 
 	fclose(fp);
 
-	alloc(vertices.size(), 0);
+	alloc(size(vertices), 0);
 	memcpy(GT, vertices.data(), n_vertices * sizeof(vertex));
 	memcpy(VC, vertices_color.data(), n_vertices * sizeof(rgb_t));
 }

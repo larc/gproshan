@@ -8,7 +8,7 @@
 namespace gproshan {
 
 
-convex_hull::convex_hull(const std::vector<vertex> & points): convex_hull(points.data(), points.size()) {}
+convex_hull::convex_hull(const std::vector<vertex> & points): convex_hull(points.data(), size(points)) {}
 
 convex_hull::convex_hull(const vertex * points, const size_t & n_points)
 {

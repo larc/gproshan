@@ -40,7 +40,7 @@ bool load_sampling(std::vector<index_t> & points, real_t & radio, che * mesh, si
 {
 	const std::string & filename = mesh->filename;
 
-	std::string file = filename.substr(filename.find_last_of('/'), filename.size() - filename.find_last_of('/')) + "." + std::to_string(n);
+	std::string file = filename.substr(filename.find_last_of('/'), size(filename) - filename.find_last_of('/')) + "." + std::to_string(n);
 
 	std::ifstream is(tmp_file_path(file));
 	gproshan_log_var(tmp_file_path(file));
@@ -60,7 +60,7 @@ bool load_sampling(std::vector<index_t> & points, real_t & radio, che * mesh, si
 	}
 	else
 	{
-		if(!points.size())
+		if(!size(points))
 			points.push_back(0);
 
 #ifdef GPROSHAN_CUDA
@@ -73,7 +73,7 @@ bool load_sampling(std::vector<index_t> & points, real_t & radio, che * mesh, si
 
 		std::ofstream os(tmp_file_path(file));
 		os << radio << std::endl;
-		os << points.size() << std::endl;
+		os << size(points) << std::endl;
 		for(const index_t & i: points)
 			os << i << std::endl;
 

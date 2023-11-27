@@ -64,21 +64,21 @@ void che_off::read_file(const std::string & file)
 	fclose(fp);
 
 
-	if(trigs.size() != che::mtrig * n_trigs)
+	if(size(trigs) != che::mtrig * n_trigs)
 	{
 		vertex * tGT = GT; GT = nullptr;
 		vertex * tVN = VN; VN = nullptr;
 		rgb_t * tVC = VC; VC = nullptr;
 
 		free();
-		alloc(nv, trigs.size() / che::mtrig);
+		alloc(nv, size(trigs) / che::mtrig);
 
 		GT = tGT;
 		VN = tVN;
 		VC = tVC;
 	}
 
-	memcpy(VT, trigs.data(), trigs.size() * sizeof(index_t));
+	memcpy(VT, trigs.data(), size(trigs) * sizeof(index_t));
 }
 
 void che_off::write_file(const che * mesh, const std::string & file, const che_off::type & off, const bool & pointcloud)

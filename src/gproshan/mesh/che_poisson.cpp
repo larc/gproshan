@@ -116,7 +116,7 @@ void biharmonic_interp_2(che * mesh, const size_t & old_n_vertices, const size_t
 	delete [] rings;
 	delete [] sorted;
 
-	a_mat P(3, sub_mesh_hole.size());
+	a_mat P(3, size(sub_mesh_hole));
 	index_t i = 0;
 	for(index_t & b: sub_mesh_hole)
 	{

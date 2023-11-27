@@ -27,7 +27,7 @@ geodesics::geodesics(che * mesh, const std::vector<index_t> & sources, const par
 	for(index_t v = 0; v < n_vertices; ++v)
 		dist[v] = INFINITY;
 
-	assert(sources.size() > 0);
+	assert(size(sources) > 0);
 	execute(mesh, sources, p);
 }
 
@@ -199,7 +199,7 @@ void geodesics::run_parallel_toplesets_propagation_cpu(che * mesh, const std::ve
 	double time_ptp;
 
 	TIC(time_ptp)
-		parallel_toplesets_propagation_cpu({dist, clusters}, mesh, sources, {limits, sorted_index}, sources.size() == 1);
+		parallel_toplesets_propagation_cpu({dist, clusters}, mesh, sources, {limits, sorted_index}, size(sources) == 1);
 	TOC(time_ptp)
 
 	gproshan_log_var(time_ptp);

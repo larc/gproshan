@@ -27,7 +27,7 @@ scene::~scene()
 
 bool scene::is_scene() const
 {
-	return load_scene && objects.size() > 1;
+	return load_scene && size(objects) > 1;
 }
 
 bool scene::is_pointcloud() const
@@ -49,7 +49,7 @@ bool scene::load_obj(const std::string & file)
 		if(!load_mtl(path + m))
 			return false;
 
-	alloc(p.trigs.size(), 0);
+	alloc(size(p.trigs), 0);
 
 	#pragma omp parallel for
 	for(index_t i = 0; i < n_vertices; ++i)
@@ -59,7 +59,7 @@ bool scene::load_obj(const std::string & file)
 		VC[i] = p.vcolors[v];
 	}
 
-	if(p.vtexcoords.size())
+	if(size(p.vtexcoords))
 	{
 		texcoords = new vec2[n_vertices];
 
@@ -82,13 +82,13 @@ bool scene::load_obj(const std::string & file)
 	for(auto & obj: p.objects)
 		objects.push_back({obj.second, material_id[obj.first]});
 
-	gproshan_log_var(objects.size());
+	gproshan_log_var(size(objects));
 
 	trig_mat = new index_t[n_vertices / 3];
 	memset(trig_mat, -1, sizeof(index_t) * n_vertices / 3);
 
 	#pragma omp parallel for
-	for(index_t i = 0; i < objects.size() - 1; ++i)
+	for(index_t i = 0; i < size(objects) - 1; ++i)
 	{
 		const object & obj = objects[i];
 		const index_t & n = objects[i + 1].begin;
@@ -118,7 +118,7 @@ bool scene::load_mtl(const std::string & file)
 			case 'n':	// newmtl
 			{
 				sscanf(line, "%*s %s", str);
-				material_id[str] = materials.size();
+				material_id[str] = size(materials);
 				material_name.push_back(str);
 				materials.emplace_back();
 				break;
@@ -167,7 +167,7 @@ bool scene::load_mtl(const std::string & file)
 				if(str[0] == '-') continue;		// ignoring map textures with options
 				if(texture_id.find(str) == texture_id.end())
 				{
-					texture_id[str] = texture_name.size();
+					texture_id[str] = size(texture_name);
 					texture_name.push_back(str);
 				}
 				m = texture_id[str];
@@ -189,7 +189,7 @@ bool scene::load_mtl(const std::string & file)
 	}
 
 /*
-	for(index_t i = 0; i < materials.size(); ++i)
+	for(index_t i = 0; i < size(materials); ++i)
 	{
 		const material & m = materials[i];
 		gproshan_log_var(material_name[i]);
@@ -207,8 +207,8 @@ bool scene::load_mtl(const std::string & file)
 	}
 */
 
-	gproshan_log_var(materials.size());
-	gproshan_log_var(textures.size());
+	gproshan_log_var(size(materials));
+	gproshan_log_var(size(textures));
 
 	return true;
 }

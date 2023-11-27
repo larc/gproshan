@@ -50,7 +50,7 @@ void key_points::compute_kps_areas(che * mesh, const real_t & percent)
 		}
 	}
 
-	kps.resize(percent * kps.size());
+	kps.resize(percent * size(kps));
 	is_kp.assign(mesh->n_vertices, false);
 
 	#pragma omp parallel for

@@ -110,9 +110,9 @@ bool shader::load(GLenum shader_type, const std::string & filename)
 	GLuint shader = glCreateShader(shader_type);
 
 	const char * source_c_str = source.c_str();
-	int size = source.size();
+	int str_size = size(source);
 
-	glShaderSource(shader, 1, &(source_c_str), &size);
+	glShaderSource(shader, 1, &(source_c_str), &str_size);
 
 	glCompileShader(shader);
 

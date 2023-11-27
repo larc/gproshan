@@ -186,7 +186,7 @@ real_t farthest_point_sampling_ptp_gpu(che * mesh, std::vector<index_t> & sample
 
 	if(n >= n_vertices) n = n_vertices >> 2;
 
-	n -= samples.size();
+	n -= size(samples);
 	samples.reserve(n);
 
 	int farthest;
