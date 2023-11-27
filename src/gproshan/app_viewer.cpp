@@ -42,57 +42,75 @@ int app_viewer::main(int nargs, const char ** args)
 
 void app_viewer::init()
 {
-	sub_menus.push_back("Point Cloud");
-	add_process("KNN", process_knn);
-	add_process("Compute Normals", process_compute_normals);
+	add_menu("Point Cloud",
+	{
+		add_process("KNN", process_knn),
+		add_process("Compute Normals", process_compute_normals)
+	});
 
-	sub_menus.push_back("Scenes");
-	add_process("Scan Scene", process_simulate_scanner);
+	add_menu("Scenes",
+	{
+		add_process("Scan Scene", process_simulate_scanner)
+	});
 
-	sub_menus.push_back("Geometry");
-	add_process("Sampling 4points", process_sampling_4points);
-	add_process("2D Convex Hull", process_convex_hull, GLFW_KEY_H);
-	add_process("Connected Components", process_connected_components, GLFW_KEY_O);
-	add_process("Gaussian curvature", process_gaussian_curvature, GLFW_KEY_K);
-	add_process("Edge Collapse", process_edge_collapse, GLFW_KEY_Q);
-	add_process("Multiplicate", process_multiplicate_vertices, GLFW_KEY_M);
-	add_process("Delete vertices", process_delete_vertices, GLFW_KEY_SLASH);
-	add_process("Delete non-manifold vertices", process_delete_non_manifold_vertices, GLFW_KEY_MINUS);
+	add_menu("Geometry",
+	{
+		add_process("Sampling 4points", process_sampling_4points),
+		add_process("2D Convex Hull", process_convex_hull, GLFW_KEY_H),
+		add_process("Connected Components", process_connected_components, GLFW_KEY_O),
+		add_process("Gaussian curvature", process_gaussian_curvature, GLFW_KEY_K),
+		add_process("Edge Collapse", process_edge_collapse, GLFW_KEY_Q),
+		add_process("Multiplicate", process_multiplicate_vertices, GLFW_KEY_M),
+		add_process("Delete vertices", process_delete_vertices, GLFW_KEY_SLASH),
+		add_process("Delete non-manifold vertices", process_delete_non_manifold_vertices, GLFW_KEY_MINUS)
+	});
 
-	sub_menus.push_back("Fairing");
-	add_process("Fairing Taubin", process_fairing_taubin, GLFW_KEY_F);
-	add_process("Fairing Spectral", process_fairing_spectral, GLFW_KEY_E);
+	add_menu("Fairing",
+	{
+		add_process("Fairing Taubin", process_fairing_taubin, GLFW_KEY_F),
+		add_process("Fairing Spectral", process_fairing_spectral, GLFW_KEY_E)
+	});
 
-	sub_menus.push_back("Geodesics");
-	add_process("Geodesics", process_geodesics, GLFW_KEY_G);
-	add_process("Geodesic Farthest Point Sampling", process_farthest_point_sampling, GLFW_KEY_S);
-	add_process("Geodesic Voronoi", process_voronoi, GLFW_KEY_V);
-	add_process("Toplesets", process_compute_toplesets, GLFW_KEY_T);
+	add_menu("Geodesics",
+	{
+		add_process("Geodesics", process_geodesics, GLFW_KEY_G),
+		add_process("Geodesic Farthest Point Sampling", process_farthest_point_sampling, GLFW_KEY_S),
+		add_process("Geodesic Voronoi", process_voronoi, GLFW_KEY_V),
+		add_process("Toplesets", process_compute_toplesets, GLFW_KEY_T)
+	});
 
-	sub_menus.push_back("Sparse Coding");
-	add_process("Mesh Sparse Coding", process_msparse_coding, GLFW_KEY_U);
-	add_process("MDICT Patch", process_mdict_patch, GLFW_KEY_J);
-	add_process("MDICT Mask", process_mask, GLFW_KEY_D);
-	add_process("PC reconstruction", process_pc_reconstruction, GLFW_KEY_L);
+	add_menu("Sparse Coding",
+	{
+		add_process("Mesh Sparse Coding", process_msparse_coding, GLFW_KEY_U),
+		add_process("MDICT Patch", process_mdict_patch, GLFW_KEY_J),
+		add_process("MDICT Mask", process_mask, GLFW_KEY_D),
+		add_process("PC reconstruction", process_pc_reconstruction, GLFW_KEY_L)
+	});
 
-	sub_menus.push_back("Features");
-	add_process("Eigenfunctions", process_eigenfuntions, GLFW_KEY_2);
-	add_process("Descriptors", process_descriptor_heatmap, GLFW_KEY_3);
-	add_process("Key Points", process_key_points, GLFW_KEY_4);
-	add_process("Key Components", process_key_components, GLFW_KEY_5);
+	add_menu("Features",
+	{
+		add_process("Eigenfunctions", process_eigenfuntions, GLFW_KEY_2),
+		add_process("Descriptors", process_descriptor_heatmap, GLFW_KEY_3),
+		add_process("Key Points", process_key_points, GLFW_KEY_4),
+		add_process("Key Components", process_key_components, GLFW_KEY_5)
+	});
 
-	sub_menus.push_back("Hole Filling");
-	add_process("Poisson: Membrane surface", process_poisson_laplacian_1, GLFW_KEY_X);
-	add_process("Poisson: Thin-plate surface", process_poisson_laplacian_2, GLFW_KEY_Y);
-	add_process("Poisson: Minimum variation surface", process_poisson_laplacian_3, GLFW_KEY_Z);
-	add_process("Fill hole: planar mesh", process_fill_holes, GLFW_KEY_6);
-	add_process("Fill hole: biharmonic splines", process_fill_holes_biharmonic_splines, GLFW_KEY_7);
+	add_menu("Hole Filling",
+	{
+		add_process("Poisson: Membrane surface", process_poisson_laplacian_1, GLFW_KEY_X),
+		add_process("Poisson: Thin-plate surface", process_poisson_laplacian_2, GLFW_KEY_Y),
+		add_process("Poisson: Minimum variation surface", process_poisson_laplacian_3, GLFW_KEY_Z),
+		add_process("Fill hole: planar mesh", process_fill_holes, GLFW_KEY_6),
+		add_process("Fill hole: biharmonic splines", process_fill_holes_biharmonic_splines, GLFW_KEY_7)
+	});
 
-	sub_menus.push_back("Others");
-	add_process("Select multiple vertices", process_select_multiple, GLFW_KEY_SEMICOLON);
-	add_process("Threshold", process_threshold, GLFW_KEY_BACKSLASH);
-	add_process("Noise", process_noise, GLFW_KEY_N);
-	add_process("Black noise", process_black_noise, GLFW_KEY_P);
+	add_menu("Others",
+	{
+		add_process("Select multiple vertices", process_select_multiple, GLFW_KEY_SEMICOLON),
+		add_process("Threshold", process_threshold, GLFW_KEY_BACKSLASH),
+		add_process("Noise", process_noise, GLFW_KEY_N),
+		add_process("Black noise", process_black_noise, GLFW_KEY_P)
+	});
 }
 
 
