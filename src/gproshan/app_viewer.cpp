@@ -14,6 +14,8 @@ using namespace gproshan::mdict;
 namespace gproshan {
 
 
+app_viewer::app_viewer(const char * title, const int & width, const int & height): viewer(title, width, height) {}
+
 app_viewer::~app_viewer()
 {
 	for(auto & m: meshes)

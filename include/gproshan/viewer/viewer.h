@@ -104,7 +104,7 @@ class viewer
 		char status_message[1024] = {};
 
 	public:
-		viewer(const int & width = 1600, const int & height = 900);
+		viewer(const char * title = "gproshan", const int & width = 1600, const int & height = 900);
 		virtual ~viewer();
 
 		che_viewer & selected_mesh();
@@ -120,7 +120,7 @@ class viewer
 		virtual bool run();
 
 		void info_gl();
-		void init_gl();
+		void init_gl(const char * title);
 		void init_imgui();
 		void init_menus();
 		void init_glsl();

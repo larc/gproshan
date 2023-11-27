@@ -24,7 +24,7 @@ size_t partitions::size(const index_t & i) const
 
 partitions::part partitions::operator () (const index_t & i) const
 {
-	assert(i > 0 && i < size(splits));
+	assert(i > 0 && i < std::size(splits));
 	return {splits[i], splits[i + 1], sorted};
 }
 

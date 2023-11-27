@@ -49,7 +49,7 @@ class app_viewer : public viewer
 		double time;
 
 	public:
-		app_viewer() = default;
+		app_viewer(const char * title = "gproshan", const int & width = 1600, const int & height = 900);
 		virtual ~app_viewer();
 
 		int main(int nargs, const char ** args);
