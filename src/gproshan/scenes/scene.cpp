@@ -165,7 +165,7 @@ bool scene::load_mtl(const std::string & file)
 						: materials.back().map_bump;
 				sscanf(line, "%*s %s", str);
 				if(str[0] == '-') continue;		// ignoring map textures with options
-				if(texture_id.find(str) == texture_id.end())
+				if(!texture_id.contains(str))
 				{
 					texture_id[str] = size(texture_name);
 					texture_name.push_back(str);

@@ -534,7 +534,7 @@ int viewer::add_process(const char * name, const function_t & f, const int & key
 	static int nk = 1000;
 
 	const int & fkey = key == -1 ? ++nk : key;
-	if(processes.find(fkey) != processes.end())
+	if(processes.contains(fkey))
 	{
 		fprintf(stderr, "repeated key: [%d] %s (%s)\n", key, glfw_key_name.at(key), name);
 		return -1;
@@ -674,7 +674,7 @@ void viewer::keyboard_callback(GLFWwindow * window, int key, int, int action, in
 	if(action == GLFW_RELEASE) return;
 
 	viewer * view = (viewer *) glfwGetWindowUserPointer(window);
-	if(view->processes.find(key) == view->processes.end())
+	if(!view->processes.contains(key))
 		return;
 
 	process_t & pro = view->processes[key];

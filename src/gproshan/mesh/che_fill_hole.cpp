@@ -118,7 +118,7 @@ che * mesh_fill_hole(che * mesh, const std::vector<index_t> & border_vertices, c
 		}
 		else // fill rest partial holes
 		{
-			reverse(merge_vertices[!c].begin(), merge_vertices[!c].end());
+			reverse(begin(merge_vertices[!c]), end(merge_vertices[!c]));
 			for(index_t v: merge_vertices[!c])
 				vertices[c].push_back(hole->point(v));
 
@@ -172,7 +172,7 @@ che * mesh_fill_hole(che * mesh, const std::vector<index_t> & border_vertices, c
 	}
 	else
 	{
-		reverse(merge_vertices[!c].begin(), merge_vertices[!c].end());
+		reverse(begin(merge_vertices[!c]), end(merge_vertices[!c]));
 
 		for(index_t v: merge_vertices[!c])
 			vertices[c].push_back(hole->point(v));

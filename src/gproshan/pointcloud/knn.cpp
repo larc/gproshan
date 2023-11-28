@@ -49,7 +49,7 @@ std::vector<index_t> grid::operator () (const point & p, int k) const
 			continue;
 
 		const auto & iter = voxels.find(pos);
-		if(iter == voxels.end())
+		if(iter == end(voxels))
 			continue;
 
 		for(const index_t & v: iter->second)
