@@ -891,7 +891,7 @@ real_t msparse_coding::mesh_reconstruction(const fmask_t & mask)
 		rp.xyz.row(2) = x.t();
 	}
 
-	std::sort(patches_error.begin(), patches_error.end());
+	std::sort(begin(patches_error), end(patches_error));
 
 	fprintf(stderr, "error %16s%16s\n", "best", "worst");
 	for(index_t i = 0; i < 10; ++i)

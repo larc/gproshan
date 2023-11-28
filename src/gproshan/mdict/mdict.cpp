@@ -77,7 +77,7 @@ void sp_KSVD(a_mat & D, const a_mat & X, const size_t & L, size_t k)
 	{
 		a_sp_mat alpha = OMP_all(locval, X, D, L);
 
-		std::sort(locval.begin(), locval.end());
+		std::sort(begin(locval), end(locval));
 
 		rows.push_back(0);
 		for(index_t k = 1; k < size(locval); ++k)
@@ -360,7 +360,7 @@ void sp_KSVD(a_mat & A, const std::vector<patch> & patches, const size_t & L, si
 	{
 		a_sp_mat alpha = OMP_all(locval, patches, A, L);
 
-		std::sort(locval.begin(), locval.end());
+		std::sort(begin(locval), end(locval));
 
 		rows.push_back(0);
 		for(index_t k = 1; k < size(locval); ++k)
