@@ -54,7 +54,7 @@ int main()
 		fscanf(fp, "%p %lu %lu %lu", &r.splat, &r.pnv, &r.pnt, &r.ns);
 		fscanf(fp, "%lf %lf %lf %lf %lf", &r.tknn, &r.tseg, &r.tvor, &r.tisp, &r.time);
 
-		if(set_pcs.find(str) != set_pcs.end())
+		if(set_pcs.contains(str))
 			table[rt - 4][str] = r;
 	}
 

@@ -196,7 +196,7 @@ std::vector<index_t> splat::voronoi_subdivision(std::vector<index_t> & voronoi_s
 
 	real_t radio = INFINITY;
 	real_t radio_threshold = 0;
-	index_t new_seed;
+	index_t new_seed = 0;
 
 	while(radio > radio_threshold)
 	{
@@ -304,7 +304,7 @@ che * splat::init_splats(const che * mesh, const mat4 & model_mat, std::vector<i
 		for(index_t j = s.begin; j < s.end; ++j)
 			s.radius = std::max(s.radius, length(points[j] - center));
 
-		std::sort(vertices.begin() + s.begin, vertices.begin() + s.end,
+		std::sort(begin(vertices) + s.begin, begin(vertices) + s.end,
 					[&](const index_t & a, const index_t & b)
 					{
 						const vertex & p = model_mat * (mesh->point(a), 1);
@@ -396,11 +396,11 @@ che * splat::init_splats(const che * mesh, const mat4 & model_mat, std::vector<i
 void splat::display_sets(che * pc, const std::vector<index_t> & sets, const index_t * mapid)
 {
 	std::vector<int> color(size(sets));
-	std::iota(color.begin(), color.end(), 0);
+	std::iota(begin(color), end(color), 0);
 
 	std::random_device rd;
 	std::mt19937 gen{rd()};
-	std::shuffle(color.begin(), color.end(), gen);
+	std::shuffle(begin(color), end(color), gen);
 
 	for(index_t i = 1; i < size(sets); ++i)
 	for(index_t j = sets[i - 1]; j < sets[i]; ++j)
