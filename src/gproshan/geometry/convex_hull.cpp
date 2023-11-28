@@ -8,22 +8,30 @@
 namespace gproshan {
 
 
-convex_hull::convex_hull(const std::vector<vertex> & points): convex_hull(points.data(), size(points)) {}
+convex_hull::convex_hull(const std::vector<vertex> & points, const real_t & precision): convex_hull(points.data(), size(points), precision) {}
 
-convex_hull::convex_hull(const vertex * points, const size_t & n_points)
+convex_hull::convex_hull(const vertex * points, const size_t & n_points, const real_t & precision)
 {
-	andrew_algorithm(points, n_points);
+	std::vector<ivec2> points2d(n_points);
+
+	#pragma omp parallel for
+	for(index_t i = 0; i < n_points; ++i)
+	{
+		const vertex & p = points[i] * precision;
+		points2d[i] = {int(p.x()), int(p.y())};
+	}
+	andrew_algorithm(points2d);
 }
 
-convex_hull::operator const std::vector<index_t> & ()
+convex_hull::operator const std::vector<index_t> & () const
 {
 	return CH;
 }
 
 ///< Andrew's Convex Hull Algorithm: Competitive Programming 4
-void convex_hull::andrew_algorithm(const vertex * points, const size_t & n_points)
+void convex_hull::andrew_algorithm(const std::vector<ivec2> & points)
 {
-	std::vector<index_t> idx(n_points);
+	std::vector<index_t> idx(size(points));
 	std::iota(begin(idx), end(idx), 0);
 
 	std::sort(begin(idx), end(idx),
@@ -32,10 +40,10 @@ void convex_hull::andrew_algorithm(const vertex * points, const size_t & n_point
 			return points[i] < points[j];
 		});
 
-	CH.resize(2 * n_points);
+	CH.resize(2 * size(points));
 
 	index_t k = 0;
-	for(index_t p = 0; p < n_points; ++p)
+	for(index_t p = 0; p < size(points); ++p)
 	{
 		const index_t & i = idx[p];
 		while(k > 1 && !ccw(points[CH[k - 2]], points[CH[k - 1]], points[i])) --k;
@@ -43,7 +51,7 @@ void convex_hull::andrew_algorithm(const vertex * points, const size_t & n_point
 	}
 
 	index_t t = k;
-	for(index_t p = n_points - 2; p > 0; --p)
+	for(index_t p = size(points) - 2; p > 0; --p)
 	{
 		const index_t & i = idx[p];
 		while(k > t && !ccw(points[CH[k - 2]], points[CH[k - 1]], points[i])) --k;
@@ -55,10 +63,9 @@ void convex_hull::andrew_algorithm(const vertex * points, const size_t & n_point
 	CH.resize(k);
 }
 
-bool convex_hull::ccw(const vertex & p, const vertex & q, const vertex & r)
+bool convex_hull::ccw(const ivec2 & p, const ivec2 & q, const ivec2 & r)
 {
-	// TODO vec2
-	return cross(q - p, r - p).z() > 0;
+	return cross(q - p, r - p) > 0;
 }
 
 

@@ -277,6 +277,14 @@ vec<T, N> operator / (const T & a, const vec<T, N> & v)
 ///< cross product
 template<class T>
 __host_device__
+T cross(const vec<T, 2> & u, const vec<T, 2> & v)
+{
+	return u.x() * v.y() - v.x() * u.y();
+}
+
+///< cross product
+template<class T>
+__host_device__
 vec<T, 3> cross(const vec<T, 3> & u, const vec<T, 3> & v)
 {
 	const T & ux = u[0];
