@@ -34,11 +34,10 @@ void convex_hull::andrew_algorithm(const std::vector<ivec2> & points)
 	std::vector<index_t> idx(size(points));
 	std::iota(begin(idx), end(idx), 0);
 
-	std::sort(begin(idx), end(idx),
-		[&points](const index_t & i, const index_t & j)
-		{
-			return points[i] < points[j];
-		});
+	std::ranges::sort(idx, [&points](const index_t & i, const index_t & j)
+					{
+						return points[i] < points[j];
+					});
 
 	CH.resize(2 * size(points));
 

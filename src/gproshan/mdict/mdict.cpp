@@ -17,11 +17,6 @@ const real_t sigma = 0.01;
 
 // SPARSE
 
-bool operator < (const locval_t & a, const locval_t & b)
-{
-	return (a.i == b.i) ? a.j < b.j : a.i < b.i;
-}
-
 std::ostream & operator << (std::ostream & os, const locval_t & lc)
 {
 	return os << '(' << lc.i << ',' << lc.j << ") = " << lc.val;
@@ -77,7 +72,10 @@ void sp_KSVD(a_mat & D, const a_mat & X, const size_t & L, size_t k)
 	{
 		a_sp_mat alpha = OMP_all(locval, X, D, L);
 
-		std::sort(begin(locval), end(locval));
+		std::ranges::sort(locval, [](const locval_t & a, const locval_t & b)
+								{
+									return a.i == b.i ? a.j < b.j : a.i < b.i;
+								});
 
 		rows.push_back(0);
 		for(index_t k = 1; k < size(locval); ++k)
@@ -360,7 +358,10 @@ void sp_KSVD(a_mat & A, const std::vector<patch> & patches, const size_t & L, si
 	{
 		a_sp_mat alpha = OMP_all(locval, patches, A, L);
 
-		std::sort(begin(locval), end(locval));
+		std::ranges::sort(locval, [](const locval_t & a, const locval_t & b)
+								{
+									return a.i == b.i ? a.j < b.j : a.i < b.i;
+								});
 
 		rows.push_back(0);
 		for(index_t k = 1; k < size(locval); ++k)
