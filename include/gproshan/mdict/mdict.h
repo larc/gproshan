@@ -20,7 +20,6 @@ struct locval_t
 	real_t val;
 };
 
-bool operator < (const locval_t & a, const locval_t & b);
 
 void OMP(std::vector<locval_t> & alpha, const a_vec & x, const index_t & i, const a_mat & D, const size_t & L);
 
