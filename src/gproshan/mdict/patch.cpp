@@ -414,7 +414,7 @@ void patch::add_extra_xyz_disjoint(che * mesh, std::vector<vpatches_t> & vpatche
 			vpatches_t & ma = vpatches[mesh->halfedge(he_next(he))];
 			vpatches_t & mb = vpatches[mesh->halfedge(he_prev(he))];
 
-			if(ma.find(p) != ma.end() && mb.find(p) != mb.end())
+			if(ma.contains(p) && mb.contains(p))
 			{
 				arma::uvec xi = { vpatches[min_v][p], ma[p], mb[p] };
 				abc = xyz.cols(xi);
@@ -600,7 +600,7 @@ void patch::jet_fit_directions(che * mesh, const index_t & v)
 
 	My_Monge_form monge_form;
 	My_Monge_via_jet_fitting monge_fit;
-	monge_form = monge_fit(in_points.begin(), in_points.end(), d_fitting, d_monge);
+	monge_form = monge_fit(begin(in_points), end(in_points), d_fitting, d_monge);
 
 	vertex normal = mesh->normal(v);
 	monge_form.comply_wrt_given_normal(DVector(normal.x(), normal.y(), normal.z()));
@@ -736,9 +736,9 @@ void patch::compute_avg_distance(che * mesh, std::vector<vpatches_t> & vpatches,
 			distances.push_back(norm(a - b));
 		}
 	*/
-	std::sort(distances.begin(), distances.end());
+	std::ranges::sort(distances);
 	size_t n_elem = size(distances);
-	if(size(distances)%2 ==0)
+	if(size(distances) % 2 ==0)
 	{
 		avg_dist = (distances[n_elem/2] + distances[(n_elem/2 -1)])/2;
 	}
