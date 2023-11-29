@@ -51,10 +51,10 @@ const std::vector<ivec2> viewer::m_window_split = {	{1, 1},
 
 
 const std::vector<std::string> viewer::colormap = { "vertex color",
-													"blue heatmap",
-													"red heatmap",
-													"blue/read heatmap",
-													"set heatmap",
+													"heatmap blue",
+													"heatmap red",
+													"heatmap blue/read",
+													"heatmap set",
 													"material scene",
 													};
 
@@ -231,7 +231,7 @@ void viewer::imgui()
 	ImGui::End();
 
 	ImGui::SetNextWindowSize(ImVec2(360, -1));
-	ImGui::SetNextWindowPos(ImVec2(20, 60), ImGuiCond_Once);
+	ImGui::SetNextWindowPos(ImVec2(0, 20), ImGuiCond_Once);
 	ImGui::Begin("gproshan");
 
 	ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.5);
