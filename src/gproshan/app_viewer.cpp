@@ -212,6 +212,7 @@ bool app_viewer::process_simulate_scanner(viewer * p_view)
 	{
 		che * ptx_mesh = scanner_ptx_jpg(mesh.rt_embree, n_rows, n_cols, cam_pos, mesh->filename);
 		che_ptx::write_file(ptx_mesh, mesh->filename, n_rows, n_cols);
+		ptx_mesh->filename = mesh->filename + ".ptx";
 		view->add_mesh(ptx_mesh);
 	}
 
