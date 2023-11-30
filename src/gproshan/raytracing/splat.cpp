@@ -54,7 +54,7 @@ void splat::add_splats(che * pc, const mat4 & model_mat)
 	std::vector<index_t> voronois[size(segs) - 1];
 	std::vector<index_t> voronoi_sets[size(segs) - 1];
 
-//	#pragma omp parallel for
+	#pragma omp parallel for
 	for(index_t i = 1; i < size(segs); ++i)
 		voronois[i - 1] = voronoi_subdivision(voronoi_sets[i - 1], vertices, &pc->point(0), k3tree, segs[i - 1], segs[i]);
 	TOC(time);
@@ -196,7 +196,7 @@ std::vector<index_t> splat::voronoi_subdivision(std::vector<index_t> & voronoi_s
 
 	real_t radio = INFINITY;
 	real_t radio_threshold = 0;
-	index_t new_seed = 0;
+	index_t new_seed = NIL;
 
 	while(radio > radio_threshold)
 	{
@@ -219,8 +219,12 @@ std::vector<index_t> splat::voronoi_subdivision(std::vector<index_t> & voronoi_s
 
 		if(size(seeds) == 1)
 			radio_threshold = std::max(0.2, radio * 0.1);
-
-		seeds.push_back(new_seed);
+	
+		if(new_seed != NIL)
+		{
+			seeds.push_back(new_seed);
+			new_seed = NIL;
+		}
 	}
 
 
