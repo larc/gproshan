@@ -65,6 +65,7 @@ template <class T>
 struct t_eval_hit
 {
 	index_t primID = NIL;
+	int illum = 1;
 	T dist = 0;
 	T u = 0, v = 0;
 	vec<T, 3> position;
@@ -132,6 +133,37 @@ struct t_eval_hit
 		d = mat.d;
 //		if(mat.map_d != -1)
 //			d = texture(sc.textures[mat.map_d], texcoord);
+
+		illum = mat.illum;
+	}
+
+	//	PTX symbols of certain types (e.g. pointers to functions) cannot be used to initialize array
+	__host_device__
+	bool scatter_mat(const vec<T, 3> & v, vec<T, 3> & scattered)
+	{
+		switch(illum)
+		{
+			case 3:
+			case 5:
+			case 6:
+			case 7:
+				return scatter_reflect(v, scattered);
+		}
+
+		return false;
+	}
+
+	__host_device__
+	bool scatter_reflect(const vec<T, 3> & v, vec<T, 3> & scattered)
+	{
+		scattered = normalize(v - 2 * dot(v, normal) * normal);
+		return dot(scattered, normal) > 0;
+	}
+
+	__host_device__
+	bool scatter_diffuse(const vec<T, 3> & v, vec<T, 3> & scattered)
+	{
+		return false;
 	}
 };
 
