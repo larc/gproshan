@@ -14,6 +14,7 @@ const size_t NL = 16;	// number of lights
 
 struct render_params
 {
+	int depth = 1;
 	int window_width = 0;
 	int window_height = 0;
 	int viewport_width = 0;

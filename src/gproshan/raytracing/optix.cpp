@@ -130,6 +130,7 @@ void optix::render(vec4 * img, const render_params & params, const bool & flat)
 	optix_params.n_samples = n_samples;
 	optix_params.color_buffer = img;
 
+	optix_params.depth = params.depth;
 	optix_params.window_width = params.window_width;
 	optix_params.window_height = params.window_height;
 	if(params.viewport_is_window)

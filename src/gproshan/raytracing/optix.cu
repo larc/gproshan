@@ -101,8 +101,7 @@ extern "C" __global__ void __anyhit__shadow() {}
 
 extern "C" __global__ void __miss__radiance()
 {
-	vec4 & pixel_color = *ray_data<vec4>();
-	pixel_color = {0, 0, 0, 0};
+	optixSetPayload_0(0);
 }
 
 extern "C" __global__ void __miss__shadow()
@@ -132,9 +131,9 @@ extern "C" __global__ void __raygen__render_frame()
 	uint32_t u0, u1;
 	pack_pointer(trace, u0, u1);
 
-	int depth = 3;
 	vec3 color_acc = 0;
 
+	int depth = optix_params.depth + 1;
 	while(--depth)
 	{
 		optixTrace(	optix_params.traversable,
@@ -150,6 +149,7 @@ extern "C" __global__ void __raygen__render_frame()
 					0,	// missSBTIndex
 					u0, u1);
 
+		if(!u0) break;	// miss
 		color_acc += color;
 	}
 
