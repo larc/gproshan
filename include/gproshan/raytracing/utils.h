@@ -118,15 +118,15 @@ struct t_eval_hit
 
 		Ka = mat.Ka;
 		if(mat.map_Ka != -1)
-			Ka *= texture(sc.textures[mat.map_Ka], texcoord);
+			Ka = texture(sc.textures[mat.map_Ka], texcoord);
 
 		Kd = mat.Kd;
 		if(mat.map_Kd != -1)
-			Kd *= texture(sc.textures[mat.map_Kd], texcoord);
+			Kd = texture(sc.textures[mat.map_Kd], texcoord);
 
 		Ks = mat.Ks;
 		if(mat.map_Ks != -1)
-			Ks *= texture(sc.textures[mat.map_Ks], texcoord);
+			Ks = texture(sc.textures[mat.map_Ks], texcoord);
 
 		Ns = mat.Ns;
 
