@@ -120,39 +120,48 @@ extern "C" __global__ void __raygen__render_frame()
 
 	random<float> rnd(pos.x() + optix_params.window_size.x() * pos.y(), optix_params.n_frames);
 
-	vec3 trace[4];
-	vec3 & color		= trace[0];
-	vec3 & position		= trace[1];
-	vec3 & ray_dir		= trace[2];
-	vec3 & attenuation	= trace[3] = 1;
-
-	position = optix_params.cam_pos;
-	ray_dir = ray_view_dir(pos, optix_params.window_size, optix_params.inv_proj_view, optix_params.cam_pos, rnd);
-
-	uint32_t u0, u1;
-	pack_pointer(trace, u0, u1);
-
 	vec3 color_acc = 0;
 
-	int depth = optix_params.depth + 1;
-	while(--depth)
-	{
-		optixTrace(	optix_params.traversable,
-					* (float3 *) &position,
-					* (float3 *) &ray_dir,
-					1e-5f,	// tmin
-					1e20f,	// tmax
-					0.0f,	// rayTime
-					OptixVisibilityMask(255),
-					OPTIX_RAY_FLAG_DISABLE_ANYHIT, //OPTIX_RAY_FLAG_NONE,
-					0,	// SBT offset
-					2,	// SBT stride
-					0,	// missSBTIndex
-					u0, u1);
+	uint32_t u0, u1;
+	int depth;
 
-		if(!u0) break;	// miss
-		color_acc += color;
+	int samples = optix_params.n_samples;
+	do
+	{
+		vec3 trace[4];
+		vec3 & color		= trace[0];
+		vec3 & position		= trace[1] = optix_params.cam_pos;
+		vec3 & ray_dir		= trace[2];
+		vec3 & attenuation	= trace[3] = 1;
+
+		ray_dir = ray_view_dir(pos, optix_params.window_size, optix_params.inv_proj_view, optix_params.cam_pos, rnd);
+
+		pack_pointer(trace, u0, u1);
+
+		depth = optix_params.depth;
+		do
+		{
+			optixTrace(	optix_params.traversable,
+						* (float3 *) &position,
+						* (float3 *) &ray_dir,
+						1e-5f,	// tmin
+						1e20f,	// tmax
+						0.0f,	// rayTime
+						OptixVisibilityMask(255),
+						OPTIX_RAY_FLAG_DISABLE_ANYHIT, //OPTIX_RAY_FLAG_NONE,
+						0,	// SBT offset
+						2,	// SBT stride
+						0,	// missSBTIndex
+						u0, u1);
+
+			if(!u0) break;	// miss
+			color_acc += color;
+		}
+		while(--depth);
 	}
+	while(--samples);
+
+	color_acc /= optix_params.n_samples;
 
 	vec4 & pixel_color = optix_params.color_buffer[id.x() + id.y() * optixGetLaunchDimensions().x];
 	pixel_color = (pixel_color * optix_params.n_frames + (color_acc, 1)) / (optix_params.n_frames + 1);
