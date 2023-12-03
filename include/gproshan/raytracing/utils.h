@@ -211,7 +211,12 @@ using eval_hit = t_eval_hit<float>;
 
 template <class T>
 __host_device__
-vec<T, 3> ray_view_dir(const ivec2 & pos, const ivec2 & windows_size, const mat<T, 4> & inv_proj_view, const vec<T, 3> & cam_pos, random<T> & rnd)
+vec<T, 3> ray_view_dir(	const uvec2 & pos,
+						const uvec2 & windows_size,
+						const mat<T, 4> & inv_proj_view,
+						const vec<T, 3> & cam_pos,
+						random<T> & rnd
+						)
 {
 	vec2 screen = {	(float(pos.x()) + rnd()) / windows_size.x(),
 					(float(pos.y()) + rnd()) / windows_size.y()

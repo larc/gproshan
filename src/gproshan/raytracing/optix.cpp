@@ -125,22 +125,15 @@ optix::~optix()
 
 void optix::render(vec4 * img, const render_params & params, const bool & flat)
 {
-	if(params.restart) n_samples = 0;
-
-	optix_params.n_samples = n_samples;
+	optix_params.depth = params.depth;
+	optix_params.n_frames = params.n_frames;
 	optix_params.color_buffer = img;
 
-	optix_params.depth = params.depth;
-	optix_params.window_width = params.window_width;
-	optix_params.window_height = params.window_height;
+	optix_params.window_size = params.window_size;
 	if(params.viewport_is_window)
-	{
-		optix_params.window_width = params.viewport_width;
-		optix_params.window_height = params.viewport_height;
-	}
+		optix_params.window_size = params.viewport_size;
 
-	optix_params.viewport_x = params.viewport_x;
-	optix_params.viewport_y = params.viewport_y;
+	optix_params.viewport_pos = params.viewport_pos;
 
 	optix_params.flat = flat;
 	optix_params.cam_pos = params.cam_pos;
@@ -156,14 +149,12 @@ void optix::render(vec4 * img, const render_params & params, const bool & flat)
 				(CUdeviceptr) optix_params_buffer,
 				sizeof(launch_params),
 				&sbt,
-				params.viewport_width,
-				params.viewport_height,
+				params.viewport_size.x(),
+				params.viewport_size.y(),
 				1
 				);
 
 	cudaDeviceSynchronize();
-
-	++n_samples;
 }
 
 void optix::create_raygen_programs()

@@ -234,7 +234,7 @@ void che_viewer::draw_selected_vertices(che_viewer & sphere, shader & program)
 	}
 }
 
-void che_viewer::select(const ivec2 & pos, const ivec2 & windows_size, const mat4 & inv_proj_view_mat, const vertex & cam_pos)
+void che_viewer::select(const uvec2 & pos, const uvec2 & windows_size, const mat4 & inv_proj_view_mat, const vertex & cam_pos)
 {
 	rt::random<real_t> rnd(pos.x(), pos.y());
 	const vertex & dir = rt::ray_view_dir({pos.x(), windows_size.y() - pos.y()}, windows_size, inv_proj_view_mat, cam_pos, rnd);
