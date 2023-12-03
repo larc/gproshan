@@ -25,12 +25,20 @@ void raytracing::render(vec4 * img, const render_params & params, const bool & f
 	for(int i = 0; i < params.viewport_width; ++i)
 	for(int j = 0; j < params.viewport_height; ++j)
 	{
+		const ivec2 & pos = {
+							i + params.viewport_x,
+							j + params.viewport_y
+							};
+
+		random<real_t> rnd(pos.x(), pos.y());
+	
 		//row major
 		vec4 & color = img[j * params.viewport_width + i];
-		const vertex & dir = ray_view_dir(	{i + params.viewport_x, j + params.viewport_y},
+		const vertex & dir = ray_view_dir(	pos,
 											{window_width, window_height},
 											params.inv_proj_view,
-											params.cam_pos
+											params.cam_pos,
+											rnd
 											);
 
 		vec3 li = closesthit_radiance(params.cam_pos, dir, params.ambient, params.lights, params.n_lights, params.cam_pos, flat);
@@ -52,9 +60,11 @@ float * raytracing::raycaster(	const ivec2 & windows_size,
 	for(int i = 0; i < windows_size.x(); ++i)
 	for(int j = 0; j < windows_size.y(); ++j)
 	{
+		random<real_t> rnd(i, j);
+		
 		//row major
 		float & color = frame[(windows_size.y() - j - 1) * windows_size.x() + i] = 0;
-		vertex dir = ray_view_dir({i, j}, windows_size, inv_proj_view, cam_pos);
+		vertex dir = ray_view_dir({i, j}, windows_size, inv_proj_view, cam_pos, rnd);
 
 		for(index_t s = 0; s < samples; ++s)
 			color += intersect_depth(cam_pos, dir);

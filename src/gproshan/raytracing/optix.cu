@@ -112,8 +112,15 @@ extern "C" __global__ void __miss__shadow()
 
 extern "C" __global__ void __raygen__render_frame()
 {
-	const int ix = optixGetLaunchIndex().x;
-	const int iy = optixGetLaunchIndex().y;
+	const int & ix = optixGetLaunchIndex().x;
+	const int & iy = optixGetLaunchIndex().y;
+
+	const ivec2 & pos = {
+						ix + optix_params.viewport_x,
+						iy + optix_params.viewport_y
+						};
+
+	random<float> rnd(pos.x(), pos.y());
 
 	vec3 trace[4];
 	vec3 & color		= trace[0];
@@ -122,10 +129,9 @@ extern "C" __global__ void __raygen__render_frame()
 	vec3 & attenuation	= trace[3] = 1;
 
 	position = optix_params.cam_pos;
-	ray_dir = ray_view_dir(	{ix + optix_params.viewport_x, iy + optix_params.viewport_y},
+	ray_dir = ray_view_dir(pos,
 							{optix_params.window_width, optix_params.window_height},
-							optix_params.inv_proj_view,
-							optix_params.cam_pos
+							optix_params.inv_proj_view, optix_params.cam_pos, rnd
 							);
 
 	uint32_t u0, u1;
