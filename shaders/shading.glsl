@@ -57,7 +57,7 @@ vec3 shading(vec3 color, vec3 n, vec3 pos, vec2 texcoord)
 
 		Ks = mat.Ks;
 		if(mat.map_Ks != -1)
-			Ks = texture(tex_Ks, texcoord).rgb;
+			Ks = vec3(texture(tex_Ks, texcoord).r);
 
 		Ns = mat.Ns;
 	}
