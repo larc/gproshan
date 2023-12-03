@@ -118,7 +118,7 @@ extern "C" __global__ void __raygen__render_frame()
 
 	const uvec2 & pos = id + optix_params.viewport_pos;
 
-	random<float> rnd(pos.x(), pos.y());
+	random<float> rnd(pos.x() + optix_params.window_size.x() * pos.y(), optix_params.n_frames);
 
 	vec3 trace[4];
 	vec3 & color		= trace[0];

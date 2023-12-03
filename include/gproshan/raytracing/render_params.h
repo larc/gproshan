@@ -12,20 +12,26 @@ namespace gproshan::rt {
 
 const size_t NL = 16;	// number of lights
 
-struct render_params
+
+struct base_params
 {
 	uvec2 window_size;
-	uvec2 viewport_size;
 	uvec2 viewport_pos;
 	unsigned int depth = 1;
 	unsigned int n_frames = 0;
+	unsigned int n_samples = 1;
 	unsigned int n_lights = 0;
 	light lights[NL];
 	light ambient = {0, 1, 0.1};
-	vertex cam_pos;
 	mat4 inv_proj_view;
-	bool restart = false;
+	vertex cam_pos;
+};
+
+struct render_params: public base_params
+{
+	uvec2 viewport_size;
 	bool viewport_is_window = true;
+	bool restart = false;
 
 	bool add_light(const light & l)
 	{

@@ -17,26 +17,16 @@
 namespace gproshan::rt {
 
 
-struct launch_params
+struct launch_params: public base_params
 {
-	vec4 * color_buffer = nullptr;
-	unsigned int buffer_size	= 0;
-	uvec2 window_size;
-	uvec2 viewport_pos;
-	unsigned int depth			= 1;
-	unsigned int n_frames		= 0;
-	unsigned int n_lights		= 0;
-	light lights[NL];
-	light ambient;
-	vec3 cam_pos;
-	mat4 inv_proj_view;
-	bool flat;
-
 	OptixTraversableHandle traversable;
 
 	scene_data sc;
 
+	bool flat;
 	void * other = nullptr;
+	vec4 * color_buffer = nullptr;
+	unsigned int buffer_size = 0;
 };
 
 

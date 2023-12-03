@@ -1253,6 +1253,9 @@ void viewer::render_rt(che_viewer & mesh, frame & rt_frame)
 
 	render_params.restart = rt_frame.resize(viewport_width, viewport_height) || render_params.restart;
 
+	if(render_params.restart)
+		render_params.n_frames = 0;
+
 	//render_params.viewport_x = mesh.vx * viewport_width;
 	//render_params.viewport_y = mesh.vy * viewport_height;
 	//render_params.viewport_is_window = false;
@@ -1263,6 +1266,8 @@ void viewer::render_rt(che_viewer & mesh, frame & rt_frame)
 	rt_frame.unmap_pbo(mesh.render_opt == R_OPTIX);
 
 	rt_frame.display();
+
+	++render_params.n_frames;
 }
 
 void viewer::pick_vertex(const uvec2 & pos)

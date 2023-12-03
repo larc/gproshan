@@ -19,8 +19,8 @@ void raytracing::render(vec4 * img, const render_params & params, const bool & f
 	{
 		const uvec2 & pos = params.viewport_size + uvec2{i, j};
 
-		random<real_t> rnd(pos.x(), pos.y());
-	
+		random<real_t> rnd(pos.x() + window_size.x() * pos.y(), params.n_frames);
+
 		//row major
 		vec4 & color = img[j * params.viewport_size.x() + i];
 		const vertex & dir = ray_view_dir(pos, window_size, params.inv_proj_view, params.cam_pos, rnd);
@@ -44,7 +44,7 @@ std::vector<float> raytracing::raycaster(	const uvec2 & windows_size,
 	for(unsigned int j = 0; j < windows_size.y(); ++j)
 	{
 		random<real_t> rnd(i, j);
-		
+
 		//row major
 		float & color = frame[(windows_size.y() - j - 1) * windows_size.x() + i] = 0;
 		vertex dir = ray_view_dir({i, j}, windows_size, inv_proj_view, cam_pos, rnd);
