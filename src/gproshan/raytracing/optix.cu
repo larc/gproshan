@@ -89,8 +89,10 @@ extern "C" __global__ void __closesthit__radiance()
 	color *= attenuation;
 	position = hit.position;
 
-	if(!hit.scatter_mat(scattered, scattered))
+	random<float> rnd = optixGetPayload_2();
+	if(!hit.scatter_mat(scattered, scattered, rnd))
 		attenuation = 0;
+	optixSetPayload_2(rnd);
 }
 
 
@@ -152,7 +154,7 @@ extern "C" __global__ void __raygen__render_frame()
 						0,	// SBT offset
 						2,	// SBT stride
 						0,	// missSBTIndex
-						u0, u1);
+						u0, u1, (unsigned int &) rnd);
 
 			if(!u0) break;	// miss
 			color_acc += color;

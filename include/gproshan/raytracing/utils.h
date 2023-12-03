@@ -13,16 +13,19 @@
 namespace gproshan::rt {
 
 
-template <class T, uint32_t N = 16>
+template <class T, unsigned int N = 16>
 struct random
 {
-	uint32_t previous;
+	unsigned int previous;
+	
+	__host_device__
+	random(unsigned int p): previous(p) {}
 
 	__host_device__
-	random(uint32_t v0, uint32_t v1)
+	random(unsigned int v0, unsigned int v1)
 	{
-		uint32_t s = 0;
-		for(uint32_t i = 0; i < N; ++i)
+		unsigned int s = 0;
+		for(unsigned int i = 0; i < N; ++i)
 		{
 			s += 0x9e3779b9;
 			v0 += ((v1 << 4) + 0xa341316c) ^ (v1 + s) ^ ((v1 >> 5) + 0xc8013ea4);
@@ -36,6 +39,12 @@ struct random
 	{
 		previous = previous * 1664525 + 1013904223;
 		return T(previous & 0x00FFFFFF) / T(0x01000000);
+	}
+	
+	__host_device__
+	operator unsigned int & ()
+	{
+		return previous;
 	}
 };
 
@@ -139,7 +148,7 @@ struct t_eval_hit
 
 	//	PTX symbols of certain types (e.g. pointers to functions) cannot be used to initialize array
 	__host_device__
-	bool scatter_mat(const vec<T, 3> & v, vec<T, 3> & scattered)
+	bool scatter_mat(const vec<T, 3> & v, vec<T, 3> & scattered, random<T> & rnd)
 	{
 		switch(illum)
 		{
@@ -147,21 +156,21 @@ struct t_eval_hit
 			case 5:
 			case 6:
 			case 7:
-				return scatter_reflect(v, scattered);
+				return scatter_reflect(v, scattered, rnd);
 		}
 
 		return false;
 	}
 
 	__host_device__
-	bool scatter_reflect(const vec<T, 3> & v, vec<T, 3> & scattered)
+	bool scatter_reflect(const vec<T, 3> & v, vec<T, 3> & scattered, random<T> & rnd)
 	{
 		scattered = normalize(v - 2 * dot(v, normal) * normal);
 		return dot(scattered, normal) > 0;
 	}
 
 	__host_device__
-	bool scatter_diffuse(const vec<T, 3> & v, vec<T, 3> & scattered)
+	bool scatter_diffuse(const vec<T, 3> & v, vec<T, 3> & scattered, random<T> & rnd)
 	{
 		return false;
 	}

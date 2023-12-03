@@ -61,8 +61,8 @@ optix::optix(const std::string & ptx)
 	optix_pipeline_compile_opt							= {};
 	optix_pipeline_compile_opt.traversableGraphFlags	= OPTIX_TRAVERSABLE_GRAPH_FLAG_ALLOW_SINGLE_GAS;
 	optix_pipeline_compile_opt.usesMotionBlur			= false;
-	optix_pipeline_compile_opt.numPayloadValues			= 2;
-	optix_pipeline_compile_opt.numAttributeValues		= 2;
+	optix_pipeline_compile_opt.numPayloadValues			= 3;
+	optix_pipeline_compile_opt.numAttributeValues		= 3;
 	optix_pipeline_compile_opt.exceptionFlags			= OPTIX_EXCEPTION_FLAG_NONE;
 	optix_pipeline_compile_opt.pipelineLaunchParamsVariableName = "optix_params";
 
