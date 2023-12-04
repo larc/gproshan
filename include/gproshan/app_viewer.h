@@ -63,6 +63,7 @@ class app_viewer : public viewer
 
 		// Scenes
 		static bool process_simulate_scanner(viewer * p_view);
+		static bool process_scatter(viewer * p_view);
 
 		// Geometry
 		static bool process_sampling_4points(viewer * p_view);

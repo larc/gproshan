@@ -86,12 +86,14 @@ extern "C" __global__ void __closesthit__radiance()
 							return occluded != 0;
 						});
 
+	random<float> rnd = optixGetPayload_2();
 	color *= attenuation;
 	position = hit.position;
 
-	random<float> rnd = optixGetPayload_2();
 	if(!hit.scatter_mat(scattered, scattered, rnd))
 		attenuation = 0;
+
+	attenuation /= 2;
 	optixSetPayload_2(rnd);
 }
 

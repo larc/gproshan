@@ -17,7 +17,7 @@ template <class T, unsigned int N = 16>
 struct random
 {
 	unsigned int previous;
-	
+
 	__host_device__
 	random(unsigned int p): previous(p) {}
 
@@ -40,7 +40,7 @@ struct random
 		previous = previous * 1664525 + 1013904223;
 		return T(previous & 0x00FFFFFF) / T(0x01000000);
 	}
-	
+
 	__host_device__
 	operator unsigned int & ()
 	{
@@ -168,38 +168,38 @@ struct t_eval_hit
 	}
 
 	__host_device__
-	bool scatter_reflect(const vec<T, 3> & v, vec<T, 3> & scattered, random<T> & rnd)
+	bool scatter_reflect(const vec<T, 3> & v, vec<T, 3> & scattered, random<T> & )
 	{
 		scattered = normalize(v - 2 * dot(v, normal) * normal);
 		return dot(scattered, normal) > 0;
 	}
 
 	__host_device__
-	bool scatter_refract(const vec<T, 3> & v, vec<T, 3> & scattered, random<T> & rnd)
+	bool scatter_refract(const vec<T, 3> & v, vec<T, 3> & scattered, random<T> & )
 	{
 		const float dvn = dot(v, normal);
 		const float d = 1 - Ni * Ni * (1 - dvn * dvn);
 
 		if(d <= 0) return false;
 
-		scattered = Ni * (v - dvn * normal) - normal * sqrt(d);
+		scattered = Ni * (v - dvn * normal) - normal * sqrtf(d);
 		return true;
 	}
 
 	__host_device__
-	bool scatter_diffuse(const vec<T, 3> & v, vec<T, 3> & scattered, random<T> & rnd)
+	bool scatter_diffuse(const vec<T, 3> & , vec<T, 3> & scattered, random<T> & rnd)
 	{
 		// random unit sphere
 		const T & theta = rnd() * 2 * M_PI;
-		const T & phi = acos(2 * rnd() - 1);
+		const T & phi = acosf(2 * rnd() - 1);
 		const T & r = cbrtf(rnd());
-		
-		const vec<T, 3> p = { r * sin(phi) * cos(theta)
-							, r * sin(phi) * sin(theta)
-							, r * cos(phi)
+
+		const vec<T, 3> p = { r * sinf(phi) * cosf(theta)
+							, r * sinf(phi) * sinf(theta)
+							, r * cosf(phi)
 							};
 
-		scattered = normalize(normal + scattered);
+		scattered = normalize(normal + p);
 
 		return true;
 	}

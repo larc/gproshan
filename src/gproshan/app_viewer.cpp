@@ -52,7 +52,8 @@ void app_viewer::init()
 
 	add_menu("Scenes",
 	{
-		add_process("Scan Scene", process_simulate_scanner)
+		add_process("Scan Scene", process_simulate_scanner),
+		add_process("RT Scatter Points", process_scatter)
 	});
 
 	add_menu("Geometry",
@@ -217,6 +218,22 @@ bool app_viewer::process_simulate_scanner(viewer * p_view)
 	}
 
 	return true;
+}
+
+bool app_viewer::process_scatter(viewer * p_view)
+{
+	app_viewer * view = (app_viewer *) p_view;
+
+	rt::eval_hit h;
+	std::vector<vertex> scatter(100);
+
+	rt::random<real_t> rnd(0xABCDEF);
+	for(vertex & v: scatter)
+		h.scatter_diffuse({}, v, rnd);
+
+	view->add_mesh(new che(scatter.data(), scatter.size(), nullptr, 0));
+
+	return false;
 }
 
 
