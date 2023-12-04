@@ -83,6 +83,7 @@ struct t_eval_hit
 	vec<T, 3> Kd = 0.5;
 	vec<T, 3> Ks = 0.2;
 	T Ns = 10;
+	T Ni = 0;
 	T d = 1;
 
 	__host_device__
@@ -138,6 +139,7 @@ struct t_eval_hit
 			Ks = texture(sc.textures[mat.map_Ks], texcoord);
 
 		Ns = mat.Ns;
+		Ni = mat.Ni;
 
 		d = mat.d;
 //		if(mat.map_d != -1)
@@ -152,6 +154,9 @@ struct t_eval_hit
 	{
 		switch(illum)
 		{
+			case 1:
+			case 2:
+				return scatter_diffuse(v, scattered, rnd);
 			case 3:
 			case 5:
 			case 6:
@@ -170,9 +175,33 @@ struct t_eval_hit
 	}
 
 	__host_device__
+	bool scatter_refract(const vec<T, 3> & v, vec<T, 3> & scattered, random<T> & rnd)
+	{
+		const float dvn = dot(v, normal);
+		const float d = 1 - Ni * Ni * (1 - dvn * dvn);
+
+		if(d <= 0) return false;
+
+		scattered = Ni * (v - dvn * normal) - normal * sqrt(d);
+		return true;
+	}
+
+	__host_device__
 	bool scatter_diffuse(const vec<T, 3> & v, vec<T, 3> & scattered, random<T> & rnd)
 	{
-		return false;
+		// random unit sphere
+		const T & theta = rnd() * 2 * M_PI;
+		const T & phi = acos(2 * rnd() - 1);
+		const T & r = cbrtf(rnd());
+		
+		const vec<T, 3> p = { r * sin(phi) * cos(theta)
+							, r * sin(phi) * sin(theta)
+							, r * cos(phi)
+							};
+
+		scattered = normalize(normal + scattered);
+
+		return true;
 	}
 };
 
@@ -180,7 +209,7 @@ template <class T, class Occluded>
 __host_device__
 vec<T, 3> eval_li(const t_eval_hit<T> & hit, const light & ambient, const light * lights, const int & n_lights, const vec<T, 3> & eye, Occluded occluded)
 {
-	const vec<T, 3> v = normalize(eye - hit.position);
+	const vec<T, 3> & v = normalize(eye - hit.position);
 	const vec<T, 3> & n = hit.normal;
 
 	T lambertian;
