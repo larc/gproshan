@@ -28,6 +28,16 @@ partitions::part partitions::operator () (const index_t & i) const
 	return {splits[i], splits[i + 1], sorted};
 }
 
+partitions::operator index_t * const & () const
+{
+	return sorted;
+}
+
+partitions::operator index_t *& ()
+{
+	return sorted;
+}
+
 
 void copy_real_t_array(float * destination, const float * source, const size_t & n_elem)
 {

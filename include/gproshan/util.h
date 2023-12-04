@@ -23,6 +23,8 @@ class partitions
 		void add(const index_t & size);
 		size_t size(const index_t & i) const;
 		part operator () (const index_t & i) const;
+		operator index_t * const & () const;
+		operator index_t *& ();
 };
 
 struct partitions::part
