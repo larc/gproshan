@@ -41,7 +41,7 @@ extern "C" __global__ void __closesthit__radiance()
 	const CHE & mesh = **(const CHE **) optixGetSbtDataPointer();
 
 	const int primID = optixGetPrimitiveIndex();
-	float2 bar = optixGetTriangleBarycentrics();
+	const float2 bar = optixGetTriangleBarycentrics();
 
 	OptixTraversableHandle gas = optixGetGASTraversableHandle();
 	const index_t sbtID = optixGetSbtGASIndex();
