@@ -154,9 +154,6 @@ struct t_eval_hit
 	{
 		switch(illum)
 		{
-			case 1:
-			case 2:
-				return scatter_diffuse(v, scattered, rnd);
 			case 3:
 			case 5:
 			case 6:
@@ -164,7 +161,7 @@ struct t_eval_hit
 				return scatter_reflect(v, scattered, rnd);
 		}
 
-		return false;
+		return scatter_diffuse(v, scattered, rnd);
 	}
 
 	__host_device__
