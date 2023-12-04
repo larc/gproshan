@@ -132,11 +132,12 @@ void embree::build_bvh(const std::vector<che *> & meshes, const std::vector<mat4
 		if(!meshes[i]->n_trigs || pointcloud)
 			g_meshes[i]->n_trigs = 0;
 
+		[[maybe_unused]]
 		const index_t & geomID = g_meshes[i]->n_trigs || meshes[i]->is_scene() ?
 											add_mesh(meshes[i], model_mats[i]) :
 											add_pointcloud(meshes[i], model_mats[i]);
 
-		gproshan_error_var(i == geomID);
+		gproshan_debug_var(i == geomID);
 	}
 
 	rtcCommitScene(rtc_scene);

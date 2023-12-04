@@ -219,7 +219,7 @@ std::vector<index_t> splat::voronoi_subdivision(std::vector<index_t> & voronoi_s
 
 		if(size(seeds) == 1)
 			radio_threshold = std::max(0.2, radio * 0.1);
-	
+
 		if(new_seed != NIL)
 		{
 			seeds.push_back(new_seed);

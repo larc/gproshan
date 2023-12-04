@@ -283,7 +283,7 @@ void viewer::imgui()
 
 		ImGui::Separator();
 
-		for(int i = 0; i < render_params.n_lights; ++i)
+		for(unsigned int i = 0; i < render_params.n_lights; ++i)
 		{
 			light & l = render_params.lights[i];
 
@@ -313,7 +313,7 @@ void viewer::imgui()
 		if(ImGui::Button("show lights"))
 		{
 			sphere_points.clear();
-			for(int i = 0; i < render_params.n_lights; ++i)
+			for(unsigned int i = 0; i < render_params.n_lights; ++i)
 				sphere_points.push_back(render_params.lights[i].pos);
 		}
 
@@ -612,7 +612,7 @@ void viewer::update_viewport_meshes()
 		meshes[m]->vy = rows - (m / cols) - 1;
 	}
 
-	glfwGetFramebufferSize(window, &viewport_width, &viewport_height);
+	glfwGetFramebufferSize(window, (int *) &viewport_width, (int *) &viewport_height);
 	viewport_width /= cols;
 	viewport_height /= rows;
 	cam.aspect = real_t(viewport_width) / viewport_height;
@@ -707,7 +707,7 @@ void viewer::mouse_callback(GLFWwindow * window, int button, int action, int mod
 			view->idx_selected_mesh = idx_mesh;
 
 		if(mods == GLFW_MOD_SHIFT && button == GLFW_MOUSE_BUTTON_LEFT)
-			view->pick_vertex(ix % view->viewport_width, iy % view->viewport_height);
+			view->pick_vertex({ix % view->viewport_width, iy % view->viewport_height});
 	}
 
 	if(button == GLFW_MOUSE_BUTTON_LEFT)
@@ -982,6 +982,8 @@ bool viewer::m_setup_raytracing(viewer * view)
 	static double time = 0;
 
 	ImGui::Combo("rt", &rt, "Select\0Embree\0OptiX\0Splat Test\0Splat Embree\0Splat OptiX\0\0");
+	ImGui::SliderInt("depth", (int *) &view->render_params.depth, 1, 1 << 5);
+	ImGui::SliderInt("n_samples", (int *) &view->render_params.n_samples, 1, 1 << 5);
 
 	if(rt > 2)
 	{
@@ -1241,18 +1243,13 @@ bool viewer::m_raycasting(viewer * view)
 
 	rt::embree rc({mesh}, {mesh.model_mat});
 
-	float * frame = rc.raycaster(	{view->viewport_width, view->viewport_height},
-									inverse(view->proj_view_mat),
-									view->cam.eye
-									);
+	auto frame = rc.raycaster(view->render_params.viewport_size, inverse(view->proj_view_mat), view->cam.eye);
 
 	std::thread([](const CImg<float> & img)
 	{
 		img.display();
 	},
-	CImg<float>(frame, view->viewport_width, view->viewport_height)).detach();
-
-	delete [] frame;
+	CImg<float>(frame.data(), view->viewport_width, view->viewport_height)).detach();
 
 	return false;
 }
@@ -1335,6 +1332,9 @@ void viewer::render_rt(che_viewer & mesh, frame & rt_frame)
 
 	render_params.restart = rt_frame.resize(viewport_width, viewport_height) || render_params.restart;
 
+	if(render_params.restart)
+		render_params.n_frames = 0;
+
 	//render_params.viewport_x = mesh.vx * viewport_width;
 	//render_params.viewport_y = mesh.vy * viewport_height;
 	//render_params.viewport_is_window = false;
@@ -1345,13 +1345,15 @@ void viewer::render_rt(che_viewer & mesh, frame & rt_frame)
 	rt_frame.unmap_pbo(mesh.render_opt == R_OPTIX);
 
 	rt_frame.display();
+
+	++render_params.n_frames;
 }
 
-void viewer::pick_vertex(const int & x, const int & y)
+void viewer::pick_vertex(const uvec2 & pos)
 {
 	che_viewer & mesh = selected_mesh();
 
-	mesh.select({x, y}, {viewport_width, viewport_height}, inverse(proj_view_mat), cam.eye);
+	mesh.select(pos, render_params.viewport_size, inverse(proj_view_mat), cam.eye);
 }
 
 void viewer::check_apply_all_meshes(const std::function<void(che_viewer &)> & fun)

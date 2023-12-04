@@ -9,52 +9,45 @@ namespace gproshan::rt {
 
 void raytracing::render(vec4 * img, const render_params & params, const bool & flat)
 {
-	if(params.restart) n_samples = 0;
-
-	int window_width = params.window_width;
-	int window_height = params.window_height;
+	uvec2 window_size = params.window_size;
 	if(params.viewport_is_window)
-	{
-		window_width = params.viewport_width;
-		window_height = params.viewport_height;
-	}
-
-	vec4 li;
-
-	#pragma omp parallel for private(li)
-	for(int i = 0; i < params.viewport_width; ++i)
-	for(int j = 0; j < params.viewport_height; ++j)
-	{
-		//row major
-		vec4 & color = img[j * params.viewport_width + i];
-		const vertex & dir = ray_view_dir(	{i + params.viewport_x, j + params.viewport_y},
-											{window_width, window_height},
-											params.inv_proj_view,
-											params.cam_pos
-											);
-
-		vec3 li = closesthit_radiance(params.cam_pos, dir, params.ambient, params.lights, params.n_lights, params.cam_pos, flat);
-
-		color = (color * n_samples + (li, 1)) / (n_samples + 1);
-	}
-
-	++n_samples;
-}
-
-float * raytracing::raycaster(	const ivec2 & windows_size,
-								const mat4 & inv_proj_view,
-								const vertex & cam_pos,
-								const index_t & samples	) const
-{
-	float * frame = new float[windows_size.x() * windows_size.y()];
+		window_size = params.viewport_size;
 
 	#pragma omp parallel for
-	for(int i = 0; i < windows_size.x(); ++i)
-	for(int j = 0; j < windows_size.y(); ++j)
+	for(unsigned int i = 0; i < params.viewport_size.x(); ++i)
+	for(unsigned int j = 0; j < params.viewport_size.y(); ++j)
 	{
+		const uvec2 & pos = params.viewport_size + uvec2{i, j};
+
+		random<real_t> rnd(pos.x() + window_size.x() * pos.y(), params.n_frames);
+
+		//row major
+		vec4 & color = img[j * params.viewport_size.x() + i];
+		const vertex & dir = ray_view_dir(pos, window_size, params.inv_proj_view, params.cam_pos, rnd);
+
+		const vec3 & li = closesthit_radiance(params.cam_pos, dir, params.ambient, params.lights, params.n_lights, params.cam_pos, flat);
+
+		color = (color * params.n_frames + (li, 1)) / (params.n_frames + 1);
+	}
+}
+
+std::vector<float> raytracing::raycaster(	const uvec2 & windows_size,
+											const mat4 & inv_proj_view,
+											const vertex & cam_pos,
+											const index_t & samples
+											) const
+{
+	std::vector<float> frame(windows_size.x() * windows_size.y());
+
+	#pragma omp parallel for
+	for(unsigned int i = 0; i < windows_size.x(); ++i)
+	for(unsigned int j = 0; j < windows_size.y(); ++j)
+	{
+		random<real_t> rnd(i, j);
+
 		//row major
 		float & color = frame[(windows_size.y() - j - 1) * windows_size.x() + i] = 0;
-		vertex dir = ray_view_dir({i, j}, windows_size, inv_proj_view, cam_pos);
+		vertex dir = ray_view_dir({i, j}, windows_size, inv_proj_view, cam_pos, rnd);
 
 		for(index_t s = 0; s < samples; ++s)
 			color += intersect_depth(cam_pos, dir);
