@@ -12,21 +12,26 @@ namespace gproshan::rt {
 
 const size_t NL = 16;	// number of lights
 
-struct render_params
+
+struct base_params
 {
-	int window_width = 0;
-	int window_height = 0;
-	int viewport_width = 0;
-	int viewport_height = 0;
-	int viewport_x = 0;
-	int viewport_y = 0;
-	int n_lights = 0;
+	uvec2 window_size;
+	uvec2 viewport_pos;
+	unsigned int depth = 1;
+	unsigned int n_frames = 0;
+	unsigned int n_samples = 1;
+	unsigned int n_lights = 0;
 	light lights[NL];
 	light ambient = {0, 1, 0.1};
-	vertex cam_pos;
 	mat4 inv_proj_view;
-	bool restart = false;
+	vertex cam_pos;
+};
+
+struct render_params: public base_params
+{
+	uvec2 viewport_size;
 	bool viewport_is_window = true;
+	bool restart = false;
 
 	bool add_light(const light & l)
 	{
@@ -39,12 +44,9 @@ struct render_params
 
 	void log()
 	{
-		gproshan_log_var(window_width);
-		gproshan_log_var(window_height);
-		gproshan_log_var(viewport_width);
-		gproshan_log_var(viewport_height);
-		gproshan_log_var(viewport_x);
-		gproshan_log_var(viewport_y);
+		gproshan_log_var(window_size);
+		gproshan_log_var(viewport_size);
+		gproshan_log_var(viewport_pos);
 		gproshan_log_var(n_lights);
 		gproshan_log_var(cam_pos);
 		gproshan_log_var(restart);

@@ -13,16 +13,19 @@
 namespace gproshan::rt {
 
 
-template <class T, uint32_t N = 16>
+template <class T, unsigned int N = 16>
 struct random
 {
-	uint32_t previous;
+	unsigned int previous;
 
 	__host_device__
-	random(uint32_t v0, uint32_t v1)
+	random(unsigned int p): previous(p) {}
+
+	__host_device__
+	random(unsigned int v0, unsigned int v1)
 	{
-		uint32_t s = 0;
-		for(uint32_t i = 0; i < N; ++i)
+		unsigned int s = 0;
+		for(unsigned int i = 0; i < N; ++i)
 		{
 			s += 0x9e3779b9;
 			v0 += ((v1 << 4) + 0xa341316c) ^ (v1 + s) ^ ((v1 >> 5) + 0xc8013ea4);
@@ -36,6 +39,12 @@ struct random
 	{
 		previous = previous * 1664525 + 1013904223;
 		return T(previous & 0x00FFFFFF) / T(0x01000000);
+	}
+
+	__host_device__
+	operator unsigned int & ()
+	{
+		return previous;
 	}
 };
 
@@ -65,6 +74,7 @@ template <class T>
 struct t_eval_hit
 {
 	index_t primID = NIL;
+	int illum = 1;
 	T dist = 0;
 	T u = 0, v = 0;
 	vec<T, 3> position;
@@ -73,6 +83,7 @@ struct t_eval_hit
 	vec<T, 3> Kd = 0.5;
 	vec<T, 3> Ks = 0.2;
 	T Ns = 10;
+	T Ni = 0;
 	T d = 1;
 
 	__host_device__
@@ -117,21 +128,80 @@ struct t_eval_hit
 
 		Ka = mat.Ka;
 		if(mat.map_Ka != -1)
-			Ka *= texture(sc.textures[mat.map_Ka], texcoord);
+			Ka = texture(sc.textures[mat.map_Ka], texcoord);
 
 		Kd = mat.Kd;
 		if(mat.map_Kd != -1)
-			Kd *= texture(sc.textures[mat.map_Kd], texcoord);
+			Kd = texture(sc.textures[mat.map_Kd], texcoord);
 
 		Ks = mat.Ks;
 		if(mat.map_Ks != -1)
-			Ks *= texture(sc.textures[mat.map_Ks], texcoord);
+			Ks = texture(sc.textures[mat.map_Ks], texcoord);
 
 		Ns = mat.Ns;
+		Ni = mat.Ni;
 
 		d = mat.d;
 //		if(mat.map_d != -1)
 //			d = texture(sc.textures[mat.map_d], texcoord);
+
+		illum = mat.illum;
+	}
+
+	//	PTX symbols of certain types (e.g. pointers to functions) cannot be used to initialize array
+	__host_device__
+	bool scatter_mat(const vec<T, 3> & v, vec<T, 3> & scattered, random<T> & rnd)
+	{
+		switch(illum)
+		{
+			case 1:
+			case 2:
+				return scatter_diffuse(v, scattered, rnd);
+			case 3:
+			case 5:
+			case 6:
+			case 7:
+				return scatter_reflect(v, scattered, rnd);
+		}
+
+		return false;
+	}
+
+	__host_device__
+	bool scatter_reflect(const vec<T, 3> & v, vec<T, 3> & scattered, random<T> & )
+	{
+		scattered = normalize(v - 2 * dot(v, normal) * normal);
+		return dot(scattered, normal) > 0;
+	}
+
+	__host_device__
+	bool scatter_refract(const vec<T, 3> & v, vec<T, 3> & scattered, random<T> & )
+	{
+		const float dvn = dot(v, normal);
+		const float d = 1 - Ni * Ni * (1 - dvn * dvn);
+
+		if(d <= 0) return false;
+
+		scattered = Ni * (v - dvn * normal) - normal * sqrtf(d);
+		return true;
+	}
+
+	__host_device__
+	bool scatter_diffuse(const vec<T, 3> & , vec<T, 3> & scattered, random<T> & rnd)
+	{
+		// random unit sphere
+		const T & theta = rnd() * 2 * M_PI;
+		const T & phi = acosf(2 * rnd() - 1);
+		const T & r = cbrtf(rnd());
+
+		const vec<T, 3> p = { r * sinf(phi) * cosf(theta)
+							, r * sinf(phi) * sinf(theta)
+							, r * cosf(phi)
+							};
+
+		scattered = normalize(normal + p);
+
+		return true;
 	}
 };
 
@@ -139,7 +209,7 @@ template <class T, class Occluded>
 __host_device__
 vec<T, 3> eval_li(const t_eval_hit<T> & hit, const light & ambient, const light * lights, const int & n_lights, const vec<T, 3> & eye, Occluded occluded)
 {
-	const vec<T, 3> v = normalize(eye - hit.position);
+	const vec<T, 3> & v = normalize(eye - hit.position);
 	const vec<T, 3> & n = hit.normal;
 
 	T lambertian;
@@ -179,10 +249,15 @@ using eval_hit = t_eval_hit<float>;
 
 template <class T>
 __host_device__
-vec<T, 3> ray_view_dir(const ivec2 & pos, const ivec2 & windows_size, const mat<T, 4> & inv_proj_view, const vec<T, 3> & cam_pos)
+vec<T, 3> ray_view_dir(	const uvec2 & pos,
+						const uvec2 & windows_size,
+						const mat<T, 4> & inv_proj_view,
+						const vec<T, 3> & cam_pos,
+						random<T> & rnd
+						)
 {
-	vec2 screen = {	(float(pos.x()) + 0.5f) / windows_size.x(),
-					(float(pos.y()) + 0.5f) / windows_size.y()
+	vec2 screen = {	(float(pos.x()) + rnd()) / windows_size.x(),
+					(float(pos.y()) + rnd()) / windows_size.y()
 					};
 	vec<T, 4> view = {screen.x() * 2 - 1, screen.y() * 2 - 1, 1, 1};
 	vec<T, 4> q = inv_proj_view * view;

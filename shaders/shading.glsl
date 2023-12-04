@@ -49,15 +49,15 @@ vec3 shading(vec3 color, vec3 n, vec3 pos, vec2 texcoord)
 	{
 		Ka = mat.Ka;
 		if(mat.map_Ka != -1)
-			Ka *= texture(tex_Ka, texcoord).rgb;
+			Ka = texture(tex_Ka, texcoord).rgb;
 
 		Kd = mat.Kd;
 		if(mat.map_Kd != -1)
-			Kd *= texture(tex_Kd, texcoord).rgb;
+			Kd = texture(tex_Kd, texcoord).rgb;
 
 		Ks = mat.Ks;
 		if(mat.map_Ks != -1)
-			Ks *= texture(tex_Ks, texcoord).rgb;
+			Ks = vec3(texture(tex_Ks, texcoord).r);
 
 		Ns = mat.Ns;
 	}

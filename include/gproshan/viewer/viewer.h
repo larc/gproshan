@@ -60,10 +60,10 @@ class viewer
 
 		GLFWwindow * window = nullptr;
 		rt::render_params render_params;
-		int & window_width = render_params.window_width;
-		int & window_height = render_params.window_height;
-		int & viewport_width = render_params.viewport_width;
-		int & viewport_height = render_params.viewport_height;
+		unsigned int & window_width = render_params.window_size.x();
+		unsigned int & window_height = render_params.window_size.y();
+		unsigned int & viewport_width = render_params.viewport_size.x();
+		unsigned int & viewport_height = render_params.viewport_size.y();
 		mat4 proj_mat;
 		mat4 proj_view_mat;
 
@@ -176,7 +176,7 @@ class viewer
 
 		static bool m_raycasting(viewer * view);
 
-		void pick_vertex(const int & x, const int & y);
+		void pick_vertex(const uvec2 & pos);
 		void check_apply_all_meshes(const std::function<void(che_viewer &)> & fun);
 };
 
