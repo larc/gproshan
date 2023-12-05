@@ -12,7 +12,7 @@
 namespace gproshan::rt {
 
 
-size_t splat::k_nn = 8;
+size_t splat::k_nn = 9;
 real_t splat::t_normal = 0.9;
 real_t splat::d_overlap = 0.1;
 
@@ -198,7 +198,7 @@ std::vector<index_t> splat::voronoi_subdivision(std::vector<index_t> & voronoi_s
 	real_t radio_threshold = 0;
 	index_t new_seed = NIL;
 
-	while(radio > radio_threshold)
+	while(radio > radio_threshold || seeds.size() < 9)
 	{
 		radio = 0;
 

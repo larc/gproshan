@@ -63,7 +63,7 @@ extern "C" __global__ void __closesthit__radiance()
 	const vertex x = (1.f - bar.x - bar.y) * A + bar.x * B + bar.y * C;
 
 	eval_hit hit;
-	splat_hit(hit, mesh, splats_pcs[sbtID], primID, x, dir, length(x - org));
+	const float w = splat_hit(hit, mesh, splats_pcs[sbtID], primID, x, dir, length(x - org));
 
 	vec3 * trace = ray_data<vec3>();
 	vec3 & color		= trace[0];
@@ -92,12 +92,17 @@ extern "C" __global__ void __closesthit__radiance()
 
 						return occluded != 0;
 					});
-
-
-	random<float> rnd = optixGetPayload_2();
+	
 	color *= attenuation;
 	position = hit.position;
+	
+	if(w < 1e-3f)
+	{
+		color *= w;
+		return;
+	}
 
+	random<float> rnd = optixGetPayload_2();
 	if(!hit.scatter_diffuse(scattered, scattered, rnd))
 		attenuation = 0;
 

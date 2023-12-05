@@ -103,7 +103,7 @@ index_t binary_search(const T * data, index_t i, index_t j, const T & value)
 
 template <class T>
 __host_device__
-void splat_hit(t_eval_hit<T> & hit, const CHE & pc, const splats_data & sd, const index_t & aprimID, const vec<T, 3> & x, const vec<T, 3> & d, const T & tray)
+T splat_hit(t_eval_hit<T> & hit, const CHE & pc, const splats_data & sd, const index_t & aprimID, const vec<T, 3> & x, const vec<T, 3> & d, const T & tray)
 {
 	const index_t k = powf(2, 10 - 4 * tray) + 2;
 
@@ -154,7 +154,7 @@ void splat_hit(t_eval_hit<T> & hit, const CHE & pc, const splats_data & sd, cons
 		position = x;
 	}
 
-	return;
+	return sum_w;
 }
 
 
