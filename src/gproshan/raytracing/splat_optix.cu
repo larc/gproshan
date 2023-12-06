@@ -94,7 +94,7 @@ extern "C" __global__ void __closesthit__radiance()
 					});
 	
 	color *= attenuation;
-	position = hit.position;
+	position = x;
 	
 	if(w < 1e-3f)
 	{
