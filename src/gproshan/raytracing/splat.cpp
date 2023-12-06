@@ -145,7 +145,7 @@ std::vector<index_t> splat::planar_segmentation(const che * pc, std::vector<inde
 			vcenter = (vcenter * (n - 1) + pc->point(front)) / n;
 
 			const int * nn = k3tree(front);
-			for(index_t i = 0; i < splat::k_nn; ++i)
+			for(index_t i = 1; i < splat::k_nn; ++i)
 			{
 				const int & u = nn[i];
 
@@ -173,6 +173,21 @@ std::vector<index_t> splat::planar_segmentation(const che * pc, std::vector<inde
 
 			continue;
 		}
+	
+		const size_t & grow_size = size(vertices);
+		
+		// overlapping segs
+		for(index_t i = segs.back(); i < grow_size; ++i)
+		{
+			const int * nn = k3tree(vertices[i]);
+			for(index_t k = 1; k < splat::k_nn; ++k)
+			{
+				const int & u = nn[k];
+				if(visited[u] != idx)
+					vertices.push_back(u);
+			}
+		}
+			
 
 		segs.push_back(size(vertices));
 	}
@@ -290,25 +305,33 @@ che * splat::init_splats(const che * mesh, const mat4 & model_mat, std::vector<i
 		vec3 & normal = s.tbn[2];
 
 		center = {0, 0, 0};
-		normal = {0, 0, 0};
 		for(index_t j = s.begin; j < s.end; ++j)
 		{
 			const index_t & v = vertices[j];
 			vertex & p = points[j];
 			p = model_mat * (mesh->point(v), 1);
 			center += p;
-			normal += mesh->normal(v);
 		}
 		center /= s.end - s.begin;
+		
+		s.radius = 0;
+		for(index_t j = s.begin; j < s.end; ++j)
+			s.radius = std::max(s.radius, length(points[j] - center));
+
+
+		normal = {0, 0, 0};
+		for(index_t j = s.begin; j < s.end; ++j)
+		{
+			const index_t & v = vertices[j];
+			vertex & p = points[j];
+			normal += gaussian(length(p - center), s.radius * s.radius / 25) * mesh->normal(v);
+		}
+
 		normal /= length(normal);
 
 		tbn[0] = points[s.end - 1] - center;
 		tbn[0] = normalize(tbn[0] - dot(tbn[0], tbn[2]) * tbn[2]);
 		tbn[1] = normalize(cross(tbn[2], tbn[0]));
-
-		s.radius = 0;
-		for(index_t j = s.begin; j < s.end; ++j)
-			s.radius = std::max(s.radius, length(points[j] - center));
 
 		std::sort(begin(vertices) + s.begin, begin(vertices) + s.end,
 					[&](const index_t & a, const index_t & b)
