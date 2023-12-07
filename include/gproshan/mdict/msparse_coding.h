@@ -59,9 +59,9 @@ class msparse_coding
 		static size_t T;						///< factor of patches' size, default 5 toplesets.
 
 	public:
-		msparse_coding(	che *const & _mesh, 		///< pointer to input mesh.
-						basis *const &_phi_basis,	///< pointer to continuous basis.
-						const params & p			///<
+		msparse_coding(	che * _mesh, 			///< pointer to input mesh.
+						basis * _phi_basis,		///< pointer to continuous basis.
+						const params & p		///<
 						);
 
 		virtual ~msparse_coding();

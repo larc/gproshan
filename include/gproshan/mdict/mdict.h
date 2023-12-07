@@ -21,44 +21,44 @@ struct locval_t
 };
 
 
-void OMP(std::vector<locval_t> & alpha, const a_vec & x, const index_t i, const a_mat & D, const size_t & L);
+void OMP(std::vector<locval_t> & alpha, const a_vec & x, const index_t i, const a_mat & D, const size_t L);
 
-a_sp_mat OMP_all(std::vector<locval_t> & locval, const a_mat & X, const a_mat & D, const size_t & L);
+a_sp_mat OMP_all(std::vector<locval_t> & locval, const a_mat & X, const a_mat & D, const size_t L);
 
-void sp_KSVD(a_mat & D, const a_mat & X, const size_t & L, size_t k);
+void sp_KSVD(a_mat & D, const a_mat & X, const size_t L, size_t k);
 
 
 // DENSE
 
-std::tuple<a_vec, arma::uvec> _OMP(const a_vec & x, const a_mat & D, const size_t & L);
+std::tuple<a_vec, arma::uvec> _OMP(const a_vec & x, const a_mat & D, const size_t L);
 
-a_vec OMP(const a_vec & x, const a_mat & D, const size_t & L);
-a_vec OMP(const a_vec & x, const a_mat & D, const size_t & L, const arma::uchar_vec & mask);
+a_vec OMP(const a_vec & x, const a_mat & D, const size_t L);
+a_vec OMP(const a_vec & x, const a_mat & D, const size_t L, const arma::uchar_vec & mask);
 
-a_mat OMP_all(const a_mat & X, const a_mat & D, const size_t & L);
+a_mat OMP_all(const a_mat & X, const a_mat & D, const size_t L);
 
-void KSVD(a_mat & D, const a_mat & X, const size_t & L, size_t k);
+void KSVD(a_mat & D, const a_mat & X, const size_t L, size_t k);
 
 
 // MESH DENSE
 
-a_vec OMP(const patch & p, const a_mat & A, const size_t & L);
-a_vec OMP(const patch & p, const a_mat & A, const size_t & L);
+a_vec OMP(const patch & p, const a_mat & A, const size_t L);
+a_vec OMP(const patch & p, const a_mat & A, const size_t L);
 
-a_mat OMP_all(const std::vector<patch> & patches, const a_mat & A, const size_t & L);
-a_mat OMP_all(const std::vector<patch> & patches, basis * phi_basis, const a_mat & A, const size_t & L);
+a_mat OMP_all(const std::vector<patch> & patches, const a_mat & A, const size_t L);
+a_mat OMP_all(const std::vector<patch> & patches, basis * phi_basis, const a_mat & A, const size_t L);
 
 
-void KSVD(a_mat & A, const std::vector<patch> & patches, const size_t & L, size_t k);
+void KSVD(a_mat & A, const std::vector<patch> & patches, const size_t L, size_t k);
 
 
 // MESH SPARSE
 
-void OMP(std::vector<locval_t> & alpha, const patch & p, const index_t i, const a_mat & A, const size_t & L);
+void OMP(std::vector<locval_t> & alpha, const patch & p, const index_t i, const a_mat & A, const size_t L);
 
-a_sp_mat OMP_all(std::vector<locval_t> & locval, const std::vector<patch> & patches, const a_mat & A, const size_t & L);
+a_sp_mat OMP_all(std::vector<locval_t> & locval, const std::vector<patch> & patches, const a_mat & A, const size_t L);
 
-void sp_KSVD(a_mat & A, const std::vector<patch> & patches, const size_t & L, size_t k);
+void sp_KSVD(a_mat & A, const std::vector<patch> & patches, const size_t L, size_t k);
 
 
 } // namespace gproshan::mdict

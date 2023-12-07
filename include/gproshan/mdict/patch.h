@@ -50,14 +50,14 @@ class patch
 
 		void init(	che * mesh,						///< input mesh.
 					const index_t v,				///< center vertex of the patch.
-					const size_t & n_toplevels,		///< number of toplevels to jet fitting.
+					const size_t n_toplevels,		///< number of toplevels to jet fitting.
 					const real_t radio_,			///< euclidean radio in XY of the patch.
 					index_t * _toplevel = nullptr	///< aux memory to gather toplevel vertices.
 					);
 
 		void init_disjoint(che * mesh,
 					const index_t v,
-					const size_t & n_toplevels,
+					const size_t n_toplevels,
 					std::vector<index_t> & _vertices,
 					index_t * _toplevel = nullptr);
 
@@ -98,7 +98,7 @@ class patch
 		const a_vec normal();
 		bool is_covered( bool * covered);
 
-//		void save(const real_t radio, const size_t & imsize, CImgList<real_t> & imlist);
+//		void save(const real_t radio, const size_t imsize, CImgList<real_t> & imlist);
 		void update_heights(real_t & min, real_t & max, bool flag);
 		void compute_avg_distance(che * mesh, std::vector<vpatches_t> & vpatches, const index_t p);
 		void scale_xyz(const real_t radio_f);
@@ -119,7 +119,7 @@ class patch
 		/// Gather the vertices needed to compute the jet_fit_directions of the patch.
 		void gather_vertices(	che * mesh,
 								const index_t v,
-								const size_t & n_toplevels,
+								const size_t n_toplevels,
 								index_t * toplevel
 								);
 

@@ -34,7 +34,7 @@ typedef My_Monge_via_jet_fitting::Monge_form My_Monge_form;
 size_t patch::expected_nv = 3 * msparse_coding::T * (msparse_coding::T + 1);
 real_t patch::nyquist_factor = 0.5;
 
-void patch::init(che * mesh, const index_t v, const size_t & n_toplevels, const real_t radio_, index_t * _toplevel)
+void patch::init(che * mesh, const index_t v, const size_t n_toplevels, const real_t radio_, index_t * _toplevel)
 {
 	radio = radio_;
 	index_t * toplevel = _toplevel ? _toplevel : new index_t[mesh->n_vertices];
@@ -46,7 +46,7 @@ void patch::init(che * mesh, const index_t v, const size_t & n_toplevels, const 
 	if(!_toplevel) delete [] toplevel;
 }
 
-void patch::init_disjoint(che * mesh, const index_t v, const size_t & n_toplevels, std::vector<index_t> & _vertices, index_t * _toplevel)
+void patch::init_disjoint(che * mesh, const index_t v, const size_t n_toplevels, std::vector<index_t> & _vertices, index_t * _toplevel)
 {
 	radio = 1;
 	index_t * toplevel = _toplevel ? _toplevel : new index_t[mesh->n_vertices];
@@ -524,7 +524,7 @@ const a_vec patch::normal()
 	return T.col(2);
 }
 
-void patch::gather_vertices(che * mesh, const index_t v, const size_t & n_toplevels, index_t * toplevel)
+void patch::gather_vertices(che * mesh, const index_t v, const size_t n_toplevels, index_t * toplevel)
 {
 	if(size(vertices)) vertices.clear();
 

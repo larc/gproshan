@@ -73,7 +73,7 @@ size_t geodesics::n_sorted_index() const
 	return n_sorted;
 }
 
-void geodesics::copy_sorted_index(index_t * indexes, const size_t & n) const
+void geodesics::copy_sorted_index(index_t * indexes, const size_t n) const
 {
 	assert(n <= n_sorted);
 	memcpy(indexes, sorted_index, n * sizeof(index_t));
@@ -114,7 +114,7 @@ void geodesics::execute(che * mesh, const std::vector<index_t> & sources, const 
 	}
 }
 
-void geodesics::run_fastmarching(che * mesh, const std::vector<index_t> & sources, const size_t & n_iter, const real_t radio, const fm_function_t & fun)
+void geodesics::run_fastmarching(che * mesh, const std::vector<index_t> & sources, const size_t n_iter, const real_t radio, const fm_function_t & fun)
 {
 	CHE cmesh(mesh);
 

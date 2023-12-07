@@ -68,7 +68,7 @@ class che
 
 	public:
 		che(const che & mesh);
-		che(const size_t & n_v = 0, const size_t & n_f = 0);
+		che(const size_t n_v = 0, const size_t n_f = 0);
 		che(const vertex * vertices, const index_t n_v, const index_t * trigs, const index_t n_f);
 		virtual ~che();
 
@@ -77,7 +77,7 @@ class che
 		vertex & point(const index_t v);
 		const vertex & normal(const index_t v) const;
 		vertex & normal(const index_t v);
-		vertex shading_normal(const index_t f, const float & u, const float & v) const;
+		vertex shading_normal(const index_t f, const float u, const float v) const;
 		vertex normal_trig(const index_t f) const;
 		vertex normal_he(const index_t he) const;
 		vertex gradient_he(const index_t he, const real_t * f) const;
@@ -91,21 +91,21 @@ class che
 		rgb_t rgb(const index_t v) const;
 		rgb_t & rgb(const index_t v);
 		vertex color(const index_t v) const;
-		vertex shading_color(const index_t f, const float & u, const float & v) const;
+		vertex shading_color(const index_t f, const float u, const float v) const;
 
 		// update methods
 		void reload();
 		mat4 normalize_sphere(const real_t r = 1) const;
 		mat4 normalize_box(const real_t side = 2) const;
 		che * merge(const che * mesh, const std::vector<index_t> & com_vertices = {});
-		void update_vertices(const vertex * positions, const size_t & n = 0, const index_t v_i = 0);
+		void update_vertices(const vertex * positions, const size_t n = 0, const index_t v_i = 0);
 		void update_heatmap(const real_t * hm = nullptr);
 		void update_normals();
 		void invert_normals();
 		void multiplicate_vertices();
 		void remove_vertices(const std::vector<index_t> & vertices);
 		void remove_non_manifold_vertices();
-		void set_head_vertices(index_t * head, const size_t & n);
+		void set_head_vertices(index_t * head, const size_t n);
 
 		// half edge access methods triangular trigs and navigation
 		const index_t * trigs_ptr() const;
@@ -159,7 +159,7 @@ class che
 	protected:
 		void init(const vertex * vertices, const index_t n_v, const index_t * trigs, const index_t n_f);
 		void init(const std::string & file);
-		void alloc(const size_t & n_v, const size_t & n_f);
+		void alloc(const size_t n_v, const size_t n_f);
 		void free();
 
 		virtual void read_file(const std::string & file);
@@ -169,7 +169,7 @@ class che
 		void update_eht();
 
 	public:
-		static std::vector<index_t> trig_convex_polygon(const index_t * P, const size_t & n);
+		static std::vector<index_t> trig_convex_polygon(const index_t * P, const size_t n);
 		static che * load_mesh(const std::string & file_path);
 
 	friend struct CHE;

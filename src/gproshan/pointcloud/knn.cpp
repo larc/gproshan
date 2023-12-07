@@ -8,7 +8,7 @@
 namespace gproshan::knn {
 
 
-grid::grid(const point * pc, const size_t & n_points, const mat4 & transform): points(n_points)
+grid::grid(const point * pc, const size_t n_points, const mat4 & transform): points(n_points)
 {
 	double build_time = 0;
 
@@ -72,7 +72,7 @@ std::vector<index_t> grid::operator () (const point & p, int k) const
 
 
 ///< Implementation using flann, by default compute all knn
-k3tree::k3tree(const point * pc, const size_t & n_points, const size_t & k, const std::vector<point> & query)
+k3tree::k3tree(const point * pc, const size_t n_points, const size_t k, const std::vector<point> & query)
 {
 	double time_build, time_query;
 
@@ -85,7 +85,7 @@ k3tree::k3tree(const point * pc, const size_t & n_points, const size_t & k, cons
 
 	TIC(time_query);
 		const point * q = size(query) ? query.data() : pc;
-		const size_t & n_results = size(query) ? size(query) : n_points;
+		const size_t n_results = size(query) ? size(query) : n_points;
 
 		flann::Matrix<real_t> mq((real_t *) q, n_results, 3);
 
@@ -118,7 +118,7 @@ const int * k3tree::operator () (const index_t i) const
 	return indices[i];
 }
 
-const int & k3tree::operator () (const index_t i, const index_t j) const
+int k3tree::operator () (const index_t i, const index_t j) const
 {
 	return indices[i][j];
 }

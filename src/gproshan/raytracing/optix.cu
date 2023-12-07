@@ -65,7 +65,7 @@ extern "C" __global__ void __closesthit__radiance()
 	vec3 & ray_dir		= trace[3];
 
 	color = eval_li(hit, optix_params.ambient, optix_params.lights, optix_params.n_lights, optix_params.cam_pos,
-					[&](const vec3 & position, const vec3 & wi, const float & light_dist) -> bool
+					[&](const vec3 & position, const vec3 & wi, const float light_dist) -> bool
 					{
 						uint32_t occluded = 1;
 						optixTrace( optix_params.traversable,

@@ -8,7 +8,7 @@
 namespace gproshan::mdict {
 
 
-basis_dct::basis_dct(const size_t & n, const real_t r): basis(r, n * n), n_freq(n) {}
+basis_dct::basis_dct(const size_t n, const real_t r): basis(r, n * n), n_freq(n) {}
 
 void basis_dct::discrete(a_mat & phi, const a_vec & x, const a_vec & y)
 {

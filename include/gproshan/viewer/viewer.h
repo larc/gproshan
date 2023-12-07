@@ -104,12 +104,12 @@ class viewer
 		char status_message[1024] = {};
 
 	public:
-		viewer(const char * title = "gproshan", const int & width = 1600, const int & height = 900);
+		viewer(const char * title = "gproshan", const int width = 1600, const int height = 900);
 		virtual ~viewer();
 
 		che_viewer & selected_mesh();
 		void add_menu(const std::string & str, const std::vector<int> & vprocesses);
-		int add_process(const char * name, const function_t & f, const int & key = -1);
+		int add_process(const char * name, const function_t & f, const int key = -1);
 		bool add_mesh(che * p_mesh, const bool & reset_normals = true);
 		bool remove_mesh(const index_t idx);
 		bool pop_mesh();

@@ -13,7 +13,7 @@ class che_ptx : public che
 	public:
 		che_ptx(const std::string & file);
 
-		static void write_file(const che * mesh, const std::string & file, const size_t & n_rows, const size_t & n_cols);
+		static void write_file(const che * mesh, const std::string & file, const size_t n_rows, const size_t n_cols);
 
 
 	private:

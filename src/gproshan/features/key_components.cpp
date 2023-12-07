@@ -41,7 +41,7 @@ index_t key_components::operator()(const index_t i)
 	return comp_idx[find(i)];
 }
 
-key_components::operator const size_t & () const
+key_components::operator size_t () const
 {
 	return n_comp;
 }

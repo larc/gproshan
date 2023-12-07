@@ -8,7 +8,7 @@
 namespace gproshan::mdict {
 
 
-basis_cosine::basis_cosine(const size_t & nr, const size_t & nf, const real_t r): basis(r, r * nf), n_rot(nr), n_freq(nf) {}
+basis_cosine::basis_cosine(const size_t nr, const size_t nf, const real_t r): basis(r, r * nf), n_rot(nr), n_freq(nf) {}
 
 void basis_cosine::discrete(a_mat & phi, const a_vec & x, const a_vec & y)
 {

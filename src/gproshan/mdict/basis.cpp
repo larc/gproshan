@@ -6,14 +6,14 @@
 namespace gproshan::mdict {
 
 
-basis::basis(const real_t r, const size_t & d): _radio(r), _dim(d) {}
+basis::basis(const real_t r, const size_t d): _radio(r), _dim(d) {}
 
 real_t & basis::radio()
 {
 	return _radio;
 }
 
-const size_t & basis::dim() const
+size_t basis::dim() const
 {
 	return _dim;
 }

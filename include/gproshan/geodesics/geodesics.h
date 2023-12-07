@@ -50,7 +50,7 @@ class geodesics
 		size_t n_sorted;			///< Number of vertices sorted by their geodesics distance.
 		bool free_dist;
 
-		const size_t & n_vertices;	///< Number of vertices, const reference
+		const size_t n_vertices;	///< Number of vertices, const reference
 
 	public:
 		geodesics(	che * mesh,								///< input triangular mesh.
@@ -65,12 +65,12 @@ class geodesics
 		real_t radio() const;
 		index_t farthest() const;
 		size_t n_sorted_index() const;
-		void copy_sorted_index(index_t * indexes, const size_t & n) const;
+		void copy_sorted_index(index_t * indexes, const size_t n) const;
 		void normalize();
 
 	private:
 		void execute(che * mesh, const std::vector<index_t> & sources, const params & p);
-		void run_fastmarching(che * mesh, const std::vector<index_t> & sources, const size_t & n_iter, const real_t radio, const fm_function_t & fun);
+		void run_fastmarching(che * mesh, const std::vector<index_t> & sources, const size_t n_iter, const real_t radio, const fm_function_t & fun);
 		void run_parallel_toplesets_propagation_cpu(che * mesh, const std::vector<index_t> & sources);
 		void run_heat_method(che * mesh, const std::vector<index_t> & sources);
 

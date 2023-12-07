@@ -19,7 +19,7 @@ size_t msparse_coding::L = 12;
 size_t msparse_coding::K = 10;
 size_t msparse_coding::T = 5;
 
-msparse_coding::msparse_coding(che *const & _mesh, basis *const & _phi_basis, const params & p): mesh(_mesh), phi_basis(_phi_basis), m_params(p)
+msparse_coding::msparse_coding(che * _mesh, basis * _phi_basis, const params & p): mesh(_mesh), phi_basis(_phi_basis), m_params(p)
 {
 	A.eye(phi_basis->dim(), m_params.n_atoms);
 	dist = new real_t[mesh->n_vertices];

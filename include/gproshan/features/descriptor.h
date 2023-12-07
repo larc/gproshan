@@ -21,7 +21,7 @@ class descriptor
 		a_mat features;
 
 	public:
-		descriptor(const signature & sig, const che * mesh, const size_t & n_eigs);
+		descriptor(const signature & sig, const che * mesh, const size_t n_eigs);
 		size_t n_eigs();
 
 		///< return true if the features were computed

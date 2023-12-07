@@ -22,7 +22,7 @@ a_vec normal_face(const std::vector<a_vec> & tmp_vertices, const index_t a_v, co
 	return normalise(cross(a,b));
 }
 
-che * mesh_simple_fill_hole(che * mesh, const std::vector<index_t> & border_vertices, const size_t & max_iter = 1000)
+che * mesh_simple_fill_hole(che * mesh, const std::vector<index_t> & border_vertices, const size_t max_iter = 1000)
 {
 	std::vector<vertex> vertices;
 	vertex normal, normal_v, edge_v, v;
@@ -58,7 +58,7 @@ che * mesh_simple_fill_hole(che * mesh, const std::vector<index_t> & border_vert
 	return fill_hole_front_angles(vertices, mesh->mean_edge(), normal, max_iter);
 }
 
-che * mesh_fill_hole(che * mesh, const std::vector<index_t> & border_vertices, const size_t & max_iter, const std::vector<std::pair<index_t, index_t> > & split_indices = {})
+che * mesh_fill_hole(che * mesh, const std::vector<index_t> & border_vertices, const size_t max_iter, const std::vector<std::pair<index_t, index_t> > & split_indices = {})
 {
 	std::vector<vertex> vertices[2];
 	std::vector<index_t> merge_vertices[2];
@@ -255,7 +255,7 @@ void split_border(std::vector<std::pair<index_t, index_t> > & , che * mesh, cons
 	}
 }
 
-std::vector<index_t> * fill_all_holes(che * mesh, const size_t & max_iter)
+std::vector<index_t> * fill_all_holes(che * mesh, const size_t max_iter)
 {
 	gproshan_error(holes);
 	std::vector<index_t> * border_vertices;
@@ -276,7 +276,7 @@ std::vector<index_t> * fill_all_holes(che * mesh, const size_t & max_iter)
 	return border_vertices;
 }
 
-std::tuple<std::vector<index_t> *, che **> fill_all_holes_meshes(che * mesh, const size_t & max_iter)
+std::tuple<std::vector<index_t> *, che **> fill_all_holes_meshes(che * mesh, const size_t max_iter)
 {
 	std::vector<index_t> * border_vertices = nullptr;
 	che ** holes = nullptr;
@@ -564,7 +564,7 @@ che * fill_hole_front_angles_test(che * mesh, std::vector<index_t> & front_verti
 	return size(trigs) == 0 ? nullptr : new che(vertices.data(), size(vertices), trigs.data(), size(trigs) / 3);
 }
 
-che * fill_hole_front_angles(std::vector<vertex> & vertices, const real_t length, const vertex & normal, const size_t & max_iter, bool is_grow)
+che * fill_hole_front_angles(std::vector<vertex> & vertices, const real_t length, const vertex & normal, const size_t max_iter, bool is_grow)
 {
 	size_t p_iter = max_iter;
 	real_t perimeter = 0.0;

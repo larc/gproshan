@@ -15,7 +15,7 @@ class basis_dct: public basis
 		size_t n_freq;		///< frequency
 
 	public:
-		basis_dct(const size_t & n, const real_t r = 1);
+		basis_dct(const size_t n, const real_t r = 1);
 		void discrete(a_mat & phi, const a_vec & x, const a_vec & y);
 		void d_discrete(a_mat & phi, const a_vec & x, const a_vec & y, const bool & b);
 		real_t freq(const index_t idx);

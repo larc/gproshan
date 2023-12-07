@@ -120,7 +120,7 @@ void che_ptx::read_file(const std::string & file)
 	rw(n_trigs)			= he / che::mtrig;
 }
 
-void che_ptx::write_file(const che * mesh, const std::string & file, const size_t & n_rows, const size_t & n_cols)
+void che_ptx::write_file(const che * mesh, const std::string & file, const size_t n_rows, const size_t n_cols)
 {
 	FILE * fp = fopen((file + ".ptx").c_str(), "wb");
 	assert(fp);

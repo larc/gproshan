@@ -48,7 +48,7 @@ void simplification::compute_quadrics()
 	}
 }
 
-void simplification::order_edges(index_t * const & sort_edges, real_t * const & error_edges)
+void simplification::order_edges(index_t * sort_edges, real_t * error_edges)
 {
 	#pragma omp parallel for
 	for(index_t e = 0; e < mesh->n_edges; ++e)

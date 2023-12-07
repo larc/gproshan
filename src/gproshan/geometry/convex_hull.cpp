@@ -10,7 +10,7 @@ namespace gproshan {
 
 convex_hull::convex_hull(const std::vector<vertex> & points, const real_t precision): convex_hull(points.data(), size(points), precision) {}
 
-convex_hull::convex_hull(const vertex * points, const size_t & n_points, const real_t precision)
+convex_hull::convex_hull(const vertex * points, const size_t n_points, const real_t precision)
 {
 	std::vector<ivec2> points2d(n_points);
 

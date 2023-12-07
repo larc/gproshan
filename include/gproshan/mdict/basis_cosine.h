@@ -16,7 +16,7 @@ class basis_cosine: public basis
 		size_t n_freq;		///< frequency
 
 	public:
-		basis_cosine(const size_t & nr, const size_t & nf, const real_t r = 0);
+		basis_cosine(const size_t nr, const size_t nf, const real_t r = 0);
 		void discrete(a_mat & phi, const a_vec & x, const a_vec & y);
 
 	private:

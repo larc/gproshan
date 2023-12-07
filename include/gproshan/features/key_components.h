@@ -24,7 +24,7 @@ class key_components
 		key_components(che * mesh, const std::vector<index_t> & kps, const real_t r);
 		~key_components();
 		index_t operator()(const index_t i);
-		operator const size_t & () const;
+		operator size_t () const;
 
 	private:
 		void compute_kcs(che * mesh, const std::vector<index_t> & kps);

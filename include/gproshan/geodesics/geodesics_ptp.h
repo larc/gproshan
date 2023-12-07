@@ -52,7 +52,7 @@ struct ptp_out_t
 	real_t * dist;
 	index_t * clusters;
 
-	ptp_out_t(real_t *const & d, index_t *const & c = nullptr);
+	ptp_out_t(real_t *const d, index_t *const c = nullptr);
 };
 
 struct toplesets_t
@@ -67,7 +67,7 @@ void parallel_toplesets_propagation_cpu(const ptp_out_t & ptp_out, che * mesh, c
 
 real_t farthest_point_sampling_ptp_gpu(che * mesh, std::vector<index_t> & samples, double & time_fps, size_t n, real_t radio = 0);
 
-void normalize_ptp(real_t * dist, const size_t & n);
+void normalize_ptp(real_t * dist, const size_t n);
 
 
 template<class T>
@@ -182,7 +182,7 @@ index_t run_ptp(const CHE * mesh, const std::vector<index_t> & sources,
 	}
 
 #ifdef __CUDACC__
-	const size_t & n_vertices = limits.back();
+	const size_t n_vertices = limits.back();
 	cudaMemcpy(dist[0], h_dist, sizeof(T) * n_vertices, cudaMemcpyHostToDevice);
 	cudaMemcpy(dist[1], h_dist, sizeof(T) * n_vertices, cudaMemcpyHostToDevice);
 	if(sorted)
@@ -196,7 +196,7 @@ index_t run_ptp(const CHE * mesh, const std::vector<index_t> & sources,
 	}
 #endif
 
-	const int & max_iter = size(limits) << 1;
+	const int max_iter = size(limits) << 1;
 
 	int iter = -1;
 	index_t count = 0;

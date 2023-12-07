@@ -11,7 +11,7 @@ namespace gproshan {
 class che_sphere : public che
 {
 	public:
-		che_sphere(const real_t r = 1, const size_t & n = 6);
+		che_sphere(const real_t r = 1, const size_t n = 6);
 };
 
 

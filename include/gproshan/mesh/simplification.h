@@ -26,7 +26,7 @@ class simplification
 		void execute();
 		void compute_quadrics();
 		real_t compute_error(const index_t e);
-		void order_edges(index_t * const & sort_edges, real_t * const & error_edges);
+		void order_edges(index_t * sort_edges, real_t * error_edges);
 		vertex create_vertex(const index_t e);
 };
 

@@ -65,7 +65,7 @@ che::che(const che & mesh)
 	memcpy(VHC, mesh.VHC, n_vertices * sizeof(real_t));
 }
 
-che::che(const size_t & n_v, const size_t & n_f)
+che::che(const size_t n_v, const size_t n_f)
 {
 	alloc(n_v, n_f);
 }
@@ -107,7 +107,7 @@ vertex & che::normal(const index_t v)
 	return VN[v];
 }
 
-vertex che::shading_normal(const index_t f, const float & u, const float & v) const
+vertex che::shading_normal(const index_t f, const float u, const float v) const
 {
 	const index_t he = f * che::mtrig;
 	return normalize(u * VN[VT[he]] + v * VN[VT[he + 1]] + (1 - u - v) * VN[VT[he + 2]]);
@@ -204,7 +204,7 @@ vertex che::color(const index_t v) const
 	return VC[v];
 }
 
-vertex che::shading_color(const index_t f, const float & u, const float & v) const
+vertex che::shading_color(const index_t f, const float u, const float v) const
 {
 	const index_t he = f * che::mtrig;
 	return u * color(VT[he]) + v * color(VT[he + 1]) + (1 - u - v) * color(VT[he + 2]);
@@ -294,8 +294,8 @@ mat4 che::normalize_box(const real_t side) const
 ///< vcommon correspond to the first vertices of the mesh with indices to the main mesh (this)
 che * che::merge(const che * mesh, const std::vector<index_t> & vcommon)
 {
-	const size_t & n_vcommon = size(vcommon);
-	const size_t & n_vnew = mesh->n_vertices - n_vcommon;
+	const size_t n_vcommon = size(vcommon);
+	const size_t n_vnew = mesh->n_vertices - n_vcommon;
 
 	che * new_mesh = new che(n_vertices + n_vnew, n_trigs + mesh->n_trigs);
 
@@ -320,7 +320,7 @@ che * che::merge(const che * mesh, const std::vector<index_t> & vcommon)
 	return new_mesh;
 }
 
-void che::update_vertices(const vertex * positions, const size_t & n, const index_t v_i)
+void che::update_vertices(const vertex * positions, const size_t n, const index_t v_i)
 {
 	if(!positions) return;
 	memcpy(GT + v_i, positions, sizeof(vertex) * (!n ? n_vertices : n));
@@ -542,7 +542,7 @@ void che::remove_non_manifold_vertices()
 	gproshan_debug(removing vertex);
 }
 
-void che::set_head_vertices(index_t * head, const size_t & n)
+void che::set_head_vertices(index_t * head, const size_t n)
 {
 	for(index_t v, i = 0; i < n; ++i)
 	{
@@ -1002,7 +1002,7 @@ void che::init(const std::string & file)
 	update_eht();
 }
 
-void che::alloc(const size_t & n_v, const size_t & n_f)
+void che::alloc(const size_t n_v, const size_t n_f)
 {
 	rw(n_vertices)		= n_v;
 	rw(n_trigs)			= n_f;
@@ -1121,7 +1121,7 @@ void che::update_eht()
 
 // static
 
-std::vector<index_t> che::trig_convex_polygon(const index_t * P, const size_t & n)
+std::vector<index_t> che::trig_convex_polygon(const index_t * P, const size_t n)
 {
 	std::vector<index_t> trigs;
 	trigs.reserve(che::mtrig * (n - 2));

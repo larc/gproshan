@@ -19,7 +19,7 @@ using namespace cimg_library;
 namespace gproshan {
 
 
-che * scanner_ptx(const rt::raytracing * rt, const size_t & n_rows, const size_t & n_cols, const vertex & cam_pos)
+che * scanner_ptx(const rt::raytracing * rt, const size_t n_rows, const size_t n_cols, const vertex & cam_pos)
 {
 	che * mesh_ptx = new che(n_cols * n_rows);
 
@@ -57,7 +57,7 @@ che * scanner_ptx(const rt::raytracing * rt, const size_t & n_rows, const size_t
 	return mesh_ptx;
 }
 
-che * scanner_ptx_jpg(const rt::raytracing * rt, const size_t & n_rows, const size_t & n_cols, const vertex & cam_pos, const std::string & file_jpg)
+che * scanner_ptx_jpg(const rt::raytracing * rt, const size_t n_rows, const size_t n_cols, const vertex & cam_pos, const std::string & file_jpg)
 {
 	che * mesh_ptx = scanner_ptx(rt, n_rows, n_cols, cam_pos);
 

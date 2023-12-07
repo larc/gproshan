@@ -45,7 +45,7 @@ void che_ply::read_file(const std::string & file)
 
 	char line[512], type[32], str[32], format[32], element[32];
 
-	auto add_vproperty = [&vbytes](size_t & p, index_t & i, const size_t & nb)
+	auto add_vproperty = [&vbytes](size_t & p, index_t & i, const size_t nb)
 	{
 		p = nb;
 		i = vbytes;
@@ -70,7 +70,7 @@ void che_ply::read_file(const std::string & file)
 		if(str[0] == 'p' && element[0] == 'v')	// property vertex
 		{
 			sscanf(line, "%*s %s %s", type, str);
-			const size_t & nb = bytes[type];
+			const size_t nb = bytes[type];
 
 			switch(str[0])
 			{

@@ -29,17 +29,17 @@ che_viewer::~che_viewer()
 	glDeleteVertexArrays(1, &vao);
 }
 
-che *& che_viewer::operator -> ()
+che * che_viewer::operator -> ()
 {
 	return mesh;
 }
 
-che *const & che_viewer::operator -> () const
+const che * che_viewer::operator -> () const
 {
 	return mesh;
 }
 
-che_viewer::operator che *& ()
+che_viewer::operator che * ()
 {
 	return mesh;
 }

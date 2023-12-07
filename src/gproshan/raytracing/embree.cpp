@@ -67,7 +67,7 @@ embree::embree()
 	rtcSetDeviceErrorFunction(rtc_device, embree_error, NULL);
 }
 
-embree::embree(const std::vector<che *> & meshes, const std::vector<mat4> & model_mats, const bool & pointcloud, const float & pcr): embree()
+embree::embree(const std::vector<che *> & meshes, const std::vector<mat4> & model_mats, const bool & pointcloud, const float pcr): embree()
 {
 	pc_radius = pcr;
 	build_bvh(meshes, model_mats, pointcloud);
@@ -267,7 +267,7 @@ bool embree::closesthit_radiance(	vertex & color,
 	hit.normal = flat ? r.normal() : hit.normal;
 
 	color = eval_li(hit, params.ambient, params.lights, params.n_lights, params.cam_pos,
-					[&](const vec3 & position, const vec3 & wi, const float & light_dist) -> bool
+					[&](const vec3 & position, const vec3 & wi, const float light_dist) -> bool
 					{
 						ray_hit ro(position, wi, 1e-3f, light_dist - 1e-3f);
 						return occluded(ro);
