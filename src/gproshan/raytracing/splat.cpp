@@ -40,7 +40,9 @@ void splat::add_splats(che * pc, const mat4 & model_mat)
 	std::vector<index_t> vertices;
 	vertices.reserve(pc->n_vertices);
 
-	const std::vector<index_t> segs = planar_segmentation(pc, vertices, k3tree);
+	std::vector<vertex> normals;
+
+	const std::vector<index_t> segs = planar_segmentation(pc, vertices, normals, k3tree);
 	TOC(time);
 	time_segmentation += time;
 
@@ -66,11 +68,16 @@ void splat::add_splats(che * pc, const mat4 & model_mat)
 	size_t n_points = 0;
 	for(const auto & vs: voronoi_sets)
 		n_points += size(vs);
-
+	
+	std::vector<vertex> splats_normals;
 	std::vector<index_t> splats({0});
-	for(const auto & voronoi: voronois)
-	for(const auto & size: voronoi)
-		splats.push_back(splats.back() + size);
+
+	for(index_t i = 0; i < size(segs) - 1; ++i)
+	for(const auto & n_points: voronois[i])
+	{
+		splats.push_back(splats.back() + n_points);
+		splats_normals.emplace_back(normals[i]);
+	}
 
 	vertices.resize(n_points);
 
@@ -81,7 +88,10 @@ void splat::add_splats(che * pc, const mat4 & model_mat)
 		n_points += size(vs);
 	}
 
-	che * new_pc = init_splats(pc, model_mat, vertices, splats);
+	gproshan_error_var(n_points == size(vertices));
+	display_sets(pc, splats, vertices.data());
+
+	che * new_pc = init_splats(pc, model_mat, vertices, splats, splats_normals);
 	pointclouds.push_back(new_pc);
 	TOC(time);
 	time_initsplats += time;
@@ -101,7 +111,11 @@ void splat::add_splats(che * pc, const mat4 & model_mat)
 	gproshan_error_var(time);
 }
 
-std::vector<index_t> splat::planar_segmentation(const che * pc, std::vector<index_t> & vertices, const knn::k3tree & k3tree)
+std::vector<index_t> splat::planar_segmentation(const che * pc,
+												std::vector<index_t> & vertices,
+												std::vector<vertex> & normals,
+												const knn::k3tree & k3tree
+												)
 {
 	vertices.clear();
 	vertices.reserve(pc->n_vertices);
@@ -141,7 +155,7 @@ std::vector<index_t> splat::planar_segmentation(const che * pc, std::vector<inde
 			visited[front] = idx;
 
 			const size_t & n = size(vertices) - segs.back();
-			vnormal = (vnormal * (n - 1) + pc->normal(front)) / n;
+			vnormal = normalize(vnormal * (n - 1) + pc->normal(front));
 			vcenter = (vcenter * (n - 1) + pc->point(front)) / n;
 
 			const int * nn = k3tree(front);
@@ -190,6 +204,7 @@ std::vector<index_t> splat::planar_segmentation(const che * pc, std::vector<inde
 			
 
 		segs.push_back(size(vertices));
+		normals.emplace_back(vnormal);
 	}
 
 	return segs;
@@ -199,8 +214,8 @@ std::vector<index_t> splat::voronoi_subdivision(std::vector<index_t> & voronoi_s
 												const std::vector<index_t> & vertices,
 												const vertex * points,
 												const knn::k3tree & k3tree,
-												const index_t & seg_begin,
-												const index_t & seg_end
+												const index_t seg_begin,
+												const index_t seg_end
 												)
 {
 	std::vector<real_t> dist;
@@ -215,9 +230,10 @@ std::vector<index_t> splat::voronoi_subdivision(std::vector<index_t> & voronoi_s
 
 	const size_t max_seeds = 3 * (log10(seg_end - seg_begin) + 1); 
 
-	while(radio > radio_threshold || seeds.size() < max_seeds)
+	while(radio > radio_threshold)
 	{
 		radio = 0;
+		new_seed = NIL;
 
 		const index_t & s = seeds.back();
 		for(index_t i = seg_begin; i < seg_end; ++i)
@@ -234,39 +250,64 @@ std::vector<index_t> splat::voronoi_subdivision(std::vector<index_t> & voronoi_s
 			}
 		}
 
+		if(new_seed == NIL)
+		{
+			gproshan_error("NIL SEED");
+			break;
+		}
+
 		if(size(seeds) == 1)
 			radio_threshold = std::max(0.2, radio * 0.1);
 
-		if(new_seed != NIL)
-		{
-			seeds.push_back(new_seed);
-			new_seed = NIL;
-		}
+		seeds.push_back(new_seed);
+	}
+	
+
+	const index_t & s = seeds.back();
+	for(index_t i = seg_begin; i < seg_end; ++i)
+	{
+		const index_t & v = vertices[i];
+
+		real_t & vdist = dist[i - seg_begin];
+		vdist = std::min(vdist, length(points[v] - points[s]));
 	}
 
 
 	std::vector<std::vector<index_t> > regions(size(seeds));
+	int left = 0;
+	int nins = 0;
 
 	bool in = false;
 	for(index_t i = seg_begin; i < seg_end; ++i)
-	for(index_t j = 0; j < size(seeds); ++j)
 	{
-		const index_t & s = seeds[j];
-		const index_t & v = vertices[i];
+		const index_t v = vertices[i];
+		nins = 0;
 
-		in = false;
-
-		const int * nn = k3tree(v);
-		for(index_t k = 0; k < splat::k_nn; ++k)
+		for(index_t j = 0; j < size(seeds); ++j)
 		{
-			const int & u = nn[k];
-			const real_t & d = length(points[u] - points[s]);
-			in |= d < (dist[i - seg_begin] + 1e-5);
+			const index_t s = seeds[j];
+
+			in = false;
+
+			const int * nn = k3tree(v);
+			for(index_t k = 0; k < splat::k_nn; ++k)
+			{
+				const int u = nn[k];
+				const real_t d = length(points[u] - points[s]);
+				in |= d < (dist[i - seg_begin] + 1e-5);
+			}
+
+			if(in)
+			{
+				regions[j].push_back(v);
+				++nins;
+			}
 		}
 
-		if(in) regions[j].push_back(v);
+		if(!nins) ++left;
 	}
-
+	
+	if(left) gproshan_error_var(left);
 
 	std::vector<index_t> voronoi;
 	voronoi_set.clear();
@@ -284,7 +325,12 @@ std::vector<index_t> splat::voronoi_subdivision(std::vector<index_t> & voronoi_s
 	return voronoi;
 }
 
-che * splat::init_splats(const che * mesh, const mat4 & model_mat, std::vector<index_t> & vertices, const std::vector<index_t> & idx_splats)
+che * splat::init_splats(	const che * mesh,
+							const mat4 & model_mat,
+							std::vector<index_t> & vertices,
+							const std::vector<index_t> & idx_splats,
+							const std::vector<vertex> & normals
+							)
 {
 	std::vector<vertex> points(size(vertices));
 	std::vector<index_t> trigs;
@@ -300,41 +346,28 @@ che * splat::init_splats(const che * mesh, const mat4 & model_mat, std::vector<i
 
 		s.begin = idx_splats[i];
 		s.end = idx_splats[i + 1];
-		vertex & center = s.center;
-		mat3 & tbn = s.tbn;
-		vec3 & normal = s.tbn[2];
+		s.tbn[2] = normals[i];
 
-		center = {0, 0, 0};
+		s.center = 0;
 		for(index_t j = s.begin; j < s.end; ++j)
 		{
-			const index_t & v = vertices[j];
+			const index_t v = vertices[j];
 			vertex & p = points[j];
 			p = model_mat * (mesh->point(v), 1);
-			center += p;
+			s.center += p;
 		}
-		center /= s.end - s.begin;
+		s.center /= s.end - s.begin;
 		
 		s.radius = 0;
 		for(index_t j = s.begin; j < s.end; ++j)
-			s.radius = std::max(s.radius, length(points[j] - center));
+			s.radius = std::max(s.radius, length(points[j] - s.center));
 
-
-		normal = {0, 0, 0};
-		for(index_t j = s.begin; j < s.end; ++j)
-		{
-			const index_t & v = vertices[j];
-			vertex & p = points[j];
-			normal += gaussian(length(p - center), s.radius * s.radius / 25) * mesh->normal(v);
-		}
-
-		normal /= length(normal);
-
-		tbn[0] = points[s.end - 1] - center;
-		tbn[0] = normalize(tbn[0] - dot(tbn[0], tbn[2]) * tbn[2]);
-		tbn[1] = normalize(cross(tbn[2], tbn[0]));
+		s.tbn[0] = points[s.end - 1] - s.center;
+		s.tbn[0] = normalize(s.tbn[0] - dot(s.tbn[0], s.tbn[2]) * s.tbn[2]);
+		s.tbn[1] = normalize(cross(s.tbn[2], s.tbn[0]));
 
 		std::sort(begin(vertices) + s.begin, begin(vertices) + s.end,
-					[&](const index_t & a, const index_t & b)
+					[&](const index_t a, const index_t b)
 					{
 						const vertex & p = model_mat * (mesh->point(a), 1);
 						const vertex & q = model_mat * (mesh->point(b), 1);
@@ -345,7 +378,7 @@ che * splat::init_splats(const che * mesh, const mat4 & model_mat, std::vector<i
 		{
 			vertex & p = points[j];
 			p = model_mat * (mesh->point(vertices[j]), 1);
-			p = tbn * (p - center);
+			p = s.tbn * (p - s.center);
 		}
 
 		splat_chs[i] = new convex_hull(points.data() + s.begin, s.end - s.begin);
@@ -354,7 +387,7 @@ che * splat::init_splats(const che * mesh, const mat4 & model_mat, std::vector<i
 		for(index_t j = s.begin; j < s.end; ++j)
 		{
 			vertex & p = points[j];
-			p = mat3::transpose(tbn) * p + center;
+			p = mat3::transpose(s.tbn) * p + s.center;
 //			h = std::min(h, dot(p - center, normal));
 		}
 
@@ -362,6 +395,7 @@ che * splat::init_splats(const che * mesh, const mat4 & model_mat, std::vector<i
 	}
 
 	std::vector<index_t> primID_splat;
+	
 	for(index_t i = 0; i < spc.n_splats; ++i)
 	{
 		const auto & s = spc.splats[i];

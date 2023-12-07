@@ -36,6 +36,7 @@ class splat
 
 		std::vector<index_t> planar_segmentation(	const che * pc,
 													std::vector<index_t> & vertices,
+													std::vector<vertex> & normals,
 													const knn::k3tree & k3tree
 													);
 
@@ -43,14 +44,15 @@ class splat
 													const std::vector<index_t> & vertices,
 													const vertex * points,
 													const knn::k3tree & nn,
-													const index_t & seg_begin,
-													const index_t & seg_end
+													const index_t seg_begin,
+													const index_t seg_end
 													);
 
 		che * init_splats(	const che * mesh,
 							const mat4 & model_mat,
 							std::vector<index_t> & vertices,
-							const std::vector<index_t> & idx_splats
+							const std::vector<index_t> & idx_splats,
+							const std::vector<vertex> & normals
 							);
 
 		void display_sets(che * mesh, const std::vector<index_t> & sets, const index_t * mapid = nullptr);
