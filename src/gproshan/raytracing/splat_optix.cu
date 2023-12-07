@@ -92,10 +92,10 @@ extern "C" __global__ void __closesthit__radiance()
 
 						return occluded != 0;
 					});
-	
+
 	color *= attenuation;
 	position = x;
-	
+
 	if(w < 1e-3f)
 	{
 		color *= w;

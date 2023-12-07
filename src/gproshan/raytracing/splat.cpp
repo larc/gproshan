@@ -68,7 +68,7 @@ void splat::add_splats(che * pc, const mat4 & model_mat)
 	size_t n_points = 0;
 	for(const auto & vs: voronoi_sets)
 		n_points += size(vs);
-	
+
 	std::vector<vertex> splats_normals;
 	std::vector<index_t> splats({0});
 
@@ -89,7 +89,7 @@ void splat::add_splats(che * pc, const mat4 & model_mat)
 	}
 
 	gproshan_error_var(n_points == size(vertices));
-	display_sets(pc, splats, vertices.data());
+	//display_sets(pc, splats, vertices.data());
 
 	che * new_pc = init_splats(pc, model_mat, vertices, splats, splats_normals);
 	pointclouds.push_back(new_pc);
@@ -136,19 +136,26 @@ std::vector<index_t> splat::planar_segmentation(const che * pc,
 	vertex vnormal;
 	vertex vcenter;
 
+	float radio = 0;
+	float delta = 0;
+	float area = 0;
+
 	std::queue<index_t> q;
 	for(const index_t & v: shuffle)
 	{
 		if(visited[v] != NIL) continue;
 
 		vnormal = 0;
+		radio = 0;
+		delta = 0;
 
 		q.push(v);
 		visited[v] = 0;
 
 		while(!q.empty())
 		{
-			index_t front = q.front();
+			const index_t front = q.front();
+			const int * nn = k3tree(front);
 			q.pop();
 
 			vertices.push_back(front);
@@ -157,8 +164,13 @@ std::vector<index_t> splat::planar_segmentation(const che * pc,
 			const size_t & n = size(vertices) - segs.back();
 			vnormal = normalize(vnormal * (n - 1) + pc->normal(front));
 			vcenter = (vcenter * (n - 1) + pc->point(front)) / n;
+			delta = (delta * (n - 1) + length(pc->point(front) - pc->point(nn[splat::k_nn - 1]))) / n;
+			radio = std::max(radio, length(pc->point(front) - vcenter));
 
-			const int * nn = k3tree(front);
+			area = radio + radio + delta;
+			if(area * area / (n * delta * delta) > 1.8f)
+				break;
+
 			for(index_t i = 1; i < splat::k_nn; ++i)
 			{
 				const int & u = nn[i];
@@ -187,9 +199,9 @@ std::vector<index_t> splat::planar_segmentation(const che * pc,
 
 			continue;
 		}
-	
+
 		const size_t & grow_size = size(vertices);
-		
+
 		// overlapping segs
 		for(index_t i = segs.back(); i < grow_size; ++i)
 		{
@@ -201,7 +213,7 @@ std::vector<index_t> splat::planar_segmentation(const che * pc,
 					vertices.push_back(u);
 			}
 		}
-			
+
 
 		segs.push_back(size(vertices));
 		normals.emplace_back(vnormal);
@@ -261,7 +273,7 @@ std::vector<index_t> splat::voronoi_subdivision(std::vector<index_t> & voronoi_s
 
 		seeds.push_back(new_seed);
 	}
-	
+
 
 	const index_t & s = seeds.back();
 	for(index_t i = seg_begin; i < seg_end; ++i)
@@ -306,7 +318,7 @@ std::vector<index_t> splat::voronoi_subdivision(std::vector<index_t> & voronoi_s
 
 		if(!nins) ++left;
 	}
-	
+
 	if(left) gproshan_error_var(left);
 
 	std::vector<index_t> voronoi;
@@ -357,7 +369,7 @@ che * splat::init_splats(	const che * mesh,
 			s.center += p;
 		}
 		s.center /= s.end - s.begin;
-		
+
 		s.radius = 0;
 		for(index_t j = s.begin; j < s.end; ++j)
 			s.radius = std::max(s.radius, length(points[j] - s.center));
@@ -395,7 +407,7 @@ che * splat::init_splats(	const che * mesh,
 	}
 
 	std::vector<index_t> primID_splat;
-	
+
 	for(index_t i = 0; i < spc.n_splats; ++i)
 	{
 		const auto & s = spc.splats[i];
