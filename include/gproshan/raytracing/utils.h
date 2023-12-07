@@ -90,7 +90,7 @@ struct t_eval_hit
 	t_eval_hit() {}
 
 	__host_device__
-	t_eval_hit(const CHE & mesh, const index_t & aprimID, const T & au, const T & av, const scene_data & sc)
+	t_eval_hit(const CHE & mesh, const index_t aprimID, const T & au, const T & av, const scene_data & sc)
 	{
 		primID = aprimID;
 		u = au;
@@ -98,8 +98,7 @@ struct t_eval_hit
 
 		if(!mesh.n_trigs) // pointcloud
 		{
-			const che::rgb_t & c = mesh.VC[aprimID];
-			Kd = {T(c.r), T(c.g), T(c.b)};
+			Kd = {T(mesh.VC[aprimID].r), T(mesh.VC[aprimID].g), T(mesh.VC[aprimID].b)};
 			Kd /= 255;
 			normal = mesh.VN[aprimID];
 			return;
@@ -150,7 +149,7 @@ struct t_eval_hit
 
 	//	PTX symbols of certain types (e.g. pointers to functions) cannot be used to initialize array
 	__host_device__
-	bool scatter_mat(const vec<T, 3> & v, vec<T, 3> & scattered, random<T> & rnd)
+	bool scatter_mat(vec<T, 3> & dir, random<T> & rnd)		// dir in: v (view), out: scattered
 	{
 		switch(illum)
 		{
@@ -158,33 +157,33 @@ struct t_eval_hit
 			case 5:
 			case 6:
 			case 7:
-				return scatter_reflect(v, scattered, rnd);
+				return scatter_reflect(dir, rnd);
 		}
 
-		return scatter_diffuse(v, scattered, rnd);
+		return scatter_diffuse(dir, rnd);
 	}
 
 	__host_device__
-	bool scatter_reflect(const vec<T, 3> & v, vec<T, 3> & scattered, random<T> & )
+	bool scatter_reflect(vec<T, 3> & dir, random<T> & )
 	{
-		scattered = normalize(v - 2 * dot(v, normal) * normal);
-		return dot(scattered, normal) > 0;
+		dir = normalize(dir - 2 * dot(dir, normal) * normal);
+		return dot(dir, normal) > 0;
 	}
 
 	__host_device__
-	bool scatter_refract(const vec<T, 3> & v, vec<T, 3> & scattered, random<T> & )
+	bool scatter_refract(vec<T, 3> & dir, random<T> & )
 	{
-		const float dvn = dot(v, normal);
+		const float dvn = dot(dir, normal);
 		const float d = 1 - Ni * Ni * (1 - dvn * dvn);
 
 		if(d <= 0) return false;
 
-		scattered = Ni * (v - dvn * normal) - normal * sqrtf(d);
+		dir = Ni * (dir - dvn * normal) - normal * sqrtf(d);
 		return true;
 	}
 
 	__host_device__
-	bool scatter_diffuse(const vec<T, 3> & , vec<T, 3> & scattered, random<T> & rnd)
+	bool scatter_diffuse(vec<T, 3> & dir, random<T> & rnd)
 	{
 		// random unit sphere
 		const T & theta = rnd() * 2 * M_PI;
@@ -196,7 +195,7 @@ struct t_eval_hit
 							, r * cosf(phi)
 							};
 
-		scattered = normalize(normal + p);
+		dir = normalize(normal + p);
 
 		return true;
 	}
@@ -204,7 +203,7 @@ struct t_eval_hit
 
 template <class T, class Occluded>
 __host_device__
-vec<T, 3> eval_li(const t_eval_hit<T> & hit, const light & ambient, const light * lights, const int & n_lights, const vec<T, 3> & eye, Occluded occluded)
+vec<T, 3> eval_li(const t_eval_hit<T> & hit, const light & ambient, const light * lights, const int n_lights, const vec<T, 3> & eye, Occluded occluded)
 {
 	const vec<T, 3> & v = normalize(eye - hit.position);
 	const vec<T, 3> & n = hit.normal;

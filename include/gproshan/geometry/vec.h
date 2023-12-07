@@ -54,14 +54,14 @@ class vec
 		}
 
 		__host_device__
-		T & operator [] (const index_t & i)
+		T & operator [] (const index_t i)
 		{
 			assert(i < N);
 			return values[i];
 		}
 
 		__host_device__
-		const T & operator [] (const index_t & i) const
+		const T & operator [] (const index_t i) const
 		{
 			assert(i < N);
 			return values[i];

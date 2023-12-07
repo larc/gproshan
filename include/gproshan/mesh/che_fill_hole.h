@@ -18,7 +18,7 @@ struct border_t
 
 	border_t() = default;
 
-	border_t(const std::vector<a_vec> & V, const index_t & _v, const std::array<index_t, 2> & neighbors, const bool & o):
+	border_t(const std::vector<a_vec> & V, const index_t _v, const std::array<index_t, 2> & neighbors, const bool & o):
 	v(_v)
 	{
 		index_t p_v = neighbors[!o];
@@ -38,7 +38,7 @@ struct border_t
 		if(theta < 0) theta += 2 * M_PI;
 	}
 
-	a_vec new_vertex(const std::vector<a_vec> & V, real_t div, const real_t & length, const std::array<index_t, 2> & neighbors, const bool & o)
+	a_vec new_vertex(const std::vector<a_vec> & V, real_t div, const real_t length, const std::array<index_t, 2> & neighbors, const bool & o)
 	{
 		index_t p_v = neighbors[!o];
 		index_t n_v = neighbors[o];
@@ -56,7 +56,7 @@ struct border_t
 		return r;
 	}
 
-	border_t(const std::vector<a_vec> & V, const index_t & _v, const std::array<index_t, 2> & neighbors, const bool & o, const a_vec & normal):
+	border_t(const std::vector<a_vec> & V, const index_t _v, const std::array<index_t, 2> & neighbors, const bool & o, const a_vec & normal):
 	v(_v)
 	{
 		index_t p_v = neighbors[!o];
@@ -81,7 +81,7 @@ struct border_t
 		if(theta < 0) theta += 2 * M_PI;
 	}
 
-	a_vec new_vertex(const std::vector<a_vec> & V, real_t div, const real_t & length, const std::array<index_t, 2> & neighbors, const bool & o, const a_vec & normal)
+	a_vec new_vertex(const std::vector<a_vec> & V, real_t div, const real_t length, const std::array<index_t, 2> & neighbors, const bool & o, const a_vec & normal)
 	{
 		index_t p_v = neighbors[!o];
 		index_t n_v = neighbors[o];
@@ -115,17 +115,17 @@ struct border_t
 
 bool operator<(const border_t & a, const border_t & b);
 
-void poisson(che * mesh, const size_t & old_n_vertices);
+void poisson(che * mesh, const size_t old_n_vertices);
 
-std::vector<index_t> * fill_all_holes(che * mesh, const size_t & max_iter = 1000);
+std::vector<index_t> * fill_all_holes(che * mesh, const size_t max_iter = 1000);
 
-std::tuple<std::vector<index_t> *, che **> fill_all_holes_meshes(che * mesh, const size_t & max_iter = 1000);
+std::tuple<std::vector<index_t> *, che **> fill_all_holes_meshes(che * mesh, const size_t max_iter = 1000);
 
 che * fill_hole_front_angles_test(che * mesh, std::vector<index_t> & front_vertices, size_t p_iter, bool & is_grow);
 
 che * fill_hole_front_angles_without_projection(che * mesh, std::vector<index_t> & front_vertices);
 
-che * fill_hole_front_angles(std::vector<vertex> & vertices, const real_t & length, const vertex & normal, const size_t & max_iter, bool is_grow = false);
+che * fill_hole_front_angles(std::vector<vertex> & vertices, const real_t length, const vertex & normal, const size_t max_iter, bool is_grow = false);
 
 che * fill_hole_center_triangle(che * mesh, std::vector<index_t> & select_vertices, index_t index);
 

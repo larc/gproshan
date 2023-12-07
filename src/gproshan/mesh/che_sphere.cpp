@@ -10,7 +10,7 @@
 namespace gproshan {
 
 
-che_sphere::che_sphere(const real_t & r, const size_t & n)
+che_sphere::che_sphere(const real_t r, const size_t n)
 {
 	filename = "sphere";
 

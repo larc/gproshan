@@ -14,7 +14,7 @@ using namespace gproshan::mdict;
 namespace gproshan {
 
 
-app_viewer::app_viewer(const char * title, const int & width, const int & height): viewer(title, width, height) {}
+app_viewer::app_viewer(const char * title, const int width, const int height): viewer(title, width, height) {}
 
 app_viewer::~app_viewer()
 {
@@ -141,9 +141,9 @@ bool app_viewer::process_knn(viewer * p_view)
 			case 1:
 			{
 				knn::grid grid(&mesh->point(0), mesh->n_vertices, mesh.model_mat);
-				for(const index_t & p: query)
+				for(const index_t p: query)
 				{
-					for(const index_t & v: grid(mesh.model_mat * (mesh->point(p), 1), k))
+					for(const index_t v: grid(mesh.model_mat * (mesh->point(p), 1), k))
 						mesh.selected.push_back(v);
 				}
 			}
@@ -152,7 +152,7 @@ bool app_viewer::process_knn(viewer * p_view)
 			case 2:
 			{
 				knn::k3tree k3tree(&mesh->point(0), mesh->n_vertices, k);
-				for(const index_t & p: query)
+				for(const index_t p: query)
 				{
 					const int * result = k3tree(p);
 					for(int i = 0; i < k; ++i)
@@ -229,7 +229,7 @@ bool app_viewer::process_scatter(viewer * p_view)
 
 	rt::random<real_t> rnd(0xABCDEF);
 	for(vertex & v: scatter)
-		h.scatter_diffuse({}, v, rnd);
+		h.scatter_diffuse(v, rnd);
 
 	view->add_mesh(new che(scatter.data(), scatter.size(), nullptr, 0));
 
@@ -311,7 +311,7 @@ bool app_viewer::process_connected_components(viewer * p_view)
 
 			while(!q.empty())
 			{
-				for(const index_t & v: mesh->link(q.front()))
+				for(const index_t v: mesh->link(q.front()))
 					if(label[v] < 0)
 					{
 						label[v] = nc;
@@ -347,7 +347,7 @@ bool app_viewer::process_gaussian_curvature(viewer * p_view)
 	for(index_t v = 0; v < mesh->n_vertices; ++v)
 	{
 		g = 0;
-		for(const index_t & he: mesh->star(v))
+		for(const index_t he: mesh->star(v))
 		{
 			a = mesh->vertex_he(he_next(he)) - mesh->point(v);
 			b = mesh->vertex_he(he_prev(he)) - mesh->point(v);
@@ -660,7 +660,7 @@ bool app_viewer::process_msparse_coding(viewer * p_view)
 		real_t max_error = msc.execute();
 		gproshan_log_var(max_error);
 
-		mesh->update_heatmap(&msc[0]);
+		mesh->update_heatmap(msc);
 		mesh->update_normals();
 	}
 
@@ -737,7 +737,7 @@ bool app_viewer::process_mask(viewer * p_view)
 
 		msc.init_radial_feature_patches();
 		//dict.init_voronoi_patches();
-		mesh->update_heatmap(&msc[0]);
+		mesh->update_heatmap(msc);
 		std::string f_points = tmp_file_path(std::string(msc) + ".rsampl");
 
 		a_vec points_out;
@@ -918,7 +918,7 @@ bool app_viewer::process_key_components(viewer * p_view)
 
 // Hole Filling
 
-bool app_viewer::process_poisson(viewer * p_view, const index_t & k)
+bool app_viewer::process_poisson(viewer * p_view, const index_t k)
 {
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->selected_mesh();
@@ -965,7 +965,7 @@ bool app_viewer::process_fill_holes(viewer * p_view)
 		std::vector<index_t> trigs;
 
 		vertex center;
-		for(const index_t & v: vbounds)
+		for(const index_t v: vbounds)
 		{
 			vertices.push_back(mesh->point(v));
 			center += mesh->point(v);
@@ -975,11 +975,11 @@ bool app_viewer::process_fill_holes(viewer * p_view)
 		std::priority_queue<std::pair<real_t, index_t> > front;
 		std::vector<uvec2> neigs(size(vertices));
 /*
-		auto bprev = [&](const index_t & v) -> index_t &
+		auto bprev = [&](const index_t v) -> index_t &
 		{
 			return neigs[v].x();
 		};
-		auto bnext = [&](const index_t & v) -> index_t &
+		auto bnext = [&](const index_t v) -> index_t &
 		{
 			return neigs[v].y();
 		};
@@ -987,7 +987,7 @@ bool app_viewer::process_fill_holes(viewer * p_view)
 		auto push = [&](const uvec3 & p)
 		{
 			neigs[p.x()] = {p.y(), p.z()};
-			const real_t & angle = 21;
+			const real_t angle = 21;
 			if(angle <= M_PI)
 				front.push({angle, p.x()});
 		};

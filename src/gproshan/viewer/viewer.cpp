@@ -62,7 +62,7 @@ const size_t viewer::max_meshes = size(m_window_split) - 1;
 
 che_sphere viewer::sphere_data{0.01};
 
-viewer::viewer(const char * title, const int & width, const int & height)
+viewer::viewer(const char * title, const int width, const int height)
 {
 	window_width = width;
 	window_height = height;
@@ -143,7 +143,7 @@ void viewer::imgui()
 	ImGui::SetNextWindowSize(ImVec2(250, -1));
 	if(ImGui::BeginPopupContextVoid("mesh"))
 	{
-		const int & p = size(mesh->filename) - 31;
+		const int p = size(mesh->filename) - 31;
 
 		ImGui::TextDisabled("%s%30s", p < 0 ? "" : "<<", mesh->filename.substr(p < 0 ? 0 : p).c_str());
 		for(auto & p: menu_processes[1])	// init_menus
@@ -316,7 +316,7 @@ void viewer::imgui()
 
 		if(ImGui::Button("add selected points as lights"))
 		{
-			for(const index_t & v: mesh.selected)
+			for(const index_t v: mesh.selected)
 				if(!render_params.add_light({vec3(mesh.model_mat * (mesh->point(v), 1))}))
 					break;
 		}
@@ -524,16 +524,16 @@ void viewer::add_menu(const std::string & str, const std::vector<int> & vprocess
 	menus.push_back(str);
 	menu_processes.emplace_back(vprocesses);
 
-	const int & id_menu = size(menus) - 1;
-	for(const int & p: menu_processes.back())
+	const int id_menu = size(menus) - 1;
+	for(const int p: menu_processes.back())
 		processes[p].id_menu = id_menu;
 }
 
-int viewer::add_process(const char * name, const function_t & f, const int & key)
+int viewer::add_process(const char * name, const function_t & f, const int key)
 {
 	static int nk = 1000;
 
-	const int & fkey = key == -1 ? ++nk : key;
+	const int fkey = key == -1 ? ++nk : key;
 	if(processes.contains(fkey))
 	{
 		fprintf(stderr, "repeated key: [%d] %s (%s)\n", key, glfw_key_name.at(key), name);
@@ -567,7 +567,7 @@ bool viewer::add_mesh(che * p_mesh, const bool & reset_normals)
 	return true;
 }
 
-bool viewer::remove_mesh(const index_t & idx)
+bool viewer::remove_mesh(const index_t idx)
 {
 	if(size(meshes) == 1)
 		return false;
@@ -601,8 +601,8 @@ bool viewer::pop_mesh()
 
 void viewer::update_viewport_meshes()
 {
-	const int & rows = m_window_split[size(meshes)].x();
-	const int & cols = m_window_split[size(meshes)].y();
+	const int rows = m_window_split[size(meshes)].x();
+	const int cols = m_window_split[size(meshes)].y();
 	for(index_t m = 0; m < size(meshes); ++m)
 	{
 		meshes[m]->vx = m % cols;
@@ -696,10 +696,10 @@ void viewer::mouse_callback(GLFWwindow * window, int button, int action, int mod
 		float xscale, yscale;
 		glfwGetWindowContentScale(window, &xscale, &yscale);
 
-		const index_t & ix = xpos * xscale;
-		const index_t & iy = ypos * yscale;
-		const int & cols = m_window_split[size(view->meshes)].y();
-		const index_t & idx_mesh = cols * (iy / view->viewport_height) + ix / view->viewport_width;
+		const index_t ix = xpos * xscale;
+		const index_t iy = ypos * yscale;
+		const int cols = m_window_split[size(view->meshes)].y();
+		const index_t idx_mesh = cols * (iy / view->viewport_height) + ix / view->viewport_width;
 		if(idx_mesh < size(view->meshes))
 			view->idx_selected_mesh = idx_mesh;
 
@@ -978,9 +978,9 @@ bool viewer::m_setup_raytracing(viewer * view)
 	static int rt = 0;
 	static double time = 0;
 
-	ImGui::Combo("rt", &rt, "Select\0Embree\0OptiX\0\0");
 	ImGui::SliderInt("depth", (int *) &view->render_params.depth, 1, 1 << 5);
 	ImGui::SliderInt("n_samples", (int *) &view->render_params.n_samples, 1, 1 << 5);
+	ImGui::Combo("rt", &rt, "Select\0Embree\0OptiX\0\0");
 
 	if(ImGui::Button("Build"))
 	{
@@ -1070,8 +1070,8 @@ bool viewer::m_select_border_vertices(viewer * view)
 {
 	view->check_apply_all_meshes([&](che_viewer & mesh)
 	{
-		for(const index_t & b: mesh->bounds())
-			for(const index_t & v: mesh->boundary(b))
+		for(const index_t b: mesh->bounds())
+			for(const index_t v: mesh->boundary(b))
 				mesh.selected.push_back(v);
 	});
 

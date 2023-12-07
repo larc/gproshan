@@ -45,7 +45,7 @@ void che_ply::read_file(const std::string & file)
 
 	char line[512], type[32], str[32], format[32], element[32];
 
-	auto add_vproperty = [&vbytes](size_t & p, index_t & i, const size_t & nb)
+	auto add_vproperty = [&vbytes](size_t & p, index_t & i, const size_t nb)
 	{
 		p = nb;
 		i = vbytes;
@@ -70,7 +70,7 @@ void che_ply::read_file(const std::string & file)
 		if(str[0] == 'p' && element[0] == 'v')	// property vertex
 		{
 			sscanf(line, "%*s %s %s", type, str);
-			const size_t & nb = bytes[type];
+			const size_t nb = bytes[type];
 
 			switch(str[0])
 			{
@@ -126,14 +126,14 @@ void che_ply::read_file(const std::string & file)
 			for(index_t i = 0; i < nv; ++i)
 				fscanf(fp, "%u", P + i);
 
-			for(const index_t & v: trig_convex_polygon(P, nv))
+			for(const index_t v: trig_convex_polygon(P, nv))
 				trigs.push_back(v);
 		}
 	}
 	else // binary_little_endian or binary_big_endian
 	{
 		bool big_endian = format[7] == 'b';
-		auto big_to_little = [](char * buffer, const index_t & n)
+		auto big_to_little = [](char * buffer, const index_t n)
 		{
 			for(index_t i = 0, j = n - 1; i < j; ++i, --j)
 				std::swap(buffer[i], buffer[j]);
@@ -229,7 +229,7 @@ void che_ply::read_file(const std::string & file)
 				if(fbytes == 4) P[i] = *((int *) buffer);
 			}
 
-			for(const index_t & v: trig_convex_polygon(P, nv))
+			for(const index_t v: trig_convex_polygon(P, nv))
 				trigs.push_back(v);
 		}
 	}
@@ -279,18 +279,19 @@ void che_ply::write_file(const che * mesh, const std::string & file, const bool 
 	fprintf(fp, "property list uchar uint vertex_index\n");
 	fprintf(fp, "end_header\n");
 
+	const che::rgb_t * p_rgb = mesh->rgb_ptr();
 	for(index_t v = 0; v < mesh->n_vertices; ++v)
 	{
 		fwrite(&mesh->point(v), sizeof(vertex), 1, fp);
 		fwrite(&mesh->normal(v), sizeof(vertex), 1, fp);
-		if(color) fwrite(&mesh->rgb(v), sizeof(rgb_t), 1, fp);
+		if(color) fwrite(p_rgb + v, sizeof(rgb_t), 1, fp);
 	}
 
 	unsigned char mtrig = che::mtrig;
 	for(index_t he = 0; he < mesh->n_half_edges; he += che::mtrig)
 	{
 		fwrite(&mtrig, 1, 1, fp);
-		fwrite(&mesh->halfedge(he), sizeof(index_t), che::mtrig, fp);
+		fwrite(mesh->trigs_ptr(), sizeof(index_t), che::mtrig, fp);
 	}
 
 	fclose(fp);

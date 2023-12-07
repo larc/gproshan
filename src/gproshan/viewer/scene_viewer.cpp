@@ -133,7 +133,7 @@ void scene_viewer::gl_uniform_material(shader & program, const scene::material &
 	program.uniform("mat.map_d", mat.map_d);
 	program.uniform("mat.map_bump", mat.map_bump);
 
-	static auto bind_texture = [&](const int & i, const int & map, const char * tex)
+	static auto bind_texture = [&](const int i, const int map, const char * tex)
 	{
 		if(map < 0) return;
 		glActiveTexture(gltex_nums[i]);

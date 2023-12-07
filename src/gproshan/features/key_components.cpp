@@ -9,7 +9,7 @@
 namespace gproshan {
 
 
-key_components::key_components(che * mesh, const std::vector<index_t> & kps, const real_t & r): radio(r)
+key_components::key_components(che * mesh, const std::vector<index_t> & kps, const real_t r): radio(r)
 {
 	n_vertices = mesh->n_vertices;
 
@@ -33,7 +33,7 @@ key_components::~key_components()
 	delete [] comp_size;
 }
 
-index_t key_components::operator()(const index_t & i)
+index_t key_components::operator()(const index_t i)
 {
 	assert(i < n_vertices);
 
@@ -41,7 +41,7 @@ index_t key_components::operator()(const index_t & i)
 	return comp_idx[find(i)];
 }
 
-key_components::operator const size_t & () const
+key_components::operator size_t () const
 {
 	return n_comp;
 }
@@ -52,7 +52,7 @@ void key_components::compute_kcs(che * mesh, const std::vector<index_t> & kps)
 
 	radio *= fm.radio();
 	for(index_t i = 0; i < n_vertices && fm[fm(i)] <= radio; ++i)
-		for(const index_t & he: mesh->star(fm(i)))
+		for(const index_t he: mesh->star(fm(i)))
 			join(fm(i), mesh->halfedge(he_next(he)));
 
 	for(index_t i = 0; i < n_vertices; ++i)
@@ -61,7 +61,7 @@ void key_components::compute_kcs(che * mesh, const std::vector<index_t> & kps)
 		else if(comp[i] == i) comp[i] = NIL;
 }
 
-index_t key_components::find(const index_t & x)
+index_t key_components::find(const index_t x)
 {
 	if(comp[x] == x) return x;
 	return comp[x] = find(comp[x]);

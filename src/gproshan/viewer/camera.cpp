@@ -31,9 +31,9 @@ mat4 camera::perspective()
 	return perspective(fovy, aspect, near, far);
 }
 
-mat4 camera::perspective(const real_t & fovy, const real_t & aspect, const real_t & near, const real_t & far)
+mat4 camera::perspective(const real_t fovy, const real_t aspect, const real_t near, const real_t far)
 {
-	const real_t & tan_fovy_2 = std::tan(fovy * M_PI / 360);
+	const real_t tan_fovy_2 = std::tan(fovy * M_PI / 360);
 
 	mat4 P;
 	P(0, 0) = 1 / (aspect * tan_fovy_2);
@@ -45,7 +45,7 @@ mat4 camera::perspective(const real_t & fovy, const real_t & aspect, const real_
 	return P;
 }
 
-quaternion camera::click_to_sphere(const double & x, const double & y, const int & w, const int & h)
+quaternion camera::click_to_sphere(const double x, const double y, const int w, const int h)
 {
 	quaternion p(0, 2 * x / w - 1, 2 * y / h - 1, 0);
 
@@ -67,7 +67,7 @@ quaternion camera::current_rotation() const
 	return p_drag * p_click.conj() * r_last;
 }
 
-void camera::mouse(const bool & press, const double & x, const double & y, const int & w, const int & h)
+void camera::mouse(const bool & press, const double x, const double y, const int w, const int h)
 {
 	if(press)
 	{
@@ -80,7 +80,7 @@ void camera::mouse(const bool & press, const double & x, const double & y, const
 	}
 }
 
-void camera::motion(const double & x, const double & y, const int & w, const int & h)
+void camera::motion(const double x, const double y, const int w, const int h)
 {
 	p_last = p_drag;
 	p_drag = click_to_sphere(x, y, w, h);

@@ -22,7 +22,7 @@ index_t ** sampling_shape(std::vector<index_t> & points, size_t *& sizes, vertex
 	#pragma omp parallel for
 	for(index_t i = 0; i < n_points; ++i)
 	{
-		const index_t & v = points[i];
+		const index_t v = points[i];
 		normals[i] = mesh->normal(v);
 
 		geodesics fm(mesh, { v }, params);
@@ -74,7 +74,7 @@ bool load_sampling(std::vector<index_t> & points, real_t & radio, che * mesh, si
 		std::ofstream os(tmp_file_path(file));
 		os << radio << std::endl;
 		os << size(points) << std::endl;
-		for(const index_t & i: points)
+		for(const index_t i: points)
 			os << i << std::endl;
 
 		os.close();

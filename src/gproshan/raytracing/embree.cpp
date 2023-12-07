@@ -67,7 +67,7 @@ embree::embree()
 	rtcSetDeviceErrorFunction(rtc_device, embree_error, NULL);
 }
 
-embree::embree(const std::vector<che *> & meshes, const std::vector<mat4> & model_mats, const bool & pointcloud, const float & pcr): embree()
+embree::embree(const std::vector<che *> & meshes, const std::vector<mat4> & model_mats, const bool & pointcloud, const float pcr): embree()
 {
 	pc_radius = pcr;
 	build_bvh(meshes, model_mats, pointcloud);
@@ -133,7 +133,7 @@ void embree::build_bvh(const std::vector<che *> & meshes, const std::vector<mat4
 			g_meshes[i]->n_trigs = 0;
 
 		[[maybe_unused]]
-		const index_t & geomID = g_meshes[i]->n_trigs || meshes[i]->is_scene() ?
+		const index_t geomID = g_meshes[i]->n_trigs || meshes[i]->is_scene() ?
 											add_mesh(meshes[i], model_mats[i]) :
 											add_pointcloud(meshes[i], model_mats[i]);
 
@@ -190,7 +190,7 @@ index_t embree::add_mesh(const che * mesh, const mat4 & model_mat)
 	}
 	else
 	{
-		memcpy(tri_idxs, &mesh->halfedge(0), mesh->n_half_edges * sizeof(index_t));
+		memcpy(tri_idxs, mesh->trigs_ptr(), mesh->n_half_edges * sizeof(index_t));
 	}
 
 	rtcCommitGeometry(geom);
@@ -248,23 +248,40 @@ index_t embree::add_pointcloud(const che * mesh, const mat4 & model_mat)
 	return geom_id;
 }
 
-vec3 embree::closesthit_radiance(const vertex & org, const vertex & dir, const light & ambient, const light * lights, const int & n_lights, const vertex & cam_pos, const bool & flat) const
+bool embree::closesthit_radiance(	vertex & color,
+									vertex & attenuation,
+									vertex & position,
+									vertex & ray_dir,
+									random<real_t> & rnd,
+									const render_params & params,
+									const bool & flat
+									) const
 {
-	ray_hit r(org, dir);
-	if(!intersect(r)) return {};
+	ray_hit r(position, ray_dir);
+	if(!intersect(r)) return false;
 
-	const CHE * mesh = g_meshes[r.hit.geomID];
+	const CHE & mesh = *g_meshes[r.hit.geomID];
 
-	eval_hit hit(*mesh, r.hit.primID, r.hit.u, r.hit.v, sc);
+	eval_hit hit(mesh, r.hit.primID, r.hit.u, r.hit.v, sc);
 	hit.position = r.pos();
 	hit.normal = flat ? r.normal() : hit.normal;
 
-	return eval_li(	hit, ambient, lights, n_lights, cam_pos,
-					[&](const vec3 & position, const vec3 & wi, const float & light_dist) -> bool
+	color = eval_li(hit, params.ambient, params.lights, params.n_lights, params.cam_pos,
+					[&](const vec3 & position, const vec3 & wi, const float light_dist) -> bool
 					{
 						ray_hit ro(position, wi, 1e-3f, light_dist - 1e-3f);
 						return occluded(ro);
 					});
+
+	color *= attenuation;
+	position = hit.position;
+
+	if(!hit.scatter_mat(ray_dir, rnd))
+		attenuation = 0;
+
+	attenuation /= 2;
+
+	return true;
 }
 
 float embree::intersect_depth(const vertex & org, const vertex & dir) const

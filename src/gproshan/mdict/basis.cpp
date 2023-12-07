@@ -6,14 +6,14 @@
 namespace gproshan::mdict {
 
 
-basis::basis(const real_t & r, const size_t & d): _radio(r), _dim(d) {}
+basis::basis(const real_t r, const size_t d): _radio(r), _dim(d) {}
 
 real_t & basis::radio()
 {
 	return _radio;
 }
 
-const size_t & basis::dim() const
+size_t basis::dim() const
 {
 	return _dim;
 }
@@ -81,7 +81,7 @@ void basis::plot_atoms(const a_mat & A)
 	system(file.c_str());
 }
 
-void basis::plot_patch(const a_mat & A, const a_mat & xyz, const index_t & p)
+void basis::plot_patch(const a_mat & A, const a_mat & xyz, const index_t p)
 {
 	a_mat tmp = xyz.t();
 	std::string data = tmp_file_path("xyz_" + std::to_string(p) + ".dat");

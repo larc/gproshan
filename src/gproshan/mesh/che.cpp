@@ -36,7 +36,7 @@ che::rgb_t::rgb_t(const vertex & v)
 
 che::rgb_t::rgb_t(const unsigned char & cr, const unsigned char & cg, const unsigned char & cb): r(cr), g(cg), b(cb) {}
 
-unsigned char & che::rgb_t::operator [] (const index_t & i)
+unsigned char & che::rgb_t::operator [] (const index_t i)
 {
 	return (&r)[i];
 }
@@ -65,12 +65,12 @@ che::che(const che & mesh)
 	memcpy(VHC, mesh.VHC, n_vertices * sizeof(real_t));
 }
 
-che::che(const size_t & n_v, const size_t & n_f)
+che::che(const size_t n_v, const size_t n_f)
 {
 	alloc(n_v, n_f);
 }
 
-che::che(const vertex * vertices, const index_t & n_v, const index_t * trigs, const index_t & n_f)
+che::che(const vertex * vertices, const index_t n_v, const index_t * trigs, const index_t n_f)
 {
 	init(vertices, n_v, trigs, n_f);
 }
@@ -83,42 +83,42 @@ che::~che()
 
 // vertex access geometry methods to xyz point values, normals, and gradient
 
-const vertex & che::point(const index_t & v) const
+const vertex & che::point(const index_t v) const
 {
 	assert(v < n_vertices);
 	return GT[v];
 }
 
-vertex & che::point(const index_t & v)
+vertex & che::point(const index_t v)
 {
 	assert(v < n_vertices);
 	return GT[v];
 }
 
-const vertex & che::normal(const index_t & v) const
+const vertex & che::normal(const index_t v) const
 {
 	assert(VN && v < n_vertices);
 	return VN[v];
 }
 
-vertex & che::normal(const index_t & v)
+vertex & che::normal(const index_t v)
 {
 	assert(VN && v < n_vertices);
 	return VN[v];
 }
 
-vertex che::shading_normal(const index_t & f, const float & u, const float & v) const
+vertex che::shading_normal(const index_t f, const float u, const float v) const
 {
-	const index_t & he = f * che::mtrig;
+	const index_t he = f * che::mtrig;
 	return normalize(u * VN[VT[he]] + v * VN[VT[he + 1]] + (1 - u - v) * VN[VT[he + 2]]);
 }
 
-vertex che::normal_trig(const index_t & f) const
+vertex che::normal_trig(const index_t f) const
 {
 	return normal_he(f * che::mtrig);
 }
 
-vertex che::normal_he(const index_t & he) const
+vertex che::normal_he(const index_t he) const
 {
 	const vertex & a = GT[VT[he]];
 	const vertex & b = GT[VT[he_next(he)]];
@@ -127,7 +127,7 @@ vertex che::normal_he(const index_t & he) const
 	return normalize(cross(b - a, c - a));
 }
 
-vertex che::gradient_he(const index_t & he, const real_t * f) const
+vertex che::gradient_he(const index_t he, const real_t * f) const
 {
 	index_t i = VT[he];
 	index_t j = VT[he_next(he)];
@@ -146,12 +146,12 @@ vertex che::gradient_he(const index_t & he, const real_t * f) const
 	return normalize(f[i] * pjk + f[j] * pki + f[k] * pij);
 }
 
-vertex che::gradient(const index_t & v, const real_t * f)
+vertex che::gradient(const index_t v, const real_t * f)
 {
 	vertex g;
 	real_t area, area_star = 0;
 
-	for(const index_t & he: star(v))
+	for(const index_t he: star(v))
 	{
 		area = area_trig(he_trig(he));
 		area_star += area;
@@ -164,39 +164,49 @@ vertex che::gradient(const index_t & v, const real_t * f)
 
 // vertex color methods
 
-const real_t & che::heatmap(const index_t & v) const
+const real_t * che::heatmap_ptr() const
+{
+	return VHC;
+}
+
+real_t che::heatmap(const index_t v) const
 {
 	assert(v < n_vertices);
 	return VHC[v];
 }
 
-real_t & che::heatmap(const index_t & v)
+real_t & che::heatmap(const index_t v)
 {
 	assert(v < n_vertices);
 	return VHC[v];
 }
 
-const che::rgb_t & che::rgb(const index_t & v) const
+const che::rgb_t * che::rgb_ptr() const
+{
+	return VC;
+}
+
+che::rgb_t che::rgb(const index_t v) const
 {
 	assert(v < n_vertices);
 	return VC[v];
 }
 
-che::rgb_t & che::rgb(const index_t & v)
+che::rgb_t & che::rgb(const index_t v)
 {
 	assert(v < n_vertices);
 	return VC[v];
 }
 
-vertex che::color(const index_t & v) const
+vertex che::color(const index_t v) const
 {
 	assert(VC && v < n_vertices);
 	return VC[v];
 }
 
-vertex che::shading_color(const index_t & f, const float & u, const float & v) const
+vertex che::shading_color(const index_t f, const float u, const float v) const
 {
-	const index_t & he = f * che::mtrig;
+	const index_t he = f * che::mtrig;
 	return u * color(VT[he]) + v * color(VT[he + 1]) + (1 - u - v) * color(VT[he + 2]);
 }
 
@@ -209,7 +219,7 @@ void che::reload()
 	init(filename);
 }
 
-mat4 che::normalize_sphere(const real_t & r) const
+mat4 che::normalize_sphere(const real_t r) const
 {
 	vertex center;
 	#pragma omp parallel for
@@ -230,14 +240,14 @@ mat4 che::normalize_sphere(const real_t & r) const
 	#pragma omp parallel for reduction(+: sigma_dist)
 	for(index_t v = 0; v < n_vertices; ++v)
 	{
-		const real_t & diff = mean_dist - length(GT[v] - center);
+		const real_t diff = mean_dist - length(GT[v] - center);
 		sigma_dist += diff * diff;
 	}
 	sigma_dist = sqrt(sigma_dist / n_vertices);
 
 	mat4 model_mat;
 
-	const real_t & scale = r / (mean_dist + sigma_dist);
+	const real_t scale = r / (mean_dist + sigma_dist);
 	model_mat(0, 0) = model_mat(1, 1) = model_mat(2, 2) = scale;
 
 	center *= -scale;
@@ -249,7 +259,7 @@ mat4 che::normalize_sphere(const real_t & r) const
 	return model_mat;
 }
 
-mat4 che::normalize_box(const real_t & side) const
+mat4 che::normalize_box(const real_t side) const
 {
 	vertex pmin = INFINITY;
 	vertex pmax = 0;
@@ -269,7 +279,7 @@ mat4 che::normalize_box(const real_t & side) const
 
 	mat4 model_mat;
 
-	const real_t & scale = side / std::max({pmax.x() - pmin.x(), pmax.y() - pmin.y(), pmax.z() - pmin.z()});
+	const real_t scale = side / std::max({pmax.x() - pmin.x(), pmax.y() - pmin.y(), pmax.z() - pmin.z()});
 	model_mat(0, 0) = model_mat(1, 1) = model_mat(2, 2) = scale;
 
 	const vertex & translate = - scale * (pmax + pmin) / 2;
@@ -284,8 +294,8 @@ mat4 che::normalize_box(const real_t & side) const
 ///< vcommon correspond to the first vertices of the mesh with indices to the main mesh (this)
 che * che::merge(const che * mesh, const std::vector<index_t> & vcommon)
 {
-	const size_t & n_vcommon = size(vcommon);
-	const size_t & n_vnew = mesh->n_vertices - n_vcommon;
+	const size_t n_vcommon = size(vcommon);
+	const size_t n_vnew = mesh->n_vertices - n_vcommon;
 
 	che * new_mesh = new che(n_vertices + n_vnew, n_trigs + mesh->n_trigs);
 
@@ -310,7 +320,7 @@ che * che::merge(const che * mesh, const std::vector<index_t> & vcommon)
 	return new_mesh;
 }
 
-void che::update_vertices(const vertex * positions, const size_t & n, const index_t & v_i)
+void che::update_vertices(const vertex * positions, const size_t n, const index_t v_i)
 {
 	if(!positions) return;
 	memcpy(GT + v_i, positions, sizeof(vertex) * (!n ? n_vertices : n));
@@ -340,7 +350,7 @@ void che::update_normals()
 		vertex & n = VN[v];
 
 		n = 0;
-		for(const index_t & he: star(v))
+		for(const index_t he: star(v))
 			n += area_trig(he_trig(he)) * normal_he(he);
 
 		n /= norm(n);
@@ -372,9 +382,9 @@ void che::multiplicate_vertices()
 	#pragma omp parallel for
 	for(index_t f = 0; f < nf; ++f)
 	{
-		const index_t & v = nv + f;
-		const index_t & old_he = f * che::mtrig;
-		const index_t & he = 3 * f * che::mtrig;
+		const index_t v = nv + f;
+		const index_t old_he = f * che::mtrig;
+		const index_t he = 3 * f * che::mtrig;
 
 		GT[v] = (GT[old_VT[old_he]] + GT[old_VT[old_he + 1]] + GT[old_VT[old_he + 2]]) / 3;
 
@@ -399,7 +409,7 @@ void che::multiplicate_vertices()
 
 	for(index_t e = 0; e < n_edges; ++e)
 	{
-		const index_t & he = ET[e];
+		const index_t he = ET[e];
 		if(!(he % 3) && OT[he] != NIL)
 			flip(e);
 	}
@@ -412,7 +422,7 @@ void che::remove_vertices(const std::vector<index_t> & vertices)
 	gproshan_debug(removing vertex);
 	for(index_t v: vertices)
 	{
-		for(const index_t & he: star(v))
+		for(const index_t he: star(v))
 		{
 			VT[he] = NIL;
 			VT[he_prev(he)] = NIL;
@@ -449,7 +459,7 @@ void che::remove_vertices(const std::vector<index_t> & vertices)
 	{
 		if(v < removed[r])
 		{
-			for(const index_t & he: star(v))
+			for(const index_t he: star(v))
 				if(VT[he] != NIL) VT[he] = v - d;
 		}
 		else if(v == removed[r])
@@ -508,7 +518,7 @@ void che::remove_non_manifold_vertices()
 	{
 		if(v < removed[r])
 		{
-			for(const index_t & he: star(v))
+			for(const index_t he: star(v))
 				if(VT[he] != NIL) VT[he] = v - d;
 		}
 		else if(v == removed[r])
@@ -532,7 +542,7 @@ void che::remove_non_manifold_vertices()
 	gproshan_debug(removing vertex);
 }
 
-void che::set_head_vertices(index_t * head, const size_t & n)
+void che::set_head_vertices(index_t * head, const size_t n)
 {
 	for(index_t v, i = 0; i < n; ++i)
 	{
@@ -547,10 +557,10 @@ void che::set_head_vertices(index_t * head, const size_t & n)
 
 		std::swap(GT[v], GT[i]);
 
-		for(const index_t & he: star(v))
+		for(const index_t he: star(v))
 			VT[he] = i;
 
-		for(const index_t & he: star(i))
+		for(const index_t he: star(i))
 			VT[he] = i;
 
 		std::swap(EVT[v], EVT[i]);
@@ -560,61 +570,66 @@ void che::set_head_vertices(index_t * head, const size_t & n)
 
 // half edge access methods triangular trigs and navigation
 
-const index_t & che::halfedge(const index_t & he) const
+const index_t * che::trigs_ptr() const
+{
+	return VT;
+}
+
+index_t che::halfedge(const index_t he) const
 {
 	assert(he < n_half_edges);
 	return VT[he];
 }
 
-const index_t & che::twin_he(const index_t & he) const
+index_t che::twin_he(const index_t he) const
 {
 	assert(he < n_half_edges);
 	return OT[he];
 }
 
-const index_t & che::edge_u(const index_t & e) const
+index_t che::edge_u(const index_t e) const
 {
 	assert(e < n_edges);
 	return VT[ET[e]];
 }
 
-const index_t & che::edge_v(const index_t & e) const
+index_t che::edge_v(const index_t e) const
 {
 	assert(e < n_edges);
 	return VT[he_next(ET[e])];
 }
 
-const index_t & che::edge_he_0(const index_t & e) const
+index_t che::edge_he_0(const index_t e) const
 {
 	assert(e < n_edges);
 	return ET[e];
 }
 
-const index_t & che::edge_he_1(const index_t & e) const
+index_t che::edge_he_1(const index_t e) const
 {
 	assert(e < n_edges);
 	return OT[ET[e]];
 }
 
-const vertex & che::vertex_he(const index_t & he) const
+const vertex & che::vertex_he(const index_t he) const
 {
 	assert(he < n_half_edges);
 	return GT[VT[he]];
 }
 
-const vertex & che::vertex_edge_u(const index_t & e) const
+const vertex & che::vertex_edge_u(const index_t e) const
 {
 	assert(e < n_edges);
 	return GT[VT[ET[e]]];
 }
 
-const vertex & che::vertex_edge_v(const index_t & e) const
+const vertex & che::vertex_edge_v(const index_t e) const
 {
 	assert(e < n_edges);
 	return GT[VT[he_next(ET[e])]];
 }
 
-const index_t & che::evt(const index_t & v) const
+index_t che::evt(const index_t v) const
 {
 	assert(v < n_vertices);
 	return EVT[v];
@@ -623,12 +638,12 @@ const index_t & che::evt(const index_t & v) const
 
 // topology methods
 
-che::star_he che::star(const index_t & v) const
+che::star_he che::star(const index_t v) const
 {
 	return {this, v};
 }
 
-std::vector<index_t> che::link(const index_t & v) const
+std::vector<index_t> che::link(const index_t v) const
 {
 	assert(v < n_vertices);
 
@@ -637,7 +652,7 @@ std::vector<index_t> che::link(const index_t & v) const
 	if(is_vertex_bound(v))
 		vlink.push_back(VT[he_next(EVT[v])]);
 
-	for(const index_t & he: star(v))
+	for(const index_t he: star(v))
 		vlink.push_back(VT[he_prev(he)]);
 
 	return vlink;
@@ -649,7 +664,7 @@ void che::edge_collapse(const std::vector<index_t> & sort_edges)
 	// TODO
 }
 
-void che::compute_toplesets(index_t *& toplesets, index_t *& sorted, std::vector<index_t> & limits, const std::vector<index_t> & sources, const index_t & k)
+void che::compute_toplesets(index_t *& toplesets, index_t *& sorted, std::vector<index_t> & limits, const std::vector<index_t> & sources, const index_t k)
 {
 	if(!size(sources)) return;
 
@@ -658,7 +673,7 @@ void che::compute_toplesets(index_t *& toplesets, index_t *& sorted, std::vector
 	index_t level = 0;
 
 	index_t p = 0;
-	for(const index_t & s: sources)
+	for(const index_t s: sources)
 	{
 		sorted[p++] = s;
 		toplesets[s] = level;
@@ -667,7 +682,7 @@ void che::compute_toplesets(index_t *& toplesets, index_t *& sorted, std::vector
 	limits.push_back(0);
 	for(index_t i = 0; i < p; ++i)
 	{
-		const index_t & v = sorted[i];
+		const index_t v = sorted[i];
 
 		if(toplesets[v] > level)
 		{
@@ -675,7 +690,7 @@ void che::compute_toplesets(index_t *& toplesets, index_t *& sorted, std::vector
 			limits.push_back(i);
 		}
 
-		for(const index_t & u: link(v))
+		for(const index_t u: link(v))
 		{
 			if(toplesets[u] == NIL)
 			{
@@ -708,7 +723,7 @@ std::vector<index_t> che::bounds() const
 		{
 			vbounds.push_back(v);
 
-			for(const index_t & b: boundary(v))
+			for(const index_t b: boundary(v))
 				is_bound[b] = true;
 		}
 
@@ -718,7 +733,7 @@ std::vector<index_t> che::bounds() const
 }
 
 ///< return a vector of the indices of the boundary where v belongs
-std::vector<index_t> che::boundary(const index_t & v) const
+std::vector<index_t> che::boundary(const index_t v) const
 {
 	std::vector<index_t> vbound;
 
@@ -734,13 +749,13 @@ std::vector<index_t> che::boundary(const index_t & v) const
 	return vbound;
 }
 
-bool che::is_vertex_bound(const index_t & v) const
+bool che::is_vertex_bound(const index_t v) const
 {
 	assert(v < n_vertices);
 	return EVT[v] != NIL && OT[EVT[v]] == NIL;
 }
 
-bool che::is_edge_bound(const index_t & e) const
+bool che::is_edge_bound(const index_t e) const
 {
 	assert(e < n_edges);
 	return OT[ET[e]] == NIL;
@@ -791,7 +806,7 @@ size_t che::max_degree() const
 	for(index_t v = 0; v < n_vertices; ++v)
 	{
 		d = 0;
-		for([[maybe_unused]] const index_t & he: star(v)) ++d;
+		for([[maybe_unused]] const index_t he: star(v)) ++d;
 		d += is_vertex_bound(v);
 		md = std::max(md, d);
 	}
@@ -850,7 +865,7 @@ bool che::is_pointcloud() const
 
 // operation methods
 
-void che::flip(const index_t & e)
+void che::flip(const index_t e)
 {
 	index_t ha = ET[e];
 	index_t hb = OT[ha];
@@ -906,7 +921,7 @@ void che::flip(const index_t & e)
 	if(EVT[vd] == he_prev(hb)) EVT[vd] = he_next(ha);
 }
 
-real_t che::cotan(const index_t & he) const
+real_t che::cotan(const index_t he) const
 {
 	if(he == NIL) return 0;
 
@@ -920,7 +935,7 @@ real_t che::cotan(const index_t & he) const
 // 4*sqrt(3)*a
 // q = ----------------
 // h1^2+h2^2+h3^2
-real_t che::pdetriq(const index_t & t) const
+real_t che::pdetriq(const index_t t) const
 {
 	index_t he = t * che::mtrig;
 	real_t h[3] = {
@@ -931,7 +946,7 @@ real_t che::pdetriq(const index_t & t) const
 	return (4 * sqrt(3) * area_trig(t)) / (h[0] * h[0] + h[1] * h[1] + h[2] * h[2]);
 }
 
-real_t che::area_trig(const index_t & t) const
+real_t che::area_trig(const index_t t) const
 {
 	index_t he = t * che::mtrig;
 	vertex a = GT[VT[he_next(he)]] - GT[VT[he]];
@@ -940,22 +955,22 @@ real_t che::area_trig(const index_t & t) const
 	return norm(cross(a, b)) / 2;
 }
 
-real_t che::area_vertex(const index_t & v) const
+real_t che::area_vertex(const index_t v) const
 {
 	real_t area_star = 0;
-	for(const index_t & he: star(v))
+	for(const index_t he: star(v))
 		area_star += area_trig(he_trig(he));
 
 	return area_star / 3;
 }
 
 // The Gauss-Bonnet Scheme
-real_t che::mean_curvature(const index_t & v) const
+real_t che::mean_curvature(const index_t v) const
 {
 	real_t h = 0;
 	real_t a = 0;
 
-	for(const index_t & he: star(v))
+	for(const index_t he: star(v))
 	{
 		a += area_trig(he_trig(he));
 		h += norm(GT[VT[he_next(he)]] - GT[v]) * dot(normal(v), normal_he(he));
@@ -967,7 +982,7 @@ real_t che::mean_curvature(const index_t & v) const
 
 // protected
 
-void che::init(const vertex * vertices, const index_t & n_v, const index_t * trigs, const index_t & n_f)
+void che::init(const vertex * vertices, const index_t n_v, const index_t * trigs, const index_t n_f)
 {
 	alloc(n_v, n_f);
 
@@ -987,7 +1002,7 @@ void che::init(const std::string & file)
 	update_eht();
 }
 
-void che::alloc(const size_t & n_v, const size_t & n_f)
+void che::alloc(const size_t n_v, const size_t n_f)
 {
 	rw(n_vertices)		= n_v;
 	rw(n_trigs)			= n_f;
@@ -1048,8 +1063,8 @@ void che::update_evt_ot_et()
 	size_t ne = 0;
 	for(index_t ohe, he = 0; he < n_half_edges; ++he)
 	{
-		const index_t & u = VT[he];
-		const index_t & v = VT[he_next(he)];
+		const index_t u = VT[he];
+		const index_t v = VT[he_next(he)];
 
 		EVT[u] = he;
 
@@ -1106,7 +1121,7 @@ void che::update_eht()
 
 // static
 
-std::vector<index_t> che::trig_convex_polygon(const index_t * P, const size_t & n)
+std::vector<index_t> che::trig_convex_polygon(const index_t * P, const size_t n)
 {
 	std::vector<index_t> trigs;
 	trigs.reserve(che::mtrig * (n - 2));
@@ -1156,7 +1171,7 @@ che * che::load_mesh(const std::string & file_path)
 
 // iterator classes methods
 
-che::star_he::star_he(const che * p_mesh, const index_t & p_v): mesh(p_mesh), v(p_v) {}
+che::star_he::star_he(const che * p_mesh, const index_t p_v): mesh(p_mesh), v(p_v) {}
 
 che::star_he::iterator che::star_he::begin() const
 {
@@ -1168,7 +1183,7 @@ che::star_he::iterator che::star_he::end() const
 	return {nullptr, NIL, NIL};
 }
 
-che::star_he::iterator::iterator(const che * p_mesh, const index_t & p_he, const index_t & p_he_end): mesh(p_mesh), he(p_he), he_end(p_he_end) {}
+che::star_he::iterator::iterator(const che * p_mesh, const index_t p_he, const index_t p_he_end): mesh(p_mesh), he(p_he), he_end(p_he_end) {}
 
 che::star_he::iterator & che::star_he::iterator::operator ++ ()
 {
@@ -1182,7 +1197,7 @@ bool che::star_he::iterator::operator != (const iterator & it) const
 	return he != it.he;
 }
 
-const index_t & che::star_he::iterator::operator * ()
+index_t che::star_he::iterator::operator * ()
 {
 	return he;
 }

@@ -48,7 +48,7 @@ void laplacian(const che * mesh, a_sp_mat & L, a_sp_mat & A)
 		A(v, v) = mesh->area_vertex(v);
 }
 
-size_t eigs_laplacian(const che * mesh, a_vec & eigval, a_mat & eigvec, a_sp_mat & L, a_sp_mat & A, const size_t & k)
+size_t eigs_laplacian(const che * mesh, a_vec & eigval, a_mat & eigvec, a_sp_mat & L, a_sp_mat & A, const size_t k)
 {
 	laplacian(mesh, L, A);
 

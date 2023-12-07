@@ -19,7 +19,7 @@ size_t msparse_coding::L = 12;
 size_t msparse_coding::K = 10;
 size_t msparse_coding::T = 5;
 
-msparse_coding::msparse_coding(che *const & _mesh, basis *const & _phi_basis, const params & p): mesh(_mesh), phi_basis(_phi_basis), m_params(p)
+msparse_coding::msparse_coding(che * _mesh, basis * _phi_basis, const params & p): mesh(_mesh), phi_basis(_phi_basis), m_params(p)
 {
 	A.eye(phi_basis->dim(), m_params.n_atoms);
 	dist = new real_t[mesh->n_vertices];
@@ -40,6 +40,11 @@ msparse_coding::~msparse_coding()
 msparse_coding::operator const std::string & () const
 {
 	return key_name;
+}
+
+msparse_coding::operator const real_t * () const
+{
+	return dist;
 }
 
 void msparse_coding::load_mask()
@@ -201,7 +206,7 @@ void msparse_coding::load_sampling()
 	bool * invalid_seed = new bool[mesh->n_vertices];
 	memset(invalid_seed, 0, mesh->n_vertices * sizeof(bool));
 
-	for(const index_t & vsf: all_sorted_features)
+	for(const index_t vsf: all_sorted_features)
 	{
 		if(invalid_seed[vsf]) continue;
 
@@ -211,7 +216,7 @@ void msparse_coding::load_sampling()
 		count_cov_patch = 0;
 		if(size(p.vertices) >= 7 )
 		{
-			for(const index_t & v: p.vertices)
+			for(const index_t v: p.vertices)
 				if(!covered[v]) ++count_cov_patch;
 
 			count_cov += count_cov_patch;
@@ -223,7 +228,7 @@ void msparse_coding::load_sampling()
 				geo_radios.push_back(geo_radio);
 				count += size(p.vertices);
 
-				for(const index_t & v: p.vertices)
+				for(const index_t v: p.vertices)
 				{
 					covered[v] = 1;
 
@@ -313,7 +318,7 @@ void msparse_coding::init_radial_feature_patches()
 	bool * pmask = mask;
 
 	for(index_t s = 0; s < m_params.n_patches; ++s)
-		patches[s].reset_xyz_disjoint(mesh, dist, m_params.n_patches, patches_map, s, [&pmask](const index_t & i) -> bool { return pmask[i]; });
+		patches[s].reset_xyz_disjoint(mesh, dist, m_params.n_patches, patches_map, s, [&pmask](const index_t i) -> bool { return pmask[i]; });
 
 	#pragma omp parallel for
 	for(index_t s = 0; s < m_params.n_patches; ++s)
@@ -442,7 +447,7 @@ void msparse_coding::init_voronoi_patches()
 
 	bool * pmask = mask;
 	for(index_t s = 0; s < m_params.n_patches; ++s)
-		patches[s].reset_xyz_disjoint(mesh, dist, m_params.n_patches, patches_map, s, [&pmask](const index_t & i) -> bool { return pmask[i]; });
+		patches[s].reset_xyz_disjoint(mesh, dist, m_params.n_patches, patches_map, s, [&pmask](const index_t i) -> bool { return pmask[i]; });
 
 	#pragma omp parallel for
 	for(index_t s = 0; s < m_params.n_patches; ++s)
@@ -503,7 +508,7 @@ real_t msparse_coding::execute()
 	bool * pmask = mask;
 
 	TIC(d_time)
-	real_t max_error = mesh_reconstruction([&pmask](const index_t & i) -> bool { return pmask[i]; });
+	real_t max_error = mesh_reconstruction([&pmask](const index_t i) -> bool { return pmask[i]; });
 	TOC(d_time)
 	gproshan_debug_var(d_time);
 
@@ -633,7 +638,7 @@ real_t msparse_coding::execute_tmp()
 	gproshan_debug_var(d_time);
 
 	// initializing patches with threshold
-	TIC(d_time) init_patches(1, [&threshold](const index_t & i) -> bool { return i < threshold; }); TOC(d_time)
+	TIC(d_time) init_patches(1, [&threshold](const index_t i) -> bool { return i < threshold; }); TOC(d_time)
 	gproshan_debug_var(d_time);
 
 	// learning only from valid patches
@@ -896,8 +901,8 @@ real_t msparse_coding::mesh_reconstruction(const fmask_t & mask)
 	fprintf(stderr, "error %16s%16s\n", "best", "worst");
 	for(index_t i = 0; i < 10; ++i)
 	{
-		const index_t & best = patches_error[i].second;
-		const index_t & worst = patches_error[m_params.n_patches - i - 1].second;
+		const index_t best = patches_error[i].second;
+		const index_t worst = patches_error[m_params.n_patches - i - 1].second;
 
 		fprintf(stderr, "%5d:%8u>%8u%8u>%8u\n", i, best, draw_patches(best), worst, draw_patches(worst));
 	}
@@ -1000,20 +1005,20 @@ void msparse_coding::update_alphas(a_mat & alpha, size_t threshold)
 	// repeat until threshold reachs all patches
 }
 
-index_t msparse_coding::sample(const index_t & s)
+index_t msparse_coding::sample(const index_t s)
 {
 	assert(s < m_params.n_patches);
 	if(size(sampling)) return sampling[s];
 	return s;
 }
 
-const real_t & msparse_coding::operator[](const index_t & i) const
+real_t msparse_coding::operator[](const index_t i) const
 {
 	assert(i < mesh->n_vertices);
 	return dist[i];
 }
 
-const index_t & msparse_coding::draw_patches(const index_t & p)
+index_t msparse_coding::draw_patches(const index_t p) const
 {
 	phi_basis->plot_patch(A * alpha.col(p), patches[p].xyz, patches[p].vertices[0]);
 	return patches[p].vertices[0];

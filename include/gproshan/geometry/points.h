@@ -9,7 +9,7 @@ namespace gproshan {
 
 
 template <class T, size_t N>
-std::vector<vec<T, N> > sampling_4points(const size_t & n, const vec<T, N> & a, const vec<T, N> & b, const vec<T, N> & c, const vec<T, N> & d)
+std::vector<vec<T, N> > sampling_4points(const size_t n, const vec<T, N> & a, const vec<T, N> & b, const vec<T, N> & c, const vec<T, N> & d)
 {
 	std::vector<vec<T, N> > points;
 	points.reserve((n + 1) * (n + 1));

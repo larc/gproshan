@@ -41,7 +41,7 @@ class frame
 		vec4 * map_pbo(bool cuda = false);
 		void unmap_pbo(bool cuda = false);
 
-		bool resize(const size_t & w, const size_t & h);
+		bool resize(const size_t w, const size_t h);
 		void display();
 };
 

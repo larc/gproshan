@@ -7,7 +7,7 @@
 namespace gproshan {
 
 
-descriptor::descriptor(const signature & sig, const che * mesh, const size_t & n_eigs)
+descriptor::descriptor(const signature & sig, const che * mesh, const size_t n_eigs)
 {
 	if(!eigs_laplacian(mesh, eigval, eigvec, L, A, n_eigs))
 		return;
@@ -30,7 +30,7 @@ descriptor::operator bool () const
 	return features.size() > 0;
 }
 
-real_t descriptor::operator () (const index_t & v) const
+real_t descriptor::operator () (const index_t v) const
 {
 	return norm(features.row(v));
 }

@@ -5,7 +5,7 @@
 namespace gproshan {
 
 
-simplification::simplification(che * mesh_, const index_t & levels_)
+simplification::simplification(che * mesh_, const index_t levels_)
 {
 	mesh = mesh_;
 	levels = levels_;
@@ -35,7 +35,7 @@ void simplification::compute_quadrics()
 		Q[v].zeros();
 		a_vec p(4);
 
-		for(const index_t & he: mesh->star(v))
+		for(const index_t he: mesh->star(v))
 		{
 			n = mesh->normal_he(he);
 			p(0) = n.x();
@@ -48,7 +48,7 @@ void simplification::compute_quadrics()
 	}
 }
 
-void simplification::order_edges(index_t * const & sort_edges, real_t * const & error_edges)
+void simplification::order_edges(index_t * sort_edges, real_t * error_edges)
 {
 	#pragma omp parallel for
 	for(index_t e = 0; e < mesh->n_edges; ++e)
@@ -58,14 +58,14 @@ void simplification::order_edges(index_t * const & sort_edges, real_t * const & 
 	}
 
 	std::sort(sort_edges, sort_edges + mesh->n_edges,
-		[&error_edges](const index_t & a, const index_t & b)
+		[&error_edges](const index_t a, const index_t b)
 		{
 			return error_edges[a] < error_edges[b];
 		}
 		);
 }
 
-real_t simplification::compute_error(const index_t & e)
+real_t simplification::compute_error(const index_t e)
 {
 	vertex ve = create_vertex(e);
 	a_vec v(4);
@@ -78,7 +78,7 @@ real_t simplification::compute_error(const index_t & e)
 	return as_scalar(v.t() * (Q[mesh->edge_u(e)] + Q[mesh->edge_v(e)]) * v);
 }
 
-vertex simplification::create_vertex(const index_t & e)
+vertex simplification::create_vertex(const index_t e)
 {
 	const vertex & va = mesh->vertex_edge_u(e);
 	const vertex & vb = mesh->vertex_edge_v(e);
