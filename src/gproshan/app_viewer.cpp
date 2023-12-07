@@ -229,7 +229,7 @@ bool app_viewer::process_scatter(viewer * p_view)
 
 	rt::random<real_t> rnd(0xABCDEF);
 	for(vertex & v: scatter)
-		h.scatter_diffuse({}, v, rnd);
+		h.scatter_diffuse(v, rnd);
 
 	view->add_mesh(new che(scatter.data(), scatter.size(), nullptr, 0));
 

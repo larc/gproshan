@@ -53,13 +53,24 @@ class embree : public raytracing
 
 
 	protected:
-		void build_bvh(const std::vector<che *> & meshes, const std::vector<mat4> & model_mats, const bool & pointcloud = false);
+		void build_bvh(	const std::vector<che *> & meshes,
+						const std::vector<mat4> & model_mats,
+						const bool & pointcloud = false
+						);
+
 		index_t add_sphere(const vec4 & xyzr);
 		index_t add_mesh(const che * mesh, const mat4 & model_mat);
 
 		virtual index_t add_pointcloud(const che * mesh, const mat4 & model_mat);
 
-		virtual vec3 closesthit_radiance(const vertex & org, const vertex & dir, const light & ambient, const light * lights, const int & n_lights, const vertex & cam_pos, const bool & flat) const;
+		virtual bool closesthit_radiance(	vertex & color,
+											vertex & attenuation,
+											vertex & position,
+											vertex & ray_dir,
+											random<real_t> & rnd,
+											const render_params & params,
+											const bool & flat
+											) const;
 
 		float intersect_depth(const vertex & org, const vertex & dir) const;
 

@@ -13,9 +13,12 @@ void raytracing::render(vec4 * img, const render_params & params, const bool & f
 	if(params.viewport_is_window)
 		window_size = params.viewport_size;
 
-	vec3 color_acc, position, ray_dir, attenuation;
+	unsigned int depth = params.depth;
+	unsigned int samples = params.n_samples;
 
-	#pragma omp parallel for private(color_acc, position, ray_dir, attenuation)
+	vec3 color_acc, color, attenuation, position, ray_dir;
+
+	#pragma omp parallel for private(depth, samples, color_acc, color, attenuation, position, ray_dir)
 	for(unsigned int i = 0; i < params.viewport_size.x(); ++i)
 	for(unsigned int j = 0; j < params.viewport_size.y(); ++j)
 	{
@@ -23,12 +26,12 @@ void raytracing::render(vec4 * img, const render_params & params, const bool & f
 
 		random<real_t> rnd(pos.x() + window_size.x() * pos.y(), params.n_frames);
 
-		int depth	= params.depth;
-		int samples	= params.n_samples;
+		color_acc = 0;
 
+		samples	= params.n_samples;
 		do
 		{
-			color_acc	= 0;
+			color		= 0;
 			attenuation = 1;
 			position	= params.cam_pos;
 			ray_dir		= ray_view_dir(pos, window_size, params.inv_proj_view, params.cam_pos, rnd);
@@ -36,8 +39,10 @@ void raytracing::render(vec4 * img, const render_params & params, const bool & f
 			depth = params.depth;
 			do
 			{
-				const vec3 & color = closesthit_radiance(position, ray_dir, params.ambient, params.lights, params.n_lights, params.cam_pos, flat);
-				color_acc += color * attenuation;
+				if(!closesthit_radiance(color, attenuation, position, ray_dir, rnd, params, flat))
+					break;
+
+				color_acc += color;
 			}
 			while(--depth);
 		}

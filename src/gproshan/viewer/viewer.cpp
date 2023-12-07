@@ -978,9 +978,9 @@ bool viewer::m_setup_raytracing(viewer * view)
 	static int rt = 0;
 	static double time = 0;
 
-	ImGui::Combo("rt", &rt, "Select\0Embree\0OptiX\0\0");
 	ImGui::SliderInt("depth", (int *) &view->render_params.depth, 1, 1 << 5);
 	ImGui::SliderInt("n_samples", (int *) &view->render_params.n_samples, 1, 1 << 5);
+	ImGui::Combo("rt", &rt, "Select\0Embree\0OptiX\0\0");
 
 	if(ImGui::Button("Build"))
 	{

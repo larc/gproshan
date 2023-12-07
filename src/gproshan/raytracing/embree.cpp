@@ -248,23 +248,40 @@ index_t embree::add_pointcloud(const che * mesh, const mat4 & model_mat)
 	return geom_id;
 }
 
-vec3 embree::closesthit_radiance(const vertex & org, const vertex & dir, const light & ambient, const light * lights, const int & n_lights, const vertex & cam_pos, const bool & flat) const
+bool embree::closesthit_radiance(	vertex & color,
+									vertex & attenuation,
+									vertex & position,
+									vertex & ray_dir,
+									random<real_t> & rnd,
+									const render_params & params,
+									const bool & flat
+									) const
 {
-	ray_hit r(org, dir);
-	if(!intersect(r)) return {};
+	ray_hit r(position, ray_dir);
+	if(!intersect(r)) return false;
 
-	const CHE * mesh = g_meshes[r.hit.geomID];
+	const CHE & mesh = *g_meshes[r.hit.geomID];
 
-	eval_hit hit(*mesh, r.hit.primID, r.hit.u, r.hit.v, sc);
+	eval_hit hit(mesh, r.hit.primID, r.hit.u, r.hit.v, sc);
 	hit.position = r.pos();
 	hit.normal = flat ? r.normal() : hit.normal;
 
-	return eval_li(	hit, ambient, lights, n_lights, cam_pos,
+	color = eval_li(hit, params.ambient, params.lights, params.n_lights, params.cam_pos,
 					[&](const vec3 & position, const vec3 & wi, const float & light_dist) -> bool
 					{
 						ray_hit ro(position, wi, 1e-3f, light_dist - 1e-3f);
 						return occluded(ro);
 					});
+
+	color *= attenuation;
+	position = hit.position;
+
+	if(!hit.scatter_mat(ray_dir, rnd))
+		attenuation = 0;
+
+	attenuation /= 2;
+
+	return true;
 }
 
 float embree::intersect_depth(const vertex & org, const vertex & dir) const

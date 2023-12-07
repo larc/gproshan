@@ -36,14 +36,14 @@ class raytracing
 										) const { return NIL; }
 
 	protected:
-		virtual vec3 closesthit_radiance(	const vertex &, // org
-											const vertex &, // dir
-											const light &, // ambient light
-											const light *, // lights
-											const int &, // n_lights
-											const vertex &, // cam_pos
-											const bool & // flat
-											) const { return {}; };
+		virtual bool closesthit_radiance(	vertex &, 				// color,
+											vertex &,				// attenuation,
+											vertex &,				// position,
+											vertex &,				// ray_dir,
+											random<real_t> &,		// rnd,
+											const render_params &,	// params,
+											const bool &			// flat
+											) const { return false; };
 
 		virtual float intersect_depth(	const vertex &,	// org,
 										const vertex &	// dir
