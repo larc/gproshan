@@ -128,7 +128,7 @@ std::vector<index_t> splat::planar_segmentation(const che * pc,
 	std::shuffle(begin(shuffle), end(shuffle), gen);
 
 	std::vector<index_t> segs({0});
-	const index_t & idx = size(segs);
+	const index_t idx = size(segs);
 
 	std::vector<index_t> visited;
 	visited.assign(pc->n_vertices, -1);
@@ -141,7 +141,7 @@ std::vector<index_t> splat::planar_segmentation(const che * pc,
 	float area = 0;
 
 	std::queue<index_t> q;
-	for(const index_t & v: shuffle)
+	for(const index_t v: shuffle)
 	{
 		if(visited[v] != NIL) continue;
 
@@ -161,7 +161,7 @@ std::vector<index_t> splat::planar_segmentation(const che * pc,
 			vertices.push_back(front);
 			visited[front] = idx;
 
-			const size_t & n = size(vertices) - segs.back();
+			const size_t n = size(vertices) - segs.back();
 			vnormal = normalize(vnormal * (n - 1) + pc->normal(front));
 			vcenter = (vcenter * (n - 1) + pc->point(front)) / n;
 			delta = (delta * (n - 1) + length(pc->point(front) - pc->point(nn[splat::k_nn - 1]))) / n;
@@ -173,7 +173,7 @@ std::vector<index_t> splat::planar_segmentation(const che * pc,
 
 			for(index_t i = 1; i < splat::k_nn; ++i)
 			{
-				const int & u = nn[i];
+				const int u = nn[i];
 
 //				const vertex & p = model_mat * (pc->point(u), 1);	// for adapt noisy
 				if(visited[u] == NIL && dot(vnormal, pc->normal(u)) > splat::t_normal)
@@ -200,7 +200,7 @@ std::vector<index_t> splat::planar_segmentation(const che * pc,
 			continue;
 		}
 
-		const size_t & grow_size = size(vertices);
+		const size_t grow_size = size(vertices);
 
 		// overlapping segs
 		for(index_t i = segs.back(); i < grow_size; ++i)
@@ -208,7 +208,7 @@ std::vector<index_t> splat::planar_segmentation(const che * pc,
 			const int * nn = k3tree(vertices[i]);
 			for(index_t k = 1; k < splat::k_nn; ++k)
 			{
-				const int & u = nn[k];
+				const int u = nn[k];
 				if(visited[u] != idx)
 					vertices.push_back(u);
 			}
@@ -247,10 +247,10 @@ std::vector<index_t> splat::voronoi_subdivision(std::vector<index_t> & voronoi_s
 		radio = 0;
 		new_seed = NIL;
 
-		const index_t & s = seeds.back();
+		const index_t s = seeds.back();
 		for(index_t i = seg_begin; i < seg_end; ++i)
 		{
-			const index_t & v = vertices[i];
+			const index_t v = vertices[i];
 
 			real_t & vdist = dist[i - seg_begin];
 			vdist = std::min(vdist, length(points[v] - points[s]));
@@ -275,10 +275,10 @@ std::vector<index_t> splat::voronoi_subdivision(std::vector<index_t> & voronoi_s
 	}
 
 
-	const index_t & s = seeds.back();
+	const index_t s = seeds.back();
 	for(index_t i = seg_begin; i < seg_end; ++i)
 	{
-		const index_t & v = vertices[i];
+		const index_t v = vertices[i];
 
 		real_t & vdist = dist[i - seg_begin];
 		vdist = std::min(vdist, length(points[v] - points[s]));
@@ -328,7 +328,7 @@ std::vector<index_t> splat::voronoi_subdivision(std::vector<index_t> & voronoi_s
 	{
 		if(size(r) < splat::k_nn) continue;
 
-		for(const index_t & v: r)
+		for(const index_t v: r)
 			voronoi_set.push_back(v);
 
 		voronoi.push_back(size(r));
@@ -424,7 +424,7 @@ che * splat::init_splats(	const che * mesh,
 		}
 
 		index_t f = -1;
-		for(const index_t & v: che::trig_convex_polygon(sch.data(), size(sch)))
+		for(const index_t v: che::trig_convex_polygon(sch.data(), size(sch)))
 		{
 			trigs.push_back(v);
 			if(!(++f % 3))
@@ -440,7 +440,7 @@ che * splat::init_splats(	const che * mesh,
 	#pragma omp parallel for
 	for(index_t i = 0; i < size(vertices); ++i)
 	{
-		const index_t & v = vertices[i];
+		const index_t v = vertices[i];
 
 		pc->heatmap(i) = mesh->heatmap(v);
 		pc->normal(i) = mesh->normal(v);

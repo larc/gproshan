@@ -17,20 +17,29 @@ class splat_embree: public splat, public embree
 			build_bvh(pointclouds, {mat4::identity()});
 		}
 
-		vec3 closesthit_radiance(const vertex & org, const vertex & dir, const light & ambient, const light * lights, const int & n_lights, const vertex & cam_pos, const bool & ) const //flat)
+		bool closesthit_radiance(	vertex & color,
+									vertex & attenuation,
+									vertex & position,
+									vertex & ray_dir,
+									random<real_t> & rnd,
+									const render_params & params,
+									const bool & flat
+									) const
 		{
-			ray_hit r(org, dir);
-			if(!intersect(r)) return {};
+			ray_hit r(position, ray_dir);
+			if(!intersect(r)) return false;
 
 			eval_hit hit;
-			splat_hit(hit, *g_meshes[r.hit.geomID], splats_pcs[r.hit.geomID], r.hit.primID, r.pos(), dir, r.ray.tfar);
+			splat_hit(hit, *g_meshes[r.hit.geomID], splats_pcs[r.hit.geomID], r.hit.primID, r.pos(), ray_dir, r.ray.tfar);
 
-			return eval_li(	hit, ambient, lights, n_lights, cam_pos,
-							[&](const vec3 & position, const vec3 & wi, const float & light_dist) -> bool
-							{
-								ray_hit ro((position - r.pos(), dir) < 0 ? position : r.pos(), wi, 1e-3f, light_dist - 1e-3f);
-								return occluded(ro);
-							});
+			color = eval_li(	hit, params.ambient, params.lights, params.n_lights, params.cam_pos,
+								[&](const vec3 & position, const vec3 & wi, const float light_dist) -> bool
+								{
+									ray_hit ro((position - r.pos(), ray_dir) < 0 ? position : r.pos(), wi, 1e-3f, light_dist - 1e-3f);
+									return occluded(ro);
+								});
+
+			return true;
 		}
 };
 
