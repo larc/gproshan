@@ -84,7 +84,8 @@ class che
 		vertex gradient(const index_t v, const real_t * f);
 
 		// vertex color methods
-		const real_t & heatmap(const index_t v) const;
+		const real_t * heatmap_ptr() const;
+		real_t heatmap(const index_t v) const;
 		real_t & heatmap(const index_t v);
 		const rgb_t & rgb(const index_t v) const;
 		rgb_t & rgb(const index_t v);
@@ -93,8 +94,8 @@ class che
 
 		// update methods
 		void reload();
-		mat4 normalize_sphere(const real_t & r = 1) const;
-		mat4 normalize_box(const real_t & side = 2) const;
+		mat4 normalize_sphere(const real_t r = 1) const;
+		mat4 normalize_box(const real_t side = 2) const;
 		che * merge(const che * mesh, const std::vector<index_t> & com_vertices = {});
 		void update_vertices(const vertex * positions, const size_t & n = 0, const index_t v_i = 0);
 		void update_heatmap(const real_t * hm = nullptr);

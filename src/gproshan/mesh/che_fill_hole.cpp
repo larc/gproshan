@@ -564,7 +564,7 @@ che * fill_hole_front_angles_test(che * mesh, std::vector<index_t> & front_verti
 	return size(trigs) == 0 ? nullptr : new che(vertices.data(), size(vertices), trigs.data(), size(trigs) / 3);
 }
 
-che * fill_hole_front_angles(std::vector<vertex> & vertices, const real_t & length, const vertex & normal, const size_t & max_iter, bool is_grow)
+che * fill_hole_front_angles(std::vector<vertex> & vertices, const real_t length, const vertex & normal, const size_t & max_iter, bool is_grow)
 {
 	size_t p_iter = max_iter;
 	real_t perimeter = 0.0;

@@ -15,11 +15,11 @@ class key_points
 		std::vector<bool> is_kp;
 
 	public:
-		key_points(che * mesh, const real_t & percent = 0.10);
+		key_points(che * mesh, const real_t percent = 0.10);
 		operator const std::vector<index_t> & () const;
 
 	private:
-		void compute_kps_areas(che * mesh, const real_t & percent);
+		void compute_kps_areas(che * mesh, const real_t percent);
 };
 
 

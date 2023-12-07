@@ -28,7 +28,7 @@ class camera
 		real_t far			= 1000;
 
 	public:
-		static mat4 perspective(const real_t & fovy, const real_t & aspect, const real_t & near, const real_t & far);
+		static mat4 perspective(const real_t fovy, const real_t aspect, const real_t near, const real_t far);
 
 		mat4 perspective();
 		mat4 look_at(const quaternion & r);

@@ -9,7 +9,7 @@
 namespace gproshan {
 
 
-key_components::key_components(che * mesh, const std::vector<index_t> & kps, const real_t & r): radio(r)
+key_components::key_components(che * mesh, const std::vector<index_t> & kps, const real_t r): radio(r)
 {
 	n_vertices = mesh->n_vertices;
 

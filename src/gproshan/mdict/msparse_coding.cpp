@@ -42,6 +42,11 @@ msparse_coding::operator const std::string & () const
 	return key_name;
 }
 
+msparse_coding::operator const real_t * () const
+{
+	return dist;
+}
+
 void msparse_coding::load_mask()
 {
 	//std::string f_mask = tmp_file_path(mesh->name_size() + '_' + std::to_string(avg_p) + '_' + std::to_string(percent) + '_' + std::to_string(radio) + ".msk");
@@ -1007,7 +1012,7 @@ index_t msparse_coding::sample(const index_t s)
 	return s;
 }
 
-const real_t & msparse_coding::operator[](const index_t i) const
+real_t msparse_coding::operator[](const index_t i) const
 {
 	assert(i < mesh->n_vertices);
 	return dist[i];

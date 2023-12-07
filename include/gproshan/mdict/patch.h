@@ -51,7 +51,7 @@ class patch
 		void init(	che * mesh,						///< input mesh.
 					const index_t v,				///< center vertex of the patch.
 					const size_t & n_toplevels,		///< number of toplevels to jet fitting.
-					const real_t & radio_,			///< euclidean radio in XY of the patch.
+					const real_t radio_,			///< euclidean radio in XY of the patch.
 					index_t * _toplevel = nullptr	///< aux memory to gather toplevel vertices.
 					);
 
@@ -65,16 +65,16 @@ class patch
 									real_t & geo_radio,
 									che * mesh,
 									const index_t v,
-									const real_t & delta,
-									const real_t & sum_thres,
-									const real_t & area_thres,
-									const real_t & area_mesh
+									const real_t delta,
+									const real_t sum_thres,
+									const real_t area_thres,
+									const real_t area_mesh
 									);
 
-		void init_random(const vertex & c, const a_mat & T, const real_t & radio, const real_t & max_radio, const real_t & percent, const real_t & fr);
+		void init_random(const vertex & c, const a_mat & T, const real_t radio, const real_t max_radio, const real_t percent, const real_t fr);
 
 		void recover_radial_disjoint(che * mesh,
-					const real_t & radio_,
+					const real_t radio_,
 					const index_t v);
 
 		void transform();
@@ -98,11 +98,11 @@ class patch
 		const a_vec normal();
 		bool is_covered( bool * covered);
 
-//		void save(const real_t & radio, const size_t & imsize, CImgList<real_t> & imlist);
+//		void save(const real_t radio, const size_t & imsize, CImgList<real_t> & imlist);
 		void update_heights(real_t & min, real_t & max, bool flag);
 		void compute_avg_distance(che * mesh, std::vector<vpatches_t> & vpatches, const index_t p);
-		void scale_xyz(const real_t & radio_f);
-		void iscale_xyz(const real_t & radio_f);
+		void scale_xyz(const real_t radio_f);
+		void iscale_xyz(const real_t radio_f);
 		bool add_vertex_by_trigs(	vertex & n,
 									std::vector<vertex> & N,
 									double thr_angle,
@@ -126,7 +126,7 @@ class patch
 		/// Gather the vertices filter by radio in the local coordinates require initialize T and x.
 		void gather_vertices(	che * mesh,
 								const index_t v,
-								const real_t & radio,
+								const real_t radio,
 								index_t * toplevel
 								);
 		bool exists(index_t idx);

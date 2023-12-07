@@ -34,7 +34,7 @@ typedef My_Monge_via_jet_fitting::Monge_form My_Monge_form;
 size_t patch::expected_nv = 3 * msparse_coding::T * (msparse_coding::T + 1);
 real_t patch::nyquist_factor = 0.5;
 
-void patch::init(che * mesh, const index_t v, const size_t & n_toplevels, const real_t & radio_, index_t * _toplevel)
+void patch::init(che * mesh, const index_t v, const size_t & n_toplevels, const real_t radio_, index_t * _toplevel)
 {
 	radio = radio_;
 	index_t * toplevel = _toplevel ? _toplevel : new index_t[mesh->n_vertices];
@@ -143,7 +143,7 @@ bool patch::add_vertex_by_trigs(vertex & n, std::vector<vertex> & N, double thr_
 	return added;
 }
 
-void patch::init_random(const vertex & c, const a_mat & T, const real_t & radio, const real_t & max_radio, const real_t & percent, const real_t & fr)
+void patch::init_random(const vertex & c, const a_mat & T, const real_t radio, const real_t max_radio, const real_t percent, const real_t fr)
 {
 	this->radio = radio;
 	this->T = T;
@@ -179,7 +179,7 @@ void patch::init_random(const vertex & c, const a_mat & T, const real_t & radio,
 	}
 }
 
-void patch::recover_radial_disjoint(che * mesh, const real_t & radio_, const index_t v)
+void patch::recover_radial_disjoint(che * mesh, const real_t radio_, const index_t v)
 {
 	// for small meshes 6000 0.e-5
 	// for others 2.e-5
@@ -232,10 +232,10 @@ void patch::init_radial_disjoint(	real_t & euc_radio,
 									real_t & geo_radio,
 									che * mesh,
 									const index_t v,
-									const real_t & delta,
-									const real_t & sum_thres,
-									const real_t & area_thres,
-									const real_t & area_mesh
+									const real_t delta,
+									const real_t sum_thres,
+									const real_t area_thres,
+									const real_t area_mesh
 									)
 {
 	radio = -INFINITY;
@@ -506,14 +506,14 @@ void patch::reset_xyz_disjoint(che * mesh, real_t * dist, size_t M, std::vector<
 	}
 }
 
-void patch::scale_xyz(const real_t & radio_f)
+void patch::scale_xyz(const real_t radio_f)
 {
 	real_t factor = radio_f/radio;
 	xyz = factor * xyz;
 
 }
 
-void patch::iscale_xyz(const real_t & radio_f)
+void patch::iscale_xyz(const real_t radio_f)
 {
 	real_t factor = radio_f/radio;
 	xyz = xyz / factor;
@@ -549,7 +549,7 @@ void patch::gather_vertices(che * mesh, const index_t v, const size_t & n_toplev
 	}
 }
 
-void patch::gather_vertices(che * mesh, const index_t v, const real_t & radio, index_t * toplevel)
+void patch::gather_vertices(che * mesh, const index_t v, const real_t radio, index_t * toplevel)
 {
 	assert(x.n_elem == 3 && T.n_rows == 3 && T.n_cols == 3);
 

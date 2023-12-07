@@ -660,7 +660,7 @@ bool app_viewer::process_msparse_coding(viewer * p_view)
 		real_t max_error = msc.execute();
 		gproshan_log_var(max_error);
 
-		mesh->update_heatmap(&msc[0]);
+		mesh->update_heatmap(msc);
 		mesh->update_normals();
 	}
 
@@ -737,7 +737,7 @@ bool app_viewer::process_mask(viewer * p_view)
 
 		msc.init_radial_feature_patches();
 		//dict.init_voronoi_patches();
-		mesh->update_heatmap(&msc[0]);
+		mesh->update_heatmap(msc);
 		std::string f_points = tmp_file_path(std::string(msc) + ".rsampl");
 
 		a_vec points_out;
@@ -987,7 +987,7 @@ bool app_viewer::process_fill_holes(viewer * p_view)
 		auto push = [&](const uvec3 & p)
 		{
 			neigs[p.x()] = {p.y(), p.z()};
-			const real_t & angle = 21;
+			const real_t angle = 21;
 			if(angle <= M_PI)
 				front.push({angle, p.x()});
 		};

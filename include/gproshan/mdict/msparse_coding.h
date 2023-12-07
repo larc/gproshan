@@ -66,10 +66,11 @@ class msparse_coding
 
 		virtual ~msparse_coding();
 
-		const real_t & operator[](const index_t i) const;
+		real_t operator[](const index_t i) const;
 		index_t draw_patches(const index_t p) const;
 
 		operator const std::string & () const;
+		operator const real_t * () const;
 
 		real_t execute();
 		void load_mask(const std::vector<index_t> * vertices, const index_t * clusters);

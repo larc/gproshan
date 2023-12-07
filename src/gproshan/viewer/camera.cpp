@@ -31,9 +31,9 @@ mat4 camera::perspective()
 	return perspective(fovy, aspect, near, far);
 }
 
-mat4 camera::perspective(const real_t & fovy, const real_t & aspect, const real_t & near, const real_t & far)
+mat4 camera::perspective(const real_t fovy, const real_t aspect, const real_t near, const real_t far)
 {
-	const real_t & tan_fovy_2 = std::tan(fovy * M_PI / 360);
+	const real_t tan_fovy_2 = std::tan(fovy * M_PI / 360);
 
 	mat4 P;
 	P(0, 0) = 1 / (aspect * tan_fovy_2);

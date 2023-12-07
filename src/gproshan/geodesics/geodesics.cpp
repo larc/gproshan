@@ -114,7 +114,7 @@ void geodesics::execute(che * mesh, const std::vector<index_t> & sources, const 
 	}
 }
 
-void geodesics::run_fastmarching(che * mesh, const std::vector<index_t> & sources, const size_t & n_iter, const real_t & radio, const fm_function_t & fun)
+void geodesics::run_fastmarching(che * mesh, const std::vector<index_t> & sources, const size_t & n_iter, const real_t radio, const fm_function_t & fun)
 {
 	CHE cmesh(mesh);
 

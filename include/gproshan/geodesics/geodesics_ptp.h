@@ -38,7 +38,7 @@ struct is_ok
 	const real_t * error = nullptr;
 
 	__host_device__
-	bool operator()(const real_t & val) const;
+	bool operator()(const real_t val) const;
 
 	__host_device__
 	bool operator()(const index_t val) const;

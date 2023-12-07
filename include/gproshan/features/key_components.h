@@ -21,7 +21,7 @@ class key_components
 		std::map<index_t, index_t> comp_idx;
 
 	public:
-		key_components(che * mesh, const std::vector<index_t> & kps, const real_t & r);
+		key_components(che * mesh, const std::vector<index_t> & kps, const real_t r);
 		~key_components();
 		index_t operator()(const index_t i);
 		operator const size_t & () const;

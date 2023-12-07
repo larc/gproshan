@@ -164,7 +164,12 @@ vertex che::gradient(const index_t v, const real_t * f)
 
 // vertex color methods
 
-const real_t & che::heatmap(const index_t v) const
+const real_t * che::heatmap_ptr() const
+{
+	return VHC;
+}
+
+real_t che::heatmap(const index_t v) const
 {
 	assert(v < n_vertices);
 	return VHC[v];
@@ -209,7 +214,7 @@ void che::reload()
 	init(filename);
 }
 
-mat4 che::normalize_sphere(const real_t & r) const
+mat4 che::normalize_sphere(const real_t r) const
 {
 	vertex center;
 	#pragma omp parallel for
@@ -230,14 +235,14 @@ mat4 che::normalize_sphere(const real_t & r) const
 	#pragma omp parallel for reduction(+: sigma_dist)
 	for(index_t v = 0; v < n_vertices; ++v)
 	{
-		const real_t & diff = mean_dist - length(GT[v] - center);
+		const real_t diff = mean_dist - length(GT[v] - center);
 		sigma_dist += diff * diff;
 	}
 	sigma_dist = sqrt(sigma_dist / n_vertices);
 
 	mat4 model_mat;
 
-	const real_t & scale = r / (mean_dist + sigma_dist);
+	const real_t scale = r / (mean_dist + sigma_dist);
 	model_mat(0, 0) = model_mat(1, 1) = model_mat(2, 2) = scale;
 
 	center *= -scale;
@@ -249,7 +254,7 @@ mat4 che::normalize_sphere(const real_t & r) const
 	return model_mat;
 }
 
-mat4 che::normalize_box(const real_t & side) const
+mat4 che::normalize_box(const real_t side) const
 {
 	vertex pmin = INFINITY;
 	vertex pmax = 0;
@@ -269,7 +274,7 @@ mat4 che::normalize_box(const real_t & side) const
 
 	mat4 model_mat;
 
-	const real_t & scale = side / std::max({pmax.x() - pmin.x(), pmax.y() - pmin.y(), pmax.z() - pmin.z()});
+	const real_t scale = side / std::max({pmax.x() - pmin.x(), pmax.y() - pmin.y(), pmax.z() - pmin.z()});
 	model_mat(0, 0) = model_mat(1, 1) = model_mat(2, 2) = scale;
 
 	const vertex & translate = - scale * (pmax + pmin) / 2;
