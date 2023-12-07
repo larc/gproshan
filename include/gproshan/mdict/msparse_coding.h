@@ -59,17 +59,18 @@ class msparse_coding
 		static size_t T;						///< factor of patches' size, default 5 toplesets.
 
 	public:
-		msparse_coding(	che *const & _mesh, 		///< pointer to input mesh.
-						basis *const &_phi_basis,	///< pointer to continuous basis.
-						const params & p			///<
+		msparse_coding(	che * _mesh, 			///< pointer to input mesh.
+						basis * _phi_basis,		///< pointer to continuous basis.
+						const params & p		///<
 						);
 
 		virtual ~msparse_coding();
 
-		const real_t & operator[](const index_t & i) const;
-		const index_t & draw_patches(const index_t & p);
+		real_t operator[](const index_t i) const;
+		index_t draw_patches(const index_t p) const;
 
 		operator const std::string & () const;
+		operator const real_t * () const;
 
 		real_t execute();
 		void load_mask(const std::vector<index_t> * vertices, const index_t * clusters);
@@ -95,7 +96,7 @@ class msparse_coding
 		void update_alphas(a_mat & alpha, size_t threshold);
 		void save_alpha(std::string file);
 
-		index_t sample(const index_t & s);
+		index_t sample(const index_t s);
 };
 
 

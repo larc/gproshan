@@ -95,7 +95,7 @@ void frame::unmap_pbo(bool cuda)
 	#endif // GPROSHAN_CUDA
 }
 
-bool frame::resize(const size_t & w, const size_t & h)
+bool frame::resize(const size_t w, const size_t h)
 {
 	if(w == width && height == h)
 		return false;

@@ -103,7 +103,7 @@ extern "C" __global__ void __closesthit__radiance()
 	}
 
 	random<float> rnd = optixGetPayload_2();
-	if(!hit.scatter_diffuse(scattered, scattered, rnd))
+	if(!hit.scatter_diffuse(scattered, rnd))
 		attenuation = 0;
 
 	attenuation /= 2;

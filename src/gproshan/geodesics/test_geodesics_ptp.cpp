@@ -11,7 +11,7 @@
 namespace gproshan {
 
 
-void main_test_geodesics_ptp(const int & nargs, const char ** args)
+void main_test_geodesics_ptp(const int nargs, const char ** args)
 {
 	if(nargs < 4)
 	{
@@ -158,7 +158,7 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 		for(index_t v = 0; v < n_vertices; ++v)
 		{
 			dv = mesh->is_vertex_bound(v) ? 1 : 0;
-			for([[maybe_unused]] const index_t & he: mesh->star(v)) ++dv;
+			for([[maybe_unused]] const index_t he: mesh->star(v)) ++dv;
 			++deg[dv];
 		}
 
@@ -237,7 +237,7 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 	fclose(ftable);
 }
 
-double test_fast_marching(real_t & error, const real_t * exact, che * mesh, const std::vector<index_t> & source, const int & n_test)
+double test_fast_marching(real_t & error, const real_t * exact, che * mesh, const std::vector<index_t> & source, const int n_test)
 {
 	double t, seconds = INFINITY;
 
@@ -249,12 +249,12 @@ double test_fast_marching(real_t & error, const real_t * exact, che * mesh, cons
 
 	geodesics fm(mesh, source);
 
-	error = compute_error(&fm[0], exact, mesh->n_vertices, size(source));
+	error = compute_error(fm, exact, mesh->n_vertices, size(source));
 
 	return seconds;
 }
 
-double test_ptp_cpu(real_t & error, const real_t * exact, che * mesh, const std::vector<index_t> & source, const toplesets_t & toplesets, const int & n_test)
+double test_ptp_cpu(real_t & error, const real_t * exact, che * mesh, const std::vector<index_t> & source, const toplesets_t & toplesets, const int n_test)
 {
 	double t, seconds = INFINITY;
 
@@ -272,7 +272,7 @@ double test_ptp_cpu(real_t & error, const real_t * exact, che * mesh, const std:
 	return seconds;
 }
 
-double test_heat_method_cholmod(real_t & error, double & stime, const real_t * exact, che * mesh, const std::vector<index_t> & source, const int & n_test)
+double test_heat_method_cholmod(real_t & error, double & stime, const real_t * exact, che * mesh, const std::vector<index_t> & source, const int n_test)
 {
 	double t, st, ptime;
 	ptime = stime = INFINITY;
@@ -295,7 +295,7 @@ double test_heat_method_cholmod(real_t & error, double & stime, const real_t * e
 
 #ifdef GPROSHAN_CUDA
 
-double test_ptp_gpu(real_t & error, const real_t * exact, che * mesh, const std::vector<index_t> & source, const toplesets_t & toplesets, const int & n_test)
+double test_ptp_gpu(real_t & error, const real_t * exact, che * mesh, const std::vector<index_t> & source, const toplesets_t & toplesets, const int n_test)
 {
 	double t, seconds = INFINITY;
 
@@ -313,7 +313,7 @@ double test_ptp_gpu(real_t & error, const real_t * exact, che * mesh, const std:
 	return seconds;
 }
 
-double test_heat_method_gpu(real_t & error, double & stime, const real_t * exact, che * mesh, const std::vector<index_t> & source, const int & n_test)
+double test_heat_method_gpu(real_t & error, double & stime, const real_t * exact, che * mesh, const std::vector<index_t> & source, const int n_test)
 {
 	double t, st, ptime;
 	ptime = stime = INFINITY;
@@ -338,7 +338,7 @@ double test_heat_method_gpu(real_t & error, double & stime, const real_t * exact
 #endif // GPROSHAN_CUDA
 
 
-real_t * load_exact_geodesics(const std::string & file, const size_t & n)
+real_t * load_exact_geodesics(const std::string & file, const size_t n)
 {
 	std::ifstream is(file);
 
@@ -353,7 +353,7 @@ real_t * load_exact_geodesics(const std::string & file, const size_t & n)
 	return exact;
 }
 
-real_t compute_error(const real_t * dist, const real_t * exact, const size_t & n, const size_t & s)
+real_t compute_error(const real_t * dist, const real_t * exact, const size_t n, const size_t s)
 {
 	real_t error = 0;
 

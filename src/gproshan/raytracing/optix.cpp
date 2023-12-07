@@ -54,7 +54,7 @@ optix::optix(const std::string & ptx)
 
 	// create module
 
-	optix_module_compile_opt.maxRegisterCount	= 50;
+	//optix_module_compile_opt.maxRegisterCount	= 50;
 	optix_module_compile_opt.optLevel			= OPTIX_COMPILE_OPTIMIZATION_DEFAULT;
 	optix_module_compile_opt.debugLevel			= OPTIX_COMPILE_DEBUG_LEVEL_NONE;
 

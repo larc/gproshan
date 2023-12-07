@@ -60,12 +60,12 @@ extern "C" __global__ void __closesthit__radiance()
 
 	vec3 * trace = ray_data<vec3>();
 	vec3 & color		= trace[0];
-	vec3 & position		= trace[1];
-	vec3 & scattered	= trace[2];	// in ray_dir / out scattered
-	vec3 & attenuation	= trace[3];
+	vec3 & attenuation	= trace[1];
+	vec3 & position		= trace[2];
+	vec3 & ray_dir		= trace[3];
 
 	color = eval_li(hit, optix_params.ambient, optix_params.lights, optix_params.n_lights, optix_params.cam_pos,
-					[&](const vec3 & position, const vec3 & wi, const float & light_dist) -> bool
+					[&](const vec3 & position, const vec3 & wi, const float light_dist) -> bool
 					{
 						uint32_t occluded = 1;
 						optixTrace( optix_params.traversable,
@@ -90,7 +90,7 @@ extern "C" __global__ void __closesthit__radiance()
 	color *= attenuation;
 	position = hit.position;
 
-	if(!hit.scatter_mat(scattered, scattered, rnd))
+	if(!hit.scatter_mat(ray_dir, rnd))
 		attenuation = 0;
 
 	attenuation /= 2;
@@ -124,27 +124,30 @@ extern "C" __global__ void __raygen__render_frame()
 
 	random<float> rnd(pos.x() + optix_params.window_size.x() * pos.y(), optix_params.n_frames);
 
+	unsigned int depth = optix_params.depth;
+	unsigned int samples = optix_params.n_samples;
+
 	vec3 color_acc = 0;
 
-	uint32_t u0, u1;
-	int depth;
+	vec3 trace[4];
+	vec3 & color		= trace[0];
+	vec3 & attenuation	= trace[1];
+	vec3 & position		= trace[2];
+	vec3 & ray_dir		= trace[3];
 
-	int samples = optix_params.n_samples;
+	uint32_t u0, u1;
+
 	do
 	{
-		vec3 trace[4];
-		vec3 & color		= trace[0];
-		vec3 & position		= trace[1] = optix_params.cam_pos;
-		vec3 & ray_dir		= trace[2];
-		vec3 & attenuation	= trace[3] = 1;
-
-		ray_dir = ray_view_dir(pos, optix_params.window_size, optix_params.inv_proj_view, optix_params.cam_pos, rnd);
-
-		pack_pointer(trace, u0, u1);
+		color		= 0;
+		attenuation = 1;
+		position	= optix_params.cam_pos;
+		ray_dir		= ray_view_dir(pos, optix_params.window_size, optix_params.inv_proj_view, optix_params.cam_pos, rnd);
 
 		depth = optix_params.depth;
 		do
 		{
+			pack_pointer(trace, u0, u1);
 			optixTrace(	optix_params.traversable,
 						* (float3 *) &position,
 						* (float3 *) &ray_dir,

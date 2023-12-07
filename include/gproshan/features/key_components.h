@@ -21,14 +21,14 @@ class key_components
 		std::map<index_t, index_t> comp_idx;
 
 	public:
-		key_components(che * mesh, const std::vector<index_t> & kps, const real_t & r);
+		key_components(che * mesh, const std::vector<index_t> & kps, const real_t r);
 		~key_components();
-		index_t operator()(const index_t & i);
-		operator const size_t & () const;
+		index_t operator()(const index_t i);
+		operator size_t () const;
 
 	private:
 		void compute_kcs(che * mesh, const std::vector<index_t> & kps);
-		index_t find(const index_t & x);
+		index_t find(const index_t x);
 		bool join(index_t x, index_t y);
 };
 

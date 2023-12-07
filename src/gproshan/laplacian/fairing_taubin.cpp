@@ -7,7 +7,7 @@
 namespace gproshan {
 
 
-fairing_taubin::fairing_taubin(const real_t & step_): step(step_) {}
+fairing_taubin::fairing_taubin(const real_t step_): step(step_) {}
 
 void fairing_taubin::compute(che * mesh)
 {

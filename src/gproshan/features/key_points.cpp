@@ -9,7 +9,7 @@
 namespace gproshan {
 
 
-key_points::key_points(che * mesh, const real_t & percent)
+key_points::key_points(che * mesh, const real_t percent)
 {
 	compute_kps_areas(mesh, percent);
 }
@@ -22,7 +22,7 @@ key_points::operator const std::vector<index_t> & () const
 /// Efficient approach for interest points detection in non-rigid shapes
 /// Cristian Jose Lopez Del Alamo; Luciano Arnaldo Romero Calla; Lizeth Joseline Fuentes Perez
 /// DOI: 10.1109/CLEI.2015.7359459
-void key_points::compute_kps_areas(che * mesh, const real_t & percent)
+void key_points::compute_kps_areas(che * mesh, const real_t percent)
 {
 	std::vector<std::pair<real_t, index_t> > face_areas(mesh->n_trigs);
 
@@ -40,7 +40,7 @@ void key_points::compute_kps_areas(che * mesh, const real_t & percent)
 		he = che::mtrig * face_areas[t].second;
 		for(index_t i = 0; i < che::mtrig; ++i)
 		{
-			const index_t & v = mesh->halfedge(he);
+			const index_t v = mesh->halfedge(he);
 			if(!is_kp[v])
 			{
 				kps.push_back(v);
@@ -54,7 +54,7 @@ void key_points::compute_kps_areas(che * mesh, const real_t & percent)
 	is_kp.assign(mesh->n_vertices, false);
 
 	#pragma omp parallel for
-	for(const index_t & v: kps)
+	for(const index_t v: kps)
 		is_kp[v] = true;
 }
 

@@ -57,7 +57,7 @@ void che_off::read_file(const std::string & file)
 		for(index_t i = 0; i < n; ++i)
 			fscanf(fp, "%u", P + i);
 
-		for(const index_t & v: trig_convex_polygon(P, n))
+		for(const index_t v: trig_convex_polygon(P, n))
 			trigs.push_back(v);
 	}
 
@@ -98,7 +98,7 @@ void che_off::write_file(const che * mesh, const std::string & file, const che_o
 
 		if(off == COFF || off == NCOFF)
 		{
-			const rgb_t & c = mesh->rgb(i);
+			const rgb_t c = mesh->rgb(i);
 			fprintf(fp, " %hhu %hhu %hhu 1", c.r, c.g, c.b);
 		}
 

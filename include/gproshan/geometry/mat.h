@@ -27,26 +27,26 @@ class mat
 		}
 
 		__host_device__
-		T & operator () (const index_t & i, const index_t & j)
+		T & operator () (const index_t i, const index_t j)
 		{
 			return rows[i][j];
 		}
 
 		__host_device__
-		const T & operator () (const index_t & i, const index_t & j) const
+		const T & operator () (const index_t i, const index_t j) const
 		{
 			return rows[i][j];
 		}
 
 		__host_device__
-		row<T, N> & operator [] (const index_t & i)
+		row<T, N> & operator [] (const index_t i)
 		{
 			assert(i < N);
 			return rows[i];
 		}
 
 		__host_device__
-		const row<T, N> & operator [] (const index_t & i) const
+		const row<T, N> & operator [] (const index_t i) const
 		{
 			assert(i < N);
 			return rows[i];

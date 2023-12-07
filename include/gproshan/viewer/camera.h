@@ -28,19 +28,19 @@ class camera
 		real_t far			= 1000;
 
 	public:
-		static mat4 perspective(const real_t & fovy, const real_t & aspect, const real_t & near, const real_t & far);
+		static mat4 perspective(const real_t fovy, const real_t aspect, const real_t near, const real_t far);
 
 		mat4 perspective();
 		mat4 look_at(const quaternion & r);
 		quaternion current_rotation() const;
-		void mouse(const bool & press, const double & x, const double & y, const int & w, const int & h);
-		void motion(const double & x, const double & y, const int & w, const int & h);
+		void mouse(const bool & press, const double x, const double y, const int w, const int h);
+		void motion(const double x, const double y, const int w, const int h);
 		void zoom_in();
 		void zoom_out();
 		real_t zoom() const;
 
 	private:
-		quaternion click_to_sphere(const double & x, const double & y, const int & w, const int & h);
+		quaternion click_to_sphere(const double x, const double y, const int w, const int h);
 
 	friend std::ostream & operator << (std::ostream & os, const camera & cam);
 	friend std::istream & operator >> (std::istream & is, camera & cam);

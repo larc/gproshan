@@ -65,9 +65,9 @@ class che_viewer
 		che_viewer(che * m);
 		virtual ~che_viewer();
 
-		che *& operator -> ();
-		che *const & operator -> () const;
-		operator che *& ();
+		che * operator -> ();
+		const che * operator -> () const;
+		operator che * ();
 
 		void update();
 		void update_model_mat();
@@ -78,7 +78,7 @@ class che_viewer
 		void update_vbo_heatmap(const real_t * vheatmap = nullptr);
 		void update_instances_positions(const std::vector<vertex> & translations);
 
-		const vertex & selected_point(const index_t & i) const;
+		const vertex & selected_point(const index_t i) const;
 
 		virtual void draw(shader & program);
 		virtual void draw_pointcloud(shader & program);

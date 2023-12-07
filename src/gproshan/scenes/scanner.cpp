@@ -19,7 +19,7 @@ using namespace cimg_library;
 namespace gproshan {
 
 
-che * scanner_ptx(const rt::raytracing * rt, const size_t & n_rows, const size_t & n_cols, const vertex & cam_pos)
+che * scanner_ptx(const rt::raytracing * rt, const size_t n_rows, const size_t n_cols, const vertex & cam_pos)
 {
 	che * mesh_ptx = new che(n_cols * n_rows);
 
@@ -30,10 +30,10 @@ che * scanner_ptx(const rt::raytracing * rt, const size_t & n_rows, const size_t
 	for(index_t i = 0; i < n_rows; ++i)
 	for(index_t j = 0; j < n_cols; ++j)
 	{
-		const index_t & v = i * n_cols + j;
+		const index_t v = i * n_cols + j;
 
-		const real_t & phi = i * delta_phi;
-		const real_t & theta = j * delta_theta;
+		const real_t phi = i * delta_phi;
+		const real_t theta = j * delta_theta;
 		const vertex & dir = {std::sin(theta) * std::sin(phi), std::cos(theta), std::sin(theta) * std::cos(phi)};
 
 		const rt::eval_hit & h = rt->intersect(cam_pos, dir);
@@ -57,7 +57,7 @@ che * scanner_ptx(const rt::raytracing * rt, const size_t & n_rows, const size_t
 	return mesh_ptx;
 }
 
-che * scanner_ptx_jpg(const rt::raytracing * rt, const size_t & n_rows, const size_t & n_cols, const vertex & cam_pos, const std::string & file_jpg)
+che * scanner_ptx_jpg(const rt::raytracing * rt, const size_t n_rows, const size_t n_cols, const vertex & cam_pos, const std::string & file_jpg)
 {
 	che * mesh_ptx = scanner_ptx(rt, n_rows, n_cols, cam_pos);
 

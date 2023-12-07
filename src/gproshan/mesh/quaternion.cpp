@@ -41,7 +41,7 @@ real_t & quaternion::operator [] (int index)
 	return v[index];
 }
 
-const real_t & quaternion::operator [] (int index) const
+real_t quaternion::operator [] (int index) const
 {
 	return v[index];
 }
@@ -59,7 +59,7 @@ real_t & quaternion::re()
 	return s;
 }
 
-const real_t & quaternion::re() const
+real_t quaternion::re() const
 {
 	return s;
 }
@@ -141,8 +141,8 @@ void quaternion::operator /= (real_t c)
 // Hamilton product
 quaternion quaternion::operator * (const quaternion & q) const
 {
-	const real_t & s1(s);
-	const real_t & s2(q.s);
+	const real_t s1(s);
+	const real_t s2(q.s);
 	const vertex & v1(v);
 	const vertex & v2(q.v);
 

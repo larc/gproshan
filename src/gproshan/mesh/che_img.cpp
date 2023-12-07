@@ -41,8 +41,8 @@ void che_img::read_file(const std::string & file)
 			VT[he++] = i * img.height() + j - 1;
 		}
 
-		const int & c = img.width() - i - 1;
-		const int & r = img.height() - j - 1;
+		const int c = img.width() - i - 1;
+		const int r = img.height() - j - 1;
 
 		GT[v] = {real_t(i), real_t(j), real_t(img.spectrum() == 1 ? - img(c, r) : 0)};
 

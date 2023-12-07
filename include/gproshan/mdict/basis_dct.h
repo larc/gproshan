@@ -15,17 +15,17 @@ class basis_dct: public basis
 		size_t n_freq;		///< frequency
 
 	public:
-		basis_dct(const size_t & n, const real_t & r = 1);
+		basis_dct(const size_t n, const real_t r = 1);
 		void discrete(a_mat & phi, const a_vec & x, const a_vec & y);
 		void d_discrete(a_mat & phi, const a_vec & x, const a_vec & y, const bool & b);
-		real_t freq(const index_t & idx);
+		real_t freq(const index_t idx);
 
 	private:
 		void plot_basis(std::ostream & os);
 		void plot_atoms(std::ostream & os, const a_vec & A);
-		a_vec dct(const a_vec & x, const a_vec & y, const index_t & nx, const index_t & ny);
-		a_vec d_dct(const a_vec & x, const a_vec & y, const index_t & nx, const index_t & ny);
-		void dct(std::ostream & os, const index_t & nx, const index_t & ny);
+		a_vec dct(const a_vec & x, const a_vec & y, const index_t nx, const index_t ny);
+		a_vec d_dct(const a_vec & x, const a_vec & y, const index_t nx, const index_t ny);
+		void dct(std::ostream & os, const index_t nx, const index_t ny);
 };
 
 

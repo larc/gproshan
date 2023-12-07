@@ -28,10 +28,10 @@ class quaternion
 		const quaternion & operator = (real_t s);
 		const quaternion & operator = (const vertex & v);
 		real_t & operator [] (int index);
-		const real_t & operator [] (int index) const;
+		real_t operator [] (int index) const;
 		void toMatrix(real_t Q[4][4]) const;
 		real_t & re(void);
-		const real_t & re(void) const;
+		real_t re(void) const;
 		vertex & im(void);
 		const vertex & im(void) const;
 

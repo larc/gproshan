@@ -23,7 +23,7 @@ class raytracing
 		virtual std::vector<float> raycaster(	const uvec2 & windows_size,
 												const mat4 & inv_proj_view,
 												const vertex & cam_pos,
-												const index_t & samples = 4
+												const index_t samples = 4
 												) const;
 
 		virtual eval_hit intersect(	const vertex &,	// org
@@ -36,14 +36,14 @@ class raytracing
 										) const { return NIL; }
 
 	protected:
-		virtual vec3 closesthit_radiance(	const vertex &, // org
-											const vertex &, // dir
-											const light &, // ambient light
-											const light *, // lights
-											const int &, // n_lights
-											const vertex &, // cam_pos
-											const bool & // flat
-											) const { return {}; };
+		virtual bool closesthit_radiance(	vertex &, 				// color,
+											vertex &,				// attenuation,
+											vertex &,				// position,
+											vertex &,				// ray_dir,
+											random<real_t> &,		// rnd,
+											const render_params &,	// params,
+											const bool &			// flat
+											) const { return false; };
 
 		virtual float intersect_depth(	const vertex &,	// org,
 										const vertex &	// dir

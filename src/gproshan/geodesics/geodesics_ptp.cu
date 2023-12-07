@@ -15,7 +15,7 @@ namespace gproshan {
 double parallel_toplesets_propagation_gpu(const ptp_out_t & ptp_out, const che * mesh, const std::vector<index_t> & sources, const toplesets_t & toplesets, const bool & coalescence, const bool & set_inf)
 {
 	CHE h_mesh(mesh);
-	const size_t & n_vertices = h_mesh.n_vertices;
+	const size_t n_vertices = h_mesh.n_vertices;
 
 	index_t * inv = nullptr;
 	if(coalescence)
@@ -35,7 +35,7 @@ double parallel_toplesets_propagation_gpu(const ptp_out_t & ptp_out, const che *
 		#pragma omp parallel for
 		for(index_t he = 0; he < mesh->n_half_edges; ++he)
 		{
-			const index_t & v = mesh->halfedge(he);
+			const index_t v = mesh->halfedge(he);
 			if(v != NIL)
 			{
 				h_mesh.VT[he] = inv[v];
@@ -88,7 +88,7 @@ double parallel_toplesets_propagation_gpu(const ptp_out_t & ptp_out, const che *
 			h_dist[v] = INFINITY;
 	}
 
-	const index_t & i = run_ptp(d_mesh, sources, toplesets.limits, d_error, d_dist, d_clusters,
+	const index_t i = run_ptp(d_mesh, sources, toplesets.limits, d_error, d_dist, d_clusters,
 								coalescence ? inv : toplesets.index, d_sorted);
 
 	cudaMemcpy(h_dist, d_dist[i], sizeof(real_t) * n_vertices, cudaMemcpyDeviceToHost);
@@ -148,7 +148,7 @@ double parallel_toplesets_propagation_gpu(const ptp_out_t & ptp_out, const che *
 real_t farthest_point_sampling_ptp_gpu(che * mesh, std::vector<index_t> & samples, double & time_fps, size_t n, real_t radio)
 {
 	CHE h_mesh(mesh);
-	const size_t & n_vertices = h_mesh.n_vertices;
+	const size_t n_vertices = h_mesh.n_vertices;
 
 	cudaDeviceReset();
 
@@ -196,7 +196,7 @@ real_t farthest_point_sampling_ptp_gpu(che * mesh, std::vector<index_t> & sample
 		limits.clear();
 		mesh->compute_toplesets(toplesets, sorted_index, limits, samples);
 
-		const index_t & i = run_ptp(d_mesh, samples, limits, d_error, d_dist, d_clusters, sorted_index, d_sorted);
+		const index_t i = run_ptp(d_mesh, samples, limits, d_error, d_dist, d_clusters, sorted_index, d_sorted);
 
 		// 1 indexing
 		#ifdef GPROSHAN_FLOAT
@@ -263,13 +263,13 @@ void relative_error(real_t * error, const real_t * new_dist, const real_t * old_
 }
 
 __host_device__
-bool is_ok::operator()(const real_t & val) const
+bool is_ok::operator()(const real_t val) const
 {
 	return val < PTP_TOL;
 }
 
 __host_device__
-bool is_ok::operator()(const index_t & i) const
+bool is_ok::operator()(const index_t i) const
 {
 	return error[i] < PTP_TOL;
 }

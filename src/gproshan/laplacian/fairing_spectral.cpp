@@ -7,7 +7,7 @@
 namespace gproshan {
 
 
-fairing_spectral::fairing_spectral(const size_t & n_eigs_): n_eigs(n_eigs_) {}
+fairing_spectral::fairing_spectral(const size_t n_eigs_): n_eigs(n_eigs_) {}
 
 void fairing_spectral::compute(che * mesh)
 {
