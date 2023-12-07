@@ -20,10 +20,10 @@ class partitions
 
 	public:
 		partitions(index_t * s = nullptr);
-		void add(const index_t & size);
-		size_t size(const index_t & i) const;
-		part operator () (const index_t & i) const;
-		operator index_t * const & () const;
+		void add(const index_t size);
+		size_t size(const index_t i) const;
+		part operator () (const index_t i) const;
+		operator index_t * () const;
 		operator index_t *& ();
 };
 
@@ -48,7 +48,7 @@ struct partitions::part
 		}
 
 		__host_device__
-		const index_t & operator * ()
+		index_t operator * () const
 		{
 			return sorted ? sorted[i] : i;
 		}

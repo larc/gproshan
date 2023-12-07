@@ -52,7 +52,7 @@ std::vector<index_t> grid::operator () (const point & p, int k) const
 		if(iter == end(voxels))
 			continue;
 
-		for(const index_t & v: iter->second)
+		for(const index_t v: iter->second)
 			q.push({-length(p - points[v]), v});
 	}
 
@@ -108,17 +108,17 @@ k3tree::~k3tree()
 	delete [] indices.ptr();
 }
 
-const int * k3tree::operator [] (const index_t & i) const
+const int * k3tree::operator [] (const index_t i) const
 {
 	return indices[i];
 }
 
-const int * k3tree::operator () (const index_t & i) const
+const int * k3tree::operator () (const index_t i) const
 {
 	return indices[i];
 }
 
-const int & k3tree::operator () (const index_t & i, const index_t & j) const
+const int & k3tree::operator () (const index_t i, const index_t j) const
 {
 	return indices[i][j];
 }

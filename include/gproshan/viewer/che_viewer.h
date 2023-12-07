@@ -78,7 +78,7 @@ class che_viewer
 		void update_vbo_heatmap(const real_t * vheatmap = nullptr);
 		void update_instances_positions(const std::vector<vertex> & translations);
 
-		const vertex & selected_point(const index_t & i) const;
+		const vertex & selected_point(const index_t i) const;
 
 		virtual void draw(shader & program);
 		virtual void draw_pointcloud(shader & program);

@@ -35,7 +35,7 @@ void parallel_toplesets_propagation_cpu(const ptp_out_t & ptp_out, che * mesh, c
 		#pragma omp parallel for
 		for(index_t he = 0; he < mesh->n_half_edges; ++he)
 		{
-			const index_t & v = mesh->halfedge(he);
+			const index_t v = mesh->halfedge(he);
 			if(v != NIL)
 			{
 				h_mesh.VT[he] = inv[v];
@@ -60,7 +60,7 @@ void parallel_toplesets_propagation_cpu(const ptp_out_t & ptp_out, che * mesh, c
 			dist[0][v] = dist[1][v] = INFINITY;
 	}
 
-	const index_t & i = run_ptp(&h_mesh, sources, toplesets.limits, error, dist, clusters,
+	const index_t i = run_ptp(&h_mesh, sources, toplesets.limits, error, dist, clusters,
 								coalescence ? inv : toplesets.index,
 								coalescence ? nullptr : (index_t *) toplesets.index);
 

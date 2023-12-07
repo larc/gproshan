@@ -48,24 +48,24 @@ void basis_dct::plot_atoms(std::ostream & os, const a_vec & A)
 	}
 }
 
-a_vec basis_dct::dct(const a_vec & x, const a_vec & y, const index_t & nx, const index_t & ny)
+a_vec basis_dct::dct(const a_vec & x, const a_vec & y, const index_t nx, const index_t ny)
 {
 	return cos(M_PI * nx * x / _radio ) % cos(M_PI * ny * y / _radio);
 }
 
 
-a_vec basis_dct::d_dct(const a_vec & x, const a_vec & y, const index_t & nx, const index_t & ny)
+a_vec basis_dct::d_dct(const a_vec & x, const a_vec & y, const index_t nx, const index_t ny)
 {
 	return - (M_PI * nx / _radio) * (sin(M_PI * nx * x / _radio) % cos(M_PI * ny * y / _radio));
 }
 
-void basis_dct::dct(std::ostream & os, const index_t & nx, const index_t & ny)
+void basis_dct::dct(std::ostream & os, const index_t nx, const index_t ny)
 {
 	os << "cos( (pi * v * cos(u) * " << nx << " ) / " << _radio << " ) *";
 	os << "cos( (pi * v * sin(u) * " << ny << " ) / " << _radio << " )";
 }
 
-real_t basis_dct::freq(const index_t & idx)
+real_t basis_dct::freq(const index_t idx)
 {
 	return !idx ? INFINITY : 2 * _radio / std::max(idx / n_freq, idx % n_freq);
 }

@@ -54,7 +54,7 @@ bool scene::load_obj(const std::string & file)
 	#pragma omp parallel for
 	for(index_t i = 0; i < n_vertices; ++i)
 	{
-		const index_t & v = p.trigs[i].x();
+		const index_t v = p.trigs[i].x();
 		GT[i] = p.vertices[v];
 		VC[i] = p.vcolors[v];
 	}
@@ -66,7 +66,7 @@ bool scene::load_obj(const std::string & file)
 		#pragma omp parallel for
 		for(index_t i = 0; i < n_vertices; ++i)
 		{
-			const index_t & t = p.trigs[i].y();
+			const index_t t = p.trigs[i].y();
 			texcoords[i] = t != NIL ? p.vtexcoords[t] : vec2{-1, -1};
 		}
 	}
@@ -74,8 +74,8 @@ bool scene::load_obj(const std::string & file)
 	#pragma omp parallel for
 	for(index_t i = 0; i < n_vertices; ++i)
 	{
-		const index_t & trig = 3 * (i / 3);
-		const index_t & n = p.trigs[i].z();
+		const index_t trig = 3 * (i / 3);
+		const index_t n = p.trigs[i].z();
 		VN[i] = n != NIL ? p.vnormals[n] : normalize(cross(GT[trig + 1] - GT[trig], GT[trig + 2] - GT[trig]));
 	}
 
@@ -91,7 +91,7 @@ bool scene::load_obj(const std::string & file)
 	for(index_t i = 0; i < size(objects) - 1; ++i)
 	{
 		const object & obj = objects[i];
-		const index_t & n = objects[i + 1].begin;
+		const index_t n = objects[i + 1].begin;
 
 		for(index_t t = obj.begin; t < n; t += 3)
 			trig_mat[t / 3] = obj.material_id;

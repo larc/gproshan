@@ -30,7 +30,7 @@ che * scanner_ptx(const rt::raytracing * rt, const size_t & n_rows, const size_t
 	for(index_t i = 0; i < n_rows; ++i)
 	for(index_t j = 0; j < n_cols; ++j)
 	{
-		const index_t & v = i * n_cols + j;
+		const index_t v = i * n_cols + j;
 
 		const real_t & phi = i * delta_phi;
 		const real_t & theta = j * delta_theta;

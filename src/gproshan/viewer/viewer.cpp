@@ -316,7 +316,7 @@ void viewer::imgui()
 
 		if(ImGui::Button("add selected points as lights"))
 		{
-			for(const index_t & v: mesh.selected)
+			for(const index_t v: mesh.selected)
 				if(!render_params.add_light({vec3(mesh.model_mat * (mesh->point(v), 1))}))
 					break;
 		}
@@ -567,7 +567,7 @@ bool viewer::add_mesh(che * p_mesh, const bool & reset_normals)
 	return true;
 }
 
-bool viewer::remove_mesh(const index_t & idx)
+bool viewer::remove_mesh(const index_t idx)
 {
 	if(size(meshes) == 1)
 		return false;
@@ -696,10 +696,10 @@ void viewer::mouse_callback(GLFWwindow * window, int button, int action, int mod
 		float xscale, yscale;
 		glfwGetWindowContentScale(window, &xscale, &yscale);
 
-		const index_t & ix = xpos * xscale;
-		const index_t & iy = ypos * yscale;
+		const index_t ix = xpos * xscale;
+		const index_t iy = ypos * yscale;
 		const int & cols = m_window_split[size(view->meshes)].y();
-		const index_t & idx_mesh = cols * (iy / view->viewport_height) + ix / view->viewport_width;
+		const index_t idx_mesh = cols * (iy / view->viewport_height) + ix / view->viewport_width;
 		if(idx_mesh < size(view->meshes))
 			view->idx_selected_mesh = idx_mesh;
 
@@ -1070,8 +1070,8 @@ bool viewer::m_select_border_vertices(viewer * view)
 {
 	view->check_apply_all_meshes([&](che_viewer & mesh)
 	{
-		for(const index_t & b: mesh->bounds())
-			for(const index_t & v: mesh->boundary(b))
+		for(const index_t b: mesh->bounds())
+			for(const index_t v: mesh->boundary(b))
 				mesh.selected.push_back(v);
 	});
 

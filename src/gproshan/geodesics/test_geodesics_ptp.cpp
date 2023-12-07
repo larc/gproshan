@@ -158,7 +158,7 @@ void main_test_geodesics_ptp(const int & nargs, const char ** args)
 		for(index_t v = 0; v < n_vertices; ++v)
 		{
 			dv = mesh->is_vertex_bound(v) ? 1 : 0;
-			for([[maybe_unused]] const index_t & he: mesh->star(v)) ++dv;
+			for([[maybe_unused]] const index_t he: mesh->star(v)) ++dv;
 			++deg[dv];
 		}
 
@@ -249,7 +249,7 @@ double test_fast_marching(real_t & error, const real_t * exact, che * mesh, cons
 
 	geodesics fm(mesh, source);
 
-	error = compute_error(&fm[0], exact, mesh->n_vertices, size(source));
+	error = compute_error(fm, exact, mesh->n_vertices, size(source));
 
 	return seconds;
 }

@@ -95,7 +95,7 @@ void che_viewer::update_vbo_geometry()
 	if(!mesh->is_pointcloud())
 	{
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[4]);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh->n_half_edges * sizeof(index_t), &mesh->halfedge(0), GL_STATIC_DRAW);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh->n_half_edges * sizeof(index_t), mesh->trigs_ptr(), GL_STATIC_DRAW);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	}
 
@@ -169,7 +169,7 @@ void che_viewer::update_instances_positions(const std::vector<vertex> & translat
 	glBindVertexArray(0);
 }
 
-const vertex & che_viewer::selected_point(const index_t & i) const
+const vertex & che_viewer::selected_point(const index_t i) const
 {
 	return mesh->point(selected[i]);
 }
@@ -222,7 +222,7 @@ void che_viewer::draw_selected_vertices(che_viewer & sphere, shader & program)
 		selected_xyz.clear();
 		selected_xyz.reserve(size(selected));
 
-		for(const index_t & v: selected)
+		for(const index_t v: selected)
 			selected_xyz.push_back(mesh->point(v));
 	}
 
@@ -238,7 +238,7 @@ void che_viewer::select(const uvec2 & pos, const uvec2 & windows_size, const mat
 {
 	rt::random<real_t> rnd(pos.x(), pos.y());
 	const vertex & dir = rt::ray_view_dir({pos.x(), windows_size.y() - pos.y()}, windows_size, inv_proj_view_mat, cam_pos, rnd);
-	const index_t & v = rt_embree->closest_vertex(cam_pos, dir);
+	const index_t v = rt_embree->closest_vertex(cam_pos, dir);
 
 	if(v != NIL) selected.push_back(v);
 }

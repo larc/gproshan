@@ -58,7 +58,7 @@ void raytracing::render(vec4 * img, const render_params & params, const bool & f
 std::vector<float> raytracing::raycaster(	const uvec2 & windows_size,
 											const mat4 & inv_proj_view,
 											const vertex & cam_pos,
-											const index_t & samples
+											const index_t samples
 											) const
 {
 	std::vector<float> frame(windows_size.x() * windows_size.y());

@@ -133,7 +133,7 @@ void embree::build_bvh(const std::vector<che *> & meshes, const std::vector<mat4
 			g_meshes[i]->n_trigs = 0;
 
 		[[maybe_unused]]
-		const index_t & geomID = g_meshes[i]->n_trigs || meshes[i]->is_scene() ?
+		const index_t geomID = g_meshes[i]->n_trigs || meshes[i]->is_scene() ?
 											add_mesh(meshes[i], model_mats[i]) :
 											add_pointcloud(meshes[i], model_mats[i]);
 
@@ -190,7 +190,7 @@ index_t embree::add_mesh(const che * mesh, const mat4 & model_mat)
 	}
 	else
 	{
-		memcpy(tri_idxs, &mesh->halfedge(0), mesh->n_half_edges * sizeof(index_t));
+		memcpy(tri_idxs, mesh->trigs_ptr(), mesh->n_half_edges * sizeof(index_t));
 	}
 
 	rtcCommitGeometry(geom);

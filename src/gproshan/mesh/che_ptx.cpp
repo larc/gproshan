@@ -94,7 +94,7 @@ void che_ptx::read_file(const std::string & file)
 
 
 	index_t he = 0;
-	auto add_trig = [&](const index_t & i, const index_t & j, const index_t & k)
+	auto add_trig = [&](const index_t i, const index_t j, const index_t k)
 	{
 		VT[he++] = i;
 		VT[he++] = j;

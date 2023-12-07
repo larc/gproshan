@@ -111,7 +111,7 @@ class viewer
 		void add_menu(const std::string & str, const std::vector<int> & vprocesses);
 		int add_process(const char * name, const function_t & f, const int & key = -1);
 		bool add_mesh(che * p_mesh, const bool & reset_normals = true);
-		bool remove_mesh(const index_t & idx);
+		bool remove_mesh(const index_t idx);
 		bool pop_mesh();
 		void update_viewport_meshes();
 		void update_status_message(const char * format, ...);

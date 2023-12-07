@@ -126,14 +126,14 @@ void che_ply::read_file(const std::string & file)
 			for(index_t i = 0; i < nv; ++i)
 				fscanf(fp, "%u", P + i);
 
-			for(const index_t & v: trig_convex_polygon(P, nv))
+			for(const index_t v: trig_convex_polygon(P, nv))
 				trigs.push_back(v);
 		}
 	}
 	else // binary_little_endian or binary_big_endian
 	{
 		bool big_endian = format[7] == 'b';
-		auto big_to_little = [](char * buffer, const index_t & n)
+		auto big_to_little = [](char * buffer, const index_t n)
 		{
 			for(index_t i = 0, j = n - 1; i < j; ++i, --j)
 				std::swap(buffer[i], buffer[j]);
@@ -229,7 +229,7 @@ void che_ply::read_file(const std::string & file)
 				if(fbytes == 4) P[i] = *((int *) buffer);
 			}
 
-			for(const index_t & v: trig_convex_polygon(P, nv))
+			for(const index_t v: trig_convex_polygon(P, nv))
 				trigs.push_back(v);
 		}
 	}
@@ -290,7 +290,7 @@ void che_ply::write_file(const che * mesh, const std::string & file, const bool 
 	for(index_t he = 0; he < mesh->n_half_edges; he += che::mtrig)
 	{
 		fwrite(&mtrig, 1, 1, fp);
-		fwrite(&mesh->halfedge(he), sizeof(index_t), che::mtrig, fp);
+		fwrite(mesh->trigs_ptr(), sizeof(index_t), che::mtrig, fp);
 	}
 
 	fclose(fp);

@@ -23,12 +23,12 @@ class key_components
 	public:
 		key_components(che * mesh, const std::vector<index_t> & kps, const real_t & r);
 		~key_components();
-		index_t operator()(const index_t & i);
+		index_t operator()(const index_t i);
 		operator const size_t & () const;
 
 	private:
 		void compute_kcs(che * mesh, const std::vector<index_t> & kps);
-		index_t find(const index_t & x);
+		index_t find(const index_t x);
 		bool join(index_t x, index_t y);
 };
 

@@ -208,7 +208,7 @@ double * times_farthest_point_sampling_ptp_coalescence_gpu(che * mesh, std::vect
 	return times;
 }
 
-std::vector<std::pair<index_t, real_t> > iter_error_run_ptp_coalescence_gpu(CHE * d_mesh, const index_t & n_vertices, real_t * h_dist, real_t ** d_dist, const std::vector<index_t> & sources, const std::vector<index_t> & limits, const index_t * inv, const real_t * exact_dist, real_t * d_error)
+std::vector<std::pair<index_t, real_t> > iter_error_run_ptp_coalescence_gpu(CHE * d_mesh, const index_t n_vertices, real_t * h_dist, real_t ** d_dist, const std::vector<index_t> & sources, const std::vector<index_t> & limits, const index_t * inv, const real_t * exact_dist, real_t * d_error)
 {
 	#pragma omp parallel for
 	for(index_t v = 0; v < n_vertices; ++v)

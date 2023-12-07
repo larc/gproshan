@@ -23,7 +23,7 @@ class raytracing
 		virtual std::vector<float> raycaster(	const uvec2 & windows_size,
 												const mat4 & inv_proj_view,
 												const vertex & cam_pos,
-												const index_t & samples = 4
+												const index_t samples = 4
 												) const;
 
 		virtual eval_hit intersect(	const vertex &,	// org

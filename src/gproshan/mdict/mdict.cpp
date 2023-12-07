@@ -22,7 +22,7 @@ std::ostream & operator << (std::ostream & os, const locval_t & lc)
 	return os << '(' << lc.i << ',' << lc.j << ") = " << lc.val;
 }
 
-void OMP(std::vector<locval_t> & alpha, const a_vec & x, const index_t & i, const a_mat & D, const size_t & L)
+void OMP(std::vector<locval_t> & alpha, const a_vec & x, const index_t i, const a_mat & D, const size_t & L)
 {
 	const auto & [aa, selected_atoms] = _OMP(x, D, L);
 
@@ -313,7 +313,7 @@ void KSVD(a_mat & A, const std::vector<patch> & patches, const size_t & L, size_
 
 // MESH SPARSE
 
-void OMP(std::vector<locval_t> & alpha, const patch & p, const index_t & i, const a_mat & A, const size_t & L)
+void OMP(std::vector<locval_t> & alpha, const patch & p, const index_t i, const a_mat & A, const size_t & L)
 {
 	OMP(alpha, p.xyz.row(2).t(), i, p.phi * A, L);
 }
@@ -378,7 +378,7 @@ void sp_KSVD(a_mat & A, const std::vector<patch> & patches, const size_t & L, si
 
 			for(index_t r = rows[j]; r < rows[j + 1]; ++r)
 			{
-				const index_t & i = locval[r].j;
+				const index_t i = locval[r].j;
 
 				a = alpha.col(i);
 				a(j) = 0;

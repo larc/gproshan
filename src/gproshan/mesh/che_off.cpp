@@ -57,7 +57,7 @@ void che_off::read_file(const std::string & file)
 		for(index_t i = 0; i < n; ++i)
 			fscanf(fp, "%u", P + i);
 
-		for(const index_t & v: trig_convex_polygon(P, n))
+		for(const index_t v: trig_convex_polygon(P, n))
 			trigs.push_back(v);
 	}
 

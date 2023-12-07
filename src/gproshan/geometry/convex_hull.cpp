@@ -34,7 +34,7 @@ void convex_hull::andrew_algorithm(const std::vector<ivec2> & points)
 	std::vector<index_t> idx(size(points));
 	std::iota(begin(idx), end(idx), 0);
 
-	std::ranges::sort(idx, [&points](const index_t & i, const index_t & j)
+	std::ranges::sort(idx, [&points](const index_t i, const index_t j)
 					{
 						return points[i] < points[j];
 					});
@@ -44,7 +44,7 @@ void convex_hull::andrew_algorithm(const std::vector<ivec2> & points)
 	index_t k = 0;
 	for(index_t p = 0; p < size(points); ++p)
 	{
-		const index_t & i = idx[p];
+		const index_t i = idx[p];
 		while(k > 1 && !ccw(points[CH[k - 2]], points[CH[k - 1]], points[i])) --k;
 		CH[k++] = i;
 	}
@@ -52,7 +52,7 @@ void convex_hull::andrew_algorithm(const std::vector<ivec2> & points)
 	index_t t = k;
 	for(index_t p = size(points) - 2; p > 0; --p)
 	{
-		const index_t & i = idx[p];
+		const index_t i = idx[p];
 		while(k > t && !ccw(points[CH[k - 2]], points[CH[k - 1]], points[i])) --k;
 		CH[k++] = i;
 	}

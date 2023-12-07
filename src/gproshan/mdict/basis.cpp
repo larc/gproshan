@@ -81,7 +81,7 @@ void basis::plot_atoms(const a_mat & A)
 	system(file.c_str());
 }
 
-void basis::plot_patch(const a_mat & A, const a_mat & xyz, const index_t & p)
+void basis::plot_patch(const a_mat & A, const a_mat & xyz, const index_t p)
 {
 	a_mat tmp = xyz.t();
 	std::string data = tmp_file_path("xyz_" + std::to_string(p) + ".dat");

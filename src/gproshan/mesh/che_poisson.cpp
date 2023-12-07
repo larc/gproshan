@@ -95,7 +95,7 @@ void biharmonic_interp_2(a_mat & P, a_mat & H)
 }
 
 //fill one hole and fit with biharmonic_interp_2
-void biharmonic_interp_2(che * mesh, const size_t & old_n_vertices, const size_t & n_vertices, const std::vector<index_t> & border_vertices, const index_t & k)
+void biharmonic_interp_2(che * mesh, const size_t & old_n_vertices, const size_t & n_vertices, const std::vector<index_t> & border_vertices, const index_t k)
 {
 	if(old_n_vertices == n_vertices) return;
 

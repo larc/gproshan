@@ -39,31 +39,36 @@ geodesics::~geodesics()
 	delete [] clusters;
 }
 
-const real_t & geodesics::operator[](const index_t & i) const
+geodesics::operator const real_t * () const
+{
+	return dist;
+}
+
+real_t geodesics::operator[](const index_t i) const
 {
 	assert(i < n_vertices);
 	return dist[i];
 }
 
-const index_t & geodesics::operator()(const index_t & i) const
+index_t geodesics::operator()(const index_t i) const
 {
 	assert(i < n_vertices);
 	return sorted_index[i];
 }
 
-const real_t & geodesics::radio() const
+real_t geodesics::radio() const
 {
 	assert(n_sorted != 0);
 	return dist[farthest()];
 }
 
-const index_t & geodesics::farthest() const
+index_t geodesics::farthest() const
 {
 	assert(n_sorted != 0);
 	return sorted_index[n_sorted - 1];
 }
 
-const size_t & geodesics::n_sorted_index() const
+size_t geodesics::n_sorted_index() const
 {
 	return n_sorted;
 }
@@ -158,7 +163,7 @@ void geodesics::run_fastmarching(che * mesh, const std::vector<index_t> & source
 
 		if(fun && !fun(black_i)) break;
 
-		for(const index_t & v: mesh->link(black_i))
+		for(const index_t v: mesh->link(black_i))
 		{
 			if(color[v] == GREEN)
 				color[v] = RED;
@@ -166,7 +171,7 @@ void geodesics::run_fastmarching(che * mesh, const std::vector<index_t> & source
 			if(color[v] == RED)
 			{
 				dv = dist[v];
-				for(const index_t & he: mesh->star(v))
+				for(const index_t he: mesh->star(v))
 				{
 					dp = update_step(&cmesh, dist, {mesh->halfedge(he_next(he)),
 													mesh->halfedge(he_prev(he)),

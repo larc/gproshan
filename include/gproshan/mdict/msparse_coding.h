@@ -66,8 +66,8 @@ class msparse_coding
 
 		virtual ~msparse_coding();
 
-		const real_t & operator[](const index_t & i) const;
-		const index_t & draw_patches(const index_t & p);
+		const real_t & operator[](const index_t i) const;
+		index_t draw_patches(const index_t p) const;
 
 		operator const std::string & () const;
 
@@ -95,7 +95,7 @@ class msparse_coding
 		void update_alphas(a_mat & alpha, size_t threshold);
 		void save_alpha(std::string file);
 
-		index_t sample(const index_t & s);
+		index_t sample(const index_t s);
 };
 
 

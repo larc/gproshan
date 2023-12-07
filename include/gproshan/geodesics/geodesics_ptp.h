@@ -41,7 +41,7 @@ struct is_ok
 	bool operator()(const real_t & val) const;
 
 	__host_device__
-	bool operator()(const index_t & val) const;
+	bool operator()(const index_t val) const;
 };
 
 #endif // __CUDACC__
@@ -131,7 +131,7 @@ template<class T>
 __forceinline__
 #endif
 __host_device__
-void relax_ptp(const CHE * mesh, T * new_dist, T * old_dist, index_t * new_clusters, index_t * old_clusters, const index_t & v)
+void relax_ptp(const CHE * mesh, T * new_dist, T * old_dist, index_t * new_clusters, index_t * old_clusters, const index_t v)
 {
 	real_t & ndv = new_dist[v] = old_dist[v];
 	if(new_clusters) new_clusters[v] = old_clusters[v];
@@ -169,7 +169,7 @@ index_t run_ptp(const CHE * mesh, const std::vector<index_t> & sources,
 
 	for(index_t i = 0; i < size(sources); ++i)
 	{					// !coalescence ?
-		const index_t & v = sorted ? sources[i] : idx[sources[i]];
+		const index_t v = sorted ? sources[i] : idx[sources[i]];
 
 	#ifdef __CUDACC__
 		h_dist[v] = 0;
@@ -206,9 +206,9 @@ index_t run_ptp(const CHE * mesh, const std::vector<index_t> & sources,
 	{
 		if(i < (j >> 1)) i = (j >> 1);	// K/2 limit band size
 
-		const index_t & start	= limits[i];
-		const index_t & end		= limits[j];
-		const index_t & n_cond	= limits[i + 1] - start;
+		const index_t start	= limits[i];
+		const index_t end		= limits[j];
+		const index_t n_cond	= limits[i + 1] - start;
 
 		T *& new_dist = dist[iter & 1];
 		T *& old_dist = dist[!(iter & 1)];
@@ -233,7 +233,7 @@ index_t run_ptp(const CHE * mesh, const std::vector<index_t> & sources,
 		#pragma omp parallel for
 		for(index_t k = start; k < start + n_cond; ++k)
 		{
-			const index_t & v = sorted ? sorted[k] : k;
+			const index_t v = sorted ? sorted[k] : k;
 			error[v] = abs(new_dist[v] - old_dist[v]) / old_dist[v];
 		}
 
@@ -241,7 +241,7 @@ index_t run_ptp(const CHE * mesh, const std::vector<index_t> & sources,
 		#pragma omp parallel for reduction(+: count)
 		for(index_t k = start; k < start + n_cond; ++k)
 		{
-			const index_t & v = sorted ? sorted[k] : k;
+			const index_t v = sorted ? sorted[k] : k;
 			count += error[v] < PTP_TOL;
 		}
 	#endif

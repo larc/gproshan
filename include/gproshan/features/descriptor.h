@@ -28,7 +28,7 @@ class descriptor
 		operator bool () const;
 
 		///< return norm of the descriptor for the vertex v
-		real_t operator () (const index_t & v) const;
+		real_t operator () (const index_t v) const;
 
 	private:
 		void compute_gps();

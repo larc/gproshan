@@ -98,7 +98,7 @@ class app_viewer : public viewer
 		static bool process_key_components(viewer * p_view);
 
 		// Hole Filling
-		static bool process_poisson(viewer * p_view, const index_t & k);
+		static bool process_poisson(viewer * p_view, const index_t k);
 		static bool process_poisson_laplacian_1(viewer * p_view);
 		static bool process_poisson_laplacian_2(viewer * p_view);
 		static bool process_poisson_laplacian_3(viewer * p_view);

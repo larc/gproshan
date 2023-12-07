@@ -19,7 +19,7 @@ namespace gproshan {
 */
 class geodesics
 {
-	using fm_function_t = std::function<bool (const index_t &)>;
+	using fm_function_t = std::function<bool (const index_t)>;
 
 	public:
 		enum algorithm {	FM,				///< Execute Fast Marching algorithm
@@ -59,11 +59,12 @@ class geodesics
 					);
 
 		virtual ~geodesics();
-		const real_t & operator[](const index_t & i) const;
-		const index_t & operator()(const index_t & i) const;
-		const real_t & radio() const;
-		const index_t & farthest() const;
-		const size_t & n_sorted_index() const;
+		operator const real_t * () const;
+		real_t operator[](const index_t i) const;
+		index_t operator()(const index_t i) const;
+		real_t radio() const;
+		index_t farthest() const;
+		size_t n_sorted_index() const;
 		void copy_sorted_index(index_t * indexes, const size_t & n) const;
 		void normalize();
 

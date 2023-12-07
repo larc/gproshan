@@ -21,7 +21,7 @@ struct locval_t
 };
 
 
-void OMP(std::vector<locval_t> & alpha, const a_vec & x, const index_t & i, const a_mat & D, const size_t & L);
+void OMP(std::vector<locval_t> & alpha, const a_vec & x, const index_t i, const a_mat & D, const size_t & L);
 
 a_sp_mat OMP_all(std::vector<locval_t> & locval, const a_mat & X, const a_mat & D, const size_t & L);
 
@@ -54,7 +54,7 @@ void KSVD(a_mat & A, const std::vector<patch> & patches, const size_t & L, size_
 
 // MESH SPARSE
 
-void OMP(std::vector<locval_t> & alpha, const patch & p, const index_t & i, const a_mat & A, const size_t & L);
+void OMP(std::vector<locval_t> & alpha, const patch & p, const index_t i, const a_mat & A, const size_t & L);
 
 a_sp_mat OMP_all(std::vector<locval_t> & locval, const std::vector<patch> & patches, const a_mat & A, const size_t & L);
 

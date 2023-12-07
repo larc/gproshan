@@ -35,7 +35,7 @@ double parallel_toplesets_propagation_gpu(const ptp_out_t & ptp_out, const che *
 		#pragma omp parallel for
 		for(index_t he = 0; he < mesh->n_half_edges; ++he)
 		{
-			const index_t & v = mesh->halfedge(he);
+			const index_t v = mesh->halfedge(he);
 			if(v != NIL)
 			{
 				h_mesh.VT[he] = inv[v];
@@ -88,7 +88,7 @@ double parallel_toplesets_propagation_gpu(const ptp_out_t & ptp_out, const che *
 			h_dist[v] = INFINITY;
 	}
 
-	const index_t & i = run_ptp(d_mesh, sources, toplesets.limits, d_error, d_dist, d_clusters,
+	const index_t i = run_ptp(d_mesh, sources, toplesets.limits, d_error, d_dist, d_clusters,
 								coalescence ? inv : toplesets.index, d_sorted);
 
 	cudaMemcpy(h_dist, d_dist[i], sizeof(real_t) * n_vertices, cudaMemcpyDeviceToHost);
@@ -196,7 +196,7 @@ real_t farthest_point_sampling_ptp_gpu(che * mesh, std::vector<index_t> & sample
 		limits.clear();
 		mesh->compute_toplesets(toplesets, sorted_index, limits, samples);
 
-		const index_t & i = run_ptp(d_mesh, samples, limits, d_error, d_dist, d_clusters, sorted_index, d_sorted);
+		const index_t i = run_ptp(d_mesh, samples, limits, d_error, d_dist, d_clusters, sorted_index, d_sorted);
 
 		// 1 indexing
 		#ifdef GPROSHAN_FLOAT
@@ -269,7 +269,7 @@ bool is_ok::operator()(const real_t & val) const
 }
 
 __host_device__
-bool is_ok::operator()(const index_t & i) const
+bool is_ok::operator()(const index_t i) const
 {
 	return error[i] < PTP_TOL;
 }

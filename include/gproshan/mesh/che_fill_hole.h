@@ -18,7 +18,7 @@ struct border_t
 
 	border_t() = default;
 
-	border_t(const std::vector<a_vec> & V, const index_t & _v, const std::array<index_t, 2> & neighbors, const bool & o):
+	border_t(const std::vector<a_vec> & V, const index_t _v, const std::array<index_t, 2> & neighbors, const bool & o):
 	v(_v)
 	{
 		index_t p_v = neighbors[!o];
@@ -56,7 +56,7 @@ struct border_t
 		return r;
 	}
 
-	border_t(const std::vector<a_vec> & V, const index_t & _v, const std::array<index_t, 2> & neighbors, const bool & o, const a_vec & normal):
+	border_t(const std::vector<a_vec> & V, const index_t _v, const std::array<index_t, 2> & neighbors, const bool & o, const a_vec & normal):
 	v(_v)
 	{
 		index_t p_v = neighbors[!o];

@@ -69,7 +69,7 @@ void dijkstra::run(che * mesh)
 
 			if(!visited[v])
 			{
-				for(const index_t & nv: mesh->link(v))
+				for(const index_t nv: mesh->link(v))
 				{
 					if(visited[nv])
 					{
