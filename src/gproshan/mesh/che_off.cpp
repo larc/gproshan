@@ -98,7 +98,7 @@ void che_off::write_file(const che * mesh, const std::string & file, const che_o
 
 		if(off == COFF || off == NCOFF)
 		{
-			const rgb_t & c = mesh->rgb(i);
+			const rgb_t c = mesh->rgb(i);
 			fprintf(fp, " %hhu %hhu %hhu 1", c.r, c.g, c.b);
 		}
 

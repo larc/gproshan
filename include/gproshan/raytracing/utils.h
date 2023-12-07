@@ -98,8 +98,7 @@ struct t_eval_hit
 
 		if(!mesh.n_trigs) // pointcloud
 		{
-			const che::rgb_t & c = mesh.VC[aprimID];
-			Kd = {T(c.r), T(c.g), T(c.b)};
+			Kd = {T(mesh.VC[aprimID].r), T(mesh.VC[aprimID].g), T(mesh.VC[aprimID].b)};
 			Kd /= 255;
 			normal = mesh.VN[aprimID];
 			return;

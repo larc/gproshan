@@ -181,7 +181,12 @@ real_t & che::heatmap(const index_t v)
 	return VHC[v];
 }
 
-const che::rgb_t & che::rgb(const index_t v) const
+const che::rgb_t * che::rgb_ptr() const
+{
+	return VC;
+}
+
+che::rgb_t che::rgb(const index_t v) const
 {
 	assert(v < n_vertices);
 	return VC[v];

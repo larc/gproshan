@@ -87,7 +87,8 @@ class che
 		const real_t * heatmap_ptr() const;
 		real_t heatmap(const index_t v) const;
 		real_t & heatmap(const index_t v);
-		const rgb_t & rgb(const index_t v) const;
+		const rgb_t * rgb_ptr() const;
+		rgb_t rgb(const index_t v) const;
 		rgb_t & rgb(const index_t v);
 		vertex color(const index_t v) const;
 		vertex shading_color(const index_t f, const float & u, const float & v) const;

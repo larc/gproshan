@@ -279,11 +279,12 @@ void che_ply::write_file(const che * mesh, const std::string & file, const bool 
 	fprintf(fp, "property list uchar uint vertex_index\n");
 	fprintf(fp, "end_header\n");
 
+	const che::rgb_t * p_rgb = mesh->rgb_ptr();
 	for(index_t v = 0; v < mesh->n_vertices; ++v)
 	{
 		fwrite(&mesh->point(v), sizeof(vertex), 1, fp);
 		fwrite(&mesh->normal(v), sizeof(vertex), 1, fp);
-		if(color) fwrite(&mesh->rgb(v), sizeof(rgb_t), 1, fp);
+		if(color) fwrite(p_rgb + v, sizeof(rgb_t), 1, fp);
 	}
 
 	unsigned char mtrig = che::mtrig;

@@ -58,7 +58,7 @@ void che_xyz::write_file(const che * mesh, const std::string & file, const bool 
 		fprintf(fp, "%f %f %f", (float) v.x(), (float) v.y(), (float) v.z());
 		if(color)
 		{
-			const rgb_t & c = mesh->rgb(i);
+			const rgb_t c = mesh->rgb(i);
 			fprintf(fp, " %hhu %hhu %hhu", c.r, c.g, c.b);
 		}
 		fprintf(fp, "\n");
