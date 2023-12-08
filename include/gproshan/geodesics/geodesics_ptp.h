@@ -58,7 +58,7 @@ struct ptp_out_t
 struct toplesets_t
 {
 	const std::vector<index_t> & limits;
-	const index_t *const & index;
+	const index_t * index;
 };
 
 double parallel_toplesets_propagation_gpu(const ptp_out_t & ptp_out, const che * mesh, const std::vector<index_t> & sources, const toplesets_t & toplesets, const bool & coalescence = true, const bool & set_inf = true);
