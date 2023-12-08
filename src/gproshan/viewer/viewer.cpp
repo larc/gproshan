@@ -983,7 +983,7 @@ bool viewer::m_setup_raytracing(viewer * view)
 
 	ImGui::SliderInt("depth", (int *) &view->render_params.depth, 1, 1 << 5);
 	ImGui::SliderInt("n_samples", (int *) &view->render_params.n_samples, 1, 1 << 5);
-	ImGui::Combo("rt", &rt, "Select\0Embree\0OptiX\0Splat Test\0Splat Embree\0Splat OptiX\0\0");
+	ImGui::Combo("rt", &rt, "Select\0Embree\0OptiX\0Splat Embree\0Splat OptiX\0\0");
 
 	if(rt > 2)
 	{
@@ -1022,20 +1022,6 @@ bool viewer::m_setup_raytracing(viewer * view)
 				break;
 
 			case 3:
-				TIC(time);
-					splat_test = new rt::splat({mesh}, {mesh.model_mat});
-				TOC(time);
-				mesh.update_vbo_heatmap();
-				view->update_status_message("build splats in %.3fs", time);
-				for(che * pc: splat_test->pointclouds)
-				{
-					pc->filename = "ch_splats_" + mesh->name();
-					view->add_mesh(new che(*pc), false);
-					view->selected_mesh().render_flat = true;
-				}
-				break;
-
-			case 4:
 				delete mesh.rt_embree;
 				TIC(time);
 				{
@@ -1046,9 +1032,15 @@ bool viewer::m_setup_raytracing(viewer * view)
 				TOC(time);
 				mesh.update_vbo_heatmap();
 				view->update_status_message("build splat embree in %.3fs", time);
+				for(che * pc: splat_test->pointclouds)
+				{
+					pc->filename = "ch_splats_" + mesh->name();
+					view->add_mesh(new che(*pc), false);
+					view->selected_mesh().render_flat = true;
+				}
 				break;
 
-			case 5:
+			case 4:
 			#ifdef GPROSHAN_OPTIX
 				delete mesh.rt_optix;
 				TIC(time);
@@ -1060,6 +1052,12 @@ bool viewer::m_setup_raytracing(viewer * view)
 				TOC(time);
 				mesh.update_vbo_heatmap();
 				view->update_status_message("build splat optix in %.3fs", time);
+				for(che * pc: splat_test->pointclouds)
+				{
+					pc->filename = "ch_splats_" + mesh->name();
+					view->add_mesh(new che(*pc), false);
+					view->selected_mesh().render_flat = true;
+				}
 			#endif // GPROSHAN_OPTIX
 				break;
 		}

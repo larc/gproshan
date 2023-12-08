@@ -240,7 +240,7 @@ std::vector<index_t> splat::voronoi_subdivision(std::vector<index_t> & voronoi_s
 	real_t radio_threshold = 0;
 	index_t new_seed = NIL;
 
-	const size_t max_seeds = 3 * (log10(seg_end - seg_begin) + 1); 
+	const size_t max_seeds = 3 * (log10(seg_end - seg_begin) + 1);
 
 	while(radio > radio_threshold)
 	{
