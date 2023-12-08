@@ -48,7 +48,7 @@ std::vector<index_t> grid::operator () (const point & p, int k) const
 		if(pos.x() == NIL || pos.y() == NIL || pos.z() == NIL)
 			continue;
 
-		const auto & iter = voxels.find(pos);
+		const auto iter = voxels.find(pos);
 		if(iter == end(voxels))
 			continue;
 
