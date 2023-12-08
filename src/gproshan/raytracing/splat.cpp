@@ -73,7 +73,7 @@ void splat::add_splats(che * pc, const mat4 & model_mat)
 	std::vector<index_t> splats({0});
 
 	for(index_t i = 0; i < size(segs) - 1; ++i)
-	for(const auto & n_points: voronois[i])
+	for(const index_t n_points: voronois[i])
 	{
 		splats.push_back(splats.back() + n_points);
 		splats_normals.emplace_back(normals[i]);
