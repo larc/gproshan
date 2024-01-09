@@ -67,10 +67,9 @@ embree::embree()
 	rtcSetDeviceErrorFunction(rtc_device, embree_error, NULL);
 }
 
-embree::embree(const std::vector<che *> & meshes, const std::vector<mat4> & model_mats, const bool & pointcloud, const float pcr): embree()
+embree::embree(const std::vector<che *> & meshes, const std::vector<mat4> & model_mats, const pc_opts & pc): embree()
 {
-	pc_radius = pcr;
-	build_bvh(meshes, model_mats, pointcloud);
+	build_bvh(meshes, model_mats, pc);
 }
 
 embree::~embree()
@@ -122,20 +121,20 @@ eval_hit embree::intersect(const vertex & org, const vertex & dir, const bool & 
 	return hit;
 }
 
-void embree::build_bvh(const std::vector<che *> & meshes, const std::vector<mat4> & model_mats, const bool & pointcloud)
+void embree::build_bvh(const std::vector<che *> & meshes, const std::vector<mat4> & model_mats, const pc_opts & pc)
 {
 	g_meshes.resize(size(meshes));
 	for(index_t i = 0; i < size(meshes); ++i)
 	{
 		g_meshes[i] = new CHE(meshes[i]);
 
-		if(!meshes[i]->n_trigs || pointcloud)
+		if(!meshes[i]->n_trigs || pc.enable)
 			g_meshes[i]->n_trigs = 0;
 
 		[[maybe_unused]]
 		const index_t geomID = g_meshes[i]->n_trigs || meshes[i]->is_scene() ?
 											add_mesh(meshes[i], model_mats[i]) :
-											add_pointcloud(meshes[i], model_mats[i]);
+											add_pointcloud(meshes[i], model_mats[i], pc);
 
 		gproshan_debug_var(i == geomID);
 	}
@@ -214,7 +213,7 @@ index_t embree::add_mesh(const che * mesh, const mat4 & model_mat)
 	return geom_id;
 }
 
-index_t embree::add_pointcloud(const che * mesh, const mat4 & model_mat)
+index_t embree::add_pointcloud(const che * mesh, const mat4 & model_mat, const pc_opts & pc)
 {
 	RTCGeometry geom = rtcNewGeometry(rtc_device, RTC_GEOMETRY_TYPE_DISC_POINT);
 
@@ -236,7 +235,7 @@ index_t embree::add_pointcloud(const che * mesh, const mat4 & model_mat)
 	for(index_t i = 0; i < mesh->n_vertices; ++i)
 	{
 		pxyzr[i] = model_mat * (mesh->point(i), 1);
-		pxyzr[i][3] = pc_radius;
+		pxyzr[i][3] = pc.radius;
 //		normal[i] = mesh->normal(i);
 	}
 

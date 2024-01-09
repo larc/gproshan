@@ -9,19 +9,17 @@
 
 int main(int argc, char* argv[])
 {
-	if(argc < 2 || argc > 7)
+	if(argc != 6)
 	{
-		std::cerr << "Correct usage: ./apps/test_scanner n_rows n_cols pc_radius ptx_folder jpg_folder" << std::endl;
+		std::cerr << "Correct usage: ./apps/test_scanner mesh n_rows n_cols ptx_folder jpg_folder" << std::endl;
 		return -1;
  	}
 
 	size_t n_rows = atoi(argv[2]);
 	size_t n_cols = atoi(argv[3]);
 
-	float pc_radius = atof(argv[4]);
-
-	char * ptx_folder = argv[5];
-	char * jpg_folder = argv[6];
+	char * ptx_folder = argv[4];
+	char * jpg_folder = argv[5];
 
 	gproshan_log_var(ptx_folder);
 	gproshan_log_var(jpg_folder);
@@ -30,7 +28,7 @@ int main(int argc, char* argv[])
 
 	const gproshan::mat4 & model_mat = mesh_ply->normalize_box();
 
-	gproshan::rt::raytracing * rt_embree = new gproshan::rt::embree({mesh_ply}, {model_mat}, false, pc_radius);
+	gproshan::rt::raytracing * rt_embree = new gproshan::rt::embree({mesh_ply}, {model_mat});
 
 	gproshan::che * ptx_mesh = gproshan::scanner_ptx_jpg(rt_embree, n_rows, n_cols, {0, 0, 0}, jpg_folder + mesh_ply->name());
 
