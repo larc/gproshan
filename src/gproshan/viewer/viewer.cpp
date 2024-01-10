@@ -983,6 +983,15 @@ bool viewer::m_setup_raytracing(viewer * view)
 	ImGui::SliderInt("n_samples", (int *) &view->render_params.n_samples, 1, 1 << 5);
 	ImGui::Combo("rt", &rt, "Select\0Embree\0OptiX\0\0");
 
+	if(rt == R_EMBREE && (mesh.render_pointcloud || mesh->is_pointcloud()))
+	{
+		ImGui::Indent();
+		ImGui::SliderInt("pc.knn", &pc.knn, 0, 1 << 5);
+		ImGui::SliderFloat("pc.radius", &pc.radius, 0, 1);
+		ImGui::Checkbox("pc.normals", &pc.normals);
+		ImGui::Unindent();
+	}
+
 	if(ImGui::Button("Build"))
 	{
 		pc.enable |= mesh.render_pointcloud;

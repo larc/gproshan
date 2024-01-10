@@ -2,6 +2,7 @@
 
 
 #include <gproshan/util.h>
+#include <gproshan/pointcloud/knn.h>
 
 #include <random>
 #include <cstring>
@@ -215,7 +216,8 @@ index_t embree::add_mesh(const che * mesh, const mat4 & model_mat)
 
 index_t embree::add_pointcloud(const che * mesh, const mat4 & model_mat, const pc_opts & pc)
 {
-	RTCGeometry geom = rtcNewGeometry(rtc_device, RTC_GEOMETRY_TYPE_DISC_POINT);
+	RTCGeometry geom = rtcNewGeometry(rtc_device, pc.normals ? RTC_GEOMETRY_TYPE_ORIENTED_DISC_POINT 
+															: RTC_GEOMETRY_TYPE_DISC_POINT);
 
 	vec4 * pxyzr = (vec4 *) rtcSetNewGeometryBuffer(	geom,
 														RTC_BUFFER_TYPE_VERTEX, 0,
@@ -223,20 +225,36 @@ index_t embree::add_pointcloud(const che * mesh, const mat4 & model_mat, const p
 														4 * sizeof(float),
 														mesh->n_vertices
 														);
-/*
-	vertex * normal = (vertex *) rtcSetNewGeometryBuffer(	geom,
-															RTC_BUFFER_TYPE_NORMAL, 0,
-															RTC_FORMAT_FLOAT3,
-															3 * sizeof(float),
-															mesh->n_vertices
-															);
-*/
+
+	vertex * normals = !pc.normals	? nullptr
+									: (vertex *) rtcSetNewGeometryBuffer(	geom,
+																			RTC_BUFFER_TYPE_NORMAL, 0,
+																			RTC_FORMAT_FLOAT3,
+																			3 * sizeof(float),
+																			mesh->n_vertices
+																			);
+
+
+	knn::k3tree * nn = !pc.knn	? nullptr
+								: new knn::k3tree(&mesh->point(0), mesh->n_vertices, pc.knn);
+
+
 	#pragma omp parallel for
 	for(index_t i = 0; i < mesh->n_vertices; ++i)
 	{
 		pxyzr[i] = model_mat * (mesh->point(i), 1);
-		pxyzr[i][3] = pc.radius;
-//		normal[i] = mesh->normal(i);
+		pxyzr[i][3] = nn ? length(model_mat * (mesh->point(i), 1) - model_mat * (mesh->point((*nn)(i, pc.knn - 1)), 1)) : pc.radius;
+	}
+
+
+	delete nn;
+
+
+	if(normals)
+	{
+		#pragma omp parallel for
+		for(index_t i = 0; i < mesh->n_vertices; ++i)
+			normals[i] = mesh->normal(i);
 	}
 
 	rtcCommitGeometry(geom);
