@@ -977,13 +977,25 @@ bool viewer::m_setup_raytracing(viewer * view)
 
 	static int rt = 0;
 	static double time = 0;
+	static rt::embree::pc_opts pc;
 
 	ImGui::SliderInt("depth", (int *) &view->render_params.depth, 1, 1 << 5);
 	ImGui::SliderInt("n_samples", (int *) &view->render_params.n_samples, 1, 1 << 5);
 	ImGui::Combo("rt", &rt, "Select\0Embree\0OptiX\0\0");
 
+	if(rt == R_EMBREE && (mesh.render_pointcloud || mesh->is_pointcloud()))
+	{
+		ImGui::Indent();
+		ImGui::SliderInt("pc.knn", &pc.knn, 0, 1 << 5);
+		ImGui::SliderFloat("pc.radius", &pc.radius, 0, 1);
+		ImGui::Checkbox("pc.normals", &pc.normals);
+		ImGui::Unindent();
+	}
+
 	if(ImGui::Button("Build"))
 	{
+		pc.enable |= mesh.render_pointcloud;
+
 		switch(rt)
 		{
 			case R_GL: break;
@@ -991,7 +1003,7 @@ bool viewer::m_setup_raytracing(viewer * view)
 			case R_EMBREE:
 				delete mesh.rt_embree;
 				TIC(time);
-					mesh.rt_embree = new rt::embree({mesh}, {mesh.model_mat}, mesh.render_pointcloud);
+					mesh.rt_embree = new rt::embree({mesh}, {mesh.model_mat}, pc);
 				TOC(time);
 				view->update_status_message("build embree in %.3fs", time);
 				break;

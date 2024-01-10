@@ -16,13 +16,25 @@ namespace gproshan::rt {
 
 class embree : public raytracing
 {
+	public:
+		struct pc_opts
+		{
+			bool enable		= false;
+			bool normals	= false;
+			float radius	= 0.01;
+			int knn			= 0;
+
+			pc_opts() {};
+		};
+
 	protected:
 		struct ray_hit : public RTCRayHit
 		{
 			ray_hit(const vertex & p_org = {0, 0, 0},
 					const vertex & v_dir = {0, 0, 0},
 					float near = 1e-5f,
-					float far = 1e20f);
+					float far = 1e20f
+					);
 
 			vertex org() const;
 			vertex dir() const;
@@ -37,14 +49,11 @@ class embree : public raytracing
 		std::vector<CHE *> g_meshes;
 		scene_data sc;
 
-		float pc_radius = 0.01;
-
 	public:
 		embree();
 		embree(	const std::vector<che *> & meshes,
 				const std::vector<mat4> & model_mats,
-				const bool & pointcloud = false,
-				const float pcr = 0.01
+				const pc_opts & pc = pc_opts()
 				);
 		virtual ~embree();
 
@@ -55,13 +64,13 @@ class embree : public raytracing
 	protected:
 		void build_bvh(	const std::vector<che *> & meshes,
 						const std::vector<mat4> & model_mats,
-						const bool & pointcloud = false
+						const pc_opts & pc = pc_opts()
 						);
 
 		index_t add_sphere(const vec4 & xyzr);
 		index_t add_mesh(const che * mesh, const mat4 & model_mat);
 
-		virtual index_t add_pointcloud(const che * mesh, const mat4 & model_mat);
+		virtual index_t add_pointcloud(const che * mesh, const mat4 & model_mat, const pc_opts & pc);
 
 		virtual bool closesthit_radiance(	vertex & color,
 											vertex & attenuation,
