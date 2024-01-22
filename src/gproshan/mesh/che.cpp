@@ -169,6 +169,12 @@ const real_t * che::heatmap_ptr() const
 	return VHC;
 }
 
+real_t che::heatmap_scale(const index_t v) const
+{
+	assert(v < n_vertices);
+	return scale_hm * VHC[v];
+}
+
 real_t che::heatmap(const index_t v) const
 {
 	assert(v < n_vertices);
@@ -338,6 +344,7 @@ void che::update_heatmap(const real_t * hm)
 	}
 
 	memcpy(VHC, hm, n_vertices * sizeof(real_t));
+	scale_hm = normalize(VHC, n_vertices);
 }
 
 void che::update_normals()
@@ -1162,6 +1169,7 @@ che * che::load_mesh(const std::string & file_path)
 	if(extension == "ply") return new che_ply(file_path);
 	if(extension == "ptx") return new che_ptx(file_path);
 	if(extension == "xyz") return new che_xyz(file_path);
+	if(extension == "txt") return new che_xyz(file_path);
 	if(extension == "pts") return new che_pts(file_path);
 	if(extension == "pcd") return new che_pcd(file_path);
 

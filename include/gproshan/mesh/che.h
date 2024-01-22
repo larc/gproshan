@@ -2,6 +2,7 @@
 #define CHE_H
 
 #include <gproshan/include.h>
+#include <gproshan/util.h>
 #include <gproshan/geometry/vec.h>
 #include <gproshan/geometry/mat.h>
 
@@ -63,6 +64,7 @@ class che
 		vertex * VN		= nullptr;	///< vertex normals			: v		-> normal(v)
 		rgb_t * VC		= nullptr;	///< vertex color			: v		-> color(v)
 		real_t * VHC	= nullptr;	///< vertex color heatmap	: v		-> heatmap(v)
+		real_t scale_hm	= 1;		///< vertex color heatmap scale factor
 
 		bool manifold = true;
 
@@ -85,6 +87,7 @@ class che
 
 		// vertex color methods
 		const real_t * heatmap_ptr() const;
+		real_t heatmap_scale(const index_t v) const;
 		real_t heatmap(const index_t v) const;
 		real_t & heatmap(const index_t v);
 		const rgb_t * rgb_ptr() const;
