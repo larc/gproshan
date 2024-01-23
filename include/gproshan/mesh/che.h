@@ -87,6 +87,7 @@ class che
 
 		// vertex color methods
 		const real_t * heatmap_ptr() const;
+		real_t heatmap_scale() const;
 		void heatmap_scale(const real_t shm);
 		real_t heatmap_scale(const index_t v) const;
 		real_t heatmap(const index_t v) const;
