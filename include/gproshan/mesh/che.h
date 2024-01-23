@@ -87,6 +87,7 @@ class che
 
 		// vertex color methods
 		const real_t * heatmap_ptr() const;
+		void heatmap_scale(const real_t shm);
 		real_t heatmap_scale(const index_t v) const;
 		real_t heatmap(const index_t v) const;
 		real_t & heatmap(const index_t v);
@@ -215,6 +216,7 @@ struct CHE
 	vertex * GT	= nullptr;
 	vertex * VN	= nullptr;
 	che::rgb_t * VC	= nullptr;
+	real_t * VHC	= nullptr;
 	index_t * VT	= nullptr;
 	index_t * OT	= nullptr;
 	index_t * EVT	= nullptr;

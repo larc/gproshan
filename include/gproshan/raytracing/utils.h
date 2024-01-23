@@ -75,8 +75,9 @@ struct t_eval_hit
 {
 	index_t primID = NIL;
 	int illum = 1;
-	T dist = 0;
 	T u = 0, v = 0;
+	T dist = 0;
+	T heatmap = 0;
 	vec<T, 3> position;
 	vec<T, 3> normal;
 	vec<T, 3> Ka = 1;
@@ -101,6 +102,7 @@ struct t_eval_hit
 			Kd = {T(mesh.VC[aprimID].r), T(mesh.VC[aprimID].g), T(mesh.VC[aprimID].b)};
 			Kd /= 255;
 			normal = mesh.VN[aprimID];
+			heatmap = mesh.VHC[aprimID];
 			return;
 		}
 
@@ -116,6 +118,7 @@ struct t_eval_hit
 
 		Kd = ((1.f - u - v) * ca + u * cb + v * cc) / 255;
 		normal = (1.f - u - v) * mesh.VN[a] + u * mesh.VN[b] + v * mesh.VN[c];
+		heatmap = (1.f - u - v) * mesh.VHC[a] + u * mesh.VHC[b] + v * mesh.VHC[c];
 
 		if(!sc.trig_mat) return;
 		if(sc.trig_mat[primID] == NIL) return;

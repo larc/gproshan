@@ -169,6 +169,11 @@ const real_t * che::heatmap_ptr() const
 	return VHC;
 }
 
+void che::heatmap_scale(const real_t shm)
+{
+	scale_hm = shm;
+}
+
 real_t che::heatmap_scale(const index_t v) const
 {
 	assert(v < n_vertices);
@@ -1219,6 +1224,7 @@ CHE::CHE(const che * mesh)
 	GT = mesh->GT;
 	VN = mesh->VN;
 	VC = mesh->VC;
+	VHC = mesh->VHC;
 	VT = mesh->VT;
 	OT = mesh->OT;
 	EVT = mesh->EVT;
