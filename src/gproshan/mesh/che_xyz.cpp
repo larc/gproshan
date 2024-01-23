@@ -23,18 +23,21 @@ void che_xyz::read_file(const std::string & file)
 	float x, y, z;
 	unsigned char r, g, b;
 	size_t n;
+	real_t h;
 
 	std::vector<vertex> vertices;
 	std::vector<rgb_t> vertices_color;
+	std::vector<real_t> vertices_hm;
 
 	while(fgets(line, sizeof(line), fp))
 	{
 		sscanf(line, "%c", &c);
 		if(c == '#') continue;
 
-		n = sscanf(line, "%f %f %f %hhu %hhu %hhu", &x, &y, &z, &r, &g, &b);
+		n = sscanf(line, "%f %f %f %hhu %hhu %hhu %f", &x, &y, &z, &r, &g, &b, &h);
 		vertices.push_back({x, y, z});
-		vertices_color.push_back(n == 6 ? rgb_t{r, g, b} : rgb_t());
+		vertices_color.push_back(n > 5 ? rgb_t{r, g, b} : rgb_t());
+		vertices_hm.push_back(n > 6 ? h : 0.45);
 	}
 
 	fclose(fp);
@@ -42,6 +45,8 @@ void che_xyz::read_file(const std::string & file)
 	alloc(size(vertices), 0);
 	memcpy(GT, vertices.data(), n_vertices * sizeof(vertex));
 	memcpy(VC, vertices_color.data(), n_vertices * sizeof(rgb_t));
+
+	update_heatmap(vertices_hm.data());
 }
 
 void che_xyz::write_file(const che * mesh, const std::string & file, const bool & color)
@@ -60,6 +65,7 @@ void che_xyz::write_file(const che * mesh, const std::string & file, const bool 
 		{
 			const rgb_t c = mesh->rgb(i);
 			fprintf(fp, " %hhu %hhu %hhu", c.r, c.g, c.b);
+			fprintf(fp, " %f", mesh->heatmap_scale(i));
 		}
 		fprintf(fp, "\n");
 	}

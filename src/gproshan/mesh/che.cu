@@ -25,6 +25,9 @@ void cuda_create_CHE(CHE * h_che, CHE *& dd_che, CHE *& d_che, const bool & norm
 	{
 		cudaMalloc(&dd_che->VC, sizeof(che::rgb_t) * h_che->n_vertices);
 		cudaMemcpy(dd_che->VC, h_che->VC, sizeof(che::rgb_t) * h_che->n_vertices, cudaMemcpyHostToDevice);
+
+		cudaMalloc(&dd_che->VHC, sizeof(real_t) * h_che->n_vertices);
+		cudaMemcpy(dd_che->VHC, h_che->VHC, sizeof(real_t) * h_che->n_vertices, cudaMemcpyHostToDevice);
 	}
 
 	cudaMalloc(&dd_che->VT, sizeof(index_t) * h_che->n_half_edges);
@@ -45,6 +48,7 @@ void cuda_free_CHE(CHE *& dd_che, CHE *& d_che)
 	cudaFree(dd_che->GT);
 	cudaFree(dd_che->VN);
 	cudaFree(dd_che->VC);
+	cudaFree(dd_che->VHC);
 	cudaFree(dd_che->VT);
 	cudaFree(dd_che->OT);
 	cudaFree(dd_che->EVT);

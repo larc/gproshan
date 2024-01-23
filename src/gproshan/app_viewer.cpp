@@ -193,6 +193,8 @@ bool app_viewer::process_simulate_scanner(viewer * p_view)
 	static const size_t n_min = 100;
 	static const size_t n_max = 10000;
 	static vertex cam_pos = {0, 0, 0};
+	static bool dist_error = true;
+	static bool save_jpg = false;
 
 	if(size(view->sphere_points) != 1)
 	{
@@ -209,9 +211,14 @@ bool app_viewer::process_simulate_scanner(viewer * p_view)
 		view->sphere_points[0] = cam_pos;
 	}
 
+	ImGui::Checkbox("dist_error", &dist_error);
+	ImGui::Checkbox("save_jpg", &save_jpg);
+
 	if(ImGui::Button("Scan"))
 	{
-		che * ptx_mesh = scanner_ptx_jpg(mesh.rt_embree, n_rows, n_cols, cam_pos, mesh->filename);
+		che * ptx_mesh = save_jpg	? scanner_ptx_jpg(mesh.rt_embree, n_rows, n_cols, cam_pos, mesh->filename)
+									: scanner_ptx(mesh.rt_embree, n_rows, n_cols, cam_pos, dist_error);
+
 		che_ptx::write_file(ptx_mesh, mesh->filename, n_rows, n_cols);
 		ptx_mesh->filename = mesh->filename + ".ptx";
 		view->add_mesh(ptx_mesh);

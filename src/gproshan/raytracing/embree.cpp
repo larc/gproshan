@@ -87,26 +87,7 @@ index_t embree::closest_vertex(const vertex & org, const vertex & dir) const
 	ray_hit r(org, dir);
 	if(!intersect(r)) return NIL;
 
-	const CHE * mesh = g_meshes[r.hit.geomID];
-
-	if(!mesh->n_trigs) return r.hit.primID;
-
-	index_t he = che::mtrig * r.hit.primID;
-	float w = 1 - r.hit.u - r.hit.v;
-
-	if(w < r.hit.u)
-	{
-		he = che::mtrig * r.hit.primID + 1;
-		w = r.hit.u;
-	}
-
-	if(w < r.hit.v)
-	{
-		he = che::mtrig * r.hit.primID + 2;
-		w = r.hit.v;
-	}
-
-	return mesh->VT[he];
+	return closest_hit_vertex(*g_meshes[r.hit.geomID], r.hit);
 }
 
 eval_hit embree::intersect(const vertex & org, const vertex & dir, const bool & flat) const
