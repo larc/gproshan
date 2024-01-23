@@ -169,6 +169,11 @@ const real_t * che::heatmap_ptr() const
 	return VHC;
 }
 
+real_t che::heatmap_scale() const
+{
+	return scale_hm;
+}
+
 void che::heatmap_scale(const real_t shm)
 {
 	scale_hm = shm;
