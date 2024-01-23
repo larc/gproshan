@@ -263,6 +263,31 @@ vec<T, 3> ray_view_dir(	const uvec2 & pos,
 }
 
 
+template <class H>
+__host_device__
+index_t closest_hit_vertex(const CHE & mesh, const H & hit)
+{
+	if(!mesh.n_trigs) return hit.primID;
+
+	index_t he = 0;
+	real_t w = 1 - hit.u - hit.v;
+
+	if(w < hit.u)
+	{
+		he = 1;
+		w = hit.u;
+	}
+
+	if(w < hit.v)
+	{
+		he = 2;
+		w = hit.v;
+	}
+
+	return mesh.VT[hit.primID * 3 + he];
+}
+
+
 } // namespace gproshan
 
 #endif // RT_UTILS_H
