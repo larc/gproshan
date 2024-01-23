@@ -83,6 +83,25 @@ void copy_real_t_array(double * destination, const float * source, const size_t 
 void copy_real_t_array(double * destination, const double * source, const size_t n_elem);
 
 
+template <class T>
+T normalize(T * data, const size_t n_elem)
+{
+	T max = 0;
+
+	#pragma omp parallel for reduction(std::max: max)
+	for(index_t i = 0; i < n_elem; ++i)
+		max = std::max(max, data[i]);
+
+	if(max <= 1) return 1;
+
+	#pragma omp parallel for
+	for(index_t i = 0; i < n_elem; ++i)
+		data[i] /= max;
+
+	return max;
+}
+
+
 } // namespace gproshan
 
 #endif // UTIL_H
