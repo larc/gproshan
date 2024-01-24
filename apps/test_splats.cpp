@@ -45,7 +45,7 @@ int main()
 	while(fscanf(fp, "%s", str) != EOF)
 	{
 		fscanf(fp, "%p %s %lu %*d %u", &r.view, str, &r.mnv, &rt);
-		if(rt < 4)
+		if(rt < 3)
 		{
 			fscanf(fp, "%*f");
 			continue;
@@ -55,7 +55,7 @@ int main()
 		fscanf(fp, "%lf %lf %lf %lf %lf", &r.tknn, &r.tseg, &r.tvor, &r.tisp, &r.time);
 
 		if(set_pcs.contains(str))
-			table[rt - 4][str] = r;
+			table[rt - 3][str] = r;
 	}
 
 	fclose(fp);
