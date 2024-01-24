@@ -1104,9 +1104,6 @@ bool viewer::m_setup_raytracing(viewer * view)
 			snprintf(histogram, sizeof(histogram), "histogram_%p", splat_test);
 			splat_test->save_histogram(tmp_file_path(histogram));
 		}
-
-		if(rt == 3) delete splat_test;
-		splat_test = nullptr;
 	}
 
 	return true;

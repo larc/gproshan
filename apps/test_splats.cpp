@@ -45,7 +45,7 @@ int main()
 	while(fscanf(fp, "%s", str) != EOF)
 	{
 		fscanf(fp, "%p %s %lu %*d %u", &r.view, str, &r.mnv, &rt);
-		if(rt < 3)
+		if(rt < 3 || rt > 4)
 		{
 			fscanf(fp, "%*f");
 			continue;
