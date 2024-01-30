@@ -62,8 +62,11 @@ extern "C" __global__ void __closesthit__radiance()
 	const vertex dir = {d.x, d.y, d.z};
 	const vertex x = (1.f - bar.x - bar.y) * A + bar.x * B + bar.y * C;
 
+	const float dist = (float) optixGetPayload_3() + length(x - org);
+	optixSetPayload_3((unsigned int) dist);
+
 	eval_hit hit;
-	const float w = splat_hit(hit, mesh, splats_pcs[sbtID], primID, x, dir, length(x - org));
+	const float w = splat_hit(hit, mesh, splats_pcs[sbtID], primID, x, dir, dist);
 
 	vec3 * trace = ray_data<vec3>();
 	vec3 & color		= trace[0];
@@ -106,7 +109,7 @@ extern "C" __global__ void __closesthit__radiance()
 	if(!hit.scatter_diffuse(ray_dir, rnd))
 		attenuation = 0;
 
-	attenuation *= 0.75f;
+	attenuation /= 2;
 	optixSetPayload_2(rnd);
 }
 
@@ -149,6 +152,7 @@ extern "C" __global__ void __raygen__render_frame()
 	vec3 & ray_dir		= trace[3];
 
 	uint32_t u0, u1;
+	unsigned int dist;
 
 	do
 	{
@@ -156,6 +160,8 @@ extern "C" __global__ void __raygen__render_frame()
 		attenuation = 1;
 		position	= optix_params.cam_pos;
 		ray_dir		= ray_view_dir(pos, optix_params.window_size, optix_params.inv_proj_view, optix_params.cam_pos, rnd);
+
+		dist = 0;
 
 		depth = optix_params.depth;
 		do
@@ -172,7 +178,7 @@ extern "C" __global__ void __raygen__render_frame()
 						0,	// SBT offset
 						2,	// SBT stride
 						0,	// missSBTIndex
-						u0, u1, (unsigned int &) rnd);
+						u0, u1, (unsigned int &) rnd, dist);
 
 			if(!u0) break;	// miss
 			color_acc += color;
