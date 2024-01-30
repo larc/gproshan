@@ -785,7 +785,7 @@ void msparse_coding::load_features(std::vector<index_t> & v_feat, size_t & feats
 	inp.close();
 }
 
-void msparse_coding::init_patches(const bool & reset, const fmask_t & mask)
+void msparse_coding::init_patches(const bool reset, const fmask_t & mask)
 {
 	gproshan_log(MDICT);
 

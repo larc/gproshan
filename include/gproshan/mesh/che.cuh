@@ -8,7 +8,7 @@
 namespace gproshan {
 
 
-void cuda_create_CHE(CHE * h_che, CHE *& dd_che, CHE *& d_che, const bool & normal = false, const bool & color = false);
+void cuda_create_CHE(CHE * h_che, CHE *& dd_che, CHE *& d_che, const bool normal = false, const bool color = false);
 
 void cuda_free_CHE(CHE *& dd_che, CHE *& d_che);
 

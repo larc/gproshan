@@ -58,7 +58,7 @@ class optix : public raytracing
 		optix(const std::vector<che *> & meshes, const std::vector<mat4> & model_mats);
 		~optix();
 
-		void render(vec4 * img, const render_params & params, const bool & flat);
+		void render(vec4 * img, const render_params & params, const bool flat);
 
 	protected:
 		void create_raygen_programs();

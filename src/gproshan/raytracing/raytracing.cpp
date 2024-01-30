@@ -7,7 +7,7 @@
 namespace gproshan::rt {
 
 
-void raytracing::render(vec4 * img, const render_params & params, const bool & flat)
+void raytracing::render(vec4 * img, const render_params & params, const bool flat)
 {
 	uvec2 window_size = params.window_size;
 	if(params.viewport_is_window)
@@ -17,8 +17,9 @@ void raytracing::render(vec4 * img, const render_params & params, const bool & f
 	unsigned int samples = params.n_samples;
 
 	vec3 color_acc, color, attenuation, position, ray_dir;
+	float dist;
 
-	#pragma omp parallel for private(depth, samples, color_acc, color, attenuation, position, ray_dir)
+	#pragma omp parallel for private(depth, samples, color_acc, color, attenuation, position, ray_dir, dist)
 	for(unsigned int i = 0; i < params.viewport_size.x(); ++i)
 	for(unsigned int j = 0; j < params.viewport_size.y(); ++j)
 	{
@@ -35,11 +36,12 @@ void raytracing::render(vec4 * img, const render_params & params, const bool & f
 			attenuation = 1;
 			position	= params.cam_pos;
 			ray_dir		= ray_view_dir(pos, window_size, params.inv_proj_view, params.cam_pos, rnd);
+			dist		= 0;
 
 			depth = params.depth;
 			do
 			{
-				if(!closesthit_radiance(color, attenuation, position, ray_dir, rnd, params, flat))
+				if(!closesthit_radiance(color, attenuation, position, ray_dir, dist, rnd, params, flat))
 					break;
 
 				color_acc += color;

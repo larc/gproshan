@@ -90,7 +90,7 @@ index_t embree::closest_vertex(const vertex & org, const vertex & dir) const
 	return closest_hit_vertex(*g_meshes[r.hit.geomID], r.hit);
 }
 
-eval_hit embree::intersect(const vertex & org, const vertex & dir, const bool & flat) const
+eval_hit embree::intersect(const vertex & org, const vertex & dir, const bool flat) const
 {
 	ray_hit r(org, dir);
 	if(!intersect(r)) return {};
@@ -250,9 +250,10 @@ bool embree::closesthit_radiance(	vertex & color,
 									vertex & attenuation,
 									vertex & position,
 									vertex & ray_dir,
+									float &,
 									random<real_t> & rnd,
 									const render_params & params,
-									const bool & flat
+									const bool flat
 									) const
 {
 	ray_hit r(position, ray_dir);

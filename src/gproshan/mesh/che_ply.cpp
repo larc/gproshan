@@ -252,7 +252,7 @@ void che_ply::read_file(const std::string & file)
 	memcpy(VT, trigs.data(), size(trigs) * sizeof(index_t));
 }
 
-void che_ply::write_file(const che * mesh, const std::string & file, const bool & color)
+void che_ply::write_file(const che * mesh, const std::string & file, const bool color)
 {
 	FILE * fp = fopen((file + ".ply").c_str(), "wb");
 	assert(fp);

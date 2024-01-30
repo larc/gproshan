@@ -67,7 +67,7 @@ quaternion camera::current_rotation() const
 	return p_drag * p_click.conj() * r_last;
 }
 
-void camera::mouse(const bool & press, const double x, const double y, const int w, const int h)
+void camera::mouse(const bool press, const double x, const double y, const int w, const int h)
 {
 	if(press)
 	{
