@@ -12,7 +12,7 @@
 namespace gproshan {
 
 
-double parallel_toplesets_propagation_gpu(const ptp_out_t & ptp_out, const che * mesh, const std::vector<index_t> & sources, const toplesets_t & toplesets, const bool & coalescence, const bool & set_inf)
+double parallel_toplesets_propagation_gpu(const ptp_out_t & ptp_out, const che * mesh, const std::vector<index_t> & sources, const toplesets_t & toplesets, const bool coalescence, const bool set_inf)
 {
 	CHE h_mesh(mesh);
 	const size_t n_vertices = h_mesh.n_vertices;

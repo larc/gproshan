@@ -58,7 +58,7 @@ class embree : public raytracing
 		virtual ~embree();
 
 		virtual index_t closest_vertex(const vertex & org, const vertex & dir) const;
-		virtual eval_hit intersect(const vertex & org, const vertex & dir, const bool & flat = true) const;
+		virtual eval_hit intersect(const vertex & org, const vertex & dir, const bool flat = true) const;
 
 
 	protected:
@@ -76,9 +76,10 @@ class embree : public raytracing
 											vertex & attenuation,
 											vertex & position,
 											vertex & ray_dir,
+											real_t & dist,
 											random<real_t> & rnd,
 											const render_params & params,
-											const bool & flat
+											const bool flat
 											) const;
 
 		float intersect_depth(const vertex & org, const vertex & dir) const;

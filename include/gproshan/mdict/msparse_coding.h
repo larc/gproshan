@@ -88,7 +88,7 @@ class msparse_coding
 		void sparse_coding();
 		void init_sampling();
 		void load_features(std::vector<index_t> & v_feat, size_t & featsize);
-		void init_patches(	const bool & reset = 1,
+		void init_patches(	const bool reset = 1,
 							const fmask_t & mask = nullptr
 							);
 

@@ -136,6 +136,7 @@ extern "C" __global__ void __raygen__render_frame()
 	vec3 & ray_dir		= trace[3];
 
 	uint32_t u0, u1;
+	unsigned int dist;
 
 	do
 	{
@@ -143,6 +144,8 @@ extern "C" __global__ void __raygen__render_frame()
 		attenuation = 1;
 		position	= optix_params.cam_pos;
 		ray_dir		= ray_view_dir(pos, optix_params.window_size, optix_params.inv_proj_view, optix_params.cam_pos, rnd);
+
+		dist = 0;
 
 		depth = optix_params.depth;
 		do
@@ -159,7 +162,7 @@ extern "C" __global__ void __raygen__render_frame()
 						0,	// SBT offset
 						2,	// SBT stride
 						0,	// missSBTIndex
-						u0, u1, (unsigned int &) rnd);
+						u0, u1, (unsigned int &) rnd, dist);
 
 			if(!u0) break;	// miss
 			color_acc += color;

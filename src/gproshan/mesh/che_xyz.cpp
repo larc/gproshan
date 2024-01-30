@@ -49,7 +49,7 @@ void che_xyz::read_file(const std::string & file)
 	update_heatmap(vertices_hm.data());
 }
 
-void che_xyz::write_file(const che * mesh, const std::string & file, const bool & color)
+void che_xyz::write_file(const che * mesh, const std::string & file, const bool color)
 {
 	FILE * fp = fopen((file + ".xyz").c_str(), "w");
 	assert(fp);

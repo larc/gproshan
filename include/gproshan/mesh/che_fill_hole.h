@@ -18,7 +18,7 @@ struct border_t
 
 	border_t() = default;
 
-	border_t(const std::vector<a_vec> & V, const index_t _v, const std::array<index_t, 2> & neighbors, const bool & o):
+	border_t(const std::vector<a_vec> & V, const index_t _v, const std::array<index_t, 2> & neighbors, const bool o):
 	v(_v)
 	{
 		index_t p_v = neighbors[!o];
@@ -38,7 +38,7 @@ struct border_t
 		if(theta < 0) theta += 2 * M_PI;
 	}
 
-	a_vec new_vertex(const std::vector<a_vec> & V, real_t div, const real_t length, const std::array<index_t, 2> & neighbors, const bool & o)
+	a_vec new_vertex(const std::vector<a_vec> & V, real_t div, const real_t length, const std::array<index_t, 2> & neighbors, const bool o)
 	{
 		index_t p_v = neighbors[!o];
 		index_t n_v = neighbors[o];
@@ -56,7 +56,7 @@ struct border_t
 		return r;
 	}
 
-	border_t(const std::vector<a_vec> & V, const index_t _v, const std::array<index_t, 2> & neighbors, const bool & o, const a_vec & normal):
+	border_t(const std::vector<a_vec> & V, const index_t _v, const std::array<index_t, 2> & neighbors, const bool o, const a_vec & normal):
 	v(_v)
 	{
 		index_t p_v = neighbors[!o];
@@ -81,7 +81,7 @@ struct border_t
 		if(theta < 0) theta += 2 * M_PI;
 	}
 
-	a_vec new_vertex(const std::vector<a_vec> & V, real_t div, const real_t length, const std::array<index_t, 2> & neighbors, const bool & o, const a_vec & normal)
+	a_vec new_vertex(const std::vector<a_vec> & V, real_t div, const real_t length, const std::array<index_t, 2> & neighbors, const bool o, const a_vec & normal)
 	{
 		index_t p_v = neighbors[!o];
 		index_t n_v = neighbors[o];
