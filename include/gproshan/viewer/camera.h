@@ -33,7 +33,7 @@ class camera
 		mat4 perspective();
 		mat4 look_at(const quaternion & r);
 		quaternion current_rotation() const;
-		void mouse(const bool & press, const double x, const double y, const int w, const int h);
+		void mouse(const bool press, const double x, const double y, const int w, const int h);
 		void motion(const double x, const double y, const int w, const int h);
 		void zoom_in();
 		void zoom_out();

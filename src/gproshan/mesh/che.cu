@@ -5,7 +5,7 @@
 namespace gproshan {
 
 
-void cuda_create_CHE(CHE * h_che, CHE *& dd_che, CHE *& d_che, const bool & normal, const bool & color)
+void cuda_create_CHE(CHE * h_che, CHE *& dd_che, CHE *& d_che, const bool normal, const bool color)
 {
 	dd_che = new CHE;
 	dd_che->n_vertices = h_che->n_vertices;

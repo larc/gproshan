@@ -26,7 +26,7 @@ void che_obj::read_file(const std::string & file)
 		VT[i] = p.trigs[i].x();
 }
 
-void che_obj::write_file(const che * mesh, const std::string & file, const bool & color, const bool & pointcloud)
+void che_obj::write_file(const che * mesh, const std::string & file, const bool color, const bool pointcloud)
 {
 	FILE * fp = fopen((file + ".obj").c_str(), "w");
 	assert(fp);

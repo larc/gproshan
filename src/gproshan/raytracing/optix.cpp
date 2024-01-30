@@ -123,7 +123,7 @@ optix::~optix()
 		cudaFree(data);
 }
 
-void optix::render(vec4 * img, const render_params & params, const bool & flat)
+void optix::render(vec4 * img, const render_params & params, const bool flat)
 {
 	optix_params.depth = params.depth;
 	optix_params.n_frames = params.n_frames;

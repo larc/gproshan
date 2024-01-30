@@ -19,7 +19,7 @@ void basis_dct::discrete(a_mat & phi, const a_vec & x, const a_vec & y)
 		phi.col(k) = dct(x, y, nx, ny);
 }
 
-void basis_dct::d_discrete(a_mat & phi, const a_vec & x, const a_vec & y, const bool & b)
+void basis_dct::d_discrete(a_mat & phi, const a_vec & x, const a_vec & y, const bool b)
 {
 	assert(phi.n_cols == _dim);
 

@@ -18,7 +18,7 @@ class raytracing
 		raytracing() = default;
 		virtual ~raytracing() = default;
 
-		virtual void render(vec4 * img, const render_params & params, const bool & flat);
+		virtual void render(vec4 * img, const render_params & params, const bool flat);
 
 		virtual std::vector<float> raycaster(	const uvec2 & windows_size,
 												const mat4 & inv_proj_view,
@@ -28,7 +28,7 @@ class raytracing
 
 		virtual eval_hit intersect(	const vertex &,	// org
 									const vertex &,	//dir
-									[[maybe_unused]] const bool & flat = true
+									[[maybe_unused]] const bool flat = true
 									) const { return {}; }
 
 		virtual index_t closest_vertex(	const vertex &,	// org,
@@ -40,9 +40,10 @@ class raytracing
 											vertex &,				// attenuation,
 											vertex &,				// position,
 											vertex &,				// ray_dir,
+											real_t &,				// dist
 											random<real_t> &,		// rnd,
 											const render_params &,	// params,
-											const bool &			// flat
+											const bool			// flat
 											) const { return false; };
 
 		virtual float intersect_depth(	const vertex &,	// org,

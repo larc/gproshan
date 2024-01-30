@@ -81,7 +81,7 @@ void che_off::read_file(const std::string & file)
 	memcpy(VT, trigs.data(), size(trigs) * sizeof(index_t));
 }
 
-void che_off::write_file(const che * mesh, const std::string & file, const che_off::type & off, const bool & pointcloud)
+void che_off::write_file(const che * mesh, const std::string & file, const che_off::type & off, const bool pointcloud)
 {
 	static const char * str_off[] = {"OFF", "NOFF", "COFF", "NCOFF"};
 

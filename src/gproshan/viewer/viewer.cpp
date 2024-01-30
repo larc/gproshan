@@ -545,7 +545,7 @@ int viewer::add_process(const char * name, const function_t & f, const int key)
 	return fkey;
 }
 
-bool viewer::add_mesh(che * p_mesh, const bool & reset_normals)
+bool viewer::add_mesh(che * p_mesh, const bool reset_normals)
 {
 	if(size(meshes) == max_meshes)
 		return false;
