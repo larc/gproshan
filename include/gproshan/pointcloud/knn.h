@@ -64,6 +64,9 @@ class k3tree
 };
 
 
+real_t pc_median_pairwise_distant(const point * pc, const size_t n_points, const mat4 & model_mat = mat4::identity());
+
+
 } // namespace gproshan
 
 #endif // KNN_H
