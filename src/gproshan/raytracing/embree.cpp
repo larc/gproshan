@@ -217,15 +217,18 @@ index_t embree::add_pointcloud(const che * mesh, const mat4 & model_mat, const p
 
 
 	knn::k3tree * nn = !pc.knn	? nullptr
-								: new knn::k3tree(&mesh->point(0), mesh->n_vertices, pc.knn);
+								: new knn::k3tree(&mesh->point(0), mesh->n_vertices, pc.knn + 1);
 
 
 	#pragma omp parallel for
 	for(index_t i = 0; i < mesh->n_vertices; ++i)
-	{
 		pxyzr[i] = model_mat * (mesh->point(i), 1);
-		pxyzr[i][3] = nn ? length(model_mat * (mesh->point(i), 1) - model_mat * (mesh->point((*nn)(i, pc.knn - 1)), 1)) : pc.radius;
-	}
+
+	const real_t r = pc.radius < 0 && !nn ? knn::pc_median_pairwise_distant(&mesh->point(0), mesh->n_vertices, model_mat) : pc.radius;
+
+	#pragma omp parallel for
+	for(index_t i = 0; i < mesh->n_vertices; ++i)
+		pxyzr[i][3] = nn ? length(model_mat * (mesh->point(i) - mesh->point((*nn)(i, pc.knn)), 0)) : r;
 
 
 	delete nn;

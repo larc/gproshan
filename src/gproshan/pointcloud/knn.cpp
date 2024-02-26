@@ -124,5 +124,21 @@ int k3tree::operator () (const index_t i, const index_t j) const
 }
 
 
+real_t pc_median_pairwise_distant(const point * pc, const size_t n_points, const mat4 & model_mat)
+{
+	k3tree p2nn(pc, n_points, 2);
+
+	std::vector<real_t> dist(n_points);
+
+	#pragma omp parallel for
+	for(index_t i = 0; i < n_points; ++i)
+		dist[i] = length(model_mat * (pc[i] - pc[p2nn(i, 1)], 0));
+
+	std::ranges::sort(dist);
+
+	return dist[size(dist) >> 1];
+}
+
+
 } // namespace gproshan
 
