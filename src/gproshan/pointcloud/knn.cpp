@@ -71,8 +71,11 @@ std::vector<index_t> grid::operator () (const point & p, int k) const
 }
 
 
-///< Implementation using flann, by default compute all knn
 k3tree::k3tree(const point * pc, const size_t n_points, const size_t k, const std::vector<point> & query)
+		: k3tree(pc, n_points, size(query) ? query.data() : nullptr, size(query), k) {}
+
+///< Implementation using flann, by default compute all knn
+k3tree::k3tree(const point * pc, const size_t n_points, const point * query, const size_t n_query, const size_t k)
 {
 	double time_build, time_query;
 
@@ -84,8 +87,8 @@ k3tree::k3tree(const point * pc, const size_t n_points, const size_t k, const st
 	gproshan_log_var(time_build);
 
 	TIC(time_query);
-		const point * q = size(query) ? query.data() : pc;
-		const size_t n_results = size(query) ? size(query) : n_points;
+		const point * q = query && n_query ? query : pc;
+		const size_t n_results = query && n_query ? n_query : n_points;
 
 		flann::Matrix<real_t> mq((real_t *) q, n_results, 3);
 
