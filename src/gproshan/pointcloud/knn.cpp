@@ -145,13 +145,13 @@ real_t mean_knn_distant(const point * pc, const size_t n_points, const size_t k,
 
 real_t median_knn_distant(const point * pc, const size_t n_points, const size_t k, const mat4 & model_mat)
 {
-	k3tree p2nn(pc, n_points, k + 1);
+	k3tree nn(pc, n_points, k + 1);
 
 	std::vector<real_t> dist(n_points);
 
 	#pragma omp parallel for
 	for(index_t i = 0; i < n_points; ++i)
-		dist[i] = length(model_mat * (pc[i] - pc[p2nn(i, k)], 0));
+		dist[i] = length(model_mat * (pc[i] - pc[nn(i, k)], 0));
 
 	std::ranges::sort(dist);
 
@@ -160,13 +160,13 @@ real_t median_knn_distant(const point * pc, const size_t n_points, const size_t 
 
 real_t median_median_knn_distant(const point * pc, const size_t n_points, const size_t k, const mat4 & model_mat)
 {
-	k3tree p2nn(pc, n_points, k + 1);
+	k3tree nn(pc, n_points, k + 1);
 
 	std::vector<real_t> dist(n_points);
 
 	#pragma omp parallel for
 	for(index_t i = 0; i < n_points; ++i)
-		dist[i] = length(model_mat * (pc[i] - pc[p2nn(i, (k >> 1) + 1)], 0));
+		dist[i] = length(model_mat * (pc[i] - pc[nn(i, (k >> 1) + 1)], 0));
 
 	std::ranges::sort(dist);
 
@@ -192,7 +192,7 @@ real_t mean_median_knn_distant(const point * pc, const size_t n_points, const si
 
 real_t median_mean_knn_distant(const point * pc, const size_t n_points, const size_t k, const mat4 & model_mat)
 {
-	k3tree p2nn(pc, n_points, k + 1);
+	k3tree nn(pc, n_points, k + 1);
 
 	std::vector<real_t> dist(n_points);
 
@@ -201,7 +201,7 @@ real_t median_mean_knn_distant(const point * pc, const size_t n_points, const si
 	{
 		real_t mean = 0;
 		for(index_t j = 1; j <= k; ++j)
-			mean += length(model_mat * (pc[i] - pc[p2nn(i, j)], 0));
+			mean += length(model_mat * (pc[i] - pc[nn(i, j)], 0));
 
 		dist[i] = mean / k;
 	}
@@ -213,7 +213,7 @@ real_t median_mean_knn_distant(const point * pc, const size_t n_points, const si
 
 real_t mean_mean_knn_distant(const point * pc, const size_t n_points, const size_t k, const mat4 & model_mat)
 {
-	k3tree p2nn(pc, n_points, k + 1);
+	k3tree nn(pc, n_points, k + 1);
 
 	real_t mean_mean = 0;
 
@@ -222,7 +222,7 @@ real_t mean_mean_knn_distant(const point * pc, const size_t n_points, const size
 	{
 		real_t mean = 0;
 		for(index_t j = 1; j <= k; ++j)
-			mean += length(model_mat * (pc[i] - pc[p2nn(i, j)], 0));
+			mean += length(model_mat * (pc[i] - pc[nn(i, j)], 0));
 
 		#pragma omp atomic
 		mean_mean += mean / k;
@@ -233,39 +233,76 @@ real_t mean_mean_knn_distant(const point * pc, const size_t n_points, const size
 
 real_t mean_knn_area_radius(const point * pc, const size_t n_points, const size_t k, const mat4 & model_mat)
 {
-	k3tree p2nn(pc, n_points, k + 1);
+	k3tree nn(pc, n_points, k + 1);
 
 	real_t mean_r = 0;
 
 	#pragma omp parallel for
 	for(index_t i = 0; i < n_points; ++i)
 	{
-		real_t r = length(model_mat * (pc[i] - pc[p2nn(i, k)], 0));
+		real_t r = length(model_mat * (pc[i] - pc[nn(i, k)], 0));
 
 		#pragma omp atomic
-		mean_r += r * r / k;
+		mean_r += sqrt(r * r / k);
 	}
+
+	gproshan_log_var(mean_r);
 
 	return mean_r / n_points;
 }
 
 real_t median_knn_area_radius(const point * pc, const size_t n_points, const size_t k, const mat4 & model_mat)
 {
-	k3tree p2nn(pc, n_points, k + 1);
+	k3tree nn(pc, n_points, k + 1);
 
 	std::vector<real_t> radius(n_points);
 
 	#pragma omp parallel for
 	for(index_t i = 0; i < n_points; ++i)
 	{
-		real_t r = length(model_mat * (pc[i] - pc[p2nn(i, k)], 0));
+		real_t r = length(model_mat * (pc[i] - pc[nn(i, k)], 0));
 
-		radius[i] = r * r / k;
+		radius[i] = sqrt(r * r / k);
 	}
 
 	std::ranges::sort(radius);
 
+
 	return radius[size(radius) >> 1];
+}
+
+
+const char * radius_str(void *, int opt)
+{
+	static const char * str[] = {	"none",
+									"mean_knn_distant",
+									"median_knn_distant",
+									"median_median_knn_distant",
+									"mean_median_knn_distant",
+									"median_mean_knn_distant",
+									"mean_median_knn_distant",
+									"mean_knn_area_radius",
+									"median_knn_area_radius"
+									};
+
+	return str[opt];
+}
+
+real_t radius(const int opt, const point * pc, const size_t n_points, const size_t k, const mat4 & model_mat)
+{
+	using fknn = real_t (*) (const point *, const size_t, const size_t, const mat4 &);
+	static const fknn f[] = {	nullptr,
+								mean_knn_distant,
+								median_knn_distant,
+								median_median_knn_distant,
+								mean_median_knn_distant,
+								median_mean_knn_distant,
+								mean_median_knn_distant,
+								mean_knn_area_radius,
+								median_knn_area_radius
+								};
+
+	return opt ? f[opt](pc, n_points, k, model_mat) : 0;
 }
 
 

@@ -75,6 +75,11 @@ real_t mean_knn_area_radius(const point * pc, const size_t n_points, const size_
 real_t median_knn_area_radius(const point * pc, const size_t n_points, const size_t k = 8, const mat4 & model_mat = mat4::identity());
 
 
+const char * radius_str(void *, int opt);
+
+real_t radius(const int opt, const point * pc, const size_t n_points, const size_t k = 8, const mat4 & model_mat = mat4::identity());
+
+
 } // namespace gproshan
 
 #endif // KNN_H

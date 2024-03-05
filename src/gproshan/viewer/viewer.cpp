@@ -14,6 +14,7 @@
 #include <gproshan/mesh/che_xyz.h>
 #include <gproshan/mesh/che_pts.h>
 #include <gproshan/mesh/che_pcd.h>
+#include <gproshan/pointcloud/knn.h>
 #include <gproshan/viewer/scene_viewer.h>
 #include <gproshan/viewer/glfw_keys.h>
 
@@ -978,6 +979,7 @@ bool viewer::m_setup_raytracing(viewer * view)
 	static int rt = 0;
 	static double time = 0;
 	static rt::embree::pc_opts pc;
+	static int opt_radius = 0;
 
 	ImGui::SliderInt("depth", (int *) &view->render_params.depth, 1, 1 << 5);
 	ImGui::SliderInt("n_samples", (int *) &view->render_params.n_samples, 1, 1 << 5);
@@ -986,8 +988,15 @@ bool viewer::m_setup_raytracing(viewer * view)
 	if(rt == R_EMBREE && (mesh.render_pointcloud || mesh->is_pointcloud()))
 	{
 		ImGui::Indent();
-		ImGui::SliderInt("pc.knn", &pc.knn, 0, 1 << 5);
+		ImGui::SliderInt("pc.knn", &pc.knn, 0, 1 << 6);
 		ImGui::SliderFloat("pc.radius", &pc.radius, 0, 1);
+		if(ImGui::Combo("knn_radius", &opt_radius, knn::radius_str, nullptr, 9, 10))
+		{
+			pc.radius = knn::radius(opt_radius, &mesh->point(0), mesh->n_vertices, pc.knn, mesh.model_mat);
+			gproshan_error_var(opt_radius);
+			gproshan_error_var(pc.radius);
+		}
+		ImGui::Checkbox("pc.knn_area", &pc.knn_area);
 		ImGui::Checkbox("pc.normals", &pc.normals);
 		ImGui::Unindent();
 	}

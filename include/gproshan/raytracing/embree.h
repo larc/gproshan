@@ -22,7 +22,9 @@ class embree : public raytracing
 			bool enable		= false;
 			bool normals	= false;
 			float radius	= 0.01;
+			bool knn_area	= true;
 			int knn			= 0;
+
 
 			pc_opts() {};
 		};
