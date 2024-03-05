@@ -96,7 +96,7 @@ k3tree::k3tree(const point * pc, const size_t n_points, const point * query, con
 		flann::Matrix dists(new real_t[n_results * k], n_results, k);
 
 		flann::SearchParams params;
-		params.cores = 16;
+		params.cores = 0;
 		index.knnSearch(mq, indices, dists, k, params);
 	TOC(time_query);
 	gproshan_log_var(time_query);
@@ -127,41 +127,145 @@ int k3tree::operator () (const index_t i, const index_t j) const
 }
 
 
-real_t pc_median_pairwise_distant(const point * pc, const size_t n_points, const mat4 & model_mat)
+real_t mean_knn_distant(const point * pc, const size_t n_points, const size_t k, const mat4 & model_mat)
 {
-	k3tree p2nn(pc, n_points, 2);
+	k3tree p2nn(pc, n_points, k + 1);
+
+	real_t mean = 0;
+
+	#pragma omp parallel for
+	for(index_t i = 0; i < n_points; ++i)
+	{
+		#pragma omp atomic
+		mean += length(model_mat * (pc[i] - pc[p2nn(i, k)], 0));
+	}
+
+	return mean / n_points;
+}
+
+real_t median_knn_distant(const point * pc, const size_t n_points, const size_t k, const mat4 & model_mat)
+{
+	k3tree p2nn(pc, n_points, k + 1);
 
 	std::vector<real_t> dist(n_points);
 
 	#pragma omp parallel for
 	for(index_t i = 0; i < n_points; ++i)
-		dist[i] = length(model_mat * (pc[i] - pc[p2nn(i, 1)], 0));
+		dist[i] = length(model_mat * (pc[i] - pc[p2nn(i, k)], 0));
 
 	std::ranges::sort(dist);
 
 	return dist[size(dist) >> 1];
 }
 
-real_t pc_mean_median_knn_distant(const point * pc, const size_t n_points, const size_t k, const mat4 & model_mat)
+real_t median_median_knn_distant(const point * pc, const size_t n_points, const size_t k, const mat4 & model_mat)
+{
+	k3tree p2nn(pc, n_points, k + 1);
+
+	std::vector<real_t> dist(n_points);
+
+	#pragma omp parallel for
+	for(index_t i = 0; i < n_points; ++i)
+		dist[i] = length(model_mat * (pc[i] - pc[p2nn(i, (k >> 1) + 1)], 0));
+
+	std::ranges::sort(dist);
+
+	return dist[size(dist) >> 1];
+}
+
+
+real_t mean_median_knn_distant(const point * pc, const size_t n_points, const size_t k, const mat4 & model_mat)
 {
 	k3tree nn(pc, n_points, k + 1);
 
-	std::vector<real_t> dist(k);
 	real_t mean = 0;
 
-	#pragma omp parallel for firstprivate(dist)
+	#pragma omp parallel for
 	for(index_t i = 0; i < n_points; ++i)
 	{
-		for(index_t j = 0; j < k; ++j)
-			dist[j] = length(model_mat * (pc[i] - pc[nn(i, j + 1)], 0));
-
-		std::ranges::sort(dist);
-
 		#pragma omp atomic
-		mean += dist[k >> 1];
+		mean += length(model_mat * (pc[i] - pc[nn(i, (k >> 1) + 1)], 0));
 	}
 
 	return mean / n_points;
+}
+
+real_t median_mean_knn_distant(const point * pc, const size_t n_points, const size_t k, const mat4 & model_mat)
+{
+	k3tree p2nn(pc, n_points, k + 1);
+
+	std::vector<real_t> dist(n_points);
+
+	#pragma omp parallel for
+	for(index_t i = 0; i < n_points; ++i)
+	{
+		real_t mean = 0;
+		for(index_t j = 1; j <= k; ++j)
+			mean += length(model_mat * (pc[i] - pc[p2nn(i, j)], 0));
+
+		dist[i] = mean / k;
+	}
+
+	std::ranges::sort(dist);
+
+	return dist[size(dist) >> 1];
+}
+
+real_t mean_mean_knn_distant(const point * pc, const size_t n_points, const size_t k, const mat4 & model_mat)
+{
+	k3tree p2nn(pc, n_points, k + 1);
+
+	real_t mean_mean = 0;
+
+	#pragma omp parallel for
+	for(index_t i = 0; i < n_points; ++i)
+	{
+		real_t mean = 0;
+		for(index_t j = 1; j <= k; ++j)
+			mean += length(model_mat * (pc[i] - pc[p2nn(i, j)], 0));
+
+		#pragma omp atomic
+		mean_mean += mean / k;
+	}
+
+	return mean_mean / n_points;
+}
+
+real_t mean_knn_area_radius(const point * pc, const size_t n_points, const size_t k, const mat4 & model_mat)
+{
+	k3tree p2nn(pc, n_points, k + 1);
+
+	real_t mean_r = 0;
+
+	#pragma omp parallel for
+	for(index_t i = 0; i < n_points; ++i)
+	{
+		real_t r = length(model_mat * (pc[i] - pc[p2nn(i, k)], 0));
+
+		#pragma omp atomic
+		mean_r += r * r / k;
+	}
+
+	return mean_r / n_points;
+}
+
+real_t median_knn_area_radius(const point * pc, const size_t n_points, const size_t k, const mat4 & model_mat)
+{
+	k3tree p2nn(pc, n_points, k + 1);
+
+	std::vector<real_t> radius(n_points);
+
+	#pragma omp parallel for
+	for(index_t i = 0; i < n_points; ++i)
+	{
+		real_t r = length(model_mat * (pc[i] - pc[p2nn(i, k)], 0));
+
+		radius[i] = r * r / k;
+	}
+
+	std::ranges::sort(radius);
+
+	return radius[size(radius) >> 1];
 }
 
 

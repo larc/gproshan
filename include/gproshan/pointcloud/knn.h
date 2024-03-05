@@ -65,8 +65,14 @@ class k3tree
 };
 
 
-real_t pc_median_pairwise_distant(const point * pc, const size_t n_points, const mat4 & model_mat = mat4::identity());
-real_t pc_mean_median_knn_distant(const point * pc, const size_t n_points, const size_t k = 8, const mat4 & model_mat = mat4::identity());
+real_t mean_knn_distant(const point * pc, const size_t n_points, const size_t k = 8, const mat4 & model_mat = mat4::identity());
+real_t median_knn_distant(const point * pc, const size_t n_points, const size_t k = 8, const mat4 & model_mat = mat4::identity());
+real_t median_median_knn_distant(const point * pc, const size_t n_points, const size_t k = 8, const mat4 & model_mat = mat4::identity());
+real_t mean_median_knn_distant(const point * pc, const size_t n_points, const size_t k = 8, const mat4 & model_mat = mat4::identity());
+real_t median_mean_knn_distant(const point * pc, const size_t n_points, const size_t k = 8, const mat4 & model_mat = mat4::identity());
+real_t mean_mean_knn_distant(const point * pc, const size_t n_points, const size_t k = 8, const mat4 & model_mat = mat4::identity());
+real_t mean_knn_area_radius(const point * pc, const size_t n_points, const size_t k = 8, const mat4 & model_mat = mat4::identity());
+real_t median_knn_area_radius(const point * pc, const size_t n_points, const size_t k = 8, const mat4 & model_mat = mat4::identity());
 
 
 } // namespace gproshan
