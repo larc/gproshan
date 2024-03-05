@@ -142,6 +142,28 @@ real_t pc_median_pairwise_distant(const point * pc, const size_t n_points, const
 	return dist[size(dist) >> 1];
 }
 
+real_t pc_mean_median_knn_distant(const point * pc, const size_t n_points, const size_t k, const mat4 & model_mat)
+{
+	k3tree nn(pc, n_points, k + 1);
+
+	std::vector<real_t> dist(k);
+	real_t mean = 0;
+
+	#pragma omp parallel for firstprivate(dist)
+	for(index_t i = 0; i < n_points; ++i)
+	{
+		for(index_t j = 0; j < k; ++j)
+			dist[j] = length(model_mat * (pc[i] - pc[nn(i, j + 1)], 0));
+
+		std::ranges::sort(dist);
+
+		#pragma omp atomic
+		mean += dist[k >> 1];
+	}
+
+	return mean / n_points;
+}
+
 
 } // namespace gproshan
 

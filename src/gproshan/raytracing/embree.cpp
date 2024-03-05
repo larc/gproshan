@@ -224,7 +224,7 @@ index_t embree::add_pointcloud(const che * mesh, const mat4 & model_mat, const p
 	for(index_t i = 0; i < mesh->n_vertices; ++i)
 		pxyzr[i] = model_mat * (mesh->point(i), 1);
 
-	const real_t r = pc.radius < 0 && !nn ? knn::pc_median_pairwise_distant(&mesh->point(0), mesh->n_vertices, model_mat) : pc.radius;
+	const real_t r = pc.radius < 0 && !nn ? knn::pc_mean_median_knn_distant(&mesh->point(0), mesh->n_vertices, 8, model_mat) : pc.radius;
 
 	#pragma omp parallel for
 	for(index_t i = 0; i < mesh->n_vertices; ++i)
