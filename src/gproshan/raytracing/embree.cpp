@@ -239,7 +239,7 @@ index_t embree::add_pointcloud(const che * mesh, const mat4 & model_mat, const p
 					break;
 
 			case MEAN:
-					r = knn::mean_knn(&mesh->point(0), (*nn)(i), pc.knn + 1, model_mat);
+					r = knn::mean_knn(&mesh->point(0), (*nn)(i), pc.knn, model_mat);
 					break;
 
 			case MEDIAN:
