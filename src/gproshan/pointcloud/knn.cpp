@@ -290,12 +290,12 @@ const char * radius_str(void *, int opt)
 	static const char * str[] = {	"none",
 									"mean_knn_distant",
 									"median_knn_distant",
-//									"median_median_knn_distant",
+									"median_median_knn_distant",
 									"mean_median_knn_distant",
-//									"median_mean_knn_distant",
+									"median_mean_knn_distant",
 									"mean_mean_knn_distant",
-//									"mean_knn_area_radius",
-//									"median_knn_area_radius"
+									"mean_knn_area_radius",
+									"median_knn_area_radius"
 									};
 
 	return str[opt];
@@ -307,12 +307,12 @@ real_t radius(const int opt, const point * pc, const size_t n_points, const size
 	static const fknn f[] = {	nullptr,
 								mean_knn_distant,
 								median_knn_distant,
-//								median_median_knn_distant,
+								median_median_knn_distant,
 								mean_median_knn_distant,
-//								median_mean_knn_distant,
+								median_mean_knn_distant,
 								mean_mean_knn_distant,
-//								mean_knn_area_radius,
-//								median_knn_area_radius
+								mean_knn_area_radius,
+								median_knn_area_radius
 								};
 
 	return opt ? f[opt](pc, n_points, k, model_mat) : 0;
