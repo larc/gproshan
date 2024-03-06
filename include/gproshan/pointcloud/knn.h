@@ -75,6 +75,10 @@ real_t mean_knn_area_radius(const point * pc, const size_t n_points, const size_
 real_t median_knn_area_radius(const point * pc, const size_t n_points, const size_t k = 8, const mat4 & model_mat = mat4::identity());
 
 
+real_t median_pair_dist(const point * pc, const int * id, const size_t n, const mat4 & model_mat);
+real_t mean_knn(const point * pc, const int * id, const size_t n, const mat4 & model_mat);
+
+
 const char * radius_str(void *, int opt);
 
 real_t radius(const int opt, const point * pc, const size_t n_points, const size_t k = 8, const mat4 & model_mat = mat4::identity());

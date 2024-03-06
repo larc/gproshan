@@ -988,15 +988,15 @@ bool viewer::m_setup_raytracing(viewer * view)
 	if(rt == R_EMBREE && (mesh.render_pointcloud || mesh->is_pointcloud()))
 	{
 		ImGui::Indent();
-		ImGui::SliderInt("pc.knn", &pc.knn, 0, 1 << 6);
-		ImGui::SliderFloat("pc.radius", &pc.radius, 0, 1);
-		if(ImGui::Combo("knn_radius", &opt_radius, knn::radius_str, nullptr, 9, 10))
+		ImGui::Combo("pc.opt", (int *) &pc.opt, "NONE\0MAX\0MEAN\0MEDIAN\0AREA\0MEDIAN_PAIRS\0\0");
+		if(pc.opt == rt::embree::NONE)
 		{
-			pc.radius = knn::radius(opt_radius, &mesh->point(0), mesh->n_vertices, pc.knn, mesh.model_mat);
-			gproshan_error_var(opt_radius);
-			gproshan_error_var(pc.radius);
+			ImGui::SliderFloat("pc.radius", &pc.radius, 0, 1);
+			if(ImGui::Combo("knn_radius", &opt_radius, knn::radius_str, nullptr, 5, 10))
+				pc.radius = knn::radius(opt_radius, &mesh->point(0), mesh->n_vertices, pc.knn, mesh.model_mat);
 		}
-		ImGui::Checkbox("pc.knn_area", &pc.knn_area);
+		ImGui::SliderInt("pc.knn", &pc.knn, 0, 1 << 6);
+		ImGui::SliderFloat("pc.scale", &pc.scale, 0, 10);
 		ImGui::Checkbox("pc.normals", &pc.normals);
 		ImGui::Unindent();
 	}
