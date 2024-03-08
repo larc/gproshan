@@ -17,12 +17,22 @@ namespace gproshan::rt {
 class embree : public raytracing
 {
 	public:
+		enum knn_opt {	NONE,
+						MAX,
+						MEAN,
+						MEDIAN,
+						AREA,
+						MEDIAN_PAIRS
+						};
 		struct pc_opts
 		{
 			bool enable		= false;
 			bool normals	= false;
 			float radius	= 0.01;
-			int knn			= 0;
+			knn_opt opt		= NONE;
+			float scale		= 1;
+			int knn			= 8;
+
 
 			pc_opts() {};
 		};

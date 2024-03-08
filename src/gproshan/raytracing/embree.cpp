@@ -216,19 +216,48 @@ index_t embree::add_pointcloud(const che * mesh, const mat4 & model_mat, const p
 																			);
 
 
-	knn::k3tree * nn = !pc.knn	? nullptr
-								: new knn::k3tree(&mesh->point(0), mesh->n_vertices, pc.knn + 1);
+	knn::k3tree * nn = pc.opt == NONE ? nullptr : new knn::k3tree(&mesh->point(0), mesh->n_vertices, pc.knn + 1);
 
 
 	#pragma omp parallel for
 	for(index_t i = 0; i < mesh->n_vertices; ++i)
 		pxyzr[i] = model_mat * (mesh->point(i), 1);
 
-	const real_t r = pc.radius < 0 && !nn ? knn::pc_median_pairwise_distant(&mesh->point(0), mesh->n_vertices, model_mat) : pc.radius;
-
 	#pragma omp parallel for
 	for(index_t i = 0; i < mesh->n_vertices; ++i)
-		pxyzr[i][3] = nn ? length(model_mat * (mesh->point(i) - mesh->point((*nn)(i, pc.knn)), 0)) : r;
+	{
+		real_t r = 0;
+
+		switch(pc.opt)
+		{
+			case NONE:
+					r = pc.radius;
+					break;
+
+			case MAX:
+					r = length(model_mat * (mesh->point(i) - mesh->point((*nn)(i, pc.knn)), 0));
+					break;
+
+			case MEAN:
+					r = knn::mean_knn(&mesh->point(0), (*nn)(i), pc.knn, model_mat);
+					break;
+
+			case MEDIAN:
+					r = length(model_mat * (mesh->point(i) - mesh->point((*nn)(i, pc.knn >> 1)), 0));
+					break;
+
+			case AREA:
+					r = length(model_mat * (mesh->point(i) - mesh->point((*nn)(i, pc.knn)), 0));
+					r = sqrt(r * r / pc.knn);
+					break;
+
+			case MEDIAN_PAIRS:
+					r = knn::median_pair_dist(&mesh->point(0), (*nn)(i), pc.knn, model_mat);
+					break;
+		};
+
+		pxyzr[i][3] = pc.scale * r;
+	}
 
 
 	delete nn;
