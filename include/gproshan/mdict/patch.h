@@ -12,11 +12,6 @@
 #include <gproshan/include_arma.h>
 
 
-#ifdef Success
-	#undef Success
-#endif
-
-
 // geometry processing and shape analysis framework
 // mesh dictionary learning and sparse coding namespace
 namespace gproshan::mdict {

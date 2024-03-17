@@ -68,7 +68,12 @@ void parallel_toplesets_propagation_cpu(const ptp_out_t & ptp_out, che * mesh, c
 	for(index_t v = 0; v < n_vertices; ++v)
 		dist[!i][v] = dist[i][v];
 
-	if(inv)
+	gproshan_log_var(inv);
+	gproshan_log_var(dist[0]);
+	gproshan_log_var(dist[1]);
+	gproshan_log_var(ptp_out.dist);
+
+	if(coalescence)
 	{
 		#pragma omp parallel for
 		for(index_t v = 0; v < n_vertices; ++v)
@@ -80,6 +85,14 @@ void parallel_toplesets_propagation_cpu(const ptp_out_t & ptp_out, che * mesh, c
 	delete [] error;
 	delete [] dist[1];
 	delete [] clusters[1];
+
+	if(coalescence)
+	{
+		delete [] h_mesh.GT;
+		delete [] h_mesh.VT;
+		delete [] h_mesh.EVT;
+	}
+
 	delete [] inv;
 }
 

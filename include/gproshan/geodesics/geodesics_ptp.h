@@ -206,15 +206,15 @@ index_t run_ptp(const CHE * mesh, const std::vector<index_t> & sources,
 	{
 		if(i < (j >> 1)) i = (j >> 1);	// K/2 limit band size
 
-		const index_t start	= limits[i];
+		const index_t start		= limits[i];
 		const index_t end		= limits[j];
 		const index_t n_cond	= limits[i + 1] - start;
 
-		T *& new_dist = dist[iter & 1];
-		T *& old_dist = dist[!(iter & 1)];
+		T * new_dist = dist[iter & 1];
+		T * old_dist = dist[!(iter & 1)];
 
-		index_t *& new_cluster = clusters[iter & 1];
-		index_t *& old_cluster = clusters[!(iter & 1)];
+		index_t * new_cluster = clusters[iter & 1];
+		index_t * old_cluster = clusters[!(iter & 1)];
 
 	#ifdef __CUDACC__
 		relax_ptp<<< NB(end - start), NT >>>(mesh, new_dist, old_dist, new_cluster, old_cluster, start, end, sorted);
@@ -230,19 +230,17 @@ index_t run_ptp(const CHE * mesh, const std::vector<index_t> & sources,
 		for(index_t v = start; v < end; ++v)
 			relax_ptp(mesh, new_dist, old_dist, new_cluster, old_cluster, sorted ? sorted[v] : v);
 
+
+		count = 0;
 		#pragma omp parallel for
 		for(index_t k = start; k < start + n_cond; ++k)
 		{
 			const index_t v = sorted ? sorted[k] : k;
-			error[v] = abs(new_dist[v] - old_dist[v]) / old_dist[v];
-		}
-
-		count = 0;
-		#pragma omp parallel for reduction(+: count)
-		for(index_t k = start; k < start + n_cond; ++k)
-		{
-			const index_t v = sorted ? sorted[k] : k;
-			count += error[v] < PTP_TOL;
+			if(std::abs(new_dist[v] - old_dist[v]) / old_dist[v] < PTP_TOL)
+			{
+				#pragma omp atomic
+				++count;
+			}
 		}
 	#endif
 
