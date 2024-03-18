@@ -25,20 +25,6 @@ double test_ptp_gpu(real_t & error, const real_t * exact, che * mesh, const std:
 
 double test_heat_method_gpu(real_t & error, double & stime, const real_t * exact, che * mesh, const std::vector<index_t> & source, const int n_test);
 
-/// Return an array with the error per iteration.
-/// Starting to store (position 0) errors after number of toplesets.
-std::vector<std::pair<index_t, real_t> > iter_error_parallel_toplesets_propagation_coalescence_gpu(che * mesh, const std::vector<index_t> & sources, const std::vector<index_t> & limits, const index_t * sorted_index, const real_t * exact_dist, double & time_ptp);
-
-/// Return an array with the error per iteration.
-/// Starting to store (position 0) errors after number of toplesets.
-std::vector<std::pair<index_t, real_t> > iter_error_parallel_toplesets_propagation_gpu(che * mesh, const std::vector<index_t> & sources, const std::vector<index_t> & limits, const index_t * sorted_index, const real_t * exact_dist, double & time_ptp);
-
-/// Return an array with the time per iteration.
-double * times_farthest_point_sampling_ptp_gpu(che * mesh, std::vector<index_t> & samples, size_t n, real_t radio = 0);
-
-/// Return an array with the time per iteration.
-double * times_farthest_point_sampling_ptp_coalescence_gpu(che * mesh, std::vector<index_t> & samples, size_t n, real_t radio = 0);
-
 #endif // GPROSHAN_CUDA
 
 

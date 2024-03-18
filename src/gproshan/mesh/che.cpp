@@ -681,7 +681,7 @@ void che::edge_collapse(const std::vector<index_t> & sort_edges)
 	// TODO
 }
 
-void che::compute_toplesets(index_t *& toplesets, index_t *& sorted, std::vector<index_t> & limits, const std::vector<index_t> & sources, const index_t k)
+void che::compute_toplesets(index_t * toplesets, index_t * sorted, std::vector<index_t> & limits, const std::vector<index_t> & sources, const index_t k)
 {
 	if(!size(sources)) return;
 

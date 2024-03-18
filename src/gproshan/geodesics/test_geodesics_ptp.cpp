@@ -45,12 +45,12 @@ void main_test_geodesics_ptp(const int nargs, const char ** args)
 		std::vector<index_t> source = { 0 };
 
 		che * mesh = new che_off(data_path + filename + ".off");
-		size_t n_vertices = mesh->n_vertices;
+		const size_t n_vertices = mesh->n_vertices;
 
-		index_t * toplesets = new index_t[n_vertices];
-		index_t * sorted_index = new index_t[n_vertices];
+		std::vector<index_t> toplesets(n_vertices);
+		std::vector<index_t> sorted_index(n_vertices);
 		std::vector<index_t> limits;
-		mesh->compute_toplesets(toplesets, sorted_index, limits, source);
+		mesh->compute_toplesets(toplesets.data(), sorted_index.data(), limits, source);
 
 
 		// PERFORMANCE & ACCURACY ___________________________________________________________________
@@ -62,10 +62,10 @@ void main_test_geodesics_ptp(const int nargs, const char ** args)
 		if(!exact) fprintf(stderr, "no exact geodesics for: %s.\n", filename.c_str());
 
 		Time[0] = test_fast_marching(Error[0], exact, mesh, source, n_test);
-		Time[1] = test_ptp_cpu(Error[1], exact, mesh, source, {limits, sorted_index}, n_test);
+		Time[1] = test_ptp_cpu(Error[1], exact, mesh, source, {limits, sorted_index.data()}, n_test);
 
 #ifdef GPROSHAN_CUDA
-		Time[2] = test_ptp_gpu(Error[2], exact, mesh, source, {limits, sorted_index}, n_test);
+		Time[2] = test_ptp_gpu(Error[2], exact, mesh, source, {limits, sorted_index.data()}, n_test);
 #else
 		Time[2] = INFINITY;
 #endif // GPROSHAN_CUDA
@@ -170,7 +170,7 @@ void main_test_geodesics_ptp(const int nargs, const char ** args)
 
 		// TOPLESETS DISTRIBUTION __________________________________________________________________
 
-		index_t * toplesets_dist = new index_t[size(limits) - 1];
+		std::vector<index_t> toplesets_dist(size(limits) - 1);
 
 		os.open(test_path + filename + "_toplesets.dist");
 		for(index_t i = 1; i < size(limits); ++i)
@@ -180,7 +180,7 @@ void main_test_geodesics_ptp(const int nargs, const char ** args)
 		}
 		os.close();
 
-		std::sort(toplesets_dist, toplesets_dist + size(limits) - 1);
+		std::ranges::sort(toplesets_dist);
 
 		os.open(test_path + filename + "_toplesets_sorted.dist");
 		for(index_t i = 0; i < size(limits) - 1; ++i)
@@ -192,10 +192,7 @@ void main_test_geodesics_ptp(const int nargs, const char ** args)
 
 #ifdef GPROSHAN_CUDA	// IMPLEMENT: iter_error_parallel_toplesets_propagation_coalescence_cpu
 
-		double time;
-		std::vector<std::pair<index_t, real_t> > iter_error = iter_error_parallel_toplesets_propagation_coalescence_gpu(mesh, source, limits, sorted_index, exact, time);
-
-		system(("mv band " + (test_path + filename + ".band")).c_str());
+		std::ofstream band(test_path + filename + ".band");
 
 		#ifndef GPROSHAN_FLOAT
 			os.open(test_path + filename + "_error_double.iter");
@@ -203,35 +200,39 @@ void main_test_geodesics_ptp(const int nargs, const char ** args)
 			os.open(test_path + filename + "_error.iter");
 		#endif
 
-		for(auto & p: iter_error)
-			os << p.first << " " << p.second << std::endl;
+		std::vector<real_t> dist(mesh->n_vertices);
+		parallel_toplesets_propagation_gpu(dist.data(), mesh, source, {limits, sorted_index.data()}, true, true,
+		[&](real_t * d, index_t i, index_t j, index_t start, index_t end)
+		{
+			band << i << " " << " " << j << " " << end - start << "\n";
+
+			os << compute_error(dist.data(), exact, n_vertices, sizeof(source)) << "\n"; 
+		});
+
 		os.close();
+		band.close();
 
 #endif // GPROSHAN_CUDA
 
 
 		// FARTHEST POINT SAMPLING _________________________________________________________________
 
-#ifdef GPROSHAN_CUDA	// IMPLEMENT: times_farthest_point_sampling_ptp_cpu
+#ifdef GPROSHAN_CUDA	// IMPLEMENT: times_farthest_point_sampling_ptp_cpu	// no coalescence
 		size_t i_samples = size(source);
 		size_t n_samples = 1001;
-		double * times_fps = times_farthest_point_sampling_ptp_gpu(mesh, source, n_samples);
+		//double * times_fps; = times_farthest_point_sampling_ptp_gpu(mesh, source, n_samples);
 
 		os.open(test_path + filename + ".fps");
-		for(index_t i = i_samples; i < n_samples; ++i)
-			os << i << " " << times_fps[i] << std::endl;
+//		for(index_t i = i_samples; i < n_samples; ++i)
+//			os << i << " " << times_fps[i] << std::endl;
 		os.close();
 
-		delete [] times_fps;
 #endif // GPROSHAN_CUDA
 
 		// FREE MEMORY
 
 		delete mesh;
-		delete [] toplesets;
-		delete [] sorted_index;
 		delete [] exact;
-		delete [] toplesets_dist;
 	}
 
 	fclose(ftable);
