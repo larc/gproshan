@@ -9,10 +9,17 @@
 namespace gproshan {
 
 
-ptp_out_t::ptp_out_t(real_t * d, index_t * c): dist(d), clusters(c) {}
+ptp_out_t::ptp_out_t(real_t *const d, index_t *const c): dist(d), clusters(c) {}
 
 
-void parallel_toplesets_propagation_cpu(const ptp_out_t & ptp_out, che * mesh, const std::vector<index_t> & sources, const toplesets_t & toplesets, const bool coalescence, const bool set_inf)
+void parallel_toplesets_propagation_cpu(const ptp_out_t & ptp_out,
+										const che * mesh,
+										const std::vector<index_t> & sources,
+										const toplesets_t & toplesets,
+										const bool coalescence,
+										const bool set_inf,
+										const f_ptp<real_t> & fun
+										)
 {
 	CHE h_mesh(mesh);
 	const size_t n_vertices = h_mesh.n_vertices;
@@ -59,18 +66,14 @@ void parallel_toplesets_propagation_cpu(const ptp_out_t & ptp_out, che * mesh, c
 			dist[0][v] = dist[1][v] = INFINITY;
 	}
 
-	const index_t i = run_ptp(&h_mesh, sources, toplesets.limits, dist, clusters,
+	const index_t i = run_ptp(	&h_mesh, sources, toplesets.limits, dist, clusters,
 								coalescence ? inv : toplesets.index,
-								coalescence ? nullptr : (index_t *) toplesets.index);
+								coalescence ? nullptr : (index_t *) toplesets.index,
+								fun);
 
 	#pragma omp parallel for
 	for(index_t v = 0; v < n_vertices; ++v)
 		dist[!i][v] = dist[i][v];
-
-	gproshan_log_var(inv);
-	gproshan_log_var(dist[0]);
-	gproshan_log_var(dist[1]);
-	gproshan_log_var(ptp_out.dist);
 
 	if(coalescence)
 	{

@@ -8,6 +8,8 @@
 
 #include <gproshan/mesh/che.h>
 
+#include <functional>
+
 
 #ifdef __CUDACC__
 	#include <thrust/count.h>
@@ -49,8 +51,8 @@ struct is_ok
 
 struct ptp_out_t
 {
-	real_t * dist;
-	index_t * clusters;
+	real_t * dist = nullptr;
+	index_t * clusters = nullptr;
 
 	ptp_out_t(real_t *const d, index_t *const c = nullptr);
 };
@@ -61,9 +63,29 @@ struct toplesets_t
 	const index_t * index;
 };
 
-double parallel_toplesets_propagation_gpu(const ptp_out_t & ptp_out, const che * mesh, const std::vector<index_t> & sources, const toplesets_t & toplesets, const bool coalescence = true, const bool set_inf = true);
 
-void parallel_toplesets_propagation_cpu(const ptp_out_t & ptp_out, che * mesh, const std::vector<index_t> & sources, const toplesets_t & toplesets, const bool coalescence = false, const bool set_inf = true);
+template<class T>
+using f_ptp = std::function<void(T *, index_t, index_t, index_t, index_t)>;
+
+
+double parallel_toplesets_propagation_gpu(	const ptp_out_t & ptp_out,
+											const che * mesh,
+											const std::vector<index_t> & sources,
+											const toplesets_t & toplesets,
+											const bool coalescence = true,
+											const bool set_inf = true,
+											const f_ptp<real_t> & fun = nullptr
+											);
+
+void parallel_toplesets_propagation_cpu(	const ptp_out_t & ptp_out,
+											const che * mesh,
+											const std::vector<index_t> & sources,
+											const toplesets_t & toplesets,
+											const bool coalescence = true,
+											const bool set_inf = true,
+											const f_ptp<real_t> & fun = nullptr
+											);
+
 
 real_t farthest_point_sampling_ptp_gpu(che * mesh, std::vector<index_t> & samples, double & time_fps, size_t n, real_t radio = 0);
 
@@ -152,15 +174,16 @@ void relax_ptp(const CHE * mesh, T * new_dist, T * old_dist, index_t * new_clust
 	}
 }
 
+
 template<class T>
 #ifdef __CUDACC__
 index_t run_ptp(const CHE * mesh, const std::vector<index_t> & sources,
 				const std::vector<index_t> & limits, T * error, T ** dist, index_t ** clusters,
-				const index_t * idx, index_t * sorted)
+				const index_t * idx, index_t * sorted, const f_ptp<T> & fun = nullptr)
 #else
 index_t run_ptp(const CHE * mesh, const std::vector<index_t> & sources,
 				const std::vector<index_t> & limits, T ** dist, index_t ** clusters,
-				const index_t * idx, index_t * sorted)
+				const index_t * idx, index_t * sorted, const f_ptp<T> & fun = nullptr)
 #endif
 {
 #ifdef __CUDACC__
@@ -244,6 +267,8 @@ index_t run_ptp(const CHE * mesh, const std::vector<index_t> & sources,
 			}
 		}
 	#endif
+
+		if(fun) fun(new_dist, i, j, start, end);
 
 		if(n_cond == count)			++i;
 		if(j < size(limits) - 1) 	++j;
