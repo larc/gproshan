@@ -154,13 +154,14 @@ void relax_ptp(const CHE * mesh, T * new_dist, T * old_dist, index_t * new_clust
 
 template<class T>
 #ifdef __CUDACC__
-__forceinline__
-#else
-inline
-#endif
 index_t run_ptp(const CHE * mesh, const std::vector<index_t> & sources,
 				const std::vector<index_t> & limits, T * error, T ** dist, index_t ** clusters,
 				const index_t * idx, index_t * sorted)
+#else
+index_t run_ptp(const CHE * mesh, const std::vector<index_t> & sources,
+				const std::vector<index_t> & limits, T ** dist, index_t ** clusters,
+				const index_t * idx, index_t * sorted)
+#endif
 {
 #ifdef __CUDACC__
 	T * h_dist = dist[2];

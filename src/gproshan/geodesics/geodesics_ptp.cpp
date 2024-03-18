@@ -45,7 +45,6 @@ void parallel_toplesets_propagation_cpu(const ptp_out_t & ptp_out, che * mesh, c
 		}
 	}
 
-	real_t * error = new real_t[n_vertices];
 	real_t * dist[2] = {	coalescence ? new real_t[n_vertices] : ptp_out.dist,
 							new real_t[n_vertices]
 							};
@@ -60,7 +59,7 @@ void parallel_toplesets_propagation_cpu(const ptp_out_t & ptp_out, che * mesh, c
 			dist[0][v] = dist[1][v] = INFINITY;
 	}
 
-	const index_t i = run_ptp(&h_mesh, sources, toplesets.limits, error, dist, clusters,
+	const index_t i = run_ptp(&h_mesh, sources, toplesets.limits, dist, clusters,
 								coalescence ? inv : toplesets.index,
 								coalescence ? nullptr : (index_t *) toplesets.index);
 
@@ -82,7 +81,6 @@ void parallel_toplesets_propagation_cpu(const ptp_out_t & ptp_out, che * mesh, c
 		delete [] dist[0];
 	}
 
-	delete [] error;
 	delete [] dist[1];
 	delete [] clusters[1];
 
