@@ -1,8 +1,11 @@
 Version History
 ---------------
 
-### gproshan 3.14
-- Added scene rendering: loader from .obj files and .mtl, handling textures
+### gproshan v4.0
+
+- Added KNN module using flann for 3D point clouds.
+- Added a simple path tracer implementation using Embree and OptiX.
+- Added scene rendering: loader from .obj files and .mtl, handling textures.
 - Exporting gproshan as cmake library, use find_package(gproshan) in your project.
 - Added Intel Embree as default ray tracing library, for ray casting operations and as rendering option with shadows.
 - Adding Scenes module, virtual point cloud scanners and point cloud normals computation for 3D scenes.

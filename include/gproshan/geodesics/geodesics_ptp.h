@@ -8,6 +8,8 @@
 
 #include <gproshan/mesh/che.h>
 
+#include <functional>
+
 
 #ifdef __CUDACC__
 	#include <thrust/count.h>
@@ -49,8 +51,8 @@ struct is_ok
 
 struct ptp_out_t
 {
-	real_t * dist;
-	index_t * clusters;
+	real_t * dist = nullptr;
+	index_t * clusters = nullptr;
 
 	ptp_out_t(real_t *const d, index_t *const c = nullptr);
 };
@@ -61,9 +63,29 @@ struct toplesets_t
 	const index_t * index;
 };
 
-double parallel_toplesets_propagation_gpu(const ptp_out_t & ptp_out, const che * mesh, const std::vector<index_t> & sources, const toplesets_t & toplesets, const bool coalescence = true, const bool set_inf = true);
 
-void parallel_toplesets_propagation_cpu(const ptp_out_t & ptp_out, che * mesh, const std::vector<index_t> & sources, const toplesets_t & toplesets, const bool coalescence = false, const bool set_inf = true);
+template<class T>
+using f_ptp = std::function<void(T *, index_t, index_t, index_t, index_t)>;
+
+
+double parallel_toplesets_propagation_gpu(	const ptp_out_t & ptp_out,
+											const che * mesh,
+											const std::vector<index_t> & sources,
+											const toplesets_t & toplesets,
+											const bool coalescence = true,
+											const bool set_inf = true,
+											const f_ptp<real_t> & fun = nullptr
+											);
+
+void parallel_toplesets_propagation_cpu(	const ptp_out_t & ptp_out,
+											const che * mesh,
+											const std::vector<index_t> & sources,
+											const toplesets_t & toplesets,
+											const bool coalescence = true,
+											const bool set_inf = true,
+											const f_ptp<real_t> & fun = nullptr
+											);
+
 
 real_t farthest_point_sampling_ptp_gpu(che * mesh, std::vector<index_t> & samples, double & time_fps, size_t n, real_t radio = 0);
 
@@ -152,15 +174,17 @@ void relax_ptp(const CHE * mesh, T * new_dist, T * old_dist, index_t * new_clust
 	}
 }
 
+
 template<class T>
 #ifdef __CUDACC__
-__forceinline__
-#else
-inline
-#endif
 index_t run_ptp(const CHE * mesh, const std::vector<index_t> & sources,
 				const std::vector<index_t> & limits, T * error, T ** dist, index_t ** clusters,
-				const index_t * idx, index_t * sorted)
+				const index_t * idx, index_t * sorted, const f_ptp<T> & fun = nullptr)
+#else
+index_t run_ptp(const CHE * mesh, const std::vector<index_t> & sources,
+				const std::vector<index_t> & limits, T ** dist, index_t ** clusters,
+				const index_t * idx, index_t * sorted, const f_ptp<T> & fun = nullptr)
+#endif
 {
 #ifdef __CUDACC__
 	T * h_dist = dist[2];
@@ -206,15 +230,15 @@ index_t run_ptp(const CHE * mesh, const std::vector<index_t> & sources,
 	{
 		if(i < (j >> 1)) i = (j >> 1);	// K/2 limit band size
 
-		const index_t start	= limits[i];
+		const index_t start		= limits[i];
 		const index_t end		= limits[j];
 		const index_t n_cond	= limits[i + 1] - start;
 
-		T *& new_dist = dist[iter & 1];
-		T *& old_dist = dist[!(iter & 1)];
+		T * new_dist = dist[iter & 1];
+		T * old_dist = dist[!(iter & 1)];
 
-		index_t *& new_cluster = clusters[iter & 1];
-		index_t *& old_cluster = clusters[!(iter & 1)];
+		index_t * new_cluster = clusters[iter & 1];
+		index_t * old_cluster = clusters[!(iter & 1)];
 
 	#ifdef __CUDACC__
 		relax_ptp<<< NB(end - start), NT >>>(mesh, new_dist, old_dist, new_cluster, old_cluster, start, end, sorted);
@@ -230,21 +254,21 @@ index_t run_ptp(const CHE * mesh, const std::vector<index_t> & sources,
 		for(index_t v = start; v < end; ++v)
 			relax_ptp(mesh, new_dist, old_dist, new_cluster, old_cluster, sorted ? sorted[v] : v);
 
+
+		count = 0;
 		#pragma omp parallel for
 		for(index_t k = start; k < start + n_cond; ++k)
 		{
 			const index_t v = sorted ? sorted[k] : k;
-			error[v] = abs(new_dist[v] - old_dist[v]) / old_dist[v];
-		}
-
-		count = 0;
-		#pragma omp parallel for reduction(+: count)
-		for(index_t k = start; k < start + n_cond; ++k)
-		{
-			const index_t v = sorted ? sorted[k] : k;
-			count += error[v] < PTP_TOL;
+			if(std::abs(new_dist[v] - old_dist[v]) / old_dist[v] < PTP_TOL)
+			{
+				#pragma omp atomic
+				++count;
+			}
 		}
 	#endif
+
+		if(fun) fun(new_dist, i, j, start, end);
 
 		if(n_cond == count)			++i;
 		if(j < size(limits) - 1) 	++j;

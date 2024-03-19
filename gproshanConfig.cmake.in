@@ -11,8 +11,6 @@ find_dependency(GLEW)
 find_dependency(glfw3)
 find_dependency(X11)
 find_dependency(Armadillo)
-find_dependency(Eigen3)
-find_dependency(CGAL)
 find_dependency(SuiteSparse)
 find_dependency(flann)
 

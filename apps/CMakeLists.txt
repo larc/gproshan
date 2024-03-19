@@ -6,12 +6,9 @@ set_target_properties(test_gproshan PROPERTIES OUTPUT_NAME gproshan)
 target_link_libraries(test_gproshan gproshan)
 
 
-add_executable(test_geodesics test_geodesics.cpp)
-target_link_libraries(test_geodesics gproshan)
-
-
 add_executable(test_image_denoising test_image_denoising.cpp)
 target_link_libraries(test_image_denoising gproshan)
+
 
 add_executable(test_scanner test_scanner.cpp)
 target_link_libraries(test_scanner gproshan)

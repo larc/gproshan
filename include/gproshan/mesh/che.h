@@ -129,7 +129,7 @@ class che
 		che::star_he star(const index_t v) const;
 		std::vector<index_t> link(const index_t v) const;
 		void edge_collapse(const std::vector<index_t> & sort_edges);
-		void compute_toplesets(index_t *& rings, index_t *& sorted, std::vector<index_t> & limites, const std::vector<index_t> & sources, const index_t k = NIL);
+		void compute_toplesets(index_t * rings, index_t * sorted, std::vector<index_t> & limites, const std::vector<index_t> & sources, const index_t k = NIL);
 
 		// boundary methods
 		std::vector<index_t> bounds() const;

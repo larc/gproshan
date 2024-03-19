@@ -6,29 +6,10 @@
 #include <queue>
 #include <random>
 
-#ifndef CGAL_PATCH_DEFS
-	#define CGAL_PATCH_DEFS
-	#define CGAL_EIGEN3_ENABLED
-	#define CGAL_USE_BOOST_PROGRAM_OPTIONS
-	#define CGAL_USE_GMP
-	#define DCGAL_USE_MPFR
-#endif
-
-#include <CGAL/Simple_cartesian.h>
-#include <CGAL/Monge_via_jet_fitting.h>
-
 
 // geometry processing and shape analysis framework
 // mesh dictionary learning and sparse coding namespace
 namespace gproshan::mdict {
-
-
-typedef real_t DFT;
-typedef CGAL::Simple_cartesian<DFT> Data_Kernel;
-typedef Data_Kernel::Point_3 DPoint;
-typedef Data_Kernel::Vector_3 DVector;
-typedef CGAL::Monge_via_jet_fitting<Data_Kernel> My_Monge_via_jet_fitting;
-typedef My_Monge_via_jet_fitting::Monge_form My_Monge_form;
 
 
 size_t patch::expected_nv = 3 * msparse_coding::T * (msparse_coding::T + 1);
@@ -40,7 +21,7 @@ void patch::init(che * mesh, const index_t v, const size_t n_toplevels, const re
 	index_t * toplevel = _toplevel ? _toplevel : new index_t[mesh->n_vertices];
 
 	gather_vertices(mesh, v, n_toplevels, toplevel);
-	jet_fit_directions(mesh, v);
+	normal_fit_directions(mesh, v);
 	gather_vertices(mesh, v, radio_, toplevel);
 
 	if(!_toplevel) delete [] toplevel;
@@ -52,7 +33,7 @@ void patch::init_disjoint(che * mesh, const index_t v, const size_t n_toplevels,
 	index_t * toplevel = _toplevel ? _toplevel : new index_t[mesh->n_vertices];
 
 	gather_vertices(mesh, v, n_toplevels, toplevel);
-	jet_fit_directions(mesh, v);
+	normal_fit_directions(mesh, v);
 	//vertices = _vertices;
 	vertices = std::move(_vertices);
 
@@ -203,7 +184,7 @@ void patch::recover_radial_disjoint(che * mesh, const real_t radio_, const index
 	size_t min_points = (d_fitting + 1) * (d_fitting + 2) / 2;
 	if(size(vertices) > min_points)
 	{
-		jet_fit_directions(mesh, v);
+		normal_fit_directions(mesh, v);
 		n.x() = T(0, 2); n.y() = T(1, 2); n.z() = T(2, 2);
 		radio = -INFINITY;
 
@@ -283,7 +264,7 @@ void patch::init_radial_disjoint(	real_t & euc_radio,
 	size_t d_fitting = 2;
 	size_t min_points = (d_fitting + 1) * (d_fitting + 2) / 2;
 	if(size(vertices) > min_points)
-		jet_fit_directions(mesh, v);
+		normal_fit_directions(mesh, v);
 	else
 		normal_fit_directions(mesh,v);
 
@@ -388,7 +369,7 @@ void patch::add_extra_xyz_disjoint(che * mesh, std::vector<vpatches_t> & vpatche
 		// create a random point
 		real_t a = abs(dis(gen)) * 2 * M_PI;
 		real_t r = abs(dis(gen));
-		a_vec np = { r * cos(a), r * sin(a), 0 };
+		a_vec np = { r * std::cos(a), r * std::sin(a), 0 };
 
 		//gproshan_debug_var(np);
 		// find the closest point
@@ -443,7 +424,7 @@ void patch::add_extra_xyz_disjoint(che * mesh, std::vector<vpatches_t> & vpatche
 					a_vec coef = arma::inv(proj_abc.head_rows(2)) * np.head(2);
 					np = proj_abc * coef + abc.col(0);
 
-					if(!isnan(np(2)))
+					if(!std::isnan(np(2)))
 					{
 						xyz(0, j) = np(0);
 						xyz(1, j) = np(1);
@@ -588,45 +569,6 @@ void patch::gather_vertices(che * mesh, const index_t v, const real_t radio, ind
 			}
 		}
 	}
-}
-
-/// Compute the principal directions of the patch, centering in the vertex \f$v\f$.
-/// See: https://doc.cgal.org/latest/Jet_fitting_3/index.html
-void patch::jet_fit_directions(che * mesh, const index_t v)
-{
-	size_t d_fitting = 2;
-	size_t d_monge = 2;
-	//size_t min_points = (d_fitting + 1) * (d_fitting + 2) / 2;
-	//assert(size(vertices) > min_points);
-
-	std::vector<DPoint> in_points;
-	in_points.reserve(size(vertices));
-	for(const index_t u: vertices)
-		in_points.push_back(DPoint(mesh->point(u).x(), mesh->point(u).y(), mesh->point(u).z()));
-
-	My_Monge_form monge_form;
-	My_Monge_via_jet_fitting monge_fit;
-	monge_form = monge_fit(begin(in_points), end(in_points), d_fitting, d_monge);
-
-	vertex normal = mesh->normal(v);
-	monge_form.comply_wrt_given_normal(DVector(normal.x(), normal.y(), normal.z()));
-
-	x.set_size(3);
-	x(0) = mesh->point(v).x();
-	x(1) = mesh->point(v).y();
-	x(2) = mesh->point(v).z();
-
-	T.set_size(3, 3);
-	T(0, 0) = monge_form.maximal_principal_direction()[0];
-	T(1, 0) = monge_form.maximal_principal_direction()[1];
-	T(2, 0) = monge_form.maximal_principal_direction()[2];
-	T(0, 1) = monge_form.minimal_principal_direction()[0];
-	T(1, 1) = monge_form.minimal_principal_direction()[1];
-	T(2, 1) = monge_form.minimal_principal_direction()[2];
-	T(0, 2) = monge_form.normal_direction()[0];
-	T(1, 2) = monge_form.normal_direction()[1];
-	T(2, 2) = monge_form.normal_direction()[2];
-
 }
 
 void patch::normal_fit_directions(che * mesh, const index_t v)

@@ -103,6 +103,12 @@ eval_hit embree::intersect(const vertex & org, const vertex & dir, const bool fl
 	return hit;
 }
 
+vec4 * embree::pc_data(const index_t geomID)
+{
+	RTCGeometry geom = rtcGetGeometry(rtc_scene, geomID);
+	return (vec4 *) rtcGetGeometryBufferData(geom, RTC_BUFFER_TYPE_VERTEX, 0);
+}
+
 void embree::build_bvh(const std::vector<che *> & meshes, const std::vector<mat4> & model_mats, const pc_opts & pc)
 {
 	g_meshes.resize(size(meshes));

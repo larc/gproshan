@@ -28,7 +28,6 @@ jobs:
         sudo apt install \
                           libarmadillo-dev \
                           libeigen3-dev \
-                          libcgal-dev \
                           libsuitesparse-dev \
                           libopenblas-dev \
                           libglew-dev \
