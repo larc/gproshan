@@ -12,7 +12,14 @@
 namespace gproshan {
 
 
-double parallel_toplesets_propagation_gpu(const ptp_out_t & ptp_out, const che * mesh, const std::vector<index_t> & sources, const toplesets_t & toplesets, const bool coalescence, const bool set_inf)
+double parallel_toplesets_propagation_gpu(	const ptp_out_t & ptp_out,
+											const che * mesh,
+											const std::vector<index_t> & sources,
+											const toplesets_t & toplesets,
+											const bool coalescence,
+											const bool set_inf,
+											const f_ptp<real_t> & fun
+											)
 {
 	CHE h_mesh(mesh);
 	const size_t n_vertices = h_mesh.n_vertices;
@@ -88,8 +95,9 @@ double parallel_toplesets_propagation_gpu(const ptp_out_t & ptp_out, const che *
 			h_dist[v] = INFINITY;
 	}
 
-	const index_t i = run_ptp(d_mesh, sources, toplesets.limits, d_error, d_dist, d_clusters,
-								coalescence ? inv : toplesets.index, d_sorted);
+	const index_t i = run_ptp(	d_mesh, sources, toplesets.limits, d_error, d_dist, d_clusters,
+								coalescence ? inv : toplesets.index, d_sorted,
+								fun);
 
 	cudaMemcpy(h_dist, d_dist[i], sizeof(real_t) * n_vertices, cudaMemcpyDeviceToHost);
 

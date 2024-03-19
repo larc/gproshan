@@ -70,6 +70,8 @@ class embree : public raytracing
 		virtual index_t closest_vertex(const vertex & org, const vertex & dir) const;
 		virtual eval_hit intersect(const vertex & org, const vertex & dir, const bool flat = true) const;
 
+		vec4 * pc_data(const index_t geomID = 0);
+
 
 	protected:
 		void build_bvh(	const std::vector<che *> & meshes,
