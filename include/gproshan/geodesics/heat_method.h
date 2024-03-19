@@ -29,7 +29,7 @@ enum heat_method_opt {
 
 double heat_method(real_t * dist, const che * mesh, const std::vector<index_t> & sources, const heat_method_opt & opt);
 
-arma::vec compute_divergence(const che * mesh, const arma::mat & u);
+arma::vec compute_divergence(const che * mesh, const arma::vec & u);
 
 /// cholmod Keenan implementation
 /// base on the code https://github.com/larc/dgpdec-course/tree/master/Geodesics

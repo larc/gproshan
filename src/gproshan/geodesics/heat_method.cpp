@@ -30,6 +30,9 @@ double heat_method(real_t * dist, const che * mesh, const std::vector<index_t> &
 
 	// heat flow for short interval
 	A += dt * L;
+
+	gproshan_error_var(A);
+
 	arma::vec u(mesh->n_vertices);
 
 	double solve_time = 0;
@@ -51,11 +54,14 @@ double heat_method(real_t * dist, const che * mesh, const std::vector<index_t> &
 	#endif // GPROSHAN_CUDA
 	}
 
+	gproshan_error_var(u);	
+
 	// extract geodesics
 
 	arma::vec div = compute_divergence(mesh, u);
 	arma::vec phi(mesh->n_vertices);
 
+	gproshan_error_var(div);	
 	switch(opt)
 	{
 		case HEAT_ARMA:
@@ -72,6 +78,7 @@ double heat_method(real_t * dist, const che * mesh, const std::vector<index_t> &
 	#endif // GPROSHAN_CUDA
 	}
 
+	gproshan_error_var(phi);	
 	if(phi.size() == mesh->n_vertices)
 	{
 		phi -= phi.min();
@@ -85,7 +92,7 @@ double heat_method(real_t * dist, const che * mesh, const std::vector<index_t> &
 	return solve_time;
 }
 
-arma::vec compute_divergence(const che * mesh, const arma::mat & u)
+arma::vec compute_divergence(const che * mesh, const arma::vec & u)
 {
 	arma::vec div(mesh->n_vertices);
 
@@ -93,7 +100,7 @@ arma::vec compute_divergence(const che * mesh, const arma::mat & u)
 
 	#pragma omp parallel for
 	for(index_t v = 0; v < mesh->n_vertices; ++v)
-		f[v] = u[v];
+		f[v] = u(v);
 
 	#pragma omp parallel for
 	for(index_t v = 0; v < mesh->n_vertices; ++v)

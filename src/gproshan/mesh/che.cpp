@@ -133,11 +133,11 @@ vertex che::gradient_he(const index_t he, const real_t * f) const
 	index_t j = VT[he_next(he)];
 	index_t k = VT[he_prev(he)];
 
-	vertex xi = GT[i];
-	vertex xj = GT[j];
-	vertex xk = GT[k];
+	const vertex & xi = GT[i];
+	const vertex & xj = GT[j];
+	const vertex & xk = GT[k];
 
-	vertex n = normal_he(he);
+	const vertex & n = normal_he(he);
 
 	vertex pij = cross(n, xj - xi);
 	vertex pjk = cross(n, xk - xj);
