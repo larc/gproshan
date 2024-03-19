@@ -15,14 +15,14 @@ double heat_method(real_t * dist, const che * mesh, const std::vector<index_t> &
 	if(!size(sources)) return 0;
 
 	// build impulse signal
-	a_vec u0(mesh->n_vertices, arma::fill::zeros);
+	arma::vec u0(mesh->n_vertices, arma::fill::zeros);
 	for(auto & v: sources) u0(v) = 1;
 
 	// step
 	real_t dt = mesh->mean_edge();
 	dt *= dt;
 
-	a_sp_mat L, A;
+	arma::sp_mat L, A;
 	laplacian(mesh, L, A);
 
 	// make L positive-definite
@@ -30,19 +30,18 @@ double heat_method(real_t * dist, const che * mesh, const std::vector<index_t> &
 
 	// heat flow for short interval
 	A += dt * L;
-	a_vec u(mesh->n_vertices);
-
-	cholmod_common context;
-	cholmod_l_start(&context);
+	arma::vec u(mesh->n_vertices);
 
 	double solve_time = 0;
 
+	cholmod_common context;
 	switch(opt)
 	{
 		case HEAT_ARMA:
-			if(!spsolve(u, A, u0)) gproshan_error(arma: no solution);
+			if(!spsolve(u, A, u0)) gproshan_error(arma no solution);
 			break;
 		case HEAT_CHOLMOD:
+			cholmod_l_start(&context);
 			solve_time += solve_positive_definite(u, A, u0, &context);
 			break;
 	#ifdef GPROSHAN_CUDA
@@ -54,10 +53,8 @@ double heat_method(real_t * dist, const che * mesh, const std::vector<index_t> &
 
 	// extract geodesics
 
-	a_vec div(mesh->n_vertices);
-	compute_divergence(mesh, u, div);
-
-	a_vec phi(dist, mesh->n_vertices, false);
+	arma::vec div = compute_divergence(mesh, u);
+	arma::vec phi(mesh->n_vertices);
 
 	switch(opt)
 	{
@@ -66,6 +63,7 @@ double heat_method(real_t * dist, const che * mesh, const std::vector<index_t> &
 			break;
 		case HEAT_CHOLMOD:
 			solve_time += solve_positive_definite(phi, L, div, &context);
+			cholmod_l_finish(&context);
 			break;
 	#ifdef GPROSHAN_CUDA
 		case HEAT_CUDA:
@@ -74,33 +72,48 @@ double heat_method(real_t * dist, const che * mesh, const std::vector<index_t> &
 	#endif // GPROSHAN_CUDA
 	}
 
-	real_t min_val = phi.min();
-	phi -= min_val;
-	phi *= 0.5;
+	if(phi.size() == mesh->n_vertices)
+	{
+		phi -= phi.min();
+		phi *= 0.5;
 
-	cholmod_l_finish(&context);
+		#pragma omp parallel for
+		for(index_t v = 0; v < mesh->n_vertices; ++v)
+			dist[v] = phi(v);
+	}
 
 	return solve_time;
 }
 
-void compute_divergence(const che * mesh, const a_mat & u, a_mat & div)
+arma::vec compute_divergence(const che * mesh, const arma::mat & u)
 {
+	arma::vec div(mesh->n_vertices);
+
+	std::vector<real_t> f(mesh->n_vertices);
+
+	#pragma omp parallel for
+	for(index_t v = 0; v < mesh->n_vertices; ++v)
+		f[v] = u[v];
+
+	#pragma omp parallel for
 	for(index_t v = 0; v < mesh->n_vertices; ++v)
 	{
-		real_t & sum = div(v);
-
-		sum = 0;
+		real_t sum = 0;
 		for(const index_t he: mesh->star(v))
 		{
 			const vertex & nhe = mesh->normal_he(he);
 			const vertex & vhe = mesh->vertex_he(he_prev(he)) - mesh->vertex_he(he_next(he));
-			const vertex & ghe = mesh->gradient_he(he, u.memptr());
+			const vertex & ghe = mesh->gradient_he(he, f.data());
 			sum += dot(cross(nhe, vhe), -ghe);
 		}
+
+		div(v) = sum;
 	}
+
+	return div;
 }
 
-double solve_positive_definite(a_mat & x, const a_sp_mat & A, const a_mat & b, cholmod_common * context)
+double solve_positive_definite(arma::mat & x, const arma::sp_mat & A, const arma::mat & b, cholmod_common * context)
 {
 	cholmod_sparse * cA = arma_2_cholmod(A, context);
 	cA->stype = 1;
@@ -131,7 +144,7 @@ double solve_positive_definite(a_mat & x, const a_sp_mat & A, const a_mat & b, c
 	return solve_time;
 }
 
-cholmod_dense * arma_2_cholmod(const a_mat & D, cholmod_common * context)
+cholmod_dense * arma_2_cholmod(const arma::mat & D, cholmod_common * context)
 {
 	cholmod_dense * cD = cholmod_l_allocate_dense(D.n_rows, D.n_cols, D.n_rows, CHOLMOD_REAL, context);
 	copy_real_t_array((double *) cD->x, D.memptr(), D.n_elem);
@@ -139,7 +152,7 @@ cholmod_dense * arma_2_cholmod(const a_mat & D, cholmod_common * context)
 	return cD;
 }
 
-cholmod_sparse * arma_2_cholmod(const a_sp_mat & S, cholmod_common * context)
+cholmod_sparse * arma_2_cholmod(const arma::sp_mat & S, cholmod_common * context)
 {
 	assert(sizeof(arma::uword) == sizeof(SuiteSparse_long));
 
@@ -155,7 +168,7 @@ cholmod_sparse * arma_2_cholmod(const a_sp_mat & S, cholmod_common * context)
 
 #ifdef GPROSHAN_CUDA
 
-double solve_positive_definite_gpu(a_mat & x, const a_sp_mat & A, const a_mat & b)
+double solve_positive_definite_gpu(arma::mat & x, const arma::sp_mat & A, const arma::mat & b)
 {
 	int * hA_col_ptrs = new int[A.n_cols + 1];
 	int * hA_row_indices = new int[A.n_nonzero];
