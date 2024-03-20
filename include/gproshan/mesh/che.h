@@ -83,6 +83,7 @@ class che
 		vertex normal_trig(const index_t f) const;
 		vertex normal_he(const index_t he) const;
 		vertex gradient_he(const index_t he, const real_t * f) const;
+		dvec3 gradient_he(const index_t he, const double * f) const;
 		vertex gradient(const index_t v, const real_t * f);
 
 		// vertex color methods

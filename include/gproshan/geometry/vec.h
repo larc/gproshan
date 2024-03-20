@@ -350,9 +350,13 @@ std::istream & operator >> (std::istream & is, vec<T, N> & v)
 }
 
 
-using vec2 = vec<real_t, 2>;
-using vec3 = vec<real_t, 3>;
-using vec4 = vec<real_t, 4>;
+using vec2 = vec<float, 2>;
+using vec3 = vec<float, 3>;
+using vec4 = vec<float, 4>;
+
+using dvec2 = vec<double, 2>;
+using dvec3 = vec<double, 3>;
+using dvec4 = vec<double, 4>;
 
 using uvec2 = vec<unsigned int, 2>;
 using uvec3 = vec<unsigned int, 3>;

@@ -146,6 +146,30 @@ vertex che::gradient_he(const index_t he, const real_t * f) const
 	return normalize(f[i] * pjk + f[j] * pki + f[k] * pij);
 }
 
+dvec3 che::gradient_he(const index_t he, const double * f) const
+{
+	index_t i = VT[he];
+	index_t j = VT[he_next(he)];
+	index_t k = VT[he_prev(he)];
+
+	const vertex & gi = GT[i];
+	const vertex & gj = GT[j];
+	const vertex & gk = GT[k];
+
+	const dvec3 xi = {gi.x(), gi.y(), gi.z()};
+	const dvec3 xj = {gj.x(), gj.y(), gj.z()};
+	const dvec3 xk = {gk.x(), gk.y(), gk.z()};
+
+	const vertex & n = normal_he(he);
+	const dvec3 dn = {n.x(), n.y(), n.z()};
+
+	dvec3 pij = cross(dn, xj - xi);
+	dvec3 pjk = cross(dn, xk - xj);
+	dvec3 pki = cross(dn, xi - xk);
+
+	return normalize(f[i] * pjk + f[j] * pki + f[k] * pij);
+}
+
 vertex che::gradient(const index_t v, const real_t * f)
 {
 	vertex g;
@@ -1078,7 +1102,7 @@ void che::update_evt_ot_et()
 		vhe[VT[he]][vnhe[VT[he]]++] = he;
 
 	size_t ne = 0;
-	for(index_t ohe, he = 0; he < n_half_edges; ++he)
+	for(index_t he = 0; he < n_half_edges; ++he)
 	{
 		const index_t u = VT[he];
 		const index_t v = VT[he_next(he)];
@@ -1087,20 +1111,18 @@ void che::update_evt_ot_et()
 
 		if(OT[he] == NIL)
 		{
-			ohe = NIL;
+			ET[ne++] = he;
+
+			index_t ohe = NIL;
 			for(index_t j = 0; j < vnhe[v]; ++j)
-			{
-				index_t & h = vhe[v][j];
-				if(VT[he_next(h)] == u)
+				if(VT[he_next(vhe[v][j])] == u)
 				{
-					ohe = h;
+					ohe = vhe[v][j];
 					break;
 				}
-			}
 
 			if(ohe != NIL && OT[ohe] == NIL)
 			{
-				ET[ne++] = he;
 				OT[he] = ohe;
 				OT[ohe] = he;
 			}

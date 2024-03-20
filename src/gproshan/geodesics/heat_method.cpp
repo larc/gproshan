@@ -26,16 +26,14 @@ double heat_method(real_t * dist, const che * mesh, const std::vector<index_t> &
 	laplacian(mesh, L, A);
 
 	// make L positive-definite
-	L += 1.0e-8 * A;
+	L += 1e-8 * A;
 
 	// heat flow for short interval
 	A += dt * L;
 
-	gproshan_error_var(A);
-
-	arma::vec u(mesh->n_vertices);
 
 	double solve_time = 0;
+	arma::vec u(mesh->n_vertices);
 
 	cholmod_common context;
 	switch(opt)
@@ -54,18 +52,16 @@ double heat_method(real_t * dist, const che * mesh, const std::vector<index_t> &
 	#endif // GPROSHAN_CUDA
 	}
 
-	gproshan_error_var(u);	
 
 	// extract geodesics
 
 	arma::vec div = compute_divergence(mesh, u);
 	arma::vec phi(mesh->n_vertices);
 
-	gproshan_error_var(div);	
 	switch(opt)
 	{
 		case HEAT_ARMA:
-			if(!spsolve(phi, L, div)) gproshan_error(arma: no solution);
+			if(!spsolve(phi, L, div)) gproshan_error(arma no solution);
 			break;
 		case HEAT_CHOLMOD:
 			solve_time += solve_positive_definite(phi, L, div, &context);
@@ -78,7 +74,6 @@ double heat_method(real_t * dist, const che * mesh, const std::vector<index_t> &
 	#endif // GPROSHAN_CUDA
 	}
 
-	gproshan_error_var(phi);	
 	if(phi.size() == mesh->n_vertices)
 	{
 		phi -= phi.min();
@@ -100,17 +95,16 @@ arma::vec compute_divergence(const che * mesh, const arma::vec & u)
 
 	#pragma omp parallel for
 	for(index_t v = 0; v < mesh->n_vertices; ++v)
-		f[v] = u(v);
-
-	#pragma omp parallel for
-	for(index_t v = 0; v < mesh->n_vertices; ++v)
 	{
 		real_t sum = 0;
 		for(const index_t he: mesh->star(v))
 		{
-			const vertex & nhe = mesh->normal_he(he);
-			const vertex & vhe = mesh->vertex_he(he_prev(he)) - mesh->vertex_he(he_next(he));
-			const vertex & ghe = mesh->gradient_he(he, f.data());
+			const vertex & n = mesh->normal_he(he);
+			const vertex & v = mesh->vertex_he(he_prev(he)) - mesh->vertex_he(he_next(he));
+
+			const dvec3 nhe = {n.x(), n.y(), n.z()};
+			const dvec3 vhe = {v.x(), v.y(), v.z()};
+			const dvec3 ghe = mesh->gradient_he(he, u.memptr());
 			sum += dot(cross(nhe, vhe), -ghe);
 		}
 
@@ -142,7 +136,7 @@ double solve_positive_definite(arma::mat & x, const arma::sp_mat & A, const arma
 	TOC(solve_time)
 
 	assert(x.n_rows == b.n_rows);
-	copy_real_t_array(x.memptr(), (double *) cx->x, x.n_rows);
+	memcpy(x.memptr(), cx->x, x.n_rows * sizeof(double));
 
 	cholmod_l_free_factor(&L, context);
 	cholmod_l_free_sparse(&cA, context);
@@ -154,7 +148,7 @@ double solve_positive_definite(arma::mat & x, const arma::sp_mat & A, const arma
 cholmod_dense * arma_2_cholmod(const arma::mat & D, cholmod_common * context)
 {
 	cholmod_dense * cD = cholmod_l_allocate_dense(D.n_rows, D.n_cols, D.n_rows, CHOLMOD_REAL, context);
-	copy_real_t_array((double *) cD->x, D.memptr(), D.n_elem);
+	memcpy(cD->x, D.memptr(), D.n_elem * sizeof(double));
 
 	return cD;
 }
@@ -165,9 +159,9 @@ cholmod_sparse * arma_2_cholmod(const arma::sp_mat & S, cholmod_common * context
 
 	cholmod_sparse * cS = cholmod_l_allocate_sparse(S.n_rows, S.n_cols, S.n_nonzero, 1, 1, 0, CHOLMOD_REAL, context);
 
-	copy_real_t_array((double *) cS->x, S.values, S.n_nonzero);
 	memcpy(cS->p, S.col_ptrs, (S.n_cols + 1) * sizeof(arma::uword));
 	memcpy(cS->i, S.row_indices, S.n_nonzero * sizeof(arma::uword));
+	memcpy(cS->x, S.values, S.n_nonzero * sizeof(double));
 
 	return cS;
 }
