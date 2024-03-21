@@ -46,14 +46,6 @@ real_t quaternion::operator [] (int index) const
 	return v[index];
 }
 
-void quaternion::toMatrix(real_t Q[4][4]) const // FIX
-{
-	Q[0][0] =	s; Q[0][1] = -v.x(); Q[0][2] = -v.y(); Q[0][3] = -v.z();
-	Q[1][0] = v.x(); Q[1][1] =	s; Q[1][2] = -v.z(); Q[1][3] =  v.y();
-	Q[2][0] = v.y(); Q[2][1] =  v.z(); Q[2][2] =	s; Q[2][3] = -v.x();
-	Q[3][0] = v.z(); Q[3][1] = -v.y(); Q[3][2] =  v.x(); Q[3][3] =	s;
-}
-
 real_t & quaternion::re()
 {
 	return s;

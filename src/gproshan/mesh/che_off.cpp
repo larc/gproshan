@@ -48,7 +48,7 @@ void che_off::read_file(const std::string & file)
 	}
 
 	std::vector<index_t> trigs;
-	trigs.reserve(che::mtrig * n_trigs);
+	trigs.reserve(3 * n_trigs);
 
 	index_t P[32];
 	while(nf--)
@@ -64,14 +64,14 @@ void che_off::read_file(const std::string & file)
 	fclose(fp);
 
 
-	if(size(trigs) != che::mtrig * n_trigs)
+	if(size(trigs) != 3 * n_trigs)
 	{
 		vertex * tGT = GT; GT = nullptr;
 		vertex * tVN = VN; VN = nullptr;
 		rgb_t * tVC = VC; VC = nullptr;
 
 		free();
-		alloc(nv, size(trigs) / che::mtrig);
+		alloc(nv, size(trigs) / 3);
 
 		GT = tGT;
 		VN = tVN;
@@ -115,8 +115,8 @@ void che_off::write_file(const che * mesh, const std::string & file, const che_o
 	{
 		for(index_t he = 0; he < mesh->n_half_edges; )
 		{
-			fprintf(fp, "%u", che::mtrig);
-			for(index_t i = 0; i < che::mtrig; ++i)
+			fprintf(fp, "%u", 3);
+			for(index_t i = 0; i < 3; ++i)
 				fprintf(fp, " %u", mesh->halfedge(he++));
 			fprintf(fp, "\n");
 		}

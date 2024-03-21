@@ -1,5 +1,3 @@
-#include <gproshan/include_arma.h>
-
 #include <cassert>
 
 #include <cusolverSp.h>
@@ -12,9 +10,9 @@ namespace gproshan {
 struct cu_spAxb
 {
 	int * A_col_ptrs, * A_row_indices;
-	real_t * A_values, * x, * b;
+	double * A_values, * x, * b;
 
-	cu_spAxb(const int m, const int nnz, const real_t * hA_values, const int * hA_col_ptrs, const int * hA_row_indices, const real_t * hb)
+	cu_spAxb(const int m, const int nnz, const double * hA_values, const int * hA_col_ptrs, const int * hA_row_indices, const double * hb)
 	{
 		cudaMalloc(&A_col_ptrs, (m + 1) * sizeof(int));
 		cudaMemcpy(A_col_ptrs, hA_col_ptrs, (m + 1) * sizeof(int), cudaMemcpyHostToDevice);
@@ -22,13 +20,13 @@ struct cu_spAxb
 		cudaMalloc(&A_row_indices, nnz * sizeof(int));
 		cudaMemcpy(A_row_indices, hA_row_indices, nnz * sizeof(int), cudaMemcpyHostToDevice);
 
-		cudaMalloc(&A_values, nnz * sizeof(real_t));
-		cudaMemcpy(A_values, hA_values, nnz * sizeof(real_t), cudaMemcpyHostToDevice);
+		cudaMalloc(&A_values, nnz * sizeof(double));
+		cudaMemcpy(A_values, hA_values, nnz * sizeof(double), cudaMemcpyHostToDevice);
 
-		cudaMalloc(&b, nnz * sizeof(real_t));
-		cudaMemcpy(b, hb, nnz * sizeof(real_t), cudaMemcpyHostToDevice);
+		cudaMalloc(&b, nnz * sizeof(double));
+		cudaMemcpy(b, hb, nnz * sizeof(double), cudaMemcpyHostToDevice);
 
-		cudaMalloc(&x, m * sizeof(real_t));
+		cudaMalloc(&x, m * sizeof(double));
 	}
 
 	~cu_spAxb()
@@ -41,7 +39,7 @@ struct cu_spAxb
 	}
 };
 
-double solve_positive_definite_cusolver(const int m, const int nnz, const real_t * hA_values, const int * hA_col_ptrs, const int * hA_row_indices, const real_t * hb, real_t * hx, const bool host)
+double solve_positive_definite_cusolver(const int m, const int nnz, const double * hA_values, const int * hA_col_ptrs, const int * hA_row_indices, const double * hb, double * hx, const bool host)
 {
 	cudaDeviceReset();
 
@@ -65,28 +63,19 @@ double solve_positive_definite_cusolver(const int m, const int nnz, const real_t
 
 	if(host)
 	{
-		#ifdef GPROSHAN_FLOAT
-			cusolverSpScsrlsvcholHost(handle_cusolver, m, nnz, descr, hA_values, hA_col_ptrs, hA_row_indices, hb, 0, 0, hx, &singularity);
-		#else
-			cusolverSpDcsrlsvcholHost(handle_cusolver, m, nnz, descr, hA_values, hA_col_ptrs, hA_row_indices, hb, 0, 0, hx, &singularity);
-		#endif
+		cusolverSpDcsrlsvcholHost(handle_cusolver, m, nnz, descr, hA_values, hA_col_ptrs, hA_row_indices, hb, 0, 0, hx, &singularity);
 	}
 	else
 	{
 		// allocate A, x, b into device
 		cu_spAxb data(m, nnz, hA_values, hA_col_ptrs, hA_row_indices, hb);
 
-		cusolverStatus_t status;
-		#ifdef GPROSHAN_FLOAT
-			status = cusolverSpScsrlsvchol(handle_cusolver, m, nnz, descr, data.A_values, data.A_col_ptrs, data.A_row_indices, data.b, 0, 0, data.x, &singularity);
-		#else
-			status = cusolverSpDcsrlsvchol(handle_cusolver, m, nnz, descr, data.A_values, data.A_col_ptrs, data.A_row_indices, data.b, 0, 0, data.x, &singularity);
-		#endif
+		cusolverStatus_t status = cusolverSpDcsrlsvchol(handle_cusolver, m, nnz, descr, data.A_values, data.A_col_ptrs, data.A_row_indices, data.b, 0, 0, data.x, &singularity);
 
 		if(status == CUSOLVER_STATUS_SUCCESS)
-			cudaMemcpy(hx, data.x, m * sizeof(real_t), cudaMemcpyDeviceToHost);
+			cudaMemcpy(hx, data.x, m * sizeof(double), cudaMemcpyDeviceToHost);
 		else
-			memset(hx, 0, m * sizeof(real_t));
+			memset(hx, 0, m * sizeof(double));
 	}
 
 //	printf("%d\n", singularity != -1);

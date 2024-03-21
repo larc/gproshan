@@ -117,7 +117,7 @@ void che_ptx::read_file(const std::string & file)
 	}
 
 	rw(n_half_edges)	= he;
-	rw(n_trigs)			= he / che::mtrig;
+	rw(n_trigs)			= he / 3;
 }
 
 void che_ptx::write_file(const che * mesh, const std::string & file, const size_t n_rows, const size_t n_cols)

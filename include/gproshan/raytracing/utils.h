@@ -4,7 +4,7 @@
 #include <gproshan/include.h>
 #include <gproshan/geometry/mat.h>
 
-#include <gproshan/mesh/che.cuh>
+#include <gproshan/mesh/che.h>
 #include <gproshan/scenes/scene.h>
 #include <gproshan/raytracing/light.h>
 
@@ -91,34 +91,33 @@ struct t_eval_hit
 	t_eval_hit() {}
 
 	__host_device__
-	t_eval_hit(const CHE & mesh, const index_t aprimID, const T & au, const T & av, const scene_data & sc)
+	t_eval_hit(const che & mesh, const index_t aprimID, const T au, const T av, const scene_data & sc, const bool pointcloud = false)
 	{
 		primID = aprimID;
 		u = au;
 		v = av;
 
-		if(!mesh.n_trigs) // pointcloud
+		if(pointcloud || !mesh.n_trigs) // pointcloud
 		{
-			Kd = {T(mesh.VC[aprimID].r), T(mesh.VC[aprimID].g), T(mesh.VC[aprimID].b)};
-			Kd /= 255;
-			normal = mesh.VN[aprimID];
-			heatmap = mesh.VHC[aprimID];
+			Kd		= mesh.color(primID);
+			normal	= mesh.normal(primID);
+			heatmap	= mesh.heatmap(primID);
 			return;
 		}
 
-		const index_t he = primID * che::mtrig;
+		const uvec3 trig = mesh.trig(primID);
 
-		const index_t a = mesh.VT[he];
-		const index_t b = mesh.VT[he + 1];
-		const index_t c = mesh.VT[he + 2];
+		Kd		= (1.f - u - v) * mesh.color(trig.x())
+							+ u * mesh.color(trig.y())
+							+ v * mesh.color(trig.z());
+		normal	= (1.f - u - v) * mesh.normal(trig.x())
+							+ u * mesh.normal(trig.y())
+							+ v * mesh.normal(trig.z());
+		heatmap	= (1.f - u - v) * mesh.heatmap(trig.x())
+							+ u * mesh.heatmap(trig.y())
+							+ v * mesh.heatmap(trig.z());
 
-		const vec<T, 3> ca = {T(mesh.VC[a].r), T(mesh.VC[a].g), T(mesh.VC[a].b)};
-		const vec<T, 3> cb = {T(mesh.VC[b].r), T(mesh.VC[b].g), T(mesh.VC[b].b)};
-		const vec<T, 3> cc = {T(mesh.VC[c].r), T(mesh.VC[c].g), T(mesh.VC[c].b)};
-
-		Kd = ((1.f - u - v) * ca + u * cb + v * cc) / 255;
-		normal = (1.f - u - v) * mesh.VN[a] + u * mesh.VN[b] + v * mesh.VN[c];
-		heatmap = (1.f - u - v) * mesh.VHC[a] + u * mesh.VHC[b] + v * mesh.VHC[c];
+		normal = normalize(normal);
 
 		if(!sc.trig_mat) return;
 		if(sc.trig_mat[primID] == NIL) return;
@@ -126,7 +125,9 @@ struct t_eval_hit
 		const scene::material & mat = sc.materials[sc.trig_mat[primID]];
 		vec<T, 2> texcoord;
 		if(sc.texcoords)
-			texcoord = (1.f - u - v) * sc.texcoords[a] + u * sc.texcoords[b] + v * sc.texcoords[c];
+			texcoord = (1.f - u - v) * sc.texcoords[trig.x()]
+								+ u * sc.texcoords[trig.y()]
+								+ v * sc.texcoords[trig.z()];
 
 		Ka = mat.Ka;
 		if(mat.map_Ka != -1)
@@ -189,9 +190,9 @@ struct t_eval_hit
 	bool scatter_diffuse(vec<T, 3> & dir, random<T> & rnd)
 	{
 		// random unit sphere
-		const T & theta = rnd() * 2 * M_PI;
-		const T & phi = acosf(2 * rnd() - 1);
-		const T & r = cbrtf(rnd());
+		const T theta = rnd() * 2 * M_PI;
+		const T phi = acosf(2 * rnd() - 1);
+		const T r = cbrtf(rnd());
 
 		const vec<T, 3> p = { r * sinf(phi) * cosf(theta)
 							, r * sinf(phi) * sinf(theta)
@@ -208,7 +209,7 @@ template <class T, class Occluded>
 __host_device__
 vec<T, 3> eval_li(const t_eval_hit<T> & hit, const light & ambient, const light * lights, const int n_lights, const vec<T, 3> & eye, Occluded occluded)
 {
-	const vec<T, 3> & v = normalize(eye - hit.position);
+	const vec<T, 3> v = normalize(eye - hit.position);
 	const vec<T, 3> & n = hit.normal;
 
 	T lambertian;
@@ -220,7 +221,7 @@ vec<T, 3> eval_li(const t_eval_hit<T> & hit, const light & ambient, const light 
 		const light & L = lights[i];
 
 		l = L.pos - hit.position;
-		const T & r = length(l);
+		const T r = length(l);
 
 		l /= r;
 		h = normalize(l + v);
@@ -233,8 +234,8 @@ vec<T, 3> eval_li(const t_eval_hit<T> & hit, const light & ambient, const light 
 		specular = powf(std::max(dot(h, n), 0.f), hit.Ns);
 	#endif // __CUDACC__
 
-		const vec<T, 3> & color = hit.Ka * ambient.color * ambient.power +
-									(lambertian * hit.Kd + specular * hit.Ks) * L.color * L.power / (r * r);
+		const vec<T, 3> color = hit.Ka * ambient.color * ambient.power +
+								(lambertian * hit.Kd + specular * hit.Ks) * L.color * L.power / (r * r);
 
 		li += (dot(v, n) < 0 || occluded(hit.position, l, r) ? 0.4f : 1.0f) * color;
 	}
@@ -268,7 +269,7 @@ vec<T, 3> ray_view_dir(	const uvec2 & pos,
 
 template <class H>
 __host_device__
-index_t closest_hit_vertex(const CHE & mesh, const H & hit)
+index_t closest_hit_vertex(const che & mesh, const H & hit)
 {
 	if(!mesh.n_trigs) return hit.primID;
 
@@ -287,7 +288,7 @@ index_t closest_hit_vertex(const CHE & mesh, const H & hit)
 		w = hit.v;
 	}
 
-	return mesh.VT[hit.primID * 3 + he];
+	return mesh.halfedge(hit.primID * 3 + he);
 }
 
 

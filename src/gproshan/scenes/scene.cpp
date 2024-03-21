@@ -49,7 +49,7 @@ bool scene::load_obj(const std::string & file)
 		if(!load_mtl(path + m))
 			return false;
 
-	alloc(size(p.trigs), 0);
+	alloc(size(p.trigs), size(p.trigs));
 
 	#pragma omp parallel for
 	for(index_t i = 0; i < n_vertices; ++i)
@@ -57,6 +57,7 @@ bool scene::load_obj(const std::string & file)
 		const index_t v = p.trigs[i].x();
 		GT[i] = p.vertices[v];
 		VC[i] = p.vcolors[v];
+		VT[i] = i;
 	}
 
 	if(size(p.vtexcoords))

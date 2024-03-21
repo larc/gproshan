@@ -116,8 +116,6 @@ void geodesics::execute(che * mesh, const std::vector<index_t> & sources, const 
 
 void geodesics::run_fastmarching(che * mesh, const std::vector<index_t> & sources, const size_t n_iter, const real_t radio, const fm_function_t & fun)
 {
-	CHE cmesh(mesh);
-
 	index_t BLACK = 0, GREEN = 1, RED = 2;
 	index_t * color = new index_t[n_vertices];
 
@@ -130,11 +128,6 @@ void geodesics::run_fastmarching(che * mesh, const std::vector<index_t> & source
 	std::priority_queue<std::pair<real_t, size_t>,
 			std::vector<std::pair<real_t, size_t> >,
 			std::greater<std::pair<real_t, size_t> > > Q;
-
-	real_t dv, dp;
-	vertex vx;
-
-	size_t black_i;
 
 	index_t c = 0;
 	n_sorted = 0;
@@ -153,7 +146,7 @@ void geodesics::run_fastmarching(che * mesh, const std::vector<index_t> & source
 
 		if(Q.empty()) break;
 
-		black_i = Q.top().second;
+		size_t black_i = Q.top().second;
 		color[black_i] = BLACK;
 		Q.pop();
 
@@ -170,19 +163,22 @@ void geodesics::run_fastmarching(che * mesh, const std::vector<index_t> & source
 
 			if(color[v] == RED)
 			{
-				dv = dist[v];
+				real_t dv = dist[v];
 				for(const index_t he: mesh->star(v))
 				{
-					dp = update_step(&cmesh, dist, {mesh->halfedge(he_next(he)),
-													mesh->halfedge(he_prev(he)),
-													mesh->halfedge(he)
-													});
-					if(dp < dv)
+					const uvec3 i = {	mesh->halfedge(he_next(he)),
+										mesh->halfedge(he_prev(he)),
+										mesh->halfedge(he)
+									};
+
+					real_t d = update_step(mesh, dist, i);
+
+					if(d < dv)
 					{
-						dv = dp;
+						dv = d;
 
 						if(clusters)
-							clusters[v] = clusters[mesh->halfedge(he_prev(he))] ? clusters[mesh->halfedge(he_prev(he))] : clusters[mesh->halfedge(he_next(he))];
+							clusters[v] = clusters[clusters[i.y()] ? i.y() : i.x()];
 					}
 				}
 

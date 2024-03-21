@@ -15,11 +15,11 @@ void fairing_spectral::compute(che * mesh)
 	vertices = new vertex[mesh->n_vertices];
 	memcpy(vertices, &mesh->point(0), mesh->n_vertices * sizeof(vertex));
 
-	a_mat X((real_t *) vertices, 3, mesh->n_vertices, false, true);
+	arma::fmat X((real_t *) vertices, 3, mesh->n_vertices, false, true);
 
-	a_sp_mat L, A;
-	a_vec eigval;
-	a_mat eigvec;
+	arma::sp_fmat L, A;
+	arma::fvec eigval;
+	arma::fmat eigvec;
 
 	n_eigs = eigs_laplacian(mesh, eigval, eigvec, L, A, n_eigs);
 	if(!n_eigs) return;

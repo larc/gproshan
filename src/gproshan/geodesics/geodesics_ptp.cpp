@@ -21,36 +21,20 @@ void parallel_toplesets_propagation_cpu(const ptp_out_t & ptp_out,
 										const f_ptp<real_t> & fun
 										)
 {
-	CHE h_mesh(mesh);
-	const size_t n_vertices = h_mesh.n_vertices;
+	const size_t n_vertices = mesh->n_vertices;
 
+	che * h_mesh = nullptr;
 	index_t * inv = nullptr;
 	if(coalescence)
 	{
+		h_mesh = new che(*mesh, toplesets.index, {false, false, false});
 		inv = new index_t[n_vertices];
-		h_mesh.GT = new vertex[n_vertices];
-		h_mesh.EVT = new index_t[n_vertices];
-		h_mesh.VT = new index_t[h_mesh.n_half_edges];
 
 		#pragma omp parallel for
 		for(index_t i = 0; i < toplesets.limits.back(); ++i)
-		{
-			h_mesh.GT[i] = mesh->point(toplesets.index[i]);
 			inv[toplesets.index[i]] = i;
-		}
-
-		#pragma omp parallel for
-		for(index_t he = 0; he < mesh->n_half_edges; ++he)
-		{
-			const index_t v = mesh->halfedge(he);
-			if(v != NIL)
-			{
-				h_mesh.VT[he] = inv[v];
-				if(mesh->evt(v) == he)
-					h_mesh.EVT[inv[v]] = he;
-			}
-		}
 	}
+
 
 	real_t * dist[2] = {	coalescence ? new real_t[n_vertices] : ptp_out.dist,
 							new real_t[n_vertices]
@@ -66,7 +50,7 @@ void parallel_toplesets_propagation_cpu(const ptp_out_t & ptp_out,
 			dist[0][v] = dist[1][v] = INFINITY;
 	}
 
-	const index_t i = run_ptp(	&h_mesh, sources, toplesets.limits, dist, clusters,
+	const index_t i = run_ptp(	h_mesh ? h_mesh : mesh, sources, toplesets.limits, dist, clusters,
 								coalescence ? inv : toplesets.index,
 								coalescence ? nullptr : (index_t *) toplesets.index,
 								fun);
@@ -87,14 +71,8 @@ void parallel_toplesets_propagation_cpu(const ptp_out_t & ptp_out,
 	delete [] dist[1];
 	delete [] clusters[1];
 
-	if(coalescence)
-	{
-		delete [] h_mesh.GT;
-		delete [] h_mesh.VT;
-		delete [] h_mesh.EVT;
-	}
-
 	delete [] inv;
+	delete h_mesh;
 }
 
 void normalize_ptp(real_t * dist, const size_t n)
