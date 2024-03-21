@@ -1,4 +1,4 @@
-#include <gproshan/mesh/che.cuh>
+#include <gproshan/mesh/che.h>
 #include <gproshan/raytracing/utils.h>
 #include <gproshan/raytracing/optix_params.h>
 
@@ -38,7 +38,7 @@ extern "C" __global__ void __closesthit__shadow() {}
 
 extern "C" __global__ void __closesthit__radiance()
 {
-	const CHE & mesh = **(const CHE **) optixGetSbtDataPointer();
+	const che & mesh = **(const che **) optixGetSbtDataPointer();
 
 	const int primID = optixGetPrimitiveIndex();
 	const float2 bar = optixGetTriangleBarycentrics();

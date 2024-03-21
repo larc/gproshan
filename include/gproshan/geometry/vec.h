@@ -24,7 +24,7 @@ class vec
 
 	public:
 		__host_device__
-		vec(const T & val = 0)
+		vec(const T val = 0)
 		{
 			for(T & v: values)
 				v = val;
@@ -34,12 +34,12 @@ class vec
 		vec(const std::initializer_list<T> & list)
 		{
 			int i = -1;
-			for(const T & v: list)
+			for(T v: list)
 				values[++i] = v;
 		}
 
 		__host_device__
-		vec(const vec<T, N - 1> & v, const T & val = 0)
+		vec(const vec<T, N - 1> & v, const T val = 0)
 		{
 			for(index_t i = 0; i < N - 1; ++i)
 				values[i] = v[i];
@@ -61,7 +61,7 @@ class vec
 		}
 
 		__host_device__
-		const T & operator [] (const index_t i) const
+		T operator [] (const index_t i) const
 		{
 			assert(i < N);
 			return values[i];
@@ -69,7 +69,7 @@ class vec
 
 		///< concatenate with comma operator
 		__host_device__
-		vec<T, N + 1> operator , (const T & a) const
+		vec<T, N + 1> operator , (const T a) const
 		{
 			return {*this, a};
 		}
@@ -82,7 +82,7 @@ class vec
 		}
 
 		__host_device__
-		const T & x() const
+		T x() const
 		{
 			assert(N > 0);
 			return values[0];
@@ -96,7 +96,7 @@ class vec
 		}
 
 		__host_device__
-		const T & y() const
+		T y() const
 		{
 			assert(N > 1);
 			return values[1];
@@ -110,7 +110,7 @@ class vec
 		}
 
 		__host_device__
-		const T & z() const
+		T z() const
 		{
 			assert(N > 2);
 			return values[2];
@@ -122,7 +122,7 @@ class vec
 		T norm() const
 		{
 			T res = 0;
-			for(const T & v: values)
+			for(T v: values)
 				res += v * v;
 			return std::sqrt(res);
 		}
@@ -258,7 +258,7 @@ class vec
 ///< scalar product
 template<class T, size_t N>
 __host_device__
-vec<T, N> operator * (const T & a, const vec<T, N> & v)
+vec<T, N> operator * (const T a, const vec<T, N> & v)
 {
 	return v * a;
 }
@@ -266,7 +266,7 @@ vec<T, N> operator * (const T & a, const vec<T, N> & v)
 ///< scalar product
 template<class T, size_t N>
 __host_device__
-vec<T, N> operator / (const T & a, const vec<T, N> & v)
+vec<T, N> operator / (const T a, const vec<T, N> & v)
 {
 	vec<T, N> res;
 	for(index_t i = 0; i < N; ++i)
@@ -287,14 +287,10 @@ template<class T>
 __host_device__
 vec<T, 3> cross(const vec<T, 3> & u, const vec<T, 3> & v)
 {
-	const T & ux = u[0];
-	const T & uy = u[1];
-	const T & uz = u[2];
-	const T & vx = v[0];
-	const T & vy = v[1];
-	const T & vz = v[2];
-
-	return {uy * vz - uz * vy, uz * vx - ux * vz, ux * vy - uy * vx};
+	return {u[1] * v[2] - u[2] * v[1],
+			u[2] * v[0] - u[0] * v[2],
+			u[0] * v[1] - u[1] * v[0]
+			};
 }
 
 ///< dot product
@@ -350,9 +346,13 @@ std::istream & operator >> (std::istream & is, vec<T, N> & v)
 }
 
 
-using vec2 = vec<real_t, 2>;
-using vec3 = vec<real_t, 3>;
-using vec4 = vec<real_t, 4>;
+using vec2 = vec<float, 2>;
+using vec3 = vec<float, 3>;
+using vec4 = vec<float, 4>;
+
+using dvec2 = vec<double, 2>;
+using dvec3 = vec<double, 3>;
+using dvec4 = vec<double, 4>;
 
 using uvec2 = vec<unsigned int, 2>;
 using uvec3 = vec<unsigned int, 3>;

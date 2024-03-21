@@ -102,7 +102,7 @@ void che_ply::read_file(const std::string & file)
 	alloc(nv, nf);
 
 	std::vector<index_t> trigs;
-	trigs.reserve(che::mtrig * n_trigs);
+	trigs.reserve(3 * n_trigs);
 
 	if(format[0] == 'a')	// ascii
 	{
@@ -237,13 +237,13 @@ void che_ply::read_file(const std::string & file)
 	fclose(fp);
 
 
-	if(size(trigs) != che::mtrig * n_trigs)
+	if(size(trigs) != 3 * n_trigs)
 	{
 		vertex * tGT = GT; GT = nullptr;
 		rgb_t * tVC = VC; VC = nullptr;
 
 		free();
-		alloc(nv, size(trigs) / che::mtrig);
+		alloc(nv, size(trigs) / 3);
 
 		GT = tGT;
 		VC = tVC;
@@ -287,11 +287,11 @@ void che_ply::write_file(const che * mesh, const std::string & file, const bool 
 		if(color) fwrite(p_rgb + v, sizeof(rgb_t), 1, fp);
 	}
 
-	unsigned char mtrig = che::mtrig;
-	for(index_t he = 0; he < mesh->n_half_edges; he += che::mtrig)
+	unsigned char mtrig = 3;
+	for(index_t he = 0; he < mesh->n_half_edges; he += 3)
 	{
 		fwrite(&mtrig, 1, 1, fp);
-		fwrite(mesh->trigs_ptr(), sizeof(index_t), che::mtrig, fp);
+		fwrite(mesh->trigs_ptr(), sizeof(index_t), 3, fp);
 	}
 
 	fclose(fp);

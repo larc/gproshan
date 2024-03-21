@@ -884,7 +884,7 @@ che * fill_hole_center_triangle(che * mesh, std::vector<index_t> & select_vertic
 	size_t n_trigs = size(select_vertices) + 4;
 
 	vertex * vertices = new vertex[n_vertices];
-	index_t * trigs = new index_t[n_trigs * che::mtrig];
+	index_t * trigs = new index_t[n_trigs * 3];
 
 	std::vector<vertex> triangle;
 	std::vector<size_t> tri_sizes(3,0);

@@ -35,18 +35,17 @@ void key_points::compute_kps_areas(che * mesh, const real_t percent)
 	is_kp.assign(mesh->n_vertices, false);
 	kps.reserve(mesh->n_vertices);
 
-	for(index_t he, t = 0; t < mesh->n_trigs; ++t)
+	for(index_t t = 0; t < mesh->n_trigs; ++t)
 	{
-		he = che::mtrig * face_areas[t].second;
-		for(index_t i = 0; i < che::mtrig; ++i)
+		uvec3 vi = mesh->trig(t);
+		for(index_t i = 0; i < 3; ++i)
 		{
-			const index_t v = mesh->halfedge(he);
+			const index_t v = vi[i];
 			if(!is_kp[v])
 			{
 				kps.push_back(v);
 				is_kp[v] = true;
 			}
-			he = he_next(he);
 		}
 	}
 

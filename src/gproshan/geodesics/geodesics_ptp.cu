@@ -1,6 +1,6 @@
 #include <gproshan/geodesics/geodesics_ptp.h>
 
-#include <gproshan/mesh/che.cuh>
+#include <gproshan/mesh/che_cuda.h>
 
 #include <cstdio>
 #include <fstream>
@@ -21,36 +21,20 @@ double parallel_toplesets_propagation_gpu(	const ptp_out_t & ptp_out,
 											const f_ptp<real_t> & fun
 											)
 {
-	CHE h_mesh(mesh);
-	const size_t n_vertices = h_mesh.n_vertices;
+	const size_t n_vertices = mesh->n_vertices;
 
+	che * h_mesh = nullptr;
 	index_t * inv = nullptr;
 	if(coalescence)
 	{
+		h_mesh = new che(*mesh, toplesets.index, {false, false, false});
 		inv = new index_t[n_vertices];
-		h_mesh.GT = new vertex[n_vertices];
-		h_mesh.EVT = new index_t[n_vertices];
-		h_mesh.VT = new index_t[h_mesh.n_half_edges];
 
 		#pragma omp parallel for
 		for(index_t i = 0; i < toplesets.limits.back(); ++i)
-		{
-			h_mesh.GT[i] = mesh->point(toplesets.index[i]);
 			inv[toplesets.index[i]] = i;
-		}
-
-		#pragma omp parallel for
-		for(index_t he = 0; he < mesh->n_half_edges; ++he)
-		{
-			const index_t v = mesh->halfedge(he);
-			if(v != NIL)
-			{
-				h_mesh.VT[he] = inv[v];
-				if(mesh->evt(v) == he)
-					h_mesh.EVT[inv[v]] = he;
-			}
-		}
 	}
+
 
 	cudaDeviceReset();
 
@@ -59,8 +43,7 @@ double parallel_toplesets_propagation_gpu(	const ptp_out_t & ptp_out,
 	cudaEventCreate(&stop);
 	cudaEventRecord(start, 0);
 
-	CHE * dd_mesh, * d_mesh;
-	cuda_create_CHE(&h_mesh, dd_mesh, d_mesh);
+	che_cuda d_mesh(h_mesh ? h_mesh : mesh, {false, false, false});
 
 	real_t * h_dist = coalescence ? new real_t[n_vertices] : ptp_out.dist;
 	index_t * h_clusters = coalescence && ptp_out.clusters ? new index_t[n_vertices]
@@ -130,16 +113,9 @@ double parallel_toplesets_propagation_gpu(	const ptp_out_t & ptp_out,
 	cudaFree(d_clusters[0]);
 	cudaFree(d_clusters[1]);
 	cudaFree(d_sorted);
-	cuda_free_CHE(dd_mesh, d_mesh);
-
-	if(coalescence)
-	{
-		delete [] h_mesh.GT;
-		delete [] h_mesh.VT;
-		delete [] h_mesh.EVT;
-	}
 
 	delete [] inv;
+	delete h_mesh;
 
 	cudaEventRecord(stop, 0);
 	cudaEventSynchronize(stop);
@@ -155,8 +131,7 @@ double parallel_toplesets_propagation_gpu(	const ptp_out_t & ptp_out,
 
 real_t farthest_point_sampling_ptp_gpu(che * mesh, std::vector<index_t> & samples, double & time_fps, size_t n, real_t radio)
 {
-	CHE h_mesh(mesh);
-	const size_t n_vertices = h_mesh.n_vertices;
+	const size_t n_vertices = mesh->n_vertices;
 
 	cudaDeviceReset();
 
@@ -165,8 +140,7 @@ real_t farthest_point_sampling_ptp_gpu(che * mesh, std::vector<index_t> & sample
 	cudaEventCreate(&stop);
 	cudaEventRecord(start, 0);
 
-	CHE * dd_mesh, * d_mesh;
-	cuda_create_CHE(&h_mesh, dd_mesh, d_mesh);
+	che_cuda d_mesh(mesh, {false, false, false});
 
 	real_t * h_dist = new real_t[n_vertices];
 
@@ -229,7 +203,6 @@ real_t farthest_point_sampling_ptp_gpu(che * mesh, std::vector<index_t> & sample
 	cudaFree(d_dist[0]);
 	cudaFree(d_dist[1]);
 	cudaFree(d_sorted);
-	cuda_free_CHE(dd_mesh, d_mesh);
 
 	cudaEventRecord(stop, 0);
 	cudaEventSynchronize(stop);
@@ -245,7 +218,7 @@ real_t farthest_point_sampling_ptp_gpu(che * mesh, std::vector<index_t> & sample
 }
 
 __global__
-void relax_ptp(const CHE * mesh, real_t * new_dist, real_t * old_dist, index_t * new_clusters, index_t * old_clusters, const index_t start, const index_t end, const index_t * sorted)
+void relax_ptp(const che * mesh, real_t * new_dist, real_t * old_dist, index_t * new_clusters, index_t * old_clusters, const index_t start, const index_t end, const index_t * sorted)
 {
 	index_t v = blockDim.x * blockIdx.x + threadIdx.x + start;
 

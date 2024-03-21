@@ -15,12 +15,12 @@ void fairing_taubin::compute(che * mesh)
 	vertices = new vertex[mesh->n_vertices];
 	memcpy(vertices, &mesh->point(0), mesh->n_vertices * sizeof(vertex));
 
-	a_mat X((real_t *) vertices, 3, mesh->n_vertices, false, true);
+	arma::fmat X((real_t *) vertices, 3, mesh->n_vertices, false, true);
 
-	a_sp_mat L, A;
+	arma::sp_fmat L, A;
 	laplacian(mesh, L, A);
 
-	a_mat R = spsolve(A + step * L, A * X.t());
+	arma::fmat R = spsolve(A + step * L, A * X.t());
 
 	X = R.t();
 }

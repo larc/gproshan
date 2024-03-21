@@ -17,7 +17,7 @@ che_obj::che_obj(const std::string & file)
 void che_obj::read_file(const std::string & file)
 {
 	parser p(file);
-	alloc(size(p.vertices), size(p.trigs) / che::mtrig);
+	alloc(size(p.vertices), size(p.trigs) / 3);
 	memcpy(GT, p.vertices.data(), size(p.vertices) * sizeof(vertex));
 	memcpy(VC, p.vcolors.data(), size(p.vcolors) * sizeof(rgb_t));
 
@@ -52,7 +52,7 @@ void che_obj::write_file(const che * mesh, const std::string & file, const bool 
 		for(index_t he = 0; he < mesh->n_half_edges; )
 		{
 			fprintf(fp, "f");
-			for(index_t i = 0; i < che::mtrig; ++i)
+			for(index_t i = 0; i < 3; ++i)
 				fprintf(fp, " %u", mesh->halfedge(he++) + 1);
 			fprintf(fp, "\n");
 		}
