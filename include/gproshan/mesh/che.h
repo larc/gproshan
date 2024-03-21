@@ -54,18 +54,18 @@ class che
 			operator vertex () const;
 		};
 
-size_t n_vertices		= 0;
-size_t n_trigs		= 0;
-size_t n_half_edges	= 0;
-size_t n_edges		= 0;
+		const size_t n_vertices		= 0;
+		const size_t n_trigs		= 0;
+		const size_t n_half_edges	= 0;
+		const size_t n_edges		= 0;
 
 		std::string filename;		///< get and set data member
 
 	public:
 		vertex * GT		= nullptr;	///< geometry table			: v		-> vertex
+		index_t * EVT	= nullptr;	///< extra vertex table		: v		-> he
 		index_t * VT	= nullptr;	///< vertex table (trigs)	: he	-> v
 		index_t * OT	= nullptr;	///< opposite table			: he	-> he
-		index_t * EVT	= nullptr;	///< extra vertex table		: v		-> he
 		index_t * ET	= nullptr;	///< edge table				: e		-> he
 		index_t * EHT	= nullptr;	///< extra half edge table	: he	-> e
 

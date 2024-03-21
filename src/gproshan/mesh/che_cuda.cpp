@@ -15,9 +15,9 @@ che_cuda::che_cuda(const che * mesh, const che::options & opts)
 	if(!mesh) return;
 	if(!mesh->n_vertices) return;
 
-	n_vertices = mesh->n_vertices;
-	n_trigs = mesh->n_trigs;
-	n_half_edges = mesh->n_half_edges;
+	rw(n_vertices)		= mesh->n_vertices;
+	rw(n_trigs)			= mesh->n_trigs;
+	rw(n_half_edges)	= mesh->n_half_edges;
 
 	cudaMalloc(&GT, sizeof(vertex) * n_vertices);
 	cudaMemcpy(GT, mesh->GT, sizeof(vertex) * n_vertices, cudaMemcpyHostToDevice);
