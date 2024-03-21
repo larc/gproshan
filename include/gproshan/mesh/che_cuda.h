@@ -18,7 +18,7 @@ class che_cuda : public che
 		che_cuda(const che * mesh = nullptr, const che::options & opts = che::default_opts);
 		~che_cuda();
 
-		operator const che * () const;
+		operator che * () const;
 };
 
 

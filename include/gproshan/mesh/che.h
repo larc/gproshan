@@ -216,26 +216,6 @@ class che::star_he::iterator
 };
 
 
-// simple che data structure
-struct CHE
-{
-	size_t n_vertices = 0;
-	size_t n_trigs = 0;
-	size_t n_half_edges = 0;
-
-	vertex * GT	= nullptr;
-	vertex * VN	= nullptr;
-	che::rgb_t * VC	= nullptr;
-	real_t * VHC	= nullptr;
-	index_t * VT	= nullptr;
-	index_t * OT	= nullptr;
-	index_t * EVT	= nullptr;
-
-	CHE() = default;
-	CHE(const che * mesh);
-};
-
-
 } // namespace gproshan
 
 #endif // CHE_H

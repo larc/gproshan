@@ -4,7 +4,7 @@
 #include <gproshan/include.h>
 #include <gproshan/geometry/mat.h>
 
-#include <gproshan/mesh/che.cuh>
+#include <gproshan/mesh/che.h>
 #include <gproshan/scenes/scene.h>
 #include <gproshan/raytracing/light.h>
 

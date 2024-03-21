@@ -1,4 +1,4 @@
-#include <gproshan/mesh/che.cuh>
+#include <gproshan/mesh/che.h>
 #include <gproshan/raytracing/utils.h>
 #include <gproshan/raytracing/optix_params.h>
 

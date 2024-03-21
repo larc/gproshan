@@ -1144,8 +1144,6 @@ bool che::alloc(const size_t n_v, const size_t n_f, const che::options & opt)
 
 void che::free()
 {
-	gproshan_error_var("che::free: " + filename);
-
 	delete [] GT;	GT = nullptr;
 	delete [] EVT;	EVT = nullptr;
 	delete [] VT;	VT = nullptr;
@@ -1320,21 +1318,6 @@ bool che::star_he::iterator::operator != (const iterator & it) const
 index_t che::star_he::iterator::operator * ()
 {
 	return he;
-}
-
-CHE::CHE(const che * mesh)
-{
-	n_vertices = mesh->n_vertices;
-	n_trigs = mesh->n_trigs;
-	n_half_edges = mesh->n_half_edges;
-
-	GT = mesh->GT;
-	VN = mesh->VN;
-	VC = mesh->VC;
-	VHC = mesh->VHC;
-	VT = mesh->VT;
-	OT = mesh->OT;
-	EVT = mesh->EVT;
 }
 
 

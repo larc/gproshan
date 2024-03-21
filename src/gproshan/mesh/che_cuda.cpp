@@ -52,8 +52,6 @@ che_cuda::che_cuda(const che * mesh, const che::options & opts)
 
 che_cuda::~che_cuda()
 {
-	gproshan_error_var("che_cuda::free: " + filename);
-
 	cudaFree(GT);	GT	= nullptr;
 	cudaFree(EVT);	EVT	= nullptr;
 	cudaFree(VT);	VT	= nullptr;
@@ -65,7 +63,7 @@ che_cuda::~che_cuda()
 	cudaFree(device);
 }
 
-che_cuda::operator const che * () const
+che_cuda::operator che * () const
 {
 	return device;
 }

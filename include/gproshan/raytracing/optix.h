@@ -1,8 +1,7 @@
 #ifndef RT_OPTIX_H
 #define RT_OPTIX_H
 
-#include <gproshan/mesh/che.h>
-#include <gproshan/mesh/che.cuh>
+#include <gproshan/mesh/che_cuda.h>
 #include <gproshan/scenes/scene.h>
 #include <gproshan/raytracing/raytracing.h>
 #include <gproshan/raytracing/optix_params.h>
@@ -43,7 +42,6 @@ class optix : public raytracing
 		launch_params optix_params;
 		launch_params * optix_params_buffer = nullptr;
 
-		std::vector<che *> dd_mesh;
 		std::vector<che *> d_mesh;
 
 		void * raygen_records_buffer = nullptr;

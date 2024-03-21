@@ -56,12 +56,12 @@ class embree : public raytracing
 		RTCDevice rtc_device;
 		RTCScene rtc_scene;
 
-		std::vector<che *> g_meshes;
+		std::vector<const che *> g_meshes;
 		scene_data sc;
 
 	public:
 		embree();
-		embree(	const std::vector<che *> & meshes,
+		embree(	const std::vector<const che *> & meshes,
 				const std::vector<mat4> & model_mats,
 				const pc_opts & pc = pc_opts()
 				);
@@ -74,7 +74,7 @@ class embree : public raytracing
 
 
 	protected:
-		void build_bvh(	const std::vector<che *> & meshes,
+		void build_bvh(	const std::vector<const che *> & meshes,
 						const std::vector<mat4> & model_mats,
 						const pc_opts & pc = pc_opts()
 						);

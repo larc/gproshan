@@ -68,7 +68,7 @@ embree::embree()
 	rtcSetDeviceErrorFunction(rtc_device, embree_error, NULL);
 }
 
-embree::embree(const std::vector<che *> & meshes, const std::vector<mat4> & model_mats, const pc_opts & pc): embree()
+embree::embree(const std::vector<const che *> & meshes, const std::vector<mat4> & model_mats, const pc_opts & pc): embree()
 {
 	build_bvh(meshes, model_mats, pc);
 }
@@ -106,7 +106,7 @@ vec4 * embree::pc_data(const index_t geomID)
 	return (vec4 *) rtcGetGeometryBufferData(geom, RTC_BUFFER_TYPE_VERTEX, 0);
 }
 
-void embree::build_bvh(const std::vector<che *> & meshes, const std::vector<mat4> & model_mats, const pc_opts & pc)
+void embree::build_bvh(const std::vector<const che *> & meshes, const std::vector<mat4> & model_mats, const pc_opts & pc)
 {
 	g_meshes.resize(size(meshes));
 	for(index_t i = 0; i < size(meshes); ++i)
@@ -162,20 +162,11 @@ index_t embree::add_mesh(const che * mesh, const mat4 & model_mat)
 	index_t * tri_idxs = (index_t *) rtcSetNewGeometryBuffer(	geom,
 																RTC_BUFFER_TYPE_INDEX, 0,
 																RTC_FORMAT_UINT3, 3 * sizeof(index_t),
-																mesh->is_scene() ? mesh->n_vertices / 3 : mesh->n_trigs
+																mesh->n_trigs
 																);
 
 
-	if(mesh->is_scene())
-	{
-		#pragma omp parallel for
-		for(index_t i = 0; i < mesh->n_vertices; ++i)
-			tri_idxs[i] = i;
-	}
-	else
-	{
-		memcpy(tri_idxs, mesh->trigs_ptr(), mesh->n_half_edges * sizeof(index_t));
-	}
+	memcpy(tri_idxs, mesh->trigs_ptr(), mesh->n_half_edges * sizeof(index_t));
 
 	rtcCommitGeometry(geom);
 
@@ -184,10 +175,6 @@ index_t embree::add_mesh(const che * mesh, const mat4 & model_mat)
 
 	if(mesh->is_scene())
 	{
-		g_meshes[geom_id]->VT = tri_idxs;
-		//g_meshes[geom_id]->n_trigs = mesh->n_vertices / 3;
-		//g_meshes[geom_id]->n_half_edges = mesh->n_vertices;
-
 		scene * psc = (scene *) mesh;
 		sc.materials = psc->materials.data();
 		sc.textures = psc->textures.data();
