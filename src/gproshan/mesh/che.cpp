@@ -1060,7 +1060,7 @@ void che::update_evt_ot_et()
 
 		if(OT[he] == NIL)
 		{
-			ET[ne++] = he;
+			if(ET) ET[ne++] = he;
 
 			index_t ohe = NIL;
 			for(index_t j = 0; j < vnhe[v]; ++j)
