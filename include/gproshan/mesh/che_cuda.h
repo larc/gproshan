@@ -3,6 +3,8 @@
 
 #include <gproshan/mesh/che.h>
 
+#ifdef GPROSHAN_CUDA
+
 
 // geometry processing and shape analysis framework
 namespace gproshan {
@@ -22,5 +24,6 @@ class che_cuda : public che
 
 } // namespace gproshan
 
+#endif // GPROSHAN_CUDA
 #endif // CHE_CUDA_H
 

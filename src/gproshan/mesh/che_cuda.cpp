@@ -1,8 +1,7 @@
 #include <gproshan/mesh/che_cuda.h>
 
-#include <cstring>
-#include <cstdio>
-#include <cassert>
+
+#ifdef GPROSHAN_CUDA
 
 #include <cuda_runtime.h>
 
@@ -73,4 +72,6 @@ che_cuda::operator const che * () const
 
 
 } // namespace gproshan
+
+#endif // GPROSHAN_CUDA
 
