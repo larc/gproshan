@@ -171,16 +171,19 @@ void geodesics::run_fastmarching(che * mesh, const std::vector<index_t> & source
 				dv = dist[v];
 				for(const index_t he: mesh->star(v))
 				{
-					dp = update_step(mesh, dist, {	mesh->halfedge(he_next(he)),
-													mesh->halfedge(he_prev(he)),
-													mesh->halfedge(he)
-													});
-					if(dp < dv)
+					const uvec3 i = {	mesh->halfedge(he_next(he)),
+										mesh->halfedge(he_prev(he)),
+										mesh->halfedge(he)
+									};
+
+					real_t d = update_step(mesh, old_dist, i);
+
+					if(d < dv)
 					{
-						dv = dp;
+						dv = d;
 
 						if(clusters)
-							clusters[v] = clusters[mesh->halfedge(he_prev(he))] ? clusters[mesh->halfedge(he_prev(he))] : clusters[mesh->halfedge(he_next(he))];
+							clusters[v] = clusters[clusters[i.y()] ? i.y() : i.x()];
 					}
 				}
 

@@ -99,26 +99,25 @@ struct t_eval_hit
 
 		if(!mesh.n_trigs) // pointcloud
 		{
-			Kd = {T(mesh.VC[aprimID].r), T(mesh.VC[aprimID].g), T(mesh.VC[aprimID].b)};
-			Kd /= 255;
-			normal = mesh.VN[aprimID];
-			heatmap = mesh.VHC[aprimID];
+			Kd		= mesh.color(primID);
+			normal	= mesh.normal(primID);
+			heatmap	= mesh.heatmap(primID);
 			return;
 		}
 
-		const index_t he = primID * che::mtrig;
+		const uvec3 trig = mesh.trig(primID);
 
-		const index_t a = mesh.VT[he];
-		const index_t b = mesh.VT[he + 1];
-		const index_t c = mesh.VT[he + 2];
+		const vec<T, 3> ca = mesh.color(trig.x());
+		const vec<T, 3> cb = mesh.color(trig.y());
+		const vec<T, 3> cc = mesh.color(trig.z());
 
-		const vec<T, 3> ca = {T(mesh.VC[a].r), T(mesh.VC[a].g), T(mesh.VC[a].b)};
-		const vec<T, 3> cb = {T(mesh.VC[b].r), T(mesh.VC[b].g), T(mesh.VC[b].b)};
-		const vec<T, 3> cc = {T(mesh.VC[c].r), T(mesh.VC[c].g), T(mesh.VC[c].b)};
-
-		Kd = ((1.f - u - v) * ca + u * cb + v * cc) / 255;
-		normal = (1.f - u - v) * mesh.VN[a] + u * mesh.VN[b] + v * mesh.VN[c];
-		heatmap = (1.f - u - v) * mesh.VHC[a] + u * mesh.VHC[b] + v * mesh.VHC[c];
+		Kd		= (1.f - u - v) * ca + u * cb + v * cc;
+		normal	= (1.f - u - v) * mesh.normal(trig.x())
+							+ u * mesh.normal(trig.y())
+							+ v * mesh.normal(trig.z());
+		heatmap	= (1.f - u - v) * mesh.heatmap(trig.x())
+							+ u * mesh.heatmap(trig.y())
+							+ v * mesh.heatmap(trig.z());
 
 		if(!sc.trig_mat) return;
 		if(sc.trig_mat[primID] == NIL) return;
@@ -126,7 +125,9 @@ struct t_eval_hit
 		const scene::material & mat = sc.materials[sc.trig_mat[primID]];
 		vec<T, 2> texcoord;
 		if(sc.texcoords)
-			texcoord = (1.f - u - v) * sc.texcoords[a] + u * sc.texcoords[b] + v * sc.texcoords[c];
+			texcoord = (1.f - u - v) * sc.texcoords[trig.x()]
+								+ u * sc.texcoords[trig.y()]
+								+ v * sc.texcoords[trig.z()];
 
 		Ka = mat.Ka;
 		if(mat.map_Ka != -1)
@@ -287,7 +288,7 @@ index_t closest_hit_vertex(const che & mesh, const H & hit)
 		w = hit.v;
 	}
 
-	return mesh.VT[hit.primID * 3 + he];
+	return mesh.halfedge(hit.primID * 3 + he);
 }
 
 

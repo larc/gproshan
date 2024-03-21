@@ -419,7 +419,7 @@ void optix::add_mesh(OptixBuildInput & optix_mesh, CUdeviceptr & d_vertex_ptr, u
 	cudaMalloc(&d_model_mat, sizeof(model_mat));
 	cudaMemcpy(d_model_mat, &model_mat, sizeof(model_mat), cudaMemcpyHostToDevice);
 
-	d_vertex_ptr = (CUdeviceptr) d_m->GT;
+	d_vertex_ptr = (CUdeviceptr) &d_m->point(0);
 
 	optix_mesh = {};
 	optix_mesh.type = OPTIX_BUILD_INPUT_TYPE_TRIANGLES;
@@ -432,7 +432,7 @@ void optix::add_mesh(OptixBuildInput & optix_mesh, CUdeviceptr & d_vertex_ptr, u
 	optix_mesh.triangleArray.indexFormat			= OPTIX_INDICES_FORMAT_UNSIGNED_INT3;
 	optix_mesh.triangleArray.indexStrideInBytes		= 3 * sizeof(index_t);
 	optix_mesh.triangleArray.numIndexTriplets		= d_m->n_trigs;
-	optix_mesh.triangleArray.indexBuffer			= (CUdeviceptr) d_m->VT;
+	optix_mesh.triangleArray.indexBuffer			= (CUdeviceptr) d_m->trigs_ptr();
 
 	optix_mesh.triangleArray.transformFormat		= OPTIX_TRANSFORM_FORMAT_MATRIX_FLOAT12;
 	optix_mesh.triangleArray.preTransform			= (CUdeviceptr) d_model_mat;

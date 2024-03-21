@@ -103,7 +103,7 @@ real_t update_step(const che * mesh, const T * dist, const uvec3 & x)
 							mesh->point(x[1]) - mesh->point(x[2])
 							};
 
-	const vec<T, 2> & t = {dist[x[0]], dist[x[1]]};
+	const vec<T, 2> t = {dist[x[0]], dist[x[1]]};
 
 	mat<T, 2> q;
 	q[0][0] = dot(X[0], X[0]);
@@ -111,7 +111,7 @@ real_t update_step(const che * mesh, const T * dist, const uvec3 & x)
 	q[1][0] = dot(X[1], X[0]);
 	q[1][1] = dot(X[1], X[1]);
 
-	const T & det = q[0][0] * q[1][1] - q[0][1] * q[1][0];
+	const T det = q[0][0] * q[1][1] - q[0][1] * q[1][0];
 
 	mat<T, 2> Q;
 	Q[0][0] = q[1][1] / det;
@@ -119,8 +119,8 @@ real_t update_step(const che * mesh, const T * dist, const uvec3 & x)
 	Q[1][0] = -q[1][0] / det;
 	Q[1][1] = q[0][0] / det;
 
-	const T & delta = t[0] * (Q[0][0] + Q[1][0]) + t[1] * (Q[0][1] + Q[1][1]);
-	const T & dis = delta * delta -
+	const T delta = t[0] * (Q[0][0] + Q[1][0]) + t[1] * (Q[0][1] + Q[1][1]);
+	const T dis = delta * delta -
 								(Q[0][0] + Q[0][1] + Q[1][0] + Q[1][1]) *
 								(t[0] * t[0] * Q[0][0] + t[0] * t[1] * (Q[1][0] + Q[0][1]) + t[1] * t[1] * Q[1][1] - 1);
 
@@ -130,13 +130,13 @@ real_t update_step(const che * mesh, const T * dist, const uvec3 & x)
 	T p = (delta + sqrt(dis)) / (Q[0][0] + Q[0][1] + Q[1][0] + Q[1][1]);
 #endif
 
-	const vec<T, 2> & tp = t - p;
-	const vec<T, 3> & n = {	tp[0] * (X[0][0]*Q[0][0] + X[1][0]*Q[1][0]) + tp[1] * (X[0][0]*Q[0][1] + X[1][0]*Q[1][1]),
+	const vec<T, 2> tp = t - p;
+	const vec<T, 3> n = {	tp[0] * (X[0][0]*Q[0][0] + X[1][0]*Q[1][0]) + tp[1] * (X[0][0]*Q[0][1] + X[1][0]*Q[1][1]),
 							tp[0] * (X[0][1]*Q[0][0] + X[1][1]*Q[1][0]) + tp[1] * (X[0][1]*Q[0][1] + X[1][1]*Q[1][1]),
 			 				tp[0] * (X[0][2]*Q[0][0] + X[1][2]*Q[1][0]) + tp[1] * (X[0][2]*Q[0][1] + X[1][2]*Q[1][1])
 							};
 
-	const vec<T, 2> & c = Q * vec<T, 2>{dot(X[0], n), dot(X[1], n)};
+	const vec<T, 2> c = Q * vec<T, 2>{dot(X[0], n), dot(X[1], n)};
 
 	if(t[0] == INFINITY || t[1] == INFINITY || dis < 0 || c[0] >= 0 || c[1] >= 0)
 	{
@@ -158,18 +158,20 @@ void relax_ptp(const che * mesh, T * new_dist, T * old_dist, index_t * new_clust
 	real_t & ndv = new_dist[v] = old_dist[v];
 	if(new_clusters) new_clusters[v] = old_clusters[v];
 
-	real_t d;
 	for(const index_t he: mesh->star(v))
 	{
-		const uvec3 i = {mesh->halfedge(he_next(he)), mesh->halfedge(he_prev(he)), mesh->halfedge(he)};
+		const uvec3 i = {	mesh->halfedge(he_next(he)),
+							mesh->halfedge(he_prev(he)),
+							mesh->halfedge(he)
+							};
 
-		d = update_step(mesh, old_dist, i);
+		real_t d = update_step(mesh, old_dist, i);
 
 		if(d < ndv)
 		{
 			ndv = d;
 			if(new_clusters)
-				new_clusters[v] = old_dist[i.y()] < old_dist[i.x()] ? old_clusters[i.y()] : old_clusters[i.x()];
+				new_clusters[v] = old_clusters[old_dist[i.y()] < old_dist[i.x()] ? i.y() : i.x()];
 		}
 	}
 }
