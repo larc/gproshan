@@ -99,8 +99,8 @@ __forceinline__
 __host_device__
 real_t update_step(const che * mesh, const T * dist, const uvec3 & x)
 {
-	const vec<T, 3> X[2] = {mesh->GT[x[0]] - mesh->GT[x[2]],
-							mesh->GT[x[1]] - mesh->GT[x[2]]
+	const vec<T, 3> X[2] = {mesh->point(x[0]) - mesh->point(x[2]),
+							mesh->point(x[1]) - mesh->point(x[2])
 							};
 
 	const vec<T, 2> & t = {dist[x[0]], dist[x[1]]};
@@ -159,9 +159,9 @@ void relax_ptp(const che * mesh, T * new_dist, T * old_dist, index_t * new_clust
 	if(new_clusters) new_clusters[v] = old_clusters[v];
 
 	real_t d;
-	for_star(he, mesh, v)
+	for(const index_t he: mesh->star(v))
 	{
-		const uvec3 i = {mesh->VT[he_next(he)], mesh->VT[he_prev(he)], mesh->VT[he]};
+		const uvec3 i = {mesh->halfedge(he_next(he)), mesh->halfedge(he_prev(he)), mesh->halfedge(he)};
 
 		d = update_step(mesh, old_dist, i);
 

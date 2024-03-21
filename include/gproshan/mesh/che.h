@@ -61,7 +61,7 @@ class che
 
 		std::string filename;		///< get and set data member
 
-	public:
+	protected:
 		vertex * GT		= nullptr;	///< geometry table			: v		-> vertex
 		index_t * EVT	= nullptr;	///< extra vertex table		: v		-> he
 		index_t * VT	= nullptr;	///< vertex table (trigs)	: he	-> v
@@ -186,7 +186,7 @@ class che
 		static std::vector<index_t> trig_convex_polygon(const index_t * P, const size_t n);
 		static che * load_mesh(const std::string & file_path);
 
-	friend struct CHE;
+	friend class che_cuda;
 };
 
 class che::star_he
