@@ -43,8 +43,8 @@ class optix : public raytracing
 		launch_params optix_params;
 		launch_params * optix_params_buffer = nullptr;
 
-		std::vector<CHE *> dd_mesh;
-		std::vector<CHE *> d_mesh;
+		std::vector<che *> dd_mesh;
+		std::vector<che *> d_mesh;
 
 		void * raygen_records_buffer = nullptr;
 		void * miss_records_buffer = nullptr;

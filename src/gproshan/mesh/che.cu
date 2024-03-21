@@ -5,9 +5,9 @@
 namespace gproshan {
 
 
-void cuda_create_CHE(CHE * h_che, CHE *& dd_che, CHE *& d_che, const bool normal, const bool color)
+void cuda_create_CHE(const che * h_che, che *& dd_che, che *& d_che, const bool normal, const bool color)
 {
-	dd_che = new CHE;
+	dd_che = new che;
 	dd_che->n_vertices = h_che->n_vertices;
 	dd_che->n_trigs = h_che->n_trigs;
 	dd_che->n_half_edges = h_che->n_half_edges;
@@ -39,21 +39,21 @@ void cuda_create_CHE(CHE * h_che, CHE *& dd_che, CHE *& d_che, const bool normal
 	cudaMalloc(&dd_che->EVT, sizeof(index_t) * h_che->n_vertices);
 	cudaMemcpy(dd_che->EVT, h_che->EVT, sizeof(index_t) * h_che->n_vertices, cudaMemcpyHostToDevice);
 
-	cudaMalloc(&d_che, sizeof(CHE));
-	cudaMemcpy(d_che, dd_che, sizeof(CHE), cudaMemcpyHostToDevice);
+	cudaMalloc(&d_che, sizeof(che));
+	cudaMemcpy(d_che, dd_che, sizeof(che), cudaMemcpyHostToDevice);
 }
 
-void cuda_free_CHE(CHE *& dd_che, CHE *& d_che)
+void cuda_free_CHE(che *& dd_che, che *& d_che)
 {
 	cudaFree(dd_che->GT);
+	cudaFree(dd_che->EVT);
+	cudaFree(dd_che->VT);
+	cudaFree(dd_che->OT);
 	cudaFree(dd_che->VN);
 	cudaFree(dd_che->VC);
 	cudaFree(dd_che->VHC);
-	cudaFree(dd_che->VT);
-	cudaFree(dd_che->OT);
-	cudaFree(dd_che->EVT);
 
-	free(dd_che);
+	//delete dd_che;
 	cudaFree(d_che);
 }
 

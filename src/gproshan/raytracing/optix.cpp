@@ -31,7 +31,7 @@ struct __align__(OPTIX_SBT_RECORD_ALIGNMENT) MissRecord
 struct __align__(OPTIX_SBT_RECORD_ALIGNMENT) HitgroupRecord
 {
 	__align__(OPTIX_SBT_RECORD_ALIGNMENT) char header[OPTIX_SBT_RECORD_HEADER_SIZE];
-	CHE * data;
+	che * data;
 };
 
 
@@ -411,13 +411,13 @@ OptixTraversableHandle optix::build_as(const std::vector<che *> & meshes, const 
 
 void optix::add_mesh(OptixBuildInput & optix_mesh, CUdeviceptr & d_vertex_ptr, uint32_t & optix_trig_flags, const che * mesh, const mat4 & model_mat)
 {
-	CHE * dd_m, * d_m;
-	CHE h_m(mesh);
+	che * dd_m, * d_m;
+	che h_m;
 
 	if(mesh->is_scene())
 	{
-		h_m.n_half_edges = mesh->n_vertices;
-		h_m.n_trigs = mesh->n_vertices / 3;
+		//h_m.n_half_edges = mesh->n_vertices;
+		//h_m.n_trigs = mesh->n_vertices / 3;
 		h_m.VT = new index_t[mesh->n_vertices];
 
 		#pragma omp parallel for

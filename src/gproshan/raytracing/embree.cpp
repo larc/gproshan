@@ -75,9 +75,6 @@ embree::embree(const std::vector<che *> & meshes, const std::vector<mat4> & mode
 
 embree::~embree()
 {
-	for(CHE * m: g_meshes)
-		delete m;
-
 	rtcReleaseScene(rtc_scene);
 	rtcReleaseDevice(rtc_device);
 }
@@ -114,10 +111,10 @@ void embree::build_bvh(const std::vector<che *> & meshes, const std::vector<mat4
 	g_meshes.resize(size(meshes));
 	for(index_t i = 0; i < size(meshes); ++i)
 	{
-		g_meshes[i] = new CHE(meshes[i]);
+		g_meshes[i] = meshes[i];
 
-		if(!meshes[i]->n_trigs || pc.enable)
-			g_meshes[i]->n_trigs = 0;
+		//if(!meshes[i]->n_trigs || pc.enable)
+		//	g_meshes[i]->n_trigs = 0;
 
 		[[maybe_unused]]
 		const index_t geomID = g_meshes[i]->n_trigs || meshes[i]->is_scene() ?
@@ -188,8 +185,8 @@ index_t embree::add_mesh(const che * mesh, const mat4 & model_mat)
 	if(mesh->is_scene())
 	{
 		g_meshes[geom_id]->VT = tri_idxs;
-		g_meshes[geom_id]->n_trigs = mesh->n_vertices / 3;
-		g_meshes[geom_id]->n_half_edges = mesh->n_vertices;
+		//g_meshes[geom_id]->n_trigs = mesh->n_vertices / 3;
+		//g_meshes[geom_id]->n_half_edges = mesh->n_vertices;
 
 		scene * psc = (scene *) mesh;
 		sc.materials = psc->materials.data();
@@ -203,7 +200,7 @@ index_t embree::add_mesh(const che * mesh, const mat4 & model_mat)
 
 index_t embree::add_pointcloud(const che * mesh, const mat4 & model_mat, const pc_opts & pc)
 {
-	RTCGeometry geom = rtcNewGeometry(rtc_device, pc.normals ? RTC_GEOMETRY_TYPE_ORIENTED_DISC_POINT 
+	RTCGeometry geom = rtcNewGeometry(rtc_device, pc.normals ? RTC_GEOMETRY_TYPE_ORIENTED_DISC_POINT
 															: RTC_GEOMETRY_TYPE_DISC_POINT);
 
 	vec4 * pxyzr = (vec4 *) rtcSetNewGeometryBuffer(	geom,
@@ -297,7 +294,7 @@ bool embree::closesthit_radiance(	vertex & color,
 	ray_hit r(position, ray_dir);
 	if(!intersect(r)) return false;
 
-	const CHE & mesh = *g_meshes[r.hit.geomID];
+	const che & mesh = *g_meshes[r.hit.geomID];
 
 	eval_hit hit(mesh, r.hit.primID, r.hit.u, r.hit.v, sc);
 	hit.position = r.pos();

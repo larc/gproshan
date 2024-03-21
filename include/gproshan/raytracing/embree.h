@@ -56,7 +56,7 @@ class embree : public raytracing
 		RTCDevice rtc_device;
 		RTCScene rtc_scene;
 
-		std::vector<CHE *> g_meshes;
+		std::vector<che *> g_meshes;
 		scene_data sc;
 
 	public:

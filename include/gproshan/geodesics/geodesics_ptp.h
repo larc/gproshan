@@ -30,7 +30,7 @@ namespace gproshan {
 #ifdef __CUDACC__
 
 __global__
-void relax_ptp(const CHE * mesh, real_t * new_dist, real_t * old_dist, index_t * new_clusters, index_t * old_clusters, const index_t start, const index_t end, const index_t * sorted = nullptr);
+void relax_ptp(const che * mesh, real_t * new_dist, real_t * old_dist, index_t * new_clusters, index_t * old_clusters, const index_t start, const index_t end, const index_t * sorted = nullptr);
 
 __global__
 void relative_error(real_t * error, const real_t * new_dist, const real_t * old_dist, const index_t start, const index_t end, const index_t * sorted = nullptr);
@@ -97,7 +97,7 @@ template<class T>
 __forceinline__
 #endif
 __host_device__
-real_t update_step(const CHE * mesh, const T * dist, const uvec3 & x)
+real_t update_step(const che * mesh, const T * dist, const uvec3 & x)
 {
 	const vec<T, 3> X[2] = {mesh->GT[x[0]] - mesh->GT[x[2]],
 							mesh->GT[x[1]] - mesh->GT[x[2]]
@@ -153,7 +153,7 @@ template<class T>
 __forceinline__
 #endif
 __host_device__
-void relax_ptp(const CHE * mesh, T * new_dist, T * old_dist, index_t * new_clusters, index_t * old_clusters, const index_t v)
+void relax_ptp(const che * mesh, T * new_dist, T * old_dist, index_t * new_clusters, index_t * old_clusters, const index_t v)
 {
 	real_t & ndv = new_dist[v] = old_dist[v];
 	if(new_clusters) new_clusters[v] = old_clusters[v];
@@ -177,11 +177,11 @@ void relax_ptp(const CHE * mesh, T * new_dist, T * old_dist, index_t * new_clust
 
 template<class T>
 #ifdef __CUDACC__
-index_t run_ptp(const CHE * mesh, const std::vector<index_t> & sources,
+index_t run_ptp(const che * mesh, const std::vector<index_t> & sources,
 				const std::vector<index_t> & limits, T * error, T ** dist, index_t ** clusters,
 				const index_t * idx, index_t * sorted, const f_ptp<T> & fun = nullptr)
 #else
-index_t run_ptp(const CHE * mesh, const std::vector<index_t> & sources,
+index_t run_ptp(const che * mesh, const std::vector<index_t> & sources,
 				const std::vector<index_t> & limits, T ** dist, index_t ** clusters,
 				const index_t * idx, index_t * sorted, const f_ptp<T> & fun = nullptr)
 #endif

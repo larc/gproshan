@@ -91,7 +91,7 @@ struct t_eval_hit
 	t_eval_hit() {}
 
 	__host_device__
-	t_eval_hit(const CHE & mesh, const index_t aprimID, const T & au, const T & av, const scene_data & sc)
+	t_eval_hit(const che & mesh, const index_t aprimID, const T & au, const T & av, const scene_data & sc)
 	{
 		primID = aprimID;
 		u = au;
@@ -268,7 +268,7 @@ vec<T, 3> ray_view_dir(	const uvec2 & pos,
 
 template <class H>
 __host_device__
-index_t closest_hit_vertex(const CHE & mesh, const H & hit)
+index_t closest_hit_vertex(const che & mesh, const H & hit)
 {
 	if(!mesh.n_trigs) return hit.primID;
 

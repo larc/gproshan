@@ -116,8 +116,6 @@ void geodesics::execute(che * mesh, const std::vector<index_t> & sources, const 
 
 void geodesics::run_fastmarching(che * mesh, const std::vector<index_t> & sources, const size_t n_iter, const real_t radio, const fm_function_t & fun)
 {
-	CHE cmesh(mesh);
-
 	index_t BLACK = 0, GREEN = 1, RED = 2;
 	index_t * color = new index_t[n_vertices];
 
@@ -173,7 +171,7 @@ void geodesics::run_fastmarching(che * mesh, const std::vector<index_t> & source
 				dv = dist[v];
 				for(const index_t he: mesh->star(v))
 				{
-					dp = update_step(&cmesh, dist, {mesh->halfedge(he_next(he)),
+					dp = update_step(mesh, dist, {	mesh->halfedge(he_next(he)),
 													mesh->halfedge(he_prev(he)),
 													mesh->halfedge(he)
 													});

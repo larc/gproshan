@@ -26,6 +26,7 @@ size_t & che::rw(const size_t & n)
 	return const_cast<size_t&>(n);
 }
 
+const che::options che::default_opts;
 
 che::rgb_t::rgb_t(const vertex & v)
 {
@@ -47,22 +48,83 @@ che::rgb_t::operator vertex () const
 }
 
 
-che::che(const che & mesh)
+che::che(const che & mesh, const index_t * sorted, const che::options & opts)
 {
 	filename = mesh.filename;
 
-	alloc(mesh.n_vertices, mesh.n_trigs);
+	if(!alloc(mesh.n_vertices, mesh.n_trigs, opts))
+		return;
+
 	rw(n_edges)	= mesh.n_edges;
 
-	memcpy(GT, mesh.GT, n_vertices * sizeof(vertex));
-	memcpy(VT, mesh.VT, n_half_edges * sizeof(index_t));
+	if(!sorted)
+	{
+		memcpy(GT, mesh.GT, n_vertices * sizeof(vertex));
+		memcpy(EVT, mesh.EVT, n_vertices * sizeof(index_t));
+		memcpy(VT, mesh.VT, n_half_edges * sizeof(index_t));
+	}
+	else
+	{
+		index_t * inv = new index_t[n_vertices];
+
+		#pragma omp parallel for
+		for(index_t v = 0; v < n_vertices; ++v)
+		{
+			GT[v] = mesh.GT[sorted[v]];
+			inv[sorted[v]] = v;
+		}
+
+		#pragma omp parallel for
+		for(index_t he = 0; he < n_half_edges; ++he)
+		{
+			const index_t v = mesh.VT[he];
+			VT[he] = inv[v];
+			if(mesh.EVT[v] == he)
+				EVT[inv[v]] = he;
+		}
+
+		delete [] inv;
+	}
+
 	memcpy(OT, mesh.OT, n_half_edges * sizeof(index_t));
-	memcpy(EVT, mesh.EVT, n_vertices * sizeof(index_t));
-	memcpy(ET, mesh.ET, n_edges * sizeof(index_t));
-	memcpy(EHT, mesh.EHT, n_half_edges * sizeof(index_t));
-	memcpy(VN, mesh.VN, n_vertices * sizeof(vertex));
-	memcpy(VC, mesh.VC, n_vertices * sizeof(rgb_t));
-	memcpy(VHC, mesh.VHC, n_vertices * sizeof(real_t));
+
+	if(opts.edges)
+	{
+		memcpy(ET, mesh.ET, n_edges * sizeof(index_t));
+		memcpy(EHT, mesh.EHT, n_half_edges * sizeof(index_t));
+	}
+
+	if(opts.normals)
+	{
+		if(!sorted)
+		{
+			memcpy(VN, mesh.VN, n_vertices * sizeof(vertex));
+		}
+		else
+		{
+			#pragma omp parallel for
+			for(index_t v = 0; v < n_vertices; ++v)
+				VN[v] = mesh.VN[sorted[v]];
+		}
+	}
+
+	if(opts.colors)
+	{
+		if(sorted)
+		{
+			memcpy(VC, mesh.VC, n_vertices * sizeof(rgb_t));
+			memcpy(VHC, mesh.VHC, n_vertices * sizeof(real_t));
+		}
+		else
+		{
+			#pragma omp parallel for
+			for(index_t v = 0; v < n_vertices; ++v)
+			{
+				VC[v] = mesh.VC[sorted[v]];
+				VHC[v] = mesh.VHC[sorted[v]];
+			}
+		}
+	}
 }
 
 che::che(const size_t n_v, const size_t n_f)
@@ -1043,33 +1105,51 @@ void che::init(const std::string & file)
 	update_eht();
 }
 
-void che::alloc(const size_t n_v, const size_t n_f)
+bool che::alloc(const size_t n_v, const size_t n_f, const che::options & opt)
 {
+	if(!n_v) return false;
+
 	rw(n_vertices)		= n_v;
 	rw(n_trigs)			= n_f;
 	rw(n_half_edges)	= che::mtrig * n_trigs;
 	rw(n_edges)			= n_half_edges;				// max number of edges
 
-	if(n_vertices)		GT	= new vertex[n_vertices];
-	if(n_half_edges)	VT	= new index_t[n_half_edges];
-	if(n_half_edges)	OT	= new index_t[n_half_edges];
-	if(n_vertices)		EVT	= new index_t[n_vertices];
-	if(n_half_edges)	ET	= new index_t[n_half_edges];
-	if(n_half_edges)	EHT	= new index_t[n_half_edges];
+	GT	= new vertex[n_vertices];
+	EVT	= new index_t[n_vertices];
 
-	if(n_vertices)		VN	= new vertex[n_vertices];
-	if(n_vertices)		VC	= new rgb_t[n_vertices];
-	if(n_vertices)		VHC	= new real_t[n_vertices];
+	if(n_half_edges)
+	{
+		VT	= new index_t[n_half_edges];
+		OT	= new index_t[n_half_edges];
 
-	update_heatmap();
+		if(opt.edges)
+		{
+			ET	= new index_t[n_half_edges];
+			EHT	= new index_t[n_half_edges];
+		}
+	}
+
+	if(opt.normals)
+		VN	= new vertex[n_vertices];
+
+	if(opt.colors)
+	{
+		VC	= new rgb_t[n_vertices];
+		VHC	= new real_t[n_vertices];
+		update_heatmap();
+	}
+
+	return true;
 }
 
 void che::free()
 {
+	gproshan_error_var("che::free: " + filename);
+
 	delete [] GT;	GT = nullptr;
+	delete [] EVT;	EVT = nullptr;
 	delete [] VT;	VT = nullptr;
 	delete [] OT;	OT = nullptr;
-	delete [] EVT;	EVT = nullptr;
 	delete [] ET;	ET = nullptr;
 	delete [] EHT;	EHT = nullptr;
 	delete [] VN;	VN = nullptr;

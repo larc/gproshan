@@ -32,6 +32,14 @@ class che
 
 	public:
 		enum mesh_type : unsigned char { mtrig = 3, mquad = 4 };	///< meshes_types
+		struct options
+		{
+			bool edges = true;
+			bool colors = true;
+			bool normals = true;
+		};
+
+		static const che::options default_opts;
 
 		struct rgb_t
 		{
@@ -46,14 +54,14 @@ class che
 			operator vertex () const;
 		};
 
-		const size_t n_vertices		= 0;
-		const size_t n_trigs		= 0;
-		const size_t n_half_edges	= 0;
-		const size_t n_edges		= 0;
+size_t n_vertices		= 0;
+size_t n_trigs		= 0;
+size_t n_half_edges	= 0;
+size_t n_edges		= 0;
 
 		std::string filename;		///< get and set data member
 
-	protected:
+	public:
 		vertex * GT		= nullptr;	///< geometry table			: v		-> vertex
 		index_t * VT	= nullptr;	///< vertex table (trigs)	: he	-> v
 		index_t * OT	= nullptr;	///< opposite table			: he	-> he
@@ -69,7 +77,7 @@ class che
 		bool manifold = true;
 
 	public:
-		che(const che & mesh);
+		che(const che & mesh, const index_t * sorted = nullptr, const che::options & opts = default_opts);
 		che(const size_t n_v = 0, const size_t n_f = 0);
 		che(const vertex * vertices, const index_t n_v, const index_t * trigs, const index_t n_f);
 		virtual ~che();
@@ -165,8 +173,8 @@ class che
 	protected:
 		void init(const vertex * vertices, const index_t n_v, const index_t * trigs, const index_t n_f);
 		void init(const std::string & file);
-		void alloc(const size_t n_v, const size_t n_f);
-		void free();
+		bool alloc(const size_t n_v, const size_t n_f, const che::options & opts = default_opts);
+		virtual void free();
 
 		virtual void read_file(const std::string & file);
 
