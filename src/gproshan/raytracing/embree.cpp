@@ -109,13 +109,18 @@ vec4 * embree::pc_data(const index_t geomID)
 void embree::build_bvh(const std::vector<const che *> & meshes, const std::vector<mat4> & model_mats, const pc_opts & pc)
 {
 	g_meshes.resize(size(meshes));
+	is_pointcloud.assign(size(meshes), 0);
+
 	for(index_t i = 0; i < size(meshes); ++i)
 	{
-		g_meshes[i] = meshes[i];
+		const che * mesh = meshes[i];
+
+		g_meshes[i] = mesh;
+		is_pointcloud[i] = pc.enable || !mesh->n_trigs;
 
 		[[maybe_unused]]
-		const index_t geomID = pc.enable	? add_pointcloud(meshes[i], model_mats[i], pc)
-											: add_mesh(meshes[i], model_mats[i]);
+		const index_t geomID = is_pointcloud[i]	? add_pointcloud(meshes[i], model_mats[i], pc)
+												: add_mesh(meshes[i], model_mats[i]);
 
 		gproshan_debug_var(i == geomID);
 	}
@@ -279,7 +284,7 @@ bool embree::closesthit_radiance(	vertex & color,
 
 	const che & mesh = *g_meshes[r.hit.geomID];
 
-	eval_hit hit(mesh, r.hit.primID, r.hit.u, r.hit.v, sc);
+	eval_hit hit(mesh, r.hit.primID, r.hit.u, r.hit.v, sc, is_pointcloud[r.hit.geomID]);
 	hit.position = r.pos();
 	hit.normal = flat ? r.normal() : hit.normal;
 

@@ -91,13 +91,13 @@ struct t_eval_hit
 	t_eval_hit() {}
 
 	__host_device__
-	t_eval_hit(const che & mesh, const index_t aprimID, const T au, const T av, const scene_data & sc)
+	t_eval_hit(const che & mesh, const index_t aprimID, const T au, const T av, const scene_data & sc, const bool pointcloud = false)
 	{
 		primID = aprimID;
 		u = au;
 		v = av;
 
-		if(!mesh.n_trigs) // pointcloud
+		if(pointcloud || !mesh.n_trigs) // pointcloud
 		{
 			Kd		= mesh.color(primID);
 			normal	= mesh.normal(primID);
@@ -107,17 +107,17 @@ struct t_eval_hit
 
 		const uvec3 trig = mesh.trig(primID);
 
-		const vec<T, 3> ca = mesh.color(trig.x());
-		const vec<T, 3> cb = mesh.color(trig.y());
-		const vec<T, 3> cc = mesh.color(trig.z());
-
-		Kd		= (1.f - u - v) * ca + u * cb + v * cc;
+		Kd		= (1.f - u - v) * mesh.color(trig.x())
+							+ u * mesh.color(trig.y())
+							+ v * mesh.color(trig.z());
 		normal	= (1.f - u - v) * mesh.normal(trig.x())
 							+ u * mesh.normal(trig.y())
 							+ v * mesh.normal(trig.z());
 		heatmap	= (1.f - u - v) * mesh.heatmap(trig.x())
 							+ u * mesh.heatmap(trig.y())
 							+ v * mesh.heatmap(trig.z());
+
+		normal = normalize(normal);
 
 		if(!sc.trig_mat) return;
 		if(sc.trig_mat[primID] == NIL) return;
@@ -209,7 +209,7 @@ template <class T, class Occluded>
 __host_device__
 vec<T, 3> eval_li(const t_eval_hit<T> & hit, const light & ambient, const light * lights, const int n_lights, const vec<T, 3> & eye, Occluded occluded)
 {
-	const vec<T, 3> & v = normalize(eye - hit.position);
+	const vec<T, 3> v = normalize(eye - hit.position);
 	const vec<T, 3> & n = hit.normal;
 
 	T lambertian;
@@ -234,8 +234,8 @@ vec<T, 3> eval_li(const t_eval_hit<T> & hit, const light & ambient, const light 
 		specular = powf(std::max(dot(h, n), 0.f), hit.Ns);
 	#endif // __CUDACC__
 
-		const vec<T, 3> & color = hit.Ka * ambient.color * ambient.power +
-									(lambertian * hit.Kd + specular * hit.Ks) * L.color * L.power / (r * r);
+		const vec<T, 3> color = hit.Ka * ambient.color * ambient.power +
+								(lambertian * hit.Kd + specular * hit.Ks) * L.color * L.power / (r * r);
 
 		li += (dot(v, n) < 0 || occluded(hit.position, l, r) ? 0.4f : 1.0f) * color;
 	}
