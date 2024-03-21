@@ -74,22 +74,22 @@ void shader::uniform(const std::string & name, float value)
 
 void shader::uniform(const std::string & name, const vec3 & value)
 {
-	glProgramUniform3fv(program, glGetUniformLocation(program, name.c_str()), 1, &value[0]);
+	glProgramUniform3fv(program, glGetUniformLocation(program, name.c_str()), 1, (float *) &value);
 }
 
 void shader::uniform(const std::string & name, const vec4 & value)
 {
-	glProgramUniform4fv(program, glGetUniformLocation(program, name.c_str()), 1, &value[0]);
+	glProgramUniform4fv(program, glGetUniformLocation(program, name.c_str()), 1, (float *) &value);
 }
 
 void shader::uniform(const std::string & name, const mat3 & value)
 {
-	glProgramUniformMatrix3fv(program, glGetUniformLocation(program, name.c_str()), 1, true, &value[0][0]);
+	glProgramUniformMatrix3fv(program, glGetUniformLocation(program, name.c_str()), 1, true, (float *) &value);
 }
 
 void shader::uniform(const std::string & name, const mat4 & value)
 {
-	glProgramUniformMatrix4fv(program, glGetUniformLocation(program, name.c_str()), 1, true, &value[0][0]);
+	glProgramUniformMatrix4fv(program, glGetUniformLocation(program, name.c_str()), 1, true, (float *) &value);
 }
 
 bool shader::load(GLenum shader_type, const std::string & filename)

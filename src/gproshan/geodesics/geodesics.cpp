@@ -129,11 +129,6 @@ void geodesics::run_fastmarching(che * mesh, const std::vector<index_t> & source
 			std::vector<std::pair<real_t, size_t> >,
 			std::greater<std::pair<real_t, size_t> > > Q;
 
-	real_t dv, dp;
-	vertex vx;
-
-	size_t black_i;
-
 	index_t c = 0;
 	n_sorted = 0;
 	for(index_t s: sources)
@@ -151,7 +146,7 @@ void geodesics::run_fastmarching(che * mesh, const std::vector<index_t> & source
 
 		if(Q.empty()) break;
 
-		black_i = Q.top().second;
+		size_t black_i = Q.top().second;
 		color[black_i] = BLACK;
 		Q.pop();
 
@@ -168,7 +163,7 @@ void geodesics::run_fastmarching(che * mesh, const std::vector<index_t> & source
 
 			if(color[v] == RED)
 			{
-				dv = dist[v];
+				real_t dv = dist[v];
 				for(const index_t he: mesh->star(v))
 				{
 					const uvec3 i = {	mesh->halfedge(he_next(he)),
@@ -176,7 +171,7 @@ void geodesics::run_fastmarching(che * mesh, const std::vector<index_t> & source
 										mesh->halfedge(he)
 									};
 
-					real_t d = update_step(mesh, old_dist, i);
+					real_t d = update_step(mesh, dist, i);
 
 					if(d < dv)
 					{

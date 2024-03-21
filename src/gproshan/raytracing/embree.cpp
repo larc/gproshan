@@ -113,13 +113,9 @@ void embree::build_bvh(const std::vector<const che *> & meshes, const std::vecto
 	{
 		g_meshes[i] = meshes[i];
 
-		//if(!meshes[i]->n_trigs || pc.enable)
-		//	g_meshes[i]->n_trigs = 0;
-
 		[[maybe_unused]]
-		const index_t geomID = g_meshes[i]->n_trigs || meshes[i]->is_scene() ?
-											add_mesh(meshes[i], model_mats[i]) :
-											add_pointcloud(meshes[i], model_mats[i], pc);
+		const index_t geomID = pc.enable	? add_pointcloud(meshes[i], model_mats[i], pc)
+											: add_mesh(meshes[i], model_mats[i]);
 
 		gproshan_debug_var(i == geomID);
 	}

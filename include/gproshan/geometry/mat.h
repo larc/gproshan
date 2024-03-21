@@ -33,7 +33,7 @@ class mat
 		}
 
 		__host_device__
-		const T & operator () (const index_t i, const index_t j) const
+		T operator () (const index_t i, const index_t j) const
 		{
 			return rows[i][j];
 		}

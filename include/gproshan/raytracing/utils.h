@@ -91,7 +91,7 @@ struct t_eval_hit
 	t_eval_hit() {}
 
 	__host_device__
-	t_eval_hit(const che & mesh, const index_t aprimID, const T & au, const T & av, const scene_data & sc)
+	t_eval_hit(const che & mesh, const index_t aprimID, const T au, const T av, const scene_data & sc)
 	{
 		primID = aprimID;
 		u = au;
@@ -190,9 +190,9 @@ struct t_eval_hit
 	bool scatter_diffuse(vec<T, 3> & dir, random<T> & rnd)
 	{
 		// random unit sphere
-		const T & theta = rnd() * 2 * M_PI;
-		const T & phi = acosf(2 * rnd() - 1);
-		const T & r = cbrtf(rnd());
+		const T theta = rnd() * 2 * M_PI;
+		const T phi = acosf(2 * rnd() - 1);
+		const T r = cbrtf(rnd());
 
 		const vec<T, 3> p = { r * sinf(phi) * cosf(theta)
 							, r * sinf(phi) * sinf(theta)
@@ -221,7 +221,7 @@ vec<T, 3> eval_li(const t_eval_hit<T> & hit, const light & ambient, const light 
 		const light & L = lights[i];
 
 		l = L.pos - hit.position;
-		const T & r = length(l);
+		const T r = length(l);
 
 		l /= r;
 		h = normalize(l + v);
