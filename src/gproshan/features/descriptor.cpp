@@ -57,11 +57,11 @@ void descriptor::compute_hks()
 void descriptor::compute_wks()
 {
 	eigvec = eigvec % eigvec; 						// element wise product
-	eigval = log(eigval);
+	double max_ev = log(std::max(max(abs(eigval)), 1e-6));
 
-	arma::vec e = arma::linspace<arma::vec>(eigval(1), eigval(eigval.n_elem - 1), eigval.n_elem);
-	real_t sigma = (e(1) - e(0)) * 6;				// 6 is wks variance see reference
-	real_t sigma_2 = 2 * sigma * sigma;
+	arma::vec e = arma::linspace<arma::vec>(eigval(1), max_ev, eigval.n_elem);
+	double sigma = (e(1) - e(0)) * 6;				// 6 is wks variance see reference
+	double sigma_2 = 2 * sigma * sigma;
 
 	features.zeros(eigvec.n_rows, e.n_elem);
 
