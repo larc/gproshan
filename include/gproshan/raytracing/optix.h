@@ -53,7 +53,7 @@ class optix : public raytracing
 
 	public:
 		optix(const std::string & ptx = "/src/optix.ptx");
-		optix(const std::vector<che *> & meshes, const std::vector<mat4> & model_mats);
+		optix(const std::vector<const che *> & meshes, const std::vector<mat4> & model_mats);
 		~optix();
 
 		void render(vec4 * img, const render_params & params, const bool flat);
@@ -64,7 +64,7 @@ class optix : public raytracing
 		void create_hitgroup_programs();
 		void create_pipeline();
 		void build_sbt();
-		OptixTraversableHandle build_as(const std::vector<che *> & meshes, const std::vector<mat4> & model_mats);
+		OptixTraversableHandle build_as(const std::vector<const che *> & meshes, const std::vector<mat4> & model_mats);
 		void add_mesh(OptixBuildInput & optix_mesh, CUdeviceptr & d_vertex_ptr, uint32_t & optix_trig_flags, const che * mesh, const mat4 & model_mat);
 };
 
