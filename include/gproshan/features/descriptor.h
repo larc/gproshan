@@ -2,7 +2,8 @@
 #define DESCRIPTOR_H
 
 #include <gproshan/mesh/che.h>
-#include <gproshan/include_arma.h>
+
+#include <armadillo>
 
 
 // geometry processing and shape analysis framework
@@ -15,10 +16,10 @@ class descriptor
 		enum signature { GPS, HKS, WKS };
 
 	private:
-		a_sp_mat L, A;
-		a_vec eigval;
-		a_mat eigvec;
-		a_mat features;
+		arma::sp_mat L, A;
+		arma::vec eigval;
+		arma::mat eigvec;
+		arma::mat features;
 
 	public:
 		descriptor(const signature & sig, const che * mesh, const size_t n_eigs);
