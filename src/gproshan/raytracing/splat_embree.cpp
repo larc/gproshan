@@ -7,7 +7,12 @@ namespace gproshan::rt {
 
 splat_embree::splat_embree(const std::vector<che *> & meshes, const std::vector<mat4> & model_mats): splat(meshes, model_mats)
 {
-	build_bvh(pointclouds, {mat4::identity()});
+	std::vector<const che *> pcs;
+	pcs.reserve(size(pointclouds));
+	for(che * pc: pointclouds)
+		pcs.push_back(pc);
+
+	build_bvh(pcs, {mat4::identity()});
 }
 
 bool splat_embree::closesthit_radiance(	vertex & color,

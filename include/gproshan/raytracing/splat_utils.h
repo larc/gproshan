@@ -103,7 +103,7 @@ index_t binary_search(const T * data, index_t i, index_t j, const T & value)
 
 template <class T>
 __host_device__
-T splat_hit(t_eval_hit<T> & hit, const CHE & pc, const splats_data & sd, const index_t aprimID, const vec<T, 3> & x, const vec<T, 3> & d, const T & tray)
+T splat_hit(t_eval_hit<T> & hit, const che & pc, const splats_data & sd, const index_t aprimID, const vec<T, 3> & x, const vec<T, 3> & d, const T & tray)
 {
 	const index_t k = powf(2, 10 - 4 * tray) + 2;
 
@@ -115,7 +115,7 @@ T splat_hit(t_eval_hit<T> & hit, const CHE & pc, const splats_data & sd, const i
 	index_t end = s.end;
 
 	const index_t h = binary_search(sd.morton_codes, begin, end - 1, s.morton2d(x));
-	const real_t sigma2 = length(pc.GT[h] - x) / 1000;
+	const real_t sigma2 = length(pc.point(h) - x) / 1000;
 
 	vec<T, 3> & color = hit.Kd = 0;
 	vec<T, 3> & normal = hit.normal = 0;
@@ -129,17 +129,12 @@ T splat_hit(t_eval_hit<T> & hit, const CHE & pc, const splats_data & sd, const i
 	T w, sum_w = 1e-5;
 	for(index_t v = begin; v < end; ++v)
 	{
-		const vec<T, 3> & p = pc.GT[v];
-		const vec<T, 3> & q = dot(d, p - x) * d + x;
+		const vec<T, 3> & p = pc.point(v);
+		const vec<T, 3> q = dot(d, p - x) * d + x;
 
 		sum_w += w = gaussian(length(p - q), sigma2);
-
-		const che::rgb_t & c = pc.VC[v];
-		vec<T, 3> vc = {T(c.r), T(c.g), T(c.b)};
-		vc /= 255;
-
-		normal += w * pc.VN[v];
-		color += w * vc;
+		normal += w * pc.normal(v);
+		color += w * pc.color(v);
 		position += w * q;
 	}
 
@@ -149,7 +144,7 @@ T splat_hit(t_eval_hit<T> & hit, const CHE & pc, const splats_data & sd, const i
 
 	if(sum_w <= 2e-5)
 	{
-		normal = pc.VN[h];
+		normal = pc.normal(h);
 		color = 0;
 		position = x;
 	}
