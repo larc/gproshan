@@ -3,7 +3,14 @@
 #include <cmath>
 #include <thread>
 
-#include <CImg.h>
+#ifndef __clang__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-truncation"
+	#include <CImg.h>
+#pragma GCC diagnostic pop
+#else
+	#include <CImg.h>
+#endif // __clang__
 
 using namespace cimg_library;
 
@@ -50,14 +57,14 @@ che * scanner_ptx(const rt::raytracing * rt, const size_t n_rows, const size_t n
 	return mesh_ptx;
 }
 
-che * scanner_ptx_jpg(const rt::raytracing * rt, const size_t n_rows, const size_t n_cols, const vertex & cam_pos, const std::string &)
+che * scanner_ptx_jpg(const rt::raytracing * rt, const size_t n_rows, const size_t n_cols, const vertex & cam_pos, const std::string & file_jpg)
 {
 	che * mesh_ptx = scanner_ptx(rt, n_rows, n_cols, cam_pos);
 
 	CImg<unsigned char> img((unsigned char *) &mesh_ptx->rgb(0), 3, n_cols, n_rows);
 	img.permute_axes("zycx");
 
-//	if(size(file_jpg)) img.save((file_jpg + ".png").c_str());
+	img.save((file_jpg + "_scan.jpg").c_str());
 
 	std::thread([](const CImg<unsigned char> & img) { img.display(); }, img).detach();
 
