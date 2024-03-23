@@ -2,9 +2,9 @@
 #define SIMPLIFICATION_H
 
 #include <gproshan/mesh/che.h>
-#include <gproshan/include_arma.h>
 
 #include <string>
+#include <armadillo>
 
 
 // geometry processing and shape analysis framework
@@ -14,7 +14,7 @@ namespace gproshan {
 class simplification
 {
 	private:
-		a_mat * Q;
+		arma::fmat * Q;
 		che * mesh;
 		index_t levels;
 

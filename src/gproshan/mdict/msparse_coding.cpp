@@ -163,7 +163,7 @@ void msparse_coding::load_sampling()
 	size_t count = 0;
 	real_t area_mesh = mesh->area_surface();
 
-	a_vec S;
+	arma::fvec S;
 	if(S.load(tmp_file_path(key_name + ".rsampl")))
 	{
 		gproshan_debug(loading sampling);
@@ -273,7 +273,7 @@ void msparse_coding::load_sampling()
 		if(!covered[i])
 			outliers.push_back(i);
 
-	a_vec outlv(size(outliers));
+	arma::fvec outlv(size(outliers));
 	for(index_t i = 0; i < size(outliers); ++i)
 		outlv(i) = outliers[i];
 
@@ -336,7 +336,7 @@ void msparse_coding::init_radial_feature_patches()
 	bool save_all = true;
 	if(save_all)
 	{
-		a_mat AS;
+		arma::fmat AS;
 		AS.resize(m_params.n_patches, 13);
 		for(index_t i = 0; i < m_params.n_patches; ++i)
 		{
@@ -522,8 +522,8 @@ real_t msparse_coding::execute()
 
 che * msparse_coding::point_cloud_reconstruction(real_t per, real_t fr)
 {
-	a_mat S;
-	a_mat alpha;
+	arma::fmat S;
+	arma::fmat alpha;
 
 	S.load(tmp_file_path(key_name + ".smp"));
 	alpha.load(tmp_file_path(key_name + ".alpha"));
@@ -546,7 +546,7 @@ che * msparse_coding::point_cloud_reconstruction(real_t per, real_t fr)
 	#pragma omp parallel for
 	for(index_t i = 0; i < m_params.n_patches; ++i)
 	{
-		a_mat T(3,3);
+		arma::fmat T(3,3);
 		T(0,0) = S(i,4);
 		T(1,0) = S(i,5);
 		T(2,0) = S(i,6);
@@ -563,7 +563,7 @@ che * msparse_coding::point_cloud_reconstruction(real_t per, real_t fr)
 		p.phi.set_size(p.xyz.n_cols, phi_basis->dim());
 		phi_basis->discrete(p.phi, p.xyz.row(0).t(), p.xyz.row(1).t());
 
-		a_vec x = p.phi * A * alpha.col(i);
+		arma::fvec x = p.phi * A * alpha.col(i);
 		p.xyz.row(2) = x.t();
 
 		p.iscale_xyz(phi_basis->radio());
@@ -595,16 +595,16 @@ che * msparse_coding::point_cloud_reconstruction(real_t per, real_t fr)
 	che * new_mesh = new che(point_cloud.data(), size(point_cloud), nullptr, 0);
 	new_mesh->update_normals();
 
-	a_vec n;
+	arma::fvec n;
 	for(index_t v = 0, i = 0; i < m_params.n_patches; ++i)
 	{
 		patch & p = patches[i];
 
 		phi_basis->d_discrete(p.phi, p.xyz.row(0).t(), p.xyz.row(1).t(), 0);
-		a_vec dx = p.phi * A * alpha.col(i);
+		arma::fvec dx = p.phi * A * alpha.col(i);
 
 		phi_basis->d_discrete(p.phi, p.xyz.row(0).t(), p.xyz.row(1).t(), 1);
-		a_vec dy = p.phi * A * alpha.col(i);
+		arma::fvec dy = p.phi * A * alpha.col(i);
 
 		for(index_t j = 0; j < patches[i].xyz.n_cols; ++j, ++v)
 		{
@@ -680,8 +680,8 @@ void msparse_coding::learning()
 			//random
 			//arma::uvec r_ind = arma::randi<arma::uvec>(m, arma::distr_param(0, M));
 			//A = alpha.cols(r_ind);
-			a_mat R, E, U, V;
-			a_vec s;
+			arma::fmat R, E, U, V;
+			arma::fvec s;
 			svd(U, s, V, alpha);
 			gproshan_debug(svd done!);
 			A = U.cols(0, m_params.n_atoms);
@@ -868,7 +868,7 @@ void msparse_coding::init_patches(const bool reset, const fmask_t & mask)
 	for(index_t s = 0; s < m_params.n_patches; ++s)
 	{
 		viewer::vectors.push_back({patches[s].x(0), patches[s].x(1), patches[s].x(2)});
-		a_vec r = patches[s].x() + 0.02 * patches[s].normal();
+		arma::fvec r = patches[s].x() + 0.02 * patches[s].normal();
 		viewer::vectors.push_back({r(0), r(1), r(2)});
 	}
 	*/
@@ -880,7 +880,7 @@ real_t msparse_coding::mesh_reconstruction(const fmask_t & mask)
 
 	assert(n_vertices == mesh->n_vertices);
 
-	a_mat V(3, mesh->n_vertices, arma::fill::zeros);
+	arma::fmat V(3, mesh->n_vertices, arma::fill::zeros);
 
 	patches_error.resize(m_params.n_patches);
 
@@ -889,7 +889,7 @@ real_t msparse_coding::mesh_reconstruction(const fmask_t & mask)
 	{
 		patch & rp = patches[p];
 
-		a_vec x = rp.phi * A * alpha.col(p);
+		arma::fvec x = rp.phi * A * alpha.col(p);
 
 		patches_error[p] = { accu(abs(x - rp.xyz.row(2).t())) / size(rp.vertices), p };
 
@@ -921,7 +921,7 @@ real_t msparse_coding::mesh_reconstruction(const fmask_t & mask)
 		// simple means vertex
 		if(size(patches_map[v]) && (!mask || mask(v)))
 		{
-			a_vec mv = arma::zeros<a_vec>(3);
+			arma::fvec mv = arma::zeros<arma::fvec>(3);
 			for(auto p: patches_map[v])
 				mv += patches[p.first].xyz.col(p.second);
 
@@ -962,7 +962,7 @@ real_t msparse_coding::mesh_reconstruction(const fmask_t & mask)
 	return max_error;
 }
 
-void msparse_coding::update_alphas(a_mat & alpha, size_t threshold)
+void msparse_coding::update_alphas(arma::fmat & alpha, size_t threshold)
 {
 	size_t np_new = m_params.n_patches - threshold;
 	bool patches_covered[np_new];
@@ -978,7 +978,7 @@ void msparse_coding::update_alphas(a_mat & alpha, size_t threshold)
 
 			if(!patches_covered[s-threshold])
 			{
-				a_vec sum;
+				arma::fvec sum;
 				sum.zeros();
 				size_t c = 0;
 				// Here updating alphas, we need a structure between patches and neighboor patches

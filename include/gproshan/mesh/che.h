@@ -195,7 +195,7 @@ class che
 		assert(t < n_trigs);
 		const index_t he = t * 3;
 		mat3 m = {GT[VT[he]], GT[VT[he + 1]], GT[VT[he + 2]]};
-		return mat3::transpose(m);
+		return m.t();
 	}
 
 	__host_device__
@@ -204,7 +204,7 @@ class che
 		assert(t < n_trigs);
 		const index_t he = t * 3;
 		mat3 m = {VN[VT[he]], VN[VT[he + 1]], VN[VT[he + 2]]};
-		return mat3::transpose(m);
+		return m.t();
 	}
 
 	__host_device__
@@ -213,7 +213,7 @@ class che
 		assert(t < n_trigs);
 		const index_t he = t * 3;
 		mat3 m = {VC[VT[he]], VC[VT[he + 1]], VC[VT[he + 2]]};
-		return mat3::transpose(m);
+		return m.t();
 	}
 
 	__host_device__

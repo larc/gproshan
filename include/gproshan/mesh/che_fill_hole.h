@@ -2,9 +2,9 @@
 #define CHE_FILL_HOLE_H
 
 #include <gproshan/mesh/che.h>
-#include <gproshan/include_arma.h>
 
 #include <array>
+#include <armadillo>
 
 
 // geometry processing and shape analysis framework
@@ -18,7 +18,7 @@ struct border_t
 
 	border_t() = default;
 
-	border_t(const std::vector<a_vec> & V, const index_t _v, const std::array<index_t, 2> & neighbors, const bool o):
+	border_t(const std::vector<arma::fvec> & V, const index_t _v, const std::array<index_t, 2> & neighbors, const bool o):
 	v(_v)
 	{
 		index_t p_v = neighbors[!o];
@@ -30,25 +30,25 @@ struct border_t
 			return;
 		}
 
-		a_vec a = V[p_v] - V[v];
-		a_vec b = V[n_v] - V[v];
+		arma::fvec a = V[p_v] - V[v];
+		arma::fvec b = V[n_v] - V[v];
 		a[2] = b[2] = 0;
 
 		theta = atan2(b[1], b[0]) - atan2(a[1], a[0]);
 		if(theta < 0) theta += 2 * M_PI;
 	}
 
-	a_vec new_vertex(const std::vector<a_vec> & V, real_t div, const real_t length, const std::array<index_t, 2> & neighbors, const bool o)
+	arma::fvec new_vertex(const std::vector<arma::fvec> & V, real_t div, const real_t length, const std::array<index_t, 2> & neighbors, const bool o)
 	{
 		index_t p_v = neighbors[!o];
 		index_t n_v = neighbors[o];
 
-		a_vec a = V[p_v] - V[v];
-		a_vec b = V[n_v] - V[v];
+		arma::fvec a = V[p_v] - V[v];
+		arma::fvec b = V[n_v] - V[v];
 
 		a(2) = b(2) = 0;
 
-		a_vec r = div * a + (1 - div) * b;
+		arma::fvec r = div * a + (1 - div) * b;
 
 		r = length * normalise(r) + V[v];
 		r(2) = 0;
@@ -56,19 +56,19 @@ struct border_t
 		return r;
 	}
 
-	border_t(const std::vector<a_vec> & V, const index_t _v, const std::array<index_t, 2> & neighbors, const bool o, const a_vec & normal):
+	border_t(const std::vector<arma::fvec> & V, const index_t _v, const std::array<index_t, 2> & neighbors, const bool o, const arma::fvec & normal):
 	v(_v)
 	{
 		index_t p_v = neighbors[!o];
 		index_t n_v = neighbors[o];
 
-		a_vec a = V[p_v] - V[v];
-		a_vec b = V[n_v] - V[v];
+		arma::fvec a = V[p_v] - V[v];
+		arma::fvec b = V[n_v] - V[v];
 
 		a -= dot(a, normal) * normal;
 		b -= dot(a, normal) * normal;
 
-		a_mat E(3,3);
+		arma::fmat E(3,3);
 		E.col(0) = normalise(a);
 		E.col(1) = normalise(cross(normal, a));
 		E.col(2) = normal;
@@ -81,18 +81,18 @@ struct border_t
 		if(theta < 0) theta += 2 * M_PI;
 	}
 
-	a_vec new_vertex(const std::vector<a_vec> & V, real_t div, const real_t length, const std::array<index_t, 2> & neighbors, const bool o, const a_vec & normal)
+	arma::fvec new_vertex(const std::vector<arma::fvec> & V, real_t div, const real_t length, const std::array<index_t, 2> & neighbors, const bool o, const arma::fvec & normal)
 	{
 		index_t p_v = neighbors[!o];
 		index_t n_v = neighbors[o];
 
-		a_vec a = V[p_v] - V[v];
-		a_vec b = V[n_v] - V[v];
+		arma::fvec a = V[p_v] - V[v];
+		arma::fvec b = V[n_v] - V[v];
 
 		a -= dot(a, normal) * normal;
 		b -= dot(a, normal) * normal;
 
-		a_mat E(3,3);
+		arma::fmat E(3,3);
 		E.col(0) = normalise(a);
 		E.col(1) = normalise(cross(normal, a));
 		E.col(2) = normal;
@@ -100,7 +100,7 @@ struct border_t
 		a = E.t() * a;
 		b = E.t() * b;
 
-		a_vec r(3);
+		arma::fvec r(3);
 		r[0] = cos(theta * div);
 		r[1] = sin(theta * div);
 		r[2] = 0;

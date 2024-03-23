@@ -1,7 +1,8 @@
 #include <gproshan/mesh/che_poisson.h>
 
 #include <gproshan/laplacian/laplacian.h>
-#include <gproshan/include_arma.h>
+
+#include <armadillo>
 
 
 // geometry processing and shape analysis framework
@@ -12,7 +13,7 @@ void poisson(che * mesh, const size_t old_n_vertices, index_t k)
 {
 	if(!k) return;
 
-	a_mat B(mesh->n_vertices, 3);
+	arma::fmat B(mesh->n_vertices, 3);
 	for(index_t v = 0; v < mesh->n_vertices; ++v)
 	{
 		if(v < old_n_vertices)
@@ -24,13 +25,13 @@ void poisson(che * mesh, const size_t old_n_vertices, index_t k)
 		else B.row(v).zeros();
 	}
 
-	a_sp_mat L, A;
+	arma::sp_fmat L, A;
 	laplacian(mesh, L, A);
 
 	for(index_t i = 0; i < mesh->n_vertices; ++i)
 		B.row(i) *= -1 / A(i,i);
 
-	a_sp_mat M;
+	arma::sp_fmat M;
 	real_t s = (k % 2) ? -1 : 1;
 
 	if(k > 1) M = A * L;
@@ -49,7 +50,7 @@ void poisson(che * mesh, const size_t old_n_vertices, index_t k)
 	A.shed_cols(0, old_n_vertices - 1);
 	B.shed_rows(0, old_n_vertices - 1);
 
-	a_mat X;
+	arma::fmat X;
 	if(spsolve(X, s * L, s * B))
 	for(index_t v = old_n_vertices; v < mesh->n_vertices; ++v)
 	{
@@ -59,13 +60,13 @@ void poisson(che * mesh, const size_t old_n_vertices, index_t k)
 	}
 }
 
-void biharmonic_interp_2(a_mat & P, a_mat & H)
+void biharmonic_interp_2(arma::fmat & P, arma::fmat & H)
 {
 	size_t n = P.n_cols;
 	real_t x;
 
-	a_mat A(n, n);
-	a_vec pi(2), pj(2);
+	arma::fmat A(n, n);
+	arma::fvec pi(2), pj(2);
 
 	for(index_t i = 0; i < n; ++i)
 	{
@@ -78,7 +79,7 @@ void biharmonic_interp_2(a_mat & P, a_mat & H)
 		}
 	}
 
-	a_mat alpha = solve(A, P.row(2).t());
+	arma::fmat alpha = solve(A, P.row(2).t());
 
 	for(index_t i = 0; i < H.n_cols; ++i)
 	{
@@ -116,7 +117,7 @@ void biharmonic_interp_2(che * mesh, const size_t old_n_vertices, const size_t n
 	delete [] rings;
 	delete [] sorted;
 
-	a_mat P(3, size(sub_mesh_hole));
+	arma::fmat P(3, size(sub_mesh_hole));
 	index_t i = 0;
 	for(index_t & b: sub_mesh_hole)
 	{
@@ -126,7 +127,7 @@ void biharmonic_interp_2(che * mesh, const size_t old_n_vertices, const size_t n
 		++i;
 	}
 
-	a_mat H(3, n_vertices - old_n_vertices);
+	arma::fmat H(3, n_vertices - old_n_vertices);
 
 	for(index_t i = 0, v = old_n_vertices; v < n_vertices; ++i, ++v)
 	{
@@ -135,13 +136,13 @@ void biharmonic_interp_2(che * mesh, const size_t old_n_vertices, const size_t n
 		H(2, i) = mesh->point(v).z();
 	}
 
-	a_vec avg = mean(H, 1);
+	arma::fvec avg = mean(H, 1);
 
 	P.each_col() -= avg;
 	H.each_col() -= avg;
 
-	a_mat E;
-	a_vec eval;
+	arma::fmat E;
+	arma::fvec eval;
 	eig_sym(eval, E, H * H.t());
 	E.swap_cols(0,2);
 

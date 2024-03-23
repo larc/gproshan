@@ -10,7 +10,7 @@ namespace gproshan::mdict {
 
 basis_dct::basis_dct(const size_t n, const real_t r): basis(r, n * n), n_freq(n) {}
 
-void basis_dct::discrete(a_mat & phi, const a_vec & x, const a_vec & y)
+void basis_dct::discrete(arma::fmat & phi, const arma::fvec & x, const arma::fvec & y)
 {
 	assert(phi.n_cols == _dim);
 
@@ -19,7 +19,7 @@ void basis_dct::discrete(a_mat & phi, const a_vec & x, const a_vec & y)
 		phi.col(k) = dct(x, y, nx, ny);
 }
 
-void basis_dct::d_discrete(a_mat & phi, const a_vec & x, const a_vec & y, const bool b)
+void basis_dct::d_discrete(arma::fmat & phi, const arma::fvec & x, const arma::fvec & y, const bool b)
 {
 	assert(phi.n_cols == _dim);
 
@@ -39,7 +39,7 @@ void basis_dct::plot_basis(std::ostream & os)
 	}
 }
 
-void basis_dct::plot_atoms(std::ostream & os, const a_vec & A)
+void basis_dct::plot_atoms(std::ostream & os, const arma::fvec & A)
 {
 	for(index_t k = 0, nx = 0; nx < n_freq; ++nx)
 	for(index_t ny = 0; ny < n_freq; ++ny, ++k)
@@ -48,13 +48,13 @@ void basis_dct::plot_atoms(std::ostream & os, const a_vec & A)
 	}
 }
 
-a_vec basis_dct::dct(const a_vec & x, const a_vec & y, const index_t nx, const index_t ny)
+arma::fvec basis_dct::dct(const arma::fvec & x, const arma::fvec & y, const index_t nx, const index_t ny)
 {
 	return cos(M_PI * nx * x / _radio ) % cos(M_PI * ny * y / _radio);
 }
 
 
-a_vec basis_dct::d_dct(const a_vec & x, const a_vec & y, const index_t nx, const index_t ny)
+arma::fvec basis_dct::d_dct(const arma::fvec & x, const arma::fvec & y, const index_t nx, const index_t ny)
 {
 	return - (M_PI * nx / _radio) * (sin(M_PI * nx * x / _radio) % cos(M_PI * ny * y / _radio));
 }

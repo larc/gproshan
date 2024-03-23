@@ -10,7 +10,7 @@ namespace gproshan::mdict {
 
 basis_cosine::basis_cosine(const size_t nr, const size_t nf, const real_t r): basis(r, r * nf), n_rot(nr), n_freq(nf) {}
 
-void basis_cosine::discrete(a_mat & phi, const a_vec & x, const a_vec & y)
+void basis_cosine::discrete(arma::fmat & phi, const arma::fvec & x, const arma::fvec & y)
 {
 	assert(phi.n_cols == _dim);
 
@@ -40,7 +40,7 @@ void basis_cosine::plot_basis(std::ostream & os)
 	}
 }
 
-void basis_cosine::plot_atoms(std::ostream & os, const a_vec & A)
+void basis_cosine::plot_atoms(std::ostream & os, const arma::fvec & A)
 {
 	real_t d = 1.0 / (n_rot - 1);
 	real_t c;
@@ -53,7 +53,7 @@ void basis_cosine::plot_atoms(std::ostream & os, const a_vec & A)
 	}
 }
 
-a_vec basis_cosine::cosine(const a_vec & x, const a_vec & y, const real_t c, const real_t alpha)
+arma::fvec basis_cosine::cosine(const arma::fvec & x, const arma::fvec & y, const real_t c, const real_t alpha)
 {
 	return cos(c * (alpha * x + (1 - alpha) * y));
 }
