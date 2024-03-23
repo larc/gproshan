@@ -3,14 +3,7 @@
 #include <cmath>
 #include <thread>
 
-#ifndef __clang__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wformat-truncation"
-	#include <CImg.h>
-#pragma GCC diagnostic pop
-#else
-	#include <CImg.h>
-#endif // __clang__
+#include <CImg.h>
 
 using namespace cimg_library;
 
@@ -46,7 +39,7 @@ che * scanner_ptx(const rt::raytracing * rt, const size_t n_rows, const size_t n
 
 	real_t max_dist = 0;
 
-	#pragma omp parallel for reduction(std::max: max_dist)
+	#pragma omp parallel for reduction(max: max_dist)
 	for(index_t v = 0; v < mesh_ptx->n_vertices; ++v)
 		max_dist = std::max(max_dist, mesh_ptx->heatmap(v));
 
