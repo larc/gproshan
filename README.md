@@ -26,13 +26,14 @@ finally execute:
 
 
 ### Dependencies (Linux/MacOS)
-g++ >= 12.3, cuda >= 12.4, cmake >= 3.28, embree >= 4.3, glew, glfw3, armadillo, suitesparse, openblas, cimg
+g++ >= 12.3, cuda >= 12.4, cmake >= 3.28, embree >= 4.3, glew, glfw3, armadillo, suitesparse, openblas, flann, cimg
 
 On Ubuntu you can install them with:
 
-	sudo apt install cmake libglew-dev libglfw3-dev libarmadillo-dev libsuitesparse-dev libopenblas-dev cimg-dev
+	sudo apt install cmake libglew-dev libglfw3-dev libarmadillo-dev libsuitesparse-dev libopenblas-dev libflann-dev cimg-dev
 
 Install Cuda if available to enable Cuda-based modules.
+Export environment variable `OptiX_INSTALL_DIR` with the path to the OptiX library to enable it. 
 
 
 #### Installing Intel Embree
