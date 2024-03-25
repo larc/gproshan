@@ -44,7 +44,7 @@ void che_img::read_file(const std::string & file)
 		const int c = img.width() - i - 1;
 		const int r = img.height() - j - 1;
 
-		GT[v] = {real_t(i), real_t(j), real_t(img.spectrum() == 1 ? - img(c, r) : 0)};
+		GT[v] = {float(i), float(j), float(img.spectrum() == 1 ? - img(c, r) : 0)};
 
 		if(img.spectrum() == 3)
 			VC[v] = {img(c, r, 0), img(c, r, 1), img(c, r, 2)};

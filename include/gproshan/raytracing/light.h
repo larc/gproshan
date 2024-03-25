@@ -12,7 +12,7 @@ struct light
 {
 	vec3 pos = 0;
 	vec3 color = 1;
-	real_t power = 10;
+	float power = 10;
 };
 
 

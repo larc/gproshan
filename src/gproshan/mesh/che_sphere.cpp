@@ -10,17 +10,17 @@
 namespace gproshan {
 
 
-che_sphere::che_sphere(const real_t r, const size_t n)
+che_sphere::che_sphere(const float r, const size_t n)
 {
 	filename = "sphere";
 
 	std::vector<vertex> vertices;
 	std::vector<index_t> trigs;
 
-	const real_t delta = M_PI / n;
+	const float delta = M_PI / n;
 
-	for(real_t phi = 0; phi < 2 * M_PI - 0.5 * delta; phi += delta)
-	for(real_t theta = delta; theta < M_PI - 0.5 * delta; theta += delta)
+	for(float phi = 0; phi < 2 * M_PI - 0.5 * delta; phi += delta)
+	for(float theta = delta; theta < M_PI - 0.5 * delta; theta += delta)
 		vertices.push_back({r * std::sin(theta) * std::cos(phi), r * std::sin(theta) * std::sin(phi), r * std::cos(theta)});
 
 	vertices.push_back({0, 0, r});

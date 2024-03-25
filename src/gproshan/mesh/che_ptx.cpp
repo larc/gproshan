@@ -140,7 +140,7 @@ void che_ptx::write_file(const che * mesh, const std::string & file, const size_
 	{
 		const vertex & v = mesh->point(i);
 		const rgb_t c = mesh->rgb(i);
-		const real_t h = mesh->heatmap(i);
+		const float h = mesh->heatmap(i);
 
 		fprintf(fp, "%f %f %f %f %hhu %hhu %hhu\n", (float) v.x(), (float) v.y(), (float) v.z(), (float) h, c.r, c.g, c.b );
 	}

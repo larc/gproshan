@@ -72,11 +72,11 @@ che * mesh_fill_hole(che * mesh, const std::vector<index_t> & border_vertices, c
 	index_t * vmap_border = new index_t[nb];
 
 	index_t c = 1;
-	real_t mean_edge = mesh->mean_edge();
+	float mean_edge = mesh->mean_edge();
 
 	auto gen_vertices = [&mean_edge](std::vector<index_t> & merge_vertices, std::vector<vertex> & vertices, const vertex & va, const vertex & vb, const index_t delta_v = 0)
 	{
-		real_t L = length(va - vb);
+		float L = length(va - vb);
 		size_t N = L / mean_edge;
 		L = N;
 
@@ -235,7 +235,7 @@ void split_border(std::vector<std::pair<index_t, index_t> > & , che * mesh, cons
 		a = NIL; b = NIL; // review this
 		for(index_t i = 0; i < n; ++i)
 		{
-			real_t d, d_min = INFINITY;
+			float d, d_min = INFINITY;
 			for(index_t c = 0; c < k; ++c)
 			{
 				d = norm(data.col(i) - means.col(c));
@@ -327,9 +327,9 @@ std::tuple<std::vector<index_t> *, che **> fill_all_holes_meshes(che * mesh, con
 che * fill_hole_front_angles_test(che * mesh, std::vector<index_t> & front_vertices, size_t p_iter, bool & is_grow)
 {
 	gproshan_debug(filling holes);
-	real_t perimeter = 0.0, init_perimeter = 0.0;
+	float perimeter = 0.0, init_perimeter = 0.0;
 
-	real_t length = mesh->mean_edge();
+	float length = mesh->mean_edge();
 	std::priority_queue<border_t> front;
 
 	std::vector<vertex> vertices;
@@ -386,8 +386,8 @@ che * fill_hole_front_angles_test(che * mesh, std::vector<index_t> & front_verti
 
 	border_t top;
 
-	real_t a75 = 75.0 * M_PI / 180;
-	real_t a135 = 135.0 * M_PI / 180;
+	float a75 = 75.0 * M_PI / 180;
+	float a135 = 135.0 * M_PI / 180;
 
 	arma::fvec m_vec;
 	arma::fvec m_normal;
@@ -564,11 +564,11 @@ che * fill_hole_front_angles_test(che * mesh, std::vector<index_t> & front_verti
 	return size(trigs) == 0 ? nullptr : new che(vertices.data(), size(vertices), trigs.data(), size(trigs) / 3);
 }
 
-che * fill_hole_front_angles(std::vector<vertex> & vertices, const real_t length, const vertex & normal, const size_t max_iter, bool is_grow)
+che * fill_hole_front_angles(std::vector<vertex> & vertices, const float length, const vertex & normal, const size_t max_iter, bool is_grow)
 {
 	size_t p_iter = max_iter;
-	real_t perimeter = 0.0;
-	real_t init_perimeter = 0.0;
+	float perimeter = 0.0;
+	float init_perimeter = 0.0;
 
 	std::priority_queue<border_t> front;
 	std::vector<index_t> trigs;
@@ -653,8 +653,8 @@ che * fill_hole_front_angles(std::vector<vertex> & vertices, const real_t length
 
 	border_t top;
 
-	real_t a75 = 75.0 * M_PI / 180;
-	real_t a135 = 135.0 * M_PI / 180;
+	float a75 = 75.0 * M_PI / 180;
+	float a135 = 135.0 * M_PI / 180;
 
 	arma::fvec m_vec;
 	while(!front.empty() && p_iter-- && p_iter < 2000)
@@ -824,7 +824,7 @@ che * fill_hole_front_angles(std::vector<vertex> & vertices, const real_t length
 	return size(trigs) ? new che(vertices.data(), size(vertices), trigs.data(), size(trigs) / 3) : nullptr;
 }
 
-void get_real_tri(che * mesh, std::vector<index_t> & select_vertices, std::vector<vertex> & triangle, std::vector<size_t> & tri_sizes )
+void get_floatri(che * mesh, std::vector<index_t> & select_vertices, std::vector<vertex> & triangle, std::vector<size_t> & tri_sizes )
 {
 	// Drawing a triangle in the middle of the border
 	size_t div = size(select_vertices) / 3;
@@ -859,11 +859,11 @@ void get_real_tri(che * mesh, std::vector<index_t> & select_vertices, std::vecto
 		}
 	}
 
-	real_t weight = 1.8;
+	float weight = 1.8;
 
-	real_t wp = weight / size(select_vertices);
-	real_t aux = wp * tri_sizes[0];
-	real_t wo = (1 - aux) / ( tri_sizes[1] + tri_sizes[2] );
+	float wp = weight / size(select_vertices);
+	float aux = wp * tri_sizes[0];
+	float wo = (1 - aux) / ( tri_sizes[1] + tri_sizes[2] );
 
 	triangle.push_back( (wp * tri[0]) + wo * (tri[1] + tri[2]) );
 
@@ -889,7 +889,7 @@ che * fill_hole_center_triangle(che * mesh, std::vector<index_t> & select_vertic
 	std::vector<vertex> triangle;
 	std::vector<size_t> tri_sizes(3,0);
 
-	get_real_tri(mesh, select_vertices, triangle, tri_sizes);
+	get_floatri(mesh, select_vertices, triangle, tri_sizes);
 
 	index_t i = 0;
 	for(index_t v: select_vertices)

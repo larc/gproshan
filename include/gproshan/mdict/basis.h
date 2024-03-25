@@ -16,16 +16,16 @@ namespace gproshan::mdict {
 class basis
 {
 	protected:
-		real_t _radio;
+		float _radio;
 		size_t _dim;
 
 	public:
-		basis(const real_t r, const size_t d);
+		basis(const float r, const size_t d);
 		virtual ~basis() = default;
 		virtual void discrete(arma::fmat & phi, const arma::fvec & x, const arma::fvec & y) = 0;
 		virtual void d_discrete(arma::fmat & phi, const arma::fvec & x, const arma::fvec & y, const bool b) = 0;
-		virtual real_t freq(const index_t idx) = 0;
-		real_t & radio();
+		virtual float freq(const index_t idx) = 0;
+		float & radio();
 		size_t dim() const;
 		void plot_basis();
 		void plot_atoms(const arma::fmat & A);

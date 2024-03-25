@@ -1,4 +1,3 @@
-#cmakedefine GPROSHAN_FLOAT
 #cmakedefine GPROSHAN_LOG
 #cmakedefine GPROSHAN_CUDA
 #cmakedefine GPROSHAN_OPTIX

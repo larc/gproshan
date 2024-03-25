@@ -22,7 +22,7 @@ size_t msparse_coding::T = 5;
 msparse_coding::msparse_coding(che * _mesh, basis * _phi_basis, const params & p): mesh(_mesh), phi_basis(_phi_basis), m_params(p)
 {
 	A.eye(phi_basis->dim(), m_params.n_atoms);
-	dist = new real_t[mesh->n_vertices];
+	dist = new float[mesh->n_vertices];
 
 	m_params.n_patches = mesh->n_vertices / m_params.avg_p;
 
@@ -42,7 +42,7 @@ msparse_coding::operator const std::string & () const
 	return key_name;
 }
 
-msparse_coding::operator const real_t * () const
+msparse_coding::operator const float * () const
 {
 	return dist;
 }
@@ -161,7 +161,7 @@ void msparse_coding::load_sampling()
 	gproshan_debug_var(size(all_sorted_features));
 
 	size_t count = 0;
-	real_t area_mesh = mesh->area_surface();
+	float area_mesh = mesh->area_surface();
 
 	arma::fvec S;
 	if(S.load(tmp_file_path(key_name + ".rsampl")))
@@ -169,7 +169,7 @@ void msparse_coding::load_sampling()
 		gproshan_debug(loading sampling);
 
 		size_t n_seeds = S.n_rows;
-		real_t euc_radio, geo_radio;
+		float euc_radio, geo_radio;
 		for(index_t i = 0; i < n_seeds; ++i)
 		{
 			patch p;
@@ -196,10 +196,10 @@ void msparse_coding::load_sampling()
 	for(index_t i = 0; i < mesh->n_vertices; ++i)
 		covered[i] = 0;
 
-	real_t euc_radio;
-	real_t geo_radio;
-	std::vector<real_t> radios;
-	std::vector<real_t> geo_radios;
+	float euc_radio;
+	float geo_radio;
+	std::vector<float> radios;
+	std::vector<float> geo_radios;
 	size_t count_cov = 0;
 	size_t count_cov_patch = 0;
 
@@ -464,7 +464,7 @@ void msparse_coding::init_voronoi_patches()
 	gproshan_log(our patches are ready);
 }
 
-real_t msparse_coding::execute()
+float msparse_coding::execute()
 {
 
 	TIC(d_time) init_radial_feature_patches(); TOC(d_time)
@@ -508,19 +508,19 @@ real_t msparse_coding::execute()
 	bool * pmask = mask;
 
 	TIC(d_time)
-	real_t max_error = mesh_reconstruction([&pmask](const index_t i) -> bool { return pmask[i]; });
+	float max_error = mesh_reconstruction([&pmask](const index_t i) -> bool { return pmask[i]; });
 	TOC(d_time)
 	gproshan_debug_var(d_time);
 
 	arma::uvec non_zero = find( abs(alpha) > 0.00001);
 	gproshan_debug_var(size(non_zero));
-	real_t ratio = (m_params.n_patches * 13.0 + non_zero.size()) / (3 * mesh->n_vertices);
+	float ratio = (m_params.n_patches * 13.0 + non_zero.size()) / (3 * mesh->n_vertices);
 	gproshan_log_var(ratio);
 
 	return max_error;
 }
 
-che * msparse_coding::point_cloud_reconstruction(real_t per, real_t fr)
+che * msparse_coding::point_cloud_reconstruction(float per, float fr)
 {
 	arma::fmat S;
 	arma::fmat alpha;
@@ -533,7 +533,7 @@ che * msparse_coding::point_cloud_reconstruction(real_t per, real_t fr)
 
 	gproshan_debug_var(m_params.n_patches);
 
-	real_t max_radio = -1;
+	float max_radio = -1;
 
 	#pragma omp parallel for reduction(max: max_radio)
 	for(index_t i = 0; i < m_params.n_patches; ++i)
@@ -622,7 +622,7 @@ che * msparse_coding::point_cloud_reconstruction(real_t per, real_t fr)
 }
 
 
-real_t msparse_coding::execute_tmp()
+float msparse_coding::execute_tmp()
 {
 	// fill holes
 	size_t threshold = mesh->n_vertices;
@@ -847,7 +847,7 @@ void msparse_coding::init_patches(const bool reset, const fmask_t & mask)
 
 /*
 #ifndef NDEBUG
-	CImgList<real_t> imlist;
+	CImgList<float> imlist;
 	for(index_t s = 0; s < m_params.n_patches; ++s)
 		patches[s].save(phi_basis->radio(), 16, imlist);
 	imlist.save_ffmpeg_external("tmp/patches.mpg", 5);
@@ -874,7 +874,7 @@ void msparse_coding::init_patches(const bool reset, const fmask_t & mask)
 	*/
 }
 
-real_t msparse_coding::mesh_reconstruction(const fmask_t & mask)
+float msparse_coding::mesh_reconstruction(const fmask_t & mask)
 {
 	gproshan_log(MDICT);
 
@@ -939,8 +939,8 @@ real_t msparse_coding::mesh_reconstruction(const fmask_t & mask)
 
 	vertex * new_vertices = (vertex *) V.memptr();
 
-	real_t error = 0;
-	real_t max_error = -1;
+	float error = 0;
+	float max_error = -1;
 
 	#pragma omp parallel for reduction(+: error) reduction(max: max_error)
 	for(index_t v = 0; v < mesh->n_vertices; ++v)
@@ -1012,7 +1012,7 @@ index_t msparse_coding::sample(const index_t s)
 	return s;
 }
 
-real_t msparse_coding::operator[](const index_t i) const
+float msparse_coding::operator[](const index_t i) const
 {
 	assert(i < mesh->n_vertices);
 	return dist[i];

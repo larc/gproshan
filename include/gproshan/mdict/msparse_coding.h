@@ -21,10 +21,10 @@ class msparse_coding
 			size_t n_patches	= 0;			///< number of patches
 			size_t avg_p		= 36;			///< avg number of vertices per patch
 			size_t percent		= 0;			///< mask percentage
-			real_t f			= 1;			///<
-			real_t delta		= M_PI / 6;		///<
-			real_t sum_thres	= 1.01;			///<
-			real_t area_thres	= 0.005;		///<
+			float f			= 1;			///<
+			float delta		= M_PI / 6;		///<
+			float sum_thres	= 1.01;			///<
+			float area_thres	= 0.005;		///<
 			bool learn			= false;		///<
 			bool plot			= false;		///<
 		};
@@ -39,14 +39,14 @@ class msparse_coding
 		arma::fmat A;								///< dictionary continuous matrix.
 		arma::fmat alpha;							///< sparse coding matrix.
 
-		real_t s_radio;							///< sampling geodesic radio.
+		float s_radio;							///< sampling geodesic radio.
 		std::vector<index_t> sampling;			///< samples, center of patches if sampling.
 		std::vector<patch> patches;				///< vector of patches.
 		std::vector<vpatches_t> patches_map;	///< invert index vertex to patches.
-		std::vector<std::pair<real_t, index_t> > patches_error;
+		std::vector<std::pair<float, index_t> > patches_error;
 
 		double d_time;							///< time of operations.
-		real_t * dist;
+		float * dist;
 
 		bool * mask = nullptr;
 		std::string key_name;
@@ -64,22 +64,22 @@ class msparse_coding
 
 		virtual ~msparse_coding();
 
-		real_t operator[](const index_t i) const;
+		float operator[](const index_t i) const;
 		index_t draw_patches(const index_t p) const;
 
 		operator const std::string & () const;
-		operator const real_t * () const;
+		operator const float * () const;
 
-		real_t execute();
+		float execute();
 		void load_mask(const std::vector<index_t> * vertices, const index_t * clusters);
 		void load_mask();
 		void init_voronoi_patches();
 		void init_radial_feature_patches();
 		void load_sampling();
-		che * point_cloud_reconstruction(real_t per, real_t fr);
-		std::vector<index_t> sort_indexes(const std::vector<real_t> &v);
+		che * point_cloud_reconstruction(float per, float fr);
+		std::vector<index_t> sort_indexes(const std::vector<float> &v);
 
-		real_t execute_tmp();
+		float execute_tmp();
 
 	private:
 		void learning();
@@ -90,7 +90,7 @@ class msparse_coding
 							const fmask_t & mask = nullptr
 							);
 
-		real_t mesh_reconstruction(const fmask_t & mask = nullptr);
+		float mesh_reconstruction(const fmask_t & mask = nullptr);
 		void update_alphas(arma::fmat & alpha, size_t threshold);
 		void save_alpha(std::string file);
 

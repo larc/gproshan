@@ -134,20 +134,20 @@ bool scene::load_mtl(const std::string & file)
 			}
 			case 'd':	// d
 			{
-				real_t & d = materials.back().d;
+				float & d = materials.back().d;
 				sscanf(line, "%*s %f", &d);
 				break;
 			}
 			case 'T':	// Tr
 			{
-				real_t & d = materials.back().d;
+				float & d = materials.back().d;
 				sscanf(line, "%*s %f", &d);
 				d = 1 - d;
 				break;
 			}
 			case 'N':	// Ns
 			{
-				real_t & N = str[1] == 's' ? materials.back().Ns : materials.back().Ni;
+				float & N = str[1] == 's' ? materials.back().Ns : materials.back().Ni;
 				sscanf(line, "%*s %f", &N);
 				break;
 			}

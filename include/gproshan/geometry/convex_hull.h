@@ -20,8 +20,8 @@ class convex_hull
 		std::vector<index_t> CH;		///< convex hull points clockwise
 
 	public:
-		convex_hull(const std::vector<vertex> & points, const real_t precision = 1000);
-		convex_hull(const vertex * points, const size_t n_points, const real_t precision = 1000);
+		convex_hull(const std::vector<vertex> & points, const float precision = 1000);
+		convex_hull(const vertex * points, const size_t n_points, const float precision = 1000);
 		operator const std::vector<index_t> & () const;
 
 	private:

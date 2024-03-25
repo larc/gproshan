@@ -48,7 +48,7 @@ void simplification::compute_quadrics()
 	}
 }
 
-void simplification::order_edges(index_t * sort_edges, real_t * error_edges)
+void simplification::order_edges(index_t * sort_edges, float * error_edges)
 {
 	#pragma omp parallel for
 	for(index_t e = 0; e < mesh->n_edges; ++e)
@@ -65,7 +65,7 @@ void simplification::order_edges(index_t * sort_edges, real_t * error_edges)
 		);
 }
 
-real_t simplification::compute_error(const index_t e)
+float simplification::compute_error(const index_t e)
 {
 	vertex ve = create_vertex(e);
 	arma::fvec v(4);

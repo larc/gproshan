@@ -30,17 +30,17 @@ namespace gproshan {
 #ifdef __CUDACC__
 
 __global__
-void relax_ptp(const che * mesh, real_t * new_dist, real_t * old_dist, index_t * new_clusters, index_t * old_clusters, const index_t start, const index_t end, const index_t * sorted = nullptr);
+void relax_ptp(const che * mesh, float * new_dist, float * old_dist, index_t * new_clusters, index_t * old_clusters, const index_t start, const index_t end, const index_t * sorted = nullptr);
 
 __global__
-void relative_error(real_t * error, const real_t * new_dist, const real_t * old_dist, const index_t start, const index_t end, const index_t * sorted = nullptr);
+void relative_error(float * error, const float * new_dist, const float * old_dist, const index_t start, const index_t end, const index_t * sorted = nullptr);
 
 struct is_ok
 {
-	const real_t * error = nullptr;
+	const float * error = nullptr;
 
 	__host_device__
-	bool operator()(const real_t val) const;
+	bool operator()(const float val) const;
 
 	__host_device__
 	bool operator()(const index_t val) const;
@@ -51,10 +51,10 @@ struct is_ok
 
 struct ptp_out_t
 {
-	real_t * dist = nullptr;
+	float * dist = nullptr;
 	index_t * clusters = nullptr;
 
-	ptp_out_t(real_t *const d, index_t *const c = nullptr);
+	ptp_out_t(float *const d, index_t *const c = nullptr);
 };
 
 struct toplesets_t
@@ -74,7 +74,7 @@ double parallel_toplesets_propagation_gpu(	const ptp_out_t & ptp_out,
 											const toplesets_t & toplesets,
 											const bool coalescence = true,
 											const bool set_inf = true,
-											const f_ptp<real_t> & fun = nullptr
+											const f_ptp<float> & fun = nullptr
 											);
 
 void parallel_toplesets_propagation_cpu(	const ptp_out_t & ptp_out,
@@ -83,13 +83,13 @@ void parallel_toplesets_propagation_cpu(	const ptp_out_t & ptp_out,
 											const toplesets_t & toplesets,
 											const bool coalescence = true,
 											const bool set_inf = true,
-											const f_ptp<real_t> & fun = nullptr
+											const f_ptp<float> & fun = nullptr
 											);
 
 
-real_t farthest_point_sampling_ptp_gpu(che * mesh, std::vector<index_t> & samples, double & time_fps, size_t n, real_t radio = 0);
+float farthest_point_sampling_ptp_gpu(che * mesh, std::vector<index_t> & samples, double & time_fps, size_t n, float radio = 0);
 
-void normalize_ptp(real_t * dist, const size_t n);
+void normalize_ptp(float * dist, const size_t n);
 
 
 template<class T>
@@ -97,7 +97,7 @@ template<class T>
 __forceinline__
 #endif
 __host_device__
-real_t update_step(const che * mesh, const T * dist, const uvec3 & x)
+float update_step(const che * mesh, const T * dist, const uvec3 & x)
 {
 	const vec<T, 3> X[2] = {mesh->point(x[0]) - mesh->point(x[2]),
 							mesh->point(x[1]) - mesh->point(x[2])
@@ -124,11 +124,7 @@ real_t update_step(const che * mesh, const T * dist, const uvec3 & x)
 								(Q[0][0] + Q[0][1] + Q[1][0] + Q[1][1]) *
 								(t[0] * t[0] * Q[0][0] + t[0] * t[1] * (Q[1][0] + Q[0][1]) + t[1] * t[1] * Q[1][1] - 1);
 
-#ifdef GPROSHAN_FLOAT
 	T p = (delta + sqrtf(dis)) / (Q[0][0] + Q[0][1] + Q[1][0] + Q[1][1]);
-#else
-	T p = (delta + sqrt(dis)) / (Q[0][0] + Q[0][1] + Q[1][0] + Q[1][1]);
-#endif
 
 	const vec<T, 2> tp = t - p;
 	const vec<T, 3> n = {	tp[0] * (X[0][0]*Q[0][0] + X[1][0]*Q[1][0]) + tp[1] * (X[0][0]*Q[0][1] + X[1][0]*Q[1][1]),
@@ -155,7 +151,7 @@ __forceinline__
 __host_device__
 void relax_ptp(const che * mesh, T * new_dist, T * old_dist, index_t * new_clusters, index_t * old_clusters, const index_t v)
 {
-	real_t & ndv = new_dist[v] = old_dist[v];
+	float & ndv = new_dist[v] = old_dist[v];
 	if(new_clusters) new_clusters[v] = old_clusters[v];
 
 	for(const index_t he: mesh->star(v))
@@ -165,7 +161,7 @@ void relax_ptp(const che * mesh, T * new_dist, T * old_dist, index_t * new_clust
 							mesh->halfedge(he)
 							};
 
-		real_t d = update_step(mesh, old_dist, i);
+		float d = update_step(mesh, old_dist, i);
 
 		if(d < ndv)
 		{

@@ -30,7 +30,7 @@ descriptor::operator bool () const
 	return features.size() > 0;
 }
 
-real_t descriptor::operator () (const index_t v) const
+float descriptor::operator () (const index_t v) const
 {
 	return norm(features.row(v));
 }

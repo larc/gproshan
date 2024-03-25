@@ -178,9 +178,9 @@ void che_ply::read_file(const std::string & file)
 				for(index_t i = 0; i < 3; ++i)
 				{
 					if(xyz == 4)
-						GT[v][i] = (real_t) *(float *) (pb + ixyz + i * xyz);
+						GT[v][i] = (float) *(float *) (pb + ixyz + i * xyz);
 					else
-						GT[v][i] = (real_t) *(double *) (pb + ixyz + i * xyz);
+						GT[v][i] = (float) *(double *) (pb + ixyz + i * xyz);
 				}
 
 				if(rgb)
@@ -197,9 +197,9 @@ void che_ply::read_file(const std::string & file)
 					for(index_t i = 0; i < 3; ++i)
 					{
 						if(normal == 4)
-							VN[v][i] = (real_t) *(float *) (pb + inormal + i * normal);
+							VN[v][i] = (float) *(float *) (pb + inormal + i * normal);
 						else
-							VN[v][i] = (real_t) *(double *) (pb + inormal + i * normal);
+							VN[v][i] = (float) *(double *) (pb + inormal + i * normal);
 					}
 				}
 			}
@@ -257,7 +257,7 @@ void che_ply::write_file(const che * mesh, const std::string & file, const bool 
 	FILE * fp = fopen((file + ".ply").c_str(), "wb");
 	assert(fp);
 
-	const char * type = sizeof(real_t) == 4 ? "float" : "double";
+	const char * type = sizeof(float) == 4 ? "float" : "double";
 
 	fprintf(fp, "ply\n");
 	fprintf(fp, "format binary_little_endian 1.0\n");

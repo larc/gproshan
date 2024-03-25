@@ -8,7 +8,7 @@
 namespace gproshan::mdict {
 
 
-basis_dct::basis_dct(const size_t n, const real_t r): basis(r, n * n), n_freq(n) {}
+basis_dct::basis_dct(const size_t n, const float r): basis(r, n * n), n_freq(n) {}
 
 void basis_dct::discrete(arma::fmat & phi, const arma::fvec & x, const arma::fvec & y)
 {
@@ -65,7 +65,7 @@ void basis_dct::dct(std::ostream & os, const index_t nx, const index_t ny)
 	os << "cos( (pi * v * sin(u) * " << ny << " ) / " << _radio << " )";
 }
 
-real_t basis_dct::freq(const index_t idx)
+float basis_dct::freq(const index_t idx)
 {
 	return !idx ? INFINITY : 2 * _radio / std::max(idx / n_freq, idx % n_freq);
 }

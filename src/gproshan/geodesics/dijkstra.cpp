@@ -13,10 +13,10 @@ dijkstra::dijkstra(che * mesh, index_t src)
 	n_vertices = mesh->n_vertices;
 	source = src;
 
-	weights = new real_t[n_vertices];
+	weights = new float[n_vertices];
 	predecessors = new index_t[n_vertices];
 
-	memset(predecessors, 255, sizeof(real_t)*n_vertices);
+	memset(predecessors, 255, sizeof(float)*n_vertices);
 
 	for(index_t i = 0; i < n_vertices; ++i)
 		weights[i] = INFINITY;
@@ -30,7 +30,7 @@ dijkstra::~dijkstra()
 	if(predecessors) delete predecessors;
 }
 
-real_t & dijkstra::operator()(index_t i)
+float & dijkstra::operator()(index_t i)
 {
 	return weights[i];
 }
@@ -54,7 +54,7 @@ void dijkstra::run(che * mesh)
 	visited[source] = true;
 	weights[source] = 0;
 
-	real_t min;
+	float min;
 	index_t min_i;
 
 	for(index_t i = 0; i < n_vertices; ++i)
@@ -65,7 +65,7 @@ void dijkstra::run(che * mesh)
 		#pragma	omp parallel for num_threads(8)
 		for(index_t v = 0; v < n_vertices; ++v)
 		{
-			real_t w;
+			float w;
 
 			if(!visited[v])
 			{

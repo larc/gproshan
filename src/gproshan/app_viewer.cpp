@@ -204,9 +204,9 @@ bool app_viewer::process_simulate_scanner(viewer * p_view)
 
 	ImGui::SliderScalar("n_rows", ImGuiDataType_U64, &n_rows, &n_min, &n_max);
 	ImGui::SliderScalar("n_cols", ImGuiDataType_U64, &n_cols, &n_min, &n_max);
-	if(	ImGui_InputReal("cam_pos.x", &cam_pos.x(), 0.001, 2, "%.3lf") ||
-		ImGui_InputReal("cam_pos.y", &cam_pos.y(), 0.001, 2, "%.3lf") ||
-		ImGui_InputReal("cam_pos.z", &cam_pos.z(), 0.001, 2, "%.3lf") )
+	if(	ImGui::InputFloat("cam_pos.x", &cam_pos.x(), 0.001, 2, "%.3lf") ||
+		ImGui::InputFloat("cam_pos.y", &cam_pos.y(), 0.001, 2, "%.3lf") ||
+		ImGui::InputFloat("cam_pos.z", &cam_pos.z(), 0.001, 2, "%.3lf") )
 	{
 		view->sphere_points[0] = cam_pos;
 	}
@@ -234,7 +234,7 @@ bool app_viewer::process_scatter(viewer * p_view)
 	rt::eval_hit h;
 	std::vector<vertex> scatter(100);
 
-	rt::random<real_t> rnd(0xABCDEF);
+	rt::random<float> rnd(0xABCDEF);
 	for(vertex & v: scatter)
 		h.scatter_diffuse(v, rnd);
 
@@ -299,7 +299,7 @@ bool app_viewer::process_connected_components(viewer * p_view)
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->selected_mesh();
 
-	real_t * label = &mesh->heatmap(0);
+	float * label = &mesh->heatmap(0);
 
 	#pragma omp parallel for
 	for(index_t v = 0; v < mesh->n_vertices; ++v)
@@ -345,7 +345,7 @@ bool app_viewer::process_gaussian_curvature(viewer * p_view)
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->selected_mesh();
 
-	real_t g, g_max = -INFINITY, g_min = INFINITY;
+	float g, g_max = -INFINITY, g_min = INFINITY;
 	vertex a, b;
 
 	arma::fvec gv(mesh->n_vertices);
@@ -376,13 +376,13 @@ bool app_viewer::process_gaussian_curvature(viewer * p_view)
 	for(index_t v = 0; v < mesh->n_vertices; ++v)
 		gv(v) = (gv(v) + g_min) / g;
 
-	real_t gm = mean(gv);
-	real_t gs = var(gv);
+	float gm = mean(gv);
+	float gs = var(gv);
 
 	gproshan_debug_var(gm);
 	gproshan_debug_var(gs);
 
-	auto f = [&](real_t x, real_t a = 4) -> real_t
+	auto f = [&](float x, float a = 4) -> float
 	{
 		if(x < gm - a * gs) return 0;
 		if(x > gm + a * gs) return 1;
@@ -498,7 +498,7 @@ bool app_viewer::process_fairing_taubin(viewer * p_view)
 	static std::vector<vertex> vertices;
 	static fairing_taubin fair(0);
 
-	if(ImGui_InputReal("step", &fair.step, 0.001))
+	if(ImGui::InputFloat("step", &fair.step, 0.001))
 	{
 		if(size(vertices) != mesh->n_vertices)
 		{
@@ -560,7 +560,7 @@ bool app_viewer::process_farthest_point_sampling(viewer * p_view)
 	che_viewer & mesh = view->selected_mesh();
 
 	static int n = 10;
-	static real_t radio;
+	static float radio;
 
 	ImGui::SliderInt("samples", &n, 1, mesh->n_vertices / 6);
 	ImGui::Text("radio: %.3f", radio);
@@ -625,7 +625,7 @@ bool app_viewer::process_compute_toplesets(viewer * p_view)
 	for(index_t v = 0; v < mesh->n_vertices; ++v)
 	{
 		if(toplesets[v] < n_toplesets)
-			mesh->heatmap(v) = real_t(toplesets[v]) / (n_toplesets);
+			mesh->heatmap(v) = float(toplesets[v]) / (n_toplesets);
 	}
 
 	mesh.update_vbo_heatmap();
@@ -651,12 +651,12 @@ bool app_viewer::process_msparse_coding(viewer * p_view)
 
 	assert(sizeof(ImGuiDataType_U64) != sizeof(size_t));
 
-	ImGui_InputReal("nyquist_factor", &patch::nyquist_factor, 0.01, 0.01, "%.2lf");
+	ImGui::InputFloat("nyquist_factor", &patch::nyquist_factor, 0.01, 0.01, "%.2lf");
 	ImGui::InputScalar("basis", ImGuiDataType_U64, &n);
 	ImGui::InputScalar("atoms", ImGuiDataType_U64, &params.n_atoms);
-	ImGui_InputReal("delta", &params.delta, 0.001, 0.1, "%.3lf");
-	ImGui_InputReal("proj_thres", &params.sum_thres, 1.001, 0.1, "%.6lf");
-	ImGui_InputReal("area_thres", &params.area_thres, 0.001, 0.1, "%6lf");
+	ImGui::InputFloat("delta", &params.delta, 0.001, 0.1, "%.3lf");
+	ImGui::InputFloat("proj_thres", &params.sum_thres, 1.001, 0.1, "%.6lf");
+	ImGui::InputFloat("area_thres", &params.area_thres, 0.001, 0.1, "%6lf");
 	ImGui::Checkbox("learn", &params.learn);
 
 	if(ImGui::Button("Run"))
@@ -664,7 +664,7 @@ bool app_viewer::process_msparse_coding(viewer * p_view)
 		basis_dct phi(n);
 		msparse_coding msc(mesh, &phi, params);
 
-		real_t max_error = msc.execute();
+		float max_error = msc.execute();
 		gproshan_log_var(max_error);
 
 		mesh->update_heatmap(msc);
@@ -685,7 +685,7 @@ bool app_viewer::process_mdict_patch(viewer * p_view)
 
 	vertex vdir;
 	patch p;
-	real_t mean_edge = mesh->mean_edge();
+	float mean_edge = mesh->mean_edge();
 	for(auto & v: mesh.selected)
 	{
 		p.init(mesh, v, msparse_coding::T, msparse_coding::T * mean_edge, toplevel);
@@ -732,9 +732,9 @@ bool app_viewer::process_mask(viewer * p_view)
 
 	ImGui::InputScalar("basis", ImGuiDataType_U64, &n);
 	ImGui::InputScalar("atoms", ImGuiDataType_U64, &params.n_atoms);
-	ImGui_InputReal("delta", &params.delta, 0.001, 0.1, "%.3lf");
-	ImGui_InputReal("proj_thres", &params.sum_thres, 1.001, 0.1, "%.6lf");
-	ImGui_InputReal("area_thres", &params.area_thres, 0.001, 0.1, "%6lf");
+	ImGui::InputFloat("delta", &params.delta, 0.001, 0.1, "%.3lf");
+	ImGui::InputFloat("proj_thres", &params.sum_thres, 1.001, 0.1, "%.6lf");
+	ImGui::InputFloat("area_thres", &params.area_thres, 0.001, 0.1, "%6lf");
 	ImGui::Checkbox("learn", &params.learn);
 
 	if(ImGui::Button("Run"))
@@ -768,20 +768,20 @@ bool app_viewer::process_pc_reconstruction(viewer * p_view)
 
 	static msparse_coding::params params;
 	static size_t n = 12;
-	static real_t percentage_size = 100;
-	static real_t radio_factor = 1;
+	static float percentage_size = 100;
+	static float radio_factor = 1;
 
 	assert(sizeof(ImGuiDataType_U64) != sizeof(size_t));
 
 	ImGui::InputScalar("basis", ImGuiDataType_U64, &n);
 	ImGui::InputScalar("atoms", ImGuiDataType_U64, &params.n_atoms);
-	ImGui_InputReal("delta", &params.delta, 0.001, 0.1, "%.3lf");
-	ImGui_InputReal("proj_thres", &params.sum_thres, 1.001, 0.1, "%.6lf");
-	ImGui_InputReal("area_thres", &params.area_thres, 0.001, 0.1, "%6lf");
+	ImGui::InputFloat("delta", &params.delta, 0.001, 0.1, "%.3lf");
+	ImGui::InputFloat("proj_thres", &params.sum_thres, 1.001, 0.1, "%.6lf");
+	ImGui::InputFloat("area_thres", &params.area_thres, 0.001, 0.1, "%6lf");
 	ImGui::Checkbox("learn", &params.learn);
 
-	ImGui_InputReal("percentage_size", &percentage_size, 100, 10, "%.3f");
-	ImGui_InputReal("radio_factor", &radio_factor, 1, 0.1, "%.3f");
+	ImGui::InputFloat("percentage_size", &percentage_size, 100, 10, "%.3f");
+	ImGui::InputFloat("radio_factor", &radio_factor, 1, 0.1, "%.3f");
 
 	if(ImGui::Button("Run"))
 	{
@@ -866,7 +866,7 @@ bool app_viewer::process_descriptor_heatmap(viewer * p_view)
 			status = true;
 			n_eigs = features.n_eigs();
 
-			real_t max_s = 0;
+			float max_s = 0;
 			#pragma omp parallel for reduction(max: max_s)
 			for(index_t v = 0; v < mesh->n_vertices; ++v)
 			{
@@ -891,8 +891,8 @@ bool app_viewer::process_key_points(viewer * p_view)
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->selected_mesh();
 
-	static real_t percent = 0.1;
-	if(ImGui_InputReal("percent", &percent, 0.01, 0.1, "%.2f"))
+	static float percent = 0.1;
+	if(ImGui::InputFloat("percent", &percent, 0.01, 0.1, "%.2f"))
 	{
 		key_points kps(mesh, percent);
 		mesh.selected = kps;
@@ -906,15 +906,15 @@ bool app_viewer::process_key_components(viewer * p_view)
 	app_viewer * view = (app_viewer *) p_view;
 	che_viewer & mesh = view->selected_mesh();
 
-	static real_t radio = 0.25;
-	if(ImGui_InputReal("radio", &radio, 0.01, 0.1, "%.2f"))
+	static float radio = 0.25;
+	if(ImGui::InputFloat("radio", &radio, 0.01, 0.1, "%.2f"))
 	{
 		// use the mesh selected points as key points.
 		key_components kcs(mesh, mesh.selected, radio);
 
 		#pragma omp parallel for
 		for(index_t v = 0; v < mesh->n_vertices; ++v)
-			mesh->heatmap(v) = (real_t) kcs(v) / kcs;
+			mesh->heatmap(v) = (float) kcs(v) / kcs;
 
 		mesh.update_vbo_heatmap();
 	}
@@ -979,7 +979,7 @@ bool app_viewer::process_fill_holes(viewer * p_view)
 		}
 		center /= size(vbounds);
 
-		std::priority_queue<std::pair<real_t, index_t> > front;
+		std::priority_queue<std::pair<float, index_t> > front;
 		std::vector<uvec2> neigs(size(vertices));
 /*
 		auto bprev = [&](const index_t v) -> index_t &
@@ -994,7 +994,7 @@ bool app_viewer::process_fill_holes(viewer * p_view)
 		auto push = [&](const uvec3 & p)
 		{
 			neigs[p.x()] = {p.y(), p.z()};
-			const real_t angle = 21;
+			const float angle = 21;
 			if(angle <= M_PI)
 				front.push({angle, p.x()});
 		};
@@ -1008,7 +1008,7 @@ bool app_viewer::process_fill_holes(viewer * p_view)
 		std::vector<bool> border;
 		border.assign(true, size(vertices));
 
-//		real_t angle;
+//		float angle;
 		index_t v0 = NIL;
 		index_t v1 = NIL;
 		index_t v2 = NIL;
@@ -1112,7 +1112,7 @@ bool app_viewer::process_noise(viewer * p_view)
 	#pragma omp parallel for
 	for(index_t v = 0; v < mesh->n_vertices; ++v)
 	{
-		real_t r = real_t(d_mod_1000(generator)) / 200000;
+		float r = float(d_mod_1000(generator)) / 200000;
 		mesh->point(v) += (!d_mod_5(generator)) * r * mesh->normal(v);
 	}
 
@@ -1133,7 +1133,7 @@ bool app_viewer::process_black_noise(viewer * p_view)
 	#pragma omp parallel for
 	for(index_t v = 0; v < mesh->n_vertices; ++v)
 	{
-		real_t r = real_t(d_mod_1000(generator)) / 200000;
+		float r = float(d_mod_1000(generator)) / 200000;
 		mesh->point(v) += (!d_mod_5(generator)) * r * mesh->normal(v);
 	}
 

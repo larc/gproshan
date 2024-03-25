@@ -19,15 +19,6 @@
 #include <imgui/imgui_impl_opengl3.h>
 
 
-#ifdef GPROSHAN_FLOAT
-	#define ImGui_InputReal ImGui::InputFloat
-	#define ImGuiDataType_Real ImGuiDataType_Float
-#else
-	#define ImGui_InputReal ImGui::InputDouble
-	#define ImGuiDataType_Real ImGuiDataType_Double
-#endif // GPROSHAN_FLOAT
-
-
 // geometry processing and shape analysis framework
 namespace gproshan {
 

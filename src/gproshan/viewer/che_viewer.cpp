@@ -88,7 +88,7 @@ void che_viewer::update_vbo_geometry()
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
 	glBufferData(GL_ARRAY_BUFFER, mesh->n_vertices * sizeof(vertex), &mesh->point(0), GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_REAL, GL_FALSE, 0, 0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	// 4 INDEXES
@@ -112,7 +112,7 @@ void che_viewer::update_vbo_normal(const vertex * vnormal)
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[1]);
 	glBufferData(GL_ARRAY_BUFFER, mesh->n_vertices * sizeof(vertex), vnormal, GL_STATIC_DRAW);
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 3, GL_REAL, GL_FALSE, 0, 0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	glBindVertexArray(0);
@@ -134,7 +134,7 @@ void che_viewer::update_vbo_color(const che::rgb_t * vcolor)
 	glBindVertexArray(0);
 }
 
-void che_viewer::update_vbo_heatmap(const real_t * vheatmap)
+void che_viewer::update_vbo_heatmap(const float * vheatmap)
 {
 	if(!vheatmap) vheatmap = &mesh->heatmap(0);
 
@@ -142,9 +142,9 @@ void che_viewer::update_vbo_heatmap(const real_t * vheatmap)
 
 	// 3 HEAT MAP
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[3]);
-	glBufferData(GL_ARRAY_BUFFER, mesh->n_vertices * sizeof(real_t), vheatmap, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, mesh->n_vertices * sizeof(float), vheatmap, GL_STATIC_DRAW);
 	glEnableVertexAttribArray(3);
-	glVertexAttribPointer(3, 1, GL_REAL, GL_TRUE, 0, 0);
+	glVertexAttribPointer(3, 1, GL_FLOAT, GL_TRUE, 0, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	glBindVertexArray(0);
@@ -161,7 +161,7 @@ void che_viewer::update_instances_positions(const std::vector<vertex> & translat
 	glBindBuffer(GL_ARRAY_BUFFER, vbo[5]);
 	glBufferData(GL_ARRAY_BUFFER, n_instances * sizeof(vertex), translations.data(), GL_STATIC_DRAW);
 	glEnableVertexAttribArray(3);
-	glVertexAttribPointer(3, 3, GL_REAL, GL_FALSE, 0, 0);
+	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	glVertexAttribDivisor(3, 1);
@@ -236,7 +236,7 @@ void che_viewer::draw_selected_vertices(che_viewer & sphere, shader & program)
 
 void che_viewer::select(const uvec2 & pos, const uvec2 & windows_size, const mat4 & inv_proj_view_mat, const vertex & cam_pos)
 {
-	rt::random<real_t> rnd(pos.x(), pos.y());
+	rt::random<float> rnd(pos.x(), pos.y());
 	const vertex & dir = rt::ray_view_dir({pos.x(), windows_size.y() - pos.y()}, windows_size, inv_proj_view_mat, cam_pos, rnd);
 	const index_t v = rt_embree->closest_vertex(cam_pos, dir);
 

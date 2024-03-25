@@ -11,7 +11,7 @@ namespace gproshan {
 class dijkstra
 {
 	private:
-		real_t * weights;
+		float * weights;
 		index_t * predecessors;
 		size_t n_vertices;
 		index_t source;
@@ -19,7 +19,7 @@ class dijkstra
 	public:
 		dijkstra(che * mesh, index_t src);
 		~dijkstra();
-		real_t & operator()(index_t i);
+		float & operator()(index_t i);
 		index_t & operator[](index_t i);
 		void print(std::ostream & os);
 

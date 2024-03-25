@@ -15,7 +15,7 @@ void fairing_spectral::compute(che * mesh)
 	vertices = new vertex[mesh->n_vertices];
 	memcpy(vertices, &mesh->point(0), mesh->n_vertices * sizeof(vertex));
 
-	arma::fmat X((real_t *) vertices, 3, mesh->n_vertices, false, true);
+	arma::fmat X((float *) vertices, 3, mesh->n_vertices, false, true);
 
 	arma::sp_fmat L, A;
 	arma::fvec eigval;

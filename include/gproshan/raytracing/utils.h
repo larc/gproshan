@@ -267,7 +267,7 @@ index_t closest_hit_vertex(const che & mesh, const H & hit)
 	if(!mesh.n_trigs) return hit.primID;
 
 	index_t he = 0;
-	real_t w = 1 - hit.u - hit.v;
+	float w = 1 - hit.u - hit.v;
 
 	if(w < hit.u)
 	{

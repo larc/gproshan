@@ -8,15 +8,6 @@
 #include <gproshan/viewer/include_opengl.h>
 
 
-#ifdef GPROSHAN_FLOAT
-	#define glVertex3v(x) glVertex3fv(x)
-	#define GL_REAL GL_FLOAT
-#else
-	#define glVertex3v(x) glVertex3dv(x)
-	#define GL_REAL GL_DOUBLE
-#endif
-
-
 // geometry processing and shape analysis framework
 namespace gproshan {
 
@@ -75,7 +66,7 @@ class che_viewer
 		void update_vbo_geometry();
 		void update_vbo_normal(const vertex * vnormal = nullptr);
 		void update_vbo_color(const che::rgb_t * vcolor = nullptr);
-		void update_vbo_heatmap(const real_t * vheatmap = nullptr);
+		void update_vbo_heatmap(const float * vheatmap = nullptr);
 		void update_instances_positions(const std::vector<vertex> & translations);
 
 		const vertex & selected_point(const index_t i) const;

@@ -139,9 +139,9 @@ mat<T, N> inverse(const mat<T, N> & m)
 #endif // __CUDACC__
 
 
-using mat2 = mat<real_t, 2>;
-using mat3 = mat<real_t, 3>;
-using mat4 = mat<real_t, 4>;
+using mat2 = mat<float, 2>;
+using mat3 = mat<float, 3>;
+using mat4 = mat<float, 4>;
 
 
 } // namespace gproshan

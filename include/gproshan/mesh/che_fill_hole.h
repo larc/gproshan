@@ -13,7 +13,7 @@ namespace gproshan {
 
 struct border_t
 {
-	real_t theta;
+	float theta;
 	index_t v;
 
 	border_t() = default;
@@ -38,7 +38,7 @@ struct border_t
 		if(theta < 0) theta += 2 * M_PI;
 	}
 
-	arma::fvec new_vertex(const std::vector<arma::fvec> & V, real_t div, const real_t length, const std::array<index_t, 2> & neighbors, const bool o)
+	arma::fvec new_vertex(const std::vector<arma::fvec> & V, float div, const float length, const std::array<index_t, 2> & neighbors, const bool o)
 	{
 		index_t p_v = neighbors[!o];
 		index_t n_v = neighbors[o];
@@ -81,7 +81,7 @@ struct border_t
 		if(theta < 0) theta += 2 * M_PI;
 	}
 
-	arma::fvec new_vertex(const std::vector<arma::fvec> & V, real_t div, const real_t length, const std::array<index_t, 2> & neighbors, const bool o, const arma::fvec & normal)
+	arma::fvec new_vertex(const std::vector<arma::fvec> & V, float div, const float length, const std::array<index_t, 2> & neighbors, const bool o, const arma::fvec & normal)
 	{
 		index_t p_v = neighbors[!o];
 		index_t n_v = neighbors[o];
@@ -125,7 +125,7 @@ che * fill_hole_front_angles_test(che * mesh, std::vector<index_t> & front_verti
 
 che * fill_hole_front_angles_without_projection(che * mesh, std::vector<index_t> & front_vertices);
 
-che * fill_hole_front_angles(std::vector<vertex> & vertices, const real_t length, const vertex & normal, const size_t max_iter, bool is_grow = false);
+che * fill_hole_front_angles(std::vector<vertex> & vertices, const float length, const vertex & normal, const size_t max_iter, bool is_grow = false);
 
 che * fill_hole_center_triangle(che * mesh, std::vector<index_t> & select_vertices, index_t index);
 

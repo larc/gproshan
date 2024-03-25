@@ -42,8 +42,8 @@ che_cuda::che_cuda(const che * mesh, const che::options & opts)
 		cudaMalloc(&VC, sizeof(che::rgb_t) * n_vertices);
 		cudaMemcpy(VC, mesh->VC, sizeof(che::rgb_t) * n_vertices, cudaMemcpyHostToDevice);
 
-		cudaMalloc(&VHC, sizeof(real_t) * n_vertices);
-		cudaMemcpy(VHC, mesh->VHC, sizeof(real_t) * n_vertices, cudaMemcpyHostToDevice);
+		cudaMalloc(&VHC, sizeof(float) * n_vertices);
+		cudaMemcpy(VHC, mesh->VHC, sizeof(float) * n_vertices, cudaMemcpyHostToDevice);
 	}
 
 	cudaMalloc(&device, sizeof(che));

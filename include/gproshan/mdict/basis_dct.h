@@ -15,10 +15,10 @@ class basis_dct: public basis
 		size_t n_freq;		///< frequency
 
 	public:
-		basis_dct(const size_t n, const real_t r = 1);
+		basis_dct(const size_t n, const float r = 1);
 		void discrete(arma::fmat & phi, const arma::fvec & x, const arma::fvec & y);
 		void d_discrete(arma::fmat & phi, const arma::fvec & x, const arma::fvec & y, const bool b);
-		real_t freq(const index_t idx);
+		float freq(const index_t idx);
 
 	private:
 		void plot_basis(std::ostream & os);
