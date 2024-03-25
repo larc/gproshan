@@ -16,7 +16,7 @@ namespace gproshan::mdict {
 struct locval_t
 {
 	arma::uword i, j;
-	real_t val;
+	float val;
 };
 
 

@@ -25,8 +25,8 @@ class simplification
 	private:
 		void execute();
 		void compute_quadrics();
-		real_t compute_error(const index_t e);
-		void order_edges(index_t * sort_edges, real_t * error_edges);
+		float compute_error(const index_t e);
+		void order_edges(index_t * sort_edges, float * error_edges);
 		vertex create_vertex(const index_t e);
 };
 

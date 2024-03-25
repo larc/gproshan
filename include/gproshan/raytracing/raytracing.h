@@ -40,8 +40,8 @@ class raytracing
 											vertex &,				// attenuation,
 											vertex &,				// position,
 											vertex &,				// ray_dir,
-											real_t &,				// dist
-											random<real_t> &,		// rnd,
+											float &,				// dist
+											random<float> &,		// rnd,
 											const render_params &,	// params,
 											const bool			// flat
 											) const { return false; };

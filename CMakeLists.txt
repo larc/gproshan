@@ -38,7 +38,6 @@ endif(CUDAToolkit_FOUND)
 set(GPROSHAN_DIR "${gproshan_SOURCE_DIR}")
 
 option(GPROSHAN_LOG "Enables logging gproshan messages." ON)
-option(GPROSHAN_FLOAT "Compile gproshan with float precision." ON)
 
 set(GPROSHAN_CUDA ${CUDAToolkit_FOUND})
 set(GPROSHAN_OPTIX ${OptiX_INCLUDE})

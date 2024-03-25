@@ -16,42 +16,42 @@ using vertex = vec3;
 class quaternion
 {
 	public:
-		real_t s;
+		float s;
 		vertex v;
 
 	public:
-		quaternion(real_t s = 0, real_t vi = 0, real_t vj = 0, real_t vk = 0);
-		quaternion(real_t s, const vertex & v);
+		quaternion(float s = 0, float vi = 0, float vj = 0, float vk = 0);
+		quaternion(float s, const vertex & v);
 		quaternion(const vertex & v);
 
 		operator const vertex & () const;
-		const quaternion & operator = (real_t s);
+		const quaternion & operator = (float s);
 		const quaternion & operator = (const vertex & v);
-		real_t & operator [] (int index);
-		real_t operator [] (int index) const;
-		real_t & re(void);
-		real_t re(void) const;
+		float & operator [] (int index);
+		float operator [] (int index) const;
+		float & re(void);
+		float re(void) const;
 		vertex & im(void);
 		const vertex & im(void) const;
 
 		quaternion operator + (const quaternion & q) const;
 		quaternion operator - (const quaternion & q) const;
 		quaternion operator - (void) const;
-		quaternion operator * (real_t c) const;
-		quaternion operator / (real_t c) const;
+		quaternion operator * (float c) const;
+		quaternion operator / (float c) const;
 		void operator += (const quaternion & q);
-		void operator += (real_t c);
+		void operator += (float c);
 		void operator -= (const quaternion & q);
-		void operator -= (real_t c);
-		void operator *= (real_t c);
-		void operator /= (real_t c);
+		void operator -= (float c);
+		void operator *= (float c);
+		void operator /= (float c);
 		quaternion operator * (const quaternion & q) const;
 		void operator *= (const quaternion & q);
 
 		quaternion conj() const;
 		quaternion inv() const;
-		real_t norm() const;
-		real_t norm2() const;
+		float norm() const;
+		float norm2() const;
 		quaternion unit() const;
 		void normalize();
 
@@ -59,7 +59,7 @@ class quaternion
 	friend std::istream & operator >> (std::istream & is, quaternion & q);
 };
 
-quaternion operator * (real_t c, const quaternion & q);
+quaternion operator * (float c, const quaternion & q);
 
 
 } // namespace gproshan

@@ -13,9 +13,9 @@ namespace gproshan::mdict {
 
 
 size_t patch::expected_nv = 3 * msparse_coding::T * (msparse_coding::T + 1);
-real_t patch::nyquist_factor = 0.5;
+float patch::nyquist_factor = 0.5;
 
-void patch::init(che * mesh, const index_t v, const size_t n_toplevels, const real_t radio_, index_t * _toplevel)
+void patch::init(che * mesh, const index_t v, const size_t n_toplevels, const float radio_, index_t * _toplevel)
 {
 	radio = radio_;
 	index_t * toplevel = _toplevel ? _toplevel : new index_t[mesh->n_vertices];
@@ -58,7 +58,7 @@ index_t patch::find(const index_t * indexes, size_t nc, index_t idx_global)
 	return -1;
 }
 
-bool patch::add_vertex_by_trigs(vertex & n, std::vector<vertex> & N, double thr_angle, const real_t * geo, che * mesh, const index_t v, real_t & area, real_t & proj_area, real_t deviation)
+bool patch::add_vertex_by_trigs(vertex & n, std::vector<vertex> & N, double thr_angle, const float * geo, che * mesh, const index_t v, float & area, float & proj_area, float deviation)
 {
 	// it needs to return both vertices
 	// it needs to filter repeated indexes.
@@ -124,7 +124,7 @@ bool patch::add_vertex_by_trigs(vertex & n, std::vector<vertex> & N, double thr_
 	return added;
 }
 
-void patch::init_random(const vertex & c, const arma::fmat & T, const real_t radio, const real_t max_radio, const real_t percent, const real_t fr)
+void patch::init_random(const vertex & c, const arma::fmat & T, const float radio, const float max_radio, const float percent, const float fr)
 {
 	this->radio = radio;
 	this->T = T;
@@ -160,12 +160,12 @@ void patch::init_random(const vertex & c, const arma::fmat & T, const real_t rad
 	}
 }
 
-void patch::recover_radial_disjoint(che * mesh, const real_t radio_, const index_t v)
+void patch::recover_radial_disjoint(che * mesh, const float radio_, const index_t v)
 {
 	// for small meshes 6000 0.e-5
 	// for others 2.e-5
 	geodesics::params params;
-	params.radio = radio_ + 1e-5;//numeric_limits<real_t>::epsilon();
+	params.radio = radio_ + 1e-5;//numeric_limits<float>::epsilon();
 
 	geodesics geo(mesh, {v}, params);
 
@@ -209,14 +209,14 @@ void patch::recover_radial_disjoint(che * mesh, const real_t radio_, const index
 
 }
 
-void patch::init_radial_disjoint(	real_t & euc_radio,
-									real_t & geo_radio,
+void patch::init_radial_disjoint(	float & euc_radio,
+									float & geo_radio,
 									che * mesh,
 									const index_t v,
-									const real_t delta,
-									const real_t sum_thres,
-									const real_t area_thres,
-									const real_t area_mesh
+									const float delta,
+									const float sum_thres,
+									const float area_thres,
+									const float area_mesh
 									)
 {
 	radio = -INFINITY;
@@ -234,14 +234,14 @@ void patch::init_radial_disjoint(	real_t & euc_radio,
 	std::vector<vertex> N;
 	N.push_back(n);
 
-	real_t area = 0;
-	real_t proj_area = std::numeric_limits<real_t>::epsilon();
-	real_t ratio;
+	float area = 0;
+	float proj_area = std::numeric_limits<float>::epsilon();
+	float ratio;
 
 	vertex c = mesh->point(v);
 
 	geodesics::params params;
-	params.dist_alloc = new real_t[mesh->n_vertices];
+	params.dist_alloc = new float[mesh->n_vertices];
 	params.fun = [&](const index_t u) -> bool
 	{
 		if(u == v) return true;
@@ -367,8 +367,8 @@ void patch::add_extra_xyz_disjoint(che * mesh, std::vector<vpatches_t> & vpatche
 
 		// add new vertices
 		// create a random point
-		real_t a = abs(dis(gen)) * 2 * M_PI;
-		real_t r = abs(dis(gen));
+		float a = abs(dis(gen)) * 2 * M_PI;
+		float r = abs(dis(gen));
 		arma::fvec np = { r * std::cos(a), r * std::sin(a), 0 };
 
 		//gproshan_debug_var(np);
@@ -416,7 +416,7 @@ void patch::add_extra_xyz_disjoint(che * mesh, std::vector<vpatches_t> & vpatche
 
 
 
-				if(abs(A - (A1 + A2 + A3)) < std::numeric_limits<real_t>::epsilon())
+				if(abs(A - (A1 + A2 + A3)) < std::numeric_limits<float>::epsilon())
 				{
 					arma::fmat proj_abc = abc.tail_cols(2).each_col() - abc.col(0);
 					np -= abc.col(0);
@@ -447,7 +447,7 @@ void patch::add_extra_xyz_disjoint(che * mesh, std::vector<vpatches_t> & vpatche
 	}
 }
 
-void patch::reset_xyz_disjoint(che * mesh, real_t * dist, size_t M, std::vector<vpatches_t> & vpatches, const index_t p, const fmask_t & mask)
+void patch::reset_xyz_disjoint(che * mesh, float * dist, size_t M, std::vector<vpatches_t> & vpatches, const index_t p, const fmask_t & mask)
 {
 	size_t m = size(vertices);
 	if(mask)
@@ -487,16 +487,16 @@ void patch::reset_xyz_disjoint(che * mesh, real_t * dist, size_t M, std::vector<
 	}
 }
 
-void patch::scale_xyz(const real_t radio_f)
+void patch::scale_xyz(const float radio_f)
 {
-	real_t factor = radio_f/radio;
+	float factor = radio_f/radio;
 	xyz = factor * xyz;
 
 }
 
-void patch::iscale_xyz(const real_t radio_f)
+void patch::iscale_xyz(const float radio_f)
 {
-	real_t factor = radio_f/radio;
+	float factor = radio_f/radio;
 	xyz = xyz / factor;
 }
 
@@ -530,14 +530,14 @@ void patch::gather_vertices(che * mesh, const index_t v, const size_t n_toplevel
 	}
 }
 
-void patch::gather_vertices(che * mesh, const index_t v, const real_t radio, index_t * toplevel)
+void patch::gather_vertices(che * mesh, const index_t v, const float radio, index_t * toplevel)
 {
 	assert(x.n_elem == 3 && T.n_rows == 3 && T.n_cols == 3);
 
 	if(size(vertices)) vertices.clear();
 	vertices.reserve(expected_nv);
 
-	std::priority_queue<std::pair<real_t, index_t> > qvertices;
+	std::priority_queue<std::pair<float, index_t> > qvertices;
 
 	memset(toplevel, -1, sizeof(index_t) * mesh->n_vertices);
 
@@ -609,19 +609,19 @@ void patch::normal_fit_directions(che * mesh, const index_t v)
 }
 
 
-real_t patch::get_min_z()
+float patch::get_min_z()
 {
 	return xyz.row(2).min();
 }
 
-real_t patch::get_max_z()
+float patch::get_max_z()
 {
 	return xyz.row(2).max();
 }
 
-void patch::update_heights(real_t & min, real_t & max, bool flag)
+void patch::update_heights(float & min, float & max, bool flag)
 {
-	real_t tmp;
+	float tmp;
 	if(flag)
 	{
 		for(index_t i = 0; i < xyz.n_cols; ++i)

@@ -23,11 +23,11 @@ void che_xyz::read_file(const std::string & file)
 	float x, y, z;
 	unsigned char r, g, b;
 	size_t n;
-	real_t h;
+	float h;
 
 	std::vector<vertex> vertices;
 	std::vector<rgb_t> vertices_color;
-	std::vector<real_t> vertices_hm;
+	std::vector<float> vertices_hm;
 
 	while(fgets(line, sizeof(line), fp))
 	{

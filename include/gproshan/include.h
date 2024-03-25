@@ -25,12 +25,6 @@ namespace gproshan {
 
 using index_t = unsigned int;
 
-#ifdef GPROSHAN_FLOAT
-	using real_t = float;
-#else
-	using real_t = double;
-#endif
-
 
 inline std::string tmp_file_path(const std::string & file)
 {
@@ -40,7 +34,9 @@ inline std::string tmp_file_path(const std::string & file)
 	return gproshan_home + "/" + file;
 }
 
+
 #define shaders_path(file) (std::string(GPROSHAN_DIR) + "/shaders/" + file)
+
 
 #ifdef GPROSHAN_LOG
 	#define gproshan_log_var(vari) std::cerr << "\033[0;33m[LOG] " << std::setprecision(3) << std::scientific << #vari << ":\033[0m " << (vari) << std::endl

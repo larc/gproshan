@@ -29,12 +29,12 @@ class patch
 		arma::fmat xyz;							///< Matrix of points.
 		arma::fmat phi;							///< Projected basis.
 		double avg_dist;					///< Average distance between points.
-		real_t radio;						///< Radio.
+		float radio;						///< Radio.
 		size_t min_nv;						///<
 
 	public:
 		static size_t expected_nv;			///< Expected number of patch vertices.
-		static real_t nyquist_factor;		///< nyquist factor
+		static float nyquist_factor;		///< nyquist factor
 
 	public:
 		patch() = default;
@@ -43,7 +43,7 @@ class patch
 		void init(	che * mesh,						///< input mesh.
 					const index_t v,				///< center vertex of the patch.
 					const size_t n_toplevels,		///< number of toplevels to jet fitting.
-					const real_t radio_,			///< euclidean radio in XY of the patch.
+					const float radio_,			///< euclidean radio in XY of the patch.
 					index_t * _toplevel = nullptr	///< aux memory to gather toplevel vertices.
 					);
 
@@ -53,20 +53,20 @@ class patch
 					std::vector<index_t> & _vertices,
 					index_t * _toplevel = nullptr);
 
-		void init_radial_disjoint(	real_t & euc_radio,
-									real_t & geo_radio,
+		void init_radial_disjoint(	float & euc_radio,
+									float & geo_radio,
 									che * mesh,
 									const index_t v,
-									const real_t delta,
-									const real_t sum_thres,
-									const real_t area_thres,
-									const real_t area_mesh
+									const float delta,
+									const float sum_thres,
+									const float area_thres,
+									const float area_mesh
 									);
 
-		void init_random(const vertex & c, const arma::fmat & T, const real_t radio, const real_t max_radio, const real_t percent, const real_t fr);
+		void init_random(const vertex & c, const arma::fmat & T, const float radio, const float max_radio, const float percent, const float fr);
 
 		void recover_radial_disjoint(che * mesh,
-					const real_t radio_,
+					const float radio_,
 					const index_t v);
 
 		void transform();
@@ -79,7 +79,7 @@ class patch
 						const fmask_t & mask = nullptr
 						);
 		void reset_xyz_disjoint(che * mesh,
-						real_t * dist,
+						float * dist,
 						size_t M,
 						std::vector<vpatches_t> & vpatches,
 						const index_t p,
@@ -90,20 +90,20 @@ class patch
 		const arma::fvec normal();
 		bool is_covered( bool * covered);
 
-//		void save(const real_t radio, const size_t imsize, CImgList<real_t> & imlist);
-		void update_heights(real_t & min, real_t & max, bool flag);
+//		void save(const float radio, const size_t imsize, CImgList<float> & imlist);
+		void update_heights(float & min, float & max, bool flag);
 		void compute_avg_distance(che * mesh, std::vector<vpatches_t> & vpatches, const index_t p);
-		void scale_xyz(const real_t radio_f);
-		void iscale_xyz(const real_t radio_f);
+		void scale_xyz(const float radio_f);
+		void iscale_xyz(const float radio_f);
 		bool add_vertex_by_trigs(	vertex & n,
 									std::vector<vertex> & N,
 									double thr_angle,
-									const real_t * geo,
+									const float * geo,
 									che * mesh,
 									const index_t v,
-									real_t & area,
-									real_t & proj_area,
-									real_t deviation
+									float & area,
+									float & proj_area,
+									float deviation
 									);
 
 
@@ -118,15 +118,15 @@ class patch
 		/// Gather the vertices filter by radio in the local coordinates require initialize T and x.
 		void gather_vertices(	che * mesh,
 								const index_t v,
-								const real_t radio,
+								const float radio,
 								index_t * toplevel
 								);
 		bool exists(index_t idx);
 
 		/// Initialize transformation matrix T and translation vector x, using CGAL jet_fitting.
 		void normal_fit_directions(che * mesh, const index_t v);
-		real_t get_min_z();
-		real_t get_max_z();
+		float get_min_z();
+		float get_max_z();
 
 		void save_z(std::ostream & os);
 		index_t find(const index_t * indexes, size_t nc, index_t idx_global);

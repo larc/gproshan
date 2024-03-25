@@ -17,7 +17,7 @@ geodesics::geodesics(che * mesh, const std::vector<index_t> & sources, const par
 
 	free_dist = p.dist_alloc == nullptr;
 
-	dist = free_dist ? new real_t[n_vertices] : p.dist_alloc;
+	dist = free_dist ? new float[n_vertices] : p.dist_alloc;
 	clusters = p.cluster ? new index_t[n_vertices] : nullptr;
 	sorted_index = new index_t[n_vertices];
 
@@ -39,12 +39,12 @@ geodesics::~geodesics()
 	delete [] clusters;
 }
 
-geodesics::operator const real_t * () const
+geodesics::operator const float * () const
 {
 	return dist;
 }
 
-real_t geodesics::operator[](const index_t i) const
+float geodesics::operator[](const index_t i) const
 {
 	assert(i < n_vertices);
 	return dist[i];
@@ -56,7 +56,7 @@ index_t geodesics::operator()(const index_t i) const
 	return sorted_index[i];
 }
 
-real_t geodesics::radio() const
+float geodesics::radio() const
 {
 	assert(n_sorted != 0);
 	return dist[farthest()];
@@ -87,7 +87,7 @@ void geodesics::normalize()
 		return;
 	}
 
-	real_t max = dist[farthest()];
+	float max = dist[farthest()];
 
 	#pragma omp parallel for
 	for(size_t i = 0; i < n_sorted; ++i)
@@ -114,7 +114,7 @@ void geodesics::execute(che * mesh, const std::vector<index_t> & sources, const 
 	}
 }
 
-void geodesics::run_fastmarching(che * mesh, const std::vector<index_t> & sources, const size_t n_iter, const real_t radio, const fm_function_t & fun)
+void geodesics::run_fastmarching(che * mesh, const std::vector<index_t> & sources, const size_t n_iter, const float radio, const fm_function_t & fun)
 {
 	index_t BLACK = 0, GREEN = 1, RED = 2;
 	index_t * color = new index_t[n_vertices];
@@ -125,9 +125,9 @@ void geodesics::run_fastmarching(che * mesh, const std::vector<index_t> & source
 
 	size_t green_count = n_iter ? n_iter : n_vertices;
 
-	std::priority_queue<std::pair<real_t, size_t>,
-			std::vector<std::pair<real_t, size_t> >,
-			std::greater<std::pair<real_t, size_t> > > Q;
+	std::priority_queue<std::pair<float, size_t>,
+			std::vector<std::pair<float, size_t> >,
+			std::greater<std::pair<float, size_t> > > Q;
 
 	index_t c = 0;
 	n_sorted = 0;
@@ -163,7 +163,7 @@ void geodesics::run_fastmarching(che * mesh, const std::vector<index_t> & source
 
 			if(color[v] == RED)
 			{
-				real_t dv = dist[v];
+				float dv = dist[v];
 				for(const index_t he: mesh->star(v))
 				{
 					const uvec3 i = {	mesh->halfedge(he_next(he)),
@@ -171,7 +171,7 @@ void geodesics::run_fastmarching(che * mesh, const std::vector<index_t> & source
 										mesh->halfedge(he)
 									};
 
-					real_t d = update_step(mesh, dist, i);
+					float d = update_step(mesh, dist, i);
 
 					if(d < dv)
 					{

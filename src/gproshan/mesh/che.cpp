@@ -94,7 +94,7 @@ che::che(const che & mesh, const index_t * sorted, const che::options & opts)
 		if(!sorted)
 		{
 			memcpy(VC, mesh.VC, n_vertices * sizeof(rgb_t));
-			memcpy(VHC, mesh.VHC, n_vertices * sizeof(real_t));
+			memcpy(VHC, mesh.VHC, n_vertices * sizeof(float));
 		}
 		else
 		{
@@ -130,7 +130,7 @@ void che::reload()
 	init(filename);
 }
 
-mat4 che::normalize_sphere(const real_t r) const
+mat4 che::normalize_sphere(const float r) const
 {
 	vertex center;
 	#pragma omp parallel for
@@ -141,24 +141,24 @@ mat4 che::normalize_sphere(const real_t r) const
 	}
 	center /= n_vertices;
 
-	real_t mean_dist = 0;
+	float mean_dist = 0;
 	#pragma omp parallel for reduction(+: mean_dist)
 	for(index_t v = 0; v < n_vertices; ++v)
 		mean_dist += length(GT[v] - center);
 	mean_dist /= n_vertices;
 
-	real_t sigma_dist = 0;
+	float sigma_dist = 0;
 	#pragma omp parallel for reduction(+: sigma_dist)
 	for(index_t v = 0; v < n_vertices; ++v)
 	{
-		const real_t diff = mean_dist - length(GT[v] - center);
+		const float diff = mean_dist - length(GT[v] - center);
 		sigma_dist += diff * diff;
 	}
 	sigma_dist = sqrt(sigma_dist / n_vertices);
 
 	mat4 model_mat;
 
-	const real_t scale = r / (mean_dist + sigma_dist);
+	const float scale = r / (mean_dist + sigma_dist);
 	model_mat(0, 0) = model_mat(1, 1) = model_mat(2, 2) = scale;
 
 	center *= -scale;
@@ -170,7 +170,7 @@ mat4 che::normalize_sphere(const real_t r) const
 	return model_mat;
 }
 
-mat4 che::normalize_box(const real_t side) const
+mat4 che::normalize_box(const float side) const
 {
 	vertex pmin = INFINITY;
 	vertex pmax = 0;
@@ -190,7 +190,7 @@ mat4 che::normalize_box(const real_t side) const
 
 	mat4 model_mat;
 
-	const real_t scale = side / std::max({pmax.x() - pmin.x(), pmax.y() - pmin.y(), pmax.z() - pmin.z()});
+	const float scale = side / std::max({pmax.x() - pmin.x(), pmax.y() - pmin.y(), pmax.z() - pmin.z()});
 	model_mat(0, 0) = model_mat(1, 1) = model_mat(2, 2) = scale;
 
 	const vertex & translate = - scale * (pmax + pmin) / 2;
@@ -216,8 +216,8 @@ che * che::merge(const che * mesh, const std::vector<index_t> & vcommon)
 	memcpy(new_mesh->VN + n_vertices, mesh->VN + n_vcommon, sizeof(vertex) * n_vnew);
 	memcpy(new_mesh->VC, VC, sizeof(rgb_t) * n_vertices);
 	memcpy(new_mesh->VC + n_vertices, mesh->VC + n_vcommon, sizeof(rgb_t) * n_vnew);
-	memcpy(new_mesh->VHC, VHC, sizeof(real_t) * n_vertices);
-	memcpy(new_mesh->VHC + n_vertices, mesh->VHC + n_vcommon, sizeof(real_t) * n_vnew);
+	memcpy(new_mesh->VHC, VHC, sizeof(float) * n_vertices);
+	memcpy(new_mesh->VHC + n_vertices, mesh->VHC + n_vcommon, sizeof(float) * n_vnew);
 
 	memcpy(new_mesh->VT, VT, sizeof(index_t) * n_half_edges);
 
@@ -237,7 +237,7 @@ void che::update_vertices(const vertex * positions, const size_t n, const index_
 	memcpy(GT + v_i, positions, sizeof(vertex) * (!n ? n_vertices : n));
 }
 
-void che::update_heatmap(const real_t * hm)
+void che::update_heatmap(const float * hm)
 {
 	if(!hm)
 	{
@@ -248,7 +248,7 @@ void che::update_heatmap(const real_t * hm)
 		return;
 	}
 
-	memcpy(VHC, hm, n_vertices * sizeof(real_t));
+	memcpy(VHC, hm, n_vertices * sizeof(float));
 	scale_hm = normalize(VHC, n_vertices);
 }
 
@@ -494,7 +494,7 @@ vertex che::normal_he(const index_t he) const
 	return normalize(cross(b - a, c - a));
 }
 
-vertex che::gradient_he(const index_t he, const real_t * f) const
+vertex che::gradient_he(const index_t he, const float * f) const
 {
 	index_t i = VT[he];
 	index_t j = VT[he_next(he)];
@@ -537,10 +537,10 @@ dvec3 che::gradient_he(const index_t he, const double * f) const
 	return normalize(f[i] * pjk + f[j] * pki + f[k] * pij);
 }
 
-vertex che::gradient(const index_t v, const real_t * f)
+vertex che::gradient(const index_t v, const float * f)
 {
 	vertex g;
-	real_t area, area_star = 0;
+	float area, area_star = 0;
 
 	for(const index_t he: star(v))
 	{
@@ -553,17 +553,17 @@ vertex che::gradient(const index_t v, const real_t * f)
 }
 
 
-real_t che::heatmap_scale() const
+float che::heatmap_scale() const
 {
 	return scale_hm;
 }
 
-void che::heatmap_scale(const real_t shm)
+void che::heatmap_scale(const float shm)
 {
 	scale_hm = shm;
 }
 
-real_t che::heatmap_scale(const index_t v) const
+float che::heatmap_scale(const index_t v) const
 {
 	assert(v < n_vertices);
 	return scale_hm * VHC[v];
@@ -769,7 +769,7 @@ size_t che::genus() const
 size_t che::memory() const
 {
 	return	sizeof(*this) +
-			n_vertices * (2 * sizeof(vertex) + sizeof(index_t) + sizeof(real_t) + sizeof(rgb_t)) +
+			n_vertices * (2 * sizeof(vertex) + sizeof(index_t) + sizeof(float) + sizeof(rgb_t)) +
 			sizeof(index_t) * (3 * n_half_edges + n_edges) +
 			size(filename);
 }
@@ -790,9 +790,9 @@ size_t che::max_degree() const
 	return md;
 }
 
-real_t che::quality() const
+float che::quality() const
 {
-	real_t q = 0;
+	float q = 0;
 
 	#pragma omp parallel for reduction(+: q)
 	for(index_t t = 0; t < n_trigs; ++t)
@@ -801,9 +801,9 @@ real_t che::quality() const
 	return q * 100 / n_trigs;
 }
 
-real_t che::mean_edge() const
+float che::mean_edge() const
 {
-	real_t m = 0;
+	float m = 0;
 
 	#pragma omp parallel for reduction(+: m)
 	for(index_t e = 0; e < n_edges; ++e)
@@ -812,9 +812,9 @@ real_t che::mean_edge() const
 	return m / n_edges;
 }
 
-real_t che::area_surface() const
+float che::area_surface() const
 {
-	real_t area = 0;
+	float area = 0;
 
 	#pragma omp parallel for reduction(+: area)
 	for(index_t i = 0; i < n_trigs; ++i)
@@ -895,7 +895,7 @@ void che::flip(const index_t e)
 	if(EVT[vd] == he_prev(hb)) EVT[vd] = he_next(ha);
 }
 
-real_t che::cotan(const index_t he) const
+float che::cotan(const index_t he) const
 {
 	if(he == NIL) return 0;
 
@@ -909,10 +909,10 @@ real_t che::cotan(const index_t he) const
 // 4*sqrt(3)*a
 // q = ----------------
 // h1^2+h2^2+h3^2
-real_t che::pdetriq(const index_t t) const
+float che::pdetriq(const index_t t) const
 {
 	index_t he = t * 3;
-	real_t h[3] = {
+	float h[3] = {
 					norm(GT[VT[he_next(he)]] - GT[VT[he]]),
 					norm(GT[VT[he_prev(he)]] - GT[VT[he_next(he)]]),
 					norm(GT[VT[he]] - GT[VT[he_prev(he)]])
@@ -920,7 +920,7 @@ real_t che::pdetriq(const index_t t) const
 	return (4 * sqrt(3) * area_trig(t)) / (h[0] * h[0] + h[1] * h[1] + h[2] * h[2]);
 }
 
-real_t che::area_trig(const index_t t) const
+float che::area_trig(const index_t t) const
 {
 	index_t he = t * 3;
 	vertex a = GT[VT[he_next(he)]] - GT[VT[he]];
@@ -929,9 +929,9 @@ real_t che::area_trig(const index_t t) const
 	return norm(cross(a, b)) / 2;
 }
 
-real_t che::area_vertex(const index_t v) const
+float che::area_vertex(const index_t v) const
 {
-	real_t area_star = 0;
+	float area_star = 0;
 	for(const index_t he: star(v))
 		area_star += area_trig(he_trig(he));
 
@@ -939,10 +939,10 @@ real_t che::area_vertex(const index_t v) const
 }
 
 // The Gauss-Bonnet Scheme
-real_t che::mean_curvature(const index_t v) const
+float che::mean_curvature(const index_t v) const
 {
-	real_t h = 0;
-	real_t a = 0;
+	float h = 0;
+	float a = 0;
 
 	for(const index_t he: star(v))
 	{
@@ -1004,7 +1004,7 @@ bool che::alloc(const size_t n_v, const size_t n_f, const che::options & opt)
 	if(opt.colors)
 	{
 		VC	= new rgb_t[n_vertices];
-		VHC	= new real_t[n_vertices];
+		VHC	= new float[n_vertices];
 		update_heatmap();
 	}
 

@@ -22,13 +22,13 @@ class camera
 		quaternion pos		= vertex{0, 0, -3.14};
 		quaternion front	= vertex{0, 0, 1};
 		quaternion up		= vertex{0, 1, 0};
-		real_t fovy			= 45;
-		real_t aspect		= 1;
-		real_t near			= 0.01;
-		real_t far			= 1000;
+		float fovy			= 45;
+		float aspect		= 1;
+		float near			= 0.01;
+		float far			= 1000;
 
 	public:
-		static mat4 perspective(const real_t fovy, const real_t aspect, const real_t near, const real_t far);
+		static mat4 perspective(const float fovy, const float aspect, const float near, const float far);
 
 		mat4 perspective();
 		mat4 look_at(const quaternion & r);
@@ -37,7 +37,7 @@ class camera
 		void motion(const double x, const double y, const int w, const int h);
 		void zoom_in();
 		void zoom_out();
-		real_t zoom() const;
+		float zoom() const;
 
 	private:
 		quaternion click_to_sphere(const double x, const double y, const int w, const int h);

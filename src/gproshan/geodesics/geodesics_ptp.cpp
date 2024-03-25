@@ -9,7 +9,7 @@
 namespace gproshan {
 
 
-ptp_out_t::ptp_out_t(real_t *const d, index_t *const c): dist(d), clusters(c) {}
+ptp_out_t::ptp_out_t(float *const d, index_t *const c): dist(d), clusters(c) {}
 
 
 void parallel_toplesets_propagation_cpu(const ptp_out_t & ptp_out,
@@ -18,7 +18,7 @@ void parallel_toplesets_propagation_cpu(const ptp_out_t & ptp_out,
 										const toplesets_t & toplesets,
 										const bool coalescence,
 										const bool set_inf,
-										const f_ptp<real_t> & fun
+										const f_ptp<float> & fun
 										)
 {
 	const size_t n_vertices = mesh->n_vertices;
@@ -36,8 +36,8 @@ void parallel_toplesets_propagation_cpu(const ptp_out_t & ptp_out,
 	}
 
 
-	real_t * dist[2] = {	coalescence ? new real_t[n_vertices] : ptp_out.dist,
-							new real_t[n_vertices]
+	float * dist[2] = {	coalescence ? new float[n_vertices] : ptp_out.dist,
+							new float[n_vertices]
 							};
 	index_t * clusters[2] = {	coalescence && ptp_out.clusters ? new index_t[n_vertices] : ptp_out.clusters,
 								ptp_out.clusters ? new index_t[n_vertices] : nullptr
@@ -75,9 +75,9 @@ void parallel_toplesets_propagation_cpu(const ptp_out_t & ptp_out,
 	delete h_mesh;
 }
 
-void normalize_ptp(real_t * dist, const size_t n)
+void normalize_ptp(float * dist, const size_t n)
 {
-	real_t max_d = 0;
+	float max_d = 0;
 
 	#pragma omp parallel for reduction(max: max_d)
 	for(index_t v = 0; v < n; ++v)

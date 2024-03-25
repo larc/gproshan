@@ -35,8 +35,8 @@ class geodesics
 		{
 			algorithm alg		= FM;					///< specific the algorithm to execute.
 			size_t n_iter		= 0;					///< maximum number of iterations.
-			real_t radio		= INFINITY;				///< execute until the specific radio.
-			real_t * dist_alloc	= nullptr;				///< external dist allocation
+			float radio		= INFINITY;				///< execute until the specific radio.
+			float * dist_alloc	= nullptr;				///< external dist allocation
 			bool cluster		= false;				///< to cluster vertices to closest source.
 			fm_function_t fun	= nullptr;				///< fun is executed inside FM loop
 		};
@@ -45,7 +45,7 @@ class geodesics
 		index_t * clusters;			///< Clustering vertices to closest source.
 
 	private:
-		real_t * dist;				///< Results of computation geodesic distances.
+		float * dist;				///< Results of computation geodesic distances.
 		index_t * sorted_index;		///< Sort vertices by topological level or geodesic distance.
 		size_t n_sorted;			///< Number of vertices sorted by their geodesics distance.
 		bool free_dist;
@@ -59,10 +59,10 @@ class geodesics
 					);
 
 		virtual ~geodesics();
-		operator const real_t * () const;
-		real_t operator[](const index_t i) const;
+		operator const float * () const;
+		float operator[](const index_t i) const;
 		index_t operator()(const index_t i) const;
-		real_t radio() const;
+		float radio() const;
 		index_t farthest() const;
 		size_t n_sorted_index() const;
 		void copy_sorted_index(index_t * indexes, const size_t n) const;
@@ -70,7 +70,7 @@ class geodesics
 
 	private:
 		void execute(che * mesh, const std::vector<index_t> & sources, const params & p);
-		void run_fastmarching(che * mesh, const std::vector<index_t> & sources, const size_t n_iter, const real_t radio, const fm_function_t & fun);
+		void run_fastmarching(che * mesh, const std::vector<index_t> & sources, const size_t n_iter, const float radio, const fm_function_t & fun);
 		void run_parallel_toplesets_propagation_cpu(che * mesh, const std::vector<index_t> & sources);
 		void run_heat_method(che * mesh, const std::vector<index_t> & sources);
 

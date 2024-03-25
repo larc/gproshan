@@ -19,7 +19,7 @@ namespace gproshan::mdict {
 
 void test_image_denoising(const std::string & file)
 {
-	CImg<real_t> image(file.c_str());
+	CImg<float> image(file.c_str());
 	image.resize(128, 128);
 	image = image.get_normalize(0, 1);
 
@@ -50,12 +50,12 @@ void test_image_denoising(const std::string & file)
 
 	arma::fmat spD = D;
 
-	CImg<real_t> imdict;
+	CImg<float> imdict;
 	for(index_t i = 0; i < 16; ++i)
 	{
-		CImg<real_t> imrow;
+		CImg<float> imrow;
 		for(index_t j = 0; j < 16; ++j)
-			imrow.append(CImg<real_t>(D.colptr(i * 16 + j), p, p, 1, 1, true), 'x');
+			imrow.append(CImg<float>(D.colptr(i * 16 + j), p, p, 1, 1, true), 'x');
 
 		imdict.append(imrow, 'y');
 	}
@@ -79,12 +79,12 @@ void test_image_denoising(const std::string & file)
 
 	gproshan_log_var(norm(D - spD));
 
-	CImg<real_t> imdictlearned;
+	CImg<float> imdictlearned;
 	for(index_t i = 0; i < 16; ++i)
 	{
-		CImg<real_t> imrow;
+		CImg<float> imrow;
 		for(index_t j = 0; j < 16; ++j)
-			imrow.append(CImg<real_t>(D.colptr(i * 16 + j), p, p, 1, 1, true), 'x');
+			imrow.append(CImg<float>(D.colptr(i * 16 + j), p, p, 1, 1, true), 'x');
 
 		imdictlearned.append(imrow, 'y');
 	}

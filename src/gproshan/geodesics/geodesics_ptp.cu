@@ -18,7 +18,7 @@ double parallel_toplesets_propagation_gpu(	const ptp_out_t & ptp_out,
 											const toplesets_t & toplesets,
 											const bool coalescence,
 											const bool set_inf,
-											const f_ptp<real_t> & fun
+											const f_ptp<float> & fun
 											)
 {
 	const size_t n_vertices = mesh->n_vertices;
@@ -45,18 +45,18 @@ double parallel_toplesets_propagation_gpu(	const ptp_out_t & ptp_out,
 
 	che_cuda d_mesh(h_mesh ? h_mesh : mesh, {false, false, false});
 
-	real_t * h_dist = coalescence ? new real_t[n_vertices] : ptp_out.dist;
+	float * h_dist = coalescence ? new float[n_vertices] : ptp_out.dist;
 	index_t * h_clusters = coalescence && ptp_out.clusters ? new index_t[n_vertices]
 															: ptp_out.clusters;
 
-	real_t * d_error = nullptr;
-	real_t * d_dist[3] = {};
+	float * d_error = nullptr;
+	float * d_dist[3] = {};
 	index_t * d_clusters[3] = {};
 	index_t * d_sorted = nullptr;
 
-	cudaMalloc(&d_error, sizeof(real_t) * n_vertices);
-	cudaMalloc(&d_dist[0], sizeof(real_t) * n_vertices);
-	cudaMalloc(&d_dist[1], sizeof(real_t) * n_vertices);
+	cudaMalloc(&d_error, sizeof(float) * n_vertices);
+	cudaMalloc(&d_dist[0], sizeof(float) * n_vertices);
+	cudaMalloc(&d_dist[1], sizeof(float) * n_vertices);
 	d_dist[2] = h_dist;
 
 	if(h_clusters)
@@ -82,7 +82,7 @@ double parallel_toplesets_propagation_gpu(	const ptp_out_t & ptp_out,
 								coalescence ? inv : toplesets.index, d_sorted,
 								fun);
 
-	cudaMemcpy(h_dist, d_dist[i], sizeof(real_t) * n_vertices, cudaMemcpyDeviceToHost);
+	cudaMemcpy(h_dist, d_dist[i], sizeof(float) * n_vertices, cudaMemcpyDeviceToHost);
 
 	if(coalescence)
 	{
@@ -129,7 +129,7 @@ double parallel_toplesets_propagation_gpu(	const ptp_out_t & ptp_out,
 	return time / 1000;
 }
 
-real_t farthest_point_sampling_ptp_gpu(che * mesh, std::vector<index_t> & samples, double & time_fps, size_t n, real_t radio)
+float farthest_point_sampling_ptp_gpu(che * mesh, std::vector<index_t> & samples, double & time_fps, size_t n, float radio)
 {
 	const size_t n_vertices = mesh->n_vertices;
 
@@ -142,16 +142,16 @@ real_t farthest_point_sampling_ptp_gpu(che * mesh, std::vector<index_t> & sample
 
 	che_cuda d_mesh(mesh, {false, false, false});
 
-	real_t * h_dist = new real_t[n_vertices];
+	float * h_dist = new float[n_vertices];
 
-	real_t * d_error = nullptr;
-	real_t * d_dist[3] = {};
+	float * d_error = nullptr;
+	float * d_dist[3] = {};
 	index_t * d_clusters[3] = {};
 	index_t * d_sorted = nullptr;
 
-	cudaMalloc(&d_error, sizeof(real_t) * n_vertices);
-	cudaMalloc(&d_dist[0], sizeof(real_t) * n_vertices);
-	cudaMalloc(&d_dist[1], sizeof(real_t) * n_vertices);
+	cudaMalloc(&d_error, sizeof(float) * n_vertices);
+	cudaMalloc(&d_dist[0], sizeof(float) * n_vertices);
+	cudaMalloc(&d_dist[1], sizeof(float) * n_vertices);
 	cudaMalloc(&d_sorted, sizeof(index_t) * n_vertices);
 	d_dist[2] = h_dist;
 
@@ -172,7 +172,7 @@ real_t farthest_point_sampling_ptp_gpu(che * mesh, std::vector<index_t> & sample
 	samples.reserve(n);
 
 	int farthest;
-	real_t max_dist = INFINITY;
+	float max_dist = INFINITY;
 	while(n-- && radio < max_dist)
 	{
 		limits.clear();
@@ -181,14 +181,10 @@ real_t farthest_point_sampling_ptp_gpu(che * mesh, std::vector<index_t> & sample
 		const index_t i = run_ptp(d_mesh, samples, limits, d_error, d_dist, d_clusters, sorted_index, d_sorted);
 
 		// 1 indexing
-		#ifdef GPROSHAN_FLOAT
 			cublasIsamax(handle, mesh->n_vertices, d_dist[i], 1, &farthest);
-		#else
-			cublasIdamax(handle, mesh->n_vertices, d_dist[i], 1, &farthest);
-		#endif
 
 		if(radio > 0 || !n)
-			cudaMemcpy(&max_dist, d_dist[i] + farthest - 1, sizeof(real_t), cudaMemcpyDeviceToHost);
+			cudaMemcpy(&max_dist, d_dist[i] + farthest - 1, sizeof(float), cudaMemcpyDeviceToHost);
 
 		samples.push_back(farthest - 1);
 	}
@@ -218,7 +214,7 @@ real_t farthest_point_sampling_ptp_gpu(che * mesh, std::vector<index_t> & sample
 }
 
 __global__
-void relax_ptp(const che * mesh, real_t * new_dist, real_t * old_dist, index_t * new_clusters, index_t * old_clusters, const index_t start, const index_t end, const index_t * sorted)
+void relax_ptp(const che * mesh, float * new_dist, float * old_dist, index_t * new_clusters, index_t * old_clusters, const index_t start, const index_t end, const index_t * sorted)
 {
 	index_t v = blockDim.x * blockIdx.x + threadIdx.x + start;
 
@@ -227,24 +223,19 @@ void relax_ptp(const che * mesh, real_t * new_dist, real_t * old_dist, index_t *
 }
 
 __global__
-void relative_error(real_t * error, const real_t * new_dist, const real_t * old_dist, const index_t start, const index_t end, const index_t * sorted)
+void relative_error(float * error, const float * new_dist, const float * old_dist, const index_t start, const index_t end, const index_t * sorted)
 {
 	index_t v = blockDim.x * blockIdx.x + threadIdx.x + start;
 
 	if(v < end)
 	{
 		v = sorted ? sorted[v] : v;
-
-		#ifdef GPROSHAN_FLOAT
-			error[v] = fabsf(new_dist[v] - old_dist[v]) / old_dist[v];
-		#else
-			error[v] = fabs(new_dist[v] - old_dist[v]) / old_dist[v];
-		#endif
+		error[v] = fabsf(new_dist[v] - old_dist[v]) / old_dist[v];
 	}
 }
 
 __host_device__
-bool is_ok::operator()(const real_t val) const
+bool is_ok::operator()(const float val) const
 {
 	return val < PTP_TOL;
 }

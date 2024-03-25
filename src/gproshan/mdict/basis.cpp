@@ -6,9 +6,9 @@
 namespace gproshan::mdict {
 
 
-basis::basis(const real_t r, const size_t d): _radio(r), _dim(d) {}
+basis::basis(const float r, const size_t d): _radio(r), _dim(d) {}
 
-real_t & basis::radio()
+float & basis::radio()
 {
 	return _radio;
 }

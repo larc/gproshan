@@ -8,9 +8,9 @@
 namespace gproshan {
 
 
-quaternion::quaternion(real_t s_, real_t vi, real_t vj, real_t vk): s(s_), v{vi, vj, vk} {}
+quaternion::quaternion(float s_, float vi, float vj, float vk): s(s_), v{vi, vj, vk} {}
 
-quaternion::quaternion(real_t s_, const vertex & v_): s(s_), v(v_) {}
+quaternion::quaternion(float s_, const vertex & v_): s(s_), v(v_) {}
 
 quaternion::quaternion(const vertex & v_): s(0), v(v_) {}
 
@@ -19,7 +19,7 @@ quaternion::operator const vertex & () const
 	return v;
 }
 
-const quaternion & quaternion::operator = (real_t _s)
+const quaternion & quaternion::operator = (float _s)
 {
 	s = _s;
 	v = {0, 0, 0};
@@ -36,22 +36,22 @@ const quaternion & quaternion::operator = (const vertex & _v)
 }
 
 
-real_t & quaternion::operator [] (int index)
+float & quaternion::operator [] (int index)
 {
 	return v[index];
 }
 
-real_t quaternion::operator [] (int index) const
+float quaternion::operator [] (int index) const
 {
 	return v[index];
 }
 
-real_t & quaternion::re()
+float & quaternion::re()
 {
 	return s;
 }
 
-real_t quaternion::re() const
+float quaternion::re() const
 {
 	return s;
 }
@@ -81,17 +81,17 @@ quaternion quaternion::operator - () const
 	return quaternion(-s, -v);
 }
 
-quaternion quaternion::operator * (real_t c) const
+quaternion quaternion::operator * (float c) const
 {
 	return quaternion(c * s, c * v);
 }
 
-quaternion operator * (real_t c, const quaternion & q)
+quaternion operator * (float c, const quaternion & q)
 {
 	return q * c;
 }
 
-quaternion quaternion::operator / (real_t c) const
+quaternion quaternion::operator / (float c) const
 {
 	return quaternion(s / c, v / c);
 }
@@ -102,7 +102,7 @@ void quaternion::operator += (const quaternion & q)
 	v += q.v;
 }
 
-void quaternion::operator += (real_t c)
+void quaternion::operator += (float c)
 {
 	s += c;
 }
@@ -113,18 +113,18 @@ void quaternion::operator -= (const quaternion & q)
 	v -= q.v;
 }
 
-void quaternion::operator -= (real_t c)
+void quaternion::operator -= (float c)
 {
 	s -= c;
 }
 
-void quaternion::operator *= (real_t c)
+void quaternion::operator *= (float c)
 {
 	s *= c;
 	v *= c;
 }
 
-void quaternion::operator /= (real_t c)
+void quaternion::operator /= (float c)
 {
 	s /= c;
 	v /= c;
@@ -133,8 +133,8 @@ void quaternion::operator /= (real_t c)
 // Hamilton product
 quaternion quaternion::operator * (const quaternion & q) const
 {
-	const real_t s1(s);
-	const real_t s2(q.s);
+	const float s1(s);
+	const float s2(q.s);
 	const vertex & v1(v);
 	const vertex & v2(q.v);
 
@@ -156,12 +156,12 @@ quaternion quaternion::inv() const
 	return (this->conj()) / this->norm2();
 }
 
-real_t quaternion::norm() const
+float quaternion::norm() const
 {
 	return sqrt(norm2());
 }
 
-real_t quaternion::norm2() const
+float quaternion::norm2() const
 {
 	return s * s + dot(v, v);
 }
@@ -177,17 +177,17 @@ void quaternion::normalize()
 }
 
 // spherical-linear interpolation
-quaternion slerp(const quaternion & q0, const quaternion & q1, real_t t)
+quaternion slerp(const quaternion & q0, const quaternion & q1, float t)
 {
 	// interpolate length
-	real_t m0 = q0.norm();
-	real_t m1 = q1.norm();
-	real_t m = (1-t)*m0 + t*m1;
+	float m0 = q0.norm();
+	float m1 = q1.norm();
+	float m = (1-t)*m0 + t*m1;
 
 	// interpolate direction
 	quaternion p0 = q0 / m0;
 	quaternion p1 = q1 / m1;
-	real_t theta = acos((p0.conj() * p1).re());
+	float theta = acos((p0.conj() * p1).re());
 	quaternion p = (sin((1 - t) * theta) * p0 + sin(t * theta) * p1) / sin(theta);
 
 	return m * p;
