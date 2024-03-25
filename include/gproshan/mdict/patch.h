@@ -9,9 +9,6 @@
 #include <algorithm>
 
 
-#include <gproshan/include_arma.h>
-
-
 // geometry processing and shape analysis framework
 // mesh dictionary learning and sparse coding namespace
 namespace gproshan::mdict {
@@ -27,10 +24,10 @@ class patch
 {
 	public:
 		std::vector<index_t> vertices;		///< Vertices of the patch.
-		a_mat T;							///< Transformation matrix.
-		a_vec x;							///< Center point.
-		a_mat xyz;							///< Matrix of points.
-		a_mat phi;							///< Projected basis.
+		arma::fmat T;							///< Transformation matrix.
+		arma::fvec x;							///< Center point.
+		arma::fmat xyz;							///< Matrix of points.
+		arma::fmat phi;							///< Projected basis.
 		double avg_dist;					///< Average distance between points.
 		real_t radio;						///< Radio.
 		size_t min_nv;						///<
@@ -66,7 +63,7 @@ class patch
 									const real_t area_mesh
 									);
 
-		void init_random(const vertex & c, const a_mat & T, const real_t radio, const real_t max_radio, const real_t percent, const real_t fr);
+		void init_random(const vertex & c, const arma::fmat & T, const real_t radio, const real_t max_radio, const real_t percent, const real_t fr);
 
 		void recover_radial_disjoint(che * mesh,
 					const real_t radio_,
@@ -90,7 +87,7 @@ class patch
 						);
 		void remove_extra_xyz_disjoint(size_t & max_points);
 		void add_extra_xyz_disjoint(che * mesh, std::vector<vpatches_t> & vpatches, const index_t p);
-		const a_vec normal();
+		const arma::fvec normal();
 		bool is_covered( bool * covered);
 
 //		void save(const real_t radio, const size_t imsize, CImgList<real_t> & imlist);

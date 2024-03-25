@@ -106,18 +106,11 @@ struct t_eval_hit
 		}
 
 		const uvec3 trig = mesh.trig(primID);
+		const vec3 uv = {1.f - u - v, u, v};
 
-		Kd		= (1.f - u - v) * mesh.color(trig.x())
-							+ u * mesh.color(trig.y())
-							+ v * mesh.color(trig.z());
-		normal	= (1.f - u - v) * mesh.normal(trig.x())
-							+ u * mesh.normal(trig.y())
-							+ v * mesh.normal(trig.z());
-		heatmap	= (1.f - u - v) * mesh.heatmap(trig.x())
-							+ u * mesh.heatmap(trig.y())
-							+ v * mesh.heatmap(trig.z());
-
-		normal = normalize(normal);
+		Kd 		= mesh.trig_colors(primID) * uv;
+		normal	= normalize(mesh.trig_normals(primID) * uv);
+		heatmap = dot(mesh.trig_heatmap(primID), uv);
 
 		if(!sc.trig_mat) return;
 		if(sc.trig_mat[primID] == NIL) return;

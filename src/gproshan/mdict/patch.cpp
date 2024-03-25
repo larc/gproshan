@@ -124,7 +124,7 @@ bool patch::add_vertex_by_trigs(vertex & n, std::vector<vertex> & N, double thr_
 	return added;
 }
 
-void patch::init_random(const vertex & c, const a_mat & T, const real_t radio, const real_t max_radio, const real_t percent, const real_t fr)
+void patch::init_random(const vertex & c, const arma::fmat & T, const real_t radio, const real_t max_radio, const real_t percent, const real_t fr)
 {
 	this->radio = radio;
 	this->T = T;
@@ -226,7 +226,7 @@ void patch::init_radial_disjoint(	real_t & euc_radio,
 
 	normal_fit_directions(mesh, v);
 
-	a_vec vn = T.col(2);
+	arma::fvec vn = T.col(2);
 	vertex n = { vn(0), vn(1), vn(2) };
 
 	vertices.push_back(v);
@@ -369,7 +369,7 @@ void patch::add_extra_xyz_disjoint(che * mesh, std::vector<vpatches_t> & vpatche
 		// create a random point
 		real_t a = abs(dis(gen)) * 2 * M_PI;
 		real_t r = abs(dis(gen));
-		a_vec np = { r * std::cos(a), r * std::sin(a), 0 };
+		arma::fvec np = { r * std::cos(a), r * std::sin(a), 0 };
 
 		//gproshan_debug_var(np);
 		// find the closest point
@@ -377,7 +377,7 @@ void patch::add_extra_xyz_disjoint(che * mesh, std::vector<vpatches_t> & vpatche
 		double min_d = INFINITY;
 		for(index_t v: vertices)
 		{
-			a_vec aux = xyz.col(vpatches[v][p]);
+			arma::fvec aux = xyz.col(vpatches[v][p]);
 			aux(2) = 0;
 
 			if(norm(np - aux) < min_d)
@@ -394,7 +394,7 @@ void patch::add_extra_xyz_disjoint(che * mesh, std::vector<vpatches_t> & vpatche
 		}
 
 		// forstar to find closest trinagle
-		a_mat abc(3,3);
+		arma::fmat abc(3,3);
 		for(const index_t he: mesh->star(min_v))
 		{
 			//discard triangles outside the patch
@@ -418,10 +418,10 @@ void patch::add_extra_xyz_disjoint(che * mesh, std::vector<vpatches_t> & vpatche
 
 				if(abs(A - (A1 + A2 + A3)) < std::numeric_limits<real_t>::epsilon())
 				{
-					a_mat proj_abc = abc.tail_cols(2).each_col() - abc.col(0);
+					arma::fmat proj_abc = abc.tail_cols(2).each_col() - abc.col(0);
 					np -= abc.col(0);
 
-					a_vec coef = arma::inv(proj_abc.head_rows(2)) * np.head(2);
+					arma::fvec coef = arma::inv(proj_abc.head_rows(2)) * np.head(2);
 					np = proj_abc * coef + abc.col(0);
 
 					if(!std::isnan(np(2)))
@@ -500,7 +500,7 @@ void patch::iscale_xyz(const real_t radio_f)
 	xyz = xyz / factor;
 }
 
-const a_vec patch::normal()
+const arma::fvec patch::normal()
 {
 	return T.col(2);
 }
@@ -541,7 +541,7 @@ void patch::gather_vertices(che * mesh, const index_t v, const real_t radio, ind
 
 	memset(toplevel, -1, sizeof(index_t) * mesh->n_vertices);
 
-	a_vec p(3);
+	arma::fvec p(3);
 
 	toplevel[v] = 0;
 	qvertices.push({0, v});
@@ -664,8 +664,8 @@ void patch::compute_avg_distance(che * mesh, std::vector<vpatches_t> & vpatches,
 			{
 				if(itp.first == p)
 				{
-					a_vec a = xyz.col(i);
-					a_vec b = xyz.col(itp.second);
+					arma::fvec a = xyz.col(i);
+					arma::fvec b = xyz.col(itp.second);
 					a(2) = 0;
 					b(2) = 0;
 					distances.push_back(norm(a - b));
@@ -677,8 +677,8 @@ void patch::compute_avg_distance(che * mesh, std::vector<vpatches_t> & vpatches,
 	/*
 		for(size_t j = i+1; j < size(vertices); ++j) // replace for 1 ring
 		{
-			a_vec a = xyz.col(i);
-			a_vec b = xyz.col(j);
+			arma::fvec a = xyz.col(i);
+			arma::fvec b = xyz.col(j);
 			a(2) = 0;
 			b(2) = 0;
 			distances.push_back(norm(a - b));

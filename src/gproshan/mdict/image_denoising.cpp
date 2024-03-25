@@ -32,7 +32,7 @@ void test_image_denoising(const std::string & file)
 	size_t L = 10;							// sparsity OMP norm L_0
 	size_t K = 10;							// KSVD iterations
 
-	a_mat X(n, M);
+	arma::fmat X(n, M);
 
 	for(index_t x = 0; x < rows; ++x)
 	for(index_t y = 0; y < cols; ++y)
@@ -45,10 +45,10 @@ void test_image_denoising(const std::string & file)
 			X(k++, i) = image(a, b);
 	}
 
-	a_mat D(n, m, arma::fill::randu);
+	arma::fmat D(n, m, arma::fill::randu);
 	D = normalise(D);
 
-	a_mat spD = D;
+	arma::fmat spD = D;
 
 	CImg<real_t> imdict;
 	for(index_t i = 0; i < 16; ++i)
@@ -94,14 +94,14 @@ void test_image_denoising(const std::string & file)
 	gproshan_log(OMP);
 
 	TIC(time)
-	a_mat Y = D * OMP_all(X, D, L);
+	arma::fmat Y = D * OMP_all(X, D, L);
 	TOC(time)
 
 	gproshan_log_var(time);
 
 	TIC(time)
 	std::vector<locval_t> locval;
-	a_mat spY = D * OMP_all(locval, X, D, L);
+	arma::fmat spY = D * OMP_all(locval, X, D, L);
 	TOC(time)
 
 	gproshan_log_var(time);

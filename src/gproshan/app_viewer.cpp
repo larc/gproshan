@@ -348,7 +348,7 @@ bool app_viewer::process_gaussian_curvature(viewer * p_view)
 	real_t g, g_max = -INFINITY, g_min = INFINITY;
 	vertex a, b;
 
-	a_vec gv(mesh->n_vertices);
+	arma::fvec gv(mesh->n_vertices);
 
 	#pragma omp parallel for private(g, a, b) reduction(max: g_max) reduction(min: g_min)
 	for(index_t v = 0; v < mesh->n_vertices; ++v)
@@ -747,7 +747,7 @@ bool app_viewer::process_mask(viewer * p_view)
 		mesh->update_heatmap(msc);
 		std::string f_points = tmp_file_path(std::string(msc) + ".rsampl");
 
-		a_vec points_out;
+		arma::fvec points_out;
 		gproshan_debug_var(f_points);
 		points_out.load(f_points);
 		gproshan_debug_var(size(points_out));
@@ -807,9 +807,9 @@ bool app_viewer::process_eigenfuntions(viewer * p_view)
 
 	if(ImGui::Button("Run"))
 	{
-		a_sp_mat L, A;
-		a_vec eigval;
-		a_mat eigvec;
+		arma::sp_fmat L, A;
+		arma::fvec eigval;
+		arma::fmat eigvec;
 
 		TIC(view->time)
 			n_eigs = eigs_laplacian(mesh, eigval, eigvec, L, A, n_eigs);

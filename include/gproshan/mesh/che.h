@@ -190,6 +190,41 @@ class che
 	}
 
 	__host_device__
+	mat3 trig_points(const index_t t) const
+	{
+		assert(t < n_trigs);
+		const index_t he = t * 3;
+		mat3 m = {GT[VT[he]], GT[VT[he + 1]], GT[VT[he + 2]]};
+		return m.t();
+	}
+
+	__host_device__
+	mat3 trig_normals(const index_t t) const
+	{
+		assert(t < n_trigs);
+		const index_t he = t * 3;
+		mat3 m = {VN[VT[he]], VN[VT[he + 1]], VN[VT[he + 2]]};
+		return m.t();
+	}
+
+	__host_device__
+	mat3 trig_colors(const index_t t) const
+	{
+		assert(t < n_trigs);
+		const index_t he = t * 3;
+		mat3 m = {VC[VT[he]], VC[VT[he + 1]], VC[VT[he + 2]]};
+		return m.t();
+	}
+
+	__host_device__
+	vec3 trig_heatmap(const index_t t) const
+	{
+		assert(t < n_trigs);
+		const index_t he = t * 3;
+		return {VHC[VT[he]], VHC[VT[he + 1]], VHC[VT[he + 2]]};
+	}
+
+	__host_device__
 	index_t halfedge(const index_t he) const
 	{
 		assert(he < n_half_edges);
@@ -214,8 +249,13 @@ class che
 		return VHC;
 	}
 
-
-	vertex normal_trig(const index_t f) const;
+/*
+	__host_device__
+	T shading(const real_t u, const real_t v)
+	{
+	}
+*/
+	vertex normal_trig(const index_t t) const;
 	vertex normal_he(const index_t he) const;
 	vertex gradient_he(const index_t he, const real_t * f) const;
 	dvec3 gradient_he(const index_t he, const double * f) const;

@@ -4,6 +4,9 @@ on: [push]
 
 env:
   CUDA_BIN: /usr/local/cuda/bin
+  CC: gcc-12
+  CXX: g++-12
+  CUDAHOSTCXX: g++-12
 
 jobs:
   build:
@@ -33,6 +36,7 @@ jobs:
                           libglew-dev \
                           libglfw3-dev \
                           cimg-dev \
+                          g++-12 \
                           wget
         wget http://mirrors.kernel.org/ubuntu/pool/universe/f/flann/libflann-dev_1.9.2+dfsg-1_amd64.deb
         wget http://mirrors.kernel.org/ubuntu/pool/universe/f/flann/libflann1.9_1.9.2+dfsg-1_amd64.deb

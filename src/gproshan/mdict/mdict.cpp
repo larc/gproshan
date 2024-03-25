@@ -22,7 +22,7 @@ std::ostream & operator << (std::ostream & os, const locval_t & lc)
 	return os << '(' << lc.i << ',' << lc.j << ") = " << lc.val;
 }
 
-void OMP(std::vector<locval_t> & alpha, const a_vec & x, const index_t i, const a_mat & D, const size_t L)
+void OMP(std::vector<locval_t> & alpha, const arma::fvec & x, const index_t i, const arma::fmat & D, const size_t L)
 {
 	const auto & [aa, selected_atoms] = _OMP(x, D, L);
 
@@ -33,7 +33,7 @@ void OMP(std::vector<locval_t> & alpha, const a_vec & x, const index_t i, const 
 	}
 }
 
-a_sp_mat OMP_all(std::vector<locval_t> & locval, const a_mat & X, const a_mat & D, const size_t L)
+arma::sp_fmat OMP_all(std::vector<locval_t> & locval, const arma::fmat & X, const arma::fmat & D, const size_t L)
 {
 	locval.clear();
 
@@ -42,7 +42,7 @@ a_sp_mat OMP_all(std::vector<locval_t> & locval, const a_mat & X, const a_mat & 
 		OMP(locval, X.col(i), i, D, L);
 
 	arma::umat DI(2, size(locval));
-	a_vec DV(size(locval));
+	arma::fvec DV(size(locval));
 
 	#pragma omp parallel for
 	for(index_t k = 0; k < size(locval); ++k)
@@ -52,17 +52,17 @@ a_sp_mat OMP_all(std::vector<locval_t> & locval, const a_mat & X, const a_mat & 
 		DV(k) = locval[k].val;
 	}
 
-	return a_sp_mat(DI, DV, D.n_cols, X.n_cols);
+	return arma::sp_fmat(DI, DV, D.n_cols, X.n_cols);
 }
 
-void sp_KSVD(a_mat & D, const a_mat & X, const size_t L, size_t k)
+void sp_KSVD(arma::fmat & D, const arma::fmat & X, const size_t L, size_t k)
 {
 	size_t m = D.n_cols;
 	size_t M = X.n_cols;
 
 	arma::uvec omega(M);
-	a_mat R, E, U, V;
-	a_vec s;
+	arma::fmat R, E, U, V;
+	arma::fvec s;
 
 	std::vector<locval_t> locval;
 	std::vector<size_t> rows;
@@ -70,7 +70,7 @@ void sp_KSVD(a_mat & D, const a_mat & X, const size_t L, size_t k)
 
 	while(k--)
 	{
-		a_sp_mat alpha = OMP_all(locval, X, D, L);
+		arma::sp_fmat alpha = OMP_all(locval, X, D, L);
 
 		std::ranges::sort(locval, [](const locval_t & a, const locval_t & b)
 								{
@@ -108,13 +108,13 @@ void sp_KSVD(a_mat & D, const a_mat & X, const size_t L, size_t k)
 
 // DENSE
 
-std::tuple<a_vec, arma::uvec> _OMP(const a_vec & x, const a_mat & D, const size_t L)
+std::tuple<arma::fvec, arma::uvec> _OMP(const arma::fvec & x, const arma::fmat & D, const size_t L)
 {
 	arma::uvec selected_atoms(L);
 	real_t threshold = norm(x) * sigma;
 
-	a_mat DD;
-	a_vec aa, r = x;
+	arma::fmat DD;
+	arma::fvec aa, r = x;
 
 	index_t l = 0;
 	while(norm(r) > threshold && l < L)
@@ -129,7 +129,7 @@ std::tuple<a_vec, arma::uvec> _OMP(const a_vec & x, const a_mat & D, const size_
 	return {aa, selected_atoms.head(l)};
 }
 
-arma::uword max_index(const a_vec & V,const arma::uchar_vec & mask)
+arma::uword max_index(const arma::fvec & V,const arma::uchar_vec & mask)
 {
 	arma::uvec indices = arma::sort_index(V, "descend");
 
@@ -139,14 +139,14 @@ arma::uword max_index(const a_vec & V,const arma::uchar_vec & mask)
 	return NIL;
 }
 
-std::tuple<a_vec, arma::uvec> _OMP(const a_vec & x, const a_mat & D, const size_t L, const arma::uchar_vec & mask)
+std::tuple<arma::fvec, arma::uvec> _OMP(const arma::fvec & x, const arma::fmat & D, const size_t L, const arma::uchar_vec & mask)
 {
 
 	arma::uvec selected_atoms(L);
 	real_t threshold = norm(x) * sigma;
 
-	a_mat DD;
-	a_vec aa, r = x;
+	arma::fmat DD;
+	arma::fvec aa, r = x;
 
 	index_t l = 0;
 	while(norm(r) > threshold && l < L)
@@ -162,9 +162,9 @@ std::tuple<a_vec, arma::uvec> _OMP(const a_vec & x, const a_mat & D, const size_
 	return {aa, selected_atoms.head(l)};
 }
 
-a_vec OMP(const a_vec & x, const a_mat & D, const size_t L)
+arma::fvec OMP(const arma::fvec & x, const arma::fmat & D, const size_t L)
 {
-	a_vec alpha(D.n_cols, arma::fill::zeros);
+	arma::fvec alpha(D.n_cols, arma::fill::zeros);
 
 	const auto & [aa, selected_atoms] = _OMP(x, D, L);
 	alpha.elem(selected_atoms) = aa;
@@ -172,9 +172,9 @@ a_vec OMP(const a_vec & x, const a_mat & D, const size_t L)
 	return alpha;
 }
 
-a_vec OMP(const a_vec & x, const a_mat & D, const size_t L, const arma::uchar_vec & mask)
+arma::fvec OMP(const arma::fvec & x, const arma::fmat & D, const size_t L, const arma::uchar_vec & mask)
 {
-	a_vec alpha(D.n_cols, arma::fill::zeros);
+	arma::fvec alpha(D.n_cols, arma::fill::zeros);
 
 	const auto & [aa, selected_atoms] = _OMP(x, D, L, mask);
 	alpha.elem(selected_atoms) = aa;
@@ -182,9 +182,9 @@ a_vec OMP(const a_vec & x, const a_mat & D, const size_t L, const arma::uchar_ve
 	return alpha;
 }
 
-a_mat OMP_all(const a_mat & X, const a_mat & D, const size_t L)
+arma::fmat OMP_all(const arma::fmat & X, const arma::fmat & D, const size_t L)
 {
-	a_mat alpha(D.n_cols, X.n_cols);
+	arma::fmat alpha(D.n_cols, X.n_cols);
 	#pragma omp parallel for
 	for(index_t i = 0; i < X.n_cols; ++i)
 	{
@@ -194,11 +194,11 @@ a_mat OMP_all(const a_mat & X, const a_mat & D, const size_t L)
 	return alpha;
 }
 
-void KSVD(a_mat & D, const a_mat & X, const size_t L, size_t k)
+void KSVD(arma::fmat & D, const arma::fmat & X, const size_t L, size_t k)
 {
 	arma::uvec omega;
-	a_mat alpha, R, E, U, V;
-	a_vec s;
+	arma::fmat alpha, R, E, U, V;
+	arma::fvec s;
 
 	while(k--)
 	{
@@ -224,12 +224,12 @@ void KSVD(a_mat & D, const a_mat & X, const size_t L, size_t k)
 
 // MESH DENSE
 
-a_vec OMP(const patch & p, const a_mat & A, const size_t L)
+arma::fvec OMP(const patch & p, const arma::fmat & A, const size_t L)
 {
 	return OMP(p.xyz.row(2).t(), p.phi * A, L);
 }
 
-a_vec OMP(const patch & p, basis * phi_basis, const a_mat & A, const size_t L)
+arma::fvec OMP(const patch & p, basis * phi_basis, const arma::fmat & A, const size_t L)
 {
 	arma::uchar_vec mask(A.n_cols);
 
@@ -239,9 +239,9 @@ a_vec OMP(const patch & p, basis * phi_basis, const a_mat & A, const size_t L)
 	return OMP(p.xyz.row(2).t(), p.phi * A, L, mask);
 }
 
-a_mat OMP_all(const std::vector<patch> & patches, basis * phi_basis, const a_mat & A, const size_t L)
+arma::fmat OMP_all(const std::vector<patch> & patches, basis * phi_basis, const arma::fmat & A, const size_t L)
 {
-	a_mat alpha(A.n_cols, size(patches));
+	arma::fmat alpha(A.n_cols, size(patches));
 
 	#pragma omp parallel for
 	for(index_t i = 0; i < size(patches); ++i)
@@ -250,9 +250,9 @@ a_mat OMP_all(const std::vector<patch> & patches, basis * phi_basis, const a_mat
 	return alpha;
 }
 
-a_mat OMP_all(const std::vector<patch> & patches, const a_mat & A, const size_t L)
+arma::fmat OMP_all(const std::vector<patch> & patches, const arma::fmat & A, const size_t L)
 {
-	a_mat alpha(A.n_cols, size(patches));
+	arma::fmat alpha(A.n_cols, size(patches));
 
 	#pragma omp parallel for
 	for(index_t i = 0; i < size(patches); ++i)
@@ -261,15 +261,15 @@ a_mat OMP_all(const std::vector<patch> & patches, const a_mat & A, const size_t 
 	return alpha;
 }
 
-void KSVD(a_mat & A, const std::vector<patch> & patches, const size_t L, size_t k)
+void KSVD(arma::fmat & A, const std::vector<patch> & patches, const size_t L, size_t k)
 {
 	size_t K = A.n_rows;
 
 	arma::uvec omega;
 
-	a_mat new_A = A;
-	a_mat alpha, D, sum, sum_error;
-	a_vec a, e;
+	arma::fmat new_A = A;
+	arma::fmat alpha, D, sum, sum_error;
+	arma::fvec a, e;
 
 	real_t aj;
 
@@ -313,12 +313,12 @@ void KSVD(a_mat & A, const std::vector<patch> & patches, const size_t L, size_t 
 
 // MESH SPARSE
 
-void OMP(std::vector<locval_t> & alpha, const patch & p, const index_t i, const a_mat & A, const size_t L)
+void OMP(std::vector<locval_t> & alpha, const patch & p, const index_t i, const arma::fmat & A, const size_t L)
 {
 	OMP(alpha, p.xyz.row(2).t(), i, p.phi * A, L);
 }
 
-a_sp_mat OMP_all(std::vector<locval_t> & locval, const std::vector<patch> & patches, const a_mat & A, const size_t L)
+arma::sp_fmat OMP_all(std::vector<locval_t> & locval, const std::vector<patch> & patches, const arma::fmat & A, const size_t L)
 {
 	locval.clear();
 
@@ -327,7 +327,7 @@ a_sp_mat OMP_all(std::vector<locval_t> & locval, const std::vector<patch> & patc
 		OMP(locval, patches[i], i, A, L);
 
 	arma::umat DI(2, size(locval));
-	a_vec DV(size(locval));
+	arma::fvec DV(size(locval));
 
 	#pragma omp parallel for
 	for(index_t k = 0; k < size(locval); ++k)
@@ -337,16 +337,16 @@ a_sp_mat OMP_all(std::vector<locval_t> & locval, const std::vector<patch> & patc
 		DV(k) = locval[k].val;
 	}
 
-	return a_sp_mat(DI, DV, A.n_cols, size(patches));
+	return arma::sp_fmat(DI, DV, A.n_cols, size(patches));
 }
 
-void sp_KSVD(a_mat & A, const std::vector<patch> & patches, const size_t L, size_t k)
+void sp_KSVD(arma::fmat & A, const std::vector<patch> & patches, const size_t L, size_t k)
 {
 	size_t K = A.n_rows;
 
-	a_mat new_A = A;
-	a_mat D, sum, sum_error;
-	a_vec a, e;
+	arma::fmat new_A = A;
+	arma::fmat D, sum, sum_error;
+	arma::fvec a, e;
 
 	real_t aj;
 
@@ -356,7 +356,7 @@ void sp_KSVD(a_mat & A, const std::vector<patch> & patches, const size_t L, size
 
 	while(k--)
 	{
-		a_sp_mat alpha = OMP_all(locval, patches, A, L);
+		arma::sp_fmat alpha = OMP_all(locval, patches, A, L);
 
 		std::ranges::sort(locval, [](const locval_t & a, const locval_t & b)
 								{

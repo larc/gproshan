@@ -88,7 +88,7 @@ T normalize(T * data, const size_t n_elem)
 {
 	T max = 0;
 
-	#pragma omp parallel for reduction(std::max: max)
+	#pragma omp parallel for reduction(max: max)
 	for(index_t i = 0; i < n_elem; ++i)
 		max = std::max(max, data[i]);
 

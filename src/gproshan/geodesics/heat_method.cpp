@@ -4,11 +4,16 @@
 #include <gproshan/laplacian/laplacian.h>
 
 #include <cassert>
+#include <cholmod.h>
 
 
 // geometry processing and shape analysis framework
 namespace gproshan {
 
+
+/// cholmod Keenan implementation
+/// base on the code https://github.com/larc/dgpdec-course/tree/master/Geodesics
+double solve_positive_definite(arma::mat & x, const arma::sp_mat & A, const arma::mat & b, cholmod_common * context);
 
 double heat_method(real_t * dist, const che * mesh, const std::vector<index_t> & sources, const heat_method_opt & opt)
 {
@@ -113,6 +118,10 @@ arma::vec compute_divergence(const che * mesh, const arma::vec & u)
 
 	return div;
 }
+
+
+cholmod_dense * arma_2_cholmod(const arma::mat & m, cholmod_common * context);
+cholmod_sparse * arma_2_cholmod(const arma::sp_mat & m, cholmod_common * context);
 
 double solve_positive_definite(arma::mat & x, const arma::sp_mat & A, const arma::mat & b, cholmod_common * context)
 {
