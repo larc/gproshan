@@ -13,8 +13,8 @@ namespace gproshan::rt {
 
 
 size_t splat::k_nn = 9;
-real_t splat::t_normal = 0.9;
-real_t splat::d_overlap = 0.1;
+float splat::t_normal = 0.9;
+float splat::d_overlap = 0.1;
 
 splat::splat(const std::vector<che *> & pcs, const std::vector<mat4> & model_mats)
 {
@@ -230,14 +230,14 @@ std::vector<index_t> splat::voronoi_subdivision(std::vector<index_t> & voronoi_s
 												const index_t seg_end
 												)
 {
-	std::vector<real_t> dist;
+	std::vector<float> dist;
 	dist.assign(seg_end - seg_begin, INFINITY);
 
 	std::vector<index_t> seeds;
 	seeds.push_back(vertices[seg_begin]);
 
-	real_t radio = INFINITY;
-	real_t radio_threshold = 0;
+	float radio = INFINITY;
+	float radio_threshold = 0;
 	index_t new_seed = NIL;
 
 	const size_t max_seeds = 3 * (log10(seg_end - seg_begin) + 1);
@@ -252,7 +252,7 @@ std::vector<index_t> splat::voronoi_subdivision(std::vector<index_t> & voronoi_s
 		{
 			const index_t v = vertices[i];
 
-			real_t & vdist = dist[i - seg_begin];
+			float & vdist = dist[i - seg_begin];
 			vdist = std::min(vdist, length(points[v] - points[s]));
 
 			if(radio < vdist)
@@ -280,7 +280,7 @@ std::vector<index_t> splat::voronoi_subdivision(std::vector<index_t> & voronoi_s
 	{
 		const index_t v = vertices[i];
 
-		real_t & vdist = dist[i - seg_begin];
+		float & vdist = dist[i - seg_begin];
 		vdist = std::min(vdist, length(points[v] - points[s]));
 	}
 
@@ -305,7 +305,7 @@ std::vector<index_t> splat::voronoi_subdivision(std::vector<index_t> & voronoi_s
 			for(index_t k = 0; k < splat::k_nn; ++k)
 			{
 				const int u = nn[k];
-				const real_t d = length(points[u] - points[s]);
+				const float d = length(points[u] - points[s]);
 				in |= d < (dist[i - seg_begin] + 1e-5);
 			}
 
@@ -395,7 +395,7 @@ che * splat::init_splats(	const che * mesh,
 
 		splat_chs[i] = new convex_hull(points.data() + s.begin, s.end - s.begin);
 
-//		real_t h = INFINITY;
+//		float h = INFINITY;
 		for(index_t j = s.begin; j < s.end; ++j)
 		{
 			vertex & p = points[j];
@@ -479,7 +479,7 @@ void splat::display_sets(che * pc, const std::vector<index_t> & sets, const inde
 
 	for(index_t i = 1; i < size(sets); ++i)
 	for(index_t j = sets[i - 1]; j < sets[i]; ++j)
-		pc->heatmap(mapid ? mapid[j] : j) = real_t(color[i]) / size(color);
+		pc->heatmap(mapid ? mapid[j] : j) = float(color[i]) / size(color);
 }
 
 void splat::save_histogram(const std::string & file) const

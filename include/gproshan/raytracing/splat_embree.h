@@ -19,7 +19,7 @@ class splat_embree: public splat, public embree
 									vertex & position,
 									vertex & ray_dir,
 									float & dist,
-									random<real_t> & rnd,
+									random<float> & rnd,
 									const render_params & params,
 									const bool
 									) const;

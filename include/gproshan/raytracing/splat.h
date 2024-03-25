@@ -14,8 +14,8 @@ class splat
 	public:
 		std::vector<che *> pointclouds;
 		static size_t k_nn;
-		static real_t t_normal;
-		static real_t d_overlap;
+		static float t_normal;
+		static float d_overlap;
 
 		double time = 0;
 		double time_knn = 0;

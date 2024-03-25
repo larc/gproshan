@@ -52,14 +52,14 @@ struct splats_data
 	unsigned int * morton_codes = nullptr;
 	index_t * primID_splat = nullptr;
 
-	splat_t<real_t> * splats = nullptr;
+	splat_t<float> * splats = nullptr;
 	size_t n_splats = 0;
 
 	splats_data() = default;
 
 	splats_data(const size_t ns): n_splats(ns)
 	{
-		splats = new splat_t<real_t>[n_splats];
+		splats = new splat_t<float>[n_splats];
 	}
 
 	splats_data(splats_data && sd)
@@ -115,7 +115,7 @@ T splat_hit(t_eval_hit<T> & hit, const che & pc, const splats_data & sd, const i
 	index_t end = s.end;
 
 	const index_t h = binary_search(sd.morton_codes, begin, end - 1, s.morton2d(x));
-	const real_t sigma2 = length(pc.point(h) - x) / 1000;
+	const float sigma2 = length(pc.point(h) - x) / 1000;
 
 	vec<T, 3> & color = hit.Kd = 0;
 	vec<T, 3> & normal = hit.normal = 0;
