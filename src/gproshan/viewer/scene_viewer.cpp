@@ -158,7 +158,7 @@ void scene_viewer::update_vbo_texcoords()
 	glBindBuffer(GL_ARRAY_BUFFER, tex_vbo);
 	glBufferData(GL_ARRAY_BUFFER, mesh->n_vertices * sizeof(vec2), sc->texcoords, GL_STATIC_DRAW);
 	glEnableVertexAttribArray(4);
-	glVertexAttribPointer(4, 2, GL_REAL, GL_FALSE, 0, 0);
+	glVertexAttribPointer(4, 2, GL_FLOAT, GL_FALSE, 0, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	glBindVertexArray(0);

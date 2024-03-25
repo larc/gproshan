@@ -15,7 +15,7 @@ namespace gproshan {
 /// base on the code https://github.com/larc/dgpdec-course/tree/master/Geodesics
 double solve_positive_definite(arma::mat & x, const arma::sp_mat & A, const arma::mat & b, cholmod_common * context);
 
-double heat_method(real_t * dist, const che * mesh, const std::vector<index_t> & sources, const heat_method_opt & opt)
+double heat_method(float * dist, const che * mesh, const std::vector<index_t> & sources, const heat_method_opt & opt)
 {
 	if(!size(sources)) return 0;
 
@@ -24,7 +24,7 @@ double heat_method(real_t * dist, const che * mesh, const std::vector<index_t> &
 	for(auto & v: sources) u0(v) = 1;
 
 	// step
-	real_t dt = mesh->mean_edge();
+	float dt = mesh->mean_edge();
 	dt *= dt;
 
 	arma::sp_mat L, A;
@@ -96,12 +96,12 @@ arma::vec compute_divergence(const che * mesh, const arma::vec & u)
 {
 	arma::vec div(mesh->n_vertices);
 
-	std::vector<real_t> f(mesh->n_vertices);
+	std::vector<float> f(mesh->n_vertices);
 
 	#pragma omp parallel for
 	for(index_t v = 0; v < mesh->n_vertices; ++v)
 	{
-		real_t sum = 0;
+		float sum = 0;
 		for(const index_t he: mesh->star(v))
 		{
 			const vertex & n = mesh->normal_he(he);

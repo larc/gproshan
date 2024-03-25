@@ -91,8 +91,8 @@ class che
 
 	vertex * VN		= nullptr;	///< vertex normals			: v		-> normal(v)
 	rgb_t * VC		= nullptr;	///< vertex color			: v		-> color(v)
-	real_t * VHC	= nullptr;	///< vertex color heatmap	: v		-> heatmap(v)
-	real_t scale_hm	= 1;		///< vertex color heatmap scale factor
+	float * VHC	= nullptr;	///< vertex color heatmap	: v		-> heatmap(v)
+	float scale_hm	= 1;		///< vertex color heatmap scale factor
 
 	bool manifold = true;
 
@@ -105,11 +105,11 @@ class che
 	virtual ~che();
 
 	void reload();
-	mat4 normalize_sphere(const real_t r = 1) const;
-	mat4 normalize_box(const real_t side = 2) const;
+	mat4 normalize_sphere(const float r = 1) const;
+	mat4 normalize_box(const float side = 2) const;
 	che * merge(const che * mesh, const std::vector<index_t> & com_vertices = {});
 	void update_vertices(const vertex * positions, const size_t n = 0, const index_t v_i = 0);
-	void update_heatmap(const real_t * hm = nullptr);
+	void update_heatmap(const float * hm = nullptr);
 	void update_normals();
 	void invert_normals();
 	void multiplicate_vertices();
@@ -147,14 +147,14 @@ class che
 	}
 
 	__host_device__
-	real_t heatmap(const index_t v) const
+	float heatmap(const index_t v) const
 	{
 		assert(v < n_vertices);
 		return VHC[v];
 	}
 
 	__host_device__
-	real_t & heatmap(const index_t v)
+	float & heatmap(const index_t v)
 	{
 		assert(v < n_vertices);
 		return VHC[v];
@@ -244,26 +244,26 @@ class che
 	}
 
 	__host_device__
-	const real_t * heatmap_ptr() const
+	const float * heatmap_ptr() const
 	{
 		return VHC;
 	}
 
 /*
 	__host_device__
-	T shading(const real_t u, const real_t v)
+	T shading(const float u, const float v)
 	{
 	}
 */
 	vertex normal_trig(const index_t t) const;
 	vertex normal_he(const index_t he) const;
-	vertex gradient_he(const index_t he, const real_t * f) const;
+	vertex gradient_he(const index_t he, const float * f) const;
 	dvec3 gradient_he(const index_t he, const double * f) const;
-	vertex gradient(const index_t v, const real_t * f);
+	vertex gradient(const index_t v, const float * f);
 
-	real_t heatmap_scale() const;
-	void heatmap_scale(const real_t shm);
-	real_t heatmap_scale(const index_t v) const;
+	float heatmap_scale() const;
+	void heatmap_scale(const float shm);
+	float heatmap_scale(const index_t v) const;
 
 	index_t twin_he(const index_t he) const;
 	index_t edge_u(const index_t e) const;
@@ -291,19 +291,19 @@ class che
 	size_t genus() const;
 	size_t memory() const;
 	size_t max_degree() const;
-	real_t quality() const;
-	real_t mean_edge() const;
-	real_t area_surface() const;
+	float quality() const;
+	float mean_edge() const;
+	float area_surface() const;
 	bool is_manifold() const;
 	virtual bool is_scene() const;
 	virtual bool is_pointcloud() const;
 
 	void flip(const index_t e);
-	real_t cotan(const index_t he) const;
-	real_t pdetriq(const index_t t) const;
-	real_t area_trig(const index_t t) const;
-	real_t area_vertex(const index_t v) const;
-	real_t mean_curvature(const index_t v) const;
+	float cotan(const index_t he) const;
+	float pdetriq(const index_t t) const;
+	float area_trig(const index_t t) const;
+	float area_vertex(const index_t v) const;
+	float mean_curvature(const index_t v) const;
 
 
 	protected:

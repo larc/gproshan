@@ -28,9 +28,9 @@ class scene: public che
 			vec3 Ka = 1;
 			vec3 Kd = 0.8;
 			vec3 Ks = 0.2;
-			real_t d = 1;	// Tr = 0, opposite
-			real_t Ns = 10;
-			real_t Ni = 0;
+			float d = 1;	// Tr = 0, opposite
+			float Ns = 10;
+			float Ni = 0;
 			int illum = 1;
 			int map_Ka = -1;
 			int map_Kd = -1;

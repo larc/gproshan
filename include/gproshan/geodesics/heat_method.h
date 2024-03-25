@@ -26,7 +26,7 @@ enum heat_method_opt {
 		#endif // GPROSHAN_CUDA
 			};
 
-double heat_method(real_t * dist, const che * mesh, const std::vector<index_t> & sources, const heat_method_opt & opt);
+double heat_method(float * dist, const che * mesh, const std::vector<index_t> & sources, const heat_method_opt & opt);
 
 arma::vec compute_divergence(const che * mesh, const arma::vec & u);
 

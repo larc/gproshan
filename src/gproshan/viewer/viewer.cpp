@@ -74,7 +74,7 @@ viewer::viewer(const char * title, const int width, const int height)
 	init_menus();
 
 	info_gl();
-	gproshan_log_var(sizeof(real_t));
+	gproshan_log_var(sizeof(float));
 
 	sphere_data.update_normals();
 	sphere = new che_viewer(&sphere_data);;
@@ -259,12 +259,12 @@ void viewer::imgui()
 		ImGui::Unindent();
 	}
 
-	static real_t pos_min = -10;
-	static real_t pos_max = 10;
+	static float pos_min = -10;
+	static float pos_max = 10;
 	if(ImGui::CollapsingHeader("Camera"))
 	{
 		ImGui::Indent();
-		ImGui::SliderScalarN("position", ImGuiDataType_Real, &cam.pos[0], 3, &pos_min, &pos_max);
+		ImGui::SliderScalarN("position", ImGuiDataType_Float, &cam.pos[0], 3, &pos_min, &pos_max);
 		ImGui::Unindent();
 	}
 
@@ -286,7 +286,7 @@ void viewer::imgui()
 			light & l = render_params.lights[i];
 
 			snprintf(slight, sizeof(slight), "light_%d.pos", i);
-			update |= ImGui::SliderScalarN(slight, ImGuiDataType_Real, &l.pos, 3, &pos_min, &pos_max);
+			update |= ImGui::SliderScalarN(slight, ImGuiDataType_Float, &l.pos, 3, &pos_min, &pos_max);
 
 			snprintf(slight, sizeof(slight), "light_%d.color", i);
 			update |= ImGui::ColorEdit3(slight, (float *) &l.color);
@@ -613,7 +613,7 @@ void viewer::update_viewport_meshes()
 	glfwGetFramebufferSize(window, (int *) &viewport_width, (int *) &viewport_height);
 	viewport_width /= cols;
 	viewport_height /= rows;
-	cam.aspect = real_t(viewport_width) / viewport_height;
+	cam.aspect = float(viewport_width) / viewport_height;
 	proj_mat = cam.perspective();
 }
 
@@ -657,7 +657,7 @@ void viewer::framebuffer_size_callback(GLFWwindow * window, int width, int heigh
 	viewer * view = (viewer *) glfwGetWindowUserPointer(window);
 	view->viewport_width = width / m_window_split[size(view->meshes)].y();
 	view->viewport_height = height / m_window_split[size(view->meshes)].x();
-	view->cam.aspect = real_t(view->viewport_width) / view->viewport_height;
+	view->cam.aspect = float(view->viewport_width) / view->viewport_height;
 	view->proj_mat = view->cam.perspective();
 }
 

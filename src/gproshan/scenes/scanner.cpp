@@ -23,8 +23,8 @@ che * scanner_ptx(const rt::raytracing * rt, const size_t n_rows, const size_t n
 {
 	che * mesh_ptx = new che(n_cols * n_rows);
 
-	const real_t delta_phi = (2 * M_PI) / n_rows;
-	const real_t delta_theta = M_PI / n_cols;
+	const float delta_phi = (2 * M_PI) / n_rows;
+	const float delta_theta = M_PI / n_cols;
 
 	#pragma omp parallel for
 	for(index_t i = 0; i < n_rows; ++i)
@@ -32,8 +32,8 @@ che * scanner_ptx(const rt::raytracing * rt, const size_t n_rows, const size_t n
 	{
 		const index_t v = i * n_cols + j;
 
-		const real_t phi = i * delta_phi;
-		const real_t theta = j * delta_theta;
+		const float phi = i * delta_phi;
+		const float theta = j * delta_theta;
 		const vertex & dir = {std::sin(theta) * std::sin(phi), std::cos(theta), std::sin(theta) * std::cos(phi)};
 
 		const rt::eval_hit & h = rt->intersect(cam_pos, dir);
@@ -44,7 +44,7 @@ che * scanner_ptx(const rt::raytracing * rt, const size_t n_rows, const size_t n
 		mesh_ptx->rgb(v) = h.Kd;
 	}
 
-	real_t max_dist = 0;
+	float max_dist = 0;
 
 	#pragma omp parallel for reduction(max: max_dist)
 	for(index_t v = 0; v < mesh_ptx->n_vertices; ++v)

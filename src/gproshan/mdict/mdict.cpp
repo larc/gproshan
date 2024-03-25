@@ -12,7 +12,7 @@
 // mesh dictionary learning and sparse coding namespace
 namespace gproshan::mdict {
 
-const real_t sigma = 0.01;
+const float sigma = 0.01;
 
 
 // SPARSE
@@ -111,7 +111,7 @@ void sp_KSVD(arma::fmat & D, const arma::fmat & X, const size_t L, size_t k)
 std::tuple<arma::fvec, arma::uvec> _OMP(const arma::fvec & x, const arma::fmat & D, const size_t L)
 {
 	arma::uvec selected_atoms(L);
-	real_t threshold = norm(x) * sigma;
+	float threshold = norm(x) * sigma;
 
 	arma::fmat DD;
 	arma::fvec aa, r = x;
@@ -143,7 +143,7 @@ std::tuple<arma::fvec, arma::uvec> _OMP(const arma::fvec & x, const arma::fmat &
 {
 
 	arma::uvec selected_atoms(L);
-	real_t threshold = norm(x) * sigma;
+	float threshold = norm(x) * sigma;
 
 	arma::fmat DD;
 	arma::fvec aa, r = x;
@@ -271,7 +271,7 @@ void KSVD(arma::fmat & A, const std::vector<patch> & patches, const size_t L, si
 	arma::fmat alpha, D, sum, sum_error;
 	arma::fvec a, e;
 
-	real_t aj;
+	float aj;
 
 	while(k--)
 	{
@@ -348,7 +348,7 @@ void sp_KSVD(arma::fmat & A, const std::vector<patch> & patches, const size_t L,
 	arma::fmat D, sum, sum_error;
 	arma::fvec a, e;
 
-	real_t aj;
+	float aj;
 
 	std::vector<locval_t> locval;
 	std::vector<size_t> rows;

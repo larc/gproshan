@@ -217,7 +217,7 @@ index_t embree::add_pointcloud(const che * mesh, const mat4 & model_mat, const p
 	#pragma omp parallel for
 	for(index_t i = 0; i < mesh->n_vertices; ++i)
 	{
-		real_t r = 0;
+		float r = 0;
 
 		switch(pc.opt)
 		{
@@ -274,7 +274,7 @@ bool embree::closesthit_radiance(	vertex & color,
 									vertex & position,
 									vertex & ray_dir,
 									float &,
-									random<real_t> & rnd,
+									random<float> & rnd,
 									const render_params & params,
 									const bool flat
 									) const
