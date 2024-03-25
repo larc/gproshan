@@ -10,7 +10,12 @@ namespace gproshan::rt {
 
 splat_optix::splat_optix(const std::vector<che *> & meshes, const std::vector<mat4> & model_mats): splat(meshes, model_mats), optix("/src/splat_optix.ptx")
 {
-	optix_params.traversable = build_as(pointclouds, {mat4::identity()});
+	std::vector<const che *> pcs;
+	pcs.reserve(size(pointclouds));
+	for(che * pc: pointclouds)
+		pcs.push_back(pc);
+
+	optix_params.traversable = build_as(pcs, {mat4::identity()});
 	build_sbt();
 
 	d_splats_pcs.resize(size(splats_pcs));

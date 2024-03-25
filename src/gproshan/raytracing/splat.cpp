@@ -399,7 +399,7 @@ che * splat::init_splats(	const che * mesh,
 		for(index_t j = s.begin; j < s.end; ++j)
 		{
 			vertex & p = points[j];
-			p = mat3::transpose(s.tbn) * p + s.center;
+			p = s.tbn.t() * p + s.center;
 //			h = std::min(h, dot(p - center, normal));
 		}
 
