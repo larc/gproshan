@@ -44,7 +44,7 @@ void basis::plot_basis()
 	system(file.c_str());
 }
 
-void basis::plot_atoms(const a_mat & A)
+void basis::plot_atoms(const arma::fmat & A)
 {
 	size_t K = A.n_rows;
 	size_t m = A.n_cols;
@@ -81,9 +81,9 @@ void basis::plot_atoms(const a_mat & A)
 	system(file.c_str());
 }
 
-void basis::plot_patch(const a_mat & A, const a_mat & xyz, const index_t p)
+void basis::plot_patch(const arma::fmat & A, const arma::fmat & xyz, const index_t p)
 {
-	a_mat tmp = xyz.t();
+	arma::fmat tmp = xyz.t();
 	std::string data = tmp_file_path("xyz_" + std::to_string(p) + ".dat");
 	tmp.save(data.c_str(), arma::arma_ascii);
 

@@ -6,8 +6,6 @@
 #include <gproshan/mdict/mdict.h>
 #include <gproshan/mdict/basis.h>
 
-#include <gproshan/include_arma.h>
-
 
 // geometry processing and shape analysis framework
 // mesh dictionary learning and sparse coding namespace
@@ -38,8 +36,8 @@ class msparse_coding
 		basis * phi_basis;						///< continuous basis.
 		params m_params;						///<
 
-		a_mat A;								///< dictionary continuous matrix.
-		a_mat alpha;							///< sparse coding matrix.
+		arma::fmat A;								///< dictionary continuous matrix.
+		arma::fmat alpha;							///< sparse coding matrix.
 
 		real_t s_radio;							///< sampling geodesic radio.
 		std::vector<index_t> sampling;			///< samples, center of patches if sampling.
@@ -93,7 +91,7 @@ class msparse_coding
 							);
 
 		real_t mesh_reconstruction(const fmask_t & mask = nullptr);
-		void update_alphas(a_mat & alpha, size_t threshold);
+		void update_alphas(arma::fmat & alpha, size_t threshold);
 		void save_alpha(std::string file);
 
 		index_t sample(const index_t s);

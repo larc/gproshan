@@ -91,7 +91,7 @@ che::che(const che & mesh, const index_t * sorted, const che::options & opts)
 
 	if(opts.colors)
 	{
-		if(sorted)
+		if(!sorted)
 		{
 			memcpy(VC, mesh.VC, n_vertices * sizeof(rgb_t));
 			memcpy(VHC, mesh.VHC, n_vertices * sizeof(real_t));

@@ -15,10 +15,10 @@ bool operator<(const border_t & a, const border_t & b)
 	return a.theta > b.theta;
 }
 
-a_vec normal_face(const std::vector<a_vec> & tmp_vertices, const index_t a_v, const index_t b_v, const index_t c_v)
+arma::fvec normal_face(const std::vector<arma::fvec> & tmp_vertices, const index_t a_v, const index_t b_v, const index_t c_v)
 {
-	a_vec a = tmp_vertices[c_v] - tmp_vertices[a_v];
-	a_vec b = tmp_vertices[b_v] - tmp_vertices[a_v];
+	arma::fvec a = tmp_vertices[c_v] - tmp_vertices[a_v];
+	arma::fvec b = tmp_vertices[b_v] - tmp_vertices[a_v];
 	return normalise(cross(a,b));
 }
 
@@ -26,8 +26,8 @@ che * mesh_simple_fill_hole(che * mesh, const std::vector<index_t> & border_vert
 {
 	std::vector<vertex> vertices;
 	vertex normal, normal_v, edge_v, v;
-	a_mat E(3, 3);
-	a_vec ve(3);
+	arma::fmat E(3, 3);
+	arma::fvec ve(3);
 
 	vertices.reserve(size(border_vertices));
 
@@ -208,8 +208,8 @@ che * mesh_fill_hole(che * mesh, const std::vector<index_t> & border_vertices, c
 void split_border(std::vector<std::pair<index_t, index_t> > & , che * mesh, const std::vector<index_t> & border_vertices)
 {
 	size_t n = size(border_vertices);
-	a_mat data(3, n);
-	a_mat means;
+	arma::fmat data(3, n);
+	arma::fmat means;
 
 	vertex normal;
 	for(index_t i = 0; i < n; ++i)
@@ -338,8 +338,8 @@ che * fill_hole_front_angles_test(che * mesh, std::vector<index_t> & front_verti
 	for(index_t v: front_vertices)
 		vertices.push_back(mesh->point(v));
 
-	std::vector<a_vec> tmp_vertices(size(vertices));
-	std::vector<a_vec> tmp_normals(size(vertices));
+	std::vector<arma::fvec> tmp_vertices(size(vertices));
+	std::vector<arma::fvec> tmp_normals(size(vertices));
 
 	vertex normal;
 	for(index_t v = 0; v < size(vertices); ++v)
@@ -389,8 +389,8 @@ che * fill_hole_front_angles_test(che * mesh, std::vector<index_t> & front_verti
 	real_t a75 = 75.0 * M_PI / 180;
 	real_t a135 = 135.0 * M_PI / 180;
 
-	a_vec m_vec;
-	a_vec m_normal;
+	arma::fvec m_vec;
+	arma::fvec m_normal;
 	while(!front.empty() && p_iter--)
 	{
 
@@ -551,11 +551,11 @@ che * fill_hole_front_angles_test(che * mesh, std::vector<index_t> & front_verti
 
 	vertices.clear();
 
-	for(a_vec r: tmp_vertices)
+	for(arma::fvec r: tmp_vertices)
 		vertices.push_back({r[0], r[1], r[2]});
 
 	for(index_t v = 0; false && v < size(tmp_vertices); ++v)
-		a_vec normal = tmp_vertices[v] + length * 3 * normalise(tmp_normals[v]);
+		arma::fvec normal = tmp_vertices[v] + length * 3 * normalise(tmp_normals[v]);
 
 	gproshan_debug_var(perimeter);
 //	gproshan_debug(filling holes);
@@ -575,7 +575,7 @@ che * fill_hole_front_angles(std::vector<vertex> & vertices, const real_t length
 
 	// PCA --------------------------------------------------------------------------
 
-	a_mat V(3, size(vertices));
+	arma::fmat V(3, size(vertices));
 	for(index_t v = 0; v < size(vertices); ++v)
 	{
 		V(0,v) = vertices[v][0];
@@ -589,16 +589,16 @@ che * fill_hole_front_angles(std::vector<vertex> & vertices, const real_t length
 	perimeter = init_perimeter;
 	//debug(perimeter)
 
-	a_vec avg = mean(V, 1);
+	arma::fvec avg = mean(V, 1);
 	V.each_col() -= avg;
 
-	a_vec orientation(3);
+	arma::fvec orientation(3);
 	orientation(0) = normal.x();
 	orientation(1) = normal.y();
 	orientation(2) = normal.z();
 
-	a_mat E;
-	a_vec eigval;
+	arma::fmat E;
+	arma::fvec eigval;
 	eig_sym(eigval, E, V * V.t());
 	E.swap_cols(0, 2);
 	//debug(E)
@@ -612,19 +612,19 @@ che * fill_hole_front_angles(std::vector<vertex> & vertices, const real_t length
 	//debug(dot(orientation, E.col(2)))
 
 	V = E.t() * V;
-//	V.each_col([](a_vec & v){v(2) = 0;});
+//	V.each_col([](arma::fvec & v){v(2) = 0;});
 
 	bool o = is_grow;
 
-	a_vec a = V.col(0);
-	a_vec b = V.col(1);
+	arma::fvec a = V.col(0);
+	arma::fvec b = V.col(1);
 	a(2) = b(2) = 0;
 	a = normalise(a);
 	b = normalise(b);
 
 	// END PCA ----------------------------------------------------------------------
 
-	std::vector<a_vec> tmp_vertices(size(vertices));
+	std::vector<arma::fvec> tmp_vertices(size(vertices));
 	std::vector<bool> is_border(size(vertices));
 	std::vector<std::array<index_t, 2> > neighbors(size(vertices));
 
@@ -656,7 +656,7 @@ che * fill_hole_front_angles(std::vector<vertex> & vertices, const real_t length
 	real_t a75 = 75.0 * M_PI / 180;
 	real_t a135 = 135.0 * M_PI / 180;
 
-	a_vec m_vec;
+	arma::fvec m_vec;
 	while(!front.empty() && p_iter-- && p_iter < 2000)
 	{
 		while(!front.empty() &&
@@ -815,7 +815,7 @@ che * fill_hole_front_angles(std::vector<vertex> & vertices, const real_t length
 	vertices.clear();
 	vertices.reserve(size(tmp_vertices));
 
-	for(a_vec r: tmp_vertices)
+	for(arma::fvec r: tmp_vertices)
 	{
 		r = E * r + avg;
 		vertices.push_back({r[0], r[1], r[2]});

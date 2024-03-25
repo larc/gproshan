@@ -2,6 +2,8 @@
 
 include(CMakeFindDependencyMacro)
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}")
+
 find_package(CUDAToolkit 12)
 
 find_dependency(embree 4)

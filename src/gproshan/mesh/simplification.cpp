@@ -9,7 +9,7 @@ simplification::simplification(che * mesh_, const index_t levels_)
 {
 	mesh = mesh_;
 	levels = levels_;
-	Q = new a_mat[mesh->n_vertices];
+	Q = new arma::fmat[mesh->n_vertices];
 
 	execute();
 }
@@ -33,7 +33,7 @@ void simplification::compute_quadrics()
 	{
 		Q[v].resize(4,4);
 		Q[v].zeros();
-		a_vec p(4);
+		arma::fvec p(4);
 
 		for(const index_t he: mesh->star(v))
 		{
@@ -68,7 +68,7 @@ void simplification::order_edges(index_t * sort_edges, real_t * error_edges)
 real_t simplification::compute_error(const index_t e)
 {
 	vertex ve = create_vertex(e);
-	a_vec v(4);
+	arma::fvec v(4);
 
 	v(0) = ve.x();
 	v(1) = ve.y();

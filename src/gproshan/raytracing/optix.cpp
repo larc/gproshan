@@ -94,7 +94,7 @@ optix::optix(const std::string & ptx)
 	cudaMalloc(&optix_params_buffer, sizeof(launch_params));
 }
 
-optix::optix(const std::vector<che *> & meshes, const std::vector<mat4> & model_mats): optix()
+optix::optix(const std::vector<const che *> & meshes, const std::vector<mat4> & model_mats): optix()
 {
 	// build as
 	optix_params.traversable = build_as(meshes, model_mats);
@@ -333,7 +333,7 @@ void optix::build_sbt()
 	sbt.hitgroupRecordCount			= size(hitgroup_records);
 }
 
-OptixTraversableHandle optix::build_as(const std::vector<che *> & meshes, const std::vector<mat4> & model_mats)
+OptixTraversableHandle optix::build_as(const std::vector<const che *> & meshes, const std::vector<mat4> & model_mats)
 {
 	OptixTraversableHandle optix_as_handle = {};
 

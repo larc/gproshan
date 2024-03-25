@@ -77,6 +77,8 @@ write_basic_package_version_file(
 install(FILES
 		${CMAKE_CURRENT_BINARY_DIR}/gproshanConfig.cmake
 		${CMAKE_CURRENT_BINARY_DIR}/gproshanConfigVersion.cmake
+		${gproshan_SOURCE_DIR}/cmake/FindSuiteSparse.cmake
+		${gproshan_SOURCE_DIR}/cmake/FindOptiX.cmake
 		DESTINATION lib/cmake/gproshan
 		)
 

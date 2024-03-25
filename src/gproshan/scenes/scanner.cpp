@@ -46,7 +46,7 @@ che * scanner_ptx(const rt::raytracing * rt, const size_t n_rows, const size_t n
 
 	real_t max_dist = 0;
 
-	#pragma omp parallel for reduction(std::max: max_dist)
+	#pragma omp parallel for reduction(max: max_dist)
 	for(index_t v = 0; v < mesh_ptx->n_vertices; ++v)
 		max_dist = std::max(max_dist, mesh_ptx->heatmap(v));
 
@@ -64,8 +64,7 @@ che * scanner_ptx_jpg(const rt::raytracing * rt, const size_t n_rows, const size
 	CImg<unsigned char> img((unsigned char *) &mesh_ptx->rgb(0), 3, n_cols, n_rows);
 	img.permute_axes("zycx");
 
-	std::string img_filename = file_jpg + ".jpg";
-	img.save(img_filename.c_str());
+	img.save((file_jpg + "_scan.jpg").c_str());
 
 	std::thread([](const CImg<unsigned char> & img) { img.display(); }, img).detach();
 

@@ -24,12 +24,17 @@ finally execute:
 
 	./gproshan [mesh_paths.(off,obj,ply)]
 
-### Dependencies (Linux)
-g++ >= 9.4, cuda >= 11.8, cmake >= 3.24, armadillo, eigen3, cgal, suitesparse, openblas, glew, glfw3, cimg, gnuplot, embree >= 3.13
 
-In Ubuntu you can install them with:
+### Dependencies (Linux/MacOS)
+g++ >= 12.3, cuda >= 12.4, cmake >= 3.28, embree >= 4.3, glew, glfw3, armadillo, suitesparse, openblas, flann, cimg
 
-	sudo apt install cmake libarmadillo-dev libeigen3-dev libcgal-dev libsuitesparse-dev libopenblas-dev libglew-dev libglfw3-dev cimg-dev gnuplot
+On Ubuntu you can install them with:
+
+	sudo apt install cmake libglew-dev libglfw3-dev libarmadillo-dev libsuitesparse-dev libopenblas-dev libflann-dev cimg-dev
+
+Install Cuda if available to enable Cuda-based modules.
+Export environment variable `OptiX_INSTALL_DIR` with the path to the OptiX library to enable it. 
+
 
 #### Installing Intel Embree
 
