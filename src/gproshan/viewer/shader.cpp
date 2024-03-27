@@ -13,7 +13,7 @@ namespace gproshan {
 
 shader::~shader()
 {
-	glDeleteProgram(program);
+	if(program)	glDeleteProgram(program);
 }
 
 shader::operator GLuint() const

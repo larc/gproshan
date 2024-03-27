@@ -39,7 +39,7 @@ struct cu_spAxb
 	}
 };
 
-double solve_positive_definite_cusolver(const int m, const int nnz, const double * hA_values, const int * hA_col_ptrs, const int * hA_row_indices, const double * hb, double * hx, const bool host)
+double solve_positive_definite_cusolver(const int m, const int nnz, const double * hA_values, const int * hA_col_ptrs, const int * hA_row_indices, const double * hb, double * hx)
 {
 	cudaDeviceReset();
 
@@ -61,24 +61,14 @@ double solve_positive_definite_cusolver(const int m, const int nnz, const double
 	cusparseSetMatType(descr, CUSPARSE_MATRIX_TYPE_GENERAL);
 	cusparseSetMatIndexBase(descr, CUSPARSE_INDEX_BASE_ZERO);
 
-	if(host)
-	{
-		cusolverSpDcsrlsvcholHost(handle_cusolver, m, nnz, descr, hA_values, hA_col_ptrs, hA_row_indices, hb, 0, 0, hx, &singularity);
-	}
+	cu_spAxb data(m, nnz, hA_values, hA_col_ptrs, hA_row_indices, hb);
+
+	cusolverStatus_t status = cusolverSpDcsrlsvchol(handle_cusolver, m, nnz, descr, data.A_values, data.A_col_ptrs, data.A_row_indices, data.b, 0, 0, data.x, &singularity);
+
+	if(status == CUSOLVER_STATUS_SUCCESS)
+		cudaMemcpy(hx, data.x, m * sizeof(double), cudaMemcpyDeviceToHost);
 	else
-	{
-		// allocate A, x, b into device
-		cu_spAxb data(m, nnz, hA_values, hA_col_ptrs, hA_row_indices, hb);
-
-		cusolverStatus_t status = cusolverSpDcsrlsvchol(handle_cusolver, m, nnz, descr, data.A_values, data.A_col_ptrs, data.A_row_indices, data.b, 0, 0, data.x, &singularity);
-
-		if(status == CUSOLVER_STATUS_SUCCESS)
-			cudaMemcpy(hx, data.x, m * sizeof(double), cudaMemcpyDeviceToHost);
-		else
-			memset(hx, 0, m * sizeof(double));
-	}
-
-//	printf("%d\n", singularity != -1);
+		memset(hx, 0, m * sizeof(double));
 
 	cusparseDestroyMatDescr(descr);
 	cusolverSpDestroy(handle_cusolver);

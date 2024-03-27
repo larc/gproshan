@@ -116,9 +116,9 @@ che_obj::parser::parser(const std::string & file)
 					}
 					switch(i)
 					{
-						case 0: f[i] += f[i] > size(vertices)		? size(vertices)	: -1;	break;
+						case 0: f[i] += f[i] > size(vertices)	? size(vertices)	: -1;	break;
 						case 1: f[i] += f[i] > size(vtexcoords)	? size(vtexcoords)	: -1;	break;
-						case 2: f[i] += f[i] > size(vnormals)		? size(vnormals)	: -1;	break;
+						case 2: f[i] += f[i] > size(vnormals)	? size(vnormals)	: -1;	break;
 					}
 				}
 

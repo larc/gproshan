@@ -1,5 +1,6 @@
 #include <gproshan/mesh/che_poisson.h>
 
+#include <gproshan/mesh/toplesets.h>
 #include <gproshan/laplacian/laplacian.h>
 
 #include <armadillo>
@@ -100,22 +101,16 @@ void biharmonic_interp_2(che * mesh, const size_t old_n_vertices, const size_t n
 {
 	if(old_n_vertices == n_vertices) return;
 
-	index_t * rings = new index_t[mesh->n_vertices];
-	index_t * sorted = new index_t[mesh->n_vertices];
-	std::vector<index_t> limites;
-	mesh->compute_toplesets(rings, sorted, limites, border_vertices, k);
+	toplesets tps(mesh, border_vertices, k);
 
-	const size_t n_border_vertices = limites.back();
+	const size_t n_border_vertices = tps.splits.back();
 
 	std::vector<index_t> sub_mesh_hole;
 	sub_mesh_hole.reserve(n_border_vertices);
 
 	for(index_t b = 0; b < n_border_vertices; ++b)
-		if(sorted[b] < old_n_vertices)
-			sub_mesh_hole.push_back(sorted[b]);
-
-	delete [] rings;
-	delete [] sorted;
+		if(tps.sorted[b] < old_n_vertices)
+			sub_mesh_hole.push_back(tps.sorted[b]);
 
 	arma::fmat P(3, size(sub_mesh_hole));
 	index_t i = 0;

@@ -111,7 +111,7 @@ class viewer
 		virtual bool run();
 
 		void info_gl();
-		void init_gl(const char * title);
+		bool init_gl(const char * title);
 		void init_imgui();
 		void init_menus();
 		void init_glsl();

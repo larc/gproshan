@@ -64,13 +64,13 @@ bool load_sampling(std::vector<index_t> & points, float & radio, che * mesh, siz
 			points.push_back(0);
 
 #ifdef GPROSHAN_CUDA
-		double time_fps;
-		radio = farthest_point_sampling_ptp_gpu(mesh, points, time_fps, n);
-		gproshan_debug_var(time_fps);
+		double time_fps = farthest_point_sampling_ptp_gpu(mesh, points, n);
+		gproshan_log_var(time_fps);
 #else
 		radio = 0; // IMPLEMENT: farthest_point_sampling_ptp_cpu(mesh, points, time_fps, n);
 #endif // GPROSHAN_CUDA
 
+		// TODO: compute radio
 		std::ofstream os(tmp_file_path(file));
 		os << radio << std::endl;
 		os << size(points) << std::endl;

@@ -18,15 +18,15 @@
 // geometry processing and shape analysis framework
 namespace gproshan {
 
-enum heat_method_opt {
-			HEAT_ARMA,
-			HEAT_CHOLMOD,
-		#ifdef GPROSHAN_CUDA
-			HEAT_CUDA
-		#endif // GPROSHAN_CUDA
-			};
+enum hm_opt {
+				HEAT_ARMA,
+				HEAT_CHOLMOD,
+			#ifdef GPROSHAN_CUDA
+				HEAT_CUDA
+			#endif // GPROSHAN_CUDA
+				};
 
-double heat_method(float * dist, const che * mesh, const std::vector<index_t> & sources, const heat_method_opt & opt);
+double heat_method(float * dist, const che * mesh, const std::vector<index_t> & sources, const hm_opt & opt);
 
 arma::vec compute_divergence(const che * mesh, const arma::vec & u);
 
@@ -34,7 +34,7 @@ arma::vec compute_divergence(const che * mesh, const arma::vec & u);
 #ifdef GPROSHAN_CUDA
 
 double solve_positive_definite_gpu(arma::mat & x, const arma::sp_mat & A, const arma::mat & b);
-double solve_positive_definite_cusolver(const int m, const int nnz, const double * hA_values, const int * hA_col_ptrs, const int * hA_row_indices, const double * hb, double * hx, const bool host = 0);
+double solve_positive_definite_cusolver(const int m, const int nnz, const double * hA_values, const int * hA_col_ptrs, const int * hA_row_indices, const double * hb, double * hx);
 
 #endif // GPROSHAN_CUDA
 
