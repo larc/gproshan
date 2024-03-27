@@ -193,19 +193,15 @@ void geodesics::run_fastmarching(che * mesh, const std::vector<index_t> & source
 
 void geodesics::run_parallel_toplesets_propagation_cpu(che * mesh, const std::vector<index_t> & sources)
 {
-	index_t * toplesets = new index_t[n_vertices];
-	std::vector<index_t> limits;
-	mesh->compute_toplesets(toplesets, sorted_index, limits, sources);
+	toplesets tps(mesh, sources);
 
 	double time_ptp;
 
 	TIC(time_ptp)
-		parallel_toplesets_propagation_cpu({dist, clusters}, mesh, sources, {limits, sorted_index}, size(sources) == 1);
+		parallel_toplesets_propagation_cpu({dist, clusters}, mesh, sources, {tps.splits, tps.sorted}, size(sources) == 1);
 	TOC(time_ptp)
 
 	gproshan_log_var(time_ptp);
-
-	delete [] toplesets;
 }
 
 void geodesics::run_heat_method(che * mesh, const std::vector<index_t> & sources)
@@ -224,15 +220,11 @@ void geodesics::run_heat_method(che * mesh, const std::vector<index_t> & sources
 
 void geodesics::run_parallel_toplesets_propagation_gpu(che * mesh, const std::vector<index_t> & sources)
 {
-	index_t * toplesets = new index_t[n_vertices];
-	std::vector<index_t> limits;
-	mesh->compute_toplesets(toplesets, sorted_index, limits, sources);
+	toplesets tps(mesh, sources);
 
-	double time_ptp = parallel_toplesets_propagation_gpu({dist, clusters}, mesh, sources, {limits, sorted_index});
+	double time_ptp = parallel_toplesets_propagation_gpu({dist, clusters}, mesh, sources, {tps.splits, tps.sorted});
 
 	gproshan_log_var(time_ptp);
-
-	delete [] toplesets;
 }
 
 void geodesics::run_heat_method_gpu(che * mesh, const std::vector<index_t> & sources)

@@ -7,6 +7,7 @@
 */
 
 #include <gproshan/mesh/che.h>
+#include <gproshan/mesh/toplesets.h>
 
 #include <functional>
 

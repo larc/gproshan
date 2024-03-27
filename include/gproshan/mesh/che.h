@@ -23,12 +23,8 @@ using vertex = vec3;
 
 class che
 {
-	protected:
-
-	static size_t & rw(const size_t & n);
-
-
 	public:
+	static size_t & rw(const size_t & n);
 
 	struct options
 	{
@@ -277,7 +273,6 @@ class che
 
 	std::vector<index_t> link(const index_t v) const;
 	void edge_collapse(const std::vector<index_t> & sort_edges);
-	void compute_toplesets(index_t * rings, index_t * sorted, std::vector<index_t> & limites, const std::vector<index_t> & sources, const index_t k = NIL);
 
 	std::vector<index_t> bounds() const;
 	std::vector<index_t> boundary(const index_t v) const;

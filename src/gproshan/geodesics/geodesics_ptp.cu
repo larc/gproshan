@@ -159,9 +159,7 @@ float farthest_point_sampling_ptp_gpu(che * mesh, std::vector<index_t> & samples
 	for(index_t v = 0; v < n_vertices; ++v)
 		h_dist[v] = INFINITY;
 
-	std::vector<index_t> limits;
-	index_t * toplesets = new index_t[n_vertices];
-	index_t * sorted_index = new index_t[n_vertices];
+	toplesets tps(mesh, samples);
 
 	cublasHandle_t handle;
 	cublasCreate(&handle);
@@ -175,25 +173,21 @@ float farthest_point_sampling_ptp_gpu(che * mesh, std::vector<index_t> & samples
 	float max_dist = INFINITY;
 	while(n-- && radio < max_dist)
 	{
-		limits.clear();
-		mesh->compute_toplesets(toplesets, sorted_index, limits, samples);
-
-		const index_t i = run_ptp(d_mesh, samples, limits, d_error, d_dist, d_clusters, sorted_index, d_sorted);
+		const index_t i = run_ptp(d_mesh, samples, tps.splits, d_error, d_dist, d_clusters, tps.sorted, d_sorted);
 
 		// 1 indexing
-			cublasIsamax(handle, mesh->n_vertices, d_dist[i], 1, &farthest);
+		cublasIsamax(handle, mesh->n_vertices, d_dist[i], 1, &farthest);
 
 		if(radio > 0 || !n)
 			cudaMemcpy(&max_dist, d_dist[i] + farthest - 1, sizeof(float), cudaMemcpyDeviceToHost);
 
 		samples.push_back(farthest - 1);
+		tps.reset(mesh, samples);
 	}
 
 	cublasDestroy(handle);
 
 	delete [] h_dist;
-	delete [] toplesets;
-	delete [] sorted_index;
 
 	cudaFree(d_error);
 	cudaFree(d_dist[0]);
