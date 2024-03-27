@@ -254,6 +254,7 @@ void che::update_heatmap(const float * hm)
 
 void che::update_normals()
 {
+	if(is_scene()) return;
 	if(!n_trigs) return;
 
 	#pragma omp parallel for

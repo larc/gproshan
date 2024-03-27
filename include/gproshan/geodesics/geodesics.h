@@ -22,23 +22,23 @@ class geodesics
 	using fm_function_t = std::function<bool (const index_t)>;
 
 	public:
-		enum algorithm {	FM,				///< Execute Fast Marching algorithm
-							PTP_CPU,		///< Execute Parallel Toplesets Propagation CPU algorithm
-							HEAT_METHOD,	///< Execute Heat Method - cholmod (CPU)
+		enum algorithm {	FM,					///< Execute Fast Marching algorithm
+							PTP_CPU,			///< Execute Parallel Toplesets Propagation CPU algorithm
+							HEAT_METHOD,		///< Execute Heat Method - cholmod (CPU)
 						#ifdef GPROSHAN_CUDA
-							PTP_GPU,		///< Execute Parallel Toplesets Propagation GPU algorithm
-							HEAT_METHOD_GPU	///< Execute Heat Method - cusparse (GPU)
+							PTP_GPU,			///< Execute Parallel Toplesets Propagation GPU algorithm
+							HEAT_METHOD_GPU		///< Execute Heat Method - cusparse (GPU)
 						#endif // GPROSHAN_CUDA
 						};
 
 		struct params
 		{
-			algorithm alg		= FM;					///< specific the algorithm to execute.
-			size_t n_iter		= 0;					///< maximum number of iterations.
-			float radio		= INFINITY;				///< execute until the specific radio.
-			float * dist_alloc	= nullptr;				///< external dist allocation
-			bool cluster		= false;				///< to cluster vertices to closest source.
-			fm_function_t fun	= nullptr;				///< fun is executed inside FM loop
+			algorithm alg		= FM;				///< specific the algorithm to execute.
+			size_t n_iter		= 0;				///< maximum number of iterations.
+			float radio			= INFINITY;			///< execute until the specific radio.
+			float * dist_alloc	= nullptr;			///< external dist allocation
+			bool cluster		= false;			///< to cluster vertices to closest source.
+			fm_function_t fun	= nullptr;			///< fun is executed inside FM loop
 		};
 
 	public:

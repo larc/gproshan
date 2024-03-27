@@ -87,7 +87,7 @@ class che
 
 	vertex * VN		= nullptr;	///< vertex normals			: v		-> normal(v)
 	rgb_t * VC		= nullptr;	///< vertex color			: v		-> color(v)
-	float * VHC	= nullptr;	///< vertex color heatmap	: v		-> heatmap(v)
+	float * VHC		= nullptr;	///< vertex color heatmap	: v		-> heatmap(v)
 	float scale_hm	= 1;		///< vertex color heatmap scale factor
 
 	bool manifold = true;

@@ -49,7 +49,7 @@ bool scene::load_obj(const std::string & file)
 		if(!load_mtl(path + m))
 			return false;
 
-	alloc(size(p.trigs), size(p.trigs));
+	alloc(size(p.trigs), size(p.trigs) / 3);
 
 	#pragma omp parallel for
 	for(index_t i = 0; i < n_vertices; ++i)
