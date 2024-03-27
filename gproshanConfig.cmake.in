@@ -1,0 +1,24 @@
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}")
+
+find_package(CUDAToolkit 12)
+
+find_dependency(embree 4)
+find_dependency(OpenMP)
+find_dependency(OpenGL)
+find_dependency(GLEW)
+find_dependency(glfw3)
+find_dependency(X11)
+find_dependency(Armadillo)
+find_dependency(SuiteSparse)
+find_dependency(flann)
+
+
+include(${CMAKE_CURRENT_LIST_DIR}/gproshanTargets.cmake)
+set_and_check(gproshan_INCLUDE_DIR "@PACKAGE_INCLUDE_INSTALL_DIR@")
+
+check_required_components(gproshan)
+

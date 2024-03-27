@@ -1,0 +1,15 @@
+include_directories(${gproshan_SOURCE_DIR}/include/)
+
+
+add_executable(test_gproshan gproshan.cpp)
+set_target_properties(test_gproshan PROPERTIES OUTPUT_NAME gproshan)
+target_link_libraries(test_gproshan gproshan)
+
+
+add_executable(test_image_denoising test_image_denoising.cpp)
+target_link_libraries(test_image_denoising gproshan)
+
+
+add_executable(test_scanner test_scanner.cpp)
+target_link_libraries(test_scanner gproshan)
+

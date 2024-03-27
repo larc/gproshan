@@ -1,0 +1,6 @@
+#cmakedefine GPROSHAN_LOG
+#cmakedefine GPROSHAN_CUDA
+#cmakedefine GPROSHAN_OPTIX
+
+#cmakedefine GPROSHAN_DIR "@GPROSHAN_DIR@"
+

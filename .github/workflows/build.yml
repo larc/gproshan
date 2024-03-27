@@ -1,0 +1,81 @@
+name: Build
+
+on: [push]
+
+env:
+  CUDA_BIN: /usr/local/cuda/bin
+  CC: gcc-12
+  CXX: g++-12
+  CUDAHOSTCXX: g++-12
+
+jobs:
+  build:
+    name: ${{ matrix.os }} (${{ matrix.config }}) ${{ matrix.cuda }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04]
+        config: [Release, Debug]
+        cuda: [cuda, '']
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install Dependencies
+      run: |
+        sudo apt remove --purge cmake
+        sudo snap install cmake --classic
+        sudo apt update
+        sudo apt install \
+                          libarmadillo-dev \
+                          libeigen3-dev \
+                          libsuitesparse-dev \
+                          libopenblas-dev \
+                          libglew-dev \
+                          libglfw3-dev \
+                          cimg-dev \
+                          g++-12 \
+                          wget
+        wget http://mirrors.kernel.org/ubuntu/pool/universe/f/flann/libflann-dev_1.9.2+dfsg-1_amd64.deb
+        wget http://mirrors.kernel.org/ubuntu/pool/universe/f/flann/libflann1.9_1.9.2+dfsg-1_amd64.deb
+        sudo dpkg -i libflann1.9_1.9.2+dfsg-1_amd64.deb || sudo apt install -f
+        sudo dpkg -i libflann-dev_1.9.2+dfsg-1_amd64.deb || sudo apt install -f
+        
+
+    - name: Install Cuda
+      if: matrix.cuda == 'cuda'
+      run: |
+        wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-ubuntu2004.pin
+        sudo mv cuda-ubuntu2004.pin /etc/apt/preferences.d/cuda-repository-pin-600
+        sudo apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/3bf863cc.pub
+        sudo add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/ /"
+        sudo apt-get update
+        sudo apt-get -y install cuda
+
+    - name: Install Embree
+      working-directory: /opt
+      run: |
+        wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | gpg --dearmor | sudo tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
+        echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
+        sudo apt update
+        sudo apt install intel-renderkit
+
+    - name: Create Build Environment
+      run: cmake -E make_directory ${{runner.workspace}}/build
+
+    - name: Configure CMake
+      shell: bash
+      working-directory: ${{runner.workspace}}/build
+      run: |
+        source /opt/intel/oneapi/setvars.sh
+        export PATH=${CUDA_BIN}:${PATH}
+        cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{matrix.config}}
+
+    - name: Build
+      working-directory: ${{runner.workspace}}/build
+      shell: bash
+      run: |
+        source /opt/intel/oneapi/setvars.sh
+        cmake --build . --config ${{matrix.config}}
