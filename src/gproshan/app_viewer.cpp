@@ -614,27 +614,16 @@ bool app_viewer::process_compute_toplesets(viewer * p_view)
 	if(!size(mesh.selected))
 		mesh.selected.push_back(0);
 
-	index_t * toplesets = new index_t[mesh->n_vertices];
-	index_t * sorted = new index_t[mesh->n_vertices];
-	std::vector<index_t> limites;
-	mesh->compute_toplesets(toplesets, sorted, limites, mesh.selected);
-
-	size_t n_toplesets = size(limites) - 1;
+	toplesets tps(mesh, mesh.selected);
+	size_t n_levels = tps.n_levels;
 
 	#pragma omp parallel for
 	for(index_t v = 0; v < mesh->n_vertices; ++v)
-	{
-		if(toplesets[v] < n_toplesets)
-			mesh->heatmap(v) = float(toplesets[v]) / (n_toplesets);
-	}
+		mesh->heatmap(v) = tps[v] < n_levels ? float(tps[v]) / n_levels : -1;
 
 	mesh.update_vbo_heatmap();
 
-	gproshan_debug_var(n_toplesets);
-
-	delete [] toplesets;
-	delete [] sorted;
-
+	gproshan_debug_var(n_levels);
 	return false;
 }
 

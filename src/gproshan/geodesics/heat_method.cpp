@@ -15,7 +15,7 @@ namespace gproshan {
 /// base on the code https://github.com/larc/dgpdec-course/tree/master/Geodesics
 double solve_positive_definite(arma::mat & x, const arma::sp_mat & A, const arma::mat & b, cholmod_common * context);
 
-double heat_method(float * dist, const che * mesh, const std::vector<index_t> & sources, const heat_method_opt & opt)
+double heat_method(float * dist, const che * mesh, const std::vector<index_t> & sources, const hm_opt & opt)
 {
 	if(!size(sources)) return 0;
 

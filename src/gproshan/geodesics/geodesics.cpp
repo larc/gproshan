@@ -15,6 +15,9 @@ geodesics::geodesics(che * mesh, const std::vector<index_t> & sources, const par
 {
 	assert(n_vertices > 0);
 
+	double time;
+	TIC(time);
+
 	free_dist = p.dist_alloc == nullptr;
 
 	dist = free_dist ? new float[n_vertices] : p.dist_alloc;
@@ -28,7 +31,12 @@ geodesics::geodesics(che * mesh, const std::vector<index_t> & sources, const par
 		dist[v] = INFINITY;
 
 	assert(size(sources) > 0);
-	execute(mesh, sources, p);
+
+	double solve_time = execute(mesh, sources, p);
+	TOC(time);
+
+	gproshan_error_var(time);
+	gproshan_log_var(solve_time);
 }
 
 geodesics::~geodesics()
@@ -94,28 +102,44 @@ void geodesics::normalize()
 		dist[i] /= max;
 }
 
-void geodesics::execute(che * mesh, const std::vector<index_t> & sources, const params & p)
+double geodesics::execute(che * mesh, const std::vector<index_t> & sources, const params & p)
 {
+	double time = 0;
+
 	switch(p.alg)
 	{
-		case FM: run_fastmarching(mesh, sources, p.n_iter, p.radio, p.fun);
+		case FM:
+			time = run_fastmarching(mesh, sources, p.n_iter, p.radio, p.fun);
 			break;
-		case PTP_CPU: run_parallel_toplesets_propagation_cpu(mesh, sources);
+
+		case PTP_CPU:
+			time = parallel_toplesets_propagation_cpu({dist, clusters}, mesh, sources, toplesets(mesh, sources));
 			break;
-		case HEAT_METHOD: run_heat_method(mesh, sources);
+
+		case HEAT_METHOD:
+			time = heat_method(dist, mesh, sources, HEAT_CHOLMOD);
 			break;
 
 #ifdef GPROSHAN_CUDA
-		case PTP_GPU: run_parallel_toplesets_propagation_gpu(mesh, sources);
+		case PTP_GPU:
+			time = parallel_toplesets_propagation_gpu({dist, clusters}, mesh, sources, toplesets(mesh, sources));
 			break;
-		case HEAT_METHOD_GPU: run_heat_method_gpu(mesh, sources);
+
+		case HEAT_METHOD_GPU:
+			time = heat_method(dist, mesh, sources, HEAT_CUDA);
 			break;
 #endif // GPROSHAN_CUDA
 	}
+
+	return time;
 }
 
-void geodesics::run_fastmarching(che * mesh, const std::vector<index_t> & sources, const size_t n_iter, const float radio, const fm_function_t & fun)
+double geodesics::run_fastmarching(che * mesh, const std::vector<index_t> & sources, const size_t n_iter, const float radio, const fm_function_t & fun)
 {
+	double time;
+	TIC(time);
+
+
 	index_t BLACK = 0, GREEN = 1, RED = 2;
 	index_t * color = new index_t[n_vertices];
 
@@ -189,64 +213,11 @@ void geodesics::run_fastmarching(che * mesh, const std::vector<index_t> & source
 	}
 
 	delete [] color;
+
+	TOC(time);
+
+	return time;
 }
-
-void geodesics::run_parallel_toplesets_propagation_cpu(che * mesh, const std::vector<index_t> & sources)
-{
-	index_t * toplesets = new index_t[n_vertices];
-	std::vector<index_t> limits;
-	mesh->compute_toplesets(toplesets, sorted_index, limits, sources);
-
-	double time_ptp;
-
-	TIC(time_ptp)
-		parallel_toplesets_propagation_cpu({dist, clusters}, mesh, sources, {limits, sorted_index}, size(sources) == 1);
-	TOC(time_ptp)
-
-	gproshan_log_var(time_ptp);
-
-	delete [] toplesets;
-}
-
-void geodesics::run_heat_method(che * mesh, const std::vector<index_t> & sources)
-{
-	double time_total, solve_time;
-	TIC(time_total)
-	solve_time = heat_method(dist, mesh, sources, HEAT_CHOLMOD);
-	TOC(time_total)
-
-	gproshan_log_var(time_total - solve_time);
-	gproshan_log_var(solve_time);
-}
-
-
-#ifdef GPROSHAN_CUDA
-
-void geodesics::run_parallel_toplesets_propagation_gpu(che * mesh, const std::vector<index_t> & sources)
-{
-	index_t * toplesets = new index_t[n_vertices];
-	std::vector<index_t> limits;
-	mesh->compute_toplesets(toplesets, sorted_index, limits, sources);
-
-	double time_ptp = parallel_toplesets_propagation_gpu({dist, clusters}, mesh, sources, {limits, sorted_index});
-
-	gproshan_log_var(time_ptp);
-
-	delete [] toplesets;
-}
-
-void geodesics::run_heat_method_gpu(che * mesh, const std::vector<index_t> & sources)
-{
-	double time_total, solve_time;
-	TIC(time_total)
-	solve_time = heat_method(dist, mesh, sources, HEAT_CUDA);
-	TOC(time_total)
-
-	gproshan_log_var(time_total - solve_time);
-	gproshan_log_var(solve_time);
-}
-
-#endif // GPROSHAN_CUDA
 
 
 } // namespace gproshan

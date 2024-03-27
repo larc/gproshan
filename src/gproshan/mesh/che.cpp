@@ -254,6 +254,7 @@ void che::update_heatmap(const float * hm)
 
 void che::update_normals()
 {
+	if(is_scene()) return;
 	if(!n_trigs) return;
 
 	#pragma omp parallel for
@@ -644,46 +645,6 @@ void che::edge_collapse(const std::vector<index_t> & sort_edges)
 {
 	gproshan_error_var(size(sort_edges));
 	// TODO
-}
-
-void che::compute_toplesets(index_t * toplesets, index_t * sorted, std::vector<index_t> & limits, const std::vector<index_t> & sources, const index_t k)
-{
-	if(!size(sources)) return;
-
-	memset(toplesets, -1, sizeof(index_t) * n_vertices);
-
-	index_t level = 0;
-
-	index_t p = 0;
-	for(const index_t s: sources)
-	{
-		sorted[p++] = s;
-		toplesets[s] = level;
-	}
-
-	limits.push_back(0);
-	for(index_t i = 0; i < p; ++i)
-	{
-		const index_t v = sorted[i];
-
-		if(toplesets[v] > level)
-		{
-			if(++level > k) break;
-			limits.push_back(i);
-		}
-
-		for(const index_t u: link(v))
-		{
-			if(toplesets[u] == NIL)
-			{
-				toplesets[u] = toplesets[v] + 1;
-				sorted[p++] = u;
-			}
-		}
-	}
-
-	assert(p <= n_vertices);
-	limits.push_back(p);
 }
 
 

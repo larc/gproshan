@@ -15,8 +15,9 @@ class partitions
 {
 	struct part;
 
-	std::vector<index_t> splits;
-	index_t * sorted = nullptr;
+	public:
+		std::vector<index_t> splits;
+		index_t * sorted = nullptr;
 
 	public:
 		partitions(index_t * s = nullptr);

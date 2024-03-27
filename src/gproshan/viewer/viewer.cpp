@@ -68,13 +68,13 @@ viewer::viewer(const char * title, const int width, const int height)
 	window_width = width;
 	window_height = height;
 
-	init_gl(title);
+	if(!init_gl(title)) return;
+
 	init_glsl();
 	init_imgui();
 	init_menus();
 
 	info_gl();
-	gproshan_log_var(sizeof(float));
 
 	sphere_data.update_normals();
 	sphere = new che_viewer(&sphere_data);;
@@ -89,12 +89,15 @@ viewer::~viewer()
 	update_status_message("frametime_%p", this);
 	save_frametime(tmp_file_path(status_message));
 
-	ImGui_ImplOpenGL3_Shutdown();
-	ImGui_ImplGlfw_Shutdown();
-	ImGui::DestroyContext();
+	if(window)
+	{
+		ImGui_ImplOpenGL3_Shutdown();
+		ImGui_ImplGlfw_Shutdown();
+		ImGui::DestroyContext();
 
-	glfwDestroyWindow(window);
-	glfwTerminate();
+		glfwDestroyWindow(window);
+		glfwTerminate();
+	}
 
 	delete sphere;
 
@@ -399,7 +402,7 @@ void error_callback(int error, const char* description)
 	fprintf(stderr, "Error %d: %s\n", error, description);
 }
 
-void viewer::init_gl(const char * title)
+bool viewer::init_gl(const char * title)
 {
 	glfwSetErrorCallback(error_callback);
 
@@ -415,6 +418,8 @@ void viewer::init_gl(const char * title)
 	gproshan_log_var(window_width);
 	gproshan_log_var(window_height);
 	window = glfwCreateWindow(window_width, window_height, title, NULL, NULL);
+
+	if(!window) return false;
 
 	glfwSetWindowUserPointer(window, this);
 
@@ -434,6 +439,8 @@ void viewer::init_gl(const char * title)
 	glEnable(GL_BLEND);
 	glEnable(GL_PROGRAM_POINT_SIZE);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	return true;
 }
 
 void viewer::init_imgui()

@@ -22,23 +22,23 @@ class geodesics
 	using fm_function_t = std::function<bool (const index_t)>;
 
 	public:
-		enum algorithm {	FM,				///< Execute Fast Marching algorithm
-							PTP_CPU,		///< Execute Parallel Toplesets Propagation CPU algorithm
-							HEAT_METHOD,	///< Execute Heat Method - cholmod (CPU)
+		enum algorithm {	FM,					///< Execute Fast Marching algorithm
+							PTP_CPU,			///< Execute Parallel Toplesets Propagation CPU algorithm
+							HEAT_METHOD,		///< Execute Heat Method - cholmod (CPU)
 						#ifdef GPROSHAN_CUDA
-							PTP_GPU,		///< Execute Parallel Toplesets Propagation GPU algorithm
-							HEAT_METHOD_GPU	///< Execute Heat Method - cusparse (GPU)
+							PTP_GPU,			///< Execute Parallel Toplesets Propagation GPU algorithm
+							HEAT_METHOD_GPU		///< Execute Heat Method - cusparse (GPU)
 						#endif // GPROSHAN_CUDA
 						};
 
 		struct params
 		{
-			algorithm alg		= FM;					///< specific the algorithm to execute.
-			size_t n_iter		= 0;					///< maximum number of iterations.
-			float radio		= INFINITY;				///< execute until the specific radio.
-			float * dist_alloc	= nullptr;				///< external dist allocation
-			bool cluster		= false;				///< to cluster vertices to closest source.
-			fm_function_t fun	= nullptr;				///< fun is executed inside FM loop
+			algorithm alg		= FM;				///< specific the algorithm to execute.
+			size_t n_iter		= 0;				///< maximum number of iterations.
+			float radio			= INFINITY;			///< execute until the specific radio.
+			float * dist_alloc	= nullptr;			///< external dist allocation
+			bool cluster		= false;			///< to cluster vertices to closest source.
+			fm_function_t fun	= nullptr;			///< fun is executed inside FM loop
 		};
 
 	public:
@@ -69,16 +69,8 @@ class geodesics
 		void normalize();
 
 	private:
-		void execute(che * mesh, const std::vector<index_t> & sources, const params & p);
-		void run_fastmarching(che * mesh, const std::vector<index_t> & sources, const size_t n_iter, const float radio, const fm_function_t & fun);
-		void run_parallel_toplesets_propagation_cpu(che * mesh, const std::vector<index_t> & sources);
-		void run_heat_method(che * mesh, const std::vector<index_t> & sources);
-
-#ifdef GPROSHAN_CUDA
-		void run_parallel_toplesets_propagation_gpu(che * mesh, const std::vector<index_t> & sources);
-		void run_heat_method_gpu(che * mesh, const std::vector<index_t> & sources);
-#endif // GPROSHAN_CUDA
-
+		double execute(che * mesh, const std::vector<index_t> & sources, const params & p);
+		double run_fastmarching(che * mesh, const std::vector<index_t> & sources, const size_t n_iter, const float radio, const fm_function_t & fun);
 };
 
 
