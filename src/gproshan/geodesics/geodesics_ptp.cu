@@ -15,27 +15,12 @@ namespace gproshan {
 double parallel_toplesets_propagation_gpu(	const ptp_out_t & ptp_out,
 											const che * mesh,
 											const std::vector<index_t> & sources,
-											const toplesets_t & toplesets,
+											const toplesets & tps,
 											const bool coalescence,
 											const bool set_inf,
 											const f_ptp<float> & fun
 											)
 {
-	const size_t n_vertices = mesh->n_vertices;
-
-	che * h_mesh = nullptr;
-	index_t * inv = nullptr;
-	if(coalescence)
-	{
-		h_mesh = new che(*mesh, toplesets.index, {false, false, false});
-		inv = new index_t[n_vertices];
-
-		#pragma omp parallel for
-		for(index_t i = 0; i < toplesets.limits.back(); ++i)
-			inv[toplesets.index[i]] = i;
-	}
-
-
 	cudaDeviceReset();
 
 	cudaEvent_t start, stop;
@@ -43,7 +28,11 @@ double parallel_toplesets_propagation_gpu(	const ptp_out_t & ptp_out,
 	cudaEventCreate(&stop);
 	cudaEventRecord(start, 0);
 
-	che_cuda d_mesh(h_mesh ? h_mesh : mesh, {false, false, false});
+
+	const size_t n_vertices = mesh->n_vertices;
+
+	coalescence_ptp inv(coalescence ? mesh : nullptr, tps);
+	che_cuda d_mesh(coalescence ? inv.mesh : mesh, {false, false, false});
 
 	float * h_dist = coalescence ? new float[n_vertices] : ptp_out.dist;
 	index_t * h_clusters = coalescence && ptp_out.clusters ? new index_t[n_vertices]
@@ -78,8 +67,8 @@ double parallel_toplesets_propagation_gpu(	const ptp_out_t & ptp_out,
 			h_dist[v] = INFINITY;
 	}
 
-	const index_t i = run_ptp(	d_mesh, sources, toplesets.limits, d_error, d_dist, d_clusters,
-								coalescence ? inv : toplesets.index, d_sorted,
+	const index_t i = run_ptp(	d_mesh, sources, tps.splits, d_error, d_dist, d_clusters,
+								coalescence ? inv : tps.sorted, d_sorted,
 								fun);
 
 	cudaMemcpy(h_dist, d_dist[i], sizeof(float) * n_vertices, cudaMemcpyDeviceToHost);
@@ -114,9 +103,6 @@ double parallel_toplesets_propagation_gpu(	const ptp_out_t & ptp_out,
 	cudaFree(d_clusters[1]);
 	cudaFree(d_sorted);
 
-	delete [] inv;
-	delete h_mesh;
-
 	cudaEventRecord(stop, 0);
 	cudaEventSynchronize(stop);
 
@@ -129,7 +115,7 @@ double parallel_toplesets_propagation_gpu(	const ptp_out_t & ptp_out,
 	return time / 1000;
 }
 
-float farthest_point_sampling_ptp_gpu(che * mesh, std::vector<index_t> & samples, double & time_fps, size_t n, float radio)
+double farthest_point_sampling_ptp_gpu(che * mesh, std::vector<index_t> & samples, size_t n, float radio)
 {
 	const size_t n_vertices = mesh->n_vertices;
 
@@ -199,12 +185,11 @@ float farthest_point_sampling_ptp_gpu(che * mesh, std::vector<index_t> & samples
 
 	float time;
 	cudaEventElapsedTime(&time, start, stop);
-	time_fps = time / 1000;
 
 	cudaEventDestroy(start);
 	cudaEventDestroy(stop);
 
-	return max_dist;
+	return time / 1000;
 }
 
 __global__

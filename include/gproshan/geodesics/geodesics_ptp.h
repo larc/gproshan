@@ -58,10 +58,16 @@ struct ptp_out_t
 	ptp_out_t(float *const d, index_t *const c = nullptr);
 };
 
-struct toplesets_t
+
+struct coalescence_ptp
 {
-	const std::vector<index_t> & limits;
-	const index_t * index;
+	che * mesh = nullptr;
+	index_t * inv = nullptr;
+
+	coalescence_ptp(const che * mesh, const toplesets & tps);
+	~coalescence_ptp();
+
+	operator const index_t * () const;
 };
 
 
@@ -72,23 +78,23 @@ using f_ptp = std::function<void(T *, index_t, index_t, index_t, index_t)>;
 double parallel_toplesets_propagation_gpu(	const ptp_out_t & ptp_out,
 											const che * mesh,
 											const std::vector<index_t> & sources,
-											const toplesets_t & toplesets,
+											const toplesets & tps,
 											const bool coalescence = true,
 											const bool set_inf = true,
 											const f_ptp<float> & fun = nullptr
 											);
 
-void parallel_toplesets_propagation_cpu(	const ptp_out_t & ptp_out,
+double parallel_toplesets_propagation_cpu(	const ptp_out_t & ptp_out,
 											const che * mesh,
 											const std::vector<index_t> & sources,
-											const toplesets_t & toplesets,
+											const toplesets & tps,
 											const bool coalescence = true,
 											const bool set_inf = true,
 											const f_ptp<float> & fun = nullptr
 											);
 
 
-float farthest_point_sampling_ptp_gpu(che * mesh, std::vector<index_t> & samples, double & time_fps, size_t n, float radio = 0);
+double farthest_point_sampling_ptp_gpu(che * mesh, std::vector<index_t> & samples, size_t n, float radio = 0);
 
 void normalize_ptp(float * dist, const size_t n);
 

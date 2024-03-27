@@ -12,28 +12,46 @@ namespace gproshan {
 ptp_out_t::ptp_out_t(float *const d, index_t *const c): dist(d), clusters(c) {}
 
 
-void parallel_toplesets_propagation_cpu(const ptp_out_t & ptp_out,
-										const che * mesh,
-										const std::vector<index_t> & sources,
-										const toplesets_t & toplesets,
-										const bool coalescence,
-										const bool set_inf,
-										const f_ptp<float> & fun
-										)
+coalescence_ptp::coalescence_ptp(const che * m, const toplesets & tps)
 {
+	if(!m) return;
+
+	mesh = new che(*m, tps.sorted, {false, false, false});
+	inv = new index_t[mesh->n_vertices];
+
+	#pragma omp parallel for
+	for(index_t i = 0; i < tps.splits.back(); ++i)
+		inv[tps.sorted[i]] = i;
+}
+
+coalescence_ptp::~coalescence_ptp()
+{
+	delete mesh;
+	delete [] inv;
+}
+
+coalescence_ptp::operator const index_t * () const
+{
+	return inv;
+}
+
+
+double parallel_toplesets_propagation_cpu(	const ptp_out_t & ptp_out,
+											const che * mesh,
+											const std::vector<index_t> & sources,
+											const toplesets & tps,
+											const bool coalescence,
+											const bool set_inf,
+											const f_ptp<float> & fun
+											)
+{
+	double time;
+	TIC(time);
+
+
 	const size_t n_vertices = mesh->n_vertices;
 
-	che * h_mesh = nullptr;
-	index_t * inv = nullptr;
-	if(coalescence)
-	{
-		h_mesh = new che(*mesh, toplesets.index, {false, false, false});
-		inv = new index_t[n_vertices];
-
-		#pragma omp parallel for
-		for(index_t i = 0; i < toplesets.limits.back(); ++i)
-			inv[toplesets.index[i]] = i;
-	}
+	coalescence_ptp inv(coalescence ? mesh : nullptr, tps);
 
 
 	float * dist[2] = {	coalescence ? new float[n_vertices] : ptp_out.dist,
@@ -50,9 +68,9 @@ void parallel_toplesets_propagation_cpu(const ptp_out_t & ptp_out,
 			dist[0][v] = dist[1][v] = INFINITY;
 	}
 
-	const index_t i = run_ptp(	h_mesh ? h_mesh : mesh, sources, toplesets.limits, dist, clusters,
-								coalescence ? inv : toplesets.index,
-								coalescence ? nullptr : (index_t *) toplesets.index,
+	const index_t i = run_ptp(	coalescence ? inv.mesh : mesh, sources, tps.splits, dist, clusters,
+								coalescence ? inv : tps.sorted,
+								coalescence ? nullptr : (index_t *) tps.sorted,
 								fun);
 
 	#pragma omp parallel for
@@ -71,8 +89,10 @@ void parallel_toplesets_propagation_cpu(const ptp_out_t & ptp_out,
 	delete [] dist[1];
 	delete [] clusters[1];
 
-	delete [] inv;
-	delete h_mesh;
+
+	TOC(time);
+
+	return time;
 }
 
 void normalize_ptp(float * dist, const size_t n)

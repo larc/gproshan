@@ -69,16 +69,8 @@ class geodesics
 		void normalize();
 
 	private:
-		void execute(che * mesh, const std::vector<index_t> & sources, const params & p);
-		void run_fastmarching(che * mesh, const std::vector<index_t> & sources, const size_t n_iter, const float radio, const fm_function_t & fun);
-		void run_parallel_toplesets_propagation_cpu(che * mesh, const std::vector<index_t> & sources);
-		void run_heat_method(che * mesh, const std::vector<index_t> & sources);
-
-#ifdef GPROSHAN_CUDA
-		void run_parallel_toplesets_propagation_gpu(che * mesh, const std::vector<index_t> & sources);
-		void run_heat_method_gpu(che * mesh, const std::vector<index_t> & sources);
-#endif // GPROSHAN_CUDA
-
+		double execute(che * mesh, const std::vector<index_t> & sources, const params & p);
+		double run_fastmarching(che * mesh, const std::vector<index_t> & sources, const size_t n_iter, const float radio, const fm_function_t & fun);
 };
 
 
