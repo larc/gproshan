@@ -12,6 +12,7 @@ namespace gproshan::rt {
 
 extern "C" __constant__ launch_params params;
 
+
 static __forceinline__ __device__
 void pack_pointer(void * ptr, uint32_t & i0, uint32_t & i1)
 {
@@ -20,12 +21,86 @@ void pack_pointer(void * ptr, uint32_t & i0, uint32_t & i1)
 	i1 = uptr & 0x00000000ffffffff;
 }
 
+static __forceinline__ __device__
+void * unpack_pointer(uint32_t i0, uint32_t i1)
+{
+	return (void *) (uint64_t(i0) << 32 | i1);
+}
+
+template<typename T>
+static __forceinline__ __device__
+T * ray_data()
+{
+	return (T *) unpack_pointer(optixGetPayload_0(), optixGetPayload_1());
+}
+
 
 extern "C" __global__ void __closesthit__shadow() {}
 
-extern "C" __global__ void __anyhit__radiance() {}
+extern "C" __global__ void __closesthit__radiance()
+{
+	const che & mesh = **(const che **) optixGetSbtDataPointer();
+
+	const int primID = optixGetPrimitiveIndex();
+	const float2 bar = optixGetTriangleBarycentrics();
+
+	OptixTraversableHandle gas = optixGetGASTraversableHandle();
+	const index_t sbtID = optixGetSbtGASIndex();
+	const float time = optixGetRayTime();
+
+	vertex data[3];
+	optixGetTriangleVertexData(gas, primID, sbtID, time, (float3 *) data);
+
+	const vertex & A = data[0];
+	const vertex & B = data[1];
+	const vertex & C = data[2];
+
+	eval_hit hit(mesh, primID, bar.x, bar.y, params.sc);
+	hit.normal = params.flat ? normalize(cross(B - A, C - A)) : hit.normal;
+	hit.position = (1.f - hit.u - hit.v) * A + hit.u * B + hit.v * C;
+
+	vec3 * trace = ray_data<vec3>();
+	vec3 & color		= trace[0];
+	vec3 & attenuation	= trace[1];
+	vec3 & position		= trace[2];
+	vec3 & ray_dir		= trace[3];
+
+	color = eval_li(hit, params.ambient, params.lights, params.n_lights, params.cam_pos,
+					[&](const vec3 & position, const vec3 & wi, const float light_dist) -> bool
+					{
+						uint32_t occluded = 1;
+						optixTrace( params.traversable,
+									* (float3 *) &position,
+									* (float3 *) &wi,
+									1e-3f,					// tmin
+									light_dist - 1e-3f,		// tmax
+									0.0f,					// rayTime
+									OptixVisibilityMask(255),
+										OPTIX_RAY_FLAG_DISABLE_ANYHIT
+										| OPTIX_RAY_FLAG_DISABLE_CLOSESTHIT
+										| OPTIX_RAY_FLAG_TERMINATE_ON_FIRST_HIT,
+										1,	// SBT offset
+										2,	// SBT stride
+										1,	// missSBTIndex
+										occluded);
+
+							return occluded != 0;
+						});
+
+	random<float> rnd = optixGetPayload_2();
+	color *= attenuation;
+	position = hit.position;
+
+	if(!hit.scatter_mat(ray_dir, rnd))
+		attenuation = 0;
+
+	attenuation /= 2;
+	optixSetPayload_2(rnd);
+}
 
 extern "C" __global__ void __anyhit__shadow() {}
+
+extern "C" __global__ void __anyhit__radiance() {}
 
 extern "C" __global__ void __miss__radiance()
 {

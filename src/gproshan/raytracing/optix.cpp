@@ -44,7 +44,6 @@ optix::optix(const std::string & ptx)
 {
 	optixInit();
 
-	// create context
 	cudaStreamCreate(&stream);
 
 	cuCtxGetCurrent(&cuda_context);
@@ -52,14 +51,8 @@ optix::optix(const std::string & ptx)
 	optixDeviceContextCreate(cuda_context, 0, &_context);
 	optixDeviceContextSetLogCallback(_context, optix_log, nullptr, 4);
 
-	// create module
-
-	//_module_compile_opt.maxRegisterCount	= 50;
-	_module_compile_opt.optLevel			= OPTIX_COMPILE_OPTIMIZATION_DEFAULT;
-	_module_compile_opt.debugLevel			= OPTIX_COMPILE_DEBUG_LEVEL_NONE;
-
 	_pipeline_compile_opt							= {};
-	_pipeline_compile_opt.traversableGraphFlags	= OPTIX_TRAVERSABLE_GRAPH_FLAG_ALLOW_SINGLE_GAS;
+	_pipeline_compile_opt.traversableGraphFlags		= OPTIX_TRAVERSABLE_GRAPH_FLAG_ALLOW_SINGLE_GAS;
 	_pipeline_compile_opt.usesMotionBlur			= false;
 	_pipeline_compile_opt.numPayloadValues			= 4;
 	_pipeline_compile_opt.numAttributeValues		= 4;
@@ -78,28 +71,21 @@ optix::optix(const std::string & ptx)
 						str_ptx_code.c_str(),
 						size(str_ptx_code),
 						nullptr, nullptr,	// log message
-						&_module_raygen
+						&_module
 						);
 
-
-	// create programs
 	create_raygen_programs();
 	create_miss_programs();
 	create_hitgroup_programs();
 
-	// create pipeline
 	create_pipeline();
 
-	// launch params
 	cudaMalloc(&params_buffer, sizeof(launch_params));
 }
 
 optix::optix(const std::vector<const che *> & meshes, const std::vector<mat4> & model_mats): optix()
 {
-	// build as
 	params.traversable = build_as(meshes, model_mats);
-
-	// build sbt
 	build_sbt();
 }
 
@@ -123,25 +109,25 @@ optix::~optix()
 		cudaFree(data);
 }
 
-void optix::render(vec4 * img, const render_params & p, const bool flat)
+void optix::render(vec4 * img, const render_params & rp, const bool flat)
 {
-	params.depth = p.depth;
-	params.n_frames = p.n_frames;
-	params.n_samples = p.n_samples;
+	params.depth = rp.depth;
+	params.n_frames = rp.n_frames;
+	params.n_samples = rp.n_samples;
 	params.color_buffer = img;
 
-	params.window_size = p.window_size;
-	if(p.viewport_is_window)
-		params.window_size = p.viewport_size;
+	params.window_size = rp.window_size;
+	if(rp.viewport_is_window)
+		params.window_size = rp.viewport_size;
 
-	params.viewport_pos = p.viewport_pos;
+	params.viewport_pos = rp.viewport_pos;
 
 	params.flat = flat;
-	params.cam_pos = p.cam_pos;
-	params.inv_proj_view = p.inv_proj_view;
-	params.ambient = p.ambient;
-	params.n_lights = p.n_lights;
-	memcpy(params.lights, p.lights, sizeof(params.lights));
+	params.cam_pos = rp.cam_pos;
+	params.inv_proj_view = rp.inv_proj_view;
+	params.ambient = rp.ambient;
+	params.n_lights = rp.n_lights;
+	memcpy(params.lights, rp.lights, sizeof(params.lights));
 
 	cudaMemcpy(params_buffer, &params, sizeof(launch_params), cudaMemcpyHostToDevice);
 
@@ -150,8 +136,8 @@ void optix::render(vec4 * img, const render_params & p, const bool flat)
 				(CUdeviceptr) params_buffer,
 				sizeof(launch_params),
 				&sbt,
-				p.viewport_size.x(),
-				p.viewport_size.y(),
+				rp.viewport_size.x(),
+				rp.viewport_size.y(),
 				1
 				);
 
@@ -166,7 +152,7 @@ void optix::create_raygen_programs()
 	OptixProgramGroupOptions pg_options	= {};
 	OptixProgramGroupDesc pg_desc		= {};
 	pg_desc.kind						= OPTIX_PROGRAM_GROUP_KIND_RAYGEN;
-	pg_desc.raygen.module				= _module_raygen;
+	pg_desc.raygen.module				= _module;
 	pg_desc.raygen.entryFunctionName	= "__raygen__render_frame";
 
 	optixProgramGroupCreate(_context,
@@ -188,7 +174,7 @@ void optix::create_miss_programs()
 	OptixProgramGroupOptions pg_options	= {};
 	OptixProgramGroupDesc pg_desc		= {};
 	pg_desc.kind						= OPTIX_PROGRAM_GROUP_KIND_MISS;
-	pg_desc.miss.module					= _module_radiance;
+	pg_desc.miss.module					= _module;
 
 
 	pg_desc.miss.entryFunctionName = "__miss__radiance";
@@ -225,8 +211,8 @@ void optix::create_hitgroup_programs()
 	OptixProgramGroupOptions pg_options	= {};
 	OptixProgramGroupDesc pg_desc		= {};
 	pg_desc.kind						= OPTIX_PROGRAM_GROUP_KIND_HITGROUP;
-	pg_desc.hitgroup.moduleCH			= _module_radiance;
-	pg_desc.hitgroup.moduleAH			= _module_radiance;
+	pg_desc.hitgroup.moduleCH			= _module;
+	pg_desc.hitgroup.moduleAH			= _module;
 
 
 	pg_desc.hitgroup.entryFunctionNameCH = "__closesthit__radiance";
@@ -340,10 +326,9 @@ OptixTraversableHandle optix::build_as(const std::vector<const che *> & meshes, 
 	for(index_t i = 0; i < size(meshes); ++i)
 		add_mesh(_meshes[i], _vertex_ptr[i], _trig_flags[i], meshes[i], model_mats[i]);
 
-	OptixAccelBuildOptions _accel_opt	=	{};
-	_accel_opt.buildFlags 				=	OPTIX_BUILD_FLAG_ALLOW_RANDOM_VERTEX_ACCESS |
-												OPTIX_BUILD_FLAG_ALLOW_COMPACTION;
-	_accel_opt.operation				=	OPTIX_BUILD_OPERATION_BUILD;
+	OptixAccelBuildOptions _accel_opt	= {};
+	_accel_opt.buildFlags 				= OPTIX_BUILD_FLAG_ALLOW_COMPACTION;
+	_accel_opt.operation				= OPTIX_BUILD_OPERATION_BUILD;
 
 	OptixAccelBufferSizes _gas_buffer_size;
 	optixAccelComputeMemoryUsage(	_context,
@@ -420,25 +405,25 @@ void optix::add_mesh(OptixBuildInput & _mesh, CUdeviceptr & d_vertex_ptr, uint32
 	_mesh = {};
 	_mesh.type = OPTIX_BUILD_INPUT_TYPE_TRIANGLES;
 
-	_mesh.triangleArray.vertexFormat			= OPTIX_VERTEX_FORMAT_FLOAT3;
+	_mesh.triangleArray.vertexFormat		= OPTIX_VERTEX_FORMAT_FLOAT3;
 	_mesh.triangleArray.vertexStrideInBytes	= 3 * sizeof(float);
 	_mesh.triangleArray.numVertices			= d_m->n_vertices;
-	_mesh.triangleArray.vertexBuffers			= &d_vertex_ptr;
+	_mesh.triangleArray.vertexBuffers		= &d_vertex_ptr;
 
 	_mesh.triangleArray.indexFormat			= OPTIX_INDICES_FORMAT_UNSIGNED_INT3;
-	_mesh.triangleArray.indexStrideInBytes		= 3 * sizeof(index_t);
-	_mesh.triangleArray.numIndexTriplets		= d_m->n_trigs;
+	_mesh.triangleArray.indexStrideInBytes	= 3 * sizeof(index_t);
+	_mesh.triangleArray.numIndexTriplets	= d_m->n_trigs;
 	_mesh.triangleArray.indexBuffer			= (CUdeviceptr) d_m->trigs_ptr();
 
 	_mesh.triangleArray.transformFormat		= OPTIX_TRANSFORM_FORMAT_MATRIX_FLOAT12;
-	_mesh.triangleArray.preTransform			= (CUdeviceptr) d_model_mat;
+	_mesh.triangleArray.preTransform		= (CUdeviceptr) d_model_mat;
 
 	_trig_flags = 0;
 
-	_mesh.triangleArray.flags							= &_trig_flags;
-	_mesh.triangleArray.numSbtRecords					= 1;
-	_mesh.triangleArray.sbtIndexOffsetBuffer			= 0;
-	_mesh.triangleArray.sbtIndexOffsetSizeInBytes		= 0;
+	_mesh.triangleArray.flags						= &_trig_flags;
+	_mesh.triangleArray.numSbtRecords				= 1;
+	_mesh.triangleArray.sbtIndexOffsetBuffer		= 0;
+	_mesh.triangleArray.sbtIndexOffsetSizeInBytes	= 0;
 	_mesh.triangleArray.sbtIndexOffsetStrideInBytes	= 0;
 
 	if(mesh->is_scene())

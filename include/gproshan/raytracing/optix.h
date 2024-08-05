@@ -26,8 +26,7 @@ class optix : public raytracing
 
 		OptixDeviceContext _context;
 
-		OptixModule _module_raygen;
-		OptixModule _module_radiance;
+		OptixModule _module;
 		OptixModuleCompileOptions _module_compile_opt = {};
 
 		OptixPipeline _pipeline;
