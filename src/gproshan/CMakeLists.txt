@@ -18,7 +18,7 @@ target_link_libraries(gproshan imgui)
 
 if(CUDAToolkit_FOUND)
 	FILE(GLOB_RECURSE cu_sources ${CMAKE_CURRENT_SOURCE_DIR}/*.cu)
-	list(REMOVE_ITEM cu_sources ${CMAKE_CURRENT_SOURCE_DIR}/raytracing/optix.cu)
+	list(FILTER cu_sources EXCLUDE REGEX ${CMAKE_CURRENT_SOURCE_DIR}/raytracing/.*.cu)
 
 	add_library(gproshan_cuda SHARED ${cu_sources})
 

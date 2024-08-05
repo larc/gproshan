@@ -24,14 +24,15 @@ class optix : public raytracing
 		CUcontext cuda_context;
 		CUstream stream;
 
-		OptixDeviceContext optix_context;
+		OptixDeviceContext _context;
 
-		OptixModule optix_module;
-		OptixModuleCompileOptions optix_module_compile_opt = {};
+		OptixModule _module_raygen;
+		OptixModule _module_radiance;
+		OptixModuleCompileOptions _module_compile_opt = {};
 
-		OptixPipeline optix_pipeline;
-		OptixPipelineCompileOptions optix_pipeline_compile_opt = {};
-		OptixPipelineLinkOptions optix_pipeline_link_opt = {};
+		OptixPipeline _pipeline;
+		OptixPipelineCompileOptions _pipeline_compile_opt = {};
+		OptixPipelineLinkOptions _pipeline_link_opt = {};
 
 		OptixProgramGroup raygen_programs[1];
 		OptixProgramGroup miss_programs[2];
@@ -39,8 +40,8 @@ class optix : public raytracing
 
 		OptixShaderBindingTable sbt = {};
 
-		launch_params optix_params;
-		launch_params * optix_params_buffer = nullptr;
+		launch_params params;
+		launch_params * params_buffer = nullptr;
 
 		std::vector<che *> d_mesh;
 
@@ -65,7 +66,7 @@ class optix : public raytracing
 		void create_pipeline();
 		void build_sbt();
 		OptixTraversableHandle build_as(const std::vector<const che *> & meshes, const std::vector<mat4> & model_mats);
-		void add_mesh(OptixBuildInput & optix_mesh, CUdeviceptr & d_vertex_ptr, uint32_t & optix_trig_flags, const che * mesh, const mat4 & model_mat);
+		void add_mesh(OptixBuildInput & _mesh, CUdeviceptr & d_vertex_ptr, uint32_t & _trig_flags, const che * mesh, const mat4 & model_mat);
 };
 
 
