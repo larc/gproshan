@@ -80,7 +80,7 @@ optix::optix(const std::string & ptx)
 
 	create_pipeline();
 
-	cudaMalloc(&params_buffer, sizeof(launch_params));
+	cudaMalloc(&params_buffer, sizeof(optix_params));
 }
 
 optix::optix(const std::vector<const che *> & meshes, const std::vector<mat4> & model_mats): optix()
@@ -129,12 +129,12 @@ void optix::render(vec4 * img, const render_params & rp, const bool flat)
 	params.n_lights = rp.n_lights;
 	memcpy(params.lights, rp.lights, sizeof(params.lights));
 
-	cudaMemcpy(params_buffer, &params, sizeof(launch_params), cudaMemcpyHostToDevice);
+	cudaMemcpy(params_buffer, &params, sizeof(optix_params), cudaMemcpyHostToDevice);
 
 	optixLaunch(_pipeline,
 				stream,
 				(CUdeviceptr) params_buffer,
-				sizeof(launch_params),
+				sizeof(optix_params),
 				&sbt,
 				rp.viewport_size.x(),
 				rp.viewport_size.y(),
@@ -327,7 +327,8 @@ OptixTraversableHandle optix::build_as(const std::vector<const che *> & meshes, 
 		add_mesh(_meshes[i], _vertex_ptr[i], _trig_flags[i], meshes[i], model_mats[i]);
 
 	OptixAccelBuildOptions _accel_opt	= {};
-	_accel_opt.buildFlags 				= OPTIX_BUILD_FLAG_ALLOW_COMPACTION;
+	_accel_opt.buildFlags 				= OPTIX_BUILD_FLAG_ALLOW_RANDOM_VERTEX_ACCESS |
+											OPTIX_BUILD_FLAG_ALLOW_COMPACTION;
 	_accel_opt.operation				= OPTIX_BUILD_OPERATION_BUILD;
 
 	OptixAccelBufferSizes _gas_buffer_size;

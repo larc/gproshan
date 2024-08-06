@@ -39,8 +39,8 @@ class optix : public raytracing
 
 		OptixShaderBindingTable sbt = {};
 
-		launch_params params;
-		launch_params * params_buffer = nullptr;
+		optix_params params;
+		optix_params * params_buffer = nullptr;
 
 		std::vector<che *> d_mesh;
 

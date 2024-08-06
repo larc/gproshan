@@ -10,7 +10,7 @@
 namespace gproshan::rt {
 
 
-extern "C" __constant__ launch_params params;
+extern "C" __constant__ optix_params params;
 
 
 static __forceinline__ __device__
