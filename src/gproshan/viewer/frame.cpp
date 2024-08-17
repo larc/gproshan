@@ -44,6 +44,16 @@ frame::frame()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glBindTexture(GL_TEXTURE_2D, 0);
+
+#ifdef GPROSHAN_CUDA
+	int current_device, is_display_device;
+	cudaGetDevice(&current_device);
+	cudaDeviceGetAttribute(&is_display_device, cudaDevAttrKernelExecTimeout, current_device);
+	if(!is_display_device )
+	{
+		gproshan_error("DEVICE IS NOT DISPLAY DEVICE");
+	}
+#endif //GPROSHAN_CUDA
 }
 
 frame::~frame()

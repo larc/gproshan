@@ -53,7 +53,7 @@ __host_device__
 vec<T, 3> texture(const scene::texture & tex, const vec<T, 2> & coord)
 {
 	const int i = (tex.width + int(coord.x() * (tex.width - 1))) % tex.width;
-	const int j = (tex.height + int(coord.y() * (tex.height -1))) % tex.height;
+	const int j = (tex.height + int(coord.y() * (tex.height - 1))) % tex.height;
 	const int k = j * tex.width + i;
 
 	che::rgb_t color;
@@ -67,7 +67,7 @@ vec<T, 3> texture(const scene::texture & tex, const vec<T, 2> & coord)
 		color.r = color.g = color.b = tex.data[k];
 	}
 
-	return {T(color.r) / 255, T(color.g) / 255, T(color.b) / 255};
+	return {T(color.r) / 255.f, T(color.g) / 255.f, T(color.b) / 255.f};
 }
 
 template <class T>
@@ -163,7 +163,7 @@ struct t_eval_hit
 	__host_device__
 	bool scatter_reflect(vec<T, 3> & dir, random<T> & )
 	{
-		dir = normalize(dir - 2 * dot(dir, normal) * normal);
+		dir = normalize(dir - 2.f * dot(dir, normal) * normal);
 		return dot(dir, normal) > 0;
 	}
 
@@ -171,7 +171,7 @@ struct t_eval_hit
 	bool scatter_refract(vec<T, 3> & dir, random<T> & )
 	{
 		const float dvn = dot(dir, normal);
-		const float d = 1 - Ni * Ni * (1 - dvn * dvn);
+		const float d = 1.f - Ni * Ni * (1.f - dvn * dvn);
 
 		if(d <= 0) return false;
 
@@ -183,8 +183,8 @@ struct t_eval_hit
 	bool scatter_diffuse(vec<T, 3> & dir, random<T> & rnd)
 	{
 		// random unit sphere
-		const T theta = rnd() * 2 * M_PI;
-		const T phi = acosf(2 * rnd() - 1);
+		const T theta = rnd() * 2.f * M_PI;
+		const T phi = acosf(2.f * rnd() - 1.f);
 		const T r = cbrtf(rnd());
 
 		const vec<T, 3> p = { r * sinf(phi) * cosf(theta)
@@ -252,7 +252,7 @@ vec<T, 3> ray_view_dir(	const uvec2 & pos,
 	vec2 screen = {	(float(pos.x()) + rnd()) / windows_size.x(),
 					(float(pos.y()) + rnd()) / windows_size.y()
 					};
-	vec<T, 4> view = {screen.x() * 2 - 1, screen.y() * 2 - 1, 1, 1};
+	vec<T, 4> view = {screen.x() * 2.f - 1.f, screen.y() * 2.f - 1.f, 1.f, 1.f};
 	vec<T, 4> q = inv_proj_view * view;
 	vec<T, 3> p = q / q[3];
 
