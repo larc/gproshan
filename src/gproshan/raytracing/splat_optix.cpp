@@ -15,7 +15,7 @@ splat_optix::splat_optix(const std::vector<che *> & meshes, const std::vector<ma
 	for(che * pc: pointclouds)
 		pcs.push_back(pc);
 
-	optix_params.traversable = build_as(pcs, {mat4::identity()});
+	params.traversable = build_as(pcs, {mat4::identity()});
 	build_sbt();
 
 	d_splats_pcs.resize(size(splats_pcs));
@@ -42,7 +42,7 @@ splat_optix::splat_optix(const std::vector<che *> & meshes, const std::vector<ma
 	cudaMalloc(&dd_splats_pcs, sizeof(splats_data) * size(splats_pcs));
 	cudaMemcpy(dd_splats_pcs, d_splats_pcs.data(), sizeof(splats_data) * size(splats_pcs), cudaMemcpyHostToDevice);
 
-	optix_params.other = dd_splats_pcs;
+	params.other = dd_splats_pcs;
 }
 
 

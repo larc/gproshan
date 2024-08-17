@@ -92,6 +92,13 @@ viewer::~viewer()
 	update_status_message("frametime_%p", this);
 	save_frametime(tmp_file_path(status_message));
 
+	delete sphere;
+
+	delete [] frames;
+
+	for(che_viewer * m: meshes)
+		delete m;
+
 	if(window)
 	{
 		ImGui_ImplOpenGL3_Shutdown();
@@ -101,13 +108,6 @@ viewer::~viewer()
 		glfwDestroyWindow(window);
 		glfwTerminate();
 	}
-
-	delete sphere;
-
-	delete [] frames;
-
-	for(che_viewer * m: meshes)
-		delete m;
 }
 
 bool viewer::run()

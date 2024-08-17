@@ -17,7 +17,7 @@
 namespace gproshan::rt {
 
 
-struct launch_params: public base_params
+struct optix_params: public base_params
 {
 	OptixTraversableHandle traversable;
 

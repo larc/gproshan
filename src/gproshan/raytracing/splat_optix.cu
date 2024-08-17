@@ -10,7 +10,7 @@
 namespace gproshan::rt {
 
 
-extern "C" __constant__ launch_params optix_params;
+extern "C" __constant__ optix_params params;
 
 static __forceinline__ __device__
 void * unpack_pointer(uint32_t i0, uint32_t i1)
@@ -54,7 +54,7 @@ extern "C" __global__ void __closesthit__radiance()
 	const vertex & B = data[1];
 	const vertex & C = data[2];
 
-	splats_data * splats_pcs = (splats_data *) optix_params.other;
+	splats_data * splats_pcs = (splats_data *) params.other;
 
 	const float3 o = optixGetWorldRayOrigin();
 	const float3 d = optixGetWorldRayDirection();
@@ -74,11 +74,11 @@ extern "C" __global__ void __closesthit__radiance()
 	vec3 & position		= trace[2];
 	vec3 & ray_dir		= trace[3];
 
-	color = eval_li(hit, optix_params.ambient, optix_params.lights, optix_params.n_lights, optix_params.cam_pos,
+	color = eval_li(hit, params.ambient, params.lights, params.n_lights, params.cam_pos,
 					[&](const vec3 & position, const vec3 & wi, const float light_dist) -> bool
 					{
 						uint32_t occluded = 1;
-						optixTrace( optix_params.traversable,
+						optixTrace( params.traversable,
 									* (float3 *) &(dot(position - x, dir) < 0 ? position : x),
 									* (float3 *) &wi,
 									1e-3f,					// tmin
@@ -136,12 +136,12 @@ extern "C" __global__ void __raygen__render_frame()
 						optixGetLaunchIndex().y
 						};
 
-	const uvec2 & pos = id + optix_params.viewport_pos;
+	const uvec2 & pos = id + params.viewport_pos;
 
-	random<float> rnd(pos.x() + optix_params.window_size.x() * pos.y(), optix_params.n_frames);
+	random<float> rnd(pos.x() + params.window_size.x() * pos.y(), params.n_frames);
 
-	unsigned int depth = optix_params.depth;
-	unsigned int samples = optix_params.n_samples;
+	unsigned int depth = params.depth;
+	unsigned int samples = params.n_samples;
 
 	vec3 color_acc = 0;
 
@@ -158,16 +158,16 @@ extern "C" __global__ void __raygen__render_frame()
 	{
 		color		= 0;
 		attenuation = 1;
-		position	= optix_params.cam_pos;
-		ray_dir		= ray_view_dir(pos, optix_params.window_size, optix_params.inv_proj_view, optix_params.cam_pos, rnd);
+		position	= params.cam_pos;
+		ray_dir		= ray_view_dir(pos, params.window_size, params.inv_proj_view, params.cam_pos, rnd);
 
 		dist = 0;
 
-		depth = optix_params.depth;
+		depth = params.depth;
 		do
 		{
 			pack_pointer(trace, u0, u1);
-			optixTrace(	optix_params.traversable,
+			optixTrace(	params.traversable,
 						* (float3 *) &position,
 						* (float3 *) &ray_dir,
 						1e-5f,	// tmin
@@ -187,10 +187,10 @@ extern "C" __global__ void __raygen__render_frame()
 	}
 	while(--samples);
 
-	color_acc /= optix_params.n_samples;
+	color_acc /= params.n_samples;
 
-	vec4 & pixel_color = optix_params.color_buffer[id.x() + id.y() * optixGetLaunchDimensions().x];
-	pixel_color = (pixel_color * optix_params.n_frames + (color_acc, 1)) / (optix_params.n_frames + 1);
+	vec4 & pixel_color = params.color_buffer[id.x() + id.y() * optixGetLaunchDimensions().x];
+	pixel_color = (pixel_color * params.n_frames + (color_acc, 1)) / (params.n_frames + 1);
 }
 
 

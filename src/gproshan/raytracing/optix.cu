@@ -10,13 +10,8 @@
 namespace gproshan::rt {
 
 
-extern "C" __constant__ launch_params optix_params;
+extern "C" __constant__ optix_params params;
 
-static __forceinline__ __device__
-void * unpack_pointer(uint32_t i0, uint32_t i1)
-{
-	return (void *) (uint64_t(i0) << 32 | i1);
-}
 
 static __forceinline__ __device__
 void pack_pointer(void * ptr, uint32_t & i0, uint32_t & i1)
@@ -24,6 +19,12 @@ void pack_pointer(void * ptr, uint32_t & i0, uint32_t & i1)
 	const uint64_t uptr = uint64_t(ptr);
 	i0 = uptr >> 32;
 	i1 = uptr & 0x00000000ffffffff;
+}
+
+static __forceinline__ __device__
+void * unpack_pointer(uint32_t i0, uint32_t i1)
+{
+	return (void *) (uint64_t(i0) << 32 | i1);
 }
 
 template<typename T>
@@ -54,8 +55,8 @@ extern "C" __global__ void __closesthit__radiance()
 	const vertex & B = data[1];
 	const vertex & C = data[2];
 
-	eval_hit hit(mesh, primID, bar.x, bar.y, optix_params.sc);
-	hit.normal = optix_params.flat ? normalize(cross(B - A, C - A)) : hit.normal;
+	eval_hit hit(mesh, primID, bar.x, bar.y, params.sc);
+	hit.normal = params.flat ? normalize(cross(B - A, C - A)) : hit.normal;
 	hit.position = (1.f - hit.u - hit.v) * A + hit.u * B + hit.v * C;
 
 	vec3 * trace = ray_data<vec3>();
@@ -64,11 +65,11 @@ extern "C" __global__ void __closesthit__radiance()
 	vec3 & position		= trace[2];
 	vec3 & ray_dir		= trace[3];
 
-	color = eval_li(hit, optix_params.ambient, optix_params.lights, optix_params.n_lights, optix_params.cam_pos,
+	color = eval_li(hit, params.ambient, params.lights, params.n_lights, params.cam_pos,
 					[&](const vec3 & position, const vec3 & wi, const float light_dist) -> bool
 					{
 						uint32_t occluded = 1;
-						optixTrace( optix_params.traversable,
+						optixTrace( params.traversable,
 									* (float3 *) &position,
 									* (float3 *) &wi,
 									1e-3f,					// tmin
@@ -97,11 +98,9 @@ extern "C" __global__ void __closesthit__radiance()
 	optixSetPayload_2(rnd);
 }
 
-
-extern "C" __global__ void __anyhit__radiance() {}
-
 extern "C" __global__ void __anyhit__shadow() {}
 
+extern "C" __global__ void __anyhit__radiance() {}
 
 extern "C" __global__ void __miss__radiance()
 {
@@ -120,12 +119,12 @@ extern "C" __global__ void __raygen__render_frame()
 						optixGetLaunchIndex().y
 						};
 
-	const uvec2 & pos = id + optix_params.viewport_pos;
+	const uvec2 & pos = id + params.viewport_pos;
 
-	random<float> rnd(pos.x() + optix_params.window_size.x() * pos.y(), optix_params.n_frames);
+	random<float> rnd(pos.x() + params.window_size.x() * pos.y(), params.n_frames);
 
-	unsigned int depth = optix_params.depth;
-	unsigned int samples = optix_params.n_samples;
+	unsigned int depth = params.depth;
+	unsigned int samples = params.n_samples;
 
 	vec3 color_acc = 0;
 
@@ -142,16 +141,16 @@ extern "C" __global__ void __raygen__render_frame()
 	{
 		color		= 0;
 		attenuation = 1;
-		position	= optix_params.cam_pos;
-		ray_dir		= ray_view_dir(pos, optix_params.window_size, optix_params.inv_proj_view, optix_params.cam_pos, rnd);
+		position	= params.cam_pos;
+		ray_dir		= ray_view_dir(pos, params.window_size, params.inv_proj_view, params.cam_pos, rnd);
 
 		dist = 0;
 
-		depth = optix_params.depth;
+		depth = params.depth;
 		do
 		{
 			pack_pointer(trace, u0, u1);
-			optixTrace(	optix_params.traversable,
+			optixTrace(	params.traversable,
 						* (float3 *) &position,
 						* (float3 *) &ray_dir,
 						1e-5f,	// tmin
@@ -171,10 +170,10 @@ extern "C" __global__ void __raygen__render_frame()
 	}
 	while(--samples);
 
-	color_acc /= optix_params.n_samples;
+	color_acc /= params.n_samples;
 
-	vec4 & pixel_color = optix_params.color_buffer[id.x() + id.y() * optixGetLaunchDimensions().x];
-	pixel_color = (pixel_color * optix_params.n_frames + (color_acc, 1)) / (optix_params.n_frames + 1);
+	vec4 & pixel_color = params.color_buffer[id.x() + id.y() * optixGetLaunchDimensions().x];
+	pixel_color = (pixel_color * params.n_frames + (color_acc, 1)) / (params.n_frames + 1);
 }
 
 
