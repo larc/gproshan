@@ -4,9 +4,6 @@ on: [push]
 
 env:
   CUDA_BIN: /usr/local/cuda/bin
-  CC: gcc-12
-  CXX: g++-12
-  CUDAHOSTCXX: g++-12
 
 jobs:
   build:
@@ -16,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-22.04]
+        os: [ubuntu-24.04]
         config: [Release, Debug]
         cuda: [cuda, '']
 
@@ -25,34 +22,24 @@ jobs:
 
     - name: Install Dependencies
       run: |
-        sudo apt remove --purge cmake
-        sudo snap install cmake --classic
         sudo apt update
         sudo apt install \
                           libarmadillo-dev \
-                          libeigen3-dev \
                           libsuitesparse-dev \
                           libopenblas-dev \
                           libglew-dev \
                           libglfw3-dev \
+                          libflann-dev \
                           cimg-dev \
-                          g++-12 \
                           wget
-        wget http://mirrors.kernel.org/ubuntu/pool/universe/f/flann/libflann-dev_1.9.2+dfsg-1_amd64.deb
-        wget http://mirrors.kernel.org/ubuntu/pool/universe/f/flann/libflann1.9_1.9.2+dfsg-1_amd64.deb
-        sudo dpkg -i libflann1.9_1.9.2+dfsg-1_amd64.deb || sudo apt install -f
-        sudo dpkg -i libflann-dev_1.9.2+dfsg-1_amd64.deb || sudo apt install -f
-        
 
     - name: Install Cuda
       if: matrix.cuda == 'cuda'
       run: |
-        wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-ubuntu2004.pin
-        sudo mv cuda-ubuntu2004.pin /etc/apt/preferences.d/cuda-repository-pin-600
-        sudo apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/3bf863cc.pub
-        sudo add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/ /"
-        sudo apt-get update
-        sudo apt-get -y install cuda
+        wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/cuda-keyring_1.1-1_all.deb
+        sudo dpkg -i cuda-keyring_1.1-1_all.deb
+        sudo apt update
+        sudo apt install -y cuda-toolkit
 
     - name: Install Embree
       working-directory: /opt
