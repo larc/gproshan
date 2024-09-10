@@ -89,7 +89,6 @@ viewer::viewer(const char * title, const int width, const int height)
 
 viewer::~viewer()
 {
-	update_status_message("frametime_%p", this);
 	save_frametime(tmp_file_path(status_message));
 
 	delete sphere;
@@ -363,13 +362,19 @@ void viewer::imgui()
 					update_viewport_meshes();
 				}
 				ImGui::SameLine();
+				if(ImGui::Button("merge"))
+				{
+					add_mesh(mesh->merge(*m));
+				}
+				ImGui::SameLine();
 				if(ImGui::Button("delete"))
 				{
 					delete m;
 					removed_meshes.erase(begin(removed_meshes) + i);
 				}
 				ImGui::SameLine();
-				ImGui::Selectable((*m)->filename.c_str());
+				const int p = size((*m)->filename) - 27;
+				ImGui::Selectable(((p < 0 ? "" : "<<") + (*m)->filename.substr(p < 0 ? 0 : p)).c_str());
 				ImGui::PopID();
 			}
 		}
