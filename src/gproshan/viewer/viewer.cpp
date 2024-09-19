@@ -1000,7 +1000,7 @@ bool viewer::m_setup_raytracing(viewer * view)
 	if(rt == R_EMBREE && (mesh.render_pointcloud || mesh->is_pointcloud()))
 	{
 		ImGui::Indent();
-		ImGui::Combo("pc.opt", (int *) &pc.opt, "NONE\0MAX\0MEAN\0MEDIAN\0AREA\0MEDIAN_PAIRS\0\0");
+		ImGui::Combo("pc.opt", (int *) &pc.opt, "NONE\0MAX\0MEAN\0MEDIAN\0AREA\0MEDIAN_PAIRS\0VORONOI\0\0");
 		if(pc.opt == rt::embree::NONE)
 		{
 			ImGui::SliderFloat("pc.radius", &pc.radius, 0, 1);

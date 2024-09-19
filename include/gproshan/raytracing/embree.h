@@ -22,7 +22,8 @@ class embree : public raytracing
 						MEAN,
 						MEDIAN,
 						AREA,
-						MEDIAN_PAIRS
+						MEDIAN_PAIRS,
+						VORONOI
 						};
 
 		struct pc_opts

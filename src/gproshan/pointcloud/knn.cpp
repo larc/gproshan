@@ -1,6 +1,7 @@
 #include <gproshan/pointcloud/knn.h>
 
 #include <unordered_map>
+#include <algorithm>
 #include <queue>
 
 
@@ -260,6 +261,17 @@ float median_knn_area_radius(const point * pc, const size_t n_points, const size
 	return radius[size(radius) >> 1];
 }
 
+
+float voronoi_radius(const point * pc, const int * id, const size_t n, const mat4 & model_mat)
+{
+	float r = 0;
+
+	for(index_t i = 1; i < n; ++i)
+	for(index_t j = i + 1; j < n; ++j)
+		r = std::max(r, length(model_mat * ((pc[id[0]] + pc[id[i]] + pc[id[j]]) / 3 - pc[id[0]], 0)));
+
+	return r;
+}
 
 float median_pair_dist(const point * pc, const int * id, const size_t n, const mat4 & model_mat)
 {

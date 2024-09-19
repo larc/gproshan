@@ -245,6 +245,10 @@ index_t embree::add_pointcloud(const che * mesh, const mat4 & model_mat, const p
 			case MEDIAN_PAIRS:
 					r = knn::median_pair_dist(&mesh->point(0), (*nn)(i), pc.knn, model_mat);
 					break;
+
+			case VORONOI:
+					r = knn::voronoi_radius(&mesh->point(0), (*nn)(i), pc.knn, model_mat);
+					break;
 		};
 
 		pxyzr[i][3] = pc.scale * r;
