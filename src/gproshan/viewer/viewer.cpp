@@ -86,6 +86,7 @@ viewer::viewer(const char * title, const int width, const int height)
 
 viewer::~viewer()
 {
+	update_status_message("frametime_%p", this);
 	save_frametime(tmp_file_path(status_message));
 
 	delete sphere;
