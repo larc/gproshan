@@ -1,8 +1,8 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
-#include <gproshan/mesh/quaternion.h>
 #include <gproshan/geometry/mat.h>
+#include <gproshan/geometry/quaternion.h>
 
 
 // geometry processing and shape analysis framework

@@ -10,29 +10,26 @@
 namespace gproshan {
 
 
-using vertex = vec3;
-
-
 class quaternion
 {
 	public:
 		float s;
-		vertex v;
+		vec3 v;
 
 	public:
 		quaternion(float s = 0, float vi = 0, float vj = 0, float vk = 0);
-		quaternion(float s, const vertex & v);
-		quaternion(const vertex & v);
+		quaternion(float s, const vec3 & v);
+		quaternion(const vec3 & v);
 
-		operator const vertex & () const;
+		operator const vec3 & () const;
 		const quaternion & operator = (float s);
-		const quaternion & operator = (const vertex & v);
+		const quaternion & operator = (const vec3 & v);
 		float & operator [] (int index);
 		float operator [] (int index) const;
 		float & re(void);
 		float re(void) const;
-		vertex & im(void);
-		const vertex & im(void) const;
+		vec3 & im(void);
+		const vec3 & im(void) const;
 
 		quaternion operator + (const quaternion & q) const;
 		quaternion operator - (const quaternion & q) const;

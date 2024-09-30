@@ -1,4 +1,4 @@
-#include <gproshan/mesh/quaternion.h>
+#include <gproshan/geometry/quaternion.h>
 
 #include <cmath>
 #include <iostream>
@@ -10,11 +10,11 @@ namespace gproshan {
 
 quaternion::quaternion(float s_, float vi, float vj, float vk): s(s_), v{vi, vj, vk} {}
 
-quaternion::quaternion(float s_, const vertex & v_): s(s_), v(v_) {}
+quaternion::quaternion(float s_, const vec3 & v_): s(s_), v(v_) {}
 
-quaternion::quaternion(const vertex & v_): s(0), v(v_) {}
+quaternion::quaternion(const vec3 & v_): s(0), v(v_) {}
 
-quaternion::operator const vertex & () const
+quaternion::operator const vec3 & () const
 {
 	return v;
 }
@@ -27,7 +27,7 @@ const quaternion & quaternion::operator = (float _s)
 	return *this;
 }
 
-const quaternion & quaternion::operator = (const vertex & _v)
+const quaternion & quaternion::operator = (const vec3 & _v)
 {
 	s = 0;
 	v = _v;
@@ -56,12 +56,12 @@ float quaternion::re() const
 	return s;
 }
 
-vertex & quaternion::im()
+vec3 & quaternion::im()
 {
 	return v;
 }
 
-const vertex & quaternion::im() const
+const vec3 & quaternion::im() const
 {
 	return v;
 }
@@ -135,8 +135,8 @@ quaternion quaternion::operator * (const quaternion & q) const
 {
 	const float s1(s);
 	const float s2(q.s);
-	const vertex & v1(v);
-	const vertex & v2(q.v);
+	const vec3 & v1(v);
+	const vec3 & v2(q.v);
 
 	return quaternion(s1 * s2 - dot(v1, v2), s1 * v2 + s2 * v1 + cross(v1, v2));
 }
@@ -176,22 +176,6 @@ void quaternion::normalize()
 	*this /= norm();
 }
 
-// spherical-linear interpolation
-quaternion slerp(const quaternion & q0, const quaternion & q1, float t)
-{
-	// interpolate length
-	float m0 = q0.norm();
-	float m1 = q1.norm();
-	float m = (1-t)*m0 + t*m1;
-
-	// interpolate direction
-	quaternion p0 = q0 / m0;
-	quaternion p1 = q1 / m1;
-	float theta = acos((p0.conj() * p1).re());
-	quaternion p = (sin((1 - t) * theta) * p0 + sin(t * theta) * p1) / sin(theta);
-
-	return m * p;
-}
 
 std::ostream & operator << (std::ostream & os, const quaternion & q)
 {
