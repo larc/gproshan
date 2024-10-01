@@ -19,9 +19,9 @@ class camera
 
 	public:
 		quaternion eye;
-		quaternion pos		= vertex{0, 0, -3.14};
-		quaternion front	= vertex{0, 0, 1};
-		quaternion up		= vertex{0, 1, 0};
+		quaternion pos		= vec3{0, 0, -3.14};
+		quaternion front	= vec3{0, 0, 1};
+		quaternion up		= vec3{0, 1, 0};
 		float fovy			= 45;
 		float aspect		= 1;
 		float near			= 0.01;

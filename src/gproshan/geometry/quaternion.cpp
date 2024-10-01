@@ -8,11 +8,9 @@
 namespace gproshan {
 
 
-quaternion::quaternion(float s_, float vi, float vj, float vk): s(s_), v{vi, vj, vk} {}
+quaternion::quaternion(float s, const vec3 & v): s(s), v(v) {}
 
-quaternion::quaternion(float s_, const vec3 & v_): s(s_), v(v_) {}
-
-quaternion::quaternion(const vec3 & v_): s(0), v(v_) {}
+quaternion::quaternion(const vec3 & v): v(v) {}
 
 quaternion::operator const vec3 & () const
 {

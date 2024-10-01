@@ -13,13 +13,12 @@ namespace gproshan {
 class quaternion
 {
 	public:
-		float s;
+		float s = 0;
 		vec3 v;
 
 	public:
-		quaternion(float s = 0, float vi = 0, float vj = 0, float vk = 0);
-		quaternion(float s, const vec3 & v);
-		quaternion(const vec3 & v);
+		quaternion(const vec3 & v = {});
+		quaternion(float s, const vec3 & v = {});
 
 		operator const vec3 & () const;
 		const quaternion & operator = (float s);

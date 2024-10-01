@@ -47,7 +47,7 @@ mat4 camera::perspective(const float fovy, const float aspect, const float near,
 
 quaternion camera::click_to_sphere(const double x, const double y, const int w, const int h)
 {
-	quaternion p(0, 2 * x / w - 1, 2 * y / h - 1, 0);
+	quaternion p = vec3{float(2 * x / w - 1), float(2 * y / h - 1), 0};
 
 	if(p.norm2() > 1)
 	{
