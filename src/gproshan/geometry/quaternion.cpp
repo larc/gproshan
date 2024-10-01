@@ -17,23 +17,6 @@ quaternion::operator const vec3 & () const
 	return v;
 }
 
-const quaternion & quaternion::operator = (float _s)
-{
-	s = _s;
-	v = {0, 0, 0};
-
-	return *this;
-}
-
-const quaternion & quaternion::operator = (const vec3 & _v)
-{
-	s = 0;
-	v = _v;
-
-	return *this;
-}
-
-
 float & quaternion::operator [] (int index)
 {
 	return v[index];
@@ -44,114 +27,45 @@ float quaternion::operator [] (int index) const
 	return v[index];
 }
 
-float & quaternion::re()
-{
-	return s;
-}
-
-float quaternion::re() const
-{
-	return s;
-}
-
-vec3 & quaternion::im()
-{
-	return v;
-}
-
-const vec3 & quaternion::im() const
-{
-	return v;
-}
-
 quaternion quaternion::operator + (const quaternion & q) const
 {
-	return quaternion(s + q.s, v + q.v);
+	return {s + q.s, v + q.v};
 }
 
 quaternion quaternion::operator - (const quaternion & q) const
 {
-	return quaternion(s - q.s, v - q.v);
+	return {s - q.s, v - q.v};
 }
 
 quaternion quaternion::operator - () const
 {
-	return quaternion(-s, -v);
+	return {-s, -v};
 }
 
 quaternion quaternion::operator * (float c) const
 {
-	return quaternion(c * s, c * v);
-}
-
-quaternion operator * (float c, const quaternion & q)
-{
-	return q * c;
+	return {c * s, c * v};
 }
 
 quaternion quaternion::operator / (float c) const
 {
-	return quaternion(s / c, v / c);
-}
-
-void quaternion::operator += (const quaternion & q)
-{
-	s += q.s;
-	v += q.v;
-}
-
-void quaternion::operator += (float c)
-{
-	s += c;
-}
-
-void quaternion::operator -= (const quaternion & q)
-{
-	s -= q.s;
-	v -= q.v;
-}
-
-void quaternion::operator -= (float c)
-{
-	s -= c;
-}
-
-void quaternion::operator *= (float c)
-{
-	s *= c;
-	v *= c;
-}
-
-void quaternion::operator /= (float c)
-{
-	s /= c;
-	v /= c;
+	return {s / c, v / c};
 }
 
 // Hamilton product
 quaternion quaternion::operator * (const quaternion & q) const
 {
-	const float s1(s);
-	const float s2(q.s);
-	const vec3 & v1(v);
-	const vec3 & v2(q.v);
-
-	return quaternion(s1 * s2 - dot(v1, v2), s1 * v2 + s2 * v1 + cross(v1, v2));
-}
-
-void quaternion::operator *= (const quaternion & q)
-{
-	*this = (*this * q);
+	return {s * q.s - dot(v, q.v), s * q.v + q.s * v + cross(v, q.v)};
 }
 
 quaternion quaternion::conj() const
 {
-	return quaternion(s, -v);
+	return {s, -v};
 }
 
 quaternion quaternion::inv() const
 {
-	return (this->conj()) / this->norm2();
+	return conj() / norm2();
 }
 
 float quaternion::norm() const
@@ -164,14 +78,20 @@ float quaternion::norm2() const
 	return s * s + dot(v, v);
 }
 
-quaternion quaternion::unit() const
+
+float norm(const quaternion & q)
 {
-	return *this / norm();
+	return q.norm();
 }
 
-void quaternion::normalize()
+quaternion normalize(const quaternion & q)
 {
-	*this /= norm();
+	return q / norm(q);
+}
+
+quaternion operator * (float c, const quaternion & q)
+{
+	return q * c;
 }
 
 
@@ -184,6 +104,7 @@ std::istream & operator >> (std::istream & is, quaternion & q)
 {
 	return is >> q.s >> q.v;
 }
+
 
 } // namespace gproshan
 

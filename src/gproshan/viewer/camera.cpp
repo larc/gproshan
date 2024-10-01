@@ -18,9 +18,9 @@ mat4 camera::look_at(const quaternion & r)
 	vec3 X = cross(Z, Y);
 
 	mat4 view;
-	view[0] = {X, -dot(X, eye.v)};
-	view[1] = {Y, -dot(Y, eye.v)};
-	view[2] = {-Z, dot(Z, eye.v)};
+	view[0] = {X, -dot(X, (vec3) eye)};
+	view[1] = {Y, -dot(Y, (vec3) eye)};
+	view[2] = {-Z, dot(Z, (vec3) eye)};
 	view[3] = {0, 0, 0, 1};
 
 	return view;
@@ -50,14 +50,9 @@ quaternion camera::click_to_sphere(const double x, const double y, const int w, 
 	quaternion p = vec3{float(2 * x / w - 1), float(2 * y / h - 1), 0};
 
 	if(p.norm2() > 1)
-	{
-		p.normalize();
-		p.im().z() = 0;
-	}
+		p = normalize(p);
 	else
-	{
-		p.im().z() = sqrt(1 - p.norm2());
-	}
+		p[2] = sqrt(1 - p.norm2());
 
 	return p;
 }
@@ -88,17 +83,17 @@ void camera::motion(const double x, const double y, const int w, const int h)
 
 void camera::zoom_in()
 {
-	pos.v.z() += 0.02;
+	pos[2] += 0.02;
 }
 
 void camera::zoom_out()
 {
-	pos.v.z() -= 0.02;
+	pos[2] -= 0.02;
 }
 
 float camera::zoom() const
 {
-	return -pos.v.z();
+	return -pos[2];
 }
 
 std::ostream & operator << (std::ostream & os, const camera & cam)

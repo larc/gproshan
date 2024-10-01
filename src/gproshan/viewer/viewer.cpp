@@ -739,8 +739,8 @@ void viewer::cursor_callback(GLFWwindow * window, double x, double y)
 
 	if(GLFW_PRESS == glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE))
 	{
-		view->cam.pos.im().x() = 2 * x / view->window_width - 1;
-		view->cam.pos.im().y() = 2 * y / view->window_height - 1;
+		view->cam.pos[0] = 2 * x / view->window_width - 1;
+		view->cam.pos[1] = 2 * y / view->window_height - 1;
 		view->render_params.restart = true;
 	}
 }
@@ -1212,9 +1212,9 @@ bool viewer::m_raycasting(viewer * view)
 
 void viewer::render_gl()
 {
-	shader_sphere.uniform("eye", cam.eye.v);
-	shader_triangles.uniform("eye", cam.eye.v);
-	shader_pointcloud.uniform("eye", cam.eye.v);
+	shader_sphere.uniform("eye", cam.eye);
+	shader_triangles.uniform("eye", cam.eye);
+	shader_pointcloud.uniform("eye", cam.eye);
 
 	const light & ambient = render_params.ambient;
 	const light & l = render_params.lights[0];
