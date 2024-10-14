@@ -126,6 +126,8 @@ void che_ply::read_file(const std::string & file)
 			for(index_t i = 0; i < nv; ++i)
 				fscanf(fp, "%u", P + i);
 
+			fgets(line, sizeof(line), fp);
+
 			for(const index_t v: trig_convex_polygon(P, nv))
 				trigs.push_back(v);
 		}
