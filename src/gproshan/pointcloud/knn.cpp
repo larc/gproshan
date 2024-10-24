@@ -85,7 +85,7 @@ k3tree::k3tree(const point * pc, const size_t n_points, const point * query, con
 		flann::Index<flann::L2<float> > index(mpc, flann::KDTreeSingleIndexParams());
 		index.buildIndex();
 	TOC(time_build);
-	gproshan_log_var(time_build);
+//	gproshan_log_var(time_build);
 
 	TIC(time_query);
 		const point * q = query && n_query ? query : pc;
@@ -100,9 +100,9 @@ k3tree::k3tree(const point * pc, const size_t n_points, const point * query, con
 		params.cores = 0;
 		index.knnSearch(mq, indices, dists, k, params);
 	TOC(time_query);
-	gproshan_log_var(time_query);
+//	gproshan_log_var(time_query);
 
-	gproshan_log_var(time_build + time_query);
+//	gproshan_log_var(time_build + time_query);
 
 	delete [] dists.ptr();
 }
@@ -236,8 +236,6 @@ float mean_knn_area_radius(const point * pc, const size_t n_points, const size_t
 		#pragma omp atomic
 		mean_r += sqrt(r * r / k);
 	}
-
-	gproshan_log_var(mean_r);
 
 	return mean_r / n_points;
 }
