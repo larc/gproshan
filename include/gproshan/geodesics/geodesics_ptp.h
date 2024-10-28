@@ -13,10 +13,6 @@
 
 
 #ifdef __CUDACC__
-	#include <thrust/count.h>
-	#include <thrust/device_vector.h>
-	#include <thrust/execution_policy.h>
-
 	#define NT 64
 	#define NB(x) (x + NT - 1) / NT
 #endif // __CUDACC__
@@ -34,7 +30,7 @@ __global__
 void relax_ptp(const che * mesh, float * new_dist, float * old_dist, index_t * new_clusters, index_t * old_clusters, const index_t start, const index_t end, const index_t * sorted = nullptr);
 
 __global__
-void relative_error(float * error, const float * new_dist, const float * old_dist, const index_t start, const index_t end, const index_t * sorted = nullptr);
+void relative_error(unsigned int * g_count, const float * new_dist, const float * old_dist, const index_t start, const index_t end, const index_t * sorted = nullptr);
 
 struct is_ok
 {
@@ -181,15 +177,9 @@ void relax_ptp(const che * mesh, T * new_dist, T * old_dist, index_t * new_clust
 
 
 template<class T>
-#ifdef __CUDACC__
-index_t run_ptp(const che * mesh, const std::vector<index_t> & sources,
-				const std::vector<index_t> & limits, T * error, T ** dist, index_t ** clusters,
-				const index_t * idx, index_t * sorted, const f_ptp<T> & fun = nullptr)
-#else
 index_t run_ptp(const che * mesh, const std::vector<index_t> & sources,
 				const std::vector<index_t> & limits, T ** dist, index_t ** clusters,
 				const index_t * idx, index_t * sorted, const f_ptp<T> & fun = nullptr)
-#endif
 {
 #ifdef __CUDACC__
 	T * h_dist = dist[2];
@@ -223,6 +213,9 @@ index_t run_ptp(const che * mesh, const std::vector<index_t> & sources,
 		cudaMemcpy(clusters[0], h_clusters, sizeof(index_t) * n_vertices, cudaMemcpyHostToDevice);
 		cudaMemcpy(clusters[1], h_clusters, sizeof(index_t) * n_vertices, cudaMemcpyHostToDevice);
 	}
+
+	unsigned int * g_count = nullptr;
+	cudaMalloc(&g_count, sizeof(unsigned int));
 #endif
 
 	const int max_iter = size(limits) << 1;
@@ -249,16 +242,13 @@ index_t run_ptp(const che * mesh, const std::vector<index_t> & sources,
 		relax_ptp<<< NB(end - start), NT >>>(mesh, new_dist, old_dist, new_cluster, old_cluster, start, end, sorted);
 		cudaDeviceSynchronize();
 
-		relative_error<<< NB(n_cond), NT >>>(error, new_dist, old_dist, start, start + n_cond, sorted);
-		cudaDeviceSynchronize();
-
-		count = sorted ? thrust::count_if(thrust::device, sorted + start, sorted + start + n_cond, is_ok{error})
-						: thrust::count_if(thrust::device, error + start, error + start + n_cond, is_ok{});
+		cudaMemset(g_count, 0, sizeof(unsigned int));
+		relative_error<<< NB(n_cond), NT >>>(g_count, new_dist, old_dist, start, start + n_cond, sorted);
+		cudaMemcpy(&count, g_count, sizeof(unsigned int), cudaMemcpyDeviceToHost);
 	#else
 		#pragma omp parallel for
 		for(index_t v = start; v < end; ++v)
 			relax_ptp(mesh, new_dist, old_dist, new_cluster, old_cluster, sorted ? sorted[v] : v);
-
 
 		count = 0;
 		#pragma omp parallel for

@@ -38,12 +38,10 @@ double parallel_toplesets_propagation_gpu(	const ptp_out_t & ptp_out,
 	index_t * h_clusters = coalescence && ptp_out.clusters ? new index_t[n_vertices]
 															: ptp_out.clusters;
 
-	float * d_error = nullptr;
 	float * d_dist[3] = {};
 	index_t * d_clusters[3] = {};
 	index_t * d_sorted = nullptr;
 
-	cudaMalloc(&d_error, sizeof(float) * n_vertices);
 	cudaMalloc(&d_dist[0], sizeof(float) * n_vertices);
 	cudaMalloc(&d_dist[1], sizeof(float) * n_vertices);
 	d_dist[2] = h_dist;
@@ -67,9 +65,7 @@ double parallel_toplesets_propagation_gpu(	const ptp_out_t & ptp_out,
 			h_dist[v] = INFINITY;
 	}
 
-	const index_t i = run_ptp(	d_mesh, sources, tps.splits, d_error, d_dist, d_clusters,
-								coalescence ? inv : tps.sorted, d_sorted,
-								fun);
+	const index_t i = run_ptp(d_mesh, sources, tps.splits, d_dist, d_clusters, coalescence ? inv : tps.sorted, d_sorted, fun);
 
 	cudaMemcpy(h_dist, d_dist[i], sizeof(float) * n_vertices, cudaMemcpyDeviceToHost);
 
@@ -96,7 +92,6 @@ double parallel_toplesets_propagation_gpu(	const ptp_out_t & ptp_out,
 		}
 	}
 
-	cudaFree(d_error);
 	cudaFree(d_dist[0]);
 	cudaFree(d_dist[1]);
 	cudaFree(d_clusters[0]);
@@ -130,12 +125,10 @@ double farthest_point_sampling_ptp_gpu(che * mesh, std::vector<index_t> & sample
 
 	float * h_dist = new float[n_vertices];
 
-	float * d_error = nullptr;
 	float * d_dist[3] = {};
 	index_t * d_clusters[3] = {};
 	index_t * d_sorted = nullptr;
 
-	cudaMalloc(&d_error, sizeof(float) * n_vertices);
 	cudaMalloc(&d_dist[0], sizeof(float) * n_vertices);
 	cudaMalloc(&d_dist[1], sizeof(float) * n_vertices);
 	cudaMalloc(&d_sorted, sizeof(index_t) * n_vertices);
@@ -159,7 +152,7 @@ double farthest_point_sampling_ptp_gpu(che * mesh, std::vector<index_t> & sample
 	float max_dist = INFINITY;
 	while(n-- && radio < max_dist)
 	{
-		const index_t i = run_ptp(d_mesh, samples, tps.splits, d_error, d_dist, d_clusters, tps.sorted, d_sorted);
+		const index_t i = run_ptp(d_mesh, samples, tps.splits, d_dist, d_clusters, tps.sorted, d_sorted);
 
 		// 1 indexing
 		cublasIsamax(handle, mesh->n_vertices, d_dist[i], 1, &farthest);
@@ -175,7 +168,6 @@ double farthest_point_sampling_ptp_gpu(che * mesh, std::vector<index_t> & sample
 
 	delete [] h_dist;
 
-	cudaFree(d_error);
 	cudaFree(d_dist[0]);
 	cudaFree(d_dist[1]);
 	cudaFree(d_sorted);
@@ -202,15 +194,24 @@ void relax_ptp(const che * mesh, float * new_dist, float * old_dist, index_t * n
 }
 
 __global__
-void relative_error(float * error, const float * new_dist, const float * old_dist, const index_t start, const index_t end, const index_t * sorted)
+void relative_error(unsigned int * g_count, const float * new_dist, const float * old_dist, const index_t start, const index_t end, const index_t * sorted)
 {
 	index_t v = blockDim.x * blockIdx.x + threadIdx.x + start;
+
+	__shared__ unsigned int count;
+	if(!threadIdx.x)
+		count = 0;
 
 	if(v < end)
 	{
 		v = sorted ? sorted[v] : v;
-		error[v] = fabsf(new_dist[v] - old_dist[v]) / old_dist[v];
+		atomicInc(&count, fabsf(new_dist[v] - old_dist[v]) / old_dist[v] < PTP_TOL);
 	}
+
+	__syncthreads();
+
+	if(!threadIdx.x)
+		atomicInc(g_count, count);
 }
 
 __host_device__

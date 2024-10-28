@@ -22,7 +22,7 @@ if(CUDAToolkit_FOUND)
 	set(CMAKE_CUDA_STANDARD 17)
 	set(CMAKE_CUDA_STANDARD_REQUIRED ON)
 
-	set(CMAKE_CUDA_FLAGS "-Xcompiler -fopenmp -use_fast_math")
+	set(CMAKE_CUDA_FLAGS "-use_fast_math -Xcompiler -fopenmp")
 	set(CMAKE_CUDA_SEPARABLE_COMPILATION ON)
 	if(NOT DEFINED ENV{GITHUB_ACTIONS})
 		set(CMAKE_CUDA_ARCHITECTURES native)
