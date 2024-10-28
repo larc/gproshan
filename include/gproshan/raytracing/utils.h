@@ -183,7 +183,7 @@ struct t_eval_hit
 	bool scatter_diffuse(vec<T, 3> & dir, random<T> & rnd)
 	{
 		// random unit sphere
-		const T theta = rnd() * 2.f * M_PI;
+		const T theta = rnd() * 2.f * 3.141592654f;
 		const T phi = acosf(2.f * rnd() - 1.f);
 		const T r = cbrtf(rnd());
 
