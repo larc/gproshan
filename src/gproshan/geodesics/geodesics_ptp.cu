@@ -201,6 +201,10 @@ void relative_error(unsigned int * g_count, const float * new_dist, const float 
 	__shared__ unsigned int count;
 	if(!threadIdx.x)
 		count = 0;
+	
+	if(!v) *g_count = 0;
+
+	__syncthreads();
 
 	if(v < end)
 	{
