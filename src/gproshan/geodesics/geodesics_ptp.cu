@@ -188,46 +188,32 @@ __global__
 void relax_ptp(const che * mesh, float * new_dist, float * old_dist, index_t * new_clusters, index_t * old_clusters, const index_t start, const index_t end, const index_t * sorted)
 {
 	index_t v = blockDim.x * blockIdx.x + threadIdx.x + start;
+	if(v >= end) return;
 
-	if(v < end)
-		relax_ptp(mesh, new_dist, old_dist, new_clusters, old_clusters, sorted ? sorted[v] : v);
+	relax_ptp(mesh, new_dist, old_dist, new_clusters, old_clusters, sorted ? sorted[v] : v);
 }
 
 __global__
 void relative_error(unsigned int * g_count, const float * new_dist, const float * old_dist, const index_t start, const index_t end, const index_t * sorted)
 {
 	index_t v = blockDim.x * blockIdx.x + threadIdx.x + start;
+	if(v >= end) return;
 
 	__shared__ unsigned int count;
 	if(!threadIdx.x)
 		count = 0;
-	
+
 	if(!v) *g_count = 0;
 
 	__syncthreads();
 
-	if(v < end)
-	{
-		v = sorted ? sorted[v] : v;
-		atomicInc(&count, fabsf(new_dist[v] - old_dist[v]) / old_dist[v] < PTP_TOL);
-	}
+	v = sorted ? sorted[v] : v;
+	atomicInc(&count, fabsf(new_dist[v] - old_dist[v]) / old_dist[v] < PTP_TOL);
 
 	__syncthreads();
 
 	if(!threadIdx.x)
 		atomicInc(g_count, count);
-}
-
-__host_device__
-bool is_ok::operator()(const float val) const
-{
-	return val < PTP_TOL;
-}
-
-__host_device__
-bool is_ok::operator()(const index_t i) const
-{
-	return error[i] < PTP_TOL;
 }
 
 

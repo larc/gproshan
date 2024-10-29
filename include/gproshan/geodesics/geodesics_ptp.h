@@ -32,17 +32,6 @@ void relax_ptp(const che * mesh, float * new_dist, float * old_dist, index_t * n
 __global__
 void relative_error(unsigned int * g_count, const float * new_dist, const float * old_dist, const index_t start, const index_t end, const index_t * sorted = nullptr);
 
-struct is_ok
-{
-	const float * error = nullptr;
-
-	__host_device__
-	bool operator()(const float val) const;
-
-	__host_device__
-	bool operator()(const index_t val) const;
-};
-
 #endif // __CUDACC__
 
 
@@ -100,13 +89,9 @@ template<class T>
 __forceinline__
 #endif
 __host_device__
-float update_step(const che * mesh, const T * dist, const uvec3 & x)
+float update_step(const mat<T, 3> & points, const vec<T, 2> & t)
 {
-	const vec<T, 3> X[2] = {mesh->point(x[0]) - mesh->point(x[2]),
-							mesh->point(x[1]) - mesh->point(x[2])
-							};
-
-	const vec<T, 2> t = {dist[x[0]], dist[x[1]]};
+	const vec<T, 3> X[2] = {points[0] - points[2], points[1] - points[2]};
 
 	mat<T, 2> q;
 	q[0][0] = dot(X[0], X[0]);
@@ -139,7 +124,7 @@ float update_step(const che * mesh, const T * dist, const uvec3 & x)
 
 	if(t[0] == INFINITY || t[1] == INFINITY || dis < 0 || c[0] >= 0 || c[1] >= 0)
 	{
-		const vec<T, 2> & dp = {dist[x[0]] + norm(X[0]), dist[x[1]] + norm(X[1])};
+		const vec<T, 2> & dp = {t[0] + norm(X[0]), t[1] + norm(X[1])};
 		p = dp[dp[1] < dp[0]];
 	}
 
@@ -154,25 +139,30 @@ __forceinline__
 __host_device__
 void relax_ptp(const che * mesh, T * new_dist, T * old_dist, index_t * new_clusters, index_t * old_clusters, const index_t v)
 {
-	float & ndv = new_dist[v] = old_dist[v];
 	if(new_clusters) new_clusters[v] = old_clusters[v];
 
+	T ndv = old_dist[v];
+
+	mat<T, 3> X;
+	X[2] = mesh->point(v);
 	for(const index_t he: mesh->star(v))
 	{
-		const uvec3 i = {	mesh->halfedge(he_next(he)),
-							mesh->halfedge(he_prev(he)),
-							mesh->halfedge(he)
-							};
+		const uvec2 x = {mesh->halfedge(he_next(he)), mesh->halfedge(he_prev(he))};
 
-		float d = update_step(mesh, old_dist, i);
+		X[0] = mesh->point(x[0]);
+		X[1] = mesh->point(x[1]);
+
+		T d = update_step(X, {old_dist[x[0]], old_dist[x[1]]});
 
 		if(d < ndv)
 		{
 			ndv = d;
 			if(new_clusters)
-				new_clusters[v] = old_clusters[old_dist[i.y()] < old_dist[i.x()] ? i.y() : i.x()];
+				new_clusters[v] = old_clusters[x[old_dist[x[1]] < old_dist[x[0]]]];
 		}
 	}
+
+	new_dist[v] = ndv;
 }
 
 
