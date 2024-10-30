@@ -137,7 +137,7 @@ template<class T>
 __forceinline__
 #endif
 __host_device__
-void relax_ptp(const che * mesh, T * new_dist, T * old_dist, index_t * new_clusters, index_t * old_clusters, const index_t v)
+void relax_ptp(const che * mesh, const index_t * sorted, const index_t v, T * new_dist, T * old_dist, index_t * new_clusters, index_t * old_clusters)
 {
 	if(new_clusters) new_clusters[v] = old_clusters[v];
 
@@ -148,17 +148,18 @@ void relax_ptp(const che * mesh, T * new_dist, T * old_dist, index_t * new_clust
 	for(const index_t he: mesh->star(v))
 	{
 		const uvec2 x = {mesh->halfedge(he_next(he)), mesh->halfedge(he_prev(he))};
+		const vec<T, 2> t = {old_dist[x[0]], old_dist[x[1]]};
 
 		X[0] = mesh->point(x[0]);
 		X[1] = mesh->point(x[1]);
 
-		T d = update_step(X, {old_dist[x[0]], old_dist[x[1]]});
+		T d = update_step(X, t);
 
 		if(d < ndv)
 		{
 			ndv = d;
 			if(new_clusters)
-				new_clusters[v] = old_clusters[x[old_dist[x[1]] < old_dist[x[0]]]];
+				new_clusters[v] = old_clusters[x[t[1] < t[0]]];
 		}
 	}
 
@@ -242,7 +243,7 @@ index_t run_ptp(const che * mesh, const std::vector<index_t> & sources,
 	#else
 		#pragma omp parallel for
 		for(index_t v = start; v < end; ++v)
-			relax_ptp(mesh, new_dist, old_dist, new_cluster, old_cluster, sorted ? sorted[v] : v);
+			relax_ptp(mesh, sorted, sorted ? sorted[v] : v, new_dist, old_dist, new_cluster, old_cluster);
 
 		count = 0;
 		#pragma omp parallel for

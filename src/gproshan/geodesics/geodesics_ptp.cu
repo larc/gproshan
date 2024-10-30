@@ -190,7 +190,7 @@ void relax_ptp(const che * mesh, float * new_dist, float * old_dist, index_t * n
 	index_t v = blockDim.x * blockIdx.x + threadIdx.x + start;
 	if(v >= end) return;
 
-	relax_ptp(mesh, new_dist, old_dist, new_clusters, old_clusters, sorted ? sorted[v] : v);
+	relax_ptp(mesh, sorted, sorted ? sorted[v] : v, new_dist, old_dist, new_clusters, old_clusters);
 }
 
 __global__
