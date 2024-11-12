@@ -294,6 +294,45 @@ float mean_knn(const point * pc, const int * id, const size_t n, const mat4 & mo
 	return mean / n;
 }
 
+std::vector<float> anisotropic(const point * pc, const size_t n_points, const knn::k3tree & nn, const int k)
+{
+	std::vector<float> A(n_points);
+
+	arma::fmat X(k, 3);
+	arma::fmat coeff, score;
+	arma::fvec latent;
+
+
+	float mean = 0;
+
+	#pragma omp parallel for reduction(+: mean) firstprivate(X, coeff, score, latent)
+	for(unsigned v = 0; v < n_points; ++v)
+	{
+		for(int i = 0; i < k; ++i)
+		for(int j = 0; j < 3; ++j)
+			X(i, j) = pc[nn(v, i)][j];
+
+		princomp(coeff, score, latent, X);
+
+		const float d = norm(pc[v] - pc[nn(v, k - 1)]);
+		A[v] = d * (1.f - latent[1] / latent[0]);
+
+		mean += d;
+	}
+
+	mean /= n_points;
+	mean *= 2;
+
+	#pragma omp parallel for
+	for(unsigned v = 0; v < n_points; ++v)
+	{
+		A[v] /= mean;
+		if(A[v] > 1) A[v] = 1;
+	}
+
+	return A;
+}
+
 
 const char * radius_str(void *, int opt)
 {

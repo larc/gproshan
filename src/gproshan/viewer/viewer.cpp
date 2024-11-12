@@ -1011,6 +1011,7 @@ bool viewer::m_setup_raytracing(viewer * view)
 		ImGui::SliderInt("pc.knn", &pc.knn, 0, 1 << 6);
 		ImGui::SliderFloat("pc.scale", &pc.scale, 0, 10);
 		ImGui::Checkbox("pc.normals", &pc.normals);
+		ImGui::Checkbox("pc.anisotropy", &pc.anisotropy);
 		ImGui::Unindent();
 	}
 

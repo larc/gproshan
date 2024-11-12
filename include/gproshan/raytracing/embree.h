@@ -28,10 +28,11 @@ class embree : public raytracing
 
 		struct pc_opts
 		{
+			knn_opt opt		= NONE;
 			bool enable		= false;
 			bool normals	= false;
+			bool anisotropy = false;
 			float radius	= 0.01;
-			knn_opt opt		= NONE;
 			float scale		= 1;
 			int knn			= 8;
 

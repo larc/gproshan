@@ -74,10 +74,11 @@ float mean_mean_knn_distant(const point * pc, const size_t n_points, const size_
 float mean_knn_area_radius(const point * pc, const size_t n_points, const size_t k = 8, const mat4 & model_mat = mat4::identity());
 float median_knn_area_radius(const point * pc, const size_t n_points, const size_t k = 8, const mat4 & model_mat = mat4::identity());
 
-
 float voronoi_radius(const point * pc, const int * id, const size_t n, const mat4 & model_mat);
 float median_pair_dist(const point * pc, const int * id, const size_t n, const mat4 & model_mat);
 float mean_knn(const point * pc, const int * id, const size_t n, const mat4 & model_mat);
+
+std::vector<float> anisotropic(const point * pc, const size_t n_points, const k3tree & nn, const int k);
 
 
 const char * radius_str(void *, int opt);
