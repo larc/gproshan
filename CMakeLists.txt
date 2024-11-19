@@ -19,7 +19,7 @@ if(CUDAToolkit_FOUND)
 	enable_language(CUDA)
 	include_directories(SYSTEM ${CUDAToolkit_INCLUDE_DIRS})
 
-	set(CMAKE_CUDA_STANDARD 17)
+	set(CMAKE_CUDA_STANDARD 20)
 	set(CMAKE_CUDA_STANDARD_REQUIRED ON)
 
 	set(CMAKE_CUDA_FLAGS "-use_fast_math -Xcompiler -fopenmp")
@@ -28,7 +28,7 @@ if(CUDAToolkit_FOUND)
 		set(CMAKE_CUDA_ARCHITECTURES native)
 	endif()
 
-	find_package(OptiX 8)
+	find_package(OptiX 8.1)
 	if(OptiX_INCLUDE)
 		include_directories(SYSTEM ${OptiX_INCLUDE})
 	endif(OptiX_INCLUDE)
@@ -48,7 +48,7 @@ configure_file(	${gproshan_SOURCE_DIR}/include/gproshan/config.h.in
 				)
 
 
-find_package(embree 4 REQUIRED)
+find_package(embree 4.3 REQUIRED)
 find_package(OpenMP REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
