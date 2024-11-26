@@ -351,7 +351,12 @@ void viewer::imgui()
 			for(index_t i = 0; i < size(removed_meshes); ++i)
 			{
 				che_viewer * m = removed_meshes[i];
+
+				const int p = size((*m)->filename) - 27;
+				const std::string & filename = (p < 0 ? "" : "<<") + (*m)->filename.substr(p < 0 ? 0 : p);
+
 				ImGui::PushID(m);
+
 				if(ImGui::Button("add"))
 				{
 					meshes.push_back(m);
@@ -359,20 +364,23 @@ void viewer::imgui()
 
 					update_viewport_meshes();
 				}
+
 				ImGui::SameLine();
 				if(ImGui::Button("merge"))
 				{
 					add_mesh(mesh->merge(*m));
 				}
+
 				ImGui::SameLine();
 				if(ImGui::Button("delete"))
 				{
 					delete m;
 					removed_meshes.erase(begin(removed_meshes) + i);
 				}
+
 				ImGui::SameLine();
-				const int p = size((*m)->filename) - 27;
-				ImGui::Selectable(((p < 0 ? "" : "<<") + (*m)->filename.substr(p < 0 ? 0 : p)).c_str());
+				ImGui::Selectable(filename.c_str());
+
 				ImGui::PopID();
 			}
 		}
