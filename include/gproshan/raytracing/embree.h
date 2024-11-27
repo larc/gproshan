@@ -22,15 +22,17 @@ class embree : public raytracing
 						MEAN,
 						MEDIAN,
 						AREA,
-						MEDIAN_PAIRS
+						MEDIAN_PAIRS,
+						VORONOI
 						};
 
 		struct pc_opts
 		{
+			knn_opt opt		= NONE;
 			bool enable		= false;
 			bool normals	= false;
+			bool anisotropy = false;
 			float radius	= 0.01;
-			knn_opt opt		= NONE;
 			float scale		= 1;
 			int knn			= 8;
 

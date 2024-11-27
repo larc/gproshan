@@ -40,7 +40,7 @@ void optix_log(index_t level, const char * tag, const char * message, void *)
 	fprintf(stderr, "OptiX [%2u][%12s]: %s\n", level, tag, message);
 }
 
-optix::optix(const std::string & ptx)
+optix::optix(const std::string & program)
 {
 	optixInit();
 
@@ -51,7 +51,8 @@ optix::optix(const std::string & ptx)
 	optixDeviceContextCreate(cuda_context, 0, &_context);
 	optixDeviceContextSetLogCallback(_context, optix_log, nullptr, 4);
 
-	_pipeline_compile_opt							= {};
+	_module_compile_opt.debugLevel = OPTIX_COMPILE_DEBUG_LEVEL_NONE;
+
 	_pipeline_compile_opt.traversableGraphFlags		= OPTIX_TRAVERSABLE_GRAPH_FLAG_ALLOW_SINGLE_GAS;
 	_pipeline_compile_opt.usesMotionBlur			= false;
 	_pipeline_compile_opt.numPayloadValues			= 4;
@@ -61,15 +62,15 @@ optix::optix(const std::string & ptx)
 
 	_pipeline_link_opt.maxTraceDepth = 2;
 
-	std::ifstream ptx_is(std::string(GPROSHAN_DIR) + ptx);
-	const std::string str_ptx_code = std::string(std::istreambuf_iterator<char>(ptx_is), std::istreambuf_iterator<char>());
-	ptx_is.close();
+	std::ifstream is(std::string(GPROSHAN_DIR) + program);
+	const std::string program_src = std::string(std::istreambuf_iterator<char>(is), std::istreambuf_iterator<char>());
+	is.close();
 
 	optixModuleCreate(	_context,
 						&_module_compile_opt,
 						&_pipeline_compile_opt,
-						str_ptx_code.c_str(),
-						size(str_ptx_code),
+						program_src.c_str(),
+						size(program_src),
 						nullptr, nullptr,	// log message
 						&_module
 						);

@@ -601,12 +601,6 @@ index_t che::edge_he_1(const index_t e) const
 	return OT[ET[e]];
 }
 
-const vertex & che::vertex_he(const index_t he) const
-{
-	assert(he < n_half_edges);
-	return GT[VT[he]];
-}
-
 const vertex & che::vertex_edge_u(const index_t e) const
 {
 	assert(e < n_edges);

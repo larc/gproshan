@@ -10,55 +10,39 @@
 namespace gproshan {
 
 
-using vertex = vec3;
-
-
 class quaternion
 {
-	public:
-		float s;
-		vertex v;
+	private:
+		float s = 0;
+		vec3 v;
 
 	public:
-		quaternion(float s = 0, float vi = 0, float vj = 0, float vk = 0);
-		quaternion(float s, const vertex & v);
-		quaternion(const vertex & v);
+		quaternion(const vec3 & v = {});
+		quaternion(float s, const vec3 & v = {});
 
-		operator const vertex & () const;
-		const quaternion & operator = (float s);
-		const quaternion & operator = (const vertex & v);
+		operator const vec3 & () const;
 		float & operator [] (int index);
 		float operator [] (int index) const;
-		float & re(void);
-		float re(void) const;
-		vertex & im(void);
-		const vertex & im(void) const;
 
 		quaternion operator + (const quaternion & q) const;
 		quaternion operator - (const quaternion & q) const;
-		quaternion operator - (void) const;
+		quaternion operator - () const;
 		quaternion operator * (float c) const;
 		quaternion operator / (float c) const;
-		void operator += (const quaternion & q);
-		void operator += (float c);
-		void operator -= (const quaternion & q);
-		void operator -= (float c);
-		void operator *= (float c);
-		void operator /= (float c);
 		quaternion operator * (const quaternion & q) const;
-		void operator *= (const quaternion & q);
 
 		quaternion conj() const;
 		quaternion inv() const;
 		float norm() const;
 		float norm2() const;
-		quaternion unit() const;
-		void normalize();
 
 	friend std::ostream & operator << (std::ostream & os, const quaternion & q);
 	friend std::istream & operator >> (std::istream & is, quaternion & q);
 };
 
+
+float norm(const quaternion & q);
+quaternion normalize(const quaternion & q);
 quaternion operator * (float c, const quaternion & q);
 
 

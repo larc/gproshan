@@ -13,11 +13,7 @@
 
 
 #ifdef __CUDACC__
-	#include <thrust/count.h>
-	#include <thrust/device_vector.h>
-	#include <thrust/execution_policy.h>
-
-	#define NT 64
+	#define NT 256
 	#define NB(x) (x + NT - 1) / NT
 #endif // __CUDACC__
 
@@ -34,18 +30,7 @@ __global__
 void relax_ptp(const che * mesh, float * new_dist, float * old_dist, index_t * new_clusters, index_t * old_clusters, const index_t start, const index_t end, const index_t * sorted = nullptr);
 
 __global__
-void relative_error(float * error, const float * new_dist, const float * old_dist, const index_t start, const index_t end, const index_t * sorted = nullptr);
-
-struct is_ok
-{
-	const float * error = nullptr;
-
-	__host_device__
-	bool operator()(const float val) const;
-
-	__host_device__
-	bool operator()(const index_t val) const;
-};
+void relative_error(unsigned int * g_count, const float * new_dist, const float * old_dist, const index_t start, const index_t end, const index_t * sorted = nullptr);
 
 #endif // __CUDACC__
 
@@ -104,13 +89,9 @@ template<class T>
 __forceinline__
 #endif
 __host_device__
-float update_step(const che * mesh, const T * dist, const uvec3 & x)
+float update_step(const mat<T, 3> & points, const vec<T, 2> & t)
 {
-	const vec<T, 3> X[2] = {mesh->point(x[0]) - mesh->point(x[2]),
-							mesh->point(x[1]) - mesh->point(x[2])
-							};
-
-	const vec<T, 2> t = {dist[x[0]], dist[x[1]]};
+	const vec<T, 3> X[2] = {points[0] - points[2], points[1] - points[2]};
 
 	mat<T, 2> q;
 	q[0][0] = dot(X[0], X[0]);
@@ -143,7 +124,7 @@ float update_step(const che * mesh, const T * dist, const uvec3 & x)
 
 	if(t[0] == INFINITY || t[1] == INFINITY || dis < 0 || c[0] >= 0 || c[1] >= 0)
 	{
-		const vec<T, 2> & dp = {dist[x[0]] + norm(X[0]), dist[x[1]] + norm(X[1])};
+		const vec<T, 2> & dp = {t[0] + norm(X[0]), t[1] + norm(X[1])};
 		p = dp[dp[1] < dp[0]];
 	}
 
@@ -156,40 +137,45 @@ template<class T>
 __forceinline__
 #endif
 __host_device__
-void relax_ptp(const che * mesh, T * new_dist, T * old_dist, index_t * new_clusters, index_t * old_clusters, const index_t v)
+void relax_ptp(const che * mesh, const index_t * sorted, const index_t v, T * new_dist, T * old_dist, index_t * new_clusters, index_t * old_clusters)
 {
-	float & ndv = new_dist[v] = old_dist[v];
 	if(new_clusters) new_clusters[v] = old_clusters[v];
 
+	T ndv = old_dist[v];
+
+	mat<T, 3> X;
+	X[2] = mesh->point(v);
 	for(const index_t he: mesh->star(v))
 	{
-		const uvec3 i = {	mesh->halfedge(he_next(he)),
-							mesh->halfedge(he_prev(he)),
-							mesh->halfedge(he)
-							};
+		const uvec2 x = {mesh->halfedge(he_next(he)), mesh->halfedge(he_prev(he))};
+		const vec<T, 2> t = {old_dist[x[0]], old_dist[x[1]]};
 
-		float d = update_step(mesh, old_dist, i);
+		X[0] = mesh->point(x[0]);
+		X[1] = mesh->point(x[1]);
+
+		T d = update_step(X, t);
 
 		if(d < ndv)
 		{
 			ndv = d;
 			if(new_clusters)
-				new_clusters[v] = old_clusters[old_dist[i.y()] < old_dist[i.x()] ? i.y() : i.x()];
+				new_clusters[v] = old_clusters[x[t[1] < t[0]]];
 		}
 	}
+
+	new_dist[v] = ndv;
 }
 
 
-template<class T>
 #ifdef __CUDACC__
-index_t run_ptp(const che * mesh, const std::vector<index_t> & sources,
-				const std::vector<index_t> & limits, T * error, T ** dist, index_t ** clusters,
-				const index_t * idx, index_t * sorted, const f_ptp<T> & fun = nullptr)
-#else
+	__managed__ index_t count;
+#endif
+
+
+template<class T>
 index_t run_ptp(const che * mesh, const std::vector<index_t> & sources,
 				const std::vector<index_t> & limits, T ** dist, index_t ** clusters,
 				const index_t * idx, index_t * sorted, const f_ptp<T> & fun = nullptr)
-#endif
 {
 #ifdef __CUDACC__
 	T * h_dist = dist[2];
@@ -225,10 +211,13 @@ index_t run_ptp(const che * mesh, const std::vector<index_t> & sources,
 	}
 #endif
 
+#ifndef __CUDACC__
+	index_t count = 0;
+#endif
+
 	const int max_iter = size(limits) << 1;
 
 	int iter = -1;
-	index_t count = 0;
 	index_t i = 1;
 	index_t j = 2;
 	while(i < j && ++iter < max_iter)
@@ -249,16 +238,12 @@ index_t run_ptp(const che * mesh, const std::vector<index_t> & sources,
 		relax_ptp<<< NB(end - start), NT >>>(mesh, new_dist, old_dist, new_cluster, old_cluster, start, end, sorted);
 		cudaDeviceSynchronize();
 
-		relative_error<<< NB(n_cond), NT >>>(error, new_dist, old_dist, start, start + n_cond, sorted);
+		relative_error<<< NB(n_cond), NT >>>(&count, new_dist, old_dist, start, start + n_cond, sorted);
 		cudaDeviceSynchronize();
-
-		count = sorted ? thrust::count_if(thrust::device, sorted + start, sorted + start + n_cond, is_ok{error})
-						: thrust::count_if(thrust::device, error + start, error + start + n_cond, is_ok{});
 	#else
 		#pragma omp parallel for
 		for(index_t v = start; v < end; ++v)
-			relax_ptp(mesh, new_dist, old_dist, new_cluster, old_cluster, sorted ? sorted[v] : v);
-
+			relax_ptp(mesh, sorted, sorted ? sorted[v] : v, new_dist, old_dist, new_cluster, old_cluster);
 
 		count = 0;
 		#pragma omp parallel for

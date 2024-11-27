@@ -209,6 +209,8 @@ index_t embree::add_pointcloud(const che * mesh, const mat4 & model_mat, const p
 
 	knn::k3tree * nn = pc.opt == NONE ? nullptr : new knn::k3tree(&mesh->point(0), mesh->n_vertices, pc.knn + 1);
 
+	std::vector<float> A = nn && pc.anisotropy	? knn::anisotropic(&mesh->point(0), mesh->n_vertices, *nn, pc.knn + 1)
+												: std::vector<float>(mesh->n_vertices, 0);
 
 	#pragma omp parallel for
 	for(index_t i = 0; i < mesh->n_vertices; ++i)
@@ -245,9 +247,13 @@ index_t embree::add_pointcloud(const che * mesh, const mat4 & model_mat, const p
 			case MEDIAN_PAIRS:
 					r = knn::median_pair_dist(&mesh->point(0), (*nn)(i), pc.knn, model_mat);
 					break;
+
+			case VORONOI:
+					r = knn::voronoi_radius(&mesh->point(0), (*nn)(i), pc.knn, model_mat);
+					break;
 		};
 
-		pxyzr[i][3] = pc.scale * r;
+		pxyzr[i][3] = pc.scale * r * (1.f + A[i]);
 	}
 
 

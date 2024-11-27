@@ -52,7 +52,7 @@ class optix : public raytracing
 		std::vector<unsigned char *> tex_data;
 
 	public:
-		optix(const std::string & ptx = "/src/optix.ptx");
+		optix(const std::string & program = "/src/optix.optixir");
 		optix(const std::vector<const che *> & meshes, const std::vector<mat4> & model_mats);
 		~optix();
 

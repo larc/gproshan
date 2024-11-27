@@ -188,21 +188,24 @@ double geodesics::run_fastmarching(che * mesh, const std::vector<index_t> & sour
 			if(color[v] == RED)
 			{
 				float dv = dist[v];
+
+				mat3 X;
+				X[2] = mesh->point(v);
 				for(const index_t he: mesh->star(v))
 				{
-					const uvec3 i = {	mesh->halfedge(he_next(he)),
-										mesh->halfedge(he_prev(he)),
-										mesh->halfedge(he)
-									};
+					const uvec2 x = {mesh->halfedge(he_next(he)), mesh->halfedge(he_prev(he))};
 
-					float d = update_step(mesh, dist, i);
+					X[0] = mesh->point(x[0]);
+					X[1] = mesh->point(x[1]);
+
+					float d = update_step(X, {dist[x[0]], dist[x[1]]});
 
 					if(d < dv)
 					{
 						dv = d;
 
 						if(clusters)
-							clusters[v] = clusters[clusters[i.y()] ? i.y() : i.x()];
+							clusters[v] = clusters[x[clusters[x[1]] & 1]];
 					}
 				}
 

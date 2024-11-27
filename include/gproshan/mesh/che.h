@@ -129,6 +129,13 @@ class che
 	}
 
 	__host_device__
+	const vertex & vertex_he(const index_t he) const
+	{
+		assert(he < n_half_edges);
+		return GT[VT[he]];
+	}
+
+	__host_device__
 	const vertex & normal(const index_t v) const
 	{
 		assert(VN && v < n_vertices);
@@ -266,7 +273,6 @@ class che
 	index_t edge_v(const index_t e) const;
 	index_t edge_he_0(const index_t e) const;
 	index_t edge_he_1(const index_t e) const;
-	const vertex & vertex_he(const index_t he) const;
 	const vertex & vertex_edge_u(const index_t e) const;
 	const vertex & vertex_edge_v(const index_t e) const;
 	index_t evt(const index_t v) const;

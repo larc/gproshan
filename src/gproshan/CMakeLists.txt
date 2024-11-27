@@ -33,17 +33,17 @@ endif(CUDAToolkit_FOUND)
 
 
 if(OptiX_INCLUDE)
-	add_library(optix_ptx OBJECT ${gproshan_SOURCE_DIR}/src/gproshan/raytracing/optix.cu)
-	set_property(TARGET optix_ptx PROPERTY CUDA_PTX_COMPILATION ON)
-	add_custom_target(	copy_optix_ptx ALL
-						DEPENDS optix_ptx
-						COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_OBJECTS:optix_ptx> ${gproshan_SOURCE_DIR}/src/)
+	add_library(optix OBJECT ${gproshan_SOURCE_DIR}/src/gproshan/raytracing/optix.cu)
+	set_property(TARGET optix PROPERTY CUDA_OPTIX_COMPILATION ON)
+	add_custom_target(	copy_optix ALL
+						DEPENDS optix
+						COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_OBJECTS:optix> ${gproshan_SOURCE_DIR}/src/)
 
-	add_library(splat_optix_ptx OBJECT ${gproshan_SOURCE_DIR}/src/gproshan/raytracing/splat_optix.cu)
-	set_property(TARGET splat_optix_ptx PROPERTY CUDA_PTX_COMPILATION ON)
-	add_custom_target(	copy_splat_optix_ptx ALL
-						DEPENDS splat_optix_ptx
-						COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_OBJECTS:splat_optix_ptx> ${gproshan_SOURCE_DIR}/src/)
+	add_library(splat_optix OBJECT ${gproshan_SOURCE_DIR}/src/gproshan/raytracing/splat_optix.cu)
+	set_property(TARGET splat_optix PROPERTY CUDA_OPTIX_COMPILATION ON)
+	add_custom_target(	copy_splat_optix ALL
+						DEPENDS splat_optix
+						COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_OBJECTS:splat_optix> ${gproshan_SOURCE_DIR}/src/)
 endif(OptiX_INCLUDE)
 
 
