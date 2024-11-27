@@ -1,6 +1,7 @@
 #include <gproshan/pointcloud/knn.h>
 
 #include <unordered_map>
+#include <algorithm>
 #include <queue>
 
 
@@ -84,7 +85,7 @@ k3tree::k3tree(const point * pc, const size_t n_points, const point * query, con
 		flann::Index<flann::L2<float> > index(mpc, flann::KDTreeSingleIndexParams());
 		index.buildIndex();
 	TOC(time_build);
-	gproshan_log_var(time_build);
+//	gproshan_log_var(time_build);
 
 	TIC(time_query);
 		const point * q = query && n_query ? query : pc;
@@ -99,9 +100,9 @@ k3tree::k3tree(const point * pc, const size_t n_points, const point * query, con
 		params.cores = 0;
 		index.knnSearch(mq, indices, dists, k, params);
 	TOC(time_query);
-	gproshan_log_var(time_query);
+//	gproshan_log_var(time_query);
 
-	gproshan_log_var(time_build + time_query);
+//	gproshan_log_var(time_build + time_query);
 
 	delete [] dists.ptr();
 }
@@ -236,8 +237,6 @@ float mean_knn_area_radius(const point * pc, const size_t n_points, const size_t
 		mean_r += sqrt(r * r / k);
 	}
 
-	gproshan_log_var(mean_r);
-
 	return mean_r / n_points;
 }
 
@@ -261,6 +260,17 @@ float median_knn_area_radius(const point * pc, const size_t n_points, const size
 }
 
 
+float voronoi_radius(const point * pc, const int * id, const size_t n, const mat4 & model_mat)
+{
+	float r = 0;
+
+	for(index_t i = 1; i < n; ++i)
+	for(index_t j = i + 1; j < n; ++j)
+		r = std::max(r, length(model_mat * ((pc[id[0]] + pc[id[i]] + pc[id[j]]) / 3 - pc[id[0]], 0)));
+
+	return r;
+}
+
 float median_pair_dist(const point * pc, const int * id, const size_t n, const mat4 & model_mat)
 {
 	std::vector<float> dist;
@@ -282,6 +292,45 @@ float mean_knn(const point * pc, const int * id, const size_t n, const mat4 & mo
 		mean += length(model_mat * (pc[id[0]] - pc[id[i]], 0));
 
 	return mean / n;
+}
+
+std::vector<float> anisotropic(const point * pc, const size_t n_points, const knn::k3tree & nn, const int k)
+{
+	std::vector<float> A(n_points);
+
+	arma::fmat X(k, 3);
+	arma::fmat coeff, score;
+	arma::fvec latent;
+
+
+	float mean = 0;
+
+	#pragma omp parallel for reduction(+: mean) firstprivate(X, coeff, score, latent)
+	for(unsigned v = 0; v < n_points; ++v)
+	{
+		for(int i = 0; i < k; ++i)
+		for(int j = 0; j < 3; ++j)
+			X(i, j) = pc[nn(v, i)][j];
+
+		princomp(coeff, score, latent, X);
+
+		const float d = norm(pc[v] - pc[nn(v, k - 1)]);
+		A[v] = d * (1.f - latent[1] / latent[0]);
+
+		mean += d;
+	}
+
+	mean /= n_points;
+	mean *= 2;
+
+	#pragma omp parallel for
+	for(unsigned v = 0; v < n_points; ++v)
+	{
+		A[v] /= mean;
+		if(A[v] > 1) A[v] = 1;
+	}
+
+	return A;
 }
 
 

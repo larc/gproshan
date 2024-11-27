@@ -86,6 +86,7 @@ viewer::viewer(const char * title, const int width, const int height)
 
 viewer::~viewer()
 {
+	update_status_message("frametime_%p", this);
 	save_frametime(tmp_file_path(status_message));
 
 	delete sphere;
@@ -350,7 +351,12 @@ void viewer::imgui()
 			for(index_t i = 0; i < size(removed_meshes); ++i)
 			{
 				che_viewer * m = removed_meshes[i];
+
+				const int p = size((*m)->filename) - 27;
+				const std::string & filename = (p < 0 ? "" : "<<") + (*m)->filename.substr(p < 0 ? 0 : p);
+
 				ImGui::PushID(m);
+
 				if(ImGui::Button("add"))
 				{
 					meshes.push_back(m);
@@ -358,20 +364,23 @@ void viewer::imgui()
 
 					update_viewport_meshes();
 				}
+
 				ImGui::SameLine();
 				if(ImGui::Button("merge"))
 				{
 					add_mesh(mesh->merge(*m));
 				}
+
 				ImGui::SameLine();
 				if(ImGui::Button("delete"))
 				{
 					delete m;
 					removed_meshes.erase(begin(removed_meshes) + i);
 				}
+
 				ImGui::SameLine();
-				const int p = size((*m)->filename) - 27;
-				ImGui::Selectable(((p < 0 ? "" : "<<") + (*m)->filename.substr(p < 0 ? 0 : p)).c_str());
+				ImGui::Selectable(filename.c_str());
+
 				ImGui::PopID();
 			}
 		}
@@ -738,8 +747,8 @@ void viewer::cursor_callback(GLFWwindow * window, double x, double y)
 
 	if(GLFW_PRESS == glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE))
 	{
-		view->cam.pos.im().x() = 2 * x / view->window_width - 1;
-		view->cam.pos.im().y() = 2 * y / view->window_height - 1;
+		view->cam.pos[0] = 2 * x / view->window_width - 1;
+		view->cam.pos[1] = 2 * y / view->window_height - 1;
 		view->render_params.restart = true;
 	}
 }
@@ -1000,7 +1009,7 @@ bool viewer::m_setup_raytracing(viewer * view)
 	if(rt == R_EMBREE && (mesh.render_pointcloud || mesh->is_pointcloud()))
 	{
 		ImGui::Indent();
-		ImGui::Combo("pc.opt", (int *) &pc.opt, "NONE\0MAX\0MEAN\0MEDIAN\0AREA\0MEDIAN_PAIRS\0\0");
+		ImGui::Combo("pc.opt", (int *) &pc.opt, "NONE\0MAX\0MEAN\0MEDIAN\0AREA\0MEDIAN_PAIRS\0VORONOI\0\0");
 		if(pc.opt == rt::embree::NONE)
 		{
 			ImGui::SliderFloat("pc.radius", &pc.radius, 0, 1);
@@ -1010,6 +1019,7 @@ bool viewer::m_setup_raytracing(viewer * view)
 		ImGui::SliderInt("pc.knn", &pc.knn, 0, 1 << 6);
 		ImGui::SliderFloat("pc.scale", &pc.scale, 0, 10);
 		ImGui::Checkbox("pc.normals", &pc.normals);
+		ImGui::Checkbox("pc.anisotropy", &pc.anisotropy);
 		ImGui::Unindent();
 	}
 
@@ -1211,9 +1221,9 @@ bool viewer::m_raycasting(viewer * view)
 
 void viewer::render_gl()
 {
-	shader_sphere.uniform("eye", cam.eye.v);
-	shader_triangles.uniform("eye", cam.eye.v);
-	shader_pointcloud.uniform("eye", cam.eye.v);
+	shader_sphere.uniform("eye", cam.eye);
+	shader_triangles.uniform("eye", cam.eye);
+	shader_pointcloud.uniform("eye", cam.eye);
 
 	const light & ambient = render_params.ambient;
 	const light & l = render_params.lights[0];

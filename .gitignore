@@ -13,3 +13,5 @@ tmp/*
 
 include/gproshan/config.h
 
+
+*.optixir
