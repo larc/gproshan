@@ -19,6 +19,9 @@
 #include <gproshan/viewer/glfw_keys.h>
 
 #include <gproshan/raytracing/embree.h>
+#include <gproshan/raytracing/splat.h>
+#include <gproshan/raytracing/splat_embree.h>
+#include <gproshan/raytracing/splat_optix.h>
 
 #ifdef GPROSHAN_OPTIX
 	#include <gproshan/raytracing/optix.h>
@@ -1004,7 +1007,19 @@ bool viewer::m_setup_raytracing(viewer * view)
 
 	ImGui::SliderInt("depth", (int *) &view->render_params.depth, 1, 1 << 5);
 	ImGui::SliderInt("n_samples", (int *) &view->render_params.n_samples, 1, 1 << 5);
-	ImGui::Combo("rt", &rt, "Select\0Embree\0OptiX\0\0");
+	ImGui::Combo("rt", &rt, "Select\0Embree\0OptiX\0Splat Embree\0Splat OptiX\0\0");
+
+	if(rt > 2)
+	{
+		const static size_t knn_min = 1;
+		const static size_t knn_max = 1 << 10;
+		ImGui::SeparatorText("splat setup");
+		ImGui::SliderScalar("k_nn", ImGuiDataType_U64, &rt::splat::k_nn, &knn_min, &knn_max);
+		ImGui::SliderFloat("t_normal", &rt::splat::t_normal, 0, 1);
+		ImGui::SliderFloat("d_overlap", &rt::splat::d_overlap, 0, 1);
+	}
+
+	rt::splat * splat_test = nullptr;
 
 	if(rt == R_EMBREE && (mesh.render_pointcloud || mesh->is_pointcloud()))
 	{
@@ -1048,19 +1063,78 @@ bool viewer::m_setup_raytracing(viewer * view)
 				view->update_status_message("build optix in %.3fs", time);
 			#endif // GPROSHAN_OPTIX
 				break;
+
+			case 3:
+				delete mesh.rt_embree;
+				TIC(time);
+				{
+					rt::splat_embree * rtse = new rt::splat_embree({mesh}, {mesh.model_mat});
+					mesh.rt_embree = rtse;
+					splat_test = rtse;
+				}
+				TOC(time);
+				mesh.update_vbo_heatmap();
+				view->update_status_message("build splat embree in %.3fs", time);
+				for(che * pc: splat_test->pointclouds)
+				{
+					pc->filename = "ch_splats_" + mesh->name();
+					view->add_mesh(new che(*pc), false);
+					view->selected_mesh().render_flat = true;
+				}
+				break;
+
+			case 4:
+			#ifdef GPROSHAN_OPTIX
+				delete mesh.rt_optix;
+				TIC(time);
+				{
+					rt::splat_optix * rtso = new rt::splat_optix({mesh}, {mesh.model_mat});
+					mesh.rt_optix = rtso;
+					splat_test = rtso;
+				}
+				TOC(time);
+				mesh.update_vbo_heatmap();
+				view->update_status_message("build splat optix in %.3fs", time);
+				for(che * pc: splat_test->pointclouds)
+				{
+					pc->filename = "ch_splats_" + mesh->name();
+					view->add_mesh(new che(*pc), false);
+					view->selected_mesh().render_flat = true;
+				}
+			#endif // GPROSHAN_OPTIX
+				break;
 		}
 
 
 		FILE * fp = fopen(tmp_file_path("rt_build_times").c_str(), "a");
 
-		fprintf(fp, "dev %p ", view);
+		fprintf(fp, "research %p ", view);
 		fprintf(fp, "%s ", mesh->name().c_str());
 		fprintf(fp, "%lu ", mesh->n_vertices);
 		fprintf(fp, "%lu ", mesh->n_trigs);
 		fprintf(fp, "%u ", rt);
-		fprintf(fp, "%f\n", time);
 
+		if(rt > 2)
+		{
+			fprintf(fp, "%p ", splat_test);
+			fprintf(fp, "%lu ", splat_test->pointclouds.back()->n_vertices);
+			fprintf(fp, "%lu ", splat_test->pointclouds.back()->n_trigs);
+			fprintf(fp, "%lu ", splat_test->splats_pcs.back().n_splats);
+			fprintf(fp, "%f ", splat_test->time_knn);
+			fprintf(fp, "%f ", splat_test->time_segmentation);
+			fprintf(fp, "%f ", splat_test->time_subdivision);
+			fprintf(fp, "%f ", splat_test->time_initsplats);
+			fprintf(fp, "%f\n", time - splat_test->time);
+		}
+		else fprintf(fp, "%f\n", time);
 		fclose(fp);
+
+		if(rt > 2)
+		{
+			static char histogram[32];
+			snprintf(histogram, sizeof(histogram), "histogram_%p", splat_test);
+			splat_test->save_histogram(tmp_file_path(histogram));
+		}
 	}
 
 	return true;

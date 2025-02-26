@@ -1,0 +1,198 @@
+#include <gproshan/mesh/che.h>
+#include <gproshan/raytracing/splat_utils.h>
+#include <gproshan/raytracing/optix_params.h>
+
+#include <optix_device.h>
+#include <cuda_runtime.h>
+
+
+// geometry processing and shape analysis framework
+namespace gproshan::rt {
+
+
+extern "C" __constant__ optix_params params;
+
+static __forceinline__ __device__
+void * unpack_pointer(uint32_t i0, uint32_t i1)
+{
+	return (void *) (uint64_t(i0) << 32 | i1);
+}
+
+static __forceinline__ __device__
+void pack_pointer(void * ptr, uint32_t & i0, uint32_t & i1)
+{
+	const uint64_t uptr = uint64_t(ptr);
+	i0 = uptr >> 32;
+	i1 = uptr & 0x00000000ffffffff;
+}
+
+template<typename T>
+static __forceinline__ __device__
+T * ray_data()
+{
+	return (T *) unpack_pointer(optixGetPayload_0(), optixGetPayload_1());
+}
+
+
+extern "C" __global__ void __closesthit__shadow() {}
+
+extern "C" __global__ void __closesthit__radiance()
+{
+	const che & mesh = **(const che **) optixGetSbtDataPointer();
+
+	const int primID = optixGetPrimitiveIndex();
+	const float2 bar = optixGetTriangleBarycentrics();
+
+	OptixTraversableHandle gas = optixGetGASTraversableHandle();
+	const index_t sbtID = optixGetSbtGASIndex();
+	const float time = optixGetRayTime();
+
+	vertex data[3];
+	optixGetTriangleVertexData(gas, primID, sbtID, time, (float3 *) data);
+
+	const vertex & A = data[0];
+	const vertex & B = data[1];
+	const vertex & C = data[2];
+
+	splats_data * splats_pcs = (splats_data *) params.other;
+
+	const float3 o = optixGetWorldRayOrigin();
+	const float3 d = optixGetWorldRayDirection();
+	const vertex org = {o.x, o.y, o.z};
+	const vertex dir = {d.x, d.y, d.z};
+	const vertex x = (1.f - bar.x - bar.y) * A + bar.x * B + bar.y * C;
+
+	const float dist = (float) optixGetPayload_3() + length(x - org);
+	optixSetPayload_3((unsigned int) dist);
+
+	eval_hit hit;
+	const float w = splat_hit(hit, mesh, splats_pcs[sbtID], primID, x, dir, dist);
+
+	vec3 * trace = ray_data<vec3>();
+	vec3 & color		= trace[0];
+	vec3 & attenuation	= trace[1];
+	vec3 & position		= trace[2];
+	vec3 & ray_dir		= trace[3];
+
+	color = eval_li(hit, params.ambient, params.lights, params.n_lights, params.cam_pos,
+					[&](const vec3 & position, const vec3 & wi, const float light_dist) -> bool
+					{
+						uint32_t occluded = 1;
+						optixTrace( params.traversable,
+									* (float3 *) &(dot(position - x, dir) < 0 ? position : x),
+									* (float3 *) &wi,
+									1e-3f,					// tmin
+									light_dist - 1e-3f,		// tmax
+									0.0f,					// rayTime
+									OptixVisibilityMask(255),
+									OPTIX_RAY_FLAG_DISABLE_ANYHIT
+									| OPTIX_RAY_FLAG_DISABLE_CLOSESTHIT
+									| OPTIX_RAY_FLAG_TERMINATE_ON_FIRST_HIT,
+									1,	// SBT offset
+									2,	// SBT stride
+									1,	// missSBTIndex
+									occluded);
+
+						return occluded != 0;
+					});
+
+	color *= attenuation;
+	position = x;
+
+	if(w < 1e-3f)
+	{
+		color *= w;
+		return;
+	}
+
+	random<float> rnd = optixGetPayload_2();
+	if(!hit.scatter_diffuse(ray_dir, rnd))
+		attenuation = 0;
+
+	attenuation /= 2;
+	optixSetPayload_2(rnd);
+}
+
+
+extern "C" __global__ void __anyhit__radiance() {}
+
+extern "C" __global__ void __anyhit__shadow() {}
+
+
+extern "C" __global__ void __miss__radiance()
+{
+	optixSetPayload_0(0);
+}
+
+extern "C" __global__ void __miss__shadow()
+{
+	optixSetPayload_0(0);
+}
+
+
+extern "C" __global__ void __raygen__render_frame()
+{
+	const uvec2 & id = {optixGetLaunchIndex().x,
+						optixGetLaunchIndex().y
+						};
+
+	const uvec2 & pos = id + params.viewport_pos;
+
+	random<float> rnd(pos.x() + params.window_size.x() * pos.y(), params.n_frames);
+
+	unsigned int depth = params.depth;
+	unsigned int samples = params.n_samples;
+
+	vec3 color_acc = 0;
+
+	vec3 trace[4];
+	vec3 & color		= trace[0];
+	vec3 & attenuation	= trace[1];
+	vec3 & position		= trace[2];
+	vec3 & ray_dir		= trace[3];
+
+	uint32_t u0, u1;
+	unsigned int dist;
+
+	do
+	{
+		color		= 0;
+		attenuation = 1;
+		position	= params.cam_pos;
+		ray_dir		= ray_view_dir(pos, params.window_size, params.inv_proj_view, params.cam_pos, rnd);
+
+		dist = 0;
+
+		depth = params.depth;
+		do
+		{
+			pack_pointer(trace, u0, u1);
+			optixTrace(	params.traversable,
+						* (float3 *) &position,
+						* (float3 *) &ray_dir,
+						1e-5f,	// tmin
+						1e20f,	// tmax
+						0.0f,	// rayTime
+						OptixVisibilityMask(255),
+						OPTIX_RAY_FLAG_DISABLE_ANYHIT, //OPTIX_RAY_FLAG_NONE,
+						0,	// SBT offset
+						2,	// SBT stride
+						0,	// missSBTIndex
+						u0, u1, (unsigned int &) rnd, dist);
+
+			if(!u0) break;	// miss
+			color_acc += color;
+		}
+		while(--depth);
+	}
+	while(--samples);
+
+	color_acc /= params.n_samples;
+
+	vec4 & pixel_color = params.color_buffer[id.x() + id.y() * optixGetLaunchDimensions().x];
+	pixel_color = (pixel_color * params.n_frames + (color_acc, 1)) / (params.n_frames + 1);
+}
+
+
+} // namespace gproshan
+
