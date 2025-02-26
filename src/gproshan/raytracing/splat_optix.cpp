@@ -8,7 +8,7 @@
 namespace gproshan::rt {
 
 
-splat_optix::splat_optix(const std::vector<che *> & meshes, const std::vector<mat4> & model_mats): splat(meshes, model_mats), optix("/src/splat_optix.ptx")
+splat_optix::splat_optix(const std::vector<che *> & meshes, const std::vector<mat4> & model_mats): splat(meshes, model_mats), optix("splat_optix.optixir")
 {
 	std::vector<const che *> pcs;
 	pcs.reserve(size(pointclouds));
