@@ -62,7 +62,7 @@ optix::optix(const std::string & program)
 
 	_pipeline_link_opt.maxTraceDepth = 2;
 
-	std::ifstream is(std::string(GPROSHAN_DIR) + program);
+	std::ifstream is(tmp_file_path(program));
 	const std::string program_src = std::string(std::istreambuf_iterator<char>(is), std::istreambuf_iterator<char>());
 	is.close();
 
