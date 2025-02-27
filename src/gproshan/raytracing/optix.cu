@@ -115,11 +115,9 @@ extern "C" __global__ void __miss__shadow()
 
 extern "C" __global__ void __raygen__render_frame()
 {
-	const uvec2 & id = {optixGetLaunchIndex().x,
-						optixGetLaunchIndex().y
-						};
+	const unsigned int id = optixGetLaunchIndex().x;
 
-	const uvec2 & pos = id + params.viewport_pos;
+	const uvec2 & pos = params.viewport_pos + uvec2{id % params.viewport_size.x(), id / params.viewport_size.x()};
 
 	random<float> rnd(pos.x() + params.window_size.x() * pos.y(), params.n_frames);
 
@@ -172,7 +170,7 @@ extern "C" __global__ void __raygen__render_frame()
 
 	color_acc /= params.n_samples;
 
-	vec4 & pixel_color = params.color_buffer[id.x() + id.y() * optixGetLaunchDimensions().x];
+	vec4 & pixel_color = params.color_buffer[id];
 	pixel_color = (pixel_color * params.n_frames + (color_acc, 1)) / (params.n_frames + 1);
 }
 

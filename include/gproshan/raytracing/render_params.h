@@ -16,6 +16,7 @@ const size_t NL = 16;	// number of lights
 struct base_params
 {
 	uvec2 window_size;
+	uvec2 viewport_size;
 	uvec2 viewport_pos;
 	unsigned int depth = 1;
 	unsigned int n_frames = 0;
@@ -29,7 +30,6 @@ struct base_params
 
 struct render_params: public base_params
 {
-	uvec2 viewport_size;
 	bool viewport_is_window = true;
 	bool restart = false;
 

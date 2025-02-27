@@ -116,7 +116,9 @@ void optix::render(vec4 * img, const render_params & rp, const bool flat)
 	params.n_frames = rp.n_frames;
 	params.n_samples = rp.n_samples;
 	params.color_buffer = img;
+	params.buffer_size = rp.viewport_size.x() * rp.viewport_size.y();
 
+	params.viewport_size = rp.viewport_size;
 	params.window_size = rp.window_size;
 	if(rp.viewport_is_window)
 		params.window_size = rp.viewport_size;
@@ -132,14 +134,14 @@ void optix::render(vec4 * img, const render_params & rp, const bool flat)
 
 	cudaMemcpy(params_buffer, &params, sizeof(optix_params), cudaMemcpyHostToDevice);
 
-	optixLaunch(_pipeline,
-				stream,
-				(CUdeviceptr) params_buffer,
-				sizeof(optix_params),
-				&sbt,
-				rp.viewport_size.x(),
-				rp.viewport_size.y(),
-				1
+	optixLaunch(_pipeline
+				, stream
+				, (CUdeviceptr) params_buffer
+				, sizeof(optix_params)
+				, &sbt
+				, params.buffer_size
+				, 1
+				, 1
 				);
 
 	cudaDeviceSynchronize();
