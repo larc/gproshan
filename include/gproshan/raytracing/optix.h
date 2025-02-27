@@ -54,7 +54,7 @@ class optix : public raytracing
 	public:
 		optix(const std::string & program = "optix.optixir");
 		optix(const std::vector<const che *> & meshes, const std::vector<mat4> & model_mats);
-		~optix();
+		virtual ~optix();
 
 		virtual void render(vec4 * img, const render_params & params, const bool flat);
 
