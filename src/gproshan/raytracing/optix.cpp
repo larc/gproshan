@@ -112,6 +112,12 @@ optix::~optix()
 
 void optix::render(vec4 * img, const render_params & rp, const bool flat)
 {
+	update_params(img, rp, flat);
+	render();
+}
+
+void optix::update_params(vec4 * img, const render_params & rp, const bool flat)
+{
 	params.depth = rp.depth;
 	params.n_frames = rp.n_frames;
 	params.n_samples = rp.n_samples;
@@ -133,7 +139,10 @@ void optix::render(vec4 * img, const render_params & rp, const bool flat)
 	memcpy(params.lights, rp.lights, sizeof(params.lights));
 
 	cudaMemcpy(params_buffer, &params, sizeof(optix_params), cudaMemcpyHostToDevice);
+}
 
+void optix::render()
+{
 	optixLaunch(_pipeline
 				, stream
 				, (CUdeviceptr) params_buffer
@@ -146,6 +155,7 @@ void optix::render(vec4 * img, const render_params & rp, const bool flat)
 
 	cudaDeviceSynchronize();
 }
+
 
 void optix::create_raygen_programs()
 {
