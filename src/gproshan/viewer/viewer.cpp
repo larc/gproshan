@@ -464,7 +464,7 @@ void viewer::init_imgui()
 {
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
-	ImGuiIO& io = ImGui::GetIO(); (void) io;
+	ImGuiIO & io = ImGui::GetIO(); (void) io;
 
 	ImGui::StyleColorsDark();
 
