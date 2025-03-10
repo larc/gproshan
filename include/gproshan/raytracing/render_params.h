@@ -32,6 +32,7 @@ struct render_params: public base_params
 {
 	bool viewport_is_window = true;
 	bool restart = false;
+	unsigned int thread = 0;
 
 	bool add_light(const light & l)
 	{

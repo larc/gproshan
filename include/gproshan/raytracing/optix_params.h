@@ -26,7 +26,6 @@ struct optix_params: public base_params
 	bool flat;
 	void * other = nullptr;
 	vec4 * color_buffer = nullptr;
-	unsigned int buffer_size = 0;
 };
 
 

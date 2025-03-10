@@ -40,7 +40,7 @@ class optix : public raytracing
 		OptixShaderBindingTable sbt = {};
 
 		optix_params params;
-		optix_params * params_buffer = nullptr;
+		std::vector<optix_params *> params_buffer;
 
 		std::vector<che *> d_mesh;
 
@@ -52,13 +52,13 @@ class optix : public raytracing
 		std::vector<unsigned char *> tex_data;
 
 	public:
-		optix(const std::string & program = "optix.optixir");
+		optix(const std::string & program = "optix.optixir", const unsigned int nthreads = 1);
 		optix(const std::vector<const che *> & meshes, const std::vector<mat4> & model_mats);
 		virtual ~optix();
 
 		virtual void render(vec4 * img, const render_params & params, const bool flat) override;
 		void update_params(vec4 * img, const render_params & params, const bool flat);
-		void render();
+		void render(const unsigned int thread, const unsigned int nrays);
 
 	protected:
 		void create_raygen_programs();
