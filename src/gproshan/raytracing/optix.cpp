@@ -129,7 +129,6 @@ void optix::update_params(vec4 * img, const render_params & rp, const bool flat)
 	tmp_params.n_frames = rp.n_frames;
 	tmp_params.n_samples = rp.n_samples;
 	tmp_params.color_buffer = img;
-	tmp_params.buffer_size = rp.viewport_size.x() * rp.viewport_size.y();
 
 	tmp_params.viewport_size = rp.viewport_size;
 	tmp_params.window_size = rp.window_size;
