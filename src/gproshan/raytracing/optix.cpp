@@ -126,6 +126,7 @@ void optix::update_params(vec4 * img, const render_params & rp, const bool flat)
 	optix_params tmp_params = params;
 
 	tmp_params.depth = rp.depth;
+	tmp_params.thread = rp.thread;
 	tmp_params.n_frames = rp.n_frames;
 	tmp_params.n_samples = rp.n_samples;
 	tmp_params.color_buffer = img;
