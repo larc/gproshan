@@ -173,7 +173,7 @@ mat4 che::normalize_sphere(const float r) const
 mat4 che::normalize_box(const float side) const
 {
 	vertex pmin = INFINITY;
-	vertex pmax = 0;
+	vertex pmax = -INFINITY;
 
 	for(index_t v = 0; v < n_vertices; ++v)
 	{
