@@ -27,15 +27,7 @@
 	#include <gproshan/raytracing/optix.h>
 #endif // GPROSHAN_OPTIX
 
-
-#ifndef __clang__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wformat-truncation"
-	#include <CImg.h>
-#pragma GCC diagnostic pop
-#else
-	#include <CImg.h>
-#endif // __clang__
+#include <CImg.h>
 
 using namespace cimg_library;
 
