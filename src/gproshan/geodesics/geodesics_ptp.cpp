@@ -16,7 +16,7 @@ coalescence_ptp::coalescence_ptp(const che * m, const toplesets & tps)
 {
 	if(!m) return;
 
-	mesh = new che(*m, tps.sorted, {false, false, false});
+	mesh = new che(*m, tps, {false, false, false});
 	inv = new index_t[mesh->n_vertices];
 
 	#pragma omp parallel for
@@ -49,10 +49,8 @@ double parallel_toplesets_propagation_cpu(	const ptp_out_t & ptp_out,
 	TIC(time);
 
 
-	const size_t n_vertices = mesh->n_vertices;
-
-	coalescence_ptp inv(coalescence ? mesh : nullptr, tps);
-
+	const coalescence_ptp inv(coalescence ? mesh : nullptr, tps);
+	const size_t n_vertices = coalescence ? inv.mesh->n_vertices : mesh->n_vertices;
 
 	float * dist[2] = {	coalescence ? new float[n_vertices] : ptp_out.dist,
 							new float[n_vertices]

@@ -29,81 +29,81 @@ size_t & che::rw(const size_t & n)
 const che::options che::default_opts;
 
 
-che::che(const che & mesh, const index_t * sorted, const che::options & opts)
+che::che(const che & mesh, const std::vector<index_t> & sorted, const che::options & opts)
 {
 	filename = mesh.filename;
 
-	if(!alloc(mesh.n_vertices, mesh.n_trigs, opts))
-		return;
-
-	rw(n_edges)	= mesh.n_edges;
-
-	if(!sorted)
+	if(!std::size(sorted))
 	{
+		if(!alloc(mesh.n_vertices, mesh.n_trigs, opts))
+			return;
+
+		rw(n_edges)	= mesh.n_edges;
 		memcpy(GT, mesh.GT, n_vertices * sizeof(vertex));
 		memcpy(EVT, mesh.EVT, n_vertices * sizeof(index_t));
 		memcpy(VT, mesh.VT, n_half_edges * sizeof(index_t));
-	}
-	else
-	{
-		index_t * inv = new index_t[n_vertices];
 
-		#pragma omp parallel for
-		for(index_t v = 0; v < n_vertices; ++v)
+		if(opts.edges)
 		{
-			GT[v] = mesh.GT[sorted[v]];
-			inv[sorted[v]] = v;
+			memcpy(ET, mesh.ET, n_edges * sizeof(index_t));
+			memcpy(EHT, mesh.EHT, n_half_edges * sizeof(index_t));
 		}
 
-		#pragma omp parallel for
-		for(index_t he = 0; he < n_half_edges; ++he)
-		{
-			const index_t v = mesh.VT[he];
-			VT[he] = inv[v];
-			if(mesh.EVT[v] == he)
-				EVT[inv[v]] = he;
-		}
-
-		delete [] inv;
-	}
-
-	memcpy(OT, mesh.OT, n_half_edges * sizeof(index_t));
-
-	if(opts.edges)
-	{
-		memcpy(ET, mesh.ET, n_edges * sizeof(index_t));
-		memcpy(EHT, mesh.EHT, n_half_edges * sizeof(index_t));
-	}
-
-	if(opts.normals)
-	{
-		if(!sorted)
-		{
-			memcpy(VN, mesh.VN, n_vertices * sizeof(vertex));
-		}
-		else
-		{
-			#pragma omp parallel for
-			for(index_t v = 0; v < n_vertices; ++v)
-				VN[v] = mesh.VN[sorted[v]];
-		}
-	}
-
-	if(opts.colors)
-	{
-		if(!sorted)
+		if(opts.normals) memcpy(VN, mesh.VN, n_vertices * sizeof(vertex));
+		if(opts.colors)
 		{
 			memcpy(VC, mesh.VC, n_vertices * sizeof(rgb_t));
 			memcpy(VHC, mesh.VHC, n_vertices * sizeof(float));
 		}
-		else
+
+		return;
+	}
+
+
+	std::vector<index_t> inv(mesh.n_vertices, NIL);
+	std::vector<vertex> V(std::size(sorted));
+
+	#pragma omp parallel for
+	for(index_t i = 0; i < std::size(sorted); ++i)
+	{
+		V[i] = mesh.GT[sorted[i]];
+		inv[sorted[i]] = i;
+	}
+
+	std::vector<index_t> T;
+	T.reserve(mesh.n_half_edges);
+
+	for(index_t i = 0; i < mesh.n_trigs; ++i)
+	{
+		const index_t he = 3 * i;
+		const index_t a = mesh.VT[he];
+		const index_t b = mesh.VT[he + 1];
+		const index_t c = mesh.VT[he + 2];
+
+		if(inv[a] == NIL || inv[b] == NIL || inv[c] == NIL)
+			continue;
+
+		T.push_back(inv[a]);
+		T.push_back(inv[b]);
+		T.push_back(inv[c]);
+	}
+
+	init(V.data(), std::size(V), T.data(), std::size(T) / 3);
+
+	if(opts.normals)
+	{
+		#pragma omp parallel for
+		for(index_t v = 0; v < n_vertices; ++v)
+			VN[v] = mesh.VN[sorted[v]];
+	}
+
+	if(opts.colors)
+	{
+		#pragma omp parallel for
+		for(index_t v = 0; v < n_vertices; ++v)
 		{
-			#pragma omp parallel for
-			for(index_t v = 0; v < n_vertices; ++v)
-			{
-				VC[v] = mesh.VC[sorted[v]];
-				VHC[v] = mesh.VHC[sorted[v]];
-			}
+			VC[v] = mesh.VC[sorted[v]];
+			VHC[v] = mesh.VHC[sorted[v]];
 		}
 	}
 }

@@ -29,10 +29,10 @@ double parallel_toplesets_propagation_gpu(	const ptp_out_t & ptp_out,
 	cudaEventRecord(start, 0);
 
 
-	const size_t n_vertices = mesh->n_vertices;
+	const coalescence_ptp inv(coalescence ? mesh : nullptr, tps);
+	const size_t n_vertices = coalescence ? inv.mesh->n_vertices : mesh->n_vertices;
 
-	coalescence_ptp inv(coalescence ? mesh : nullptr, tps);
-	che_cuda d_mesh(coalescence ? inv.mesh : mesh, {false, false, false});
+	const che_cuda d_mesh(coalescence ? inv.mesh : mesh, {false, false, false});
 
 	float * h_dist = coalescence ? new float[n_vertices] : ptp_out.dist;
 	index_t * h_clusters = coalescence && ptp_out.clusters ? new index_t[n_vertices]
