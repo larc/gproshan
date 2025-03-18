@@ -45,10 +45,6 @@ double parallel_toplesets_propagation_gpu(	const ptp_out_t & ptp_out,
 
 	const che_cuda d_mesh(coalescence ? inv : mesh, {false, false, false});
 
-	gproshan_error_var(coalescence);
-	gproshan_error_var(n_vertices == mesh->n_vertices);
-	gproshan_error_var(n_vertices == tps.size());
-
 	float * h_dist = new float[n_vertices];
 	index_t * h_clusters = ptp_out.clusters ? new index_t[n_vertices] : nullptr;
 
@@ -89,7 +85,7 @@ double parallel_toplesets_propagation_gpu(	const ptp_out_t & ptp_out,
 	cudaMemcpy(h_dist, d_dist[i], sizeof(float) * n_vertices, cudaMemcpyDeviceToHost);
 
 	#pragma omp parallel for
-	for(index_t v = 0; v < n_vertices; ++v)
+	for(index_t v = 0; v < std::size(tps); ++v)
 		ptp_out.dist[tps.sorted[v]] = h_dist[v];
 
 	delete [] h_dist;
@@ -99,7 +95,7 @@ double parallel_toplesets_propagation_gpu(	const ptp_out_t & ptp_out,
 		cudaMemcpy(h_clusters, d_clusters[i], sizeof(index_t) * n_vertices, cudaMemcpyDeviceToHost);
 
 		#pragma omp parallel for
-		for(index_t v = 0; v < n_vertices; ++v)
+		for(index_t v = 0; v < std::size(tps); ++v)
 			ptp_out.clusters[tps.sorted[v]] = h_clusters[v];
 
 		delete [] h_clusters;

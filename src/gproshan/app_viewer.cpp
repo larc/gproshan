@@ -562,7 +562,7 @@ bool app_viewer::process_farthest_point_sampling(viewer * p_view)
 	static int n = 10;
 	static float radio;
 
-	ImGui::SliderInt("samples", &n, 1, mesh->n_vertices / 6);
+	ImGui::SliderInt("samples", &n, 1, mesh->n_vertices >> 3);
 	ImGui::Text("radio: %.3f", radio);
 
 	if(ImGui::Button("Run"))

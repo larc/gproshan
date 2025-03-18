@@ -150,19 +150,19 @@ void relax_ptp(const che * mesh, const index_t * sorted, const index_t * inv, co
 
 	vec<T, 2> t;
 	mat<T, 3> X;
+	uvec2 x;
 
 	X[2] = mesh->point(v);
 	for(const index_t he: mesh->star(v))
 	{
-		const uvec2 x = {mesh->halfedge(he_next(he)), mesh->halfedge(he_prev(he))};
-		inv ? t = {old_dist[inv[x[0]]], old_dist[inv[x[1]]]}
-			: t = {old_dist[x[0]], old_dist[x[1]]};
+		x = {mesh->halfedge(he_next(he)), mesh->halfedge(he_prev(he))};
 
 		X[0] = mesh->point(x[0]);
 		X[1] = mesh->point(x[1]);
 
-		d = update_step(X, t);
+		if(inv) x = {inv[x[0]], inv[x[1]]};
 
+		d = update_step(X, t = {old_dist[x[0]], old_dist[x[1]]});
 		if(d < ndv)
 		{
 			ndv = d;

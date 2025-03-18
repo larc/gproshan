@@ -60,9 +60,6 @@ double parallel_toplesets_propagation_cpu(	const ptp_out_t & ptp_out,
 	const coalescence_ptp inv(coalescence ? mesh : nullptr, tps);
 	const size_t n_vertices = coalescence ? inv->n_vertices : mesh->n_vertices;
 
-	gproshan_error_var(coalescence);
-	gproshan_error_var(n_vertices == mesh->n_vertices);
-
 	float * dist[2] = {	ptp_out.dist, new float[n_vertices]};
 	index_t * clusters[2] = {};
 	if(ptp_out.clusters)
@@ -88,7 +85,7 @@ double parallel_toplesets_propagation_cpu(	const ptp_out_t & ptp_out,
 		dist[!i][v] = dist[i][v];
 
 	#pragma omp parallel for
-	for(index_t v = 0; v < n_vertices; ++v)
+	for(index_t v = 0; v < std::size(tps); ++v)
 		ptp_out.dist[tps.sorted[v]] = dist[1][v];
 
 	delete [] dist[1];

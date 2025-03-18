@@ -42,15 +42,15 @@ class geodesics
 		};
 
 	public:
-		index_t * clusters;			///< Clustering vertices to closest source.
+		index_t * clusters = nullptr;				///< Clustering vertices to closest source.
 
 	private:
-		float * dist;				///< Results of computation geodesic distances.
-		index_t * sorted_index;		///< Sort vertices by topological level or geodesic distance.
-		size_t n_sorted;			///< Number of vertices sorted by their geodesics distance.
-		bool free_dist;
+		float * dist = nullptr;						///< Results of computation geodesic distances.
+		index_t * sorted_index = nullptr;			///< Sort vertices by topological level or geodesic distance.
+		size_t n_sorted	= 0;						///< Number of vertices sorted by their geodesics distance.
+		bool free_dist = false;
 
-		const size_t n_vertices;	///< Number of vertices, const reference
+		const size_t n_vertices = 0;				///< Number of vertices, const reference
 
 	public:
 		geodesics(	che * mesh,								///< input triangular mesh.
