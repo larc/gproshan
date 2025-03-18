@@ -101,7 +101,7 @@ void test_image_denoising(const std::string & file)
 
 	gproshan_log_var(norm(Y - spY));
 
-	CImg<double> image_out = image;
+	CImg<float> image_out = image;
 	image_out.fill(0);
 
 	for(index_t x = 0; x < rows; ++x)
@@ -129,7 +129,7 @@ void test_image_denoising(const std::string & file)
 		image_out(x, y) /= dx * dy;
 	}
 
-	CImg<double> diff = abs(image - image_out);
+	CImg<float> diff = abs(image - image_out);
 	(image, image_out, diff).display();
 }
 
