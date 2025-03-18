@@ -15,6 +15,7 @@ class toplesets: public partitions
 
 	public:
 		const size_t n_levels = 0;
+		const size_t n_vertices = 0;
 
 	public:
 		toplesets(const che * mesh, const std::vector<index_t> & sources, const index_t max_level = NIL);

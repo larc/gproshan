@@ -14,10 +14,9 @@ ptp_out_t::ptp_out_t(float *const d, index_t *const c): dist(d), clusters(c) {}
 
 coalescence_ptp::coalescence_ptp(const che * m, const toplesets & tps)
 {
-	if(!m) return;
-	mesh = new che(*m, tps, {false, false, false});
+	if(m) mesh = new che(*m, tps, {false, false, false});
 
-	inv.assign(m->n_vertices, NIL);
+	inv.assign(tps.n_vertices, NIL);
 
 	#pragma omp parallel for
 	for(index_t i = 0; i < std::size(tps); ++i)
@@ -81,19 +80,16 @@ double parallel_toplesets_propagation_cpu(	const ptp_out_t & ptp_out,
 
 	const index_t i = run_ptp(	coalescence ? inv : mesh, sources, tps.splits, dist, clusters,
 								coalescence ? nullptr : tps.sorted,
-								!coalescence ? nullptr : (const index_t *) inv,
+								coalescence ? nullptr : (const index_t *) inv,
 								fun);
 
 	#pragma omp parallel for
 	for(index_t v = 0; v < n_vertices; ++v)
 		dist[!i][v] = dist[i][v];
 
-	if(coalescence)
-	{
-		#pragma omp parallel for
-		for(index_t v = 0; v < n_vertices; ++v)
-			ptp_out.dist[tps.sorted[v]] = dist[1][v];
-	}
+	#pragma omp parallel for
+	for(index_t v = 0; v < n_vertices; ++v)
+		ptp_out.dist[tps.sorted[v]] = dist[1][v];
 
 	delete [] dist[1];
 	delete [] clusters[1];

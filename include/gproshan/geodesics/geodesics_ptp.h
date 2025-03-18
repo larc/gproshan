@@ -155,8 +155,8 @@ void relax_ptp(const che * mesh, const index_t * sorted, const index_t * inv, co
 	for(const index_t he: mesh->star(v))
 	{
 		const uvec2 x = {mesh->halfedge(he_next(he)), mesh->halfedge(he_prev(he))};
-		inv ? t = {old_dist[x[0]], old_dist[x[1]]}
-			: t = {old_dist[inv[x[0]]], old_dist[inv[x[1]]]};
+		inv ? t = {old_dist[inv[x[0]]], old_dist[inv[x[1]]]}
+			: t = {old_dist[x[0]], old_dist[x[1]]};
 
 		X[0] = mesh->point(x[0]);
 		X[1] = mesh->point(x[1]);
@@ -245,14 +245,14 @@ index_t run_ptp(const che * mesh, const std::vector<index_t> & sources,
 		cudaDeviceSynchronize();
 	#else
 		#pragma omp parallel for
-		for(index_t i = start; i < end; ++i)
-			relax_ptp(mesh, sorted, inv, i, new_dist, old_dist, new_cluster, old_cluster);
+		for(index_t v = start; v < end; ++v)
+			relax_ptp(mesh, sorted, inv, v, new_dist, old_dist, new_cluster, old_cluster);
 
 		count = 0;
 		#pragma omp parallel for
-		for(index_t k = start; k < start + n_cond; ++k)
+		for(index_t v = start; v < start + n_cond; ++v)
 		{
-			if(std::abs(new_dist[k] - old_dist[k]) / old_dist[k] < PTP_TOL)
+			if(std::abs(new_dist[v] - old_dist[v]) / old_dist[v] < PTP_TOL)
 			{
 				#pragma omp atomic
 				++count;

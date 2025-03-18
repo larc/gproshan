@@ -63,7 +63,7 @@ double parallel_toplesets_propagation_gpu(	const ptp_out_t & ptp_out,
 		cudaMemcpy(d_sorted, tps.sorted, sizeof(index_t) * std::size(tps), cudaMemcpyHostToDevice);
 
 		cudaMalloc(&d_inv, sizeof(index_t) * mesh->n_vertices);
-		cudaMemcpy(d_inv, tps.sorted, sizeof(index_t) * mesh->n_vertices, cudaMemcpyHostToDevice);
+		cudaMemcpy(d_inv, (const index_t *) inv, sizeof(index_t) * mesh->n_vertices, cudaMemcpyHostToDevice);
 	}
 
 	if(set_inf)
@@ -99,6 +99,7 @@ double parallel_toplesets_propagation_gpu(	const ptp_out_t & ptp_out,
 	cudaFree(d_clusters[0]);
 	cudaFree(d_clusters[1]);
 	cudaFree(d_sorted);
+	cudaFree(d_inv);
 
 	cudaEventRecord(stop, 0);
 	cudaEventSynchronize(stop);

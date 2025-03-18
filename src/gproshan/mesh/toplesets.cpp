@@ -56,6 +56,7 @@ void toplesets::reset(const che * mesh, const std::vector<index_t> & sources, co
 	splits.push_back(std::size(tsorted));
 
 	che::rw(n_levels) = std::size(splits) - 1;
+	che::rw(n_vertices) = mesh->n_vertices;
 	sorted = tsorted.data();
 }
 
