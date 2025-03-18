@@ -11,8 +11,6 @@
 namespace gproshan {
 
 
-index_t ** sampling_shape(std::vector<index_t> & points, size_t *& sizes, vertex *& normals, che * mesh, size_t n_points, float radio);
-
 bool load_sampling(std::vector<index_t> & points, float & radio, che * mesh, size_t M);
 
 

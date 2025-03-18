@@ -12,6 +12,17 @@
 namespace gproshan {
 
 
+__global__
+void update_inv(index_t * inv, const index_t * sorted, const size_t n)
+{
+	const index_t i = blockDim.x * blockIdx.x + threadIdx.x;
+
+	if(i >= n) return;
+
+	inv[sorted[i]] = i;
+}
+
+
 double parallel_toplesets_propagation_gpu(	const ptp_out_t & ptp_out,
 											const che * mesh,
 											const std::vector<index_t> & sources,
@@ -136,12 +147,14 @@ double farthest_point_sampling_ptp_gpu(che * mesh, std::vector<index_t> & sample
 	cudaMalloc(&d_dist[0], sizeof(float) * n_vertices);
 	cudaMalloc(&d_dist[1], sizeof(float) * n_vertices);
 	cudaMalloc(&d_sorted, sizeof(index_t) * n_vertices);
-	cudaMalloc(&d_inv, sizeof(index_t) * mesh->n_vertices);
+	cudaMalloc(&d_inv, sizeof(index_t) * n_vertices);
 	d_dist[2] = h_dist;
 
 	#pragma omp parallel for
 	for(index_t v = 0; v < n_vertices; ++v)
 		h_dist[v] = INFINITY;
+
+	if(!size(samples)) samples.push_back(0);
 
 	toplesets tps(mesh, samples);
 
@@ -158,6 +171,9 @@ double farthest_point_sampling_ptp_gpu(che * mesh, std::vector<index_t> & sample
 	while(n-- && radio < max_dist)
 	{
 		cudaMemcpy(d_sorted, tps.sorted, sizeof(index_t) * tps.size(), cudaMemcpyHostToDevice);
+		update_inv<<< NB(tps.size()), NT >>>(d_inv, d_sorted, tps.size());
+		cudaDeviceSynchronize();
+
 		const index_t i = run_ptp(d_mesh, samples, tps.splits, d_dist, d_clusters, d_sorted, d_inv);
 
 		// 1 indexing
@@ -177,6 +193,7 @@ double farthest_point_sampling_ptp_gpu(che * mesh, std::vector<index_t> & sample
 	cudaFree(d_dist[0]);
 	cudaFree(d_dist[1]);
 	cudaFree(d_sorted);
+	cudaFree(d_inv);
 
 	cudaEventRecord(stop, 0);
 	cudaEventSynchronize(stop);

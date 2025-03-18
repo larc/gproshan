@@ -568,7 +568,9 @@ bool app_viewer::process_farthest_point_sampling(viewer * p_view)
 	if(ImGui::Button("Run"))
 	{
 		TIC(view->time)
-		load_sampling(mesh.selected, radio, mesh, n);
+	#ifdef GPROSHAN_CUDA
+		farthest_point_sampling_ptp_gpu(mesh, mesh.selected, n);
+	#endif
 		TOC(view->time)
 		gproshan_log_var(view->time);
 	}
