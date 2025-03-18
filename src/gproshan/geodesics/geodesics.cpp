@@ -113,7 +113,7 @@ double geodesics::execute(che * mesh, const std::vector<index_t> & sources, cons
 			break;
 
 		case PTP_CPU:
-			time = parallel_toplesets_propagation_cpu({dist, clusters}, mesh, sources, toplesets(mesh, sources));
+			time = parallel_toplesets_propagation_cpu({dist, clusters}, mesh, sources, toplesets(mesh, sources), size(sources) == 1);
 			break;
 
 		case HEAT_METHOD:
@@ -122,7 +122,7 @@ double geodesics::execute(che * mesh, const std::vector<index_t> & sources, cons
 
 #ifdef GPROSHAN_CUDA
 		case PTP_GPU:
-			time = parallel_toplesets_propagation_gpu({dist, clusters}, mesh, sources, toplesets(mesh, sources));
+			time = parallel_toplesets_propagation_gpu({dist, clusters}, mesh, sources, toplesets(mesh, sources), size(sources) == 1);
 			break;
 
 		case HEAT_METHOD_GPU:

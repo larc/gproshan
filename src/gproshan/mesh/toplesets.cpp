@@ -23,6 +23,8 @@ toplesets::operator const std::vector<index_t> & () const
 void toplesets::reset(const che * mesh, const std::vector<index_t> & sources, const index_t max_level)
 {
 	level.assign(mesh->n_vertices, NIL);
+
+	tsorted.clear();
 	tsorted.reserve(mesh->n_vertices);
 
 	index_t l = 0;

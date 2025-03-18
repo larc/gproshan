@@ -15,24 +15,22 @@ ptp_out_t::ptp_out_t(float *const d, index_t *const c): dist(d), clusters(c) {}
 coalescence_ptp::coalescence_ptp(const che * m, const toplesets & tps)
 {
 	if(!m) return;
-
 	mesh = new che(*m, tps, {false, false, false});
-	inv = new index_t[mesh->n_vertices];
-
-	#pragma omp parallel for
-	for(index_t i = 0; i < tps.splits.back(); ++i)
-		inv[tps.sorted[i]] = i;
 }
 
 coalescence_ptp::~coalescence_ptp()
 {
 	delete mesh;
-	delete [] inv;
 }
 
-coalescence_ptp::operator const index_t * () const
+coalescence_ptp::operator const che * () const
 {
-	return inv;
+	return mesh;
+}
+
+const che * coalescence_ptp::operator -> () const
+{
+	return mesh;
 }
 
 
@@ -52,12 +50,16 @@ double parallel_toplesets_propagation_cpu(	const ptp_out_t & ptp_out,
 	const coalescence_ptp inv(coalescence ? mesh : nullptr, tps);
 	const size_t n_vertices = coalescence ? inv.mesh->n_vertices : mesh->n_vertices;
 
-	float * dist[2] = {	coalescence ? new float[n_vertices] : ptp_out.dist,
-							new float[n_vertices]
-							};
-	index_t * clusters[2] = {	coalescence && ptp_out.clusters ? new index_t[n_vertices] : ptp_out.clusters,
-								ptp_out.clusters ? new index_t[n_vertices] : nullptr
-								};
+	gproshan_error_var(coalescence);
+	gproshan_error_var(n_vertices == mesh->n_vertices);
+
+	float * dist[2] = {	ptp_out.dist, new float[n_vertices]};
+	index_t * clusters[2] = {};
+	if(ptp_out.clusters)
+	{
+		clusters[0] = ptp_out.clusters;
+		clusters[1] = new index_t[n_vertices];
+	}
 
 	if(set_inf)
 	{
@@ -67,7 +69,6 @@ double parallel_toplesets_propagation_cpu(	const ptp_out_t & ptp_out,
 	}
 
 	const index_t i = run_ptp(	coalescence ? inv.mesh : mesh, sources, tps.splits, dist, clusters,
-								coalescence ? inv : tps.sorted,
 								coalescence ? nullptr : (index_t *) tps.sorted,
 								fun);
 
@@ -79,9 +80,7 @@ double parallel_toplesets_propagation_cpu(	const ptp_out_t & ptp_out,
 	{
 		#pragma omp parallel for
 		for(index_t v = 0; v < n_vertices; ++v)
-			ptp_out.dist[v] = dist[0][inv[v]];
-
-		delete [] dist[0];
+			ptp_out.dist[tps.sorted[v]] = dist[1][v];
 	}
 
 	delete [] dist[1];

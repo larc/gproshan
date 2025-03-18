@@ -22,6 +22,11 @@ size_t partitions::size(const index_t i) const
 	return splits[i + 1] - splits[i];
 }
 
+size_t partitions::size() const
+{
+	return splits.back();
+}
+
 partitions::part partitions::operator () (const index_t i) const
 {
 	assert(i > 0 && i < std::size(splits));
