@@ -27,7 +27,7 @@ namespace gproshan {
 #ifdef __CUDACC__
 
 __global__
-void relax_ptp(const che * mesh, float * new_dist, float * old_dist, index_t * new_clusters, index_t * old_clusters, const index_t start, const index_t end, const index_t * sorted = nullptr);
+void relax_ptp(const che * mesh, float * new_dist, float * old_dist, index_t * new_clusters, index_t * old_clusters, const index_t start, const index_t end, const index_t * sorted = nullptr, const index_t * inv = nullptr);
 
 __global__
 void relative_error(unsigned int * g_count, const float * new_dist, const float * old_dist, const index_t start, const index_t end);
@@ -44,15 +44,18 @@ struct ptp_out_t
 };
 
 
-struct coalescence_ptp
+class coalescence_ptp
 {
 	che * mesh = nullptr;
+	std::vector<index_t> inv;
 
-	coalescence_ptp(const che * mesh, const toplesets & tps);
-	~coalescence_ptp();
+	public:
+		coalescence_ptp(const che * mesh, const toplesets & tps);
+		~coalescence_ptp();
 
-	operator const che * () const;
-	const che * operator -> () const;
+		operator const index_t * () const;
+		operator const che * () const;
+		const che * operator -> () const;
 };
 
 
@@ -137,7 +140,7 @@ template<class T>
 __forceinline__
 #endif
 __host_device__
-void relax_ptp(const che * mesh, const index_t * sorted, const index_t i, T * new_dist, T * old_dist, index_t * new_clusters, index_t * old_clusters)
+void relax_ptp(const che * mesh, const index_t * sorted, const index_t * inv, const index_t i, T * new_dist, T * old_dist, index_t * new_clusters, index_t * old_clusters)
 {
 	const index_t v = sorted ? sorted[i] : i;
 
@@ -145,12 +148,15 @@ void relax_ptp(const che * mesh, const index_t * sorted, const index_t i, T * ne
 
 	T d, ndv = old_dist[i];
 
+	vec<T, 2> t;
 	mat<T, 3> X;
+
 	X[2] = mesh->point(v);
 	for(const index_t he: mesh->star(v))
 	{
 		const uvec2 x = {mesh->halfedge(he_next(he)), mesh->halfedge(he_prev(he))};
-		const vec<T, 2> t = {old_dist[x[0]], old_dist[x[1]]};
+		inv ? t = {old_dist[x[0]], old_dist[x[1]]}
+			: t = {old_dist[inv[x[0]]], old_dist[inv[x[1]]]};
 
 		X[0] = mesh->point(x[0]);
 		X[1] = mesh->point(x[1]);
@@ -177,7 +183,7 @@ void relax_ptp(const che * mesh, const index_t * sorted, const index_t i, T * ne
 template<class T>
 index_t run_ptp(const che * mesh, const std::vector<index_t> & sources,
 				const std::vector<index_t> & limits, T ** dist, index_t ** clusters,
-				index_t * sorted, const f_ptp<T> & fun = nullptr)
+				const index_t * sorted, const index_t * inv, const f_ptp<T> & fun = nullptr)
 {
 #ifdef __CUDACC__
 	T * h_dist = dist[2];
@@ -232,7 +238,7 @@ index_t run_ptp(const che * mesh, const std::vector<index_t> & sources,
 		index_t * old_cluster = clusters[!(iter & 1)];
 
 	#ifdef __CUDACC__
-		relax_ptp<<< NB(end - start), NT >>>(mesh, new_dist, old_dist, new_cluster, old_cluster, start, end, sorted);
+		relax_ptp<<< NB(end - start), NT >>>(mesh, new_dist, old_dist, new_cluster, old_cluster, start, end, sorted, inv);
 		cudaDeviceSynchronize();
 
 		relative_error<<< NB(n_cond), NT >>>(&count, new_dist, old_dist, start, start + n_cond);
@@ -240,7 +246,7 @@ index_t run_ptp(const che * mesh, const std::vector<index_t> & sources,
 	#else
 		#pragma omp parallel for
 		for(index_t i = start; i < end; ++i)
-			relax_ptp(mesh, sorted, i, new_dist, old_dist, new_cluster, old_cluster);
+			relax_ptp(mesh, sorted, inv, i, new_dist, old_dist, new_cluster, old_cluster);
 
 		count = 0;
 		#pragma omp parallel for
