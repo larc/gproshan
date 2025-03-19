@@ -122,14 +122,17 @@ double parallel_toplesets_propagation_gpu(	const ptp_out_t & ptp_out,
 
 double farthest_point_sampling_ptp_gpu(std::vector<index_t> & samples, const che * mesh, size_t n, const float radio)
 {
-	const size_t n_vertices = mesh->n_vertices;
-
 	cudaDeviceReset();
 
 	cudaEvent_t start, stop;
 	cudaEventCreate(&start);
 	cudaEventCreate(&stop);
 	cudaEventRecord(start, 0);
+
+	cublasHandle_t handle;
+	cublasCreate(&handle);
+
+	const size_t n_vertices = mesh->n_vertices;
 
 	const che_cuda d_mesh(mesh, {false, false, false});
 
@@ -153,9 +156,6 @@ double farthest_point_sampling_ptp_gpu(std::vector<index_t> & samples, const che
 	if(!size(samples)) samples.push_back(0);
 
 	toplesets tps(mesh, samples);
-
-	cublasHandle_t handle;
-	cublasCreate(&handle);
 
 	if(n >= n_vertices) n = n_vertices >> 2;
 
