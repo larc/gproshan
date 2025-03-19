@@ -565,14 +565,25 @@ bool app_viewer::process_farthest_point_sampling(viewer * p_view)
 	ImGui::SliderInt("samples", &n, 1, mesh->n_vertices >> 3);
 	ImGui::Text("radio: %.3f", radio);
 
-	if(ImGui::Button("Run"))
+#ifdef GPROSHAN_CUDA
+	if(ImGui::Button("Run GPU"))
 	{
 		TIC(view->time)
-	#ifdef GPROSHAN_CUDA
-		farthest_point_sampling_ptp_gpu(mesh, mesh.selected, n);
-	#endif
+		farthest_point_sampling_ptp_gpu(mesh.selected, mesh, n);
 		TOC(view->time)
-		gproshan_log_var(view->time);
+
+		view->update_status_message("selected %u samples in %fs", std::size(mesh.selected), view->time);
+	}
+	ImGui::SameLine();
+#endif // GPROSHAN_CUDA
+
+	if(ImGui::Button("Run CPU"))
+	{
+		TIC(view->time)
+		farthest_point_sampling_ptp_cpu(mesh.selected, mesh, n);
+		TOC(view->time)
+
+		view->update_status_message("selected %u samples in %fs", std::size(mesh.selected), view->time);
 	}
 
 	return true;

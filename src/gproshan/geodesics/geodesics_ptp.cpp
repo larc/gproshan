@@ -97,6 +97,68 @@ double parallel_toplesets_propagation_cpu(	const ptp_out_t & ptp_out,
 	return time;
 }
 
+double farthest_point_sampling_ptp_cpu(std::vector<index_t> & samples, const che * mesh, size_t n, const float radio)
+{
+	double time;
+	TIC(time);
+
+	const size_t n_vertices = mesh->n_vertices;
+
+	float * dist[2] = {new float[n_vertices], new float[n_vertices]};
+	index_t * clusters[2] = {};
+
+	std::vector<index_t> inv(n_vertices, NIL);
+
+	#pragma omp parallel for
+	for(index_t v = 0; v < n_vertices; ++v)
+		dist[0][v] = dist[1][v] = INFINITY;
+
+	if(!size(samples)) samples.push_back(0);
+
+	toplesets tps(mesh, samples);
+
+	if(n >= n_vertices) n = n_vertices >> 2;
+
+	n -= size(samples);
+	samples.reserve(n);
+
+	int farthest;
+	float max_dist = INFINITY;
+	while(n-- && radio < max_dist)
+	{
+		#pragma omp parallel for
+		for(index_t v = 0; v < std::size(tps); ++v)
+			inv[tps.sorted[v]] = v;
+
+		const index_t i = run_ptp(mesh, samples, tps.splits, dist, clusters, tps.sorted, inv.data());
+
+		farthest = 0;
+		#pragma omp parallel for
+		for(index_t v = 1; v < n_vertices; ++v)
+		{
+			if(dist[i][v] < INFINITY)
+			{
+				#pragma omp critical
+				if(dist[i][v] > dist[i][farthest])
+					farthest = v;
+			}
+		}
+
+		if(radio > 0 || !n)
+			max_dist = dist[i][farthest];
+
+		samples.push_back(tps.sorted[farthest]);
+		tps.reset(mesh, samples);
+	}
+
+	delete [] dist[0];
+	delete [] dist[1];
+
+	TOC(time);
+
+	return time;
+}
+
 void normalize_ptp(float * dist, const size_t n)
 {
 	float max_d = 0;

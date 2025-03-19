@@ -120,16 +120,19 @@ double parallel_toplesets_propagation_gpu(	const ptp_out_t & ptp_out,
 	return time / 1000;
 }
 
-double farthest_point_sampling_ptp_gpu(che * mesh, std::vector<index_t> & samples, size_t n, float radio)
+double farthest_point_sampling_ptp_gpu(std::vector<index_t> & samples, const che * mesh, size_t n, const float radio)
 {
-	const size_t n_vertices = mesh->n_vertices;
-
 	cudaDeviceReset();
 
 	cudaEvent_t start, stop;
 	cudaEventCreate(&start);
 	cudaEventCreate(&stop);
 	cudaEventRecord(start, 0);
+
+	cublasHandle_t handle;
+	cublasCreate(&handle);
+
+	const size_t n_vertices = mesh->n_vertices;
 
 	const che_cuda d_mesh(mesh, {false, false, false});
 
@@ -153,9 +156,6 @@ double farthest_point_sampling_ptp_gpu(che * mesh, std::vector<index_t> & sample
 	if(!size(samples)) samples.push_back(0);
 
 	toplesets tps(mesh, samples);
-
-	cublasHandle_t handle;
-	cublasCreate(&handle);
 
 	if(n >= n_vertices) n = n_vertices >> 2;
 
@@ -215,25 +215,26 @@ void relax_ptp(const che * mesh, float * new_dist, float * old_dist, index_t * n
 __global__
 void relative_error(unsigned int * g_count, const float * new_dist, const float * old_dist, const index_t start, const index_t end)
 {
+	const index_t tid = threadIdx.x;
 	const index_t i = blockDim.x * blockIdx.x + threadIdx.x + start;
-	if(i >= end) return;
 
 	__shared__ unsigned int count;
-	if(!threadIdx.x)
-		count = 0;
-
-	if(!i) *g_count = 0;
+	if(i < end && fabsf(new_dist[i] - old_dist[i]) / old_dist[i] < PTP_TOL)
+		atomicInc(&count, 1);
 
 	__syncthreads();
 
-	atomicInc(&count, fabsf(new_dist[i] - old_dist[i]) / old_dist[i] < PTP_TOL);
-
-	__syncthreads();
-
-	if(!threadIdx.x)
-		atomicInc(g_count, count);
+	if(!tid) atomicInc(g_count, count);
 }
 
+__global__
+void relative_error(bool * error, const float * new_dist, const float * old_dist, const index_t n)
+{
+	const index_t i = blockDim.x * blockIdx.x + threadIdx.x;
+	if(i >= n) return;
+
+	error[i] = fabsf(new_dist[i] - old_dist[i]) / old_dist[i] < PTP_TOL;
+}
 
 } // namespace gproshan
 
