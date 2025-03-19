@@ -257,7 +257,7 @@ index_t run_ptp(const che * mesh, const std::vector<index_t> & sources,
 
 		count = thrust::count(thrust::device, error, error + n_cond, true);
 */
-
+		count = 0;
 		relative_error<<< NB(n_cond), NT >>>(&count, new_dist, old_dist, start, start + n_cond);
 		cudaDeviceSynchronize();
 	#else
