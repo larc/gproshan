@@ -120,7 +120,7 @@ double parallel_toplesets_propagation_gpu(	const ptp_out_t & ptp_out,
 	return time / 1000;
 }
 
-double farthest_point_sampling_ptp_gpu(che * mesh, std::vector<index_t> & samples, size_t n, float radio)
+double farthest_point_sampling_ptp_gpu(std::vector<index_t> & samples, const che * mesh, size_t n, const float radio)
 {
 	const size_t n_vertices = mesh->n_vertices;
 
@@ -234,6 +234,14 @@ void relative_error(unsigned int * g_count, const float * new_dist, const float 
 		atomicInc(g_count, count);
 }
 
+__global__
+void relative_error(bool * error, const float * new_dist, const float * old_dist, const index_t n)
+{
+	const index_t i = blockDim.x * blockIdx.x + threadIdx.x;
+	if(i >= n) return;
+
+	error[i] = fabsf(new_dist[i] - old_dist[i]) / old_dist[i] < PTP_TOL;
+}
 
 } // namespace gproshan
 

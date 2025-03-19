@@ -13,8 +13,11 @@
 
 
 #ifdef __CUDACC__
+//	#include <thrust/count.h>
+//	#include <thrust/execution_policy.h>
+
 	#define NT 256
-	#define NB(x) (x + NT - 1) / NT
+	#define NB(x) ((x) + NT - 1) / NT
 #endif // __CUDACC__
 
 #define PTP_TOL 1e-4
@@ -31,6 +34,9 @@ void relax_ptp(const che * mesh, float * new_dist, float * old_dist, index_t * n
 
 __global__
 void relative_error(unsigned int * g_count, const float * new_dist, const float * old_dist, const index_t start, const index_t end);
+
+__global__
+void relative_error(bool * error, const float * new_dist, const float * old_dist, const index_t n);
 
 #endif // __CUDACC__
 
@@ -82,7 +88,8 @@ double parallel_toplesets_propagation_cpu(	const ptp_out_t & ptp_out,
 											);
 
 
-double farthest_point_sampling_ptp_gpu(che * mesh, std::vector<index_t> & samples, size_t n, float radio = 0);
+double farthest_point_sampling_ptp_gpu(std::vector<index_t> & samples, const che * mesh, size_t n, const float radio = 0);
+double farthest_point_sampling_ptp_cpu(std::vector<index_t> & samples, const che * mesh, size_t n, const float radio = 0);
 
 void normalize_ptp(float * dist, const size_t n);
 
@@ -212,11 +219,13 @@ index_t run_ptp(const che * mesh, const std::vector<index_t> & sources,
 		cudaMemcpy(clusters[0], h_clusters, sizeof(index_t) * n_vertices, cudaMemcpyHostToDevice);
 		cudaMemcpy(clusters[1], h_clusters, sizeof(index_t) * n_vertices, cudaMemcpyHostToDevice);
 	}
-#endif
+//	bool * error = nullptr;
+//	cudaMalloc(&error, sizeof(bool) * n_vertices);
+#endif // __CUDACC__
 
 #ifndef __CUDACC__
 	index_t count = 0;
-#endif
+#endif // __CUDACC__
 
 	const int max_iter = size(limits) << 1;
 
@@ -240,6 +249,14 @@ index_t run_ptp(const che * mesh, const std::vector<index_t> & sources,
 	#ifdef __CUDACC__
 		relax_ptp<<< NB(end - start), NT >>>(mesh, new_dist, old_dist, new_cluster, old_cluster, start, end, sorted, inv);
 		cudaDeviceSynchronize();
+
+/*		thrust error cudaErrorInvalidDevice: invalid device ordinal 
+
+		relative_error<<< NB(n_cond), NT >>>(error, new_dist + start, old_dist + start, n_cond);
+		cudaDeviceSynchronize();
+
+		count = thrust::count(thrust::device, error, error + n_cond, true);
+*/
 
 		relative_error<<< NB(n_cond), NT >>>(&count, new_dist, old_dist, start, start + n_cond);
 		cudaDeviceSynchronize();
@@ -265,6 +282,12 @@ index_t run_ptp(const che * mesh, const std::vector<index_t> & sources,
 		if(n_cond == count)			++i;
 		if(j < size(limits) - 1) 	++j;
 	}
+
+/*
+#ifdef __CUDACC__
+	cudaFree(error);
+#endif // __CUDACC__
+*/
 
 	return !(iter & 1);
 }

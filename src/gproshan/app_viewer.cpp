@@ -569,8 +569,10 @@ bool app_viewer::process_farthest_point_sampling(viewer * p_view)
 	{
 		TIC(view->time)
 	#ifdef GPROSHAN_CUDA
-		farthest_point_sampling_ptp_gpu(mesh, mesh.selected, n);
-	#endif
+		farthest_point_sampling_ptp_gpu(mesh.selected, mesh, n);
+	#else
+		farthest_point_sampling_ptp_cpu(mesh.selected, mesh, n);
+	#endif // GPROSHAN_CUDA
 		TOC(view->time)
 		gproshan_log_var(view->time);
 	}
