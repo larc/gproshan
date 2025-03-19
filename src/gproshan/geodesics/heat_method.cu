@@ -63,7 +63,8 @@ double solve_positive_definite_cusolver(const int m, const int nnz, const double
 
 	cu_spAxb data(m, nnz, hA_values, hA_col_ptrs, hA_row_indices, hb);
 
-	cusolverStatus_t status = cusolverSpDcsrlsvchol(handle_cusolver, m, nnz, descr, data.A_values, data.A_col_ptrs, data.A_row_indices, data.b, 0, 0, data.x, &singularity);
+	//[[deprecated and faster]] cusolverStatus_t status = cusolverSpDcsrlsvchol(handle_cusolver, m, nnz, descr, data.A_values, data.A_col_ptrs, data.A_row_indices, data.b, 0, 0, data.x, &singularity);
+	cusolverStatus_t status = cusolverSpDcsrlsvqr(handle_cusolver, m, nnz, descr, data.A_values, data.A_col_ptrs, data.A_row_indices, data.b, 0, 0, data.x, &singularity);
 
 	if(status == CUSOLVER_STATUS_SUCCESS)
 		cudaMemcpy(hx, data.x, m * sizeof(double), cudaMemcpyDeviceToHost);

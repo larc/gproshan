@@ -12,6 +12,17 @@
 namespace gproshan {
 
 
+__global__
+void update_inv(index_t * inv, const index_t * sorted, const size_t n)
+{
+	const index_t i = blockDim.x * blockIdx.x + threadIdx.x;
+
+	if(i >= n) return;
+
+	inv[sorted[i]] = i;
+}
+
+
 double parallel_toplesets_propagation_gpu(	const ptp_out_t & ptp_out,
 											const che * mesh,
 											const std::vector<index_t> & sources,
@@ -29,18 +40,18 @@ double parallel_toplesets_propagation_gpu(	const ptp_out_t & ptp_out,
 	cudaEventRecord(start, 0);
 
 
-	const size_t n_vertices = mesh->n_vertices;
+	const coalescence_ptp inv(coalescence ? mesh : nullptr, tps);
+	const size_t n_vertices = coalescence ? inv->n_vertices : mesh->n_vertices;
 
-	coalescence_ptp inv(coalescence ? mesh : nullptr, tps);
-	che_cuda d_mesh(coalescence ? inv.mesh : mesh, {false, false, false});
+	const che_cuda d_mesh(coalescence ? inv : mesh, {false, false, false});
 
-	float * h_dist = coalescence ? new float[n_vertices] : ptp_out.dist;
-	index_t * h_clusters = coalescence && ptp_out.clusters ? new index_t[n_vertices]
-															: ptp_out.clusters;
+	float * h_dist = new float[n_vertices];
+	index_t * h_clusters = ptp_out.clusters ? new index_t[n_vertices] : nullptr;
 
 	float * d_dist[3] = {};
 	index_t * d_clusters[3] = {};
 	index_t * d_sorted = nullptr;
+	index_t * d_inv = nullptr;
 
 	cudaMalloc(&d_dist[0], sizeof(float) * n_vertices);
 	cudaMalloc(&d_dist[1], sizeof(float) * n_vertices);
@@ -56,6 +67,10 @@ double parallel_toplesets_propagation_gpu(	const ptp_out_t & ptp_out,
 	if(!coalescence)
 	{
 		cudaMalloc(&d_sorted, sizeof(index_t) * n_vertices);
+		cudaMemcpy(d_sorted, tps.sorted, sizeof(index_t) * std::size(tps), cudaMemcpyHostToDevice);
+
+		cudaMalloc(&d_inv, sizeof(index_t) * mesh->n_vertices);
+		cudaMemcpy(d_inv, (const index_t *) inv, sizeof(index_t) * mesh->n_vertices, cudaMemcpyHostToDevice);
 	}
 
 	if(set_inf)
@@ -65,31 +80,25 @@ double parallel_toplesets_propagation_gpu(	const ptp_out_t & ptp_out,
 			h_dist[v] = INFINITY;
 	}
 
-	const index_t i = run_ptp(d_mesh, sources, tps.splits, d_dist, d_clusters, coalescence ? inv : tps.sorted, d_sorted, fun);
+	const index_t i = run_ptp(d_mesh, sources, tps.splits, d_dist, d_clusters, d_sorted, d_inv, fun);
 
 	cudaMemcpy(h_dist, d_dist[i], sizeof(float) * n_vertices, cudaMemcpyDeviceToHost);
 
-	if(coalescence)
-	{
-		#pragma omp parallel for
-		for(index_t v = 0; v < n_vertices; ++v)
-			ptp_out.dist[v] = h_dist[inv[v]];
+	#pragma omp parallel for
+	for(index_t v = 0; v < std::size(tps); ++v)
+		ptp_out.dist[tps.sorted[v]] = h_dist[v];
 
-		delete [] h_dist;
-	}
+	delete [] h_dist;
 
 	if(h_clusters)
 	{
 		cudaMemcpy(h_clusters, d_clusters[i], sizeof(index_t) * n_vertices, cudaMemcpyDeviceToHost);
 
-		if(coalescence)
-		{
-			#pragma omp parallel for
-			for(index_t v = 0; v < n_vertices; ++v)
-				ptp_out.clusters[v] = h_clusters[inv[v]];
+		#pragma omp parallel for
+		for(index_t v = 0; v < std::size(tps); ++v)
+			ptp_out.clusters[tps.sorted[v]] = h_clusters[v];
 
-			delete [] h_clusters;
-		}
+		delete [] h_clusters;
 	}
 
 	cudaFree(d_dist[0]);
@@ -97,6 +106,7 @@ double parallel_toplesets_propagation_gpu(	const ptp_out_t & ptp_out,
 	cudaFree(d_clusters[0]);
 	cudaFree(d_clusters[1]);
 	cudaFree(d_sorted);
+	cudaFree(d_inv);
 
 	cudaEventRecord(stop, 0);
 	cudaEventSynchronize(stop);
@@ -110,10 +120,8 @@ double parallel_toplesets_propagation_gpu(	const ptp_out_t & ptp_out,
 	return time / 1000;
 }
 
-double farthest_point_sampling_ptp_gpu(che * mesh, std::vector<index_t> & samples, size_t n, float radio)
+double farthest_point_sampling_ptp_gpu(std::vector<index_t> & samples, const che * mesh, size_t n, const float radio)
 {
-	const size_t n_vertices = mesh->n_vertices;
-
 	cudaDeviceReset();
 
 	cudaEvent_t start, stop;
@@ -121,27 +129,33 @@ double farthest_point_sampling_ptp_gpu(che * mesh, std::vector<index_t> & sample
 	cudaEventCreate(&stop);
 	cudaEventRecord(start, 0);
 
-	che_cuda d_mesh(mesh, {false, false, false});
+	cublasHandle_t handle;
+	cublasCreate(&handle);
+
+	const size_t n_vertices = mesh->n_vertices;
+
+	const che_cuda d_mesh(mesh, {false, false, false});
 
 	float * h_dist = new float[n_vertices];
 
 	float * d_dist[3] = {};
 	index_t * d_clusters[3] = {};
 	index_t * d_sorted = nullptr;
+	index_t * d_inv = nullptr;
 
 	cudaMalloc(&d_dist[0], sizeof(float) * n_vertices);
 	cudaMalloc(&d_dist[1], sizeof(float) * n_vertices);
 	cudaMalloc(&d_sorted, sizeof(index_t) * n_vertices);
+	cudaMalloc(&d_inv, sizeof(index_t) * n_vertices);
 	d_dist[2] = h_dist;
 
 	#pragma omp parallel for
 	for(index_t v = 0; v < n_vertices; ++v)
 		h_dist[v] = INFINITY;
 
-	toplesets tps(mesh, samples);
+	if(!size(samples)) samples.push_back(0);
 
-	cublasHandle_t handle;
-	cublasCreate(&handle);
+	toplesets tps(mesh, samples);
 
 	if(n >= n_vertices) n = n_vertices >> 2;
 
@@ -152,7 +166,11 @@ double farthest_point_sampling_ptp_gpu(che * mesh, std::vector<index_t> & sample
 	float max_dist = INFINITY;
 	while(n-- && radio < max_dist)
 	{
-		const index_t i = run_ptp(d_mesh, samples, tps.splits, d_dist, d_clusters, tps.sorted, d_sorted);
+		cudaMemcpy(d_sorted, tps.sorted, sizeof(index_t) * tps.size(), cudaMemcpyHostToDevice);
+		update_inv<<< NB(tps.size()), NT >>>(d_inv, d_sorted, tps.size());
+		cudaDeviceSynchronize();
+
+		const index_t i = run_ptp(d_mesh, samples, tps.splits, d_dist, d_clusters, d_sorted, d_inv);
 
 		// 1 indexing
 		cublasIsamax(handle, mesh->n_vertices, d_dist[i], 1, &farthest);
@@ -160,7 +178,7 @@ double farthest_point_sampling_ptp_gpu(che * mesh, std::vector<index_t> & sample
 		if(radio > 0 || !n)
 			cudaMemcpy(&max_dist, d_dist[i] + farthest - 1, sizeof(float), cudaMemcpyDeviceToHost);
 
-		samples.push_back(farthest - 1);
+		samples.push_back(tps.sorted[farthest - 1]);
 		tps.reset(mesh, samples);
 	}
 
@@ -171,6 +189,7 @@ double farthest_point_sampling_ptp_gpu(che * mesh, std::vector<index_t> & sample
 	cudaFree(d_dist[0]);
 	cudaFree(d_dist[1]);
 	cudaFree(d_sorted);
+	cudaFree(d_inv);
 
 	cudaEventRecord(stop, 0);
 	cudaEventSynchronize(stop);
@@ -185,37 +204,37 @@ double farthest_point_sampling_ptp_gpu(che * mesh, std::vector<index_t> & sample
 }
 
 __global__
-void relax_ptp(const che * mesh, float * new_dist, float * old_dist, index_t * new_clusters, index_t * old_clusters, const index_t start, const index_t end, const index_t * sorted)
+void relax_ptp(const che * mesh, float * new_dist, float * old_dist, index_t * new_clusters, index_t * old_clusters, const index_t start, const index_t end, const index_t * sorted, const index_t * inv)
 {
-	index_t v = blockDim.x * blockIdx.x + threadIdx.x + start;
-	if(v >= end) return;
+	index_t i = blockDim.x * blockIdx.x + threadIdx.x + start;
+	if(i >= end) return;
 
-	relax_ptp(mesh, sorted, sorted ? sorted[v] : v, new_dist, old_dist, new_clusters, old_clusters);
+	relax_ptp(mesh, sorted, inv, i, new_dist, old_dist, new_clusters, old_clusters);
 }
 
 __global__
-void relative_error(unsigned int * g_count, const float * new_dist, const float * old_dist, const index_t start, const index_t end, const index_t * sorted)
+void relative_error(unsigned int * g_count, const float * new_dist, const float * old_dist, const index_t start, const index_t end)
 {
-	index_t v = blockDim.x * blockIdx.x + threadIdx.x + start;
-	if(v >= end) return;
+	const index_t tid = threadIdx.x;
+	const index_t i = blockDim.x * blockIdx.x + threadIdx.x + start;
 
 	__shared__ unsigned int count;
-	if(!threadIdx.x)
-		count = 0;
-
-	if(!v) *g_count = 0;
+	if(i < end && fabsf(new_dist[i] - old_dist[i]) / old_dist[i] < PTP_TOL)
+		atomicInc(&count, 1);
 
 	__syncthreads();
 
-	v = sorted ? sorted[v] : v;
-	atomicInc(&count, fabsf(new_dist[v] - old_dist[v]) / old_dist[v] < PTP_TOL);
-
-	__syncthreads();
-
-	if(!threadIdx.x)
-		atomicInc(g_count, count);
+	if(!tid) atomicInc(g_count, count);
 }
 
+__global__
+void relative_error(bool * error, const float * new_dist, const float * old_dist, const index_t n)
+{
+	const index_t i = blockDim.x * blockIdx.x + threadIdx.x;
+	if(i >= n) return;
+
+	error[i] = fabsf(new_dist[i] - old_dist[i]) / old_dist[i] < PTP_TOL;
+}
 
 } // namespace gproshan
 

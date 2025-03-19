@@ -10,32 +10,6 @@
 namespace gproshan {
 
 
-index_t ** sampling_shape(std::vector<index_t> & points, size_t *& sizes, vertex *& normals, che * mesh, size_t n_points, float radio)
-{
-	normals = new vertex[n_points];
-	sizes = new size_t[n_points];
-	index_t ** indexes = new index_t * [n_points];
-
-	geodesics::params params;
-	params.radio = radio;
-
-	#pragma omp parallel for
-	for(index_t i = 0; i < n_points; ++i)
-	{
-		const index_t v = points[i];
-		normals[i] = mesh->normal(v);
-
-		geodesics fm(mesh, { v }, params);
-
-		indexes[i] = new index_t[fm.n_sorted_index()];
-
-		fm.copy_sorted_index(indexes[i], fm.n_sorted_index());
-		sizes[i] = fm.n_sorted_index();
-	}
-
-	return indexes;
-}
-
 bool load_sampling(std::vector<index_t> & points, float & radio, che * mesh, size_t n)
 {
 	const std::string & filename = mesh->filename;
@@ -64,7 +38,7 @@ bool load_sampling(std::vector<index_t> & points, float & radio, che * mesh, siz
 			points.push_back(0);
 
 #ifdef GPROSHAN_CUDA
-		double time_fps = farthest_point_sampling_ptp_gpu(mesh, points, n);
+		double time_fps = farthest_point_sampling_ptp_gpu(points, mesh, n);
 		gproshan_log_var(time_fps);
 #else
 		radio = 0; // IMPLEMENT: farthest_point_sampling_ptp_cpu(mesh, points, time_fps, n);

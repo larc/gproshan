@@ -233,7 +233,12 @@ vec<T, 3> eval_li(const t_eval_hit<T> & hit, const light & ambient, const light 
 		li += (dot(v, n) < 0 || occluded(hit.position, l, r) ? 0.4f : 1.0f) * color;
 	}
 
-	return li / n_lights;
+	li /= n_lights;
+	if(li.x() > 1.0f) li.x() = 1.0f;
+	if(li.y() > 1.0f) li.y() = 1.0f;
+	if(li.z() > 1.0f) li.z() = 1.0f;
+
+	return li;
 }
 
 

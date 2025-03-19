@@ -49,7 +49,7 @@ frame::frame()
 	int current_device, is_display_device;
 	cudaGetDevice(&current_device);
 	cudaDeviceGetAttribute(&is_display_device, cudaDevAttrKernelExecTimeout, current_device);
-	if(!is_display_device )
+	if(!is_display_device)
 	{
 		gproshan_error("DEVICE IS NOT DISPLAY DEVICE");
 	}

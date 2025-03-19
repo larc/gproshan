@@ -24,11 +24,14 @@ geodesics::geodesics(che * mesh, const std::vector<index_t> & sources, const par
 	clusters = p.cluster ? new index_t[n_vertices] : nullptr;
 	sorted_index = new index_t[n_vertices];
 
-	n_sorted = 0;
-
 	memset(sorted_index, -1, n_vertices * sizeof(index_t));
+
+	#pragma omp parallel for
 	for(index_t v = 0; v < n_vertices; ++v)
 		dist[v] = INFINITY;
+
+	if(clusters)
+		memset(clusters, 0, n_vertices * sizeof(index_t));
 
 	assert(size(sources) > 0);
 
@@ -113,7 +116,7 @@ double geodesics::execute(che * mesh, const std::vector<index_t> & sources, cons
 			break;
 
 		case PTP_CPU:
-			time = parallel_toplesets_propagation_cpu({dist, clusters}, mesh, sources, toplesets(mesh, sources));
+			time = parallel_toplesets_propagation_cpu({dist, clusters}, mesh, sources, toplesets(mesh, sources), size(sources) == 1);
 			break;
 
 		case HEAT_METHOD:
@@ -122,7 +125,7 @@ double geodesics::execute(che * mesh, const std::vector<index_t> & sources, cons
 
 #ifdef GPROSHAN_CUDA
 		case PTP_GPU:
-			time = parallel_toplesets_propagation_gpu({dist, clusters}, mesh, sources, toplesets(mesh, sources));
+			time = parallel_toplesets_propagation_gpu({dist, clusters}, mesh, sources, toplesets(mesh, sources), size(sources) == 1);
 			break;
 
 		case HEAT_METHOD_GPU:

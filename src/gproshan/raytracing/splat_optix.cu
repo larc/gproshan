@@ -1,5 +1,5 @@
 #include <gproshan/mesh/che.h>
-#include <gproshan/raytracing/utils.h>
+#include <gproshan/raytracing/splat_utils.h>
 #include <gproshan/raytracing/optix_params.h>
 
 #include <optix_device.h>
@@ -12,6 +12,11 @@ namespace gproshan::rt {
 
 extern "C" __constant__ optix_params params;
 
+static __forceinline__ __device__
+void * unpack_pointer(uint32_t i0, uint32_t i1)
+{
+	return (void *) (uint64_t(i0) << 32 | i1);
+}
 
 static __forceinline__ __device__
 void pack_pointer(void * ptr, uint32_t & i0, uint32_t & i1)
@@ -19,12 +24,6 @@ void pack_pointer(void * ptr, uint32_t & i0, uint32_t & i1)
 	const uint64_t uptr = uint64_t(ptr);
 	i0 = uptr >> 32;
 	i1 = uptr & 0x00000000ffffffff;
-}
-
-static __forceinline__ __device__
-void * unpack_pointer(uint32_t i0, uint32_t i1)
-{
-	return (void *) (uint64_t(i0) << 32 | i1);
 }
 
 template<typename T>
@@ -55,9 +54,19 @@ extern "C" __global__ void __closesthit__radiance()
 	const vertex & B = data[1];
 	const vertex & C = data[2];
 
-	eval_hit hit(mesh, primID, bar.x, bar.y, params.sc);
-	hit.normal = params.flat ? normalize(cross(B - A, C - A)) : hit.normal;
-	hit.position = (1.f - hit.u - hit.v) * A + hit.u * B + hit.v * C;
+	splats_data * splats_pcs = (splats_data *) params.other;
+
+	const float3 o = optixGetWorldRayOrigin();
+	const float3 d = optixGetWorldRayDirection();
+	const vertex org = {o.x, o.y, o.z};
+	const vertex dir = {d.x, d.y, d.z};
+	const vertex x = (1.f - bar.x - bar.y) * A + bar.x * B + bar.y * C;
+
+	const float dist = (float) optixGetPayload_3() + length(x - org);
+	optixSetPayload_3((unsigned int) dist);
+
+	eval_hit hit;
+	const float w = splat_hit(hit, mesh, splats_pcs[sbtID], primID, x, dir, dist);
 
 	vec3 * trace = ray_data<vec3>();
 	vec3 & color		= trace[0];
@@ -70,37 +79,45 @@ extern "C" __global__ void __closesthit__radiance()
 					{
 						uint32_t occluded = 1;
 						optixTrace( params.traversable,
-									* (float3 *) &position,
+									* (float3 *) &(dot(position - x, dir) < 0 ? position : x),
 									* (float3 *) &wi,
 									1e-3f,					// tmin
 									light_dist - 1e-3f,		// tmax
 									0.0f,					// rayTime
 									OptixVisibilityMask(255),
-										OPTIX_RAY_FLAG_DISABLE_ANYHIT
-										| OPTIX_RAY_FLAG_DISABLE_CLOSESTHIT
-										| OPTIX_RAY_FLAG_TERMINATE_ON_FIRST_HIT,
-										1,	// SBT offset
-										2,	// SBT stride
-										1,	// missSBTIndex
-										occluded);
+									OPTIX_RAY_FLAG_DISABLE_ANYHIT
+									| OPTIX_RAY_FLAG_DISABLE_CLOSESTHIT
+									| OPTIX_RAY_FLAG_TERMINATE_ON_FIRST_HIT,
+									1,	// SBT offset
+									2,	// SBT stride
+									1,	// missSBTIndex
+									occluded);
 
-							return occluded != 0;
-						});
+						return occluded != 0;
+					});
+
+	color *= attenuation;
+	position = x;
+
+	if(w < 1e-3f)
+	{
+		color *= w;
+		return;
+	}
 
 	random<float> rnd = optixGetPayload_2();
-	color *= attenuation;
-	position = hit.position;
-
-	if(!hit.scatter_mat(ray_dir, rnd))
+	if(!hit.scatter_diffuse(ray_dir, rnd))
 		attenuation = 0;
 
 	attenuation /= 2;
 	optixSetPayload_2(rnd);
 }
 
-extern "C" __global__ void __anyhit__shadow() {}
 
 extern "C" __global__ void __anyhit__radiance() {}
+
+extern "C" __global__ void __anyhit__shadow() {}
+
 
 extern "C" __global__ void __miss__radiance()
 {
@@ -115,9 +132,11 @@ extern "C" __global__ void __miss__shadow()
 
 extern "C" __global__ void __raygen__render_frame()
 {
-	const unsigned int id = optixGetLaunchIndex().x;
+	const uvec2 & id = {optixGetLaunchIndex().x,
+						optixGetLaunchIndex().y
+						};
 
-	const uvec2 & pos = params.viewport_pos + uvec2{id % params.viewport_size.x(), id / params.viewport_size.x()};
+	const uvec2 & pos = id + params.viewport_pos;
 
 	random<float> rnd(pos.x() + params.window_size.x() * pos.y(), params.n_frames);
 
@@ -170,7 +189,7 @@ extern "C" __global__ void __raygen__render_frame()
 
 	color_acc /= params.n_samples;
 
-	vec4 & pixel_color = params.color_buffer[id];
+	vec4 & pixel_color = params.color_buffer[id.x() + id.y() * optixGetLaunchDimensions().x];
 	pixel_color = (pixel_color * params.n_frames + (color_acc, 1)) / (params.n_frames + 1);
 }
 

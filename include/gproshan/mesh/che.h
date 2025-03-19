@@ -95,7 +95,7 @@ class che
 
 	public:
 
-	che(const che & mesh, const index_t * sorted = nullptr, const che::options & opts = default_opts);
+	che(const che & mesh, const std::vector<index_t> & sorted = {}, const che::options & opts = default_opts);
 	che(const size_t nv = 0, const size_t nf = 0);
 	che(const vertex * vertices, const index_t nv, const index_t * trigs, const index_t nf);
 	virtual ~che();

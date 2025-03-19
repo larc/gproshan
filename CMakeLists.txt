@@ -1,6 +1,6 @@
-cmake_minimum_required(VERSION 3.28)
+cmake_minimum_required(VERSION 3.31)
 
-project(gproshan VERSION 4.0)
+project(gproshan VERSION 3.14)
 
 list(APPEND CMAKE_MODULE_PATH "${gproshan_SOURCE_DIR}/cmake")
 
@@ -28,7 +28,7 @@ if(CUDAToolkit_FOUND)
 		set(CMAKE_CUDA_ARCHITECTURES native)
 	endif()
 
-	find_package(OptiX 8.1)
+	find_package(OptiX 8)
 	if(OptiX_INCLUDE)
 		include_directories(SYSTEM ${OptiX_INCLUDE})
 	endif(OptiX_INCLUDE)
@@ -48,7 +48,7 @@ configure_file(	${gproshan_SOURCE_DIR}/include/gproshan/config.h.in
 				)
 
 
-find_package(embree 4.3 REQUIRED)
+find_package(embree 4 REQUIRED)
 find_package(OpenMP REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)

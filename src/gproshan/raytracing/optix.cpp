@@ -40,7 +40,7 @@ void optix_log(index_t level, const char * tag, const char * message, void *)
 	fprintf(stderr, "OptiX [%2u][%12s]: %s\n", level, tag, message);
 }
 
-optix::optix(const std::string & program)
+optix::optix(const std::string & program, const unsigned int nthreads)
 {
 	optixInit();
 
@@ -62,7 +62,7 @@ optix::optix(const std::string & program)
 
 	_pipeline_link_opt.maxTraceDepth = 2;
 
-	std::ifstream is(std::string(GPROSHAN_DIR) + program);
+	std::ifstream is(tmp_file_path(program));
 	const std::string program_src = std::string(std::istreambuf_iterator<char>(is), std::istreambuf_iterator<char>());
 	is.close();
 
@@ -81,7 +81,10 @@ optix::optix(const std::string & program)
 
 	create_pipeline();
 
-	cudaMalloc(&params_buffer, sizeof(optix_params));
+	params_buffer.assign(nthreads, nullptr);
+	gproshan_error_var(size(params_buffer));
+	for(auto & p: params_buffer)
+		cudaMalloc(&p, sizeof(optix_params));
 }
 
 optix::optix(const std::vector<const che *> & meshes, const std::vector<mat4> & model_mats): optix()
@@ -92,7 +95,9 @@ optix::optix(const std::vector<const che *> & meshes, const std::vector<mat4> & 
 
 optix::~optix()
 {
-	cudaFree(params_buffer);
+	for(auto & p: params_buffer)
+		cudaFree(p);
+
 	cudaFree(raygen_records_buffer);
 	cudaFree(miss_records_buffer);
 	cudaFree(hitgroup_records_buffer);
@@ -112,38 +117,52 @@ optix::~optix()
 
 void optix::render(vec4 * img, const render_params & rp, const bool flat)
 {
-	params.depth = rp.depth;
-	params.n_frames = rp.n_frames;
-	params.n_samples = rp.n_samples;
-	params.color_buffer = img;
+	update_params(img, rp, flat);
+	render(rp.thread, rp.viewport_size.x() * rp.viewport_size.y());
+}
 
-	params.window_size = rp.window_size;
+void optix::update_params(vec4 * img, const render_params & rp, const bool flat)
+{
+	optix_params tmp_params = params;
+
+	tmp_params.depth = rp.depth;
+	tmp_params.thread = rp.thread;
+	tmp_params.n_frames = rp.n_frames;
+	tmp_params.n_samples = rp.n_samples;
+	tmp_params.color_buffer = img;
+
+	tmp_params.viewport_size = rp.viewport_size;
+	tmp_params.window_size = rp.window_size;
 	if(rp.viewport_is_window)
-		params.window_size = rp.viewport_size;
+		tmp_params.window_size = rp.viewport_size;
 
-	params.viewport_pos = rp.viewport_pos;
+	tmp_params.viewport_pos = rp.viewport_pos;
 
-	params.flat = flat;
-	params.cam_pos = rp.cam_pos;
-	params.inv_proj_view = rp.inv_proj_view;
-	params.ambient = rp.ambient;
-	params.n_lights = rp.n_lights;
-	memcpy(params.lights, rp.lights, sizeof(params.lights));
+	tmp_params.flat = flat;
+	tmp_params.cam_pos = rp.cam_pos;
+	tmp_params.inv_proj_view = rp.inv_proj_view;
+	tmp_params.ambient = rp.ambient;
+	tmp_params.n_lights = rp.n_lights;
+	memcpy(tmp_params.lights, rp.lights, sizeof(params.lights));
 
-	cudaMemcpy(params_buffer, &params, sizeof(optix_params), cudaMemcpyHostToDevice);
+	cudaMemcpy(params_buffer[rp.thread], &tmp_params, sizeof(optix_params), cudaMemcpyHostToDevice);
+}
 
-	optixLaunch(_pipeline,
-				stream,
-				(CUdeviceptr) params_buffer,
-				sizeof(optix_params),
-				&sbt,
-				rp.viewport_size.x(),
-				rp.viewport_size.y(),
-				1
+void optix::render(const unsigned int thread, const unsigned int nrays)
+{
+	optixLaunch(_pipeline
+				, stream
+				, (CUdeviceptr) params_buffer[thread]
+				, sizeof(optix_params)
+				, &sbt
+				, nrays
+				, 1
+				, 1
 				);
 
 	cudaDeviceSynchronize();
 }
+
 
 void optix::create_raygen_programs()
 {
