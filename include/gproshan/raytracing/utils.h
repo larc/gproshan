@@ -221,10 +221,10 @@ vec<T, 3> eval_li(const t_eval_hit<T> & hit, const light & ambient, const light 
 
 	#ifdef __CUDACC__
 		lambertian = max(dot(l, n), 0.f);
-		specular = powf(max(dot(h, n), 0.f), hit.Ns);
+		specular = powf(max(dot(h, n), 1e-4f), hit.Ns);
 	#else
 		lambertian = std::max(dot(l, n), 0.f);
-		specular = powf(std::max(dot(h, n), 0.f), hit.Ns);
+		specular = powf(std::max(dot(h, n), 1e-4f), hit.Ns);
 	#endif // __CUDACC__
 
 		const vec<T, 3> color = hit.Ka * ambient.color * ambient.power +

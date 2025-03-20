@@ -68,7 +68,7 @@ vec3 shading(vec3 color, vec3 n, vec3 pos, vec2 texcoord)
 	vec3 v = normalize(eye - pos);
 	vec3 h = normalize(l + v);
 	float lambertian = max(dot(l, n), 0.0);
-	float specular = pow(max(dot(h, n), 0.0), Ns);
+	float specular = pow(max(dot(h, n), 0.00001), Ns);
 
 	return Ka * ambient.color * ambient.power +
 			(lambertian * Kd + specular * Ks) * cam_light.color * cam_light.power / (r * r);
