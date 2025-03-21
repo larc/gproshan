@@ -57,14 +57,15 @@ class scene: public che
 
 		index_t * trig_mat = nullptr;
 		vec2 * texcoords = nullptr;
-		bool load_scene = true;
 
 	public:
 		scene(const std::string & file);
 		~scene();
-		bool is_scene() const;
-		bool is_pointcloud() const;
-		void read_file(const std::string & file);
+		bool is_scene() const override;
+		bool is_pointcloud() const override;
+
+	private:
+		void read_file(const std::string & file) override;
 		bool load_obj(const std::string & file);
 		bool load_mtl(const std::string & file);
 		bool load_texture(const std::string & file);

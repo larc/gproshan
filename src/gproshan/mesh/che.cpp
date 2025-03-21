@@ -1084,10 +1084,10 @@ std::vector<index_t> che::trig_convex_polygon(const index_t * P, const size_t n)
 
 che * che::load_mesh(const std::string & file_path)
 {
-	size_t pos = file_path.rfind('.');
+	const size_t pos = file_path.rfind('.');
 	assert(pos != std::string::npos);
 
-	std::string extension = file_path.substr(pos + 1);
+	const std::string extension = file_path.substr(pos + 1);
 
 	if(extension == "obj")
 	{

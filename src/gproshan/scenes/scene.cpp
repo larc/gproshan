@@ -27,7 +27,7 @@ scene::~scene()
 
 bool scene::is_scene() const
 {
-	return load_scene && size(objects) > 1;
+	return size(objects) > 1;
 }
 
 bool scene::is_pointcloud() const
@@ -37,7 +37,7 @@ bool scene::is_pointcloud() const
 
 void scene::read_file(const std::string & file)
 {
-	load_scene = load_obj(file);
+	load_obj(file);
 }
 
 bool scene::load_obj(const std::string & file)
@@ -49,7 +49,7 @@ bool scene::load_obj(const std::string & file)
 		if(!load_mtl(path + m))
 			return false;
 
-	alloc(size(p.trigs), size(p.trigs) / 3);
+	alloc(size(p.trigs), 0);
 
 	#pragma omp parallel for
 	for(index_t i = 0; i < n_vertices; ++i)
@@ -57,7 +57,6 @@ bool scene::load_obj(const std::string & file)
 		const index_t v = p.trigs[i].x();
 		GT[i] = p.vertices[v];
 		VC[i] = p.vcolors[v];
-		VT[i] = i;
 	}
 
 	if(size(p.vtexcoords))
