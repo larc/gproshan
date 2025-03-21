@@ -59,6 +59,7 @@ class scene: public che
 		vec2 * texcoords = nullptr;
 
 	public:
+		scene(const size_t ntrigs);
 		scene(const std::string & file);
 		~scene();
 		bool is_scene() const override;

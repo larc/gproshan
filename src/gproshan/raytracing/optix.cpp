@@ -431,10 +431,13 @@ void optix::add_mesh(OptixBuildInput & _mesh, CUdeviceptr & d_vertex_ptr, uint32
 	_mesh.triangleArray.numVertices			= d_m->n_vertices;
 	_mesh.triangleArray.vertexBuffers		= &d_vertex_ptr;
 
-	_mesh.triangleArray.indexFormat			= OPTIX_INDICES_FORMAT_UNSIGNED_INT3;
-	_mesh.triangleArray.indexStrideInBytes	= 3 * sizeof(index_t);
-	_mesh.triangleArray.numIndexTriplets	= d_m->n_trigs;
-	_mesh.triangleArray.indexBuffer			= (CUdeviceptr) d_m->trigs_ptr();
+	if(!mesh->is_scene())
+	{
+		_mesh.triangleArray.indexFormat			= OPTIX_INDICES_FORMAT_UNSIGNED_INT3;
+		_mesh.triangleArray.indexStrideInBytes	= 3 * sizeof(index_t);
+		_mesh.triangleArray.numIndexTriplets	= d_m->n_trigs;
+		_mesh.triangleArray.indexBuffer			= (CUdeviceptr) d_m->trigs_ptr();
+	}
 
 	_mesh.triangleArray.transformFormat		= OPTIX_TRANSFORM_FORMAT_MATRIX_FLOAT12;
 	_mesh.triangleArray.preTransform		= (CUdeviceptr) d_model_mat;

@@ -97,7 +97,7 @@ struct t_eval_hit
 		u = au;
 		v = av;
 
-		if(pointcloud || !mesh.n_trigs) // pointcloud
+		if(!sc.trig_mat && (pointcloud || !mesh.n_trigs)) // pointcloud
 		{
 			Kd		= mesh.color(primID);
 			normal	= mesh.normal(primID);

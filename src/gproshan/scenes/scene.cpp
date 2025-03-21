@@ -11,6 +11,12 @@ using namespace cimg_library;
 namespace gproshan {
 
 
+scene::scene(const size_t ntrigs): che(ntrigs * 3, 0)
+{
+	trig_mat = new index_t[ntrigs];
+	texcoords = new vec2[n_vertices];
+}
+
 scene::scene(const std::string & file)
 {
 	init(file);
