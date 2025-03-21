@@ -116,7 +116,7 @@ void embree::build_bvh(const std::vector<const che *> & meshes, const std::vecto
 		const che * mesh = meshes[i];
 
 		g_meshes[i] = mesh;
-		is_pointcloud[i] = pc.enable || !mesh->n_trigs;
+		is_pointcloud[i] = !mesh->is_scene() && (pc.enable || !mesh->n_trigs);
 
 		[[maybe_unused]]
 		const index_t geomID = is_pointcloud[i]	? add_pointcloud(meshes[i], model_mats[i], pc)
@@ -132,10 +132,10 @@ index_t embree::add_sphere(const vec4 & xyzr)
 {
 	RTCGeometry geom = rtcNewGeometry(rtc_device, RTC_GEOMETRY_TYPE_SPHERE_POINT);
 
-	vec4 * pxyzr = (vec4 *) rtcSetNewGeometryBuffer(	geom,
-														RTC_BUFFER_TYPE_VERTEX, 0,
-														RTC_FORMAT_FLOAT4, 4 * sizeof(float), 1
-														);
+	vec4 * pxyzr = (vec4 *) rtcSetNewGeometryBuffer( geom
+													, RTC_BUFFER_TYPE_VERTEX, 0
+													, RTC_FORMAT_FLOAT4, 4 * sizeof(float), 1
+													);
 	*pxyzr = xyzr;
 
 	rtcCommitGeometry(geom);
@@ -150,24 +150,30 @@ index_t embree::add_mesh(const che * mesh, const mat4 & model_mat)
 {
 	RTCGeometry geom = rtcNewGeometry(rtc_device, RTC_GEOMETRY_TYPE_TRIANGLE);
 
-	vertex * vertices = (vertex *) rtcSetNewGeometryBuffer(	geom,
-															RTC_BUFFER_TYPE_VERTEX, 0,
-															RTC_FORMAT_FLOAT3, 3 * sizeof(float),
-															mesh->n_vertices
+	vertex * vertices = (vertex *) rtcSetNewGeometryBuffer(	geom
+															, RTC_BUFFER_TYPE_VERTEX, 0
+															, RTC_FORMAT_FLOAT3, 3 * sizeof(float)
+															, mesh->n_vertices
 															);
 
 	#pragma omp parallel for
 	for(index_t i = 0; i < mesh->n_vertices; ++i)
 		vertices[i] = model_mat * (mesh->point(i), 1);
 
-	index_t * tri_idxs = (index_t *) rtcSetNewGeometryBuffer(	geom,
-																RTC_BUFFER_TYPE_INDEX, 0,
-																RTC_FORMAT_UINT3, 3 * sizeof(index_t),
-																mesh->n_trigs
-																);
+	index_t * tri_idxs = (index_t *) rtcSetNewGeometryBuffer( geom
+															, RTC_BUFFER_TYPE_INDEX, 0
+															, RTC_FORMAT_UINT3, 3 * sizeof(index_t)
+															, mesh->is_scene() ? mesh->n_vertices / 3 : mesh->n_trigs
+															);
 
 
-	memcpy(tri_idxs, mesh->trigs_ptr(), mesh->n_half_edges * sizeof(index_t));
+	if(mesh->is_scene())
+	{
+		#pragma omp parallel for
+		for(index_t i = 0; i < mesh->n_vertices; ++i)
+			tri_idxs[i] = i;
+	}
+	else memcpy(tri_idxs, mesh->trigs_ptr(), mesh->n_half_edges * sizeof(index_t));
 
 	rtcCommitGeometry(geom);
 
