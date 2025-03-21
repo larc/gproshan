@@ -33,7 +33,7 @@ __global__
 void relax_ptp(const che * mesh, float * new_dist, float * old_dist, index_t * new_clusters, index_t * old_clusters, const index_t start, const index_t end, const index_t * sorted = nullptr, const index_t * inv = nullptr);
 
 __global__
-void relative_error(unsigned int * g_count, const float * new_dist, const float * old_dist, const index_t start, const index_t end);
+void relative_error(unsigned int * g_count, const float * new_dist, const float * old_dist, const index_t n);
 
 __global__
 void relative_error(bool * error, const float * new_dist, const float * old_dist, const index_t n);
@@ -182,11 +182,6 @@ void relax_ptp(const che * mesh, const index_t * sorted, const index_t * inv, co
 }
 
 
-#ifdef __CUDACC__
-	__managed__ index_t count;
-#endif
-
-
 template<class T>
 index_t run_ptp(const che * mesh, const std::vector<index_t> & sources,
 				const std::vector<index_t> & limits, T ** dist, index_t ** clusters,
@@ -223,11 +218,13 @@ index_t run_ptp(const che * mesh, const std::vector<index_t> & sources,
 //	cudaMalloc(&error, sizeof(bool) * n_vertices);
 #endif // __CUDACC__
 
-#ifndef __CUDACC__
-	index_t count = 0;
+#ifdef __CUDACC__
+	index_t * g_count = nullptr;
+	cudaMallocManaged(&g_count, sizeof(index_t));
 #endif // __CUDACC__
 
 	const int max_iter = size(limits) << 1;
+	index_t count = 0;
 
 	int iter = -1;
 	index_t i = 1;
@@ -257,9 +254,10 @@ index_t run_ptp(const che * mesh, const std::vector<index_t> & sources,
 
 		count = thrust::count(thrust::device, error, error + n_cond, true);
 */
-		count = 0;
-		relative_error<<< NB(n_cond), NT >>>(&count, new_dist, old_dist, start, start + n_cond);
+		*g_count = 0;
+		relative_error<<< NB(n_cond), NT >>>(g_count, new_dist + start, old_dist + start, n_cond);
 		cudaDeviceSynchronize();
+		count = *g_count;
 	#else
 		#pragma omp parallel for
 		for(index_t v = start; v < end; ++v)
@@ -283,11 +281,10 @@ index_t run_ptp(const che * mesh, const std::vector<index_t> & sources,
 		if(j < size(limits) - 1) 	++j;
 	}
 
-/*
 #ifdef __CUDACC__
-	cudaFree(error);
+	cudaFree(g_count);
+	//cudaFree(error);
 #endif // __CUDACC__
-*/
 
 	return !(iter & 1);
 }

@@ -213,18 +213,20 @@ void relax_ptp(const che * mesh, float * new_dist, float * old_dist, index_t * n
 }
 
 __global__
-void relative_error(unsigned int * g_count, const float * new_dist, const float * old_dist, const index_t start, const index_t end)
+void relative_error(unsigned int * g_count, const float * new_dist, const float * old_dist, const index_t n)
 {
 	const index_t tid = threadIdx.x;
-	const index_t i = blockDim.x * blockIdx.x + threadIdx.x + start;
+	index_t i = blockDim.x * blockIdx.x + threadIdx.x;
 
-	__shared__ unsigned int count;
-	if(i < end && fabsf(new_dist[i] - old_dist[i]) / old_dist[i] < PTP_TOL)
-		atomicInc(&count, 1);
+	__shared__ unsigned int b_count;
+	if(!tid) b_count = 0;
+
+	if(i < n && fabsf(new_dist[i] - old_dist[i]) / old_dist[i] < PTP_TOL)
+		atomicAdd(&b_count, 1);
 
 	__syncthreads();
 
-	if(!tid) atomicInc(g_count, count);
+	if(!tid) atomicAdd(g_count, b_count);
 }
 
 __global__
