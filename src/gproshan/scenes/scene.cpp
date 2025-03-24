@@ -191,9 +191,24 @@ bool scene::load_mtl(const std::string & file)
 			if(c == '\\') c = '/';
 
 		if(!load_texture(path + tex))
-			return false;
+		{
+			delete textures.back().data;
+			textures.back().data = nullptr;
+//			return false;
+		}
 	}
 
+
+	for(auto & m: materials)
+	{
+		if(m.map_Ka < 0) continue;
+		if(!textures[m.map_Ka].data)
+			m.map_Ka = -1;
+		if(!textures[m.map_Kd].data)
+			m.map_Kd = -1;
+		if(!textures[m.map_Ks].data)
+			m.map_Ks = -1;
+	}
 /*
 	for(index_t i = 0; i < size(materials); ++i)
 	{
