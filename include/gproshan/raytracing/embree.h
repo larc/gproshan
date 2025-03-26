@@ -58,9 +58,8 @@ class embree : public raytracing
 		RTCDevice rtc_device;
 		RTCScene rtc_scene;
 
-		std::vector<const che *> g_meshes;
+		std::vector<scene_data> scene_meshes;
 		std::vector<bool> is_pointcloud;
-		scene_data sc;
 
 	public:
 		embree();

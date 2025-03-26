@@ -74,6 +74,7 @@ class scene: public che
 
 struct scene_data
 {
+	const che * mesh = nullptr;
 	scene::material * materials = nullptr;
 	scene::texture * textures = nullptr;
 	index_t * trig_mat = nullptr;

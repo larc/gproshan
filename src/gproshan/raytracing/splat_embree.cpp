@@ -31,7 +31,7 @@ bool splat_embree::closesthit_radiance(	vertex & color,
 	dist += r.ray.tfar;
 
 	eval_hit hit;
-	const float w = splat_hit(hit, *g_meshes[r.hit.geomID], splats_pcs[r.hit.geomID], r.hit.primID, r.pos(), ray_dir, dist);
+	const float w = splat_hit(hit, *scene_meshes[r.hit.geomID].mesh, splats_pcs[r.hit.geomID], r.hit.primID, r.pos(), ray_dir, dist);
 
 	color = eval_li(	hit, params.ambient, params.lights, params.n_lights, params.cam_pos,
 						[&](const vec3 & position, const vec3 & wi, const float light_dist) -> bool

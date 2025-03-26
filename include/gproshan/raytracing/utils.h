@@ -91,8 +91,10 @@ struct t_eval_hit
 	t_eval_hit() {}
 
 	__host_device__
-	t_eval_hit(const che & mesh, const index_t aprimID, const T au, const T av, const scene_data & sc, const bool pointcloud = false)
+	t_eval_hit(const scene_data & sc, const index_t aprimID, const T au, const T av, const bool pointcloud = false)
 	{
+		const che & mesh = *sc.mesh;
+
 		primID = aprimID;
 		u = au;
 		v = av;
