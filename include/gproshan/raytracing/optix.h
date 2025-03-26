@@ -43,6 +43,9 @@ class optix : public raytracing
 		std::vector<optix_params *> params_buffer;
 
 		std::vector<che *> d_mesh;
+		std::vector<scene_data> scene_mesh;
+		std::vector<std::vector<scene::texture> > textures_mesh;
+		scene_data * d_scene_mesh = nullptr;
 
 		void * raygen_records_buffer = nullptr;
 		void * miss_records_buffer = nullptr;
