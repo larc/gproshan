@@ -145,9 +145,12 @@ bool scene::load_mtl(const std::string & file)
 			}
 			case 'T':	// Tr
 			{
-				float & d = materials.back().d;
-				sscanf(line, "%*s %f", &d);
-				d = 1 - d;
+				if(str[1] == 'r')
+				{
+					float & d = materials.back().d;
+					sscanf(line, "%*s %f", &d);
+					d = 1 - d;
+				}
 				break;
 			}
 			case 'N':	// Ns
@@ -204,8 +207,10 @@ bool scene::load_mtl(const std::string & file)
 		if(m.map_Ka < 0) continue;
 		if(!textures[m.map_Ka].data)
 			m.map_Ka = -1;
+		if(m.map_Kd < 0) continue;
 		if(!textures[m.map_Kd].data)
 			m.map_Kd = -1;
+		if(m.map_Ks < 0) continue;
 		if(!textures[m.map_Ks].data)
 			m.map_Ks = -1;
 	}

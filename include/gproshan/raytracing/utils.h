@@ -140,8 +140,8 @@ struct t_eval_hit
 		Ni = mat.Ni;
 
 		d = mat.d;
-//		if(mat.map_d != -1)
-//			d = texture(sc.textures[mat.map_d], texcoord);
+		if(mat.map_d != -1)
+			d = texture(sc.textures[mat.map_d], texcoord).x();
 
 		illum = mat.illum;
 	}
