@@ -82,7 +82,6 @@ optix::optix(const std::string & program, const unsigned int nthreads)
 	create_pipeline();
 
 	params_buffer.assign(nthreads, nullptr);
-	gproshan_error_var(size(params_buffer));
 	for(auto & p: params_buffer)
 		cudaMalloc(&p, sizeof(optix_params));
 }
@@ -464,7 +463,6 @@ void optix::add_mesh(OptixBuildInput & _mesh, CUdeviceptr & d_vertex_ptr, uint32
 	{
 		scene * sc = (scene *) mesh;
 		scene_data & sd = scene_mesh.back();
-		gproshan_error_var(sd.mesh);
 
 		cudaMalloc(&sd.materials, size(sc->materials) * sizeof(scene::material));
 		cudaMalloc(&sd.textures, size(sc->textures) * sizeof(texture));
@@ -482,7 +480,6 @@ void optix::add_mesh(OptixBuildInput & _mesh, CUdeviceptr & d_vertex_ptr, uint32
 			tex_data.push_back(tex.data);
 		}
 
-		gproshan_error_var(size(textures));
 		cudaMemcpy(sd.materials, sc->materials.data(), size(sc->materials) * sizeof(scene::material), cudaMemcpyHostToDevice);
 		cudaMemcpy(sd.textures, textures.data(), size(textures) * sizeof(texture), cudaMemcpyHostToDevice);
 		cudaMemcpy(sd.trig_mat, sc->trig_mat, mesh->n_vertices / 3 * sizeof(index_t), cudaMemcpyHostToDevice);

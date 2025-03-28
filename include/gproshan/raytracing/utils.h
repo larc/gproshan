@@ -103,26 +103,29 @@ struct t_eval_hit
 								+ u * sc.texcoords[trig.y()]
 								+ v * sc.texcoords[trig.z()];
 
+		illum = mat.illum;
 		Ka = mat.Ka;
+		Kd = mat.Kd;
+		Ks = mat.Ks;
+		Ns = mat.Ns;
+		Ni = mat.Ni;
+		d = mat.d;
+
 		if(mat.map_Ka != -1)
 			Ka = sc.textures[mat.map_Ka](texcoord);
 
-		Kd = mat.Kd;
 		if(mat.map_Kd != -1)
+		{
 			Kd = sc.textures[mat.map_Kd](texcoord);
+			if(sc.textures[mat.map_Kd].spectrum == 4)
+				d = sc.textures[mat.map_Kd](texcoord)[3];
+		}
 
-		Ks = mat.Ks;
 		if(mat.map_Ks != -1)
 			Ks = sc.textures[mat.map_Ks](texcoord);
 
-		Ns = mat.Ns;
-		Ni = mat.Ni;
-
-		d = mat.d;
 		if(mat.map_d != -1)
 			d = sc.textures[mat.map_d](texcoord).x();
-
-		illum = mat.illum;
 	}
 
 	//	PTX symbols of certain types (e.g. pointers to functions) cannot be used to initialize array

@@ -15,6 +15,9 @@ target_link_libraries(gproshan ${SuiteSparse_LIBRARIES})
 target_link_libraries(gproshan flann::flann_cpp)
 target_link_libraries(gproshan ${OptiX_LIBRARY})
 target_link_libraries(gproshan imgui)
+target_link_libraries(gproshan PNG::PNG)
+
+target_compile_definitions(gproshan PUBLIC -Dcimg_use_png)
 
 if(CUDAToolkit_FOUND)
 	FILE(GLOB_RECURSE cu_sources ${CMAKE_CURRENT_SOURCE_DIR}/*.cu)

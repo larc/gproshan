@@ -57,6 +57,7 @@ find_package(X11 REQUIRED)
 find_package(Armadillo REQUIRED)
 find_package(SuiteSparse REQUIRED)
 find_package(flann REQUIRED)
+find_package(PNG REQUIRED)
 
 
 include_directories(SYSTEM ${embree_INCLUDE_DIRS})

@@ -2,6 +2,8 @@
 
 #include "gproshan/mesh/che_obj.h"
 
+#include <thread>
+
 #include <CImg.h>
 
 using namespace cimg_library;
@@ -245,6 +247,8 @@ bool scene::load_texture(const std::string & file)
 	{
 		CImg<unsigned char> img(file.c_str());
 		img.mirror('y');
+		if(img.spectrum() == 4)
+			std::thread([](CImg<unsigned char> img) { img.display(); }, img).detach();
 
 		textures.emplace_back();
 		texture & tex = textures.back();
