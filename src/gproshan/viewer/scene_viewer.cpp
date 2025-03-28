@@ -26,7 +26,7 @@ scene_viewer::~scene_viewer()
 	delete [] gltextures;
 }
 
-void scene_viewer::init_texture(const GLuint & gltex, const scene::texture & tex)
+void scene_viewer::init_texture(const GLuint & gltex, const texture & tex)
 {
 	glBindTexture(GL_TEXTURE_2D, gltex);
 

@@ -3,9 +3,9 @@
 
 #include <gproshan/include.h>
 #include <gproshan/geometry/mat.h>
-
 #include <gproshan/mesh/che.h>
 #include <gproshan/scenes/scene.h>
+#include <gproshan/scenes/texture.h>
 #include <gproshan/raytracing/light.h>
 
 
@@ -48,27 +48,6 @@ struct random
 	}
 };
 
-template<class T>
-__host_device__
-vec<T, 3> texture(const scene::texture & tex, const vec<T, 2> & coord)
-{
-	const int i = (tex.width + int(coord.x() * (tex.width - 1))) % tex.width;
-	const int j = (tex.height + int(coord.y() * (tex.height - 1))) % tex.height;
-	const int k = j * tex.width + i;
-
-	che::rgb_t color;
-	if(tex.spectrum == 3)
-	{
-		const che::rgb_t * img = (const che::rgb_t *) tex.data;
-		color = img[k];
-	}
-	if(tex.spectrum == 1)
-	{
-		color.r = color.g = color.b = tex.data[k];
-	}
-
-	return {T(color.r) / 255.f, T(color.g) / 255.f, T(color.b) / 255.f};
-}
 
 template <class T>
 struct t_eval_hit
@@ -126,22 +105,22 @@ struct t_eval_hit
 
 		Ka = mat.Ka;
 		if(mat.map_Ka != -1)
-			Ka = texture(sc.textures[mat.map_Ka], texcoord);
+			Ka = sc.textures[mat.map_Ka](texcoord);
 
 		Kd = mat.Kd;
 		if(mat.map_Kd != -1)
-			Kd = texture(sc.textures[mat.map_Kd], texcoord);
+			Kd = sc.textures[mat.map_Kd](texcoord);
 
 		Ks = mat.Ks;
 		if(mat.map_Ks != -1)
-			Ks = texture(sc.textures[mat.map_Ks], texcoord);
+			Ks = sc.textures[mat.map_Ks](texcoord);
 
 		Ns = mat.Ns;
 		Ni = mat.Ni;
 
 		d = mat.d;
 		if(mat.map_d != -1)
-			d = texture(sc.textures[mat.map_d], texcoord).x();
+			d = sc.textures[mat.map_d](texcoord).x();
 
 		illum = mat.illum;
 	}

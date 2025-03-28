@@ -467,14 +467,14 @@ void optix::add_mesh(OptixBuildInput & _mesh, CUdeviceptr & d_vertex_ptr, uint32
 		gproshan_error_var(sd.mesh);
 
 		cudaMalloc(&sd.materials, size(sc->materials) * sizeof(scene::material));
-		cudaMalloc(&sd.textures, size(sc->textures) * sizeof(scene::texture));
+		cudaMalloc(&sd.textures, size(sc->textures) * sizeof(texture));
 		cudaMalloc(&sd.trig_mat, mesh->n_vertices / 3 * sizeof(index_t));
 		cudaMalloc(&sd.texcoords, mesh->n_vertices * sizeof(vec2));
 
 		textures_mesh.push_back(sc->textures);
 
 		auto & textures = textures_mesh.back();
-		for(scene::texture & tex: textures)
+		for(texture & tex: textures)
 		{
 			unsigned char * h_data = tex.data;
 			cudaMalloc(&tex.data, tex.width * tex.height * tex.spectrum);
@@ -484,7 +484,7 @@ void optix::add_mesh(OptixBuildInput & _mesh, CUdeviceptr & d_vertex_ptr, uint32
 
 		gproshan_error_var(size(textures));
 		cudaMemcpy(sd.materials, sc->materials.data(), size(sc->materials) * sizeof(scene::material), cudaMemcpyHostToDevice);
-		cudaMemcpy(sd.textures, textures.data(), size(textures) * sizeof(scene::texture), cudaMemcpyHostToDevice);
+		cudaMemcpy(sd.textures, textures.data(), size(textures) * sizeof(texture), cudaMemcpyHostToDevice);
 		cudaMemcpy(sd.trig_mat, sc->trig_mat, mesh->n_vertices / 3 * sizeof(index_t), cudaMemcpyHostToDevice);
 		cudaMemcpy(sd.texcoords, sc->texcoords, mesh->n_vertices * sizeof(vec2), cudaMemcpyHostToDevice);
 	}
