@@ -29,6 +29,6 @@ void main()
 		color = mix(vec3(.2), color, d);
 	}
 
-	frag_color = vec4(shading(color, normal, gs_position, gs_texcoord), 1);
+	frag_color = shading(color, normal, gs_position, gs_texcoord);
 }
 
