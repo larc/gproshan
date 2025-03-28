@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.31)
 
-project(gproshan VERSION 3.14)
+project(gproshan VERSION 2.0)
 
 list(APPEND CMAKE_MODULE_PATH "${gproshan_SOURCE_DIR}/cmake")
 

@@ -1,12 +1,6 @@
-#include "gproshan/scenes/scene.h"
+#include <gproshan/scenes/scene.h>
 
-#include "gproshan/mesh/che_obj.h"
-
-#include <thread>
-
-#include <CImg.h>
-
-using namespace cimg_library;
+#include <gproshan/mesh/che_obj.h>
 
 
 // geometry processing and shape analysis framework
@@ -195,12 +189,7 @@ bool scene::load_mtl(const std::string & file)
 		for(char & c: tex)
 			if(c == '\\') c = '/';
 
-		if(!load_texture(path + tex))
-		{
-			delete textures.back().data;
-			textures.back().data = nullptr;
-//			return false;
-		}
+		textures.emplace_back(path + tex);
 	}
 
 
@@ -216,6 +205,7 @@ bool scene::load_mtl(const std::string & file)
 		if(!textures[m.map_Ks].data)
 			m.map_Ks = -1;
 	}
+
 /*
 	for(index_t i = 0; i < size(materials); ++i)
 	{
@@ -237,33 +227,6 @@ bool scene::load_mtl(const std::string & file)
 
 	gproshan_log_var(size(materials));
 	gproshan_log_var(size(textures));
-
-	return true;
-}
-
-bool scene::load_texture(const std::string & file)
-{
-	try
-	{
-		CImg<unsigned char> img(file.c_str());
-		img.mirror('y');
-		if(img.spectrum() == 4)
-			std::thread([](CImg<unsigned char> img) { img.display(); }, img).detach();
-
-		textures.emplace_back();
-		texture & tex = textures.back();
-		tex.width = img.width();
-		tex.height = img.height();
-		tex.spectrum = img.spectrum();
-		tex.data = new unsigned char[tex.width * tex.height * tex.spectrum];
-		img.permute_axes("cxyz");
-		memcpy(tex.data, img.data(), tex.width * tex.height * tex.spectrum);
-	}
-	catch(CImgException & e)
-	{
-		gproshan_error_var(e.what());
-		return false;
-	}
 
 	return true;
 }

@@ -62,7 +62,6 @@ class scene: public che
 		void read_file(const std::string & file) override;
 		bool load_obj(const std::string & file);
 		bool load_mtl(const std::string & file);
-		bool load_texture(const std::string & file);
 };
 
 struct scene_data

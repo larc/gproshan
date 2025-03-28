@@ -17,6 +17,8 @@ scene_viewer::scene_viewer(scene * p_sc): che_viewer(p_sc), sc(p_sc)
 
 	glGenBuffers(1, &tex_vbo);
 	update_vbo_texcoords();
+
+	idx_colormap = 5;
 }
 
 scene_viewer::~scene_viewer()
