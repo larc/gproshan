@@ -9,6 +9,7 @@ uniform vec3 eye;
 uniform sampler2D tex_Ka;
 uniform sampler2D tex_Kd;
 uniform sampler2D tex_Ks;
+uniform sampler2D tex_d;
 
 uniform material mat;
 
@@ -38,28 +39,36 @@ vec3 lines_colormap(vec3 color, float h)
 	return color;
 }
 
-vec3 shading(vec3 color, vec3 n, vec3 pos, vec2 texcoord)
+vec4 shading(vec3 color, vec3 n, vec3 pos, vec2 texcoord)
 {
 	vec3 Ka = vec3(1);
 	vec3 Kd = color;
 	vec3 Ks = vec3(0.2);
 	float Ns = 10;
+	float d = 1;
 
 	if(idx_colormap == 5)
 	{
 		Ka = mat.Ka;
+		Kd = mat.Kd;
+		Ks = mat.Ks;
+		d = mat.d;
+		Ns = mat.Ns;
+
 		if(mat.map_Ka != -1)
 			Ka = texture(tex_Ka, texcoord).rgb;
 
-		Kd = mat.Kd;
 		if(mat.map_Kd != -1)
+		{
 			Kd = texture(tex_Kd, texcoord).rgb;
+			d = min(d, texture(tex_Kd, texcoord).a);
+		}
 
-		Ks = mat.Ks;
 		if(mat.map_Ks != -1)
-			Ks = vec3(texture(tex_Ks, texcoord).r);
+			Ks = texture(tex_Ks, texcoord).rgb;
 
-		Ns = mat.Ns;
+		if(mat.map_d != -1)
+			d = texture(tex_d, texcoord).r;
 	}
 
 	vec3 l = cam_light.pos - pos;
@@ -68,10 +77,10 @@ vec3 shading(vec3 color, vec3 n, vec3 pos, vec2 texcoord)
 	vec3 v = normalize(eye - pos);
 	vec3 h = normalize(l + v);
 	float lambertian = max(dot(l, n), 0.0);
-	float specular = pow(max(dot(h, n), 0.0), Ns);
+	float specular = pow(max(dot(h, n), 0.00001), Ns);
 
-	return Ka * ambient.color * ambient.power +
-			(lambertian * Kd + specular * Ks) * cam_light.color * cam_light.power / (r * r);
+	return vec4(Ka * ambient.color * ambient.power +
+			(lambertian * Kd + specular * Ks) * cam_light.color * cam_light.power / (r * r), d);
 }
 
 

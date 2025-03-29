@@ -21,8 +21,6 @@ struct optix_params: public base_params
 {
 	OptixTraversableHandle traversable;
 
-	scene_data sc;
-
 	bool flat;
 	void * other = nullptr;
 	vec4 * color_buffer = nullptr;

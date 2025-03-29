@@ -187,44 +187,58 @@ class che
 	__host_device__
 	uvec3 trig(const index_t t) const
 	{
-		assert(t < n_trigs);
 		const index_t he = t * 3;
-		return {VT[he], VT[he + 1], VT[he + 2]};
+
+		if(VT) return {VT[he], VT[he + 1], VT[he + 2]};
+
+		return {he, he + 1, he + 2};
 	}
 
 	__host_device__
 	mat3 trig_points(const index_t t) const
 	{
-		assert(t < n_trigs);
-		const index_t he = t * 3;
-		mat3 m = {GT[VT[he]], GT[VT[he + 1]], GT[VT[he + 2]]};
+		index_t a = t * 3;
+		index_t b = a + 1;
+		index_t c = b + 1;
+		if(VT) { a = VT[a]; b = VT[b]; c = VT[c]; }
+
+		mat3 m = {GT[a], GT[b], GT[c]};
 		return m.t();
 	}
 
 	__host_device__
 	mat3 trig_normals(const index_t t) const
 	{
-		assert(t < n_trigs);
-		const index_t he = t * 3;
-		mat3 m = {VN[VT[he]], VN[VT[he + 1]], VN[VT[he + 2]]};
+		index_t a = t * 3;
+		index_t b = a + 1;
+		index_t c = b + 1;
+		if(VT) { a = VT[a]; b = VT[b]; c = VT[c]; }
+
+		mat3 m = {VN[a], VN[b], VN[c]};
 		return m.t();
 	}
 
 	__host_device__
 	mat3 trig_colors(const index_t t) const
 	{
-		assert(t < n_trigs);
-		const index_t he = t * 3;
-		mat3 m = {VC[VT[he]], VC[VT[he + 1]], VC[VT[he + 2]]};
+		index_t a = t * 3;
+		index_t b = a + 1;
+		index_t c = b + 1;
+		if(VT) { a = VT[a]; b = VT[b]; c = VT[c]; }
+
+		mat3 m = {VC[a], VC[b], VC[c]};
 		return m.t();
 	}
 
 	__host_device__
 	vec3 trig_heatmap(const index_t t) const
 	{
-		assert(t < n_trigs);
-		const index_t he = t * 3;
-		return {VHC[VT[he]], VHC[VT[he + 1]], VHC[VT[he + 2]]};
+		index_t a = t * 3;
+		index_t b = a + 1;
+		index_t c = b + 1;
+		if(VT) { a = VT[a]; b = VT[b]; c = VT[c]; }
+
+		return {VHC[a], VHC[b], VHC[c]};
 	}
 
 	__host_device__

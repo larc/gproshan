@@ -39,7 +39,7 @@ extern "C" __global__ void __closesthit__shadow() {}
 
 extern "C" __global__ void __closesthit__radiance()
 {
-	const che & mesh = **(const che **) optixGetSbtDataPointer();
+	const scene_data & sc = **(const scene_data **) optixGetSbtDataPointer();
 
 	const int primID = optixGetPrimitiveIndex();
 	const float2 bar = optixGetTriangleBarycentrics();
@@ -55,7 +55,7 @@ extern "C" __global__ void __closesthit__radiance()
 	const vertex & B = data[1];
 	const vertex & C = data[2];
 
-	eval_hit hit(mesh, primID, bar.x, bar.y, params.sc);
+	eval_hit hit(sc, primID, bar.x, bar.y);
 	hit.normal = params.flat ? normalize(cross(B - A, C - A)) : hit.normal;
 	hit.position = (1.f - hit.u - hit.v) * A + hit.u * B + hit.v * C;
 
@@ -88,13 +88,16 @@ extern "C" __global__ void __closesthit__radiance()
 						});
 
 	random<float> rnd = optixGetPayload_2();
-	color *= attenuation;
+	color *= attenuation * hit.d;
 	position = hit.position;
 
-	if(!hit.scatter_mat(ray_dir, rnd))
-		attenuation = 0;
+	if(rnd() < hit.d)
+	{
+		if(!hit.scatter_mat(ray_dir, rnd))
+			attenuation = 0;
 
-	attenuation /= 2;
+		attenuation /= 2;
+	}
 	optixSetPayload_2(rnd);
 }
 

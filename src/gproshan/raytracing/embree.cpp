@@ -84,7 +84,7 @@ index_t embree::closest_vertex(const vertex & org, const vertex & dir) const
 	ray_hit r(org, dir);
 	if(!intersect(r)) return NIL;
 
-	return closest_hit_vertex(*g_meshes[r.hit.geomID], r.hit);
+	return closest_hit_vertex(*scene_meshes[r.hit.geomID].mesh, r.hit);
 }
 
 eval_hit embree::intersect(const vertex & org, const vertex & dir, const bool flat) const
@@ -92,7 +92,7 @@ eval_hit embree::intersect(const vertex & org, const vertex & dir, const bool fl
 	ray_hit r(org, dir);
 	if(!intersect(r)) return {};
 
-	eval_hit hit(*g_meshes[r.hit.geomID], r.hit.primID, r.hit.u, r.hit.v, sc);
+	eval_hit hit(scene_meshes[r.hit.geomID], r.hit.primID, r.hit.u, r.hit.v);
 	hit.dist = r.ray.tfar;
 	hit.position = r.pos();
 	hit.normal = flat ? r.normal() : hit.normal;
@@ -108,15 +108,14 @@ vec4 * embree::pc_data(const index_t geomID)
 
 void embree::build_bvh(const std::vector<const che *> & meshes, const std::vector<mat4> & model_mats, const pc_opts & pc)
 {
-	g_meshes.resize(size(meshes));
 	is_pointcloud.assign(size(meshes), 0);
 
 	for(index_t i = 0; i < size(meshes); ++i)
 	{
 		const che * mesh = meshes[i];
 
-		g_meshes[i] = mesh;
-		is_pointcloud[i] = pc.enable || !mesh->n_trigs;
+		scene_meshes.emplace_back(mesh);
+		is_pointcloud[i] = !mesh->is_scene() && (pc.enable || !mesh->n_trigs);
 
 		[[maybe_unused]]
 		const index_t geomID = is_pointcloud[i]	? add_pointcloud(meshes[i], model_mats[i], pc)
@@ -132,10 +131,10 @@ index_t embree::add_sphere(const vec4 & xyzr)
 {
 	RTCGeometry geom = rtcNewGeometry(rtc_device, RTC_GEOMETRY_TYPE_SPHERE_POINT);
 
-	vec4 * pxyzr = (vec4 *) rtcSetNewGeometryBuffer(	geom,
-														RTC_BUFFER_TYPE_VERTEX, 0,
-														RTC_FORMAT_FLOAT4, 4 * sizeof(float), 1
-														);
+	vec4 * pxyzr = (vec4 *) rtcSetNewGeometryBuffer( geom
+													, RTC_BUFFER_TYPE_VERTEX, 0
+													, RTC_FORMAT_FLOAT4, 4 * sizeof(float), 1
+													);
 	*pxyzr = xyzr;
 
 	rtcCommitGeometry(geom);
@@ -150,24 +149,30 @@ index_t embree::add_mesh(const che * mesh, const mat4 & model_mat)
 {
 	RTCGeometry geom = rtcNewGeometry(rtc_device, RTC_GEOMETRY_TYPE_TRIANGLE);
 
-	vertex * vertices = (vertex *) rtcSetNewGeometryBuffer(	geom,
-															RTC_BUFFER_TYPE_VERTEX, 0,
-															RTC_FORMAT_FLOAT3, 3 * sizeof(float),
-															mesh->n_vertices
+	vertex * vertices = (vertex *) rtcSetNewGeometryBuffer(	geom
+															, RTC_BUFFER_TYPE_VERTEX, 0
+															, RTC_FORMAT_FLOAT3, 3 * sizeof(float)
+															, mesh->n_vertices
 															);
 
 	#pragma omp parallel for
 	for(index_t i = 0; i < mesh->n_vertices; ++i)
 		vertices[i] = model_mat * (mesh->point(i), 1);
 
-	index_t * tri_idxs = (index_t *) rtcSetNewGeometryBuffer(	geom,
-																RTC_BUFFER_TYPE_INDEX, 0,
-																RTC_FORMAT_UINT3, 3 * sizeof(index_t),
-																mesh->n_trigs
-																);
+	index_t * tri_idxs = (index_t *) rtcSetNewGeometryBuffer( geom
+															, RTC_BUFFER_TYPE_INDEX, 0
+															, RTC_FORMAT_UINT3, 3 * sizeof(index_t)
+															, mesh->is_scene() ? mesh->n_vertices / 3 : mesh->n_trigs
+															);
 
 
-	memcpy(tri_idxs, mesh->trigs_ptr(), mesh->n_half_edges * sizeof(index_t));
+	if(mesh->is_scene())
+	{
+		#pragma omp parallel for
+		for(index_t i = 0; i < mesh->n_vertices; ++i)
+			tri_idxs[i] = i;
+	}
+	else memcpy(tri_idxs, mesh->trigs_ptr(), mesh->n_half_edges * sizeof(index_t));
 
 	rtcCommitGeometry(geom);
 
@@ -177,6 +182,8 @@ index_t embree::add_mesh(const che * mesh, const mat4 & model_mat)
 	if(mesh->is_scene())
 	{
 		scene * psc = (scene *) mesh;
+		scene_data & sc = scene_meshes.back();
+
 		sc.materials = psc->materials.data();
 		sc.textures = psc->textures.data();
 		sc.trig_mat = psc->trig_mat;
@@ -288,9 +295,7 @@ bool embree::closesthit_radiance(	vertex & color,
 	ray_hit r(position, ray_dir);
 	if(!intersect(r)) return false;
 
-	const che & mesh = *g_meshes[r.hit.geomID];
-
-	eval_hit hit(mesh, r.hit.primID, r.hit.u, r.hit.v, sc, is_pointcloud[r.hit.geomID]);
+	eval_hit hit(scene_meshes[r.hit.geomID], r.hit.primID, r.hit.u, r.hit.v, is_pointcloud[r.hit.geomID]);
 	hit.position = r.pos();
 	hit.normal = flat ? r.normal() : hit.normal;
 

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.31)
 
-project(gproshan VERSION 3.14)
+project(gproshan VERSION 2.0)
 
 list(APPEND CMAKE_MODULE_PATH "${gproshan_SOURCE_DIR}/cmake")
 
@@ -57,6 +57,7 @@ find_package(X11 REQUIRED)
 find_package(Armadillo REQUIRED)
 find_package(SuiteSparse REQUIRED)
 find_package(flann REQUIRED)
+find_package(PNG REQUIRED)
 
 
 include_directories(SYSTEM ${embree_INCLUDE_DIRS})

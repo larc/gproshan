@@ -1,15 +1,17 @@
-#include "gproshan/scenes/scene.h"
+#include <gproshan/scenes/scene.h>
 
-#include "gproshan/mesh/che_obj.h"
-
-#include <CImg.h>
-
-using namespace cimg_library;
+#include <gproshan/mesh/che_obj.h>
 
 
 // geometry processing and shape analysis framework
 namespace gproshan {
 
+
+scene::scene(const size_t ntrigs): che(ntrigs * 3, 0)
+{
+	trig_mat = new index_t[ntrigs];
+	texcoords = new vec2[n_vertices];
+}
 
 scene::scene(const std::string & file)
 {
@@ -27,7 +29,7 @@ scene::~scene()
 
 bool scene::is_scene() const
 {
-	return load_scene && size(objects) > 1;
+	return size(objects) > 1;
 }
 
 bool scene::is_pointcloud() const
@@ -37,7 +39,7 @@ bool scene::is_pointcloud() const
 
 void scene::read_file(const std::string & file)
 {
-	load_scene = load_obj(file);
+	load_obj(file);
 }
 
 bool scene::load_obj(const std::string & file)
@@ -49,7 +51,7 @@ bool scene::load_obj(const std::string & file)
 		if(!load_mtl(path + m))
 			return false;
 
-	alloc(size(p.trigs), size(p.trigs) / 3);
+	alloc(size(p.trigs), 0);
 
 	#pragma omp parallel for
 	for(index_t i = 0; i < n_vertices; ++i)
@@ -57,7 +59,6 @@ bool scene::load_obj(const std::string & file)
 		const index_t v = p.trigs[i].x();
 		GT[i] = p.vertices[v];
 		VC[i] = p.vcolors[v];
-		VT[i] = i;
 	}
 
 	if(size(p.vtexcoords))
@@ -140,9 +141,12 @@ bool scene::load_mtl(const std::string & file)
 			}
 			case 'T':	// Tr
 			{
-				float & d = materials.back().d;
-				sscanf(line, "%*s %f", &d);
-				d = 1 - d;
+				if(str[1] == 'r')
+				{
+					float & d = materials.back().d;
+					sscanf(line, "%*s %f", &d);
+					d = 1 - d;
+				}
 				break;
 			}
 			case 'N':	// Ns
@@ -185,8 +189,21 @@ bool scene::load_mtl(const std::string & file)
 		for(char & c: tex)
 			if(c == '\\') c = '/';
 
-		if(!load_texture(path + tex))
-			return false;
+		textures.emplace_back(path + tex);
+	}
+
+
+	for(auto & m: materials)
+	{
+		if(m.map_Ka < 0) continue;
+		if(!textures[m.map_Ka].data)
+			m.map_Ka = -1;
+		if(m.map_Kd < 0) continue;
+		if(!textures[m.map_Kd].data)
+			m.map_Kd = -1;
+		if(m.map_Ks < 0) continue;
+		if(!textures[m.map_Ks].data)
+			m.map_Ks = -1;
 	}
 
 /*
@@ -210,31 +227,6 @@ bool scene::load_mtl(const std::string & file)
 
 	gproshan_log_var(size(materials));
 	gproshan_log_var(size(textures));
-
-	return true;
-}
-
-bool scene::load_texture(const std::string & file)
-{
-	try
-	{
-		CImg<unsigned char> img(file.c_str());
-		img.mirror('y');
-
-		textures.emplace_back();
-		texture & tex = textures.back();
-		tex.width = img.width();
-		tex.height = img.height();
-		tex.spectrum = img.spectrum();
-		tex.data = new unsigned char[tex.width * tex.height * tex.spectrum];
-		img.permute_axes("cxyz");
-		memcpy(tex.data, img.data(), tex.width * tex.height * tex.spectrum);
-	}
-	catch(CImgException & e)
-	{
-		gproshan_error_var(e.what());
-		return false;
-	}
 
 	return true;
 }

@@ -2,6 +2,7 @@
 #define SCENE_H
 
 #include <gproshan/mesh/che.h>
+#include <gproshan/scenes/texture.h>
 
 #include <vector>
 #include <string>
@@ -15,14 +16,6 @@ namespace gproshan {
 class scene: public che
 {
 	public:
-		struct texture
-		{
-			unsigned char * data = nullptr;
-			size_t width = 0;
-			size_t height = 0;
-			size_t spectrum = 0;
-		};
-
 		struct material
 		{
 			vec3 Ka = 1;
@@ -57,23 +50,25 @@ class scene: public che
 
 		index_t * trig_mat = nullptr;
 		vec2 * texcoords = nullptr;
-		bool load_scene = true;
 
 	public:
+		scene(const size_t ntrigs);
 		scene(const std::string & file);
 		~scene();
-		bool is_scene() const;
-		bool is_pointcloud() const;
-		void read_file(const std::string & file);
+		bool is_scene() const override;
+		bool is_pointcloud() const override;
+
+	private:
+		void read_file(const std::string & file) override;
 		bool load_obj(const std::string & file);
 		bool load_mtl(const std::string & file);
-		bool load_texture(const std::string & file);
 };
 
 struct scene_data
 {
+	const che * mesh = nullptr;
 	scene::material * materials = nullptr;
-	scene::texture * textures = nullptr;
+	texture * textures = nullptr;
 	index_t * trig_mat = nullptr;
 	vec2 * texcoords = nullptr;
 };

@@ -17,9 +17,7 @@ void main()
 {
 	vec3 color = lines_colormap(vs_mesh_color, vs_color);
 
-	if(point_normals)
-		color = shading(color, normalize(vs_normal), vs_position, vs_texcoord);
-
-	frag_color = vec4(color, 1);
+	frag_color = point_normals	? shading(color, normalize(vs_normal), vs_position, vs_texcoord)
+								: vec4(color, 1);
 }
 

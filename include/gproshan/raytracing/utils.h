@@ -3,9 +3,9 @@
 
 #include <gproshan/include.h>
 #include <gproshan/geometry/mat.h>
-
 #include <gproshan/mesh/che.h>
 #include <gproshan/scenes/scene.h>
+#include <gproshan/scenes/texture.h>
 #include <gproshan/raytracing/light.h>
 
 
@@ -48,27 +48,6 @@ struct random
 	}
 };
 
-template<class T>
-__host_device__
-vec<T, 3> texture(const scene::texture & tex, const vec<T, 2> & coord)
-{
-	const int i = (tex.width + int(coord.x() * (tex.width - 1))) % tex.width;
-	const int j = (tex.height + int(coord.y() * (tex.height - 1))) % tex.height;
-	const int k = j * tex.width + i;
-
-	che::rgb_t color;
-	if(tex.spectrum == 3)
-	{
-		const che::rgb_t * img = (const che::rgb_t *) tex.data;
-		color = img[k];
-	}
-	if(tex.spectrum == 1)
-	{
-		color.r = color.g = color.b = tex.data[k];
-	}
-
-	return {T(color.r) / 255.f, T(color.g) / 255.f, T(color.b) / 255.f};
-}
 
 template <class T>
 struct t_eval_hit
@@ -91,13 +70,15 @@ struct t_eval_hit
 	t_eval_hit() {}
 
 	__host_device__
-	t_eval_hit(const che & mesh, const index_t aprimID, const T au, const T av, const scene_data & sc, const bool pointcloud = false)
+	t_eval_hit(const scene_data & sc, const index_t aprimID, const T au, const T av, const bool pointcloud = false)
 	{
+		const che & mesh = *sc.mesh;
+
 		primID = aprimID;
 		u = au;
 		v = av;
 
-		if(pointcloud || !mesh.n_trigs) // pointcloud
+		if(!sc.trig_mat && (pointcloud || !mesh.n_trigs)) // pointcloud
 		{
 			Kd		= mesh.color(primID);
 			normal	= mesh.normal(primID);
@@ -122,26 +103,29 @@ struct t_eval_hit
 								+ u * sc.texcoords[trig.y()]
 								+ v * sc.texcoords[trig.z()];
 
+		illum = mat.illum;
 		Ka = mat.Ka;
-		if(mat.map_Ka != -1)
-			Ka = texture(sc.textures[mat.map_Ka], texcoord);
-
 		Kd = mat.Kd;
-		if(mat.map_Kd != -1)
-			Kd = texture(sc.textures[mat.map_Kd], texcoord);
-
 		Ks = mat.Ks;
-		if(mat.map_Ks != -1)
-			Ks = texture(sc.textures[mat.map_Ks], texcoord);
-
 		Ns = mat.Ns;
 		Ni = mat.Ni;
-
 		d = mat.d;
-//		if(mat.map_d != -1)
-//			d = texture(sc.textures[mat.map_d], texcoord);
 
-		illum = mat.illum;
+		if(mat.map_Ka != -1)
+			Ka = sc.textures[mat.map_Ka](texcoord);
+
+		if(mat.map_Kd != -1)
+		{
+			Kd = sc.textures[mat.map_Kd](texcoord);
+			if(sc.textures[mat.map_Kd].spectrum == 4)
+				d = sc.textures[mat.map_Kd](texcoord)[3];
+		}
+
+		if(mat.map_Ks != -1)
+			Ks = sc.textures[mat.map_Ks](texcoord);
+
+		if(mat.map_d != -1)
+			d = sc.textures[mat.map_d](texcoord).x();
 	}
 
 	//	PTX symbols of certain types (e.g. pointers to functions) cannot be used to initialize array
@@ -221,10 +205,10 @@ vec<T, 3> eval_li(const t_eval_hit<T> & hit, const light & ambient, const light 
 
 	#ifdef __CUDACC__
 		lambertian = max(dot(l, n), 0.f);
-		specular = powf(max(dot(h, n), 0.f), hit.Ns);
+		specular = powf(max(dot(h, n), 1e-4f), hit.Ns);
 	#else
 		lambertian = std::max(dot(l, n), 0.f);
-		specular = powf(std::max(dot(h, n), 0.f), hit.Ns);
+		specular = powf(std::max(dot(h, n), 1e-4f), hit.Ns);
 	#endif // __CUDACC__
 
 		const vec<T, 3> color = hit.Ka * ambient.color * ambient.power +

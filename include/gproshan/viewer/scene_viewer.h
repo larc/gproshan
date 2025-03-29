@@ -19,7 +19,8 @@ class scene_viewer: public che_viewer
 	public:
 		scene_viewer(scene * p_sc);
 		~scene_viewer();
-		void init_texture(const GLuint & gltex, const scene::texture & tex);
+
+		void init_texture(const GLuint & gltex, const texture & tex);
 		void draw(shader & program);
 		void draw_pointcloud(shader & program);
 		void gl_uniform_material(shader & program, const scene::material & mat);
