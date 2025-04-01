@@ -128,16 +128,28 @@ struct t_eval_hit
 			d = sc.textures[mat.map_d](texcoord).x();
 	}
 
+	__host_device__
+	T schlick(const T cosine) const
+	{
+		float r = (1.f - Ni) / (1.f + Ni);
+		r *= r;
+		return r + (1.f - r) * powf(1.f - cosine, 5.f);
+	}
+
 	//	PTX symbols of certain types (e.g. pointers to functions) cannot be used to initialize array
 	__host_device__
-	bool scatter_mat(vec<T, 3> & dir, random<T> & rnd)		// dir in: v (view), out: scattered
+	bool scatter_mat(vec<T, 3> & dir, random<T> & rnd) const	// dir in: v (view), out: scattered
 	{
 		switch(illum)
 		{
-			case 3:
-			case 5:
 			case 6:
 			case 7:
+				if(scatter_refract(dir, rnd))
+				{
+					return true;
+				}
+			case 3:
+			case 5:
 				return scatter_reflect(dir, rnd);
 		}
 
@@ -145,26 +157,48 @@ struct t_eval_hit
 	}
 
 	__host_device__
-	bool scatter_reflect(vec<T, 3> & dir, random<T> & )
+	bool scatter_reflect(vec<T, 3> & dir, random<T> & ) const
 	{
 		dir = normalize(dir - 2.f * dot(dir, normal) * normal);
 		return dot(dir, normal) > 0;
 	}
 
 	__host_device__
-	bool scatter_refract(vec<T, 3> & dir, random<T> & )
+	bool scatter_refract(vec<T, 3> & dir, random<T> & rnd) const
 	{
-		const float dvn = dot(dir, normal);
-		const float d = 1.f - Ni * Ni * (1.f - dvn * dvn);
+		vec<T, 3> on;
+		float nn;
+		float cosine;
 
-		if(d <= 0) return false;
+		float dvn = dot(dir, normal);
 
-		dir = Ni * (dir - dvn * normal) - normal * sqrtf(d);
+		if(dvn > 0)
+		{
+			on = - normal;
+			nn = Ni;
+			cosine = Ni * dvn;
+		}
+		else
+		{
+			on = normal;
+			nn = 1.f / Ni;
+			cosine = - dvn;
+		}
+
+		dvn = dot(dir, on);
+		float d = 1.f - nn * nn * (1.f - dvn * dvn);
+		if(d <= 0)
+			return false;
+
+		if(rnd() < schlick(cosine))
+			return false;
+
+		dir = nn * (dir - dvn * on) - on * sqrtf(d);
 		return true;
 	}
 
 	__host_device__
-	bool scatter_diffuse(vec<T, 3> & dir, random<T> & rnd)
+	bool scatter_diffuse(vec<T, 3> & dir, random<T> & rnd) const
 	{
 		// random unit sphere
 		const T theta = rnd() * 2.f * 3.141592654f;
