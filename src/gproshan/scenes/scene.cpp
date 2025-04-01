@@ -127,6 +127,9 @@ bool scene::load_mtl(const std::string & file)
 			}
 			case 'K':	// Ka, Kd, Ks
 			{
+				if(str[1] != 'a' && str[1] != 'd' && str[1] != 's')
+					break;
+
 				vec3 & rgb = str[1] == 'a' ? materials.back().Ka
 							: str[1] == 'd' ? materials.back().Kd
 							: materials.back().Ks;
