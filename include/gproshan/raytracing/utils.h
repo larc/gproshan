@@ -153,7 +153,7 @@ struct t_eval_hit
 				return scatter_reflect(dir, rnd);
 		}
 
-		return scatter_diffuse(dir, rnd);
+		return !scatter_diffuse(dir, rnd);
 	}
 
 	__host_device__

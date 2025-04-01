@@ -94,8 +94,7 @@ extern "C" __global__ void __closesthit__radiance()
 	if(rnd() < hit.d)
 	{
 		if(!hit.scatter_mat(ray_dir, rnd))
-			attenuation = 0;
-		attenuation /= 2;
+			attenuation /= 2;
 	}
 	optixSetPayload_2(rnd);
 }
