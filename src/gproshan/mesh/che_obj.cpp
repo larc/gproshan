@@ -168,13 +168,14 @@ che_obj::parser::parser(const std::string & file)
 	fclose(fp);
 
 	objects.emplace_back("", size(trigs));
-
+/*
 	gproshan_log_var(size(vertices));
 	gproshan_log_var(size(vnormals));
 	gproshan_log_var(size(vtexcoords));
 	gproshan_log_var(size(vcolors));
 	gproshan_log_var(size(trigs));
 	gproshan_log_var(size(objects));
+*/
 }
 
 

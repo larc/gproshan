@@ -29,7 +29,7 @@ texture::texture(const std::string & file)
 	{
 		delete [] data;
 		data = nullptr;
-		gproshan_error_var(e.what());
+//		gproshan_error_var(e.what());
 	}
 }
 

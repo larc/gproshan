@@ -160,7 +160,7 @@ void scene_viewer::gl_uniform_material(shader & program, const scene::material &
 void scene_viewer::update_vbo_texcoords()
 {
 	if(!sc->texcoords) return;
-	gproshan_error(texcoords);
+
 	glBindVertexArray(vao);
 
 	// 6 TEXTURE COORDS
