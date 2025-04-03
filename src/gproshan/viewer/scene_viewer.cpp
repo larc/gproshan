@@ -64,7 +64,7 @@ void scene_viewer::draw(shader & program)
 	program.enable();
 
 	glBindVertexArray(vao);
-	if(size(sc->objects) == 1)
+	if(size(sc->objects) == 1 || idx_colormap < 5)
 	{
 		glDrawArrays(GL_TRIANGLES, 0, mesh->n_vertices);
 	}
@@ -101,7 +101,7 @@ void scene_viewer::draw_pointcloud(shader & program)
 	program.enable();
 
 	glBindVertexArray(vao);
-	if(size(sc->objects) == 1)
+	if(size(sc->objects) == 1 || idx_colormap < 5)
 	{
 		glDrawArrays(GL_POINTS, 0, mesh->n_vertices);
 	}
