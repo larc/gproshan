@@ -49,7 +49,7 @@ extern "C" __global__ void __closesthit__radiance()
 	const float time = optixGetRayTime();
 
 	vertex data[3];
-	optixGetTriangleVertexData(gas, primID, sbtID, time, (float3 *) data);
+	optixGetTriangleVertexData((float3 *) data);
 
 	const vertex & A = data[0];
 	const vertex & B = data[1];
