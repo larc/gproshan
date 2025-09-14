@@ -1,5 +1,5 @@
-#ifndef OCCLUSION_H
-#define OCCLUSION_H
+#ifndef OCCAM_H
+#define OCCAM_H
 
 #include <gproshan/app_viewer.h>
 #include <gproshan/raytracing/embree.h>
@@ -9,7 +9,7 @@ namespace gp = gproshan;
 
 using point = gp::vec3;
 
-class occlusion
+class occam
 {
 	public:
 		struct data
@@ -86,14 +86,14 @@ class occlusion
 										, gp::che ** out = nullptr
 										);
 
-		static float occlusion_random(	const gp::rt::raytracing * rt
+		static float occam_random(	const gp::rt::raytracing * rt
 										, const gp::vertex & min_vertex
 										, const gp::vertex & max_vertex
 										, const int num_rays
 										, gp::che ** out = nullptr
 										);
 
-		static float occlusion_random(const float ratio);
+		static float occam_random(const float ratio);
 
 		static int main_test_bbr(const std::string & input);
 		static int main_test_inside(const std::string & input);

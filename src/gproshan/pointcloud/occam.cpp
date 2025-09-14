@@ -1,4 +1,4 @@
-#include <gproshan/pointcloud/occlusion.h>
+#include <gproshan/pointcloud/occam.h>
 
 #include <gproshan/scenes/scanner.h>
 #include <gproshan/pointcloud/knn.h>
@@ -7,7 +7,7 @@
 #include <map>
 
 
-const std::vector<std::string> occlusion::rt_opts_str = {	"mesh"
+const std::vector<std::string> occam::rt_opts_str = {	"mesh"
 															, "area_npoints"
 															, "mean_median_knn_distant_8"
 															, "knn_area_per_point_1.5"
@@ -16,9 +16,9 @@ const std::vector<std::string> occlusion::rt_opts_str = {	"mesh"
 															, "voronoi_8_anisotropy"
 															};
 
-const size_t occlusion::n_tracers = size(rt_opts_str);
+const size_t occam::n_tracers = size(rt_opts_str);
 
-const std::vector<std::string> occlusion::patterns_str = {	"center",
+const std::vector<std::string> occam::patterns_str = {	"center",
 															"min",
 															"max",
 															"centerMin",
@@ -26,14 +26,14 @@ const std::vector<std::string> occlusion::patterns_str = {	"center",
 															"centerMinMax"
 															};
 
-const size_t occlusion::n_patterns = size(patterns_str);
+const size_t occam::n_patterns = size(patterns_str);
 
 
-bool occlusion::volume_dynamic_rays = false;
-bool occlusion::use_inside_ray = true;
+bool occam::volume_dynamic_rays = false;
+bool occam::use_inside_ray = true;
 
 
-occlusion::data::data(const gp::che * m): mesh(m)
+occam::data::data(const gp::che * m): mesh(m)
 {
 	if(!mesh) return;
 
@@ -57,7 +57,7 @@ occlusion::data::data(const gp::che * m): mesh(m)
 	radius = sqrt(area / m->n_vertices);
 }
 
-gp::rt::embree::pc_opts occlusion::rt_opts(const data & scene, const unsigned id)
+gp::rt::embree::pc_opts occam::rt_opts(const data & scene, const unsigned id)
 {
 	gp::rt::embree::pc_opts pc_opts;
 	pc_opts.enable = true;
@@ -97,7 +97,7 @@ gp::rt::embree::pc_opts occlusion::rt_opts(const data & scene, const unsigned id
 	return pc_opts;
 }
 
-void occlusion::get_min_max_vertex(const gp::che * mesh, gp::vertex & min_vertex, gp::vertex & max_vertex)
+void occam::get_min_max_vertex(const gp::che * mesh, gp::vertex & min_vertex, gp::vertex & max_vertex)
 {
 	min_vertex = INFINITY;
 	max_vertex = -INFINITY;
@@ -115,7 +115,7 @@ void occlusion::get_min_max_vertex(const gp::che * mesh, gp::vertex & min_vertex
 	}
 }
 
-float occlusion::halton(int index, const int base)
+float occam::halton(int index, const int base)
 {
 	float result = 0.0;
 	float f = 1.0 / base;
@@ -130,7 +130,7 @@ float occlusion::halton(int index, const int base)
 	return result;
 }
 
-std::vector<occlusion::pn_sample> occlusion::halton_sample_trigs( gp::partitions & trig_samples
+std::vector<occam::pn_sample> occam::halton_sample_trigs( gp::partitions & trig_samples
 																, const gp::che * mesh
 																, const int total_samples
 																)
@@ -196,8 +196,8 @@ std::vector<occlusion::pn_sample> occlusion::halton_sample_trigs( gp::partitions
 	return samples;
 }
 
-std::vector<int> occlusion::raycast_vpoint(	const gp::rt::raytracing * rt
-											, const std::vector<occlusion::pn_sample> & samples
+std::vector<int> occam::raycast_vpoint(	const gp::rt::raytracing * rt
+											, const std::vector<occam::pn_sample> & samples
 											, const std::vector<gp::vertex> & pviews
 											, const float min_dist
 											)
@@ -233,7 +233,7 @@ std::vector<int> occlusion::raycast_vpoint(	const gp::rt::raytracing * rt
 	return vocc;
 }
 
-gp::che * occlusion::scan(	const gp::rt::raytracing * rt
+gp::che * occam::scan(	const gp::rt::raytracing * rt
 							, const std::vector<gp::vertex> & vo
 							, const size_t rows
 							, const size_t cols
@@ -253,9 +253,9 @@ gp::che * occlusion::scan(	const gp::rt::raytracing * rt
 	return out;
 }
 
-float occlusion::inside_ray(const gp::rt::raytracing * rt, const gp::vertex & org, const int n_inside_ray)
+float occam::inside_ray(const gp::rt::raytracing * rt, const gp::vertex & org, const int n_inside_ray)
 {
-	if(!occlusion::use_inside_ray)
+	if(!occam::use_inside_ray)
 		return 1;
 
 	std::random_device rd;
@@ -275,7 +275,7 @@ float occlusion::inside_ray(const gp::rt::raytracing * rt, const gp::vertex & or
 	return float(hits) / n_inside_ray;
 }
 
-int occlusion::generate_random_rays(std::vector<gp::vertex> & origins
+int occam::generate_random_rays(std::vector<gp::vertex> & origins
 									, std::vector<gp::vertex> & directions
 									, const gp::vertex & min_vertex
 									, const gp::vertex & max_vertex
@@ -296,7 +296,7 @@ int occlusion::generate_random_rays(std::vector<gp::vertex> & origins
 	std::uniform_real_distribution<float> dis_y(min_vertex.y(), max_vertex.y());
 	std::uniform_real_distribution<float> dis_z(min_vertex.z(), max_vertex.z());
 
-	if(occlusion::volume_dynamic_rays)
+	if(occam::volume_dynamic_rays)
 	{
 		const gp::vertex c = max_vertex - min_vertex;
 		num_rays *= c.x() * c.y() * c.z();
@@ -320,7 +320,7 @@ int occlusion::generate_random_rays(std::vector<gp::vertex> & origins
 	return num_rays;
 }
 
-gp::vec2 occlusion::raycast_random(	const gp::rt::raytracing * rt
+gp::vec2 occam::raycast_random(	const gp::rt::raytracing * rt
 									, const gp::vertex & min_vertex
 									, const gp::vertex & max_vertex
 									, int num_rays
@@ -417,7 +417,7 @@ gp::vec2 occlusion::raycast_random(	const gp::rt::raytracing * rt
 	return {nohits, rays};
 }
 
-float occlusion::occlusion_random(	const gp::rt::raytracing * rt
+float occam::occam_random(	const gp::rt::raytracing * rt
 									, const gp::vertex & min_vertex
 									, const gp::vertex & max_vertex
 									, const int num_rays
@@ -425,16 +425,16 @@ float occlusion::occlusion_random(	const gp::rt::raytracing * rt
 									)
 {
 	auto occ = raycast_random(rt, min_vertex, max_vertex, num_rays, out);
-	return occlusion_random(occ.x() / occ.y());
+	return occam_random(occ.x() / occ.y());
 }
 
-float occlusion::occlusion_random(const float ratio)
+float occam::occam_random(const float ratio)
 {
 	return std::pow(ratio, 2.0 / 3.0);
 }
 
 
-int occlusion::main_test_bbr(const std::string & input)
+int occam::main_test_bbr(const std::string & input)
 {
 	for(const auto & s: rt_opts_str)
 		std::cout << s << "\n";
@@ -443,7 +443,7 @@ int occlusion::main_test_bbr(const std::string & input)
 
 
 	// setup
-	occlusion::volume_dynamic_rays = true;
+	occam::volume_dynamic_rays = true;
 	const std::vector<int> vnum_rays = {1000};
 	const std::vector<float> vradius = {};//0.001, 0.002, 0.005, 0.01, 0.02, 0.03, 0.04;
 //	bool scan_patterns = false;
@@ -470,7 +470,7 @@ int occlusion::main_test_bbr(const std::string & input)
 		std::cerr << "processing: " << file << "\n";
 
 		gp::che * pc = gp::che::load_mesh(file);
-		const occlusion::data scene(pc);
+		const occam::data scene(pc);
 
 		for(auto & os: results)
 			os << pc->name();
@@ -501,17 +501,17 @@ int occlusion::main_test_bbr(const std::string & input)
 			{
 				const int num_rays = vnum_rays[i];
 
-				float sum_occlusion = 0;
+				float sum_occam = 0;
 				for(unsigned t = 0; t < n_tests; ++t)
-					sum_occlusion += occlusion_random(&rt, scene.min_vertex, scene.max_vertex, num_rays);
-				sum_occlusion /= n_tests;
+					sum_occam += occam_random(&rt, scene.min_vertex, scene.max_vertex, num_rays);
+				sum_occam /= n_tests;
 
 				std::ofstream & os = results[i];
 
 				for(float v: stats)
 					os << " " << v;
 
-				os << " " << sum_occlusion;
+				os << " " << sum_occam;
 			}
 
 /*
@@ -546,7 +546,7 @@ int occlusion::main_test_bbr(const std::string & input)
 	return 0;
 }
 
-int occlusion::main_test_inside(const std::string & input)
+int occam::main_test_inside(const std::string & input)
 {
 	for(const auto & s: rt_opts_str)
 		std::cout << s << "\n";
@@ -555,7 +555,7 @@ int occlusion::main_test_inside(const std::string & input)
 
 
 	// setup
-	occlusion::volume_dynamic_rays = true;
+	occam::volume_dynamic_rays = true;
 	const std::vector<int> vnum_rays = {1000};
 
 
@@ -581,7 +581,7 @@ int occlusion::main_test_inside(const std::string & input)
 		}
 
 		const gp::che * pc = gp::che::load_mesh(file);
-		const occlusion::data scene(pc);
+		const occam::data scene(pc);
 
 		for(unsigned t = 0; t < n_tracers; ++t)
 		{
@@ -623,7 +623,7 @@ int occlusion::main_test_inside(const std::string & input)
 	return 0;
 }
 
-int occlusion::main_test_intersection(const std::string & input)
+int occam::main_test_intersection(const std::string & input)
 {
 	for(const auto & s: rt_opts_str)
 		std::cout << s << "\n";
@@ -632,7 +632,7 @@ int occlusion::main_test_intersection(const std::string & input)
 
 
 	// setup
-	occlusion::volume_dynamic_rays = true;
+	occam::volume_dynamic_rays = true;
 	const std::vector<int> vnum_rays = {1000};
 
 
@@ -660,7 +660,7 @@ int occlusion::main_test_intersection(const std::string & input)
 
 		const gp::che * pc = gp::che::load_mesh(file);
 		const gp::rt::embree mrt({pc}, {gp::mat4::identity()});
-		const occlusion::data scene(pc);
+		const occam::data scene(pc);
 
 		for(auto & os: results)
 			os << pc->n_vertices << " " << pc->n_trigs;
@@ -714,13 +714,13 @@ int occlusion::main_test_intersection(const std::string & input)
 	return 0;
 }
 
-int occlusion::main_test_reconstruction(const std::string & input)
+int occam::main_test_reconstruction(const std::string & input)
 {
 	const std::string home = std::getenv("HOME");
 	const std::string path = home + "/scannet++/";
 
 	const int num_rays = 1000;
-	occlusion::volume_dynamic_rays = true;
+	occam::volume_dynamic_rays = true;
 
 	std::string file;
 	std::string filename;
@@ -737,16 +737,16 @@ int occlusion::main_test_reconstruction(const std::string & input)
 		gp::che * scan = gp::che::load_mesh(filename + "_scan_-2.000000_0.xyz");
 		gp::che * reco = gp::che::load_mesh(filename + "_scan_-2.000000_0.xyz.off");	// reconstructed
 
-		const occlusion::data scene(orig);
+		const occam::data scene(orig);
 		const float d = 0.01 * scene.box_min;
 
 		os << file << " " << f_score(&orig->point(0), orig->n_vertices, &reco->point(0), reco->n_vertices, d);
 
-		for(unsigned i = 1; i < occlusion::n_tracers; ++i)
+		for(unsigned i = 1; i < occam::n_tracers; ++i)
 		{
 			gp::rt::embree rt({scan}, {gp::mat4::identity()}, rt_opts(scene, i));
 
-			os << " " << occlusion_random(&rt, scene.min_vertex, scene.max_vertex, num_rays);
+			os << " " << occam_random(&rt, scene.min_vertex, scene.max_vertex, num_rays);
 		}
 
 		os << "\n";
