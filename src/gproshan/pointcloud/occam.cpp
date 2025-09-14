@@ -12,24 +12,24 @@ namespace gproshan {
 
 
 
-const std::vector<std::string> occam::rt_opts_str = {	"mesh"
-															, "area_npoints"
-															, "mean_median_knn_distant_8"
-															, "knn_area_per_point_1.5"
-															, "knn_median_pairs_per_point_8"
-															, "voronoi_8"
-															, "voronoi_8_anisotropy"
-															};
+const std::vector<std::string> occam::rt_opts_str = { "mesh"
+													, "area_npoints"
+													, "mean_median_knn_distant_8"
+													, "knn_area_per_point_1.5"
+													, "knn_median_pairs_per_point_8"
+													, "voronoi_8"
+													, "voronoi_8_anisotropy"
+													};
 
 const size_t occam::n_tracers = size(rt_opts_str);
 
-const std::vector<std::string> occam::patterns_str = {	"center",
-															"min",
-															"max",
-															"centerMin",
-															"centerMax",
-															"centerMinMax"
-															};
+const std::vector<std::string> occam::patterns_str = {	"center"
+														, "min"
+														, "max"
+														, "centerMin"
+														, "centerMax"
+														, "centerMinMax"
+														};
 
 const size_t occam::n_patterns = size(patterns_str);
 
@@ -390,7 +390,7 @@ vec2 occam::raycast_random(	const rt::raytracing * rt
 			if(pc.heatmap(i) >= 0)
 			{
 				auto v = origins[i] * bin_res;
-				ivec3 b = {v.x(), v.y(), v.z()};
+				ivec3 b = {int(v.x()), int(v.y()), int(v.z())};
 				bins[b] += pc.heatmap(i);
 			}
 	}
@@ -413,7 +413,7 @@ vec2 occam::raycast_random(	const rt::raytracing * rt
 	for(const auto & p: bins)
 	{
 		auto b = p.first;
-		vertex v = {b.x(), b.y(), b.z()};
+		vertex v = {float(b.x()), float(b.y()), float(b.z())};
 		out[1]->point(i) = (v + 0.5f) / bin_res;
 		out[1]->heatmap(i) = p.second / max_w;
 		++i;
