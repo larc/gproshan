@@ -5,31 +5,33 @@
 #include <gproshan/raytracing/embree.h>
 
 
-namespace gp = gproshan;
+// geometry processing and shape analysis framework
+namespace gproshan {
 
-using point = gp::vec3;
+
+using point = vec3;
 
 class occam
 {
 	public:
 		struct data
 		{
-			const gp::che * mesh = nullptr;
-			gp::vertex min_vertex;
-			gp::vertex max_vertex;
-			std::vector<gp::vertex> patterns[6];
+			const che * mesh = nullptr;
+			vertex min_vertex;
+			vertex max_vertex;
+			std::vector<vertex> patterns[6];
 			float box_min = 0;
 			float area = 0;
 			float volume = 0;
 			float radius = 0;
 
-			data(const gp::che * m = nullptr);
+			data(const che * m = nullptr);
 		};
 
 		struct pn_sample
 		{
-			gp::vertex p;
-			gp::vertex n;
+			vertex p;
+			vertex n;
 		};
 
 		static const std::vector<std::string> rt_opts_str;
@@ -41,56 +43,52 @@ class occam
 		static bool volume_dynamic_rays;
 		static bool use_inside_ray;
 
-	private:
-		data scene;
-		std::vector<gp::vertex> viewpoints;
-
 	public:
-		static gp::rt::embree::pc_opts rt_opts(const data & scene, const unsigned id);
+		static rt::embree::pc_opts rt_opts(const data & scene, const unsigned id);
 
-		static void get_min_max_vertex(const gp::che * mesh, gp::vertex & min_vertex, gp::vertex & max_vertex);
+		static void get_min_max_vertex(const che * mesh, vertex & min_vertex, vertex & max_vertex);
 
 		static float halton(const int index, const int base);
 
-		static std::vector<pn_sample> halton_sample_trigs(	gp::partitions & trig_samples
-															, const gp::che * mesh
+		static std::vector<pn_sample> halton_sample_trigs(	partitions & trig_samples
+															, const che * mesh
 															, const int total_samples
 															);
 
 		// return ints: 0 not visible, 1 is visible at least for 1 view point, 2 is occluded for all viewpoints
-		static std::vector<int> raycast_vpoint( const gp::rt::raytracing * rt
+		static std::vector<int> raycast_vpoint( const rt::raytracing * rt
 												, const std::vector<pn_sample> & samples
-												, const std::vector<gp::vertex> & pviews
+												, const std::vector<vertex> & pviews
 												, const float min_dist
 												);
 
-		static gp::che * scan(	const gp::rt::raytracing * rt
-								, const std::vector<gp::vertex> & vo
+		static che * scan(	const rt::raytracing * rt
+								, const std::vector<vertex> & vo
 								, const size_t rows
 								, const size_t cols
 								);
 
-		static float inside_ray(const gp::rt::raytracing * rt, const gp::vertex & org, const int n_inside_ray = 100);
+		static float inside_ray(const rt::raytracing * rt, const vertex & org, const int n_inside_ray = 100);
 
-		static int generate_random_rays(std::vector<gp::vertex> & origins
-										, std::vector<gp::vertex> & destinations
-										, const gp::vertex & min_vertex
-										, const gp::vertex & max_vertex
+		static int generate_random_rays(std::vector<vertex> & origins
+										, std::vector<vertex> & destinations
+										, const vertex & min_vertex
+										, const vertex & max_vertex
 										, int num_rays
 										);
 
-		static gp::vec2 raycast_random(	const gp::rt::raytracing * rt
-										, const gp::vertex & min_vertex
-										, const gp::vertex & max_vertex
+		static vec2 raycast_random(	const rt::raytracing * rt
+										, const vertex & min_vertex
+										, const vertex & max_vertex
 										, const int num_rays
-										, gp::che ** out = nullptr
+										, che ** out = nullptr
 										);
 
-		static float occam_random(	const gp::rt::raytracing * rt
-										, const gp::vertex & min_vertex
-										, const gp::vertex & max_vertex
+		static float occam_random(	const rt::raytracing * rt
+										, const vertex & min_vertex
+										, const vertex & max_vertex
 										, const int num_rays
-										, gp::che ** out = nullptr
+										, che ** out = nullptr
 										);
 
 		static float occam_random(const float ratio);
@@ -105,6 +103,8 @@ class occam
 float f_score(const point * G, const size_t nG, const point * R, const size_t nR, const float d);
 float f_score_percent(const point * A, const size_t nA, const point * B, const size_t nB, const float d);
 
+
+} // namespace gproshan
 
 #endif // OCCLUSION_H
 

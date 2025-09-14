@@ -7,6 +7,11 @@
 #include <map>
 
 
+// geometry processing and shape analysis framework
+namespace gproshan {
+
+
+
 const std::vector<std::string> occam::rt_opts_str = {	"mesh"
 															, "area_npoints"
 															, "mean_median_knn_distant_8"
@@ -33,15 +38,15 @@ bool occam::volume_dynamic_rays = false;
 bool occam::use_inside_ray = true;
 
 
-occam::data::data(const gp::che * m): mesh(m)
+occam::data::data(const che * m): mesh(m)
 {
 	if(!mesh) return;
 
 	get_min_max_vertex(mesh, min_vertex, max_vertex);
 
-	gp::vertex center = (min_vertex + max_vertex) / 2;
-	gp::vertex min_mid = (min_vertex + center) / 2;
-	gp::vertex max_mid = (max_vertex + center) / 2;
+	vertex center = (min_vertex + max_vertex) / 2;
+	vertex min_mid = (min_vertex + center) / 2;
+	vertex max_mid = (max_vertex + center) / 2;
 
 	patterns[0] = {center};
 	patterns[1] = {min_mid};
@@ -50,16 +55,16 @@ occam::data::data(const gp::che * m): mesh(m)
 	patterns[4] = {max_mid, center};
 	patterns[5] = {min_mid, max_mid, center};
 
-	gp::vertex box = max_vertex - min_vertex;
+	vertex box = max_vertex - min_vertex;
 	box_min = std::min({box.x(), box.y(), box.z()});
 	area = 2 * (box.x() * box.y() + box.y() * box.z() + box.x() * box.z());
 	volume = box.x() * box.y() * box.z();
 	radius = sqrt(area / m->n_vertices);
 }
 
-gp::rt::embree::pc_opts occam::rt_opts(const data & scene, const unsigned id)
+rt::embree::pc_opts occam::rt_opts(const data & scene, const unsigned id)
 {
-	gp::rt::embree::pc_opts pc_opts;
+	rt::embree::pc_opts pc_opts;
 	pc_opts.enable = true;
 
 	switch(id)
@@ -67,28 +72,28 @@ gp::rt::embree::pc_opts occam::rt_opts(const data & scene, const unsigned id)
 		case 0: pc_opts.enable = false;
 				break;
 
-		case 1: pc_opts.opt = gp::rt::embree::NONE;
+		case 1: pc_opts.opt = rt::embree::NONE;
 				pc_opts.radius = scene.radius;
 				break;
 
-		case 2: pc_opts.opt = gp::rt::embree::NONE;
-				pc_opts.radius = gp::knn::mean_median_knn_distant(&scene.mesh->point(0), scene.mesh->n_vertices, 8);
+		case 2: pc_opts.opt = rt::embree::NONE;
+				pc_opts.radius = knn::mean_median_knn_distant(&scene.mesh->point(0), scene.mesh->n_vertices, 8);
 				break;
 
-		case 3: pc_opts.opt = gp::rt::embree::AREA;
+		case 3: pc_opts.opt = rt::embree::AREA;
 				pc_opts.scale = 1.5;
 				pc_opts.knn = 64;
 				break;
 
-		case 4: pc_opts.opt = gp::rt::embree::MEDIAN_PAIRS;
+		case 4: pc_opts.opt = rt::embree::MEDIAN_PAIRS;
 				pc_opts.knn = 8;
 				break;
 
-		case 5: pc_opts.opt = gp::rt::embree::VORONOI;
+		case 5: pc_opts.opt = rt::embree::VORONOI;
 				pc_opts.knn = 8;
 				break;
 
-		case 6: pc_opts.opt = gp::rt::embree::VORONOI;
+		case 6: pc_opts.opt = rt::embree::VORONOI;
 				pc_opts.anisotropy = true;
 				pc_opts.knn = 8;
 				break;
@@ -97,13 +102,13 @@ gp::rt::embree::pc_opts occam::rt_opts(const data & scene, const unsigned id)
 	return pc_opts;
 }
 
-void occam::get_min_max_vertex(const gp::che * mesh, gp::vertex & min_vertex, gp::vertex & max_vertex)
+void occam::get_min_max_vertex(const che * mesh, vertex & min_vertex, vertex & max_vertex)
 {
 	min_vertex = INFINITY;
 	max_vertex = -INFINITY;
 	for(unsigned v = 0; v < mesh->n_vertices; ++v)
 	{
-		const gp::vertex & p = mesh->point(v);
+		const vertex & p = mesh->point(v);
 
 		min_vertex.x() = std::min(min_vertex.x(), p.x());
 		min_vertex.y() = std::min(min_vertex.y(), p.y());
@@ -130,8 +135,8 @@ float occam::halton(int index, const int base)
 	return result;
 }
 
-std::vector<occam::pn_sample> occam::halton_sample_trigs( gp::partitions & trig_samples
-																, const gp::che * mesh
+std::vector<occam::pn_sample> occam::halton_sample_trigs( partitions & trig_samples
+																, const che * mesh
 																, const int total_samples
 																)
 {
@@ -150,9 +155,9 @@ std::vector<occam::pn_sample> occam::halton_sample_trigs( gp::partitions & trig_
 	for(unsigned t = 0; t < n_trigs; ++t)
 	{
 		const size_t & he = t * 3;
-		const gp::vertex & a = mesh->point(vtrig(he));
-		const gp::vertex & b = mesh->point(vtrig(he + 1));
-		const gp::vertex & c = mesh->point(vtrig(he + 2));
+		const vertex & a = mesh->point(vtrig(he));
+		const vertex & b = mesh->point(vtrig(he + 1));
+		const vertex & c = mesh->point(vtrig(he + 2));
 
 		total_area += length(cross(a - c, b - c)) / 2;
 	}
@@ -163,13 +168,13 @@ std::vector<occam::pn_sample> occam::halton_sample_trigs( gp::partitions & trig_
 	for(unsigned t = 0; t < n_trigs; ++t)
 	{
 		const size_t & he = t * 3;
-		const gp::vertex & a = mesh->point(vtrig(he));
-		const gp::vertex & b = mesh->point(vtrig(he + 1));
-		const gp::vertex & c = mesh->point(vtrig(he + 2));
+		const vertex & a = mesh->point(vtrig(he));
+		const vertex & b = mesh->point(vtrig(he + 1));
+		const vertex & c = mesh->point(vtrig(he + 2));
 
-		const gp::vertex & an = mesh->normal(vtrig(he));
-		const gp::vertex & bn = mesh->normal(vtrig(he + 1));
-		const gp::vertex & cn = mesh->normal(vtrig(he + 2));
+		const vertex & an = mesh->normal(vtrig(he));
+		const vertex & bn = mesh->normal(vtrig(he + 1));
+		const vertex & cn = mesh->normal(vtrig(he + 2));
 
 		const float area = length(cross(a - c, b - c)) / 2;
 		size_t num_samples = area * samples_per_unit_area + 0.5f;
@@ -186,8 +191,8 @@ std::vector<occam::pn_sample> occam::halton_sample_trigs( gp::partitions & trig_
 			float beta = r2 * sqrtR1;
 			float gamma = 1 - alpha - beta;
 
-			gp::vertex p = alpha * a + beta * b + gamma * c;
-			gp::vertex n = alpha * an + beta * bn + gamma * cn;
+			vertex p = alpha * a + beta * b + gamma * c;
+			vertex n = alpha * an + beta * bn + gamma * cn;
 			samples.emplace_back(p, n);
 			++idx;
 		}
@@ -196,9 +201,9 @@ std::vector<occam::pn_sample> occam::halton_sample_trigs( gp::partitions & trig_
 	return samples;
 }
 
-std::vector<int> occam::raycast_vpoint(	const gp::rt::raytracing * rt
+std::vector<int> occam::raycast_vpoint(	const rt::raytracing * rt
 											, const std::vector<occam::pn_sample> & samples
-											, const std::vector<gp::vertex> & pviews
+											, const std::vector<vertex> & pviews
 											, const float min_dist
 											)
 {
@@ -211,10 +216,10 @@ std::vector<int> occam::raycast_vpoint(	const gp::rt::raytracing * rt
 
 		unsigned visible = 0;
 		unsigned occluded = 0;
-		for(const gp::vertex & vpoint: pviews)
+		for(const vertex & vpoint: pviews)
 		{
 			const float dist = length(vpoint - s.p);
-			const gp::vec3 & dir = (vpoint - s.p) / dist;
+			const vec3 & dir = (vpoint - s.p) / dist;
 
 			if(dot(dir, s.n) < 0) continue;
 
@@ -233,17 +238,17 @@ std::vector<int> occam::raycast_vpoint(	const gp::rt::raytracing * rt
 	return vocc;
 }
 
-gp::che * occam::scan(	const gp::rt::raytracing * rt
-							, const std::vector<gp::vertex> & vo
+che * occam::scan(	const rt::raytracing * rt
+							, const std::vector<vertex> & vo
 							, const size_t rows
 							, const size_t cols
 							)
 {
-	gp::che * out = gp::scanner_ptx(rt, rows, cols, vo[0], true);
+	che * out = scanner_ptx(rt, rows, cols, vo[0], true);
 	for(size_t i = 1; i < size(vo); ++i)
 	{
-		gp::che * p = gp::scanner_ptx(rt, rows, cols, vo[i], true);
-		gp::che * q = out->merge(p);
+		che * p = scanner_ptx(rt, rows, cols, vo[i], true);
+		che * q = out->merge(p);
 		delete out;
 		delete p;
 
@@ -253,7 +258,7 @@ gp::che * occam::scan(	const gp::rt::raytracing * rt
 	return out;
 }
 
-float occam::inside_ray(const gp::rt::raytracing * rt, const gp::vertex & org, const int n_inside_ray)
+float occam::inside_ray(const rt::raytracing * rt, const vertex & org, const int n_inside_ray)
 {
 	if(!occam::use_inside_ray)
 		return 1;
@@ -267,7 +272,7 @@ float occam::inside_ray(const gp::rt::raytracing * rt, const gp::vertex & org, c
 	{
 		const float theta = dis(gen) * 2.f * M_PI;
 		const float phi = acosf(2.f * dis(gen) - 1.f);
-		const gp::vertex dir = {sinf(phi) * cosf(theta), sinf(phi) * sinf(theta), cosf(phi)};
+		const vertex dir = {sinf(phi) * cosf(theta), sinf(phi) * sinf(theta), cosf(phi)};
 		if(rt->intersect(org, dir).primID != NIL)
 			++hits;
 	}
@@ -275,10 +280,10 @@ float occam::inside_ray(const gp::rt::raytracing * rt, const gp::vertex & org, c
 	return float(hits) / n_inside_ray;
 }
 
-int occam::generate_random_rays(std::vector<gp::vertex> & origins
-									, std::vector<gp::vertex> & directions
-									, const gp::vertex & min_vertex
-									, const gp::vertex & max_vertex
+int occam::generate_random_rays(std::vector<vertex> & origins
+									, std::vector<vertex> & directions
+									, const vertex & min_vertex
+									, const vertex & max_vertex
 									, int num_rays
 									)
 {
@@ -298,7 +303,7 @@ int occam::generate_random_rays(std::vector<gp::vertex> & origins
 
 	if(occam::volume_dynamic_rays)
 	{
-		const gp::vertex c = max_vertex - min_vertex;
+		const vertex c = max_vertex - min_vertex;
 		num_rays *= c.x() * c.y() * c.z();
 	}
 
@@ -310,8 +315,8 @@ int occam::generate_random_rays(std::vector<gp::vertex> & origins
 
 	for(int i = 0; i < num_rays; ++i)
 	{
-		gp::vertex org = {dis_x(gen), dis_y(gen), dis_z(gen)};
-		gp::vertex look_at = {dis_x(gen), dis_y(gen), dis_z(gen)};
+		vertex org = {dis_x(gen), dis_y(gen), dis_z(gen)};
+		vertex look_at = {dis_x(gen), dis_y(gen), dis_z(gen)};
 
 		origins.push_back(org);
 		directions.push_back(normalize(look_at - org));
@@ -320,20 +325,20 @@ int occam::generate_random_rays(std::vector<gp::vertex> & origins
 	return num_rays;
 }
 
-gp::vec2 occam::raycast_random(	const gp::rt::raytracing * rt
-									, const gp::vertex & min_vertex
-									, const gp::vertex & max_vertex
+vec2 occam::raycast_random(	const rt::raytracing * rt
+									, const vertex & min_vertex
+									, const vertex & max_vertex
 									, int num_rays
-									, gp::che ** out
+									, che ** out
 									)
 {
-	std::vector<gp::vertex> origins;
-	std::vector<gp::vertex> directions;
+	std::vector<vertex> origins;
+	std::vector<vertex> directions;
 
 	num_rays = generate_random_rays(origins, directions, min_vertex, max_vertex, num_rays);
 
 	const int bin_res = 2;
-	std::map<gp::ivec3, float> bins;
+	std::map<ivec3, float> bins;
 
 	float nohits = 0;
 	float rays = 0;
@@ -341,7 +346,7 @@ gp::vec2 occam::raycast_random(	const gp::rt::raytracing * rt
 	if(out)
 	{
 		delete out[0];
-		out[0] = new gp::che(num_rays);
+		out[0] = new che(num_rays);
 	}
 
 	arma::frowvec p(num_rays);
@@ -370,7 +375,7 @@ gp::vec2 occam::raycast_random(	const gp::rt::raytracing * rt
 		{
 			out[0]->point(i) = origins[i];
 			out[0]->heatmap(i) = w;
-			out[0]->rgb(i) = gp::vertex{0,w,0};
+			out[0]->rgb(i) = vertex{0,w,0};
 		}
 		else if(out)
 		{
@@ -380,12 +385,12 @@ gp::vec2 occam::raycast_random(	const gp::rt::raytracing * rt
 
 	if(out)
 	{
-		const gp::che & pc = *out[0];
+		const che & pc = *out[0];
 		for(int i = 0; i < num_rays; ++i)
 			if(pc.heatmap(i) >= 0)
 			{
 				auto v = origins[i] * bin_res;
-				gp::ivec3 b = {v.x(), v.y(), v.z()};
+				ivec3 b = {v.x(), v.y(), v.z()};
 				bins[b] += pc.heatmap(i);
 			}
 	}
@@ -397,7 +402,7 @@ gp::vec2 occam::raycast_random(	const gp::rt::raytracing * rt
 	if(out)
 	{
 		delete out[1];
-		out[1] = new gp::che(bins.size());
+		out[1] = new che(bins.size());
 	}
 
 	float max_w = 0;
@@ -408,7 +413,7 @@ gp::vec2 occam::raycast_random(	const gp::rt::raytracing * rt
 	for(const auto & p: bins)
 	{
 		auto b = p.first;
-		gp::vertex v = {b.x(), b.y(), b.z()};
+		vertex v = {b.x(), b.y(), b.z()};
 		out[1]->point(i) = (v + 0.5f) / bin_res;
 		out[1]->heatmap(i) = p.second / max_w;
 		++i;
@@ -417,11 +422,11 @@ gp::vec2 occam::raycast_random(	const gp::rt::raytracing * rt
 	return {nohits, rays};
 }
 
-float occam::occam_random(	const gp::rt::raytracing * rt
-									, const gp::vertex & min_vertex
-									, const gp::vertex & max_vertex
+float occam::occam_random(	const rt::raytracing * rt
+									, const vertex & min_vertex
+									, const vertex & max_vertex
 									, const int num_rays
-									, gp::che ** out
+									, che ** out
 									)
 {
 	auto occ = raycast_random(rt, min_vertex, max_vertex, num_rays, out);
@@ -452,7 +457,7 @@ int occam::main_test_bbr(const std::string & input)
 //	const size_t n_cols = 1000;
 
 
-	gp::rt::embree::pc_opts pc_opts;
+	rt::embree::pc_opts pc_opts;
 
 	std::vector<std::ofstream> results(size(vnum_rays));
 	for(unsigned i = 0; i < size(vnum_rays); ++i)
@@ -469,7 +474,7 @@ int occam::main_test_bbr(const std::string & input)
 	{
 		std::cerr << "processing: " << file << "\n";
 
-		gp::che * pc = gp::che::load_mesh(file);
+		che * pc = che::load_mesh(file);
 		const occam::data scene(pc);
 
 		for(auto & os: results)
@@ -479,7 +484,7 @@ int occam::main_test_bbr(const std::string & input)
 		{
 			if(!pc->n_trigs && !i) continue;
 
-			gp::rt::embree rt({pc}, {gp::mat4::identity()}, rt_opts(scene, i));
+			rt::embree rt({pc}, {mat4::identity()}, rt_opts(scene, i));
 
 /*
 			stats.clear();
@@ -520,10 +525,10 @@ int occam::main_test_bbr(const std::string & input)
 			std::string filename = file + "_scan_" + std::to_string(i);
 			for(int i = 0; i < 1; ++i)
 			{
-				gp::che *out = scan(&rt, scene.patterns[i], n_rows, n_cols);
+				che *out = scan(&rt, scene.patterns[i], n_rows, n_cols);
 				out->heatmap_scale(pc->heatmap_scale());
 
-				gp::che_xyz::write_file(out, filename + "_" + std::to_string(i), true);
+				che_xyz::write_file(out, filename + "_" + std::to_string(i), true);
 
 				delete out;
 			}
@@ -559,14 +564,14 @@ int occam::main_test_inside(const std::string & input)
 	const std::vector<int> vnum_rays = {1000};
 
 
-	gp::rt::embree::pc_opts pc_opts;
+	rt::embree::pc_opts pc_opts;
 
 	std::ifstream is(input);
 	std::ofstream results[size(vnum_rays)][n_tracers];
 
-	std::vector<gp::vertex> orgs;
-	std::vector<gp::vertex> dirs;
-	std::vector<gp::vec<float,10>> inside;
+	std::vector<vertex> orgs;
+	std::vector<vertex> dirs;
+	std::vector<vec<float,10>> inside;
 
 	std::string file;
 	while(is >> file)
@@ -580,14 +585,14 @@ int occam::main_test_inside(const std::string & input)
 			os.open(file + "_" + std::to_string(vnum_rays[i]) + "_inside_" + std::to_string(t + 1));
 		}
 
-		const gp::che * pc = gp::che::load_mesh(file);
+		const che * pc = che::load_mesh(file);
 		const occam::data scene(pc);
 
 		for(unsigned t = 0; t < n_tracers; ++t)
 		{
 			if(!pc->n_trigs && !t) continue;
 
-			gp::rt::embree rt({pc}, {gp::mat4::identity()}, rt_opts(scene, t));
+			rt::embree rt({pc}, {mat4::identity()}, rt_opts(scene, t));
 
 			for(unsigned i = 0; i < size(vnum_rays); ++i)
 			{
@@ -636,7 +641,7 @@ int occam::main_test_intersection(const std::string & input)
 	const std::vector<int> vnum_rays = {1000};
 
 
-	gp::rt::embree::pc_opts pc_opts;
+	rt::embree::pc_opts pc_opts;
 
 	std::vector<std::ofstream> results(size(vnum_rays));
 	for(unsigned i = 0; i < size(vnum_rays); ++i)
@@ -647,8 +652,8 @@ int occam::main_test_intersection(const std::string & input)
 
 	std::ifstream is(input);
 
-	std::vector<gp::vertex> orgs;
-	std::vector<gp::vertex> dirs;
+	std::vector<vertex> orgs;
+	std::vector<vertex> dirs;
 
 	int miss_hit, extra_hit;
 
@@ -658,8 +663,8 @@ int occam::main_test_intersection(const std::string & input)
 	{
 		std::cerr << "processing: " << file << "\n";
 
-		const gp::che * pc = gp::che::load_mesh(file);
-		const gp::rt::embree mrt({pc}, {gp::mat4::identity()});
+		const che * pc = che::load_mesh(file);
+		const rt::embree mrt({pc}, {mat4::identity()});
 		const occam::data scene(pc);
 
 		for(auto & os: results)
@@ -667,7 +672,7 @@ int occam::main_test_intersection(const std::string & input)
 
 		for(unsigned t = 1; t < n_tracers; ++t)
 		{
-			const gp::rt::embree prt({pc}, {gp::mat4::identity()}, rt_opts(scene, t));
+			const rt::embree prt({pc}, {mat4::identity()}, rt_opts(scene, t));
 
 			for(unsigned i = 0; i < size(vnum_rays); ++i)
 			{
@@ -733,9 +738,9 @@ int occam::main_test_reconstruction(const std::string & input)
 		filename = path + file + "/scans/mesh_aligned_0.05.ply";
 		gproshan_error_var(filename);
 
-		gp::che * orig = gp::che::load_mesh(filename);
-		gp::che * scan = gp::che::load_mesh(filename + "_scan_-2.000000_0.xyz");
-		gp::che * reco = gp::che::load_mesh(filename + "_scan_-2.000000_0.xyz.off");	// reconstructed
+		che * orig = che::load_mesh(filename);
+		che * scan = che::load_mesh(filename + "_scan_-2.000000_0.xyz");
+		che * reco = che::load_mesh(filename + "_scan_-2.000000_0.xyz.off");	// reconstructed
 
 		const occam::data scene(orig);
 		const float d = 0.01 * scene.box_min;
@@ -744,7 +749,7 @@ int occam::main_test_reconstruction(const std::string & input)
 
 		for(unsigned i = 1; i < occam::n_tracers; ++i)
 		{
-			gp::rt::embree rt({scan}, {gp::mat4::identity()}, rt_opts(scene, i));
+			rt::embree rt({scan}, {mat4::identity()}, rt_opts(scene, i));
 
 			os << " " << occam_random(&rt, scene.min_vertex, scene.max_vertex, num_rays);
 		}
@@ -774,13 +779,13 @@ float f_score(const point * G, const size_t nG, const point * R, const size_t nR
 
 float f_score_percent(const point * Q, const size_t nQ, const point * P, const size_t nP, const float d)
 {
-	gp::knn::k3tree nn(P, nP, Q, nQ, 1);
+	knn::k3tree nn(P, nP, Q, nQ, 1);
 
 	int sum = 0;
 
 	#pragma omp parallel for
 	for(unsigned i = 0; i < nQ; ++i)
-		if(gp::length(Q[i] - P[nn(i, 0)]) < d)
+		if(length(Q[i] - P[nn(i, 0)]) < d)
 		{
 			#pragma omp atomic
 			++sum;
@@ -788,4 +793,7 @@ float f_score_percent(const point * Q, const size_t nQ, const point * P, const s
 
 	return 100.f * sum / nQ;
 }
+
+
+} // namespace gproshan
 
