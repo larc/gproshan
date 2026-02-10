@@ -39,6 +39,7 @@ class geodesics
 			float * dist_alloc	= nullptr;			///< external dist allocation
 			bool cluster		= false;			///< to cluster vertices to closest source.
 			fm_function_t fun	= nullptr;			///< fun is executed inside FM loop
+			bool inf			= false;
 		};
 
 	public:
@@ -55,7 +56,7 @@ class geodesics
 	public:
 		geodesics(	che * mesh,								///< input triangular mesh.
 					const std::vector<index_t> & sources,	///< source vertices.
-					const params & p = {FM, 0, INFINITY, nullptr, false, nullptr}
+					const params & p = {FM, 0, INFINITY, nullptr, false, nullptr, false}
 					);
 
 		virtual ~geodesics();

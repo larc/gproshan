@@ -79,7 +79,8 @@ void app_viewer::init()
 		add_process("Geodesics", process_geodesics, GLFW_KEY_G),
 		add_process("Geodesic Farthest Point Sampling", process_farthest_point_sampling, GLFW_KEY_S),
 		add_process("Geodesic Voronoi", process_voronoi, GLFW_KEY_V),
-		add_process("Toplesets", process_compute_toplesets, GLFW_KEY_T)
+		add_process("Toplesets", process_compute_toplesets, GLFW_KEY_T),
+		add_process("Dart Trowing", process_dart_trowing)
 	});
 
 	add_menu("Sparse Coding",
@@ -637,6 +638,54 @@ bool app_viewer::process_compute_toplesets(viewer * p_view)
 	mesh.update_vbo_heatmap();
 
 	gproshan_debug_var(n_levels);
+	return false;
+}
+
+bool app_viewer::process_dart_trowing(viewer * p_view)
+{
+	app_viewer * view = (app_viewer *) p_view;
+	che_viewer & mesh = view->selected_mesh();
+
+	static geodesics::params params;
+	params.dist_alloc = &mesh->heatmap(0);
+	params.inf = true;
+
+	float edge = 2 * mesh->mean_edge();
+
+	std::random_device rd;  // Will be used to obtain a seed for the random number engine
+	std::mt19937 gen(rd());
+
+	std::uniform_int_distribution<> rnd_trig(0, mesh->n_vertices - 1);
+    std::uniform_real_distribution<> rnd(0, 1);
+
+	//view->sphere_points.clear();
+	view->sphere_points.reserve(mesh->n_vertices / 10);
+
+	index_t v = rnd_trig(gen);
+	params.radio = rnd(gen) * edge;
+	geodesics geo(mesh, {v}, params);
+	view->sphere_points.push_back(mesh.model_mat * mesh->point(v));
+
+
+	params.inf = false;
+	for(int i = 0; i < mesh->n_vertices / 10; ++i)
+	{
+		while(!std::isinf(params.dist_alloc[v]))
+			v = rnd_trig(gen);
+		params.radio = rnd(gen) * edge;
+		geodesics geo(mesh, {v}, params);
+		view->sphere_points.push_back(mesh.model_mat * mesh->point(v));
+	}
+
+	view->add_mesh(new che(data(view->sphere_points), size(view->sphere_points), nullptr, 0));
+	view->sphere_points.clear();
+
+	//	gproshan_log_var(t);
+	//	gproshan_log_var(u);
+	//	gproshan_log_var(v);
+
+	//	gproshan_log_var(mesh->trig_points(t));
+
 	return false;
 }
 

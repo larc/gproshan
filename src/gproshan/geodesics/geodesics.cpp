@@ -26,9 +26,12 @@ geodesics::geodesics(che * mesh, const std::vector<index_t> & sources, const par
 
 	memset(sorted_index, -1, n_vertices * sizeof(index_t));
 
-	#pragma omp parallel for
-	for(index_t v = 0; v < n_vertices; ++v)
-		dist[v] = INFINITY;
+	if(p.inf)
+	{
+		#pragma omp parallel for
+		for(index_t v = 0; v < n_vertices; ++v)
+			dist[v] = INFINITY;
+	}
 
 	if(clusters)
 		memset(clusters, 0, n_vertices * sizeof(index_t));

@@ -84,6 +84,7 @@ class app_viewer : public viewer
 		static bool process_farthest_point_sampling(viewer * p_view);
 		static bool process_voronoi(viewer * p_view);
 		static bool process_compute_toplesets(viewer * p_view);
+		static bool process_dart_trowing(viewer * p_view);
 
 		// Mesh Sparse Coding
 		static bool process_msparse_coding(viewer * p_view);
