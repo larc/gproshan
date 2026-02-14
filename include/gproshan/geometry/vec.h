@@ -312,6 +312,15 @@ T norm(const vec<T, N> & v)
 	return v.norm();
 }
 
+///< norm2
+template<class T, size_t N>
+__host_device__
+T norm2(const vec<T, N> & v)
+{
+	const T n = v.norm();
+	return n * n;
+}
+
 ///< length
 template<class T, size_t N>
 __host_device__
