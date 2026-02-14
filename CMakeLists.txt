@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.31)
+cmake_minimum_required(VERSION 4.2)
 
 project(gproshan VERSION 2.0)
 
@@ -14,7 +14,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_compile_options(-Wall -Wextra -Wno-unused-result)
 
 
-find_package(CUDAToolkit 12)
+find_package(CUDAToolkit 13)
 if(CUDAToolkit_FOUND)
 	enable_language(CUDA)
 	include_directories(SYSTEM ${CUDAToolkit_INCLUDE_DIRS})
@@ -28,7 +28,7 @@ if(CUDAToolkit_FOUND)
 		set(CMAKE_CUDA_ARCHITECTURES native)
 	endif()
 
-	find_package(OptiX 8)
+	find_package(OptiX 9)
 	if(OptiX_INCLUDE)
 		include_directories(SYSTEM ${OptiX_INCLUDE})
 	endif(OptiX_INCLUDE)
