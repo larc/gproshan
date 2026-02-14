@@ -297,6 +297,7 @@ float mean_knn(const point * pc, const int * id, const size_t n, const mat4 & mo
 std::vector<float> anisotropic(const point * pc, const size_t n_points, const knn::k3tree & nn, const int k)
 {
 	std::vector<float> A(n_points);
+	std::vector<float> P(n_points);
 
 	arma::fmat X(k, 3);
 	arma::fmat coeff, score;
@@ -316,9 +317,13 @@ std::vector<float> anisotropic(const point * pc, const size_t n_points, const kn
 
 		const float d = norm(pc[v] - pc[nn(v, k - 1)]);
 		A[v] = d * (1.f - latent[1] / latent[0]);
-
+		P[v] = latent[2] / (latent[2] + latent[1] + latent[0]);
 		mean += d;
 	}
+
+	const auto [min, max] = std::minmax_element(begin(A), end(A));
+	gproshan_log_var(*min);
+	gproshan_log_var(*max);
 
 	mean /= n_points;
 	mean *= 2;
@@ -327,10 +332,28 @@ std::vector<float> anisotropic(const point * pc, const size_t n_points, const kn
 	for(unsigned v = 0; v < n_points; ++v)
 	{
 		A[v] /= mean;
+		P[v] = (P[v] - *min) / (*max - *min);
 		if(A[v] > 1) A[v] = 1;
+		A[v] *= P[v];
 	}
 
 	return A;
+}
+
+std::vector<float> kde(const point * pc, const size_t n_points, const knn::k3tree & nn, const int k, const float h)
+{
+	std::vector<float> D(n_points);
+
+	#pragma omp parallel for
+	for(unsigned i = 0; i < n_points; ++i)
+	{
+		float d = 0;
+		for(int j = 0; j < k; ++j)
+			d += exp(-norm2(pc[i] - pc[nn(i, j)]) / (2 * h * h)) / pow(2 * M_PI * h * h, 3 / 2);
+		D[i] = d / k;
+	}
+
+	return D;
 }
 
 
