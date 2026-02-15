@@ -33,6 +33,8 @@ jobs:
                           libflann-dev \
                           cimg-dev \
                           wget
+        sudo apt remove cmake
+        sudo snap install cmake --classic
 
     - name: Install Cuda
       if: matrix.cuda == 'cuda'
