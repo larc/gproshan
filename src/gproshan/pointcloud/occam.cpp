@@ -349,7 +349,7 @@ vec2 occam::raycast_random(	const rt::raytracing * rt
 		out[0] = new che(num_rays);
 	}
 
-	arma::frowvec p(num_rays);
+	std::vector<float> p(num_rays);
 	#pragma omp parallel for
 	for(int i = 0; i < num_rays; ++i)
 		p[i] = inside_ray(rt, origins[i]);
@@ -379,7 +379,7 @@ vec2 occam::raycast_random(	const rt::raytracing * rt
 		}
 		else if(out)
 		{
-			out[0]->heatmap(i) = -1;
+			out[0]->heatmap(i) = 0;
 		}
 	}
 

@@ -340,7 +340,7 @@ std::vector<float> anisotropic(const point * pc, const size_t n_points, const kn
 	return A;
 }
 
-std::vector<float> kde(const point * pc, const size_t n_points, const knn::k3tree & nn, const int k, const float h)
+std::vector<float> kde(const point * pc, const float * p, const size_t n_points, const knn::k3tree & nn, const int k, const float h)
 {
 	std::vector<float> D(n_points);
 
@@ -349,7 +349,7 @@ std::vector<float> kde(const point * pc, const size_t n_points, const knn::k3tre
 	{
 		float d = 0;
 		for(int j = 0; j < k; ++j)
-			d += exp(-norm2(pc[i] - pc[nn(i, j)]) / (2 * h * h)) / pow(2 * M_PI * h * h, 3 / 2);
+			d += p[nn(i,j)] * exp(-norm2(pc[i] - pc[nn(i, j)]) / (2 * h * h)) / pow(2 * M_PI * h * h, 3 / 2);
 		D[i] = d / k;
 	}
 
