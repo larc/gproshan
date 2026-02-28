@@ -350,7 +350,7 @@ std::vector<float> kde(const point * pc, const float * p, const size_t n_points,
 		float d = 0;
 		for(int j = 0; j < k; ++j)
 			d += p[nn(i,j)] * exp(-norm2(pc[i] - pc[nn(i, j)]) / (2 * h * h)) / pow(2 * M_PI * h * h, 3 / 2);
-		D[i] = d / k;
+		D[i] = d / n_points;
 	}
 
 	return D;

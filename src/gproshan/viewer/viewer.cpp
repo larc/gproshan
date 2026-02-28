@@ -216,8 +216,8 @@ void viewer::imgui()
 
 	if(size(meshes) > 1)
 	{
-		const int rows = window_height > window_width ? m_window_split[size(meshes)].y()
-													: m_window_split[size(meshes)].x();
+		const int rows = window_height > window_width ? m_window_split[size(meshes)].x()
+													: m_window_split[size(meshes)].y();
 		ImGui::SetNextWindowSize(ImVec2(72, -1));
 		ImGui::SetNextWindowPos(ImVec2((mesh.vx + 1) * viewport_width - 72, (rows - mesh.vy) * viewport_height - 70));
 		ImGui::SetNextWindowBgAlpha(0.0f);
@@ -627,7 +627,7 @@ void viewer::update_viewport_meshes()
 	int rows = m_window_split[size(meshes)].x();
 	int cols = m_window_split[size(meshes)].y();
 
-	if(viewport_height > viewport_width)
+	if(window_height > window_width)
 		std::swap(rows, cols);
 
 	for(index_t m = 0; m < size(meshes); ++m)
@@ -682,6 +682,8 @@ void viewer::framebuffer_size_callback(GLFWwindow * window, int width, int heigh
 {
 	viewer * view = (viewer *) glfwGetWindowUserPointer(window);
 	view->update_viewport_meshes();
+	gproshan_log_var(view->window_width);
+	gproshan_log_var(view->window_height);
 }
 
 void viewer::window_size_callback(GLFWwindow * window, int width, int height)

@@ -337,23 +337,15 @@ vec2 occam::raycast_random(	const rt::raytracing * rt
 
 	num_rays = generate_random_rays(origins, directions, min_vertex, max_vertex, num_rays);
 
-	const int bin_res = 2;
-	std::map<ivec3, float> bins;
-
 	float nohits = 0;
 	float rays = 0;
-
-	if(out)
-	{
-		delete out[0];
-		out[0] = new che(num_rays);
-	}
 
 	std::vector<float> p(num_rays);
 	#pragma omp parallel for
 	for(int i = 0; i < num_rays; ++i)
 		p[i] = inside_ray(rt, origins[i]);
 
+	std::vector<bool> ho(num_rays, 0);
 //	gproshan_log_var(hist(p));
 
 	#pragma omp parallel for
@@ -365,45 +357,53 @@ vec2 occam::raycast_random(	const rt::raytracing * rt
 		#pragma omp atomic
 		rays += w;
 
-		if(hit.primID == NIL)
+		if((ho[i] = hit.primID == NIL))
 		{
 			#pragma omp atomic
 			nohits += w;
 		}
-
-		if(out && hit.primID == NIL)
-		{
-			out[0]->point(i) = origins[i];
-			out[0]->heatmap(i) = w;
-			out[0]->rgb(i) = vertex{0,w,0};
-		}
-		else if(out)
-		{
-			out[0]->heatmap(i) = 0;
-		}
 	}
 
-	if(out)
+	if(!out) return {nohits, rays};
+
+
+	std::vector<int> inv;
+	inv.reserve(num_rays);
+
+	for(unsigned i = 0; i < size(ho); ++i)
+		if(ho[i]) inv.push_back(i);
+
+	gproshan_error_var(size(inv));
+
+	delete out[0];
+	out[0] = new che(size(inv));
+
+	che & pc = *out[0];
+
+	const int bin_res = 2;
+	std::map<ivec3, float> bins;
+
+	#pragma omp parallel for
+	for(int v = 0; v < pc.n_vertices; ++v)
 	{
-		const che & pc = *out[0];
-		for(int i = 0; i < num_rays; ++i)
-			if(pc.heatmap(i) >= 0)
-			{
-				auto v = origins[i] * bin_res;
-				ivec3 b = {int(v.x()), int(v.y()), int(v.z())};
-				bins[b] += pc.heatmap(i);
-			}
+		const int i = inv[v];
+		pc.point(v) = origins[i];
+		pc.heatmap(v) = p[i]; 
+
+		auto o = origins[i] * bin_res;
+		ivec3 b = {int(o.x()), int(o.y()), int(o.z())};
+
+		#pragma omp critical
+		bins[b] += pc.heatmap(v);
 	}
 
 	gproshan_error_var(min_vertex);
 	gproshan_error_var(max_vertex);
-	gproshan_log_var(bins.size());
+	gproshan_log_var(size(bins));
 
-	if(out)
-	{
-		delete out[1];
-		out[1] = new che(bins.size());
-	}
+
+	delete out[1];
+	out[1] = new che(size(bins));
 
 	float max_w = 0;
 	for(const auto & p: bins)
