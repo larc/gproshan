@@ -79,7 +79,7 @@ float median_pair_dist(const point * pc, const int * id, const size_t n, const m
 float mean_knn(const point * pc, const int * id, const size_t n, const mat4 & model_mat);
 
 std::vector<float> anisotropic(const point * pc, const size_t n_points, const k3tree & nn, const int k);
-std::vector<float> kde(const point * pc, const float * p, const size_t n_points, const knn::k3tree & nn, const int k, const float h);
+std::vector<double> kde(const point * pc, const float * p, const size_t n_points, const knn::k3tree & nn, const int k, const double h);
 
 
 const char * radius_str(void *, int opt);

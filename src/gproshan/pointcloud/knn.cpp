@@ -340,17 +340,20 @@ std::vector<float> anisotropic(const point * pc, const size_t n_points, const kn
 	return A;
 }
 
-std::vector<float> kde(const point * pc, const float * p, const size_t n_points, const knn::k3tree & nn, const int k, const float h)
+std::vector<double> kde(const point * pc, const float * p, const size_t n_points, const knn::k3tree & nn, const int k, const double h)
 {
-	std::vector<float> D(n_points);
+	std::vector<double> D(n_points);
+	const double hh = 2.0 * h * h;
 
 	#pragma omp parallel for
 	for(unsigned i = 0; i < n_points; ++i)
 	{
-		float d = 0;
+		double d = 0;
 		for(int j = 0; j < k; ++j)
-			d += p[nn(i,j)] * exp(-norm2(pc[i] - pc[nn(i, j)]) / (2 * h * h)) / pow(2 * M_PI * h * h, 3 / 2);
-		D[i] = d / n_points;
+			d += p[nn(i,j)] * exp(-double(norm2(pc[i] - pc[nn(i, j)])) / hh);
+			//d += p[nn(i,j)] * exp(-norm2(pc[i] - pc[nn(i, j)]) / (2 * h * h)) / pow(2 * M_PI * h * h, 3 / 2);
+		D[i] = d;
+		//D[i] = d / n_points;
 	}
 
 	return D;
