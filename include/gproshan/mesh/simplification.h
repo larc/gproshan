@@ -3,9 +3,6 @@
 
 #include <gproshan/mesh/che.h>
 
-#include <string>
-#include <armadillo>
-
 
 // geometry processing and shape analysis framework
 namespace gproshan {
@@ -14,13 +11,15 @@ namespace gproshan {
 class simplification
 {
 	private:
-		arma::fmat * Q;
-		che * mesh;
+		mat4 * Q = nullptr;
+		che * mesh = nullptr;
 		index_t levels;
 
 	public:
 		simplification(che * mesh, const index_t levels_ = 1);
-		~simplification();
+		virtual ~simplification();
+
+		const mat4 & operator [] (const index_t i) const;
 
 	private:
 		void execute();

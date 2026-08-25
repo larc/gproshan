@@ -405,10 +405,41 @@ bool app_viewer::process_edge_collapse(viewer * p_view)
 	che_viewer & mesh = view->selected_mesh();
 
 	index_t levels;
-	std::cin >> levels;
 
-	TIC(view->time) simplification sampling(mesh, levels); TOC(view->time)
-	gproshan_debug_var(view->time);
+	TIC(view->time) simplification Q(mesh, levels); TOC(view->time)
+
+
+	#pragma omp parallel for
+	for(index_t v = 0; v < mesh->n_vertices; ++v)
+	{
+		vec4 p;
+		int n = 0;
+		for(const index_t he: mesh->star(v))
+		{
+			p += (mesh->vertex_he(he_next(he)), 1);
+			++n;
+		}
+		p /= n;
+
+		mesh->heatmap(v) = dot(p, Q[v] * p);
+	}
+
+	float max_e, min_e;
+	max_e = min_e = mesh->heatmap(0);
+	for(index_t v = 1; v < mesh->n_vertices; ++v)
+	{
+		max_e = std::max(max_e, mesh->heatmap(v));
+		min_e = std::min(min_e, mesh->heatmap(v));
+	}
+
+	#pragma omp parallel for
+	for(index_t v = 0; v < mesh->n_vertices; ++v)
+	{
+		mesh->heatmap(v) -= min_e;
+		mesh->heatmap(v) /= max_e - min_e + 0.00001;
+		mesh->heatmap(v) = fsqrt(mesh->heatmap(v));
+	}
+	mesh.update_vbo_heatmap();
 
 	//if(view->n_meshes < 2)
 	//	view->add_mesh(new che(*mesh));
