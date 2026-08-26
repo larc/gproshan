@@ -1,0 +1,80 @@
+#ifndef SCENE_H
+#define SCENE_H
+
+#include <gproshan/mesh/che.h>
+#include <gproshan/scenes/texture.h>
+
+#include <vector>
+#include <string>
+#include <unordered_map>
+
+
+// geometry processing and shape analysis framework
+namespace gproshan {
+
+
+class scene: public che
+{
+	public:
+		struct material
+		{
+			vec3 Ka = 1;
+			vec3 Kd = 0.8;
+			vec3 Ks = 0.2;
+			float d = 1;	// Tr = 0, opposite
+			float Ns = 10;
+			float Ni = 0;
+			int illum = 1;
+			int map_Ka = -1;
+			int map_Kd = -1;
+			int map_Ks = -1;
+			int map_d = -1;
+			int map_bump = -1;
+		};
+
+		struct object
+		{
+			index_t begin = 0;
+			index_t material_id = NIL;
+		};
+
+	public:
+		std::unordered_map<std::string, index_t> material_id;
+		std::vector<std::string> material_name;
+		std::vector<material> materials;
+
+		std::vector<std::string> texture_name;
+		std::vector<texture> textures;
+
+		std::vector<object> objects;
+
+		index_t * trig_mat = nullptr;
+		vec2 * texcoords = nullptr;
+
+	public:
+		scene(const size_t ntrigs);
+		scene(const std::string & file);
+		~scene();
+		bool is_scene() const override;
+		bool is_pointcloud() const override;
+
+	private:
+		void read_file(const std::string & file) override;
+		bool load_obj(const std::string & file);
+		bool load_mtl(const std::string & file);
+};
+
+struct scene_data
+{
+	const che * mesh = nullptr;
+	scene::material * materials = nullptr;
+	texture * textures = nullptr;
+	index_t * trig_mat = nullptr;
+	vec2 * texcoords = nullptr;
+};
+
+
+} // namespace gproshan
+
+#endif // SCENE_H
+

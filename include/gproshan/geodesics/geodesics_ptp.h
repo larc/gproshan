@@ -1,0 +1,296 @@
+#ifndef GEODESICS_PTP_H
+#define GEODESICS_PTP_H
+
+/**
+	Parallel Toplesets Propagation algorithm
+	topleset: (Topological Level Set)
+*/
+
+#include <gproshan/mesh/che.h>
+#include <gproshan/mesh/toplesets.h>
+
+#include <functional>
+
+
+#ifdef __CUDACC__
+//	#include <thrust/count.h>
+//	#include <thrust/execution_policy.h>
+
+	#define NT 256
+	#define NB(x) ((x) + NT - 1) / NT
+#endif // __CUDACC__
+
+#define PTP_TOL 1e-4
+
+
+// geometry processing and shape analysis framework
+namespace gproshan {
+
+
+#ifdef __CUDACC__
+
+__global__
+void relax_ptp(const che * mesh, float * new_dist, float * old_dist, index_t * new_clusters, index_t * old_clusters, const index_t start, const index_t end, const index_t * sorted = nullptr, const index_t * inv = nullptr);
+
+__global__
+void relative_error(unsigned int * g_count, const float * new_dist, const float * old_dist, const index_t n);
+
+__global__
+void relative_error(bool * error, const float * new_dist, const float * old_dist, const index_t n);
+
+#endif // __CUDACC__
+
+
+struct ptp_out_t
+{
+	float * dist = nullptr;
+	index_t * clusters = nullptr;
+
+	ptp_out_t(float *const d, index_t *const c = nullptr);
+};
+
+
+class coalescence_ptp
+{
+	che * mesh = nullptr;
+	std::vector<index_t> inv;
+
+	public:
+		coalescence_ptp(const che * mesh, const toplesets & tps);
+		~coalescence_ptp();
+
+		operator const index_t * () const;
+		operator const che * () const;
+		const che * operator -> () const;
+};
+
+
+template<class T>
+using f_ptp = std::function<void(T *, index_t, index_t, index_t, index_t)>;
+
+
+double parallel_toplesets_propagation_gpu(	const ptp_out_t & ptp_out,
+											const che * mesh,
+											const std::vector<index_t> & sources,
+											const toplesets & tps,
+											const bool coalescence = true,
+											const bool set_inf = true,
+											const f_ptp<float> & fun = nullptr
+											);
+
+double parallel_toplesets_propagation_cpu(	const ptp_out_t & ptp_out,
+											const che * mesh,
+											const std::vector<index_t> & sources,
+											const toplesets & tps,
+											const bool coalescence = true,
+											const bool set_inf = true,
+											const f_ptp<float> & fun = nullptr
+											);
+
+
+double farthest_point_sampling_ptp_gpu(std::vector<index_t> & samples, const che * mesh, size_t n, const float radio = 0);
+double farthest_point_sampling_ptp_cpu(std::vector<index_t> & samples, const che * mesh, size_t n, const float radio = 0);
+
+void normalize_ptp(float * dist, const size_t n);
+
+
+template<class T>
+#ifdef __CUDACC__
+__forceinline__
+#endif
+__host_device__
+float update_step(const mat<T, 3> & points, const vec<T, 2> & t)
+{
+	const vec<T, 3> X[2] = {points[0] - points[2], points[1] - points[2]};
+
+	mat<T, 2> q;
+	q[0][0] = dot(X[0], X[0]);
+	q[0][1] = dot(X[0], X[1]);
+	q[1][0] = dot(X[1], X[0]);
+	q[1][1] = dot(X[1], X[1]);
+
+	const T det = q[0][0] * q[1][1] - q[0][1] * q[1][0];
+
+	mat<T, 2> Q;
+	Q[0][0] = q[1][1] / det;
+	Q[0][1] = -q[0][1] / det;
+	Q[1][0] = -q[1][0] / det;
+	Q[1][1] = q[0][0] / det;
+
+	const T delta = t[0] * (Q[0][0] + Q[1][0]) + t[1] * (Q[0][1] + Q[1][1]);
+	const T dis = delta * delta -
+								(Q[0][0] + Q[0][1] + Q[1][0] + Q[1][1]) *
+								(t[0] * t[0] * Q[0][0] + t[0] * t[1] * (Q[1][0] + Q[0][1]) + t[1] * t[1] * Q[1][1] - 1);
+
+	T p = (delta + sqrtf(dis)) / (Q[0][0] + Q[0][1] + Q[1][0] + Q[1][1]);
+
+	const vec<T, 2> tp = t - p;
+	const vec<T, 3> n = {	tp[0] * (X[0][0]*Q[0][0] + X[1][0]*Q[1][0]) + tp[1] * (X[0][0]*Q[0][1] + X[1][0]*Q[1][1]),
+							tp[0] * (X[0][1]*Q[0][0] + X[1][1]*Q[1][0]) + tp[1] * (X[0][1]*Q[0][1] + X[1][1]*Q[1][1]),
+			 				tp[0] * (X[0][2]*Q[0][0] + X[1][2]*Q[1][0]) + tp[1] * (X[0][2]*Q[0][1] + X[1][2]*Q[1][1])
+							};
+
+	const vec<T, 2> c = Q * vec<T, 2>{dot(X[0], n), dot(X[1], n)};
+
+	if(t[0] == INFINITY || t[1] == INFINITY || dis < 0 || c[0] >= 0 || c[1] >= 0)
+	{
+		const vec<T, 2> & dp = {t[0] + norm(X[0]), t[1] + norm(X[1])};
+		p = dp[dp[1] < dp[0]];
+	}
+
+	return p;
+}
+
+
+template<class T>
+#ifdef __CUDACC__
+__forceinline__
+#endif
+__host_device__
+void relax_ptp(const che * mesh, const index_t * sorted, const index_t * inv, const index_t i, T * new_dist, T * old_dist, index_t * new_clusters, index_t * old_clusters)
+{
+	const index_t v = sorted ? sorted[i] : i;
+
+	if(new_clusters) new_clusters[i] = old_clusters[i];
+
+	T d, ndv = old_dist[i];
+
+	vec<T, 2> t;
+	mat<T, 3> X;
+	uvec2 x;
+
+	X[2] = mesh->point(v);
+	for(const index_t he: mesh->star(v))
+	{
+		x = {mesh->halfedge(he_next(he)), mesh->halfedge(he_prev(he))};
+
+		X[0] = mesh->point(x[0]);
+		X[1] = mesh->point(x[1]);
+
+		if(inv) x = {inv[x[0]], inv[x[1]]};
+
+		d = update_step(X, t = {old_dist[x[0]], old_dist[x[1]]});
+		if(d < ndv)
+		{
+			ndv = d;
+			if(new_clusters)
+				new_clusters[i] = old_clusters[x[t[1] < t[0]]];
+		}
+	}
+
+	new_dist[i] = ndv;
+}
+
+
+template<class T>
+index_t run_ptp(const che * mesh, const std::vector<index_t> & sources,
+				const std::vector<index_t> & limits, T ** dist, index_t ** clusters,
+				const index_t * sorted, const index_t * inv, const f_ptp<T> & fun = nullptr)
+{
+#ifdef __CUDACC__
+	T * h_dist = dist[2];
+	index_t * h_clusters = clusters[2];
+#endif
+
+	// sorted is !coalescence
+	for(index_t i = 0; i < size(sources); ++i)
+	{
+	#ifdef __CUDACC__
+		h_dist[i] = 0;
+		if(h_clusters) h_clusters[i] = i + 1;
+	#else
+		dist[0][i] = dist[1][i] = 0;
+		if(clusters && clusters[0])
+			clusters[0][i] = clusters[1][i] = i + 1;
+	#endif
+	}
+
+#ifdef __CUDACC__
+	const size_t n_vertices = limits.back();
+	cudaMemcpy(dist[0], h_dist, sizeof(T) * n_vertices, cudaMemcpyHostToDevice);
+	cudaMemcpy(dist[1], h_dist, sizeof(T) * n_vertices, cudaMemcpyHostToDevice);
+	if(clusters)
+	{
+		cudaMemcpy(clusters[0], h_clusters, sizeof(index_t) * n_vertices, cudaMemcpyHostToDevice);
+		cudaMemcpy(clusters[1], h_clusters, sizeof(index_t) * n_vertices, cudaMemcpyHostToDevice);
+	}
+//	bool * error = nullptr;
+//	cudaMalloc(&error, sizeof(bool) * n_vertices);
+#endif // __CUDACC__
+
+#ifdef __CUDACC__
+	index_t * g_count = nullptr;
+	cudaMallocManaged(&g_count, sizeof(index_t));
+#endif // __CUDACC__
+
+	const int max_iter = size(limits) << 1;
+	index_t count = 0;
+
+	int iter = -1;
+	index_t i = 1;
+	index_t j = 2;
+	while(i < j && ++iter < max_iter)
+	{
+		if(i < (j >> 1)) i = (j >> 1);	// K/2 limit band size
+
+		const index_t start		= limits[i];
+		const index_t end		= limits[j];
+		const index_t n_cond	= limits[i + 1] - start;
+
+		T * new_dist = dist[iter & 1];
+		T * old_dist = dist[!(iter & 1)];
+
+		index_t * new_cluster = clusters[iter & 1];
+		index_t * old_cluster = clusters[!(iter & 1)];
+
+	#ifdef __CUDACC__
+		relax_ptp<<< NB(end - start), NT >>>(mesh, new_dist, old_dist, new_cluster, old_cluster, start, end, sorted, inv);
+		cudaDeviceSynchronize();
+
+/*		thrust error cudaErrorInvalidDevice: invalid device ordinal 
+
+		relative_error<<< NB(n_cond), NT >>>(error, new_dist + start, old_dist + start, n_cond);
+		cudaDeviceSynchronize();
+
+		count = thrust::count(thrust::device, error, error + n_cond, true);
+*/
+		*g_count = 0;
+		relative_error<<< NB(n_cond), NT >>>(g_count, new_dist + start, old_dist + start, n_cond);
+		cudaDeviceSynchronize();
+		count = *g_count;
+	#else
+		#pragma omp parallel for
+		for(index_t v = start; v < end; ++v)
+			relax_ptp(mesh, sorted, inv, v, new_dist, old_dist, new_cluster, old_cluster);
+
+		count = 0;
+		#pragma omp parallel for
+		for(index_t v = start; v < start + n_cond; ++v)
+		{
+			if(std::abs(new_dist[v] - old_dist[v]) / old_dist[v] < PTP_TOL)
+			{
+				#pragma omp atomic
+				++count;
+			}
+		}
+	#endif
+
+		if(fun) fun(new_dist, i, j, start, end);
+
+		if(n_cond == count)			++i;
+		if(j < size(limits) - 1) 	++j;
+	}
+
+#ifdef __CUDACC__
+	cudaFree(g_count);
+	//cudaFree(error);
+#endif // __CUDACC__
+
+	return !(iter & 1);
+}
+
+
+} // namespace gproshan
+
+#endif // GEODESICS_PTP_H
+

@@ -1,0 +1,97 @@
+include_directories(${gproshan_SOURCE_DIR}/include/)
+
+FILE(GLOB_RECURSE cpp_sources ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
+
+add_library(gproshan SHARED ${cpp_sources})
+
+target_link_libraries(gproshan embree)
+target_link_libraries(gproshan OpenMP::OpenMP_CXX)
+target_link_libraries(gproshan OpenGL::GL)
+target_link_libraries(gproshan GLEW::GLEW)
+target_link_libraries(gproshan glfw)
+target_link_libraries(gproshan X11::X11)
+target_link_libraries(gproshan ${ARMADILLO_LIBRARIES})
+target_link_libraries(gproshan ${SuiteSparse_LIBRARIES})
+target_link_libraries(gproshan flann::flann_cpp)
+target_link_libraries(gproshan ${OptiX_LIBRARY})
+target_link_libraries(gproshan imgui)
+target_link_libraries(gproshan PNG::PNG)
+
+target_compile_definitions(gproshan PUBLIC -Dcimg_use_png)
+
+if(CUDAToolkit_FOUND)
+	FILE(GLOB_RECURSE cu_sources ${CMAKE_CURRENT_SOURCE_DIR}/*.cu)
+	list(FILTER cu_sources EXCLUDE REGEX ${CMAKE_CURRENT_SOURCE_DIR}/raytracing/.*.cu)
+
+	add_library(gproshan_cuda SHARED ${cu_sources})
+
+	target_link_libraries(gproshan_cuda CUDA::cudart)
+	target_link_libraries(gproshan_cuda CUDA::cuda_driver)
+	target_link_libraries(gproshan_cuda CUDA::cublas)
+	target_link_libraries(gproshan_cuda CUDA::cusolver)
+	target_link_libraries(gproshan_cuda CUDA::cusparse)
+
+	target_link_libraries(gproshan gproshan_cuda)
+endif(CUDAToolkit_FOUND)
+
+
+if(OptiX_INCLUDE)
+	add_library(optix OBJECT ${gproshan_SOURCE_DIR}/src/gproshan/raytracing/optix.cu)
+	set_property(TARGET optix PROPERTY CUDA_OPTIX_COMPILATION ON)
+	add_custom_target(	copy_optix ALL
+						DEPENDS optix
+						COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_OBJECTS:optix> $ENV{HOME}/.gproshan/)
+
+	add_library(splat_optix OBJECT ${gproshan_SOURCE_DIR}/src/gproshan/raytracing/splat_optix.cu)
+	set_property(TARGET splat_optix PROPERTY CUDA_OPTIX_COMPILATION ON)
+	add_custom_target(	copy_splat_optix ALL
+						DEPENDS splat_optix
+						COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_OBJECTS:splat_optix> $ENV{HOME}/.gproshan/)
+endif(OptiX_INCLUDE)
+
+
+
+set(installable_libs gproshan imgui)
+if(TARGET gproshan_cuda)
+	list(APPEND installable_libs gproshan_cuda)
+endif()
+
+install(TARGETS ${installable_libs}
+		EXPORT gproshanTargets
+		DESTINATION lib
+		)
+
+install(EXPORT gproshanTargets
+		FILE gproshanTargets.cmake
+		DESTINATION lib/cmake/gproshan
+		)
+
+set(INCLUDE_INSTALL_DIR "${gproshan_SOURCE_DIR}/include/")
+
+include(CMakePackageConfigHelpers)
+
+configure_package_config_file(
+		${gproshan_SOURCE_DIR}/gproshanConfig.cmake.in
+		"${CMAKE_CURRENT_BINARY_DIR}/gproshanConfig.cmake"
+		INSTALL_DESTINATION "lib/cmake/gproshan"
+		PATH_VARS INCLUDE_INSTALL_DIR
+		)
+
+write_basic_package_version_file(
+		"${CMAKE_CURRENT_BINARY_DIR}/gproshanConfigVersion.cmake"
+		VERSION "${gproshan_VERSION_MAJOR}.${gproshan_VERSION_MINOR}"
+		COMPATIBILITY AnyNewerVersion
+		)
+
+install(FILES
+		${CMAKE_CURRENT_BINARY_DIR}/gproshanConfig.cmake
+		${CMAKE_CURRENT_BINARY_DIR}/gproshanConfigVersion.cmake
+		${gproshan_SOURCE_DIR}/cmake/FindSuiteSparse.cmake
+		${gproshan_SOURCE_DIR}/cmake/FindOptiX.cmake
+		DESTINATION lib/cmake/gproshan
+		)
+
+export(	EXPORT gproshanTargets
+		FILE "${CMAKE_CURRENT_BINARY_DIR}/gproshanTargets.cmake"
+		)
+

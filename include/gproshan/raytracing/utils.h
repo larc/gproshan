@@ -1,0 +1,314 @@
+#ifndef RT_UTILS_H
+#define RT_UTILS_H
+
+#include <gproshan/include.h>
+#include <gproshan/geometry/mat.h>
+#include <gproshan/mesh/che.h>
+#include <gproshan/scenes/scene.h>
+#include <gproshan/scenes/texture.h>
+#include <gproshan/raytracing/light.h>
+
+
+// geometry processing and shape analysis framework
+namespace gproshan::rt {
+
+
+template <class T, unsigned int N = 16>
+struct random
+{
+	unsigned int previous;
+
+	__host_device__
+	random(unsigned int p): previous(p) {}
+
+	__host_device__
+	random(unsigned int v0, unsigned int v1)
+	{
+		unsigned int s = 0;
+		for(unsigned int i = 0; i < N; ++i)
+		{
+			s += 0x9e3779b9;
+			v0 += ((v1 << 4) + 0xa341316c) ^ (v1 + s) ^ ((v1 >> 5) + 0xc8013ea4);
+			v1 += ((v0 << 4) + 0xad90777d) ^ (v0 + s) ^ ((v0 >> 5) + 0x7e95761e);
+		}
+		previous = v0;
+	}
+
+	__host_device__
+	T operator () ()
+	{
+		previous = previous * 1664525 + 1013904223;
+		return T(previous & 0x00FFFFFF) / T(0x01000000);
+	}
+
+	__host_device__
+	operator unsigned int & ()
+	{
+		return previous;
+	}
+};
+
+
+template <class T>
+struct t_eval_hit
+{
+	index_t primID = NIL;
+	int illum = 1;
+	T u = 0, v = 0;
+	T dist = 0;
+	T heatmap = 0;
+	vec<T, 3> position;
+	vec<T, 3> normal;
+	vec<T, 3> Ka = 1;
+	vec<T, 3> Kd = 0.5;
+	vec<T, 3> Ks = 0.2;
+	T Ns = 10;
+	T Ni = 0;
+	T d = 1;
+
+	__host_device__
+	t_eval_hit() {}
+
+	__host_device__
+	t_eval_hit(const scene_data & sc, const index_t aprimID, const T au, const T av, const bool pointcloud = false)
+	{
+		const che & mesh = *sc.mesh;
+
+		primID = aprimID;
+		u = au;
+		v = av;
+
+		if(!sc.trig_mat && (pointcloud || !mesh.n_trigs)) // pointcloud
+		{
+			Kd		= mesh.color(primID);
+			normal	= mesh.normal(primID);
+			heatmap	= mesh.heatmap(primID);
+			return;
+		}
+
+		const uvec3 trig = mesh.trig(primID);
+		const vec3 uv = {1.f - u - v, u, v};
+
+		Kd 		= mesh.trig_colors(primID) * uv;
+		normal	= normalize(mesh.trig_normals(primID) * uv);
+		heatmap = dot(mesh.trig_heatmap(primID), uv);
+
+		if(!sc.trig_mat) return;
+		if(sc.trig_mat[primID] == NIL) return;
+
+		const scene::material & mat = sc.materials[sc.trig_mat[primID]];
+		vec<T, 2> texcoord;
+		if(sc.texcoords)
+			texcoord = (1.f - u - v) * sc.texcoords[trig.x()]
+								+ u * sc.texcoords[trig.y()]
+								+ v * sc.texcoords[trig.z()];
+
+		illum = mat.illum;
+		Ka = mat.Ka;
+		Kd = mat.Kd;
+		Ks = mat.Ks;
+		Ns = mat.Ns;
+		Ni = mat.Ni;
+		d = mat.d;
+
+		if(mat.map_Ka != -1)
+			Ka = sc.textures[mat.map_Ka](texcoord);
+
+		if(mat.map_Kd != -1)
+		{
+			Kd = sc.textures[mat.map_Kd](texcoord);
+			if(sc.textures[mat.map_Kd].spectrum == 4)
+				d = sc.textures[mat.map_Kd](texcoord)[3];
+		}
+
+		if(mat.map_Ks != -1)
+			Ks = sc.textures[mat.map_Ks](texcoord);
+
+		if(mat.map_d != -1)
+			d = sc.textures[mat.map_d](texcoord).x();
+	}
+
+	__host_device__
+	T schlick(const T cosine) const
+	{
+		float r = (1.f - Ni) / (1.f + Ni);
+		r *= r;
+		return r + (1.f - r) * powf(1.f - cosine, 5.f);
+	}
+
+	//	PTX symbols of certain types (e.g. pointers to functions) cannot be used to initialize array
+	__host_device__
+	bool scatter_mat(vec<T, 3> & dir, random<T> & rnd) const	// dir in: v (view), out: scattered
+	{
+		switch(illum)
+		{
+			case 6:
+			case 7:
+				if(scatter_refract(dir, rnd))
+				{
+					return true;
+				}
+			case 3:
+			case 5:
+				return scatter_reflect(dir, rnd);
+		}
+
+		return !scatter_diffuse(dir, rnd);
+	}
+
+	__host_device__
+	bool scatter_reflect(vec<T, 3> & dir, random<T> & ) const
+	{
+		dir = normalize(dir - 2.f * dot(dir, normal) * normal);
+		return dot(dir, normal) > 0;
+	}
+
+	__host_device__
+	bool scatter_refract(vec<T, 3> & dir, random<T> & rnd) const
+	{
+		vec<T, 3> on;
+		float nn;
+		float cosine;
+
+		float dvn = dot(dir, normal);
+
+		if(dvn > 0)
+		{
+			on = - normal;
+			nn = Ni;
+			cosine = Ni * dvn;
+		}
+		else
+		{
+			on = normal;
+			nn = 1.f / Ni;
+			cosine = - dvn;
+		}
+
+		dvn = dot(dir, on);
+		float d = 1.f - nn * nn * (1.f - dvn * dvn);
+		if(d <= 0)
+			return false;
+
+		if(rnd() < schlick(cosine))
+			return false;
+
+		dir = nn * (dir - dvn * on) - on * sqrtf(d);
+		return true;
+	}
+
+	__host_device__
+	bool scatter_diffuse(vec<T, 3> & dir, random<T> & rnd) const
+	{
+		// random unit sphere
+		const T theta = rnd() * 2.f * 3.141592654f;
+		const T phi = acosf(2.f * rnd() - 1.f);
+		const T r = cbrtf(rnd());
+
+		const vec<T, 3> p = { r * sinf(phi) * cosf(theta)
+							, r * sinf(phi) * sinf(theta)
+							, r * cosf(phi)
+							};
+
+		dir = normalize(normal + p);
+
+		return true;
+	}
+};
+
+template <class T, class Occluded>
+__host_device__
+vec<T, 3> eval_li(const t_eval_hit<T> & hit, const light & ambient, const light * lights, const int n_lights, const vec<T, 3> & eye, Occluded occluded)
+{
+	const vec<T, 3> v = normalize(eye - hit.position);
+	const vec<T, 3> & n = hit.normal;
+
+	T lambertian;
+	T specular;
+	vec<T, 3> li, l, h;
+
+	for(int i = 0; i < n_lights; ++i)
+	{
+		const light & L = lights[i];
+
+		l = L.pos - hit.position;
+		const T r = length(l);
+
+		l /= r;
+		h = normalize(l + v);
+
+	#ifdef __CUDACC__
+		lambertian = max(dot(l, n), 0.f);
+		specular = powf(max(dot(h, n), 1e-4f), hit.Ns);
+	#else
+		lambertian = std::max(dot(l, n), 0.f);
+		specular = powf(std::max(dot(h, n), 1e-4f), hit.Ns);
+	#endif // __CUDACC__
+
+		const vec<T, 3> color = hit.Ka * ambient.color * ambient.power +
+								(lambertian * hit.Kd + specular * hit.Ks) * L.color * L.power / (r * r);
+
+		li += (dot(v, n) < 0 || occluded(hit.position, l, r) ? 0.4f : 1.0f) * color;
+	}
+
+	li /= n_lights;
+	if(li.x() > 1.0f) li.x() = 1.0f;
+	if(li.y() > 1.0f) li.y() = 1.0f;
+	if(li.z() > 1.0f) li.z() = 1.0f;
+
+	return li;
+}
+
+
+using eval_hit = t_eval_hit<float>;
+
+
+template <class T>
+__host_device__
+vec<T, 3> ray_view_dir(	const uvec2 & pos,
+						const uvec2 & windows_size,
+						const mat<T, 4> & inv_proj_view,
+						const vec<T, 3> & cam_pos,
+						random<T> & rnd
+						)
+{
+	vec2 screen = {	(float(pos.x()) + rnd()) / windows_size.x(),
+					(float(pos.y()) + rnd()) / windows_size.y()
+					};
+	vec<T, 4> view = {screen.x() * 2.f - 1.f, screen.y() * 2.f - 1.f, 1.f, 1.f};
+	vec<T, 4> q = inv_proj_view * view;
+	vec<T, 3> p = q / q[3];
+
+	return normalize(p - cam_pos);
+}
+
+
+template <class H>
+__host_device__
+index_t closest_hit_vertex(const che & mesh, const H & hit)
+{
+	if(!mesh.n_trigs) return hit.primID;
+
+	index_t he = 0;
+	float w = 1 - hit.u - hit.v;
+
+	if(w < hit.u)
+	{
+		he = 1;
+		w = hit.u;
+	}
+
+	if(w < hit.v)
+	{
+		he = 2;
+		w = hit.v;
+	}
+
+	return mesh.halfedge(hit.primID * 3 + he);
+}
+
+
+} // namespace gproshan
+
+#endif // RT_UTILS_H
+

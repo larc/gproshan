@@ -1,0 +1,61 @@
+name: Build
+
+on: [push]
+
+env:
+  CUDA_BIN: /usr/local/cuda/bin
+
+jobs:
+  build:
+    name: ${{ matrix.os }} (${{ matrix.config }}) ${{ matrix.cuda }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04]
+        config: [Release, Debug]
+        cuda: [cuda, '']
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install Dependencies
+      run: |
+        sudo apt update
+        sudo apt install \
+                          libarmadillo-dev \
+                          libsuitesparse-dev \
+                          libopenblas-dev \
+                          libglew-dev \
+                          libglfw3-dev \
+                          libembree-dev \
+                          libflann-dev \
+                          cimg-dev \
+                          wget
+        sudo apt remove cmake
+        sudo snap install cmake --classic
+
+    - name: Install Cuda
+      if: matrix.cuda == 'cuda'
+      run: |
+        wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/cuda-keyring_1.1-1_all.deb
+        sudo dpkg -i cuda-keyring_1.1-1_all.deb
+        sudo apt update
+        sudo apt install -y cuda-toolkit
+
+    - name: Create Build Environment
+      run: cmake -E make_directory ${{runner.workspace}}/build
+
+    - name: Configure CMake
+      shell: bash
+      working-directory: ${{runner.workspace}}/build
+      run: |
+        export PATH=${CUDA_BIN}:${PATH}
+        cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{matrix.config}}
+
+    - name: Build
+      working-directory: ${{runner.workspace}}/build
+      shell: bash
+      run: |
+        cmake --build . --config ${{matrix.config}}
