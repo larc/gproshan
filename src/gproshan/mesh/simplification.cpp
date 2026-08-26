@@ -9,14 +9,19 @@ simplification::simplification(che * mesh_, const index_t levels_)
 {
 	mesh = mesh_;
 	levels = levels_;
-	Q = new arma::fmat[mesh->n_vertices];
+	Q = new mat4[mesh->n_vertices];
 
 	execute();
 }
 
 simplification::~simplification()
 {
-	if(Q) delete [] Q;
+	delete [] Q;
+}
+
+const mat4 & simplification::operator [] (const index_t i) const
+{
+	return Q[i];
 }
 
 void simplification::execute()
@@ -26,26 +31,15 @@ void simplification::execute()
 
 void simplification::compute_quadrics()
 {
-	vertex n;
-
-	#pragma omp parallel for private(n)
+	#pragma omp parallel for
 	for(index_t v = 0; v < mesh->n_vertices; ++v)
-	{
-		Q[v].resize(4,4);
-		Q[v].zeros();
-		arma::fvec p(4);
-
 		for(const index_t he: mesh->star(v))
 		{
-			n = mesh->normal_he(he);
-			p(0) = n.x();
-			p(1) = n.y();
-			p(2) = n.z();
-			p(3) = -dot(n, mesh->point(v));
-
-			Q[v] += p * p.t();
+			const vec3 & n = mesh->normal_he(he);
+			const vec4 p = (n, -dot(mesh->point(v), n));
+			for(int i = 0; i < 4; ++i)
+				Q[v][i] += p[i] * p;
 		}
-	}
 }
 
 void simplification::order_edges(index_t * sort_edges, float * error_edges)
@@ -67,15 +61,7 @@ void simplification::order_edges(index_t * sort_edges, float * error_edges)
 
 float simplification::compute_error(const index_t e)
 {
-	vertex ve = create_vertex(e);
-	arma::fvec v(4);
-
-	v(0) = ve.x();
-	v(1) = ve.y();
-	v(2) = ve.z();
-	v(3) = 1;
-
-	return as_scalar(v.t() * (Q[mesh->edge_u(e)] + Q[mesh->edge_v(e)]) * v);
+	return 0;//as_scalar(v.t() * (Q[mesh->edge_u(e)] + Q[mesh->edge_v(e)]) * v);
 }
 
 vertex simplification::create_vertex(const index_t e)

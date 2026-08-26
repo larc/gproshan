@@ -137,9 +137,12 @@ void viewer::imgui()
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
 
+	//ImGuiIO & io = ImGui::GetIO();
+	//ImGui::PushFont(io.Fonts->AddFontFromFileTTF("/usr/share/fonts/gnu-free/FreeMono.otf"), 20);
+
 	che_viewer & mesh = selected_mesh();
 
-	ImGui::SetNextWindowSize(ImVec2(250, -1));
+	ImGui::SetNextWindowSize(ImVec2(300, -1));
 	if(ImGui::BeginPopupContextVoid("mesh"))
 	{
 		const int p = size(mesh->filename) - 31;
@@ -213,8 +216,10 @@ void viewer::imgui()
 
 	if(size(meshes) > 1)
 	{
+		const int rows = window_height > window_width ? m_window_split[size(meshes)].x()
+													: m_window_split[size(meshes)].y();
 		ImGui::SetNextWindowSize(ImVec2(72, -1));
-		ImGui::SetNextWindowPos(ImVec2((mesh.vx + 1) * viewport_width - 72, (m_window_split[size(meshes)].x() - mesh.vy) * viewport_height - 70));
+		ImGui::SetNextWindowPos(ImVec2((mesh.vx + 1) * viewport_width - 72, (rows - mesh.vy) * viewport_height - 70));
 		ImGui::SetNextWindowBgAlpha(0.0f);
 		ImGui::Begin("selected model", nullptr, ImGuiWindowFlags_NoTitleBar);
 		ImGui::TextColored({0, 1, 0, 1}, "SELECTED");
@@ -382,6 +387,7 @@ void viewer::imgui()
 	}
 
 
+	//ImGui::PopFont();
 	ImGui::PopItemWidth();
 	ImGui::End();
 
@@ -618,8 +624,12 @@ bool viewer::pop_mesh()
 
 void viewer::update_viewport_meshes()
 {
-	const int rows = m_window_split[size(meshes)].x();
-	const int cols = m_window_split[size(meshes)].y();
+	int rows = m_window_split[size(meshes)].x();
+	int cols = m_window_split[size(meshes)].y();
+
+	if(window_height > window_width)
+		std::swap(rows, cols);
+
 	for(index_t m = 0; m < size(meshes); ++m)
 	{
 		meshes[m]->vx = m % cols;
@@ -671,10 +681,9 @@ void viewer::save_frametime(const std::string & file)
 void viewer::framebuffer_size_callback(GLFWwindow * window, int width, int height)
 {
 	viewer * view = (viewer *) glfwGetWindowUserPointer(window);
-	view->viewport_width = width / m_window_split[size(view->meshes)].y();
-	view->viewport_height = height / m_window_split[size(view->meshes)].x();
-	view->cam.aspect = float(view->viewport_width) / view->viewport_height;
-	view->proj_mat = view->cam.perspective();
+	view->update_viewport_meshes();
+	gproshan_log_var(view->window_width);
+	gproshan_log_var(view->window_height);
 }
 
 void viewer::window_size_callback(GLFWwindow * window, int width, int height)
@@ -715,13 +724,18 @@ void viewer::mouse_callback(GLFWwindow * window, int button, int action, int mod
 
 		const index_t ix = xpos * xscale;
 		const index_t iy = ypos * yscale;
-		const int cols = m_window_split[size(view->meshes)].y();
-		const index_t idx_mesh = cols * (iy / view->viewport_height) + ix / view->viewport_width;
+		const int wh = view->window_height;
+		const int ww = view->window_width;
+		const int vh = view->viewport_height;
+		const int vw = view->viewport_width;
+		const int cols = wh > ww ? m_window_split[size(view->meshes)].x()
+								: m_window_split[size(view->meshes)].y();
+		const index_t idx_mesh = cols * (iy / vh) + ix / vw;
 		if(idx_mesh < size(view->meshes))
 			view->idx_selected_mesh = idx_mesh;
 
 		if(mods == GLFW_MOD_SHIFT && button == GLFW_MOUSE_BUTTON_LEFT)
-			view->pick_vertex({ix % view->viewport_width, iy % view->viewport_height});
+			view->pick_vertex({ix % vw, iy % vh});
 	}
 
 	if(button == GLFW_MOUSE_BUTTON_LEFT)

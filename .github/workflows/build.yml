@@ -29,9 +29,12 @@ jobs:
                           libopenblas-dev \
                           libglew-dev \
                           libglfw3-dev \
+                          libembree-dev \
                           libflann-dev \
                           cimg-dev \
                           wget
+        sudo apt remove cmake
+        sudo snap install cmake --classic
 
     - name: Install Cuda
       if: matrix.cuda == 'cuda'
@@ -41,14 +44,6 @@ jobs:
         sudo apt update
         sudo apt install -y cuda-toolkit
 
-    - name: Install Embree
-      working-directory: /opt
-      run: |
-        wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | gpg --dearmor | sudo tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
-        echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
-        sudo apt update
-        sudo apt install intel-renderkit
-
     - name: Create Build Environment
       run: cmake -E make_directory ${{runner.workspace}}/build
 
@@ -56,7 +51,6 @@ jobs:
       shell: bash
       working-directory: ${{runner.workspace}}/build
       run: |
-        source /opt/intel/oneapi/setvars.sh
         export PATH=${CUDA_BIN}:${PATH}
         cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=${{matrix.config}}
 
@@ -64,5 +58,4 @@ jobs:
       working-directory: ${{runner.workspace}}/build
       shell: bash
       run: |
-        source /opt/intel/oneapi/setvars.sh
         cmake --build . --config ${{matrix.config}}

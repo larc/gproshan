@@ -49,7 +49,7 @@ extern "C" __global__ void __closesthit__radiance()
 	const float time = optixGetRayTime();
 
 	vertex data[3];
-	optixGetTriangleVertexData(gas, primID, sbtID, time, (float3 *) data);
+	optixGetTriangleVertexData((float3 *) data);
 
 	const vertex & A = data[0];
 	const vertex & B = data[1];
@@ -87,17 +87,17 @@ extern "C" __global__ void __closesthit__radiance()
 							return occluded != 0;
 						});
 
-	random<float> rnd = optixGetPayload_2();
-	color *= attenuation * hit.d;
+	color *= attenuation;
 	position = hit.position;
 
+	random<float> rnd = optixGetPayload_2();
 	if(rnd() < hit.d)
 	{
 		if(!hit.scatter_mat(ray_dir, rnd))
-			attenuation = 0;
-
-		attenuation /= 2;
+			attenuation /= 2;
 	}
+	else color = 0;
+
 	optixSetPayload_2(rnd);
 }
 

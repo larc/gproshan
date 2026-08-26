@@ -83,4 +83,3 @@ vec4 shading(vec3 color, vec3 n, vec3 pos, vec2 texcoord)
 			(lambertian * Kd + specular * Ks) * cam_light.color * cam_light.power / (r * r), d);
 }
 
-
